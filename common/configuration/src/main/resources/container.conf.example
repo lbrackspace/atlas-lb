@@ -1,0 +1,16 @@
+## Note: The datastore is expected to be MySQL and have a database named
+##   loadbalancing
+
+#Datastore Configuration
+datastore_host = 0.0.0.0
+datastore_username = loadbalancing
+datastore_password = password
+
+#Showing the SQL will output Hibernate generated SQL at runtime
+datastore_show_sql = false
+
+
+#ZXTM WebService Configration
+zxtm_endpoint_uri = https://endpoint.rackspacezxtmhost.com:9090/soap
+zxtm_username = username
+zxtm_password = password

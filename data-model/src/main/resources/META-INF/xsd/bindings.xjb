@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<bindings version="2.1" xmlns="http://java.sun.com/xml/ns/jaxb">
+
+    <bindings scd="x-schema::tns" xmlns:tns="http://docs.openstack.org/loadbalancers/api/v1.0">
+        <schemaBindings map="true"/>
+
+        <!--Bindings for enumerated types-->
+        <bindings scd="~tns:healthMonitorType">
+            <typesafeEnumClass ref="org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitorType"/>
+        </bindings>
+        <bindings scd="~tns:ipVersion">
+            <typesafeEnumClass ref="org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion">
+                <typesafeEnumMember value="IPV4" name="IPV4"/>
+                <typesafeEnumMember value="IPV6" name="IPV6"/>
+            </typesafeEnumClass>
+        </bindings>
+        <bindings scd="~tns:networkItemType">
+            <typesafeEnumClass ref="org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItemType"/>
+        </bindings>
+        <bindings scd="~tns:nodeCondition">
+            <typesafeEnumClass ref="org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition"/>
+        </bindings>
+        <bindings scd="~tns:nodeStatus">
+            <typesafeEnumClass ref="org.openstack.atlas.docs.loadbalancers.api.v1.NodeStatus"/>
+        </bindings>
+        <bindings scd="~tns:persistenceType">
+            <typesafeEnumClass ref="org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType"/>
+        </bindings>
+        <bindings scd="~tns:vipType">
+            <typesafeEnumClass ref="org.openstack.atlas.docs.loadbalancers.api.v1.VipType"/>
+        </bindings>
+
+        <!--Bindings for classes-->
+        <bindings scd="~tns:algorithms">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Algorithms"/>
+        </bindings>
+        <bindings scd="~tns:algorithm">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Algorithm"/>
+        </bindings>
+        <bindings scd="~tns:accessList">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.AccessList"/>
+        </bindings>
+        <bindings scd="~tns:networkItem">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem"/>
+        </bindings>
+        <bindings scd="~tns:connectionLogging">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging"/>
+        </bindings>
+        <bindings scd="~tns:connectionThrottle">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle"/>
+        </bindings>
+        <bindings scd="~tns:healthMonitor">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor"/>
+        </bindings>
+        <bindings scd="tns:loadBalancers">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers"/>
+        </bindings>
+        <bindings scd="~tns:loadBalancer">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer"/>
+        </bindings>
+        <bindings scd="~tns:nodes">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Nodes"/>
+        </bindings>
+        <bindings scd="~tns:node">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Node"/>
+        </bindings>
+        <bindings scd="~tns:protocols">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Protocols"/>
+        </bindings>
+        <bindings scd="~tns:protocol">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Protocol"/>
+        </bindings>
+        <bindings scd="~tns:virtualIps">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps"/>
+        </bindings>
+        <bindings scd="~tns:virtualIp">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp"/>
+        </bindings>
+        <bindings scd="~tns:sessionPersistence">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence"/>
+        </bindings>
+
+        <!--<-->
+        <bindings scd="~tns:cluster">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Cluster"/>
+        </bindings>
+        <bindings scd="~tns:accountBilling">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling"/>
+        </bindings>
+        <bindings scd="~tns:accountUsage">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.AccountUsage"/>
+        </bindings>
+        <bindings scd="~tns:accountUsageRecord">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.AccountUsageRecord"/>
+        </bindings>
+        <bindings scd="~tns:loadBalancerUsage">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage"/>
+        </bindings>
+        <bindings scd="~tns:loadBalancerUsageRecord">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord"/>
+        </bindings>
+    </bindings>
+</bindings>
+

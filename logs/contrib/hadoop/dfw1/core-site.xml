@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+
+
+    <property>
+        <name>fs.default.name</name>
+        <!--<value>hdfs://hadoop1:9000</value>-->
+        <!--<value>hdfs://hadoop-name.ord.com:8020</value>-->
+        <value>hdfs://hadoop-name.dfw1.com:8020</value>
+    </property>
+
+    <!--<property>
+        <name>io.compression.codecs</name>
+        <value>com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec</value>
+    </property>
+    <property>
+        <name>io.compression.codec.lzo.class</name>
+        <value>com.hadoop.compression.lzo.LzoCodec</value>
+    </property>-->
+
+</configuration>

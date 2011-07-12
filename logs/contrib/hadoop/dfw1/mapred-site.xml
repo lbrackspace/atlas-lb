@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+
+    <property>
+        <name>mapred.job.tracker</name>
+        <!--<value>hadoop1:9001</value>-->
+        <!--<value>hadoop-name.ord.com:8021</value>-->
+        <value>hadoop-name.dfw1.com:8021</value>
+    </property>
+
+    <property>
+        <name>hadoop.job.ugi</name>
+        <!--<value>sites_stats,supergroup</value>-->
+        <value>lbaas,lbaas</value>
+    </property>
+
+    <property>
+        <name>mapred.child.java.opts</name>
+        <value>-Xmx2000m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp</value>
+    </property>
+
+    <property>
+        <name>mapred.java.opts</name>
+        <value>-Xmx2000m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp</value>
+    </property>
+
+    <property>
+        <name>mapred.reduce.tasks</name>
+        <value>10</value>
+    </property>
+
+    <property>
+        <name>mapred.map.tasks</name>
+        <value>10</value>
+    </property>
+
+</configuration>

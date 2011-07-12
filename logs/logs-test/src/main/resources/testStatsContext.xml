@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd"
+	default-autowire="byName">
+
+	
+	<bean
+		class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" >
+	</bean>
+
+	<import resource="/WEB-INF/confCtx.xml" />
+	<import resource="/WEB-INF/runcheckContext.xml" />
+	
+	<!--<bean id="statsTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager" />-->
+<!---->
+	<!--<tx:annotation-driven transaction-manager="statsTransactionManager" />-->
+
+	<bean id="statsDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="${stats.url}"/>
+        <property name="user" value="${stats.user.username}"/>
+        <property name="password" value="${stats.user.password}"/>
+        <property name="acquireIncrement" value="3"/>
+        <property name="idleConnectionTestPeriod" value="100"/>
+        <property name="maxConnectionAge" value="25200"/>
+        <property name="maxPoolSize" value="15"/>
+        <property name="minPoolSize" value="3"/>
+        <property name="maxStatements" value="0"/>
+        <property name="preferredTestQuery" value="select 1;"/>
+	</bean>
+
+	<!--<bean id="entityManagerFactory"-->
+		<!--class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">-->
+		<!--<property name="persistenceXmlLocation" value="/META-INF/statsPersistence.xml" />-->
+		<!--<property name="dataSource" ref="statsDataSource" />-->
+		<!--<property name="persistenceUnitName" value="statsHadoop" />-->
+		<!--<property name="jpaVendorAdapter">-->
+			<!--<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">-->
+				<!--<property name="showSql" value="false" />-->
+				<!--<property name="generateDdl" value="false" />-->
+				<!--<property name="databasePlatform" value="org.hibernate.dialect.MySQL5Dialect" />-->
+			<!--</bean>-->
+		<!--</property>-->
+	<!--</bean>-->
+    <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+            <property name="sessionFactory">
+                <ref local="statsSessionFactory"/>
+            </property>
+        </bean>
+
+    <bean id="statsSessionFactory"
+          class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+        <property name="dataSource">
+            <ref bean="statsDataSource"/>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+                <prop key="hibernate.connection.isolation">3</prop>
+                <!--<prop key="hibernate.current_session_context_class">jta</prop>-->
+                <!--org.hibernate.transaction.JTATransactionFactory -->
+                <!--com.atomikos.icatch.jta.hibernate3.AtomikosJTATransactionFactory-->
+                <!--<prop key="hibernate.transaction.factory_class">-->
+                    <!--com.atomikos.icatch.jta.hibernate3.AtomikosJTATransactionFactory-->
+                <!--</prop>-->
+                <!--<prop key="hibernate.transaction.manager_lookup_class">-->
+                    <!--com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup-->
+                <!--</prop>-->
+
+            </props>
+        </property>
+        <property name="annotatedClasses">
+            <list>
+                <value>com.rackspacecloud.data.to.State</value>
+                <!--<value>com.rackspacecloud.data.to.Stats</value>-->
+                <!--<value>com.rackspacecloud.data.to.DumpEntry</value>-->
+                <!--<value>com.rackspacecloud.data.to.StatsArchive</value>-->
+                <!--<value>com.rackspacecloud.data.to.CacheServer</value>-->
+            </list>
+        </property>
+    </bean>
+
+    <bean id="statsHibernateTemplate"
+          class="org.springframework.orm.hibernate3.HibernateTemplate">
+        <property name="sessionFactory">
+            <ref bean="statsSessionFactory"/>
+        </property>
+    </bean>
+
+	<import resource="/WEB-INF/statsDaos.xml" />
+	<import resource="/WEB-INF/statsServices.xml" />
+
+</beans>

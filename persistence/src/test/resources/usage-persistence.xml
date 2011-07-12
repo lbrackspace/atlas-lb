@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
+
+    <persistence-unit name="loadbalancingUsage" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <jta-data-source>jdbc/loadBalancerUsageDB</jta-data-source>
+        <class>org.openstack.atlas.service.domain.usage.entities.Entity</class>
+        <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage</class>
+        <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent</class>
+        <class>org.openstack.atlas.service.domain.usage.entities.HostUsage</class>
+
+        <!-- Hibernate Properties -->
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
+           <!-- <property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.SunONETransactionManagerLookup"/>-->
+            <property name="hibernate.transaction.flush_before_completion" value="false"/>
+            <!-- <property name="hibernate.query.factory_class" value="org.hibernate.hql.classic.ClassicQueryTranslatorFactory"/> -->
+            <property name="hibernate.connection.autocommit" value="false"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.connection.release_mode" value="auto"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+        </properties>
+    </persistence-unit>
+</persistence>

@@ -1,0 +1,19 @@
+<beans xmlns:jaxrs="http://cxf.apache.org/jaxrs" xmlns:jaxrs="http://camel.apache.org/schema/cxf">
+    <bean id="propertyConfigurer"
+          class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
+        <property name="location" value="classpath:/test.properties"/>
+    </bean>
+
+    <import resource="classpath:META-INF/cxf/cxf-extension-http-jetty.xml"/>
+    <import resource="classpath:/spring-context-public.xml"/>
+
+    <jaxrs:client id="lbClient" address="${server.address}">
+        <jaxrs:serviceBeans>
+            <ref bean="loadBalancingPublicImpl"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:headers>
+            <entry key="content-type" value="application/xml"/>
+            <entry key="BYPASS-AUTH" value="true"/>
+        </jaxrs:headers>
+    </jaxrs:client>
+</beans>
