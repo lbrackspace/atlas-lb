@@ -42,7 +42,7 @@
             <param-value>true</param-value>
         </init-param>
     </filter>
-    <!--<filter>
+    <filter>
         <filter-name>authenticationFilter</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
         <init-param>
@@ -69,7 +69,7 @@
             <param-name>context-adapter-class</param-name>
             <param-value>com.rackspace.cloud.commons.util.servlet.context.impl.ServletSpringContext</param-value>
         </init-param>
-    </filter> -->
+    </filter>
     <filter>
         <filter-name>jsonValidationFilter</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
@@ -84,7 +84,7 @@
         <filter-name>requestSanitationFilter</filter-name>
         <servlet-name>CXFServlet</servlet-name>
     </filter-mapping>
-    <!--<filter-mapping>
+    <filter-mapping>
         <filter-name>authenticationFilter</filter-name>
         <servlet-name>CXFServlet</servlet-name>
     </filter-mapping>
@@ -95,7 +95,7 @@
     <filter-mapping>
         <filter-name>rateLimitingFilter</filter-name>
         <servlet-name>CXFServlet</servlet-name>
-    </filter-mapping> -->
+    </filter-mapping>
     <filter-mapping>
         <filter-name>jsonValidationFilter</filter-name>
         <servlet-name>CXFServlet</servlet-name>
