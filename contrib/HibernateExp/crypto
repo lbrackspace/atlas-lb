@@ -1,0 +1,33 @@
+#!/usr/bin/env jython
+
+from util import *
+import traceback
+import sys
+import os
+
+def usage(prog):
+    printf("usage is %s <encrypt|decrypt> <ptext|ctext>\n",prog)
+    printf("\n")
+    printf("Encrypt or decrypt the password for cluster\n")
+
+if __name__=="__main__":
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<3:
+        usage(prog)
+        sys.exit()
+    
+    operation = sys.argv[1].lower()
+    val = sys.argv[2]
+
+    if operation == "encrypt":
+        ctext = CryptoUtil.encrypt(val)
+        printf("\"%s\"\n",ctext)
+    elif operation == "decrypt":
+        ptext = CryptoUtil.decrypt(val)
+        printf("\"%s\"\n",ptext)
+    else:
+        printf("1st parameter should be encrypt or decrypt\n")
+        printf("\n")
+        usage(prog)
+        sys.exit()
+

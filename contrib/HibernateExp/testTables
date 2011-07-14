@@ -1,0 +1,12 @@
+#!/bin/sh
+
+export CLASSPATH="./target/HibernateExp-1.0-SNAPSHOT-jar-with-dependencies.jar"
+unset JAVA_OPTS; # Cause jython is picky about custom VM settings
+if [ "$#" -lt "1" ]; then 
+    jython testTables.py;
+else
+    jython testTables.py $1;
+fi;
+
+
+

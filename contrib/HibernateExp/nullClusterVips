@@ -1,0 +1,31 @@
+#!/usr/bin/env jython
+
+from util import *
+import sys
+import os
+
+#Should yeild select * from virtual_ip where cluster_id is null and id not in (select virtualip_id from loadbalancer_virtualip);
+
+def usage(prog):
+    printf("usage is %s <db.xml>\n",prog)
+    printf("\n")
+    printf("Fetch virtualips for which has no cluster info\n")
+
+prog = os.path.basename(sys.argv[0])
+
+if len(sys.argv)<2:
+    usage(prog)
+    sys.exit()
+
+xml_file = sys.argv[1]
+
+setHu(xml_file)
+
+begin()
+printf("%s\t%s\n","ipAddress","vip_id")
+results = nullClusterVips()
+results.sort()
+for (id,ip) in results:
+    printf("%s\t%s\n",ip,id)
+rollback()
+

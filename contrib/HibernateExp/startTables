@@ -1,0 +1,127 @@
+#!/usr/bin/env jython
+
+#   From this directory run "mvn clean assembly:assembly"
+#   Because we use a lot of jar files for this project the assembly:assembly
+#   command tells maven to build all the dependencies into one jar file which
+#   Allows us to use a simple single jar CLASSPATH. See below. IE you don't
+#   Have to pull in all the spring and hibernate jars. 
+#
+#   export the variable
+#   CLASSPATH="./target/HibernateExp-1.0-SNAPSHOT-jar-with-dependencies.jar"
+#   Execute Jython
+#   At this point enter the command "from util import *" 
+#   to pull in the tools from util.py
+#
+#   to start up the hibernate interface you use the setHu(file_path) function
+#   the config file is of the form
+#
+#   <?xml version="1.0" ?>
+#    <config type="dict">
+#        <url>jdbc:mysql://173.203.200.79:3306/loadbalancing</url>
+#        <user>loadbalancing</user>
+#        <passwd>password</passwd>
+#    </config>
+#
+#    There is a slice.xml and local.xml file as an example already in this
+#    Directory. Basically when you call setHu you tell it which database
+#    to use. Example invocations
+#    setHu("local.xml")     <-- My Own local database at 127.0.0.1
+#    setHu("remote.xml")    <-- The slice database every one else is useing
+#
+#    After this you can use the methods  below on the jython command line
+#
+#
+#    To exeriment with Queries you can use the getList command from App
+#    Example:
+#    
+#    loadbalancers = App.getList("from LoadBalancer where accountId=31337")
+#    you can experiment with real java query tools by grabbing the sesssion
+#    Then executing java code
+#    For example
+#
+#    session = App.getSession()  <-- Grabs the hibernate Session
+#    session.beginTransaction()
+#    q = session.createQuery("from LoadBalancer where accountId=:accountId")
+#    q.setParameter("accountId",31337)
+#    loadbalancers = q.list()
+# 
+#    if you want to run the command in one line Java style you could use
+#    loadbalancers = session.createQuery("from LoadBalancer where accountId=:accountId").setParameter("accountId",31337).list()
+#
+#    This HibernateExp project depends on loadbalancing-domain project so
+#    if you make a change to loadbalancing-domain you must 
+#    rebuild loadbalancing-domain then rerun mvn assembly:assembly in this
+#    project after you've built loadbalancing-domain. And restart jython
+#    since you can't dynamicly reload Java classes. :(
+#
+#    You can run this from the command line like
+#    ./startTables slice.xml
+
+from util import *
+import sys
+import os
+
+prog = os.path.basename(sys.argv[0])
+
+if len(sys.argv) < 2:
+     printf("usage is %s <config_file.xml>\n",prog)
+     printf("\n")
+     printf("Populate the data base specified by config.xml")
+     sys.exit()
+
+setHu(sys.argv[1])
+
+c = newClusters(["C%i"%ri(0,30000) for i in xrange(0,4)])
+saveList(c)
+
+h = [newHost(random.choice(c)) for i in xrange(0,2)]
+saveList(h)
+
+rp = newRateProfile()
+saveList([rp])
+
+rp = App.getList("from LoadBalancerRateProfile")[0]
+hosts = App.getList("from Host")
+lbs = newLoadBalancers(999,5,hosts,rateprofile=rp)
+saveList(lbs)
+
+vips = newVips("10.69.0.0/24")
+saveList(vips)
+
+nodes = newNodes(lbs,10)
+saveList(nodes)
+
+lbs = App.getList("from LoadBalancer")
+cls = newConnectionLimit(lbs)
+saveList(cls)
+
+linkConnectionLimits2LoadBalancer(cls)
+
+lbs = App.getList("from LoadBalancer")
+als = newAccessLists(lbs,5)
+saveList(als)
+
+lbs = App.getList("from LoadBalancer")
+us = newUsages(lbs,300)
+random.shuffle(us)
+saveList(us)
+
+hm = newHealthMonitor(lbs,1)
+saveList(hm)
+
+
+
+#Getters
+prots = App.getList("from LoadBalancerProtocolObject where enabled = True")
+
+begin()
+lbs = App.getList("from LoadBalancer where id in (5,7,3)")
+vips = App.getList("from VirtualIp where id = 3")
+linkVips2Lbs(lbs,vips)
+
+lbs = App.getList("from LoadBalancer where id = 11")
+vips = App.getList("from VirtualIp where id in (5,22,24)")
+linkVips2Lbs(lbs,vips)
+commit()
+
+
