@@ -200,7 +200,7 @@
         </constructor-arg>
         <property name="authenticatedUsers" ref="authCache"/>
     </bean>
-    <!--<bean id="groupRateLimitFilter"
+    <bean id="groupRateLimitFilter"
           class="org.openstack.atlas.api.filters.GroupRateLimitFilter"
           scope="request">
         <constructor-arg>
@@ -210,7 +210,7 @@
     </bean>
     <bean id="rateLimitingFilter"
           class="com.rackspace.cloud.jee.filters.limits.rate.RateLimitingFilter"
-          scope="request"/>-->
+          scope="request"/>
     <bean id="validationFilter"
           class="org.openstack.atlas.api.filters.ValidationFilter"
           scope="request">
