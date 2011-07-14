@@ -1,0 +1,4 @@
+*.class
+*.xml
+*.pyc
+target/*

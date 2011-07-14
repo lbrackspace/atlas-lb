@@ -1,0 +1,75 @@
+#!/usr/bin/env jython
+
+from util import *
+import simplejson as json
+import sys
+import os
+
+def padprint(aid,lid,nid,ip):
+    aid = pad(10," ",aid)
+    lid = pad(15," ",lid)
+    nid = pad(7," ",nid)
+    ip  = pad(16," ",ip)
+    printf("%s%s%s%s\n",aid,lid,nid,ip)
+
+def usage(prog):
+    printf("Usage is %s <db.xml> <cidr.txt> <out.json>\n",prog)
+    printf("\n")
+    printf("scan the database defined in db.xml and make sure\n")
+    printf("no nodes are already blacklisted.\n")
+
+prog = os.path.basename(sys.argv[0])
+
+if len(sys.argv)<4:
+    usage(prog)
+    sys.exit()
+
+dbxml_file = sys.argv[1]
+cidr_file = sys.argv[2]
+json_out = sys.argv[3]
+
+lines = [chop(l) for l in open(cidr_file).readlines()]
+
+cbs = CidrBlackList()
+
+for line in lines:
+    printf("%s\n",cbs.addCidr(line))
+
+
+qStr  = "SELECT n.loadbalancer.accountId,n.loadbalancer.id,n.id,n.ipAddress " 
+qStr += "FROM Node n"
+
+cq = CustomQuery(qStr)
+setConfig(dbxml_file)
+begin()
+nodes = buildQuery(cq).list()
+nodes = pythonList(nodes)
+
+for node in nodes:
+    cbs.checkBlacklisted(node)
+
+
+bad = {"accounts":set(),"loadbalancers":set(),"nodes":set(),"records":[]}
+
+
+for node in cbs.bad4Node:
+    (aid,lid,nid,ip) = node
+    bad["accounts"].add(aid)
+    bad["loadbalancers"].add(lid)
+    bad["nodes"].add(nid)
+    record = {}
+    record["accountId"]=aid
+    record["LoadBalancerId"]=lid
+    record["NodeId"]=nid
+    record["Ip"]=ip
+    bad["records"].append(record)
+    
+bad["accounts"]=list(bad["accounts"])
+bad["loadbalancers"]=list(bad["loadbalancers"])
+bad["nodes"]=list(bad["nodes"])
+    
+jdata = json.dumps(bad)
+fp = open(json_out,"w")
+fp.write(jdata)
+fp.close()
+
