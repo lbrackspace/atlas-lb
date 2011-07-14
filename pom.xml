@@ -10,11 +10,9 @@
     <packaging>pom</packaging>
 
     <scm>
-        <url>scm:git:ssh://git@git.wc1.dfw1.stabletransit.com/loadbalancing-rest-api.git</url>
-        <developerConnection>
-            scm:git:ssh://git@git.wc1.dfw1.stabletransit.com/loadbalancing-rest-api.git
-        </developerConnection>
-        <connection>scm:git:ssh://git@git.wc1.dfw1.stabletransit.com/loadbalancing-rest-api.git</connection>
+        <url>scm:git:git@github.com:lbrackspace/atlas-lb.git</url>
+        <developerConnection>scm:git:git@github.com:lbrackspace/atlas-lb.git</developerConnection>
+        <connection>scm:git:git@github.com:lbrackspace/atlas-lb.git</connection>
     </scm>
 
 
