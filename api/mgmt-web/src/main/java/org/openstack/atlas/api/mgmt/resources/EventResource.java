@@ -31,4 +31,19 @@ public class EventResource extends ManagementDependencyProvider {
         }
         return Response.status(200).entity(rEvents).build();
     }
+
+    @GET
+    @Path("user/{username: [A-Za-z][A-Za-z]*")
+    public Response getAllEventsByUsername(@PathParam("username") String username, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate) {
+        if (!isUserInRole("ops")) {
+            return ResponseFactory.accessDenied();
+        }
+
+        org.openstack.atlas.service.domain.events.pojos.AccountLoadBalancerServiceEvents dEvents;
+//        try {
+//            dEvents = getEventRepository().getAllEventsForAccount();
+//        }
+
+        return null;
+    }
 }
