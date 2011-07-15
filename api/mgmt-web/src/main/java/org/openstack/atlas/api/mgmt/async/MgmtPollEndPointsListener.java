@@ -25,6 +25,7 @@ public class MgmtPollEndPointsListener extends BaseListener {
             } else {
                 host.setSoapEndpointActive(Boolean.FALSE);
             }
+            hostService.update(host);
         }
     }
 }
