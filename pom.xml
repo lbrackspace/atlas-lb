@@ -9,9 +9,9 @@
     <packaging>pom</packaging>
 
     <scm>
-        <url>scm:git:git@github.com:lbrackspace/atlas-lb.git</url>
-        <developerConnection>scm:git:git@github.com:lbrackspace/atlas-lb.git</developerConnection>
-        <connection>scm:git:git@github.com:lbrackspace/atlas-lb.git</connection>
+        <url>scm:git:git@github-lbaas:lbrackspace/atlas-lb.git</url>
+        <developerConnection>scm:git:git@github-lbaas:lbrackspace/atlas-lb.git</developerConnection>
+        <connection>scm:git:git@github-lbass:lbrackspace/atlas-lb.git</connection>
     </scm>
 
 
@@ -20,14 +20,14 @@
         <snapshotRepository>
             <id>rackspacecloud-snapshots</id>
             <name>Internal RC Snapshot Maven Repo</name>
-            <url>http://50.57.100.173/m2/content/repositories/rackspacecloud-snapshots/</url>
+            <url>http://50.57.100.173/m2/content/repositories/rackspacecloud-snapshots</url>
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
 
         <repository>
             <id>rackspacecloud-releases</id>
             <name>Internal RC Releases Maven Repo</name>
-            <url>http://50.57.100.173/m2/content/repositories/rackspaceclout-releases/</url>
+            <url>http://50.57.100.173/m2/content/repositories/rackspaceclout-releases</url>
         </repository>
     </distributionManagement>
 
