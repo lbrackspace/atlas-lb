@@ -18,16 +18,16 @@
 <!-- TODO: Find a way to get this project to deploy to the 50.57.100.173 nexus repo -->
     <distributionManagement>
         <snapshotRepository>
-            <id>repos.rackspace.cloud.snapshots</id>
+            <id>rackspacecloud-snapshots</id>
             <name>Internal RC Snapshot Maven Repo</name>
-            <url>http://50.57.100.173/m2/content/repositories/repos.rackspace.cloud.snapshots</url>
+            <url>http://50.57.100.173/m2/content/repositories/rackspacecloud-snapshots/</url>
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
 
         <repository>
-            <id>repos.rackspace.cloud.releases</id>
+            <id>rackspacecloud-releases</id>
             <name>Internal RC Releases Maven Repo</name>
-            <url>http://172.17.16.59/m2/content/repositories/releases/</url>
+            <url>http://50.57.100.173/m2/content/repositories/rackspaceclout-releases/</url>
         </repository>
     </distributionManagement>
 
