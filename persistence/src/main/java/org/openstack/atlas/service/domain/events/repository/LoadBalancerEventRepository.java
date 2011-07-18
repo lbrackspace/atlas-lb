@@ -80,6 +80,19 @@ public class LoadBalancerEventRepository {
         return query.getResultList();
     }
 
+    public LoadBalancerServiceEvents getAllEventsForUsername(String username, Integer page) {
+        Query query = entityManager.createQuery("SELECT evt FROM LoadBalancerServiceEvent evt where evt.author = :username order by evt.created desc").setParameter("username", username).setMaxResults(PAGE_SIZE);
+
+        if (page != null && page > 0) {
+            query = query.setFirstResult((page - 1) * PAGE_SIZE);
+        }
+
+        LoadBalancerServiceEvents dEvents = new LoadBalancerServiceEvents();
+        dEvents.getLoadBalancerServiceEvents().addAll(query.getResultList());
+
+        return dEvents;
+    }
+
     public List<NodeEvent> getAllNodeEvents(Integer accountId, Integer loadbalancerId, Integer page) {
         Query query = entityManager.createQuery("SELECT evt FROM NodeEvent evt where evt.accountId = :accountId and evt.loadbalancerId = :loadbalancerId order by evt.created desc").setParameter("accountId", accountId).setParameter("loadbalancerId", loadbalancerId).setMaxResults(PAGE_SIZE);
 

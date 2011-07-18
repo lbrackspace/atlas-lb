@@ -1,11 +1,11 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerServiceEvents;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerServiceEvents;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerServiceEvents;
 
 import javax.ws.rs.GET;
-
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -33,17 +33,30 @@ public class EventResource extends ManagementDependencyProvider {
     }
 
     @GET
-    @Path("user/{username: [A-Za-z][A-Za-z]*")
-    public Response getAllEventsByUsername(@PathParam("username") String username, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate) {
+    @Path("user/{username: [0-9A-Za-z ]+}")
+    public Response getAllEventsByUsername(@PathParam("username") String username, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate, @QueryParam("page") Integer page) {
         if (!isUserInRole("ops")) {
             return ResponseFactory.accessDenied();
         }
 
-        org.openstack.atlas.service.domain.events.pojos.AccountLoadBalancerServiceEvents dEvents;
-//        try {
-//            dEvents = getEventRepository().getAllEventsForAccount();
-//        }
+        org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents dEvents;
+        LoadBalancerServiceEvents rEvents = new LoadBalancerServiceEvents();
 
-        return null;
+        if (page == null) {
+            page = 1;
+        }
+
+        if (page <= 0) {
+            page = 1;
+        }
+
+        try {
+            dEvents = getEventRepository().getAllEventsForUsername(username, page);
+            rEvents = getDozerMapper().map(dEvents, rEvents.getClass());
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+
+        return Response.status(200).entity(rEvents).build();
     }
 }
