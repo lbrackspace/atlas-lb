@@ -20,8 +20,7 @@
         <snapshotRepository>
             <id>repos.rackspace.cloud.snapshots</id>
             <name>Internal RC Snapshot Maven Repo</name>
-            <url>http://172.17.16.59/m2/content/repositories/snapshots/</url>
-
+            <url>http://50.57.100.173/m2/content/repositories/repos.rackspace.cloud.snapshots</url>
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
 
