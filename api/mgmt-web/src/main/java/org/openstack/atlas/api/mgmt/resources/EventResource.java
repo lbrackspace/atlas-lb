@@ -10,6 +10,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class EventResource extends ManagementDependencyProvider {
 
@@ -39,6 +42,21 @@ public class EventResource extends ManagementDependencyProvider {
             return ResponseFactory.accessDenied();
         }
 
+        Calendar startCal = new GregorianCalendar();
+        Calendar endCal = new GregorianCalendar();
+
+        if (startDate == null) {
+            startCal.setTime(new Date(1990, 1, 1));
+        } else {
+            startCal.setTime(new Date(startDate));
+        }
+
+        if (endDate == null) {
+            endCal.setTime(Calendar.getInstance().getTime());
+        } else {
+            endCal.setTime(new Date(endDate));
+        }
+
         org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents dEvents;
         LoadBalancerServiceEvents rEvents = new LoadBalancerServiceEvents();
 
@@ -51,7 +69,7 @@ public class EventResource extends ManagementDependencyProvider {
         }
 
         try {
-            dEvents = getEventRepository().getAllEventsForUsername(username, page);
+            dEvents = getEventRepository().getAllEventsForUsername(username, page, startCal, endCal);
             rEvents = getDozerMapper().map(dEvents, rEvents.getClass());
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
