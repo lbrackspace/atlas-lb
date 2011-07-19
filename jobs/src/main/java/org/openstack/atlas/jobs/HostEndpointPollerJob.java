@@ -43,6 +43,7 @@ public class HostEndpointPollerJob extends QuartzJobBean {
         this.hostRepository = hostRepository;
     }
 
+    //TODO: refactor to use the async service...
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         LOG.info("HostEndpointPollerJob job has started...");

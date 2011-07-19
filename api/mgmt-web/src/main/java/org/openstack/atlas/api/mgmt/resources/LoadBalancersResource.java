@@ -115,12 +115,16 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
             }
         }
 
-        List<org.openstack.atlas.service.domain.entities.LoadBalancer> domainLbs;
+        List<org.openstack.atlas.service.domain.entities.LoadBalancer> domainLbs = new ArrayList<org.openstack.atlas.service.domain.entities.LoadBalancer>();
         org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers dataModelLbs = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers();
-        if (vipId >= 9000000) {
-            domainLbs = virtualIpService.getLoadBalancerByVip6Id(vipId);
-        } else {
-            domainLbs = virtualIpService.getLoadBalancerByVipId(vipId);
+//        if (vipId != null && vipId >= 9000000) {
+//            domainLbs = virtualIpService.getLoadBalancerByVip6Id(vipId);
+//        } else {
+//            domainLbs = virtualIpService.getLoadBalancerByVipId(vipId);
+//        }
+
+        if (vipId != null) {
+            domainLbs = retrieveAllVipsById(vipId);
         }
 
         for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
@@ -150,6 +154,13 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
             return ResponseFactory.getErrorResponse(ex, null, null);
         }
         return Response.status(200).entity(dataModelLbs).build();
+    }
+
+    private List<org.openstack.atlas.service.domain.entities.LoadBalancer> retrieveAllVipsById(int vipId) {
+        List<org.openstack.atlas.service.domain.entities.LoadBalancer> domainLbs;
+        domainLbs = virtualIpService.getLoadBalancerByVip6Id(vipId);
+        domainLbs.addAll(virtualIpService.getLoadBalancerByVipId(vipId));
+        return domainLbs;
     }
 
     public void setLoadBalancerResource(LoadBalancerResource loadBalancerResource) {
