@@ -8,6 +8,7 @@
     <import resource="usage-jpa-persistence.xml"/>
 
     <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
+    <bean id="reverseProxyLoadBalancerService" class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl"/>
 
     <!--ENABLED TRIGGERS-->
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
@@ -22,6 +23,7 @@
                 <ref bean="dailyDeletionJobTrigger"/>
                 <ref bean="eventsDeletionJobTrigger"/>
                 <ref bean="atomAlertDeletionJobTrigger"/>
+                <ref bean="hostEndpointPollerJobTrigger"/>
             </list>
         </property>
     </bean>
@@ -133,6 +135,24 @@
         <property name="jobDetail" ref="rateLimitDeletionJob"/>
         <property name="cronExpression" value="0 */15 * * * ?"/>
         <!-- run every 15 mins -->
+    </bean>
+
+    <!--HOST ENDPOINT POLLER JOB CONFIG-->
+    <bean name="hostEndpointPollerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"
+                  value="org.openstack.atlas.jobs.HostEndpointPollerJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="reverseProxyLoadBalancerService" value-ref="reverseProxyLoadBalancerService"/>
+                <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
+                <entry key="hostRepository" value-ref="hostRepository"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="hostEndpointPollerJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="hostEndpointPollerJob"/>
+        <property name="cronExpression" value="0 */02 * * * ?"/>
+        <!-- run every 2 mins -->
     </bean>
 
     <!--ALERT DELETION JOB CONFIG-->
