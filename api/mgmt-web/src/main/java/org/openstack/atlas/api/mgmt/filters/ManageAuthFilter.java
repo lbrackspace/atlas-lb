@@ -1,5 +1,7 @@
 package org.openstack.atlas.api.mgmt.filters;
 
+import org.openstack.atlas.api.mgmt.filters.helpers.UserEntry;
+import org.openstack.atlas.util.simplecache.SimpleCache;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.api.filters.helpers.AcceptTypes;
 import org.openstack.atlas.api.filters.wrappers.HeadersRequestWrapper;
@@ -35,6 +37,7 @@ public class ManageAuthFilter implements Filter {
     private MossoAuth mossoAuth;
     private FilterConfig config = null;
     private XmlJsonConfig xmlJsonConfig;
+    private SimpleCache <UserEntry> ldapCache;
     private static final BadRequest unAuthorized;
     private static final BadRequest requiresAuth;
     private static final BadRequest invalidAuth;
@@ -85,7 +88,7 @@ public class ManageAuthFilter implements Filter {
             return;
         }
 
-        if (httpTools.isHeaderTrue("BYPASS-AUTH")) {
+        if (httpTools.isHeaderTrue("BYPASS-AUTH") && mossoAuth.getConfig().isAllowforcedRole()) {
             user = "BYPASS-AUTH";
             groups = new HashSet<String>();
             LOG.info("Bypassed AUTH.... ");
@@ -132,21 +135,36 @@ public class ManageAuthFilter implements Filter {
 
         user = httpTools.getBasicUser();
         password = httpTools.getBasicPassword();
-
         LOG.info("Basic User: " + user);
+        UserEntry ue = ldapCache.get(user);
+        if (ue == null) { // If the entry expired or was not found Bind to eDir
+            LOG.info("bind eDir");
+            if (!mossoAuth.testAuth(user, password)) {
+                sendResponse(hresp, acceptType, unAuthorized, SC_UNAUTHORIZED);
+                return;
+            }
+            try {
+                groups = mossoAuth.getGroups(user, password);
+            } catch (NamingException ex) {
+                LOG.error(ex);
+                throw new ServletException("UNABLE to fetch posixgroups from LDAP", ex);
+            }
+            ue = new UserEntry();
+            ue.setName(user);
+            ue.setPasswd(password);
+            ue.setGroups(groups);
+            groups = new HashSet<String>(ue.getGroups());
+            ldapCache.put(user, ue);
+            LOG.info(String.format("insert %s into LdapCache",user));
+        }else{
+            if(!password.equals(ue.getPasswd())) {
+                sendResponse(hresp, acceptType, unAuthorized, SC_UNAUTHORIZED);
+            }
+            groups = new HashSet<String>(ue.getGroups());
+            LOG.info(String.format("Cache hit %s",user));
+        }
 
-        if (!mossoAuth.testAuth(user, password)) {
-            sendResponse(hresp, acceptType, unAuthorized, SC_UNAUTHORIZED);
-            return;
-        }
-        try {
-            groups = mossoAuth.getGroups(user, password);
-        } catch (NamingException ex) {
-            LOG.error(ex);
-            throw new ServletException("UNABLE to fetch posixgroups from LDAP", ex);
-        }
         forcedRolesHeaders = hreq.getHeaders("FORCEROLES");
-
         if (mossoAuth.getConfig().isAllowforcedRole() && forcedRolesHeaders != null) {
             while (forcedRolesHeaders.hasMoreElements()) {
                 String role = forcedRolesHeaders.nextElement();
@@ -174,7 +192,8 @@ public class ManageAuthFilter implements Filter {
         return;
     }
 
-    public void startConfig() {
+    public void startConfig() { // Spring should have already initialized the cache
+        ldapCache.setTtl(mossoAuth.getConfig().getTtl());
     }
 
     private String pojo2xml(Object pojo) throws JAXBException {
@@ -251,6 +270,7 @@ public class ManageAuthFilter implements Filter {
         this.xmlJsonConfig = xmlJsonConfig;
     }
 
-    public static class AuthState {
+    public void setLdapCache(SimpleCache<UserEntry> ldapCache) {
+        this.ldapCache = ldapCache;
     }
 }
