@@ -32,8 +32,8 @@ public class RootResource extends CommonDependencyProvider {
         this.origContainer.setHttpHeaders(hh);
         this.origContainer.setSecurityContext(sc);
         this.origContainer.setUriInfo(ui);
-        loadBalancersResource.setRequestHeaders(hh);
-        loadBalancersResource.setAccountId(accountId);
+        this.loadBalancersResource.setRequestHeaders(hh);
+        this.loadBalancersResource.setAccountId(accountId);
         return loadBalancersResource;
     }
 
