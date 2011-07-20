@@ -1,6 +1,8 @@
 package org.openstack.atlas.api.resources;
 
+import java.net.URI;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
 import java.util.Calendar;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
@@ -89,6 +91,15 @@ public class StubResource extends CommonDependencyProvider {
         Node node;
         node = newNode(64, 80, "127.0.0.1");
         return Response.status(200).entity(node).build();
+    }
+
+    @GET
+    @Path("uri")
+    public Response uriInfo(){
+        String uri = getRequestStateContainer().getUriInfo().getAbsolutePath().toString();
+        SourceAddresses sa = new SourceAddresses();
+        sa.setIpv4Public(uri);
+        return Response.status(200).entity(sa).build();
     }
 
     @GET

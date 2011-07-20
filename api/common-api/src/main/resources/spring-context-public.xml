@@ -47,6 +47,7 @@
         <property name="accessListService" ref="accessListService" />
         <property name="usageService" ref="usageService" />
         <property name="accountLimitService" ref="accountLimitService" />
+        <property name="requestStateContainer" ref="requestStateContainer"/>
     </bean>
 
     <!--DOZER SETTINGS-->
@@ -70,6 +71,7 @@
           class="org.openstack.atlas.api.resources.RootResource"
           parent="commonDependencyProvider"
           scope="request">
+        <property name="origContainer" ref="requestStateContainer"/>
         <property name="throwResource">
             <bean class="org.openstack.atlas.api.resources.ThrowResource"
                   parent="commonDependencyProvider"
@@ -110,9 +112,11 @@
     </bean>
     <bean id="stubResource"
           class="org.openstack.atlas.api.resources.StubResource"
+          parent="commonDependencyProvider"
           scope="request"/>
     <bean id="bounceResource"
           class="org.openstack.atlas.api.resources.BounceResource"
+          parent="commonDependencyProvider"
           scope="request"/>
     <bean id="loadBalancingAsyncService"
           class="org.openstack.atlas.api.integration.AsyncServiceImpl"
