@@ -115,7 +115,7 @@ public class VirtualIpv6Repository {
     public List<LoadBalancer> getLoadBalancersByVipId(Integer virtualIpv6Id) {
         List<LoadBalancer> lbs;
         String qStr = "select v.loadBalancer from LoadBalancerJoinVip6 "
-                + "v where v.virtualIp=:vid";
+                + "v where v.virtualIp.id=:vid";
         Query q = entityManager.createQuery(qStr);
         q.setParameter("vid", virtualIpv6Id);
         return q.getResultList();
