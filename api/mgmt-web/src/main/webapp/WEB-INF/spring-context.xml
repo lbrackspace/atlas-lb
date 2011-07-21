@@ -58,9 +58,12 @@
     <bean id="headerEnhancerFilter"
           class="org.openstack.atlas.api.mgmt.filters.HeaderEnhancerFilter" scope="request"/>
     <bean id="manageAuthFilter"
-          class="org.openstack.atlas.api.mgmt.filters.ManageAuthFilter" scope="singleton">
+          class="org.openstack.atlas.api.mgmt.filters.ManageAuthFilter" 
+          init-method="startConfig"
+          scope="singleton">
         <property name="xmlJsonConfig" ref="xmlJsonConfig"/>
         <property name="mossoAuth" ref="mossoAuth"/>
+        <property name="ldapCache" ref="ldapCache"/>
     </bean>
 
     <bean id="xmlJsonConfig"
