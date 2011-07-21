@@ -269,4 +269,6 @@
         <constructor-arg index="1" ref="cacheManagerFactory"/>
     </bean>
 
+
+    <bean id="ldapCache" class="org.openstack.atlas.util.simplecache.SimpleCache" scope="singleton"/>
 </beans>

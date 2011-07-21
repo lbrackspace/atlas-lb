@@ -19,7 +19,9 @@ public class MossoAuthConfig {
     private Set<String> allowedGroups;
     private Map<String, HashSet<String>> roles;
     private int port;
-    private boolean allowforcedRole=false;
+    private boolean allowforcedRole = false;
+    private boolean allowBypassAuth = false;
+    private int ttl = 300; // Cache timeout
     private static final Pattern opRe = Pattern.compile("(\\S+)\\s*=\\s*\\\"(.*)\\\"");
     private static final Pattern rolesRe = Pattern.compile("grouprole\\[\\s*\"(\\S+)\"\\s*\\]");
 
@@ -66,8 +68,12 @@ public class MossoAuthConfig {
                     this.connectMethod = LDAPConnectMethod.SSL;
                 } else if (name.equals("connect") && value.equals("tls")) {
                     this.connectMethod = LDAPConnectMethod.TLS;
-                }else if(name.equals("allowforcedrole")&&value.equals("true")){
+                } else if (name.equals("ttl")) {
+                    this.ttl = Integer.parseInt(value);
+                } else if (name.equals("allowforcedrole") && value.equals("true")) {
                     this.allowforcedRole = true;
+                } else if (name.equals("allowbypassauth") && value.equals("true")) {
+                    this.allowBypassAuth = true;
                 } else {
                     continue;
                 }
@@ -131,6 +137,22 @@ public class MossoAuthConfig {
 
     public void setAllowforcedRole(boolean allowforcedRole) {
         this.allowforcedRole = allowforcedRole;
+    }
+
+    public boolean isAllowBypassAuth() {
+        return allowBypassAuth;
+    }
+
+    public void setAllowBypassAuth(boolean allowBypassAuth) {
+        this.allowBypassAuth = allowBypassAuth;
+    }
+
+    public int getTtl() {
+        return ttl;
+    }
+
+    public void setTtl(int ttl) {
+        this.ttl = ttl;
     }
 
     public static enum LDAPConnectMethod {
