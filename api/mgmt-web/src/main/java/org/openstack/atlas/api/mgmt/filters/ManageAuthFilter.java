@@ -37,7 +37,7 @@ public class ManageAuthFilter implements Filter {
     private MossoAuth mossoAuth;
     private FilterConfig config = null;
     private XmlJsonConfig xmlJsonConfig;
-    private SimpleCache <UserEntry> ldapCache;
+    private SimpleCache<UserEntry> ldapCache;
     private static final BadRequest unAuthorized;
     private static final BadRequest requiresAuth;
     private static final BadRequest invalidAuth;
@@ -88,7 +88,9 @@ public class ManageAuthFilter implements Filter {
             return;
         }
 
-        if (httpTools.isHeaderTrue("BYPASS-AUTH") && mossoAuth.getConfig().isAllowforcedRole()) {
+        if (httpTools.isHeaderTrue("BYPASS-AUTH")
+                && mossoAuth.getConfig().isAllowBypassAuth()
+                && mossoAuth.getConfig().isAllowforcedRole()) {
             user = "BYPASS-AUTH";
             groups = new HashSet<String>();
             LOG.info("Bypassed AUTH.... ");
@@ -135,7 +137,6 @@ public class ManageAuthFilter implements Filter {
 
         user = httpTools.getBasicUser();
         password = httpTools.getBasicPassword();
-        LOG.info("Basic User: " + user);
         UserEntry ue = ldapCache.get(user);
         if (ue == null) { // If the entry expired or was not found Bind to eDir
             LOG.info("bind eDir");
@@ -155,13 +156,13 @@ public class ManageAuthFilter implements Filter {
             ue.setGroups(groups);
             groups = new HashSet<String>(ue.getGroups());
             ldapCache.put(user, ue);
-            LOG.info(String.format("insert %s into LdapCache",user));
-        }else{
-            if(!password.equals(ue.getPasswd())) {
+            LOG.info(String.format("insert %s into LdapCache", user));
+        } else {
+            if (!password.equals(ue.getPasswd())) {
                 sendResponse(hresp, acceptType, unAuthorized, SC_UNAUTHORIZED);
             }
             groups = new HashSet<String>(ue.getGroups());
-            LOG.info(String.format("Cache hit %s",user));
+            LOG.info(String.format("Cache hit %s expires in %d secs", user,ldapCache.expiresIn(user)));
         }
 
         forcedRolesHeaders = hreq.getHeaders("FORCEROLES");

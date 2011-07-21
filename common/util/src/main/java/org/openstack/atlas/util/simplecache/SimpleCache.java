@@ -22,7 +22,7 @@ public class SimpleCache<E> {
 
     public SimpleCache(long ttl) {
         cache = new HashMap<String, CacheEntry<E>>();
-        this.ttl = ttl * 10;
+        this.ttl = ttl;
     }
 
     public void put(String key, E val) {
@@ -31,6 +31,20 @@ public class SimpleCache<E> {
         synchronized (this) {
             cache.put(key, entry);
         }
+    }
+
+    public long expiresIn(String key) {
+        long expiresin = -1;
+        CacheEntry entry;
+        if (ttl > 0) {
+            synchronized (this) {
+                entry = cache.get(key);
+                if (entry != null) {
+                    expiresin = entry.expiresIn(ttl);
+                }
+            }
+        }
+        return expiresin;
     }
 
     public E get(String key) {
