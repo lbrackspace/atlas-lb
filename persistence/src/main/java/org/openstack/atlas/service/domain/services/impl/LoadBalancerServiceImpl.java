@@ -626,40 +626,43 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
-    public SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId,
-                                                                             Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
-        SessionPersistence sp;
-        sp = loadBalancerRepository.getSessionPersistenceByAccountIdLoadBalancerId(accountId, loadbalancerId);
-        return sp;
+    public SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
+        return loadBalancerRepository.getSessionPersistenceByAccountIdLoadBalancerId(accountId, loadbalancerId);
     }
 
     @Override
     @Transactional
-    public List<LoadBalancer> reassignLoadBalancerHost(List<LoadBalancer> lbs) throws Exception{
+    public List<LoadBalancer> reassignLoadBalancerHost(List<LoadBalancer> lbs) throws Exception {
         List<LoadBalancer> invalidLbs = new ArrayList<LoadBalancer>();
         List<LoadBalancer> validLbs = new ArrayList<LoadBalancer>();
         LoadBalancer dbLb;
+
+        List<LoadBalancer> lbsNeededForSharedVips = verifySharedVipsOnLoadBalancers(lbs);
+        if (lbsNeededForSharedVips.size() > 0) {
+            String[] sharedVipLBArray = buildLbArray(lbsNeededForSharedVips);
+            throw new BadRequestException("Found LoadBalancer sharing virtual ips. LoadBalancers: " + StringUtilities.buildDelemtedListFromStringArray(sharedVipLBArray, ",") + " are missing, please include the missing load balancers and retry the request.");
+        }
 
         for (LoadBalancer lb : lbs) {
             dbLb = loadBalancerRepository.getById(lb.getId());
             if (dbLb.isSticky()) {
                 invalidLbs.add(dbLb);
             } else {
-                setStatus(dbLb, LoadBalancerStatus.PENDING_UPDATE);
                 processSpecifiedOrDefaultHost(lb);
                 validLbs.add(lb);
             }
         }
 
-        //inform user of all invalid Load balancers...
-        String[] array = new String[invalidLbs.size()];
-        for (int i = 0; i < invalidLbs.size(); i++) {
-            array[i] = invalidLbs.get(i).getId().toString();
+        if (!invalidLbs.isEmpty()) {
+            String[] invalidLbArray = buildLbArray(invalidLbs);
+            throw new BadRequestException("Found sticky LoadBalancers: " + StringUtilities.buildDelemtedListFromStringArray(invalidLbArray, ",") + " please remove and retry the request");
         }
 
-        if (!invalidLbs.isEmpty()) {
-            throw new BadRequestException("Found sticky LoadBalancers (" + StringUtilities.buildDelemtedListFromStringArray(array, ",") + ") please remove and retry the request");
+        //Everythings ok, begin update...
+        for (LoadBalancer lb : validLbs) {
+            setStatus(lb, LoadBalancerStatus.PENDING_UPDATE);
         }
+
         return validLbs;
     }
 
@@ -680,6 +683,52 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 lb.setHost(hostService.getDefaultActiveHost());
             }
         }
+    }
+
+    private List<LoadBalancer> verifySharedVipsOnLoadBalancers(List<LoadBalancer> lbs) throws EntityNotFoundException, BadRequestException {
+        List<LoadBalancer> lbsWithSharedVips = new ArrayList<LoadBalancer>();
+        List<LoadBalancer> lbsNeededForRequest = new ArrayList<LoadBalancer>();
+
+        for (LoadBalancer lb : lbs) {
+            LoadBalancer dbLb = loadBalancerRepository.getById(lb.getId());
+
+            Set<LoadBalancerJoinVip> vip4Set = dbLb.getLoadBalancerJoinVipSet();
+            for (LoadBalancerJoinVip lbjv : vip4Set) {
+                List<LoadBalancer> lbsSharingVip4 = virtualIpRepository.getLoadBalancersByVipId(lbjv.getVirtualIp().getId());
+                lbsWithSharedVips.addAll(lbsSharingVip4);
+            }
+            Set<LoadBalancerJoinVip6> vip6Set = dbLb.getLoadBalancerJoinVip6Set();
+            for (LoadBalancerJoinVip6 lbjv : vip6Set) {
+                List<LoadBalancer> lbsSharingVip6 = virtualIpRepository.getLoadBalancersByVipId(lbjv.getVirtualIp().getId());
+                lbsWithSharedVips.addAll(lbsSharingVip6);
+            }
+        }
+
+        if (lbsWithSharedVips.size() > 0) {
+            for (LoadBalancer lbsv : lbsWithSharedVips) {
+                if (!buildLbIdList(lbs).contains(lbsv.getId())) {
+                    lbsNeededForRequest.add(lbsv);
+                }
+            }
+        }
+
+        return lbsNeededForRequest;
+    }
+
+    private String[] buildLbArray(List<LoadBalancer> loadBalancers) {
+        String[] loadbalancersArray = new String[loadBalancers.size()];
+        for (int i = 0; i < loadBalancers.size(); i++) {
+            loadbalancersArray[i] = loadBalancers.get(i).getId().toString();
+        }
+        return loadbalancersArray;
+    }
+
+    private List<Integer> buildLbIdList(List<LoadBalancer> loadBalancers) {
+        List<Integer> incommingLbIds = new ArrayList<Integer>();
+        for (LoadBalancer lb : loadBalancers) {
+            incommingLbIds.add(lb.getId());
+        }
+        return incommingLbIds;
     }
 }
 
