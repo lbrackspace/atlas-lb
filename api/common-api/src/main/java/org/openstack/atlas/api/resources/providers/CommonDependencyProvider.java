@@ -21,6 +21,7 @@ public class CommonDependencyProvider {
     protected final static String NOBODY = "Undefined User";
     protected final static String USERHEADERNAME = "X-PP-User";
     protected final static String VFAIL = "Validation Failure";
+    private RequestStateContainer requestStateContainer;
     protected AsyncService asyncService;
     protected LoadBalancerRepository lbRepository;
     protected DozerBeanMapper dozerMapper;
@@ -140,6 +141,14 @@ public class CommonDependencyProvider {
         badreq = HttpResponseBuilder.buildBadRequestResponse(VFAIL, errorStrs);
         Response resp = Response.status(status).entity(badreq).build();
         return resp;
+    }
+
+    public RequestStateContainer getRequestStateContainer() {
+        return requestStateContainer;
+    }
+
+    public void setRequestStateContainer(RequestStateContainer requestStateContainer) {
+        this.requestStateContainer = requestStateContainer;
     }
 
 }

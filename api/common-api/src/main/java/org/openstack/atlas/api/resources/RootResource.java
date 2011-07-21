@@ -6,12 +6,21 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
+import org.openstack.atlas.api.resources.providers.RequestStateContainer;
 
 @Path("{id: [-+]?[0-9][0-9]*}")
 public class RootResource extends CommonDependencyProvider {
 
     @Context
+    HttpHeaders hh;
+    private SecurityContext sc;
+    @Context
+    private UriInfo ui;
+    @Context
     HttpHeaders requestHeaders;
+    private RequestStateContainer origContainer;
 
     @PathParam("id")
     private Integer accountId;
@@ -20,8 +29,11 @@ public class RootResource extends CommonDependencyProvider {
 
     @Path("loadbalancers")
     public LoadBalancersResource retrieveLoadBalancersResource() {
-        loadBalancersResource.setRequestHeaders(requestHeaders);
-        loadBalancersResource.setAccountId(accountId);
+        this.origContainer.setHttpHeaders(hh);
+        this.origContainer.setSecurityContext(sc);
+        this.origContainer.setUriInfo(ui);
+        this.loadBalancersResource.setRequestHeaders(hh);
+        this.loadBalancersResource.setAccountId(accountId);
         return loadBalancersResource;
     }
 
@@ -43,6 +55,14 @@ public class RootResource extends CommonDependencyProvider {
     }
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {
-        this.requestHeaders = requestHeaders;
+        this.hh = requestHeaders;
+    }
+
+    public RequestStateContainer getOrigContainer() {
+        return origContainer;
+    }
+
+    public void setOrigContainer(RequestStateContainer origContainer) {
+        this.origContainer = origContainer;
     }
 }
