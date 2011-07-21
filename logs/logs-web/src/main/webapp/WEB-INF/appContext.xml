@@ -140,7 +140,7 @@
           scope="prototype"/>
 
     <bean id="stateDao"
-          class="org.openstack.atlas.service.domain.logs.repository.StateRepository"
+          class="org.openstack.atlas.service.domain.logs.repository.JobStateRepository"
           scope="prototype"/>
 
 </beans>

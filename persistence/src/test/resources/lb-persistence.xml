@@ -44,6 +44,7 @@
         <class>org.openstack.atlas.service.domain.entities.Account</class>
         <class>org.openstack.atlas.service.domain.entities.AccountLimit</class>
         <class>org.openstack.atlas.service.domain.entities.LimitType</class>
+        <class>org.openstack.atlas.service.domain.entities.JobState</class>
 
         <class>org.openstack.atlas.service.domain.events.entities.Event</class>
         <class>org.openstack.atlas.service.domain.events.entities.Alert</class>
@@ -56,8 +57,6 @@
         <class>org.openstack.atlas.service.domain.events.entities.NodeEvent</class>
         <class>org.openstack.atlas.service.domain.events.entities.VirtualIpEvent</class>
         <class>org.openstack.atlas.service.domain.events.entities.SessionPersistenceEvent</class>
-        <class>org.openstack.atlas.service.domain.logs.entities.Entity</class>
-        <class>org.openstack.atlas.service.domain.logs.entities.State</class>
 
         <!-- Hibernate Properties -->
         <properties>

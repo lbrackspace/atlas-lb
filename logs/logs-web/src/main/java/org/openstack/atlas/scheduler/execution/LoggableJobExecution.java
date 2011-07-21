@@ -1,45 +1,45 @@
 package org.openstack.atlas.scheduler.execution;
 
-import org.openstack.atlas.service.domain.logs.entities.NameVal;
-import org.openstack.atlas.service.domain.logs.entities.State;
-import org.openstack.atlas.service.domain.logs.entities.StateVal;
-import org.openstack.atlas.service.domain.logs.repository.StateRepository;
+import org.openstack.atlas.service.domain.entities.JobState;
+import org.openstack.atlas.service.domain.logs.entities.JobName;
+import org.openstack.atlas.service.domain.logs.entities.JobStateVal;
+import org.openstack.atlas.service.domain.logs.repository.JobStateRepository;
 import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.util.DateTime;
 import org.openstack.atlas.util.FileSystemUtils;
 
 public class LoggableJobExecution {
-    protected StateRepository stateDao;
+    protected JobStateRepository stateDao;
     protected FileSystemUtils utils;
     protected org.openstack.atlas.cfg.Configuration conf;
 
-    protected State createJob(NameVal val, String jobInput) {
-        return stateDao.addState(val, jobInput);
+    protected JobState createJob(JobName val, String jobInput) {
+        return stateDao.addEntry(val, jobInput);
     }
 
-    protected void setJobState(StateVal val, State state) {
+    protected void setJobState(JobStateVal val, JobState state) {
         state.setState(val);
         stateDao.update(state);
     }
 
-    protected void finishJob(State state) {
-        state.setState(StateVal.FINISHED);
+    protected void finishJob(JobState state) {
+        state.setState(JobStateVal.FINISHED);
         state.setEndTime(new DateTime().getCalendar());
         stateDao.update(state);
     }
 
-    protected void deleteJob(State state) {
-        state.setState(StateVal.DELETED);
+    protected void deleteJob(JobState state) {
+        state.setState(JobStateVal.DELETED);
         stateDao.update(state);
     }
 
-    protected void failJob(State state) {
-        state.setState(StateVal.FAILED);
+    protected void failJob(JobState state) {
+        state.setState(JobStateVal.FAILED);
         state.setEndTime(new DateTime().getCalendar());
         stateDao.update(state);
     }
 
-    public final void setStateDao(StateRepository stateDao) {
+    public final void setStateDao(JobStateRepository stateDao) {
         this.stateDao = stateDao;
     }
 

@@ -6,8 +6,8 @@ import org.openstack.atlas.io.FileBytesWritable;
 import org.openstack.atlas.mapreduce.LbStatsTool;
 import org.openstack.atlas.scheduler.ArchiveLoadBalancerLogsJob;
 import org.openstack.atlas.scheduler.JobScheduler;
-import org.openstack.atlas.service.domain.logs.entities.NameVal;
-import org.openstack.atlas.service.domain.logs.entities.State;
+import org.openstack.atlas.service.domain.entities.JobState;
+import org.openstack.atlas.service.domain.logs.entities.JobName;
 import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.tools.HadoopRunner;
 import org.apache.commons.logging.Log;
@@ -28,7 +28,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
 
      public void execute(JobScheduler scheduler, HadoopRunner runner) throws ExecutionException {
 
-         State state = createJob(NameVal.FILES_SPLIT, runner.getInputString());
+         JobState state = createJob(JobName.FILES_SPLIT, runner.getInputString());
 
          try {
 

@@ -5,9 +5,9 @@ import org.openstack.atlas.cloudfiles.CloudFilesDao;
 import org.openstack.atlas.constants.Constants;
 import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.scheduler.JobScheduler;
+import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.logs.entities.NameVal;
-import org.openstack.atlas.service.domain.logs.entities.State;
+import org.openstack.atlas.service.domain.logs.entities.JobName;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.tools.HadoopRunner;
 import org.apache.commons.logging.Log;
@@ -50,10 +50,10 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
         }
 
         for (String fileName : filenames.keySet()) {
-            State state = null;
+            JobState state = null;
 
             try {
-                state = createJob(NameVal.ARCHIVE, runner.getInputString() + ":" + fileName);
+                state = createJob(JobName.ARCHIVE, runner.getInputString() + ":" + fileName);
 
                 List<String> accountLogFiles = filenames.get(fileName);
                 for (String accountLogFile : accountLogFiles) {

@@ -4,9 +4,9 @@ import com.hadoop.compression.lzo.LzoIndexer;
 import org.openstack.atlas.mapreduce.LbStatsTool;
 import org.openstack.atlas.scheduler.ArchiveLoadBalancerLogsJob;
 import org.openstack.atlas.scheduler.JobScheduler;
-import org.openstack.atlas.service.domain.logs.entities.NameVal;
-import org.openstack.atlas.service.domain.logs.entities.State;
-import org.openstack.atlas.service.domain.logs.entities.StateVal;
+import org.openstack.atlas.service.domain.entities.JobState;
+import org.openstack.atlas.service.domain.logs.entities.JobName;
+import org.openstack.atlas.service.domain.logs.entities.JobStateVal;
 import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.exception.SchedulingException;
 import org.openstack.atlas.scheduler.OrderLoadBalancerLogsJob;
@@ -49,7 +49,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         jobScheduler = scheduler;
         String runTime = runner.getInputString();
 
-        State state = createJob(NameVal.FILECOPY_PARENT, runTime);
+        JobState state = createJob(JobName.FILECOPY_PARENT, runTime);
         LOG.info("setting filemove run up for " + runTime);
 
         hadoopTool.setupHadoopRun(runTime);
@@ -61,7 +61,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
             // this is done so that any other watchdog runs will not pick up the
             // files. They may take a while before they make it onto the DFS,
             // especially if its a bunch of large files being uploaded.
-            Map<String, State> fastValues = createStateForMovingFiles(runTime, localInputFiles);
+            Map<String, JobState> fastValues = createStateForMovingFiles(runTime, localInputFiles);
 
             for (String filename : localInputFiles) {
                 if (filename.endsWith(".lzo")) {
@@ -111,12 +111,12 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         this.hadoopTool = lbStatsTool;
     }
 
-    private Map<String, State> createStateForMovingFiles(String inputString,
+    private Map<String, JobState> createStateForMovingFiles(String inputString,
                                                          List<String> localInputFiles) {
-        Map<String, State> fastValues = new HashMap<String, State>();
+        Map<String, JobState> fastValues = new HashMap<String, JobState>();
         for (String inputFile : localInputFiles) {
 
-            State state = createJob(NameVal.FILECOPY, inputString + ":" + inputFile);
+            JobState state = createJob(JobName.FILECOPY, inputString + ":" + inputFile);
             fastValues.put(inputFile, state);
         }
         return fastValues;
@@ -137,9 +137,9 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         return localInputFiles;
     }
 
-    private void deleteIfFinished(Map<String, State> fastValues) throws ExecutionException {
-        for (Entry<String, State> inputEntry : fastValues.entrySet()) {
-            if (inputEntry.getValue().getState() == StateVal.FINISHED) {
+    private void deleteIfFinished(Map<String, JobState> fastValues) throws ExecutionException {
+        for (Entry<String, JobState> inputEntry : fastValues.entrySet()) {
+            if (inputEntry.getValue().getState() == JobStateVal.FINISHED) {
                 new File(inputEntry.getKey()).delete();
                 // also delete from the 2ndary store (somewhat nasty hack cuz the way the 2ndary node is set up)
                 try {
@@ -168,15 +168,15 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         }
     }
 
-    private void moveFilesOntoDFS(HadoopRunner runner, Map<String, State> fastValues) throws ExecutionException {
+    private void moveFilesOntoDFS(HadoopRunner runner, Map<String, JobState> fastValues) throws ExecutionException {
 
         HadoopConfiguration conf = hadoopTool.getConfiguration();
         String inputDir = hadoopTool.getInputDirectory();
         int offset = 0;
 
-        for (Entry<String, State> inputEntry : fastValues.entrySet()) {
+        for (Entry<String, JobState> inputEntry : fastValues.entrySet()) {
             String inputFile = inputEntry.getKey();
-            State state = inputEntry.getValue();
+            JobState state = inputEntry.getValue();
             try {
                 LOG.info("putting file on the DFS at " + inputDir);
 
