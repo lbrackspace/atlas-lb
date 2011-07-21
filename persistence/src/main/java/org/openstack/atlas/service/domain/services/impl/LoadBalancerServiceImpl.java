@@ -640,7 +640,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         List<LoadBalancer> lbsNeededForSharedVips = verifySharedVipsOnLoadBalancers(lbs);
         if (lbsNeededForSharedVips.size() > 0) {
             String[] sharedVipLBArray = buildLbArray(lbsNeededForSharedVips);
-            throw new BadRequestException("Found LoadBalancer sharing virtual ips. LoadBalancers: " + StringUtilities.buildDelemtedListFromStringArray(sharedVipLBArray, ",") + ", are missing, please included the missing load balancers and retry the request.");
+            throw new BadRequestException("Found LoadBalancer sharing virtual ips. LoadBalancers: " + StringUtilities.buildDelemtedListFromStringArray(sharedVipLBArray, ",") + " are missing, please include the missing load balancers and retry the request.");
         }
 
         for (LoadBalancer lb : lbs) {
