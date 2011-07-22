@@ -30,6 +30,7 @@ public class LoadBalancerEventRepository {
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
     private final Integer PAGE_SIZE = 10;
+    private final int MAX_SERVICE_EVENT = 20;
 
     public LoadBalancerEventRepository() {
     }
@@ -263,12 +264,8 @@ public class LoadBalancerEventRepository {
         lbid2EventList = new HashMap<Integer, List<LoadBalancerServiceEvent>>();
         endCal = null;
 
-        qHead = "select l from LoadBalancerServiceEvent l "
-                + "where  l.accountId = :accountId";
-
-
+        qHead = "select l from LoadBalancerServiceEvent l " + "where  l.accountId = :accountId and loadbalancer_id = :lbId";
         qTail = " order by created";
-
         qMid.append(" and created >= :startDate ");
 
         if(startDate != null) {
@@ -287,37 +284,28 @@ public class LoadBalancerEventRepository {
         }
 
         qStr = String.format("%s%s%s", qHead, qMid.toString(), qTail);
-        q = entityManager.createQuery(qStr).setParameter("accountId",lb.getAccountId());
-
-        q.setParameter("startDate",startCal);
+        q = entityManager.createQuery(qStr)
+                .setParameter("accountId",lb.getAccountId())
+                .setParameter("lbId", lb.getId())
+                .setMaxResults(MAX_SERVICE_EVENT)
+                .setParameter("startDate", startCal);
         if(endDate != null) {
             q.setParameter("endDate",endCal);
         }
 
         resultList = q.getResultList();
-        Integer lbId = null;
-        for (LoadBalancerServiceEvent resultEvent : resultList) {
-            if (resultEvent.getLoadbalancerId().equals(lb.getId())) {
-                lbId = resultEvent.getLoadbalancerId();
-                if (!lbid2EventList.containsKey(lbId)) {
-                    lbid2EventList.put(lbId, new ArrayList<LoadBalancerServiceEvent>());
-                    lbIds.add(lbId);
-                }
-                LoadBalancerServiceEvent eventOut = new LoadBalancerServiceEvent();
-                eventOut.setCategory(resultEvent.getCategory());
-                eventOut.setSeverity(resultEvent.getSeverity());
-                eventOut.setDescription(resultEvent.getDescription());
-                eventOut.setAuthor(resultEvent.getAuthor());
-                eventOut.setCreated(resultEvent.getCreated());
-                lbid2EventList.get(lbId).add(eventOut);
-            }
-        }
         lbEvents = new LoadBalancerServiceEvents();
-        if (lbid2EventList.containsKey(lbId)) {
-            lbEvents.setLoadbalancerId(lbId);
-            lbEvents.getLoadBalancerServiceEvents().addAll(lbid2EventList.get(lbId));
-            out.getLoadBalancerServiceEvents().add(lbEvents);
+        LoadBalancerServiceEvent loadBalancerServiceEvent;
+        for (LoadBalancerServiceEvent lbse : resultList) {
+            loadBalancerServiceEvent = new LoadBalancerServiceEvent();
+            loadBalancerServiceEvent.setCategory(lbse.getCategory());
+            loadBalancerServiceEvent.setSeverity(lbse.getSeverity());
+            loadBalancerServiceEvent.setDescription(lbse.getDescription());
+            loadBalancerServiceEvent.setAuthor(lbse.getAuthor());
+            loadBalancerServiceEvent.setCreated(lbse.getCreated());
+            lbEvents.getLoadBalancerServiceEvents().add(loadBalancerServiceEvent);
         }
+        out.getLoadBalancerServiceEvents().add(lbEvents);
 
         return out;
     }
