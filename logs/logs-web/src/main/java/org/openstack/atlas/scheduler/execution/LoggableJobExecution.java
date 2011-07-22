@@ -1,9 +1,9 @@
 package org.openstack.atlas.scheduler.execution;
 
+import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
-import org.openstack.atlas.service.domain.logs.entities.JobName;
-import org.openstack.atlas.service.domain.logs.entities.JobStateVal;
-import org.openstack.atlas.service.domain.logs.repository.JobStateRepository;
+import org.openstack.atlas.service.domain.entities.JobStateVal;
+import org.openstack.atlas.service.domain.repository.JobStateRepository;
 import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.util.DateTime;
 import org.openstack.atlas.util.FileSystemUtils;
@@ -14,7 +14,7 @@ public class LoggableJobExecution {
     protected org.openstack.atlas.cfg.Configuration conf;
 
     protected JobState createJob(JobName val, String jobInput) {
-        return stateDao.addEntry(val, jobInput);
+        return stateDao.create(val, jobInput);
     }
 
     protected void setJobState(JobStateVal val, JobState state) {

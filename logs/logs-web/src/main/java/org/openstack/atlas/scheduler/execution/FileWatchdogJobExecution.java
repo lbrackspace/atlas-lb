@@ -2,9 +2,9 @@ package org.openstack.atlas.scheduler.execution;
 
 import org.openstack.atlas.scheduler.FileAssembleJob;
 import org.openstack.atlas.scheduler.JobScheduler;
+import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
-import org.openstack.atlas.service.domain.logs.entities.JobName;
-import org.openstack.atlas.service.domain.logs.entities.JobStateVal;
+import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.exception.SchedulingException;
 import org.openstack.atlas.tools.HadoopRunner;
@@ -27,7 +27,7 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
         LOG.debug("checking for files " + localInputFiles);
 
         for (String inputFile : localInputFiles) {
-            List states = stateDao.getEntryLike(JobName.FILECOPY, inputFile);
+            List states = stateDao.getEntriesLike(JobName.FILECOPY, inputFile);
             if (states.isEmpty()) {
                 // it does not exist, so schedule it.
                 scheduledFilesToRun.add(inputFile);
@@ -39,7 +39,7 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
             LOG.info("Could not find any files that are not already scheduled. returning.");
             return;
         } else {
-            JobState state = stateDao.addEntry(JobName.WATCHDOG, runner.getInputString());
+            JobState state = stateDao.create(JobName.WATCHDOG, runner.getInputString());
 
             // now that we have a list of files, schedule them.
             String jobName = "fileAssemble" + runner.getInputString();

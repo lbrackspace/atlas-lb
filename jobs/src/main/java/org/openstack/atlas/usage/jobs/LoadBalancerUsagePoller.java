@@ -1,30 +1,31 @@
 package org.openstack.atlas.usage.jobs;
 
+import org.apache.axis.AxisFault;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
-import org.openstack.atlas.usage.BatchAction;
-import org.openstack.atlas.usage.ExecutionUtilities;
-import org.openstack.atlas.usage.helpers.*;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.jobs.Job;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
+import org.openstack.atlas.usage.BatchAction;
+import org.openstack.atlas.usage.ExecutionUtilities;
+import org.openstack.atlas.usage.helpers.HostConfigHelper;
+import org.openstack.atlas.usage.helpers.ZxtmNameHelper;
 import org.openstack.atlas.usage.logic.UsagesForPollingDatabase;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.apache.axis.AxisFault;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.net.ConnectException;
 import java.rmi.RemoteException;
@@ -32,7 +33,7 @@ import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ACTIVE;
 
-public class LoadBalancerUsagePoller extends QuartzJobBean {
+public class LoadBalancerUsagePoller extends Job {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsagePoller.class);
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
     private HostRepository hostRepository;
@@ -143,6 +144,8 @@ public class LoadBalancerUsagePoller extends QuartzJobBean {
     private void startUsagePoller() {
         Calendar startTime = Calendar.getInstance();
         LOG.info(String.format("Load balancer usage poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
+        jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.IN_PROGRESS);
+
         List<Host> hosts;
 
         try {
@@ -199,8 +202,10 @@ public class LoadBalancerUsagePoller extends QuartzJobBean {
 
                 ExecutionUtilities.executeInBatches(loadBalancerNamesForHost, BATCH_SIZE, batchAction);
             } catch (DecryptException de) {
+                jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FAILED);
                 LOG.error(String.format("Error decrypting configuration for '%s' (%s)", host.getName(), host.getEndpoint()), de);
             } catch (AxisFault af) {
+                jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FAILED);
                 if (af.getCause() instanceof ConnectException) {
                     LOG.error(String.format("Error connecting to '%s' (%s). Skipping...", host.getName(), host.getEndpoint()));
                 } else {
@@ -208,6 +213,7 @@ public class LoadBalancerUsagePoller extends QuartzJobBean {
                     af.printStackTrace();
                 }
             } catch (Exception e) {
+                jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FAILED);
                 LOG.error("Exception caught", e);
                 e.printStackTrace();
             }
@@ -215,6 +221,7 @@ public class LoadBalancerUsagePoller extends QuartzJobBean {
 
         Calendar endTime = Calendar.getInstance();
         Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
+        jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FINISHED);
         LOG.info(String.format("Usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 

@@ -3,7 +3,7 @@ package org.openstack.atlas.scheduler;
 import org.openstack.atlas.config.LbLogsConfigurationKeys;
 import org.openstack.atlas.constants.Constants;
 import org.openstack.atlas.data.LogDateFormat;
-import org.openstack.atlas.service.domain.logs.repository.JobStateRepository;
+import org.openstack.atlas.service.domain.repository.JobStateRepository;
 import org.openstack.atlas.tools.HadoopRunner;
 import org.openstack.atlas.util.DateTime;
 import org.apache.commons.logging.Log;
