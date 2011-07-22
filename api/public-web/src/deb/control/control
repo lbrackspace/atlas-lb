@@ -1,0 +1,12 @@
+Package: rs-lb-restapi
+Version: [[version]]
+Source: rs-lb-restapi
+Section: libs
+Priority: optional
+Maintainer: Carlos D. Garza <carlos.garza@rackspace.com>
+Build-Depends: cdbs, debhelper (>> 5.0.0)
+Standards-Version: 3.8.4
+Architecture: all
+Depends: rs-glassfish, libmysql-java, rs-lbaas-activemq
+Description: The rackspace LBAAS rest api
+ The rackspace lbaas REST API that runs under glassfish
