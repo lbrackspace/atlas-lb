@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.mgmt.filters;
 
 import org.openstack.atlas.api.mgmt.filters.helpers.UserEntry;
+import org.openstack.atlas.util.simplecache.CacheEntry;
 import org.openstack.atlas.util.simplecache.SimpleCache;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.api.filters.helpers.AcceptTypes;
@@ -46,6 +47,8 @@ public class ManageAuthFilter implements Filter {
     private static final String LDAPUSER = "LDAPUser";
     private static final Pattern jsonUriPattern = Pattern.compile(".*\\.json$", Pattern.CASE_INSENSITIVE);
     private static final Pattern xmlUriPattern = Pattern.compile(".*\\.xml$", Pattern.CASE_INSENSITIVE);
+    private static final int cacheCleanFrequency = 4096; // Number of requests be fore attempting a cache clean sweep
+    private static int requestCount; // Tracks number of requests for cache clearing
 
     static {
         invalidAuth = new BadRequest();
@@ -59,6 +62,7 @@ public class ManageAuthFilter implements Filter {
         unAuthorized = new BadRequest();
         unAuthorized.setCode(SC_UNAUTHORIZED);
         unAuthorized.setMessage("eDir bind failed");
+        requestCount = 0;
     }
 
     @Override
@@ -78,8 +82,17 @@ public class ManageAuthFilter implements Filter {
         AcceptTypes ats = AcceptTypes.getPrefferedAcceptTypes(accept);
         String acceptType = ats.findSuitableMediaType(JSON, XML);
         HttpHeadersTools httpTools = new HttpHeadersTools(hreq, hresp);
-
-        LOG.info("Requesting URL: " + hreq.getRequestURI());
+        int purged = 0;
+        int nr;
+        LOG.info(String.format("Requesting URL: %s", hreq.getRequestURI()));
+        synchronized (this) { // Test and set the static nRequests variable with Mutex
+            requestCount = (requestCount + 1) % cacheCleanFrequency;
+            nr = requestCount; // nr is the Local copy of nRequest
+        }
+        if (nr == 0) { // For every
+            purged = ldapCache.removeExpired(); // Prevent unchecked entries from Living forever
+            LOG.info(String.format("cleaning eDir cache: purged %d stale entries", purged));
+        }
 
         String[] splitUrl = hreq.getRequestURL().toString().split(hreq.getContextPath());
         if (hreq.getRequestURL().toString().equals(splitUrl[0] + hreq.getContextPath() + "/application.wadl")) {
@@ -89,8 +102,7 @@ public class ManageAuthFilter implements Filter {
         }
 
         if (httpTools.isHeaderTrue("BYPASS-AUTH")
-                && mossoAuth.getConfig().isAllowBypassAuth()
-                && mossoAuth.getConfig().isAllowforcedRole()) {
+                && mossoAuth.getConfig().isAllowBypassAuth()) {
             user = "BYPASS-AUTH";
             groups = new HashSet<String>();
             LOG.info("Bypassed AUTH.... ");
@@ -137,8 +149,11 @@ public class ManageAuthFilter implements Filter {
 
         user = httpTools.getBasicUser();
         password = httpTools.getBasicPassword();
-        UserEntry ue = ldapCache.get(user);
-        if (ue == null) { // If the entry expired or was not found Bind to eDir
+        CacheEntry<UserEntry> ce = ldapCache.getEntry(user);
+        UserEntry ue;
+        if (ce == null || ce.isExpired()) {
+            ldapCache.remove(user);// Won't hurt if the user was not in the cache
+            // If the entry expired or was not found Bind to eDir.
             LOG.info("bind eDir");
             if (!mossoAuth.testAuth(user, password)) {
                 sendResponse(hresp, acceptType, unAuthorized, SC_UNAUTHORIZED);
@@ -158,11 +173,12 @@ public class ManageAuthFilter implements Filter {
             ldapCache.put(user, ue);
             LOG.info(String.format("insert %s into LdapCache", user));
         } else {
+            ue = ce.getVal();
             if (!password.equals(ue.getPasswd())) {
                 sendResponse(hresp, acceptType, unAuthorized, SC_UNAUTHORIZED);
             }
             groups = new HashSet<String>(ue.getGroups());
-            LOG.info(String.format("Cache hit %s expires in %d secs", user,ldapCache.expiresIn(user)));
+            LOG.info(String.format("Cache hit %s expires in %d secs", user, ce.expiresIn()));
         }
 
         forcedRolesHeaders = hreq.getHeaders("FORCEROLES");

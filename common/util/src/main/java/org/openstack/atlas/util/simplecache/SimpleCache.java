@@ -8,101 +8,22 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 public class SimpleCache<E> {
 
-    Map<String, CacheEntry<E>> cache;
+    private Map<String, CacheEntry<E>> cache;
     private long ttl;
 
     public SimpleCache() {
         cache = new HashMap<String, CacheEntry<E>>();
-        this.ttl = -1; // Use negative values to specify No expiration
+        this.ttl = 300; // Use negative values to specify No expiration
     }
 
     public SimpleCache(long ttl) {
         cache = new HashMap<String, CacheEntry<E>>();
         this.ttl = ttl;
-    }
-
-    public void put(String key, E val) {
-        CacheEntry entry = new CacheEntry<E>();
-        entry.setVal(val);
-        synchronized (this) {
-            cache.put(key, entry);
-        }
-    }
-
-    public long expiresIn(String key) {
-        long expiresin = -1;
-        CacheEntry entry;
-        if (ttl > 0) {
-            synchronized (this) {
-                entry = cache.get(key);
-                if (entry != null) {
-                    expiresin = entry.expiresIn(ttl);
-                }
-            }
-        }
-        return expiresin;
-    }
-
-    public E get(String key) {
-        CacheEntry entry;
-        E val = null;
-        synchronized (this) {
-            entry = cache.get(key);
-            val = (E) ((entry == null) ? null : entry.getVal());
-            if (ttl > 0 && entry != null && entry.isExpired(ttl)) {
-                val = null;
-                cache.remove(key); // This entry expired so get rid of it.
-            }
-        }
-        return val;
-    }
-
-    public Set<String> keySet() {
-        Set<String> keys;
-        synchronized (this) {
-            keys = new HashSet<String>(this.cache.keySet());
-        }
-        return keys;
-    }
-
-    public Set<String> expiredKeys() {
-        Set<String> expired = new HashSet<String>();
-        if (ttl > 0) {
-            synchronized (this) {
-                for (String key : new ArrayList<String>(this.cache.keySet())) {
-                    CacheEntry entry = cache.get(key);
-                    if (entry != null && entry.isExpired(ttl)) {
-                        expired.add(key);
-                    }
-                }
-            }
-        }
-        return expired;
-    }
-
-    public void clean() {
-        if (ttl <= 0) {
-            return;
-        }
-        synchronized (this) {
-            for (String key : new ArrayList<String>(this.cache.keySet())) {
-                CacheEntry entry = cache.get(key);
-                if (entry != null && entry.isExpired(ttl)) {
-                    cache.remove(key);
-                }
-            }
-        }
-
-    }
-
-    public void clear() {
-        synchronized (this) {
-            cache.clear();
-        }
     }
 
     public long getTtl() {
@@ -111,5 +32,130 @@ public class SimpleCache<E> {
 
     public void setTtl(long ttl) {
         this.ttl = ttl;
+    }
+
+    public void put(String key, E val) {
+        CacheEntry entry = new CacheEntry<E>();
+        entry.setVal(val);
+        entry.setTtl(ttl);
+        entry.setUpdated();
+        synchronized (this) {
+            cache.put(key, entry);
+        }
+    }
+
+    public CacheEntry<E> getEntry(String key) {
+        CacheEntry<E> entry;
+        synchronized (this) {
+            entry = cache.get(key);
+        }
+        return entry;
+    }
+
+    public boolean remove(String key) {
+        synchronized (this) {
+            if (cache.containsKey(key)) {
+                cache.remove(key);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean containsKey(String key) {
+        boolean out;
+        synchronized (this) {
+            out = cache.containsKey(key);
+        }
+        return out;
+    }
+
+    public Set<String> getKeySet() {
+        Set<String> keys;
+        synchronized (this) {
+            keys = new HashSet<String>(cache.keySet());
+        }
+        return keys;
+    }
+
+    public Set<String> getExpiredKeySet() {
+        Set<String> keys = new HashSet<String>();
+        Set<Entry<String, CacheEntry<E>>> entrySet;
+        synchronized (this) {
+            entrySet = new HashSet<Entry<String, CacheEntry<E>>>(cache.entrySet());
+        }
+        for (Entry<String, CacheEntry<E>> e : entrySet) {
+            if (e.getValue().isExpired()) {
+                keys.add(e.getKey());
+            }
+        }
+        return keys;
+    }
+
+    public int numExpiredKeys() {
+        int count = 0;
+        Set<Entry<String, CacheEntry<E>>> entrySet;
+        synchronized (this) {
+            entrySet = new HashSet<Entry<String, CacheEntry<E>>>(cache.entrySet());
+            for (Entry<String, CacheEntry<E>> e : entrySet) {
+                if (e.getValue().isExpired()) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public void clear(){
+        cache.clear();
+    }
+
+    public Map<String, Long> expiresIn() {
+        Map<String, Long> out = new HashMap<String, Long>();
+
+        Set<Entry<String, CacheEntry<E>>> entrySet;
+        synchronized (this) {
+            entrySet = new HashSet<Entry<String, CacheEntry<E>>>(cache.entrySet());
+        }
+        for (Entry<String, CacheEntry<E>> e : entrySet) {
+            String key = e.getKey();
+            CacheEntry<E> cacheEntry = e.getValue();
+            out.put(key, cacheEntry.expiresIn());
+        }
+        return out;
+    }
+
+    public Map<String, CacheEntry<E>> getExpiredEntriesAndRemoveFromCache() {
+        Map<String, CacheEntry<E>> out = new HashMap<String, CacheEntry<E>>();
+        synchronized (this) {
+            Set<Entry<String, CacheEntry<E>>> entrySet;
+            entrySet = new HashSet<Entry<String, CacheEntry<E>>>(cache.entrySet());
+            for (Entry<String, CacheEntry<E>> e : entrySet) {
+                String key = e.getKey();
+                CacheEntry<E> cacheEntry = e.getValue();
+                if (cacheEntry.isExpired()) {
+                    out.put(key, cacheEntry);
+                    cache.remove(key);
+                }
+            }
+        }
+        return out;
+    }
+
+    public int removeExpired() {
+        int n = 0;
+        synchronized (this) {
+            Set<Entry<String, CacheEntry<E>>> entrySet;
+            entrySet = new HashSet<Entry<String, CacheEntry<E>>>(cache.entrySet());
+            for (Entry<String, CacheEntry<E>> e : entrySet) {
+                String key = e.getKey();
+                CacheEntry<E> cacheEntry = e.getValue();
+                if (cacheEntry.isExpired()) {
+                    cache.remove(key);
+                    n++;
+                }
+            }
+        }
+        return n;
     }
 }
