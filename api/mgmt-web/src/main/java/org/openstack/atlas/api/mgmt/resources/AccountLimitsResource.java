@@ -1,6 +1,8 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.api.mapper.DomainToRestModel;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Limits;
 import org.openstack.atlas.service.domain.entities.AccountLimit;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
@@ -35,8 +37,9 @@ public class AccountLimitsResource extends ManagementDependencyProvider {
             return ResponseFactory.accessDenied();
         }
         try {
-            Map<Integer, List<AccountLimit>> accountLimits = accountLimitService.getAllAccountLimits();
-            return Response.status(200).entity(accountLimits).build();
+            Map<String, Integer> accountLimits = accountLimitService.getAllLimitsForAccount(accountId);
+            Limits rLimits = DomainToRestModel.AccountLimitMap2Limits(accountLimits);
+            return Response.status(200).entity(rLimits).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
