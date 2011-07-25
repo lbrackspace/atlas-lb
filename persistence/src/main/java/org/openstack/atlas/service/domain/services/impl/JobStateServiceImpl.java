@@ -14,13 +14,18 @@ import java.util.List;
 public class JobStateServiceImpl extends BaseService implements JobStateService {
 
     @Override
+    public JobState getById(Integer id) throws EntityNotFoundException {
+        return jobStateRepository.getById(id);
+    }
+
+    @Override
     public List<JobState> getAll(Integer... p) {
         return jobStateRepository.getAll(p);
     }
 
     @Override
-    public JobState getById(Integer id) throws EntityNotFoundException {
-        return jobStateRepository.getById(id);
+    public List<JobState> getByState(String state, Integer... p) {
+        return jobStateRepository.getByState(state, p);
     }
 
     @Override

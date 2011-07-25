@@ -26,7 +26,7 @@ public class JobsResource extends ManagementDependencyProvider {
     }
 
     @GET
-    public Response retrieveJobs(@QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
+    public Response retrieveJobs(@QueryParam("state") String state, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
         if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
@@ -35,7 +35,9 @@ public class JobsResource extends ManagementDependencyProvider {
         org.openstack.atlas.docs.loadbalancers.api.management.v1.Jobs dataModelJobs = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Jobs();
 
         try {
-            domainJobs = jobStateService.getAll(offset, limit);
+            if(state == null || state.equals("")) domainJobs = jobStateService.getAll(offset, limit);
+            else domainJobs = jobStateService.getByState(state, offset, limit);
+
             for (JobState domainJob : domainJobs) {
                 dataModelJobs.getJobs().add(getDozerMapper().map(domainJob, Job.class));
             }

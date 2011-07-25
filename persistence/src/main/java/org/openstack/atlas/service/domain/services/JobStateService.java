@@ -9,9 +9,11 @@ import java.util.List;
 
 public interface JobStateService {
 
+    public JobState getById(Integer id) throws EntityNotFoundException;
+
     public List<JobState> getAll(Integer... p);
 
-    public JobState getById(Integer id) throws EntityNotFoundException;
+    public List<JobState> getByState(String state, Integer... p);
 
     public JobState updateJobState(JobName jobName, JobStateVal jobStateVal);
 }

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Transactional
@@ -30,6 +31,34 @@ public class JobStateRepository {
         Root<JobState> jobStateRoot = criteria.from(JobState.class);
 
         criteria.select(jobStateRoot);
+        TypedQuery<JobState> query = entityManager.createQuery(criteria);
+
+        if (p.length >= 2) {
+            Integer offset = p[0];
+            Integer limit = p[1];
+            if (offset == null) offset = 0;
+            if (limit == null || limit > 100) limit = 100;
+            query = query.setFirstResult(offset).setMaxResults(limit);
+        }
+
+        return query.getResultList();
+    }
+
+    public List<JobState> getByState(String state, Integer... p) {
+        final JobStateVal jobStateVal;
+        try {
+             jobStateVal = JobStateVal.valueOf(state);
+        } catch(IllegalArgumentException e) {
+            return new ArrayList<JobState>();
+        }
+
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<JobState> criteria = builder.createQuery(JobState.class);
+        Root<JobState> jobStateRoot = criteria.from(JobState.class);
+
+        Predicate hasState = builder.equal(jobStateRoot.get(JobState_.state), jobStateVal);
+        criteria.select(jobStateRoot);
+        criteria.where(hasState);
         TypedQuery<JobState> query = entityManager.createQuery(criteria);
 
         if (p.length >= 2) {
