@@ -324,17 +324,8 @@ public class LoadBalancerServiceImplIntegrationTest {
 
             }
 
-            @Test(expected = EntityNotFoundException.class)
-            public void shouldThrowEntityNotFoundExceptionWhenlbsNotFound() throws Exception {
-                ids = new ArrayList<Integer>();
-                for (int i=0;i<=10;i++) {
-                    ids.add(i);
-                }
-                loadBalancerService.prepareForDelete(1000, ids);
-            }
-
             @Test()
-            public void shouldDeleteLbs() throws Exception {
+            public void shouldPassDeleteLbsToNextLayer() throws Exception {
                 ids = new ArrayList<Integer>();
                 loadBalancers = new ArrayList<LoadBalancer>();
 
