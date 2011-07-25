@@ -7,11 +7,8 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
+import javax.persistence.*;
 import javax.persistence.criteria.*;
-import java.util.Calendar;
 import java.util.List;
 
 @Transactional
@@ -25,6 +22,25 @@ public class JobStateRepository {
         JobState jobState = entityManager.find(JobState.class, id);
         if (jobState == null) logAndThrowException();
         return jobState;
+    }
+
+    public List<JobState> getAll(Integer... p) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<JobState> criteria = builder.createQuery(JobState.class);
+        Root<JobState> jobStateRoot = criteria.from(JobState.class);
+
+        criteria.select(jobStateRoot);
+        TypedQuery<JobState> query = entityManager.createQuery(criteria);
+
+        if (p.length >= 2) {
+            Integer offset = p[0];
+            Integer limit = p[1];
+            if (offset == null) offset = 0;
+            if (limit == null || limit > 100) limit = 100;
+            query = query.setFirstResult(offset).setMaxResults(limit);
+        }
+
+        return query.getResultList();
     }
 
     public JobState getByName(JobName jobName) throws EntityNotFoundException {
@@ -84,7 +100,7 @@ public class JobStateRepository {
     }
 
     private JobState logAndThrowException() throws EntityNotFoundException {
-        String message = Constants.JobStateNotFound;
+        String message = Constants.JobNotFound;
         LOG.debug(message);
         throw new EntityNotFoundException(message);
     }

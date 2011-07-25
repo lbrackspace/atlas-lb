@@ -55,6 +55,7 @@
     <bean id="accountLimitService" class="org.openstack.atlas.service.domain.services.impl.AccountLimitServiceImpl" parent="baseService"/>
     <bean id="suspensionService" class="org.openstack.atlas.service.domain.services.impl.SuspensionServiceImpl" parent="baseService"/>
     <bean id="blackListService" class="org.openstack.atlas.service.domain.services.impl.BlackListServiceImpl" parent="baseService"/>
+    <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl" parent="baseService"/>
 
     <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>

@@ -8,9 +8,20 @@ import org.openstack.atlas.service.domain.services.JobStateService;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
+import java.util.List;
 
 @Service
 public class JobStateServiceImpl extends BaseService implements JobStateService {
+
+    @Override
+    public List<JobState> getAll(Integer... p) {
+        return jobStateRepository.getAll(p);
+    }
+
+    @Override
+    public JobState getById(Integer id) throws EntityNotFoundException {
+        return jobStateRepository.getById(id);
+    }
 
     @Override
     /* Creates an entry in the database if it doesn't exist */

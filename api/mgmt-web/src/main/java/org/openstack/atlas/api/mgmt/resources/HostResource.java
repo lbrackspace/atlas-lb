@@ -21,8 +21,7 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
-public class
-        HostResource extends ManagementDependencyProvider {
+public class HostResource extends ManagementDependencyProvider {
 
     private BackupsResource backupsResource;
     private int id;
