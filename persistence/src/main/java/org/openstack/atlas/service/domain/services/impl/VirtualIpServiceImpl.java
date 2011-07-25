@@ -212,8 +212,8 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         LoadBalancer dlb = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
 
         Integer ipv6Limit = accountLimitService.getLimit(dlb.getAccountId(), AccountLimitType.IPV6_LIMIT);
-        if (dlb.getLoadBalancerJoinVip6Set().size() > ipv6Limit) {
-            throw new BadRequestException(String.format("A load balancer cannot have more than %d IPv6 virtual ips.", ipv6Limit));
+        if (dlb.getLoadBalancerJoinVip6Set().size() >= ipv6Limit) {
+            throw new BadRequestException(String.format("Your load balancer cannot have more than %d IPv6 virtual ips.", ipv6Limit));
         }
 
         if (vipConfig.getId() != null) {
