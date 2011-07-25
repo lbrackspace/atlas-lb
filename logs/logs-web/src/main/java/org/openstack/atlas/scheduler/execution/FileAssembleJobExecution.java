@@ -4,8 +4,8 @@ import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.exception.SchedulingException;
 import org.openstack.atlas.scheduler.FileMoveJob;
 import org.openstack.atlas.scheduler.JobScheduler;
-import org.openstack.atlas.service.domain.logs.entities.NameVal;
-import org.openstack.atlas.service.domain.logs.entities.State;
+import org.openstack.atlas.service.domain.entities.JobName;
+import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.tools.HadoopRunner;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,7 +25,7 @@ public class FileAssembleJobExecution extends LoggableJobExecution implements Qu
 
 
         String runTime = runner.getInputString();
-        State allJobState = createJob(NameVal.FILEASSEMBLE, runTime);
+        JobState allJobState = createJob(JobName.FILEASSEMBLE, runTime);
         try {
 //            runner.setOldestDate(getOldestLoglineSpeculatively(runner));
 //            runner.setCacheIPs(createCacheIPs());

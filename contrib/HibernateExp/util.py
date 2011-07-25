@@ -52,8 +52,8 @@ import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEve
 import org.openstack.atlas.service.domain.events.entities.NodeEvent as NodeEvent
 import org.openstack.atlas.service.domain.events.entities.VirtualIpEvent as VirtualIpEvent
 import org.openstack.atlas.service.domain.events.entities.SessionPersistenceEvent as SessionPersistenceEvent
-import org.openstack.atlas.service.domain.logs.entities.Entity as Entity
-import org.openstack.atlas.service.domain.logs.entities.State as State
+import org.openstack.atlas.service.domain.entities.Entity as Entity
+import org.openstack.atlas.service.domain.entities.JobState as State
 import org.openstack.atlas.service.domain.entities.RateLimit as RateLimit
 import org.openstack.atlas.service.domain.entities.AccountLimit as AccountLimit
 import org.openstack.atlas.service.domain.entities.LimitType as LimitType

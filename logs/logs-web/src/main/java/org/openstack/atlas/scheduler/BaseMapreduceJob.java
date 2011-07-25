@@ -3,7 +3,7 @@ package org.openstack.atlas.scheduler;
 import org.openstack.atlas.config.LbLogsConfigurationKeys;
 import org.openstack.atlas.constants.Constants;
 import org.openstack.atlas.data.LogDateFormat;
-import org.openstack.atlas.service.domain.logs.repository.StateRepository;
+import org.openstack.atlas.service.domain.repository.JobStateRepository;
 import org.openstack.atlas.tools.HadoopRunner;
 import org.openstack.atlas.util.DateTime;
 import org.apache.commons.logging.Log;
@@ -19,7 +19,7 @@ public abstract class BaseMapreduceJob extends QuartzJobBean {
 
     protected JobScheduler jobScheduler;
 
-    protected StateRepository stateDao;
+    protected JobStateRepository stateDao;
 
     private org.openstack.atlas.cfg.Configuration configuration;
 
@@ -46,7 +46,7 @@ public abstract class BaseMapreduceJob extends QuartzJobBean {
         this.logService = rawLogsService;
     }
 */
-    public void setStateDao(StateRepository stateDao) {
+    public void setStateDao(JobStateRepository stateDao) {
         this.stateDao = stateDao;
     }
 

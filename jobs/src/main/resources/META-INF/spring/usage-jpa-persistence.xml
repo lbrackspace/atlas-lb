@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:cxfse="http://servicemix.apache.org/cxfse/1.0"
        xmlns:tx="http://www.springframework.org/schema/tx"
-       xmlns:osgi="http://www.springframework.org/schema/osgi" xmlns:aop="http://www.springframework.org/schema/aop"
-       xsi:schemaLocation="
-                http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-                http://servicemix.apache.org/cxfse/1.0 http://servicemix.apache.org/cxfse/1.0/servicemix-cxf-se.xsd
-                http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
-                http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
-                http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
-">
-
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
 
     <!-- Wires up the @Tx's -->
     <tx:annotation-driven/>
@@ -48,9 +42,18 @@
     <!-- Repo's go here, they MUST be prototype, they are not thread safe -->
     <bean id="usageRepository" class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository"
           scope="prototype"/>
-    <bean id="usageEventRepository" class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository"
+    <bean id="usageEventRepository"
+          class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository"
           scope="prototype"/>
     <bean id="hostUsageRepository" class="org.openstack.atlas.service.domain.usage.repository.HostUsageRepository"
           scope="prototype"/>
+    <bean id="jobStateRepository" class="org.openstack.atlas.service.domain.repository.JobStateRepository"
+          scope="prototype"/>
+
+    <!--Services go here-->
+    <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
+        <property name="jobStateRepository" ref="jobStateRepository" />
+    </bean>
+    <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl" parent="baseService"/>
 
 </beans>

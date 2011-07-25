@@ -4,24 +4,23 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.JobName;
+import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.repository.HostRepository;
-import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.net.MalformedURLException;
+import java.util.Calendar;
 import java.util.List;
 
-public class HostEndpointPollerJob extends QuartzJobBean {
+public class HostEndpointPollerJob extends Job {
     private final Log LOG = LogFactory.getLog(HostEndpointPollerJob.class);
     private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
@@ -46,7 +45,10 @@ public class HostEndpointPollerJob extends QuartzJobBean {
     //TODO: refactor to use the async service...
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        LOG.info("HostEndpointPollerJob job has started...");
+        Calendar startTime = Calendar.getInstance();
+        LOG.info(String.format("Host endpoint poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
+        jobStateService.updateJobState(JobName.HOST_ENDPOINT_POLLER, JobStateVal.IN_PROGRESS);
+
         try {
             boolean endpointWorks;
             List<Host> hosts = hostRepository.getAllHosts();
@@ -64,9 +66,14 @@ public class HostEndpointPollerJob extends QuartzJobBean {
                 LOG.info("Finished updating host: " + host.getId() + " in the database.");
             }
         } catch (Exception e) {
+            jobStateService.updateJobState(JobName.HOST_ENDPOINT_POLLER, JobStateVal.FAILED);
             LOG.error("There was a problem polling host endpoints. 'HostEndpointPollerJob'");
         }
-        LOG.info("HostEndpointPollerJob job has finished...");
+
+        Calendar endTime = Calendar.getInstance();
+        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
+        jobStateService.updateJobState(JobName.HOST_ENDPOINT_POLLER, JobStateVal.FINISHED);
+        LOG.info(String.format("Host endpoint poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 
     //TODO: refactor to use service/null adapter

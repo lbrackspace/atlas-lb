@@ -55,6 +55,7 @@
     <bean id="accountLimitService" class="org.openstack.atlas.service.domain.services.impl.AccountLimitServiceImpl" parent="baseService"/>
     <bean id="suspensionService" class="org.openstack.atlas.service.domain.services.impl.SuspensionServiceImpl" parent="baseService"/>
     <bean id="blackListService" class="org.openstack.atlas.service.domain.services.impl.BlackListServiceImpl" parent="baseService"/>
+    <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl" parent="baseService"/>
 
     <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
@@ -69,6 +70,7 @@
         <property name="clusterRepository" ref="clusterRepository" />
         <property name="nodeRepository" ref="nodeRepository" />
         <property name="rateLimitRepository" ref="rateLimitRepository" />
+        <property name="jobStateRepository" ref="jobStateRepository" />
     </bean>
 
     <bean id="accountUsageRepository" class="org.openstack.atlas.service.domain.repository.AccountUsageRepository" depends-on="entityManagerFactory1"/>
@@ -85,5 +87,6 @@
     <bean id="virtualIpRepository" class="org.openstack.atlas.service.domain.repository.VirtualIpRepository" depends-on="entityManagerFactory1"/>
     <bean id="nodeRepository" class="org.openstack.atlas.service.domain.repository.NodeRepository" depends-on="entityManagerFactory1"/>
     <bean id="rateLimitRepository" class="org.openstack.atlas.service.domain.repository.RateLimitRepository" depends-on="entityManagerFactory1" />
+    <bean id="jobStateRepository" class="org.openstack.atlas.service.domain.repository.JobStateRepository" depends-on="entityManagerFactory1" />
 
 </beans>

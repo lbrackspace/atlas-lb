@@ -38,6 +38,7 @@
                 <entry key="hostRepository" value-ref="hostRepository"/>
                 <entry key="usageRepository" value-ref="usageRepository"/>
                 <entry key="usageEventRepository" value-ref="usageEventRepository"/>
+                <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
     </bean>
@@ -57,6 +58,7 @@
                 <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
                 <entry key="accountUsageRepository" value-ref="accountUsageRepository"/>
                 <entry key="virtualIpRepository" value-ref="virtualIpRepository"/>
+                <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
     </bean>
@@ -75,6 +77,7 @@
                 <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
                 <entry key="hostRepository" value-ref="hostRepository"/>
                 <entry key="hostUsageRepository" value-ref="hostUsageRepository"/>
+                <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
     </bean>
@@ -92,6 +95,7 @@
             <map>
                 <entry key="pollingUsageRepository" value-ref="usageRepository"/>
                 <entry key="rollUpUsageRepository" value-ref="rollupUsageRepository"/>
+                <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
     </bean>
@@ -105,11 +109,12 @@
     <!--USAGE DELETION JOB CONFIG-->
     <bean name="dailyDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass"
-        value="org.openstack.atlas.usage.jobs.DailyDeletionJob"/>
+        value="org.openstack.atlas.jobs.DailyDeletionJob"/>
         <property name="jobDataAsMap">
             <map>
                 <entry key="usageRepository" value-ref="usageRepository"/>
                 <entry key="hostUsageRepository" value-ref="hostUsageRepository"/>
+                <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
     </bean>
@@ -146,6 +151,7 @@
                 <entry key="reverseProxyLoadBalancerService" value-ref="reverseProxyLoadBalancerService"/>
                 <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
                 <entry key="hostRepository" value-ref="hostRepository"/>
+                <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
     </bean>
@@ -158,10 +164,11 @@
     <!--ALERT DELETION JOB CONFIG-->
     <bean name="atomAlertDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass"
-                  value="org.openstack.atlas.jobs.AtomAlertDeletionJob"/>
+                  value="org.openstack.atlas.jobs.AlertDeletionJob"/>
         <property name="jobDataAsMap">
             <map>
                 <entry key="alertRepository" value-ref="alertRepository"/>
+                <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
     </bean>
@@ -179,6 +186,7 @@
             <map>
                 <entry key="loadBalancerEventRepository" value-ref="loadBalancerEventRepository"/>
                 <entry key="alertRepository" value-ref="alertRepository"/>
+                <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
     </bean>
@@ -198,6 +206,7 @@
                 <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
                 <entry key="hostRepository" value-ref="hostRepository"/>
                 <entry key="alertRepository" value-ref="alertRepository"/>
+                <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
     </bean>
