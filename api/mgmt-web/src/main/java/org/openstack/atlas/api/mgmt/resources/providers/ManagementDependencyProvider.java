@@ -54,6 +54,7 @@ public class ManagementDependencyProvider {
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     protected SuspensionService suspensionService;
     protected ClusterService clusterService;
+    protected JobStateService jobStateService;
 
     public static String getStackTraceMessage(Exception e) {
         StringBuffer sb = new StringBuffer();
@@ -114,6 +115,10 @@ public class ManagementDependencyProvider {
 
     public void setClusterService(ClusterService clusterService) {
         this.clusterService = clusterService;
+    }
+
+    public void setJobStateService(JobStateService jobStateService) {
+        this.jobStateService = jobStateService;
     }
 
     public void setSuspensionService(SuspensionService suspensionService) {

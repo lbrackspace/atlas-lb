@@ -5,7 +5,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
+import org.openstack.atlas.jobs.Job;
 import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.JobName;
+import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.usage.entities.HostUsage;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRepository;
@@ -20,7 +23,7 @@ import java.net.ConnectException;
 import java.util.Calendar;
 import java.util.List;
 
-public class HostUsagePoller extends QuartzJobBean {
+public class HostUsagePoller extends Job {
     private final Log LOG = LogFactory.getLog(HostUsagePoller.class);
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
     private HostRepository hostRepository;
@@ -49,11 +52,14 @@ public class HostUsagePoller extends QuartzJobBean {
     private void startPoller() {
         Calendar startTime = Calendar.getInstance();
         LOG.info(String.format("Host usage poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
+        jobStateService.updateJobState(JobName.HOST_USAGE_POLLER, JobStateVal.IN_PROGRESS);
+
         List<Host> hosts;
 
         try {
             hosts = hostRepository.getAll();
         } catch (Exception ex) {
+            jobStateService.updateJobState(JobName.HOST_USAGE_POLLER, JobStateVal.FAILED);
             LOG.error(ex.getCause(), ex);
             return;
         }
@@ -90,6 +96,7 @@ public class HostUsagePoller extends QuartzJobBean {
 
         Calendar endTime = Calendar.getInstance();
         Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
+        jobStateService.updateJobState(JobName.HOST_USAGE_POLLER, JobStateVal.FINISHED);
         LOG.info(String.format("Host usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 

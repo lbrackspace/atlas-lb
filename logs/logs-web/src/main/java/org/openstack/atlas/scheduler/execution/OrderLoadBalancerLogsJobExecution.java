@@ -6,8 +6,8 @@ import org.openstack.atlas.exception.SchedulingException;
 import org.openstack.atlas.mapreduce.LbStatsTool;
 import org.openstack.atlas.scheduler.JobScheduler;
 import org.openstack.atlas.scheduler.SplitLoadBalancerLogsJob;
-import org.openstack.atlas.service.domain.logs.entities.NameVal;
-import org.openstack.atlas.service.domain.logs.entities.State;
+import org.openstack.atlas.service.domain.entities.JobName;
+import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.tools.HadoopRunner;
 import org.openstack.atlas.tools.HadoopTool;
 import org.openstack.atlas.util.FileSystemUtils;
@@ -29,7 +29,7 @@ public class OrderLoadBalancerLogsJobExecution extends LoggableJobExecution impl
 
     public void execute(JobScheduler scheduler, HadoopRunner runner) throws ExecutionException {
 
-        State state = createJob(NameVal.MAPREDUCE, runner.getInputString());
+        JobState state = createJob(JobName.MAPREDUCE, runner.getInputString());
 
         runner.setRawlogsFileDate(Constants.Rawlogs.RAWLOGS_FORMAT.format(Calendar.getInstance().getTime()));
 

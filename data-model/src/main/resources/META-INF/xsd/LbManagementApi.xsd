@@ -765,4 +765,22 @@
         <!--<xsd:attribute name="type" type="xsd:string" />-->
         <!--<xsd:attribute name="value" type="xsd:int" />-->
     <!--</xsd:complexType>-->
+
+    <xsd:element name="jobs" type="tns:jobs"/>
+    <xsd:complexType name="jobs">
+        <xsd:sequence>
+            <xsd:element name="job" minOccurs="1" maxOccurs="unbounded" type="tns:job"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="job" type="tns:job"/>
+    <xsd:complexType name="job">
+        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:attribute name="jobName" type="xsd:string"/>
+        <xsd:attribute name="state" type="xsd:string"/>
+        <xsd:attribute name="startTime" type="xsd:dateTime"/>
+        <xsd:attribute name="endTime" type="xsd:dateTime"/>
+        <xsd:attribute name="inputPath" type="xsd:string"/>
+    </xsd:complexType>
+
 </xsd:schema>
