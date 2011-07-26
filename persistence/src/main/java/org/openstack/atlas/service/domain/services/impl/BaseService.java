@@ -40,6 +40,7 @@ public class BaseService {
     protected ClusterRepository clusterRepository;
     protected NodeRepository nodeRepository;
     protected RateLimitRepository rateLimitRepository;
+    protected JobStateRepository jobStateRepository;
 
     public void setRateLimitRepository(RateLimitRepository rateLimitRepository) {
         this.rateLimitRepository = rateLimitRepository;
@@ -83,6 +84,10 @@ public class BaseService {
 
     public void setClusterRepository(ClusterRepository clusterRepository) {
         this.clusterRepository = clusterRepository;
+    }
+
+    public void setJobStateRepository(JobStateRepository jobStateRepository) {
+        this.jobStateRepository = jobStateRepository;
     }
 
     public void isLbActive(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException {

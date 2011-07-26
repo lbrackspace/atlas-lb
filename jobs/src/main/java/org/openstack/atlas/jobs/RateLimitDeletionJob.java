@@ -5,9 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
-import org.openstack.atlas.service.domain.entities.Cluster;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.RateLimit;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.util.crypto.CryptoUtil;
@@ -19,9 +17,10 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
+import java.util.Calendar;
 import java.util.List;
 
-public class RateLimitDeletionJob extends QuartzJobBean {
+public class RateLimitDeletionJob extends Job {
     private final Log LOG = LogFactory.getLog(RateLimitDeletionJob.class);
     private LoadBalancerRepository loadBalancerRepository;
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
@@ -44,7 +43,10 @@ public class RateLimitDeletionJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        LOG.info("Loadbalancer expired rate limit deletion job started...");
+        Calendar startTime = Calendar.getInstance();
+        LOG.info(String.format("Rate limit deletion job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
+        jobStateService.updateJobState(JobName.RATE_LIMIT_DELETION_JOB, JobStateVal.IN_PROGRESS);
+
         List<RateLimit> rls;
         rls = loadBalancerRepository.getRateLimitByExpiration();
         LOG.info(String.format("There are '%s' expired rate limits...", rls.size()));
@@ -73,7 +75,11 @@ public class RateLimitDeletionJob extends QuartzJobBean {
                 }
             }
         }
-        LOG.info("Loadbalancer expired rate limit deletion job completed.");
+
+        Calendar endTime = Calendar.getInstance();
+        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
+        jobStateService.updateJobState(JobName.RATE_LIMIT_DELETION_JOB, JobStateVal.FINISHED);
+        LOG.info(String.format("Rate limit deletion job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 
     private LoadBalancerEndpointConfiguration getConfig(Host hostIn) throws DecryptException, MalformedURLException {

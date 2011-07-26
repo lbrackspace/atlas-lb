@@ -1,25 +1,27 @@
 package org.openstack.atlas.util.simplecache;
+
 import java.util.Calendar;
 
 public class CacheEntry <E>{
     private long updated;
+    private long ttl;
     private E val;
+
     public CacheEntry(){
-        updated = 0;
+        updated = nowInSeconds();
+        ttl = 300;
         val = null;
     }
 
-    public CacheEntry(E val){
-        this.updated = nowInSeconds();
-        this.val = val;
+    public CacheEntry(long ttl){
+        updated = nowInSeconds();
+        this.ttl = ttl;
+        val = null;
     }
 
-    public E getVal() {
-        return val;
-    }
-
-    public void setVal(E val) {
-        this.updated = nowInSeconds();
+    public CacheEntry(long ttl,E val){
+        updated = nowInSeconds();
+        this.ttl = ttl;
         this.val = val;
     }
 
@@ -28,26 +30,41 @@ public class CacheEntry <E>{
     }
 
     public void setUpdated(long updated) {
+        setUpdated();
+    }
+
+    public void setUpdated(){
         this.updated = nowInSeconds();
     }
 
-    public long expiresIn(long ttl){
-        long expires = ttl + updated;
-        long rightNow = nowInSeconds();
-        long secondsLeft = expires - rightNow;
-        return secondsLeft;
+    public Long getTtl() {
+        return ttl;
     }
 
-    public boolean isExpired(long ttl){
-        long expiresin = expiresIn(ttl);
-        if(expiresin<0){
-            return true;
-        }
-        return false;
+    public void setTtl(long ttl) {
+        this.ttl = ttl;
     }
 
-    public final long nowInSeconds(){
+    public E getVal() {
+        return val;
+    }
+
+    public void setVal(E val) {
+        this.val = val;
+    }
+
+
+    private long nowInSeconds(){
         long seconds = Calendar.getInstance().getTimeInMillis()/1000;
         return seconds;
+    }
+
+
+    public long expiresIn(){
+        return ttl + updated - nowInSeconds();
+    }
+
+    public boolean isExpired(){
+        return (expiresIn()<0);
     }
 }

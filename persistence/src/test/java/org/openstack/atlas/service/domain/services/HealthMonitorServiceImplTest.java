@@ -1,22 +1,17 @@
 package org.openstack.atlas.service.domain.services;
 
-import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.entities.HealthMonitor;
-import org.openstack.atlas.service.domain.entities.HealthMonitorType;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.VirtualIp;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.services.impl.HealthMonitorServiceImpl;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.services.impl.HealthMonitorServiceImpl;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.mockito.Mockito.mock;
 
 @RunWith(Enclosed.class)
 public class HealthMonitorServiceImplTest {

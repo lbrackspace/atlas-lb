@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -116,13 +117,16 @@ public class LoadBalancerServiceImplIntegrationTest {
             @Autowired
             private LoadBalancerService loadBalancerService;
 
+            @Autowired
+            private VirtualIpService virtualIpService;
+
             @PersistenceContext(unitName = "loadbalancing")
             private EntityManager entityManager;
 
             private LoadBalancer loadBalancer;
 
             @Before
-            public void setUp() {
+            public void setUp() throws NoSuchAlgorithmException {
                 loadBalancer = new LoadBalancer();
                 loadBalancer.setAccountId(1000);
                 loadBalancer.setName("integration testing");
@@ -136,6 +140,9 @@ public class LoadBalancerServiceImplIntegrationTest {
                 node.setCondition(NodeCondition.ENABLED);
                 nodes.add(node);
                 loadBalancer.setNodes(nodes);
+
+                virtualIpService.addAccountRecord(1000);
+
             }
 
             @After
@@ -324,17 +331,8 @@ public class LoadBalancerServiceImplIntegrationTest {
 
             }
 
-            @Test(expected = EntityNotFoundException.class)
-            public void shouldThrowEntityNotFoundExceptionWhenlbsNotFound() throws Exception {
-                ids = new ArrayList<Integer>();
-                for (int i=0;i<=10;i++) {
-                    ids.add(i);
-                }
-                loadBalancerService.prepareForDelete(1000, ids);
-            }
-
             @Test()
-            public void shouldDeleteLbs() throws Exception {
+            public void shouldPassDeleteLbsToNextLayer() throws Exception {
                 ids = new ArrayList<Integer>();
                 loadBalancers = new ArrayList<LoadBalancer>();
 

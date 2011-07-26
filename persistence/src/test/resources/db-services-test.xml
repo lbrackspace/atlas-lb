@@ -7,6 +7,15 @@
                            http://www.springframework.org/schema/tx
                            http://www.springframework.org/schema/tx/spring-tx.xsd">
 
+    <bean id="configProperties"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>file:///etc/openstack/atlas/common.properties</value>
+            </list>
+        </property>
+    </bean>
+
     <bean id="entityManagerFactory1" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="persistenceXmlLocation" value="lb-persistence.xml"/>
         <property name="persistenceUnitName" value="loadbalancing"/>
@@ -20,9 +29,9 @@
 
     <bean id="loadbalancingDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
  		<property name="driverClassName" value="com.mysql.jdbc.Driver"/>
- 		<property name="url" value="jdbc:mysql://url:3306/loadbalancing"/>
- 		<property name="username" value="username"/>
- 		<property name="password" value="password"/>
+ 		<property name="url" value="jdbc:mysql://173.203.200.79:3306/loadbalancing"/>
+ 		<property name="username" value="${username}"/>
+ 		<property name="password" value="${password}"/>
  	</bean>
 
     <tx:annotation-driven/>

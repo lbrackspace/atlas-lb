@@ -18,6 +18,7 @@ public class ManagementResource extends ManagementDependencyProvider {
     private BounceResource bounceResource;
     private GroupsResource groupsResource;
     private EventResource eventResource;
+    private JobsResource jobsResource;
     private AuditResource auditResource;
     private BlackListResource blackListResource;
 
@@ -86,6 +87,11 @@ public class ManagementResource extends ManagementDependencyProvider {
         return eventResource;
     }
 
+    @Path("jobs")
+    public JobsResource retrieveJobsResource() {
+        return jobsResource;
+    }
+
     public void setBounceResource(BounceResource bounceResource) {
         this.bounceResource = bounceResource;
     }
@@ -144,5 +150,9 @@ public class ManagementResource extends ManagementDependencyProvider {
 
     public BlackListResource getBlackListResource() {
         return blackListResource;
+    }
+
+    public void setJobsResource(JobsResource jobsResource) {
+        this.jobsResource = jobsResource;
     }
 }

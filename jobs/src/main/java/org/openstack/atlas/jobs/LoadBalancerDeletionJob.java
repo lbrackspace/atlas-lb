@@ -1,5 +1,7 @@
 package org.openstack.atlas.jobs;
 
+import org.openstack.atlas.service.domain.entities.JobName;
+import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.events.repository.AlertRepository;
@@ -13,9 +15,10 @@ import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
+import java.util.Calendar;
 import java.util.List;
 
-public class LoadBalancerDeletionJob extends QuartzJobBean {
+public class LoadBalancerDeletionJob extends Job {
     private final Log LOG = LogFactory.getLog(LoadBalancerDeletionJob.class);
     private LoadBalancerRepository loadBalancerRepository;
     private AlertRepository alertRepository;
@@ -32,7 +35,9 @@ public class LoadBalancerDeletionJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        LOG.info("Expired load balancer deletion job started...");
+        Calendar startTime = Calendar.getInstance();
+        LOG.info(String.format("Load balancer deletion job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
+        jobStateService.updateJobState(JobName.LB_DELETION_JOB, JobStateVal.IN_PROGRESS);
 
         List<LoadBalancer> elbs;
         try {
@@ -51,8 +56,13 @@ public class LoadBalancerDeletionJob extends QuartzJobBean {
                 }
             }
         } catch (Exception e) {
+            jobStateService.updateJobState(JobName.LB_DELETION_JOB, JobStateVal.FAILED);
             LOG.error("There was a problem deleting a load balancer...", e);
         }
-        LOG.info("Expired load balancer deletion job completed.");
+
+        Calendar endTime = Calendar.getInstance();
+        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
+        jobStateService.updateJobState(JobName.LB_DELETION_JOB, JobStateVal.FINISHED);
+        LOG.info(String.format("Load balancer deletion job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 }
