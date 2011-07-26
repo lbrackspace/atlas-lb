@@ -1,6 +1,6 @@
-Package: [[name]]
+Package: [[artifactId]]
 Version: [[version]]
-Source: rs-lbaas-jobs
+Source: [[artifactId]]
 Section: libs
 Priority: optional
 Maintainer: Carlos D. Garza <carlos.garza@rackspace.com>
