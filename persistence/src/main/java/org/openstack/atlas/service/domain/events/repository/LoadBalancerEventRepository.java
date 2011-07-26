@@ -15,6 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.*;
 
 @Repository
@@ -77,17 +81,17 @@ public class LoadBalancerEventRepository {
     }
 
     public LoadBalancerServiceEvents getAllEventsForUsername(String username, Integer page, Calendar startDate, Calendar endDate) {
-
-        Query query = entityManager.createQuery("SELECT evt FROM LoadBalancerServiceEvent evt where evt.author = :username and evt.created >= :startDate and evt.created <= :endDate order by evt.created desc").setParameter("username", username).setParameter("startDate", startDate).setParameter("endDate", endDate).setMaxResults(PAGE_SIZE);
-
-        if (page != null && page > 0) {
-            query = query.setFirstResult((page - 1) * PAGE_SIZE);
-        }
-
-        LoadBalancerServiceEvents dEvents = new LoadBalancerServiceEvents();
-        dEvents.getLoadBalancerServiceEvents().addAll(query.getResultList());
-
-        return dEvents;
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerServiceEvent> query = builder.createQuery(LoadBalancerServiceEvent.class);
+        Root<LoadBalancerServiceEvent> root = query.from(LoadBalancerServiceEvent.class);
+        Predicate userEvents = builder.equal(root.get(LoadBalancerServiceEvent_.author), username);
+        Predicate timeRange = builder.between(root.get(LoadBalancerServiceEvent_.created), startDate, endDate);
+        query.where(userEvents, timeRange);
+        query.select(root);
+        List<LoadBalancerServiceEvent> lsv = entityManager.createQuery(query).getResultList();
+        LoadBalancerServiceEvents events = new LoadBalancerServiceEvents();
+        events.getLoadBalancerServiceEvents().addAll(lsv);
+        return events;
     }
 
     public List<NodeEvent> getAllNodeEvents(Integer accountId, Integer loadbalancerId, Integer page) {
