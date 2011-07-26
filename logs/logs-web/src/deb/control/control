@@ -1,4 +1,4 @@
-Package: rs-lbaas-logs
+Package: [[name]]
 Version: [[version]]
 Source: rs-lbaas-logs
 Section: libs
