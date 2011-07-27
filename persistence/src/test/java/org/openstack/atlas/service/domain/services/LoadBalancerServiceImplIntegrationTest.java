@@ -108,7 +108,7 @@ public class LoadBalancerServiceImplIntegrationTest {
             Assert.assertEquals(dbLoadBalancers.size(), dbLoadBalancers1.size() - 1);
         }
 
-        //TODO:Move..
+            //TODO:Move..
         @RunWith(SpringJUnit4ClassRunner.class)
         @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
         @Transactional
