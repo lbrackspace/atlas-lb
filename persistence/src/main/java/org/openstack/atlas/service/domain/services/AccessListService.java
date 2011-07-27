@@ -19,7 +19,7 @@ public interface AccessListService {
 
     public LoadBalancer markForDeletionNetworkItems(LoadBalancer returnLB, List<Integer> networkItemIds) throws EntityNotFoundException, ImmutableEntityException;
 
-    LoadBalancer updateAccessList(LoadBalancer rLb) throws EntityNotFoundException, ImmutableEntityException, BadRequestException;
+    LoadBalancer updateAccessList(LoadBalancer rLb) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException;
 
     Set<AccessList> diffRequestAccessListWithDomainAccessList(LoadBalancer rLb, LoadBalancer dLb);
 
