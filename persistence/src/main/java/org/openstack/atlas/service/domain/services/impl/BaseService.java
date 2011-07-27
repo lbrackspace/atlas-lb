@@ -142,6 +142,34 @@ public class BaseService {
         return null;
     }
 
+    protected AccessList blackListedItemAccessList(Set<AccessList> accessLists) throws IPStringConversionException, IpTypeMissMatchException {
+        IPv4Cidrs ip4Cidr = new IPv4Cidrs();
+        IPv6Cidrs ip6Cidr = new IPv6Cidrs();
+        AccessList badAccessListItem = new AccessList();
+        List<BlacklistItem> blackItems = blacklistRepository.getAllBlacklistItems();
+
+        for (AccessList testMe : accessLists) {
+            for (BlacklistItem bli : blackItems) {
+                if (bli.getBlacklistType() == null || bli.getBlacklistType().equals(BlacklistType.ACCESSLIST)) {
+                    if (bli.getIpVersion().equals(IpVersion.IPV4)) {
+                        ip4Cidr.getCidrs().add(new IPv4Cidr(bli.getCidrBlock()));
+                        badAccessListItem.setIpAddress(testMe.getIpAddress());
+                        if (ip4Cidr.contains(testMe.getIpAddress())) {
+                            return badAccessListItem;
+                        }
+                    } else if (bli.getIpVersion().equals(IpVersion.IPV6)) {
+                        ip6Cidr.getCidrs().add(new IPv6Cidr(bli.getCidrBlock()));
+                        badAccessListItem.setIpAddress(testMe.getIpAddress());
+                        if (ip6Cidr.contains(testMe.getIpAddress())) {
+                            return badAccessListItem;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public void setVirtualIpv6Repository(VirtualIpv6Repository virtualIpv6Repository) {
         this.virtualIpv6Repository = virtualIpv6Repository;
     }

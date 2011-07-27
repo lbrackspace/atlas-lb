@@ -1,15 +1,14 @@
 package org.openstack.atlas.service.domain.services.impl;
 
-import org.openstack.atlas.service.domain.entities.AccessList;
-import org.openstack.atlas.service.domain.entities.AccountLimitType;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.AccessListService;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
+import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +33,8 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
     }
 
     @Override
-    @Transactional
-    public LoadBalancer updateAccessList(LoadBalancer rLb) throws EntityNotFoundException, ImmutableEntityException, BadRequestException {
+    @Transactional(rollbackFor = {Exception.class})
+    public LoadBalancer updateAccessList(LoadBalancer rLb) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
         String msg;
         String format;
         LoadBalancer dLb;
@@ -48,7 +47,8 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
             throw ex;
         }
 
-        if (!isActiveLoadBalancer(dLb, false)) {
+         LOG.debug("Updating the lb status to pending_update");
+        if(!loadBalancerRepository.testAndSetStatus(dLb.getAccountId(), dLb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dLb);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
@@ -65,13 +65,22 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
             throw new BadRequestException("Must supply a unique access list item to update the current list.");
         }
 
+        try {
+            AccessList badAccessList = blackListedItemAccessList(rLb.getAccessLists());
+            if (badAccessList != null) {
+                throw new BadRequestException(String.format("Invalid network item address. The address '%s' is currently not accepted for this request.", badAccessList.getIpAddress()));
+            }
+        } catch (IPStringConversionException ipe) {
+            LOG.warn("IPStringConversionException thrown. Sending error response to client...");
+            throw new BadRequestException("IP address was not converted properly, we are unable to process this request.");
+        } catch (IpTypeMissMatchException ipte) {
+            LOG.warn("EntityNotFoundException thrown. Sending error response to client...");
+            throw new BadRequestException("IP addresses type are mismatched, we are unable to process this request.");
+        }
+
         for (AccessList al : rLb.getAccessLists()) {
             dLb.addAccessList(al);
         }
-        format = "Pre Zxtm updateing Lb[%d] to PENDING_UPDATE while added accesslists";
-        msg = String.format(format, rLb.getId());
-        dLb.setStatus(LoadBalancerStatus.PENDING_UPDATE);
-        loadBalancerRepository.update(dLb);
 
         return rLb;
     }

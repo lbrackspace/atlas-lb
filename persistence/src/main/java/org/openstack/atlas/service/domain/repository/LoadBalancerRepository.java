@@ -2,6 +2,7 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.openstack.atlas.service.domain.entities.*;
 
+import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent_;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
@@ -10,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.jws.soap.SOAPBinding;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
@@ -20,6 +22,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.security.PublicKey;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1072,6 +1076,7 @@ public class LoadBalancerRepository {
 
         criteria.select(lbRoot);
         criteria.where(builder.and(isBeforeLastUpdated, builder.or(errorStatus, buildStatus, pendingUpdateStatus, pendingDeleteStatus)));
+
 
         try {
             List<LoadBalancer> loadBalancers = entityManager.createQuery(criteria).getResultList();
