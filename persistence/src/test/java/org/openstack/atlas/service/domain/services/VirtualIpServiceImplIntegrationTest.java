@@ -317,7 +317,6 @@ public class VirtualIpServiceImplIntegrationTest {
             LoadBalancerJoinVip loadBalancerJoinVip2 = new LoadBalancerJoinVip();
             Set<LoadBalancerJoinVip6> loadBalancerJoinVip6Set2 = new HashSet<LoadBalancerJoinVip6>();
             LoadBalancerJoinVip6 loadBalancerJoinVip62 = new LoadBalancerJoinVip6();
-
             loadBalancerJoinVip.setVirtualIp(virtualIp2);
 
             for (LoadBalancerJoinVip6 jvip : dbLoadBalancer.getLoadBalancerJoinVip6Set()) {
