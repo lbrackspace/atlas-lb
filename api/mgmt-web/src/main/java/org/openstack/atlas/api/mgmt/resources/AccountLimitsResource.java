@@ -1,21 +1,19 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.api.mapper.DomainToRestModel;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Limits;
-import org.openstack.atlas.service.domain.entities.AccountLimit;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Map;
 
 public class AccountLimitsResource extends ManagementDependencyProvider {
 
@@ -31,19 +29,19 @@ public class AccountLimitsResource extends ManagementDependencyProvider {
         return accountLimitResource;
     }
     
-    @GET
-    public Response retrieveAllLimitsForAccount(@QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker) {
-        if (!isUserInRole("cp, ops")) {
-            return ResponseFactory.accessDenied();
-        }
-        try {
-            Map<String, Integer> accountLimits = accountLimitService.getAllLimitsForAccount(accountId);
-            Limits rLimits = DomainToRestModel.AccountLimitMap2Limits(accountLimits);
-            return Response.status(200).entity(rLimits).build();
-        } catch (Exception e) {
-            return ResponseFactory.getErrorResponse(e, null, null);
-        }
-    }
+//    @GET
+//    public Response retrieveAllLimitsForAccount(@QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker) {
+//        if (!isUserInRole("cp, ops")) {
+//            return ResponseFactory.accessDenied();
+//        }
+//        try {
+//            Map<String, Integer> accountLimits = accountLimitService.getAllLimitsForAccount(accountId);
+//            Limits rLimits = DomainToRestModel.AccountLimitMap2Limits(accountLimits);
+//            return Response.status(200).entity(rLimits).build();
+//        } catch (Exception e) {
+//            return ResponseFactory.getErrorResponse(e, null, null);
+//        }
+//    }
 
 
     @POST
