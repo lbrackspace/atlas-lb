@@ -248,12 +248,6 @@
     <profiles>
         <profile>
             <id>gen-deb-packages</id>
-            <activation>
-              <property>
-                <name>build</name>
-                <value>release</value>
-              </property>
-            </activation>
             <build>
                 <plugins>
                     <plugin>
