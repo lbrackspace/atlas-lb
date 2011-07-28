@@ -207,14 +207,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
 
-
         try {
             if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
                 removeSessionPersistence(config, lbId, accountId); // We currently only support HTTP session persistence
                 removeXFFRuleFromVirtualServer(serviceStubs, virtualServerName); // XFF is only for the HTTP protocol
-            } else {
-                TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
-                attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
             }
         } catch (Exception e) {
             throw new ZxtmRollBackException("Update protocol request canceled.", e);
@@ -241,6 +237,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Updating protocol for virtual server '%s'...", virtualServerName));
             serviceStubs.getVirtualServerBinding().setProtocol(new String[]{virtualServerName}, new VirtualServerProtocol[]{ZxtmConversionUtils.mapProtocol(protocol)});
             LOG.info(String.format("Successfully updated protocol for virtual server '%s'.", virtualServerName));
+
+            try {
+                if (protocol.equals(LoadBalancerProtocol.HTTP)) {
+                    TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
+                    attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
+                }
+            } catch (Exception ex) {
+            throw new ZxtmRollBackException("Update protocol request canceled.", ex);
+        }
 
             // Re-add rate-limit Rule
             if (rateLimitExists) attachRateLimitRulesToVirtualServer(serviceStubs, virtualServerName);
@@ -510,6 +515,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getVirtualServerBinding().addRules(new String[]{virtualServerName}, new VirtualServerRule[][]{{ZxtmAdapterImpl.ruleXForwardedFor}});
             LOG.debug(String.format("XFF rule successfully enabled on load balancer '%s'.", virtualServerName));
         }
+    }
+
+    private void attachXFFRuleToVirtualServerForced(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
+            LOG.debug(String.format("Attaching the XFF rule and enabling it on load balancer '%s'...", virtualServerName));
+            serviceStubs.getVirtualServerBinding().addRules(new String[]{virtualServerName}, new VirtualServerRule[][]{{ZxtmAdapterImpl.ruleXForwardedFor}});
+            LOG.debug(String.format("XFF rule successfully enabled on load balancer '%s'.", virtualServerName));
     }
 
     private void removeXFFRuleFromVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
