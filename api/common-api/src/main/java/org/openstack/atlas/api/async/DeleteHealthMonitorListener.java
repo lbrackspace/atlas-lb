@@ -13,7 +13,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_HEALTH_MONITOR;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 
 public class DeleteHealthMonitorListener extends BaseListener {
 
@@ -37,14 +37,14 @@ public class DeleteHealthMonitorListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Deleting health monitor for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+            LOG.debug(String.format("Deleting health monitor for load balancer '%d' in LB Device...", dbLoadBalancer.getId()));
             reverseProxyLoadBalancerService.removeHealthMonitor(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
-            LOG.debug(String.format("Successfully deleted the health monitor for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+            LOG.debug(String.format("Successfully deleted the health monitor for load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error deleting health monitor in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());
+            String alertDescription = String.format("Error deleting health monitor in LB Device for loadbalancer '%d'.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             return;
         }

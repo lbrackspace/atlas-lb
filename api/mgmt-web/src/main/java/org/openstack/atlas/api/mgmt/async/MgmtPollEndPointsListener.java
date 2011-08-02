@@ -21,9 +21,9 @@ public class MgmtPollEndPointsListener extends BaseListener {
         for (Host host : hosts) {
             endpointWorks = reverseProxyLoadBalancerService.isEndPointWorking(host);
             if (endpointWorks) {
-                host.setSoapEndpointActive(Boolean.TRUE);
+                host.setEndpointActive(Boolean.TRUE);
             } else {
-                host.setSoapEndpointActive(Boolean.FALSE);
+                host.setEndpointActive(Boolean.FALSE);
             }
         }
     }

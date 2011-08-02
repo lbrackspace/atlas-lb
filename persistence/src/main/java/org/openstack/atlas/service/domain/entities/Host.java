@@ -53,15 +53,15 @@ public class Host extends Entity implements Serializable {
     @Column(name = "endpoint", nullable = false)
     private String endpoint;
 
-    @Column(name = "traffic_manager_name", nullable = false)
-    private String trafficManagerName;
+    @Column(name = "host_name", nullable = false)
+    private String hostName;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "zone", length = 4)
     private Zone zone;
 
-    @Column(name = "soap_endpoint_active")
-    private Boolean soapEndpointActive;
+    @Column(name = "endpoint_active")
+    private Boolean endpointActive;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "host")
     @OrderBy("id")
@@ -144,12 +144,12 @@ public class Host extends Entity implements Serializable {
         this.backups = backups;
     }
 
-    public Boolean isSoapEndpointActive() {
-        return soapEndpointActive;
+    public Boolean isEndpointActive() {
+        return endpointActive;
     }
 
-    public void setSoapEndpointActive(Boolean soapEndpointActive) {
-        this.soapEndpointActive = soapEndpointActive;
+    public void setEndpointActive(Boolean endpointActive) {
+        this.endpointActive = endpointActive;
     }
 
     public String toString() {
@@ -161,21 +161,21 @@ public class Host extends Entity implements Serializable {
         sb.append(String.format("hoststatus= \"%s\", ", vorn(this.getHostStatus())));
         sb.append(String.format("managementip = \"%s\", ", vorn(this.getManagementIp())));
         sb.append(String.format("maxconnections= %s, ", vorn(this.getMaxConcurrentConnections())));
-        sb.append(String.format("trafficManagerName = \"%s\", ", vorn(this.getTrafficManagerName())));
+        sb.append(String.format("hostName = \"%s\", ", vorn(this.getHostName())));
         sb.append(String.format("coreid= %s,", vorn(this.getCoreDeviceId())));
         sb.append(String.format("endpoint=\"%s\",",vorn(this.getEndpoint())));
-        sb.append(String.format("endpointActive=\"%s\"",vorn(this.isSoapEndpointActive())));
+        sb.append(String.format("endpointActive=\"%s\"",vorn(this.isEndpointActive())));
         sb.append("}");
 
         return sb.toString();
     }
 
-    public String getTrafficManagerName() {
-        return trafficManagerName;
+    public String getHostName() {
+        return hostName;
     }
 
-    public void setTrafficManagerName(String trafficManagerName) {
-        this.trafficManagerName = trafficManagerName;
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
     }
 
     public String getIpv6Servicenet() {

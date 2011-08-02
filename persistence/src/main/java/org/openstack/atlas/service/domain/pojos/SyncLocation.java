@@ -2,7 +2,7 @@ package org.openstack.atlas.service.domain.pojos;
 
 public enum SyncLocation {
     DATABASE,
-    ZEUS;
+    LBDEVICE;
 
     public String value() {
         return name();

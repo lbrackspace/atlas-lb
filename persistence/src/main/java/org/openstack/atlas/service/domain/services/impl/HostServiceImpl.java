@@ -100,14 +100,14 @@ public class HostServiceImpl extends BaseService implements HostService {
 
             dbHost.setMaxConcurrentConnections(queueHost.getMaxConcurrentConnections());
         }
-        if (queueHost.getTrafficManagerName() != null) {
+        if (queueHost.getHostName() != null) {
 
-            dbHost.setTrafficManagerName(queueHost.getTrafficManagerName());
+            dbHost.setHostName(queueHost.getHostName());
         }
 
-        if (queueHost.isSoapEndpointActive() != null) {
+        if (queueHost.isEndpointActive() != null) {
 
-            dbHost.setSoapEndpointActive(queueHost.isSoapEndpointActive());
+            dbHost.setEndpointActive(queueHost.isEndpointActive());
         }
 
         if (queueHost.getIpv4Public() != null) {
@@ -287,7 +287,7 @@ public class HostServiceImpl extends BaseService implements HostService {
              throw new ImmutableEntityException(String.format("Host %d is currently active. Canceling request...", host.getId()));
          }
 
-//       TODO: Make Zeus call here       "Activating Host in ZEUS.. TODO: No Zeus call yet :(");
+//       TODO: Make LB Device call here       "Activating Host in LB Device.. TODO: No LB Device call yet :(");
          hostRepository.update(dbHost);
 
      }
@@ -307,7 +307,7 @@ public class HostServiceImpl extends BaseService implements HostService {
              throw new ImmutableEntityException(String.format("Host %d is currently active. Canceling request...", host.getId()));
          }
 
-//       TODO: Make Zeus call here       "In Activating Host in ZEUS.. TODO: No Zeus call yet :(");
+//       TODO: Make LB Device call here       "In Activating Host in LB Device.. TODO: No LB Device call yet :(");
          hostRepository.update(dbHost);
 
      }
@@ -321,7 +321,7 @@ public class HostServiceImpl extends BaseService implements HostService {
 
     public static boolean detectDuplicateHosts(List<Host> allHosts, Host queueHost) {
         for (Host h : allHosts) {
-            if (h.getTrafficManagerName().equals(queueHost.getTrafficManagerName())) return true;
+            if (h.getHostName().equals(queueHost.getHostName())) return true;
         }
         return false;
     }

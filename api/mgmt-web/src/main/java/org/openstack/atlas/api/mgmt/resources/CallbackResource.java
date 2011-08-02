@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.ZeusEvent;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LBDeviceEvent;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
@@ -17,10 +17,10 @@ import static org.openstack.atlas.service.domain.events.entities.EventType.UPDAT
 public class CallbackResource extends ManagementDependencyProvider {
 
     @POST
-    public Response receiveCallbackMessage(ZeusEvent event) {
+    public Response receiveCallbackMessage(LBDeviceEvent event) {
         try {
-            org.openstack.atlas.service.domain.pojos.ZeusEvent zeusEvent = getDozerMapper().map(event, org.openstack.atlas.service.domain.pojos.ZeusEvent.class);
-            callbackService.handleZeusEvent(zeusEvent);
+            org.openstack.atlas.service.domain.pojos.LBDeviceEvent lbDeviceEvent = getDozerMapper().map(event, org.openstack.atlas.service.domain.pojos.LBDeviceEvent.class);
+            callbackService.handleLBDeviceEvent(lbDeviceEvent);
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);

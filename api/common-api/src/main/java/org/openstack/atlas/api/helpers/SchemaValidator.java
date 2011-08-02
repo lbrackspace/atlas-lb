@@ -48,7 +48,7 @@ public class SchemaValidator implements MessageBodyReader<Object> {
 
             SchemaFactory schemaFactory = SchemaFactory.newInstance(W3C_XML_SCHEMA);
 
-            factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource("com/rackspace.cloud/service/loadbalancing/xsd/LoadBalancerApi.xsd")}));
+            factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource("org.openstack.cloud/service/loadbalancing/xsd/LoadBalancerApi.xsd")}));
 
             builder = factory.newDocumentBuilder();
             builder.setErrorHandler(new SimpleErrorHandler());

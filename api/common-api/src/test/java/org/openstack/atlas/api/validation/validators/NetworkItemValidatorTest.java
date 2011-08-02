@@ -39,7 +39,7 @@ public class NetworkItemValidatorTest {
     }
 
     @Test
-    public void shouldRejectInvalidIpForZeus() {
+    public void shouldRejectInvalidIpForLBDevice() {
         NetworkItem nwTest1 = new NetworkItem();
         nwTest1.setAddress("0.0.0.0");
         ValidatorResult result = nwValidator.validate(nwTest1, FULL);

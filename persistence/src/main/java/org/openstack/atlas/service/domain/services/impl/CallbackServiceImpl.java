@@ -3,7 +3,7 @@ package org.openstack.atlas.service.domain.services.impl;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.pojos.ZeusEvent;
+import org.openstack.atlas.service.domain.pojos.LBDeviceEvent;
 import org.openstack.atlas.service.domain.services.CallbackService;
 import org.openstack.atlas.service.domain.services.NodeService;
 import org.openstack.atlas.service.domain.services.NotificationService;
@@ -35,26 +35,26 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
 
     @Override
     @Transactional
-    public void handleZeusEvent(ZeusEvent zeusEvent) throws BadRequestException {
+    public void handleLBDeviceEvent(LBDeviceEvent lbDeviceEvent) throws BadRequestException {
         // Example paramLine: "INFO pools/501148_11066 nodes/10.179.78.70:80 nodeworking Node 10.179.78.70 is working again"
 
-        if (zeusEvent.getParamLine().contains(NODE_FAIL_TAG) || zeusEvent.getParamLine().contains(NODE_WORKING_TAG)) {
+        if (lbDeviceEvent.getParamLine().contains(NODE_FAIL_TAG) || lbDeviceEvent.getParamLine().contains(NODE_WORKING_TAG)) {
             LOG.debug("Node status changed.");
         } else {
             LOG.warn("Unsupported callback event triggered. Dropping request...");
             throw new BadRequestException("We currently do not support this callback request.");
         }
 
-        Integer loadBalancerId = getLoadbalancerId(zeusEvent.getParamLine());
-        String ipAddress = getIpAddress(zeusEvent.getParamLine());
-        Integer ipPort = getIpPort(zeusEvent.getParamLine());
+        Integer loadBalancerId = getLoadbalancerId(lbDeviceEvent.getParamLine());
+        String ipAddress = getIpAddress(lbDeviceEvent.getParamLine());
+        Integer ipPort = getIpPort(lbDeviceEvent.getParamLine());
         Node dbNode = nodeService.getNodeByLoadBalancerIdIpAddressAndPort(loadBalancerId, ipAddress, ipPort);
         String status;
 
-        if (zeusEvent.getParamLine().contains(NODE_FAIL_TAG)) {
+        if (lbDeviceEvent.getParamLine().contains(NODE_FAIL_TAG)) {
             dbNode.setStatus(NodeStatus.OFFLINE);
             status = NodeStatus.OFFLINE.name();
-        } else if (zeusEvent.getParamLine().contains(NODE_WORKING_TAG)) {
+        } else if (lbDeviceEvent.getParamLine().contains(NODE_WORKING_TAG)) {
             dbNode.setStatus(NodeStatus.ONLINE);
             status = NodeStatus.ONLINE.name();
         } else {
@@ -66,7 +66,7 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
         // Add atom entry
         String atomTitle = "Node Status Updated";
         String atomSummary = String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId);
-        notificationService.saveNodeEvent("Rackspace Cloud", dbNode.getLoadbalancer().getAccountId(), loadBalancerId, dbNode.getId(), atomTitle, atomSummary, UPDATE_NODE, UPDATE, INFO);
+        notificationService.saveNodeEvent("OpenStack Cloud", dbNode.getLoadbalancer().getAccountId(), loadBalancerId, dbNode.getId(), atomTitle, atomSummary, UPDATE_NODE, UPDATE, INFO);
 
         LOG.info(String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId));
     }

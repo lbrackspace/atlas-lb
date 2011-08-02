@@ -76,7 +76,7 @@ public class ManagementResource extends ManagementDependencyProvider {
         return blackListResource;
     }
 
-    @Path("zeusevent")
+    @Path("lbdeviceevent")
     public CallbackResource retrieveCallbackResource() {
         return callbackResource;
     }

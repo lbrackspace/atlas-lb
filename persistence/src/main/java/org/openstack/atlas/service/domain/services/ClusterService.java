@@ -1,6 +1,6 @@
 package org.openstack.atlas.service.domain.services;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.ZeusRateLimitedLoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LBDeviceRateLimitedLoadBalancer;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPBlocksOverLapException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPRangeTooBigException;
@@ -28,7 +28,7 @@ public interface ClusterService {
 
     public List<VirtualIp> getVirtualIps(Integer id, Integer offset, Integer limit);
 
-    public List<ZeusRateLimitedLoadBalancer> getRateLimitedLoadBalancersInCluster(Integer clusterId) throws EntityNotFoundException;
+    public List<LBDeviceRateLimitedLoadBalancer> getRateLimitedLoadBalancersInCluster(Integer clusterId) throws EntityNotFoundException;
 
     public List<AccountGroup> getAPIRateLimitedAccounts(Integer clusterId) throws EntityNotFoundException;
 

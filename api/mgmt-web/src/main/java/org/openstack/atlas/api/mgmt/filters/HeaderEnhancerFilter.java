@@ -12,7 +12,7 @@ public class HeaderEnhancerFilter implements Filter {
     private FilterConfig filterConfig = null;
     private static final Log LOG =  LogFactory.getLog(HeaderEnhancerFilter.class);
     private static final String X_AUTH_USER_NAME = "X-PP-User";
-    private static final String defaultUserName = "Rackspace Cloud";
+    private static final String defaultUserName = "OpenStack Cloud";
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {

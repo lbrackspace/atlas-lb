@@ -15,7 +15,7 @@ import static org.openstack.atlas.service.domain.events.entities.CategoryType.CR
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 
 public class CreateRateLimitListener extends BaseListener {
 
@@ -39,13 +39,13 @@ public class CreateRateLimitListener extends BaseListener {
         }
 
         try {
-            LOG.debug("Creating rate limit in Zeus...");
+            LOG.debug("Creating rate limit in LB Device...");
             reverseProxyLoadBalancerService.setRateLimit(queueLb.getId(), queueLb.getAccountId(), queueLb.getRateLimit());
-            LOG.debug("Successfully created rate limit in Zeus.");
+            LOG.debug("Successfully created rate limit in LB Device.");
         } catch (Exception e) {
             String alertDescription = String.format("Error adding rate limit for load balancer '%d'", queueLb.getId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             return;
         }

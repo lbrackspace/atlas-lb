@@ -141,7 +141,7 @@ public class IPv4ToolSet {
         return out;
     }
 
-    //TODO: refactor this, temp hack to make zeus happy...
+    //TODO: refactor this, temp hack to make LB device happy...
     public static boolean rejectUnwantedIps(String ip) {
         List<String> badIps = new ArrayList<String>();
         badIps.add("0.0.0.0");

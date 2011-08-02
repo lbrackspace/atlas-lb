@@ -5,7 +5,7 @@ import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
-import com.zxtm.service.client.ObjectDoesNotExist;
+import org.openstack.atlas.adapter.exceptions.ObjectNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -53,16 +53,16 @@ public class BackupResource extends ManagementDependencyProvider {
             }
 
             try {
-                LOG.debug("Deleting backup in Zeus...");
+                LOG.debug("Deleting backup in LB Device...");
                 reverseProxyLoadBalancerService.deleteHostBackup(domainHost, domainBackup.getName());
-                LOG.info("Backup successfully deleted in Zeus.");
-            } catch (ObjectDoesNotExist odno) {
+                LOG.info("Backup successfully deleted in LB Device.");
+            } catch (ObjectNotFoundException odno) {
                 String message = String.format("A backup named '%s' does not exist. Ignoring...", domainBackup.getName());
                 LOG.warn(message);
             } catch (Exception e) {
-                String message = String.format("Error deleting backup '%d' in Zeus.", domainBackup.getId());
+                String message = String.format("Error deleting backup '%d' in LB Device.", domainBackup.getId());
                 LOG.error(message, e);
-                notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), message);
+                notificationService.saveAlert(e, AlertType.LBDEVICE_FAILURE.name(), message);
                 throw e;
             }
 
@@ -94,18 +94,18 @@ public class BackupResource extends ManagementDependencyProvider {
             }
 
             try {
-                LOG.info(String.format("Restoring host with backup '%s' in Zeus...", domainBackup.getName()));
+                LOG.info(String.format("Restoring host with backup '%s' in LB Device...", domainBackup.getName()));
                 reverseProxyLoadBalancerService.restoreHostBackup(domainHost, domainBackup.getName());
-                LOG.info(String.format("Host successfully restored with backup '%s' in Zeus.", domainBackup.getName()));
-            } catch (ObjectDoesNotExist odno) {
-                String message = String.format("A backup named '%s' does not exist in Zeus. Cannot restore host!", domainBackup.getName());
+                LOG.info(String.format("Host successfully restored with backup '%s' in LB Device.", domainBackup.getName()));
+            } catch (ObjectNotFoundException odno) {
+                String message = String.format("A backup named '%s' does not exist in LB Device. Cannot restore host!", domainBackup.getName());
                 LOG.error(message);
-                notificationService.saveAlert(odno, AlertType.ZEUS_FAILURE.name(), message);
+                notificationService.saveAlert(odno, AlertType.LBDEVICE_FAILURE.name(), message);
                 throw new EntityNotFoundException(message);
             } catch (Exception e) {
                 String error = "Error during restore backup.";
                 LOG.error(error, e);
-                notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), error);
+                notificationService.saveAlert(e, AlertType.LBDEVICE_FAILURE.name(), error);
                 throw e;
             }
 

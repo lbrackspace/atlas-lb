@@ -4,10 +4,7 @@
  */
 package org.openstack.atlas.util.ip;
 
-/**
- *
- * @author carlos.garza@rackspace.com
- */
+
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.converters.BitConverters;
 import java.util.regex.Pattern;

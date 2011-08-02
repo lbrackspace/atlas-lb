@@ -1,6 +1,6 @@
 package org.openstack.atlas.usage.logic;
 
-import org.openstack.atlas.usage.helpers.ZxtmNameHelper;
+import org.openstack.atlas.usage.helpers.AdapterNameHelper;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,44 +42,44 @@ public class UsagesForPollingDatabase {
         recordsToInsert = new ArrayList<LoadBalancerUsage>();
         recordsToUpdate = new ArrayList<LoadBalancerUsage>();
 
-        for (String zxtmName : loadBalancerNames) {
+        for (String name : loadBalancerNames) {
             try {
-                Integer accountId = ZxtmNameHelper.stripAccountIdFromZxtmName(zxtmName);
-                Integer lbId = ZxtmNameHelper.stripLbIdFromZxtmName(zxtmName);
+                Integer accountId = AdapterNameHelper.stripAccountIdFromName(name);
+                Integer lbId = AdapterNameHelper.stripLbIdFromName(name);
 
                 if (!usagesAsMap.containsKey(lbId)) {
                     // Case 1: No record exists at all. Create one.
-                    LoadBalancerUsage newRecord = createNewUsageRecord(zxtmName, accountId, lbId);
+                    LoadBalancerUsage newRecord = createNewUsageRecord(name, accountId, lbId);
                     recordsToInsert.add(newRecord);
                 } else {
                     LoadBalancerUsage currentRecord = usagesAsMap.get(lbId);
                     if (currentRecord.getEndTime().get(Calendar.HOUR_OF_DAY) != pollTime.get(Calendar.HOUR_OF_DAY) && pollTime.after(currentRecord.getEndTime())) {
                         // Case 2: A record exists but need to create new one because current hour is later than endTime hour.
-                        LoadBalancerUsage newRecord = createNewUsageRecord(zxtmName, accountId, lbId);
+                        LoadBalancerUsage newRecord = createNewUsageRecord(name, accountId, lbId);
                         // Copy over tags from last record.
                         newRecord.setNumVips(currentRecord.getNumVips());
                         newRecord.setTags(currentRecord.getTags());
                         recordsToInsert.add(newRecord);
                         // Add bandwidth that occurred between currentRecord endTime and newRecord startTime to currentRecord
-                        currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(zxtmName)));
-                        currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(zxtmName)));
+                        currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(name)));
+                        currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(name)));
                         recordsToUpdate.add(currentRecord);
                     } else {
                         // Case 3: A record exists and we need to update because current day is the same as endTime day.
-                        updateCurrentRecord(zxtmName, currentRecord);
+                        updateCurrentRecord(name, currentRecord);
                         recordsToUpdate.add(currentRecord);
                     }
                 }
             } catch (NumberFormatException e) {
-                LOG.warn(String.format("Invalid load balancer name '%s'. Ignoring usage record...", zxtmName));
+                LOG.warn(String.format("Invalid load balancer name '%s'. Ignoring usage record...", name));
             } catch (ArrayIndexOutOfBoundsException e) {
-                LOG.warn(String.format("Invalid load balancer name '%s'. Ignoring usage record...", zxtmName));
+                LOG.warn(String.format("Invalid load balancer name '%s'. Ignoring usage record...", name));
             }
         }
         return this;
     }
 
-    public void updateCurrentRecord(String zxtmName, LoadBalancerUsage currentRecord) {
+    public void updateCurrentRecord(String name, LoadBalancerUsage currentRecord) {
 
         Integer oldNumPolls = currentRecord.getNumberOfPolls();
         Integer newNumPolls = oldNumPolls + 1;
@@ -87,28 +87,28 @@ public class UsagesForPollingDatabase {
         currentRecord.setNumberOfPolls(newNumPolls);
 
         if (oldNumPolls == 0) { // polls will equal 0 only when an event occurs, thus we act as if usage data is brand new
-            currentRecord.setAverageConcurrentConnections(currentConnectionsMap.get(zxtmName).doubleValue());
+            currentRecord.setAverageConcurrentConnections(currentConnectionsMap.get(name).doubleValue());
             currentRecord.setCumulativeBandwidthBytesIn(0l);
             currentRecord.setCumulativeBandwidthBytesOut(0l);
         } else {
-            currentRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnections(), oldNumPolls, currentConnectionsMap.get(zxtmName)));
-            currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(zxtmName)));
-            currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(zxtmName)));
+            currentRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnections(), oldNumPolls, currentConnectionsMap.get(name)));
+            currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(name)));
+            currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(name)));
         }
         
-        currentRecord.setLastBandwidthBytesIn(bytesInMap.get(zxtmName));
-        currentRecord.setLastBandwidthBytesOut(bytesOutMap.get(zxtmName));
+        currentRecord.setLastBandwidthBytesIn(bytesInMap.get(name));
+        currentRecord.setLastBandwidthBytesOut(bytesOutMap.get(name));
     }
 
-    private LoadBalancerUsage createNewUsageRecord(String zxtmName, Integer accountId, Integer lbId) {
+    private LoadBalancerUsage createNewUsageRecord(String name, Integer accountId, Integer lbId) {
         LoadBalancerUsage newRecord = new LoadBalancerUsage();
         newRecord.setAccountId(accountId);
         newRecord.setLoadbalancerId(lbId);
-        newRecord.setAverageConcurrentConnections(currentConnectionsMap.get(zxtmName).doubleValue());
+        newRecord.setAverageConcurrentConnections(currentConnectionsMap.get(name).doubleValue());
         newRecord.setCumulativeBandwidthBytesIn(0l);
         newRecord.setCumulativeBandwidthBytesOut(0l);
-        newRecord.setLastBandwidthBytesIn(bytesInMap.get(zxtmName));
-        newRecord.setLastBandwidthBytesOut(bytesOutMap.get(zxtmName));
+        newRecord.setLastBandwidthBytesIn(bytesInMap.get(name));
+        newRecord.setLastBandwidthBytesOut(bytesOutMap.get(name));
         newRecord.setStartTime(pollTime);
         newRecord.setEndTime(pollTime);
         newRecord.setNumberOfPolls(1);

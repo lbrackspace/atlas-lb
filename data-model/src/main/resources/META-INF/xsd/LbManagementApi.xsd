@@ -183,9 +183,9 @@
         <xsd:attribute name="type" type="tns:hostType"/>
         <xsd:attribute name="maxConcurrentConnections" type="xsd:int"/>
         <xsd:attribute name="managementIp" type="xsd:string"/>
-        <xsd:attribute name="trafficManagerName" type="xsd:string"/>
-        <xsd:attribute name="soapEndpointActive" type="xsd:boolean"/>
-        <xsd:attribute name="managementSoapInterface" type="xsd:string"/>
+        <xsd:attribute name="hostName" type="xsd:string"/>
+        <xsd:attribute name="endpointActive" type="xsd:boolean"/>
+        <xsd:attribute name="managementInterface" type="xsd:string"/>
         <xsd:attribute name="utilization" type="xsd:string"/>
         <xsd:attribute name="numberOfLoadBalancingConfigurations" type="xsd:int"/>
         <xsd:attribute name="numberOfUniqueCustomers" type="xsd:int"/>
@@ -417,13 +417,13 @@
         <xsd:attribute name="remainingDaysOfServiceNetIpAddresses" type="xsd:double"/>
     </xsd:complexType>
 
-    <!-- START Zeus callback contract -->
-    <xsd:element name="zeusEvent" type="tns:zeusEvent"/>
-    <xsd:complexType name="zeusEvent">
+    <!-- START LB Device callback contract -->
+    <xsd:element name="LBDeviceEvent" type="tns:LBDeviceEvent"/>
+    <xsd:complexType name="LBDeviceEvent">
         <xsd:attribute name="eventType" type="xsd:string"/>
         <xsd:attribute name="paramLine" type="xsd:string"/>
     </xsd:complexType>
-    <!-- END Zeus callback contract -->
+    <!-- END LB Device callback contract -->
 
     <xsd:element name="usageBilling" type="tns:usageBilling"/>
     <xsd:complexType name="usageBilling">
@@ -720,15 +720,15 @@
         <xsd:attribute name="accountId" type="xsd:int"/>
     </xsd:complexType>
 
-    <xsd:element name="zeusRateLimitedLoadBalancers" type="tns:zeusRateLimitedLoadBalancers"/>
-    <xsd:complexType name="zeusRateLimitedLoadBalancers">
+    <xsd:element name="LBDeviceRateLimitedLoadBalancers" type="tns:LBDeviceRateLimitedLoadBalancers"/>
+    <xsd:complexType name="LBDeviceRateLimitedLoadBalancers">
         <xsd:sequence>
-            <xsd:element name="zeusRateLimitedLoadBalancer" type="tns:zeusRateLimitedLoadBalancer" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="LBDeviceRateLimitedLoadBalancer" type="tns:LBDeviceRateLimitedLoadBalancer" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
-    <xsd:element name="zeusRateLimitedLoadBalancer" type="tns:zeusRateLimitedLoadBalancer"/>
-    <xsd:complexType name="zeusRateLimitedLoadBalancer">
+    <xsd:element name="LBDeviceRateLimitedLoadBalancer" type="tns:LBDeviceRateLimitedLoadBalancer"/>
+    <xsd:complexType name="LBDeviceRateLimitedLoadBalancer">
         <xsd:sequence>
             <xsd:element name="tickets" type="tns:tickets"/>
         </xsd:sequence>

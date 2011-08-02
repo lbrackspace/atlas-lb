@@ -45,21 +45,21 @@ public class HostValidator implements ResourceValidator<Host> {
                 result(validationTarget().getZone()).must().exist().forContext(POST).withMessage("Zone must be present for host");
                 result(validationTarget().getMaxConcurrentConnections()).must().exist().forContext(POST).withMessage("MaxConcurrentConnections must be preset for host");
                 result(validationTarget().getManagementIp()).must().exist().forContext(POST).withMessage("ManagementIpAddress must be preset for host");
-                result(validationTarget().getManagementSoapInterface()).must().exist().forContext(POST).withMessage("ManagementSoapInterface must be preset for host");
+                result(validationTarget().getManagementInterface()).must().exist().forContext(POST).withMessage("ManagementInterface must be preset for host");
                 result(validationTarget().getManagementIp()).must().exist().forContext(POST).withMessage("ManagementIp must be preset for host");
-                result(validationTarget().getTrafficManagerName()).must().exist().forContext(POST).withMessage("TrafficManagerName must be present for host");
+                result(validationTarget().getHostName()).must().exist().forContext(POST).withMessage("HostName must be present for host");
                 result(validationTarget().getIpv4Public()).must().exist().forContext(POST).withMessage("ipv4Public must be present in host"); // JIRA:882
                 result(validationTarget().getIpv4Servicenet()).must().exist().forContext(POST).withMessage("ipv4Servicenet must be present in host"); // JIRA:882
                 // result(validationTarget().getIpv6Public()).must().exist().forContext(POST).withMessage("ipv6Public was must be present in host");
                 // result(validationTarget().getIpv6Servicenet()).must().exist().forContext(POST).withMessage("ipv6Servicenet must be present in host");
-                result(validationTarget().isSoapEndpointActive()).must().exist().forContext(POST).withMessage("SoapEndPointActive must be preset for host");
-                result(validationTarget().isSoapEndpointActive()).if_().exist().then().must().adhereTo(new Verifier<Boolean>() {
+                result(validationTarget().isEndpointActive()).must().exist().forContext(POST).withMessage("EndPointActive must be preset for host");
+                result(validationTarget().isEndpointActive()).if_().exist().then().must().adhereTo(new Verifier<Boolean>() {
 
                     @Override
-                    public VerifierResult verify(Boolean isSoapEndpointActive) {
-                        return new VerifierResult(isSoapEndpointActive != null && (isSoapEndpointActive || !isSoapEndpointActive));
+                    public VerifierResult verify(Boolean isEndpointActive) {
+                        return new VerifierResult(isEndpointActive != null && (isEndpointActive || !isEndpointActive));
                     }
-                }).withMessage("Soap end point active must be of boolean value");
+                }).withMessage("end point active must be of boolean value");
                 result(validationTarget().getClusterId()).must().not().exist().forContext(PUT).withMessage("Cluster Id is not mutable");
                 //REASSIGN_HOST context
                 result(validationTarget().getId()).must().exist().forContext(ReassignHostContext.REASSIGN_HOST).withMessage("ID must be present for host.");
@@ -70,7 +70,7 @@ public class HostValidator implements ResourceValidator<Host> {
                 result(validationTarget().getZone()).must().not().exist().forContext(ReassignHostContext.REASSIGN_HOST).withMessage("Must not provide zone for this request.");
                 result(validationTarget().getMaxConcurrentConnections()).must().not().exist().forContext(ReassignHostContext.REASSIGN_HOST).withMessage("Must not provide max concurrent connections for this request.");
                 result(validationTarget().getManagementIp()).must().not().exist().forContext(ReassignHostContext.REASSIGN_HOST).withMessage("Must not provide management ip for this request.");
-                result(validationTarget().getManagementSoapInterface()).must().not().exist().forContext(ReassignHostContext.REASSIGN_HOST).withMessage("Must not provide management soap interface for this request.");
+                result(validationTarget().getManagementInterface()).must().not().exist().forContext(ReassignHostContext.REASSIGN_HOST).withMessage("Must not provide management interface for this request.");
 
 
             }

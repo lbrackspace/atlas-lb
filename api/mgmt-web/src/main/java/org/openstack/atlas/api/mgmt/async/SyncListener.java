@@ -50,7 +50,7 @@ public class SyncListener extends BaseListener {
             } catch (Exception e) {
                 String msg = "Error deleting loadbalancer in SyncListener(): ";
                 loadBalancerService.setStatus(dbLoadBalancer, ERROR);
-                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
+                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.LBDEVICE_FAILURE.name(), msg);
                 LOG.error(msg, e);
             }
 
@@ -89,11 +89,11 @@ public class SyncListener extends BaseListener {
                 } catch (Exception e) {
                     String msg = "Error re-creating loadbalancer in SyncListener():";
                     loadBalancerService.setStatus(dbLoadBalancer, ERROR);
-                    notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
+                    notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.LBDEVICE_FAILURE.name(), msg);
                     LOG.error(msg, e);
                 }
             }
-        } else if (queueSyncObject.getLocationToSyncFrom().equals(SyncLocation.ZEUS)) {
+        } else if (queueSyncObject.getLocationToSyncFrom().equals(SyncLocation.LBDEVICE)) {
             LOG.warn(String.format("Load balancers can only be synchronized with the database at this time."));
         }
 

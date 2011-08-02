@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import javax.jms.Message;
 
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
@@ -37,14 +37,14 @@ public class DeleteConnectionThrottleListener extends BaseListener {
         }
 
         try {
-            LOG.debug("Deleting connection throttle in Zeus...");
+            LOG.debug("Deleting connection throttle in LB Device...");
             reverseProxyLoadBalancerService.deleteConnectionThrottle(queueLb.getId(), queueLb.getAccountId());
-            LOG.debug("Successfully deleted connection throttle in Zeus.");
+            LOG.debug("Successfully deleted connection throttle in LB Device.");
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error deleting connection throttle in Zeus for loadbalancer '%d'.", queueLb.getId());
+            String alertDescription = String.format("Error deleting connection throttle in LB Device for loadbalancer '%d'.", queueLb.getId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             return;
         }

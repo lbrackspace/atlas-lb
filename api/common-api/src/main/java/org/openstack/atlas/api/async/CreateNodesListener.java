@@ -13,7 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import javax.jms.Message;
 
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.CREATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
@@ -42,14 +42,14 @@ public class CreateNodesListener extends BaseListener {
         }
         
         try {
-            LOG.debug("Setting nodes in Zeus...");
+            LOG.debug("Setting nodes in LBDevice...");
             reverseProxyLoadBalancerService.setNodes(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getNodes());
             LOG.debug("Nodes successfully set.");
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = "Error setting nodes in Zeus for loadbalancer #" + dbLoadBalancer.getId();
+            String alertDescription = "Error setting nodes in LB Device for loadbalancer #" + dbLoadBalancer.getId();
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             return;
         }

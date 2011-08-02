@@ -10,8 +10,8 @@ import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
-import com.zxtm.service.client.InvalidObjectName;
-import com.zxtm.service.client.ObjectAlreadyExists;
+import org.openstack.atlas.adapter.exceptions.InvalidObjectNameException;
+import org.openstack.atlas.adapter.exceptions.ObjectExistsException;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -67,14 +67,14 @@ public class BackupsResource extends ManagementDependencyProvider {
             }
 
             try {
-                LOG.info("Creating backup in Zeus...");
+                LOG.info("Creating backup in LB Device...");
                 reverseProxyLoadBalancerService.createHostBackup(domainHost, backup.getName());
-                LOG.info("Backup successfully created in Zeus.");
-            } catch (ObjectAlreadyExists oae) {
+                LOG.info("Backup successfully created in LB Device.");
+            } catch (ObjectExistsException oae) {
                 String message = String.format("A backup named '%s' already exists. Please try a different name.", backup.getName());
                 LOG.warn(message);
                 throw new BadRequestException(message);
-            } catch (InvalidObjectName ion) {
+            } catch (InvalidObjectNameException ion) {
                 String message = String.format("Backup name is invalid. Please try a different name.");
                 LOG.warn(message);
                 throw new BadRequestException(message);

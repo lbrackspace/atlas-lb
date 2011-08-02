@@ -68,7 +68,7 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
         for (AccessList al : rLb.getAccessLists()) {
             dLb.addAccessList(al);
         }
-        format = "Pre Zxtm updateing Lb[%d] to PENDING_UPDATE while added accesslists";
+        format = "Pre LBDevice updateing Lb[%d] to PENDING_UPDATE while added accesslists";
         msg = String.format(format, rLb.getId());
         dLb.setStatus(LoadBalancerStatus.PENDING_UPDATE);
         loadBalancerRepository.update(dLb);
@@ -90,7 +90,7 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
             throw new UnprocessableEntityException("No access list found to delete");
         }
         dLb = loadBalancerRepository.getByIdAndAccountId(rLb.getId(), rLb.getAccountId());
-        format = "Pre Zxtm updateing Lb[%d] to PENDING_DELETE while deleting accesslists";
+        format = "Pre LBDevice updateing Lb[%d] to PENDING_DELETE while deleting accesslists";
         msg = String.format(format, rLb.getId());
         dLb.setStatus(LoadBalancerStatus.PENDING_UPDATE);
         loadBalancerRepository.update(dLb);

@@ -67,7 +67,7 @@ public class HostsResource extends ManagementDependencyProvider {
 
     @GET
     @Path("usage")
-    public Response retrieveZeusUsage(@QueryParam("startDate") String startDateParam, @QueryParam("endDate") String endDateParam) {
+    public Response retrieveLBDeviceUsage(@QueryParam("startDate") String startDateParam, @QueryParam("endDate") String endDateParam) {
         if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
