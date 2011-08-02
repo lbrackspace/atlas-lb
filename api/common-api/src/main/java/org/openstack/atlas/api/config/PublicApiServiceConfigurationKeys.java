@@ -16,5 +16,6 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     db_name,
     db_port,
     access_log_file_location,
-    usage_timezone_code;
+    usage_timezone_code,
+    health_check;
 }

@@ -21,6 +21,7 @@ public class ManagementResource extends ManagementDependencyProvider {
     private JobsResource jobsResource;
     private AuditResource auditResource;
     private BlackListResource blackListResource;
+    private HealthCheckResource healthCheckResource;
 
     @Path("accounts")
     public AccountsResource retrieveAccountsResource() {
@@ -90,6 +91,15 @@ public class ManagementResource extends ManagementDependencyProvider {
     @Path("jobs")
     public JobsResource retrieveJobsResource() {
         return jobsResource;
+    }
+
+    @Path("healthcheck")
+    public HealthCheckResource retrieveHealthCheckResource() {
+        return healthCheckResource;
+    }
+
+    public void setHealthCheckResource(HealthCheckResource healthCheckResource) {
+        this.healthCheckResource = healthCheckResource;
     }
 
     public void setBounceResource(BounceResource bounceResource) {
