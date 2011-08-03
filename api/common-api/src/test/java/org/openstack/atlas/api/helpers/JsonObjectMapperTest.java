@@ -102,11 +102,11 @@ public class JsonObjectMapperTest {
     @Test
     public void shouldMapErrorPageDeserialize() throws IOException{
         String expected = "<html>Buzzoff!!!</html>";
-        String epJson = String.format("{\"errorpage\":{\"html\":\"%s\"}}\"",expected);
+        String epJson = String.format("{\"errorpage\":{\"content\":\"%s\"}}\"",expected);
         Errorpage errorpage;
         errorpage = mapper.readValue(epJson,Errorpage.class);
         nop();
-        Assert.assertEquals(expected,errorpage.getHtml());
+        Assert.assertEquals(expected,errorpage.getContent());
     }
 
     @Test
