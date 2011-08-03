@@ -57,6 +57,7 @@ import org.openstack.atlas.service.domain.entities.JobState as State
 import org.openstack.atlas.service.domain.entities.RateLimit as RateLimit
 import org.openstack.atlas.service.domain.entities.AccountLimit as AccountLimit
 import org.openstack.atlas.service.domain.entities.LimitType as LimitType
+import org.openstack.atlas.service.domain.entities.UserPages as UserPages
 
 
 import org.openstack.atlas.util.ip.IPUtils   as IPUtils

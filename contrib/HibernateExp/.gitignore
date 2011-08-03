@@ -1,4 +1,5 @@
 *.class
 *.xml
 *.pyc
+!pom.xml
 target/*

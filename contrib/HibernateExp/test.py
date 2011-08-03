@@ -2,17 +2,18 @@
 
 from util import *
 setConfig("slice.xml")
+
 begin()
-
-qStr  = "from Alert a where a.loadbalancerId in "
-qStr += "(SELECT h.id from Host h where h.cluster.id = :cid)"
-
-cq = CustomQuery(qStr)
-cq.addUnquotedParam("cid",1)
-#cq.addParam("a.id","=","aid",21)
-#cq.setWherePrefix(" and ")
-cq.setWherePrefix("")
-cq.getQueryString()
+lb = qq("FROM LoadBalancer lb where lb.id=316")[0]
 
 
-lts = qq("from LimitType")
+lb.getUserPages().getErrorpage()
+
+begin()
+ep = qq("FROM UserPages up where id=1")[0]
+
+count = 1024
+goaway = "<html>%s</html>"%("BeatIt<br/>\n"*count)
+ep[0].setErrorpage(goaway)
+saveList(ep)
+
