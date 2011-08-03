@@ -100,6 +100,16 @@ public class JsonObjectMapperTest {
     }
 
     @Test
+    public void shouldMapErrorPageDeserialize() throws IOException{
+        String expected = "<html>Buzzoff!!!</html>";
+        String epJson = String.format("{\"errorpage\":{\"html\":\"%s\"}}\"",expected);
+        Errorpage errorpage;
+        errorpage = mapper.readValue(epJson,Errorpage.class);
+        nop();
+        Assert.assertEquals(expected,errorpage.getHtml());
+    }
+
+    @Test
     public void shouldMapAccessListDeserializeWith2Elements() throws IOException {
         String alJson = "{\"accessList\":[{\"ipVersion\":\"IPV4\",\"type\": \"DENY\",\"id\":1,\"address\":\"10.0.0.0/8\"},{\"ipVersion\":\"IPV4\",\"type\":\"DENY\",\"id\":2,\"address\":\"192.168.0.0/24\"}]}";
         AccessList al = mapper.readValue(alJson, AccessList.class);
