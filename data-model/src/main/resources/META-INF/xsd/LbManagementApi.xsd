@@ -783,4 +783,19 @@
         <xsd:attribute name="inputPath" type="xsd:string"/>
     </xsd:complexType>
 
+    <xsd:element name="healthChecks" type="tns:healthChecks" />
+    <xsd:complexType name="healthChecks">
+        <xsd:sequence>
+            <xsd:element name="healthCheck" minOccurs="1" maxOccurs="unbounded" type="tns:healthCheck" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="healthCheck" type="tns:healthCheck" />
+    <xsd:complexType name="healthCheck">
+        <xsd:attribute name="type" type="xsd:string" />
+        <xsd:attribute name="status" type="xsd:string" />
+        <xsd:attribute name="time" type="xsd:long" />
+        <xsd:attribute name="message" type="xsd:string" />
+    </xsd:complexType>
+
 </xsd:schema>
