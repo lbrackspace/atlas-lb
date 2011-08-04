@@ -13,7 +13,7 @@ begin()
 ep = qq("FROM UserPages up where id=1")[0]
 
 count = 1024
-goaway = "<html>%s</html>"%("BeatIt<br/>\n"*count)
+goaway = "<html>%s</html>"%("Test<br/>\n"*count)
 ep[0].setErrorpage(goaway)
 saveList(ep)
 

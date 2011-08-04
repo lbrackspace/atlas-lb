@@ -183,7 +183,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-    private void deleteTrafficIpGroups(ZxtmServiceStubs serviceStubs, List<String> trafficIpGroups) throws RemoteException {
+    private void deleteTrafficIpGroupsX(ZxtmServiceStubs serviceStubs, List<String> trafficIpGroups) throws RemoteException {
         for (String trafficIpGroupName : trafficIpGroups) {
             deleteTrafficIpGroup(serviceStubs, trafficIpGroupName);
         }
@@ -338,7 +338,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 createTrafficIpGroup(config, serviceStubs, loadBalancerJoinVip6ToAdd.getVirtualIp().getDerivedIpString(), newTrafficIpGroup);
             } catch (IPStringConversionException e) {
                 LOG.error("Rolling back newly created traffic ip groups...", e);
-                deleteTrafficIpGroups(serviceStubs, newTrafficIpGroups);
+                deleteTrafficIpGroupsX(serviceStubs, newTrafficIpGroups);
                 throw new ZxtmRollBackException("Cannot derive name from IPv6 virtual ip.", e);
             }
         }
@@ -352,7 +352,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 LOG.error("Cannot add virtual ips to virtual server as it does not exist.", e);
             }
             LOG.error("Rolling back newly created traffic ip groups...", e);
-            deleteTrafficIpGroups(serviceStubs, newTrafficIpGroups);
+            deleteTrafficIpGroupsX(serviceStubs, newTrafficIpGroups);
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
 
@@ -448,7 +448,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         if (!trafficIpGroupNamesToDelete.isEmpty()) {
             try {
-                deleteTrafficIpGroups(serviceStubs, trafficIpGroupNamesToDelete);
+                deleteTrafficIpGroupsX(serviceStubs, trafficIpGroupNamesToDelete);
             } catch (RemoteException re) {
                 LOG.error(rollBackMessage + "Rolling back changes...", re);
                 serviceStubs.getVirtualServerBinding().setListenTrafficIPGroups(new String[]{virtualServerName}, new String[][]{Arrays.copyOf(trafficIpGroupNamesToDelete.toArray(), trafficIpGroupNamesToDelete.size(), String[].class)});

@@ -230,6 +230,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return dbLoadBalancer;
     }
 
+    @Transactional
+    public UserPages getUserPages(Integer id,Integer accountId) throws EntityNotFoundException{
+    LoadBalancer dLb = loadBalancerRepository.getByIdAndAccountId(id, accountId);
+    UserPages up = dLb.getUserPages();
+    return up;
+    }
+
     @Override
     @Transactional
     public LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException {
