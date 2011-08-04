@@ -91,9 +91,7 @@ public class NodesResource extends CommonDependencyProvider {
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
         }
-        ListOfInts listOfInts = new ListOfInts();
-        listOfInts.getInts().addAll(ids);
-        return Response.status(200).entity(listOfInts).build();
+        return Response.status(202).build();
     }
 
     @POST

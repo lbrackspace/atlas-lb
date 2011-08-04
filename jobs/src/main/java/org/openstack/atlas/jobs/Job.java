@@ -4,7 +4,7 @@ import org.openstack.atlas.service.domain.services.JobStateService;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
-public abstract class Job extends QuartzJobBean {
+public abstract class Job extends QuartzJobBean implements org.quartz.StatefulJob {
     protected JobStateService jobStateService;
 
     @Required
