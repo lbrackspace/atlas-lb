@@ -2,7 +2,6 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.openstack.atlas.service.domain.entities.*;
 
-import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent_;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
