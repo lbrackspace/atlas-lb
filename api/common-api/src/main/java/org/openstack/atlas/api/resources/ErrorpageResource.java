@@ -21,16 +21,16 @@ public class ErrorpageResource extends CommonDependencyProvider{
     @GET
     public Response retrieveErrorpage(){
         Errorpage errorpage = new Errorpage();
-        UserPages up;
+        String errorcontent;
         try {
-            up = loadBalancerService.getUserPages(loadBalancerId, accountId);
+            errorcontent = loadBalancerService.getErrorPage(loadBalancerId, accountId);
+            if(errorcontent == null){
+                throw new EntityNotFoundException("Errorpage was empty");
+            }
         } catch (EntityNotFoundException ex) {
             return ResponseFactory.getErrorResponse(ex, null,null);
         }
-        if(up==null || up.getErrorpage() == null){
-            return ResponseFactory.getResponseWithStatus(Response.Status.NOT_FOUND, "errorpage not found");
-        }
-        errorpage.setContent(up.getErrorpage());
+        errorpage.setContent(errorcontent);
         Response resp = Response.status(200).entity(errorpage).build();
         return resp;
     }

@@ -58,6 +58,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     @Transactional
+    public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException {
+        return loadBalancerRepository.getErrorPage(lid, aid);
+    }
+
+    @Override
+    @Transactional
     public LoadBalancer create(LoadBalancer lb) throws Exception {
         if (isLoadBalancerLimitReached(lb.getAccountId())) {
             LOG.error("Load balancer limit reached. Sending error response to client...");

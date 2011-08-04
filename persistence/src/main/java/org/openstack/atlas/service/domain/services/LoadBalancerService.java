@@ -67,7 +67,9 @@ public interface LoadBalancerService {
 
     public void prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws EntityNotFoundException, BadRequestException;
 
-    public boolean testAndSetStatusPending(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException;
+    public boolean testAndSetStatusPending(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException;   
 
     public UserPages getUserPages(Integer id,Integer accountId) throws EntityNotFoundException;
+
+    public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException;
 }
