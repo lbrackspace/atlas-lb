@@ -62,6 +62,7 @@
                                     <goal>jdeb</goal>
                                 </goals>
                                 <configuration>
+                                    <deb>target/${artifactId}_${version}_all.deb</deb>
                                     <dataSet>
                                         <data>
                                             <src>${project.build.directory}/${project.build.finalName}.war</src>
