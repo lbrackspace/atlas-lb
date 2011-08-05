@@ -13,5 +13,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>persistence</module>
+        <module>api</module>
     </modules>
 </project>
