@@ -14,7 +14,7 @@
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 
-    <import resource="classpath:spring-context-public.xml"/>
+    <import resource="classpath:rax-spring-context-public.xml"/>
 
     <jaxrs:server id="loadBalancingPublic" address="/" staticSubresourceResolution="true">
         <jaxrs:serviceFactories>
