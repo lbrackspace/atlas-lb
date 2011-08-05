@@ -11,6 +11,7 @@
     <packaging>war</packaging>
 
     <artifactId>atlas-rax-public-web</artifactId>
+    <name>Openstack :: Atlas :: Extension :: RAX :: API :: WEB</name>
 
     <dependencies>
         <dependency>

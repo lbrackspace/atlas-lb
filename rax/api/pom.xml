@@ -9,6 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <name>Openstack :: Atlas :: Extension :: RAX :: API</name>
     <artifactId>atlas-rax-api</artifactId>
     <packaging>pom</packaging>
 

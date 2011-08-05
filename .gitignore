@@ -7,6 +7,7 @@
 .settings
 .project
 .classpath
+target/
 */target
 classes/
 */target/*

@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>atlas-rax-persistence</artifactId>
-    <name>Openstack :: Atlas :: Persistence :: RAX</name>
+    <name>Openstack :: Atlas :: Extension :: RAX :: Persistence</name>
 
     <packaging>jar</packaging>
 
