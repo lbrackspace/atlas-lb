@@ -56,7 +56,6 @@ public class HealthCheckResource extends ManagementDependencyProvider {
 
     private HealthCheck localHealthCheck() {
         HealthCheck check = new HealthCheck();
-        PublicApiServiceConfigurationKeys keys = PublicApiServiceConfigurationKeys.health_check;
         String location = configuration.getString(PublicApiServiceConfigurationKeys.health_check);
         check.setType("LOCAL");
         check.setStatus("ACTIVE");
