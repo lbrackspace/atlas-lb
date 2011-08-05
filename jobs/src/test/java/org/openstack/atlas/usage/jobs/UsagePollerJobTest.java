@@ -1,5 +1,6 @@
 package org.openstack.atlas.usage.jobs;
 
+import org.junit.Ignore;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
@@ -22,9 +23,10 @@ import java.util.Set;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Ignore
 @RunWith(Enclosed.class)
 public class UsagePollerJobTest {
-    public static class WhenGettingLoadbalancerIdsFromVirtualServerNames {
+/*    public static class WhenGettingLoadbalancerIdsFromVirtualServerNames {
         private LoadBalancerUsagePoller usagePollerJob;
         private List<String> loadbalancerNames;
 
@@ -182,5 +184,5 @@ public class UsagePollerJobTest {
             lb.setAccountId(accountId);
             return lb;
         }
-    }
+    }*/
 }
