@@ -1,6 +1,11 @@
 package org.openstack.atlas.usage.jobs;
 
-import org.junit.Ignore;
+import junit.framework.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
@@ -8,12 +13,7 @@ import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.repository.HostRepository;
-import junit.framework.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.openstack.atlas.usage.helpers.ZxtmNameHelper;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -23,16 +23,15 @@ import java.util.Set;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Ignore
 @RunWith(Enclosed.class)
-public class UsagePollerJobTest {
-/*    public static class WhenGettingLoadbalancerIdsFromVirtualServerNames {
-        private LoadBalancerUsagePoller usagePollerJob;
+public class UsagePollerTest {
+    public static class WhenGettingLoadbalancerIdsFromVirtualServerNames {
+        private LoadBalancerUsagePollerThread usagePollerThread;
         private List<String> loadbalancerNames;
 
         @Before
         public void standUp() {
-            usagePollerJob = new LoadBalancerUsagePoller();
+            usagePollerThread = new LoadBalancerUsagePollerThread("thread", null, null, null, null);
             loadbalancerNames = new ArrayList<String>();
 
             loadbalancerNames.add("1_1");
@@ -42,26 +41,26 @@ public class UsagePollerJobTest {
 
         @Test
         public void shouldReturnAllLoadbalancerIds() {
-            Assert.assertEquals(loadbalancerNames.size(), usagePollerJob.stripLbIdAndAccountIdFromZxtmName(loadbalancerNames).size());
+            Assert.assertEquals(loadbalancerNames.size(), ZxtmNameHelper.stripLbIdAndAccountIdFromZxtmName(loadbalancerNames).size());
         }
 
         @Test
         public void shouldOnlyReturnIdsForProperlyFormattedNames() {
             int expectedSize = loadbalancerNames.size();
             loadbalancerNames.add("1_notvalid");
-            Assert.assertEquals(expectedSize, usagePollerJob.stripLbIdAndAccountIdFromZxtmName(loadbalancerNames).size());
+            Assert.assertEquals(expectedSize, ZxtmNameHelper.stripLbIdAndAccountIdFromZxtmName(loadbalancerNames).size());
         }
 
         @Test
         public void shouldOnlyReturnIdsForProperlyFormattedNamesWhenArrayOutOfBoundsExceptionOccurs() {
             int expectedSize = loadbalancerNames.size();
             loadbalancerNames.add("blahblahblah");
-            Assert.assertEquals(expectedSize, usagePollerJob.stripLbIdAndAccountIdFromZxtmName(loadbalancerNames).size());
+            Assert.assertEquals(expectedSize, ZxtmNameHelper.stripLbIdAndAccountIdFromZxtmName(loadbalancerNames).size());
         }
     }
 
     public static class WhenGettingValidNamesForPolling {
-        private LoadBalancerUsagePoller usagePollerJob;
+        private LoadBalancerUsagePollerThread usagePollerJob;
         private Host fakeHost;
         private ReverseProxyLoadBalancerAdapter mockedLoadBalancerAdapter;
         private HostRepository mockedHostRepository;
@@ -72,26 +71,24 @@ public class UsagePollerJobTest {
         public void standUp() throws RemoteException {
             fakeHost = new Host();
             fakeHost.setId(1);
-            
+
             mockedLoadBalancerAdapter = mock(ReverseProxyLoadBalancerAdapter.class);
             mockedHostRepository = mock(HostRepository.class);
 
             allLoadBalancerNames = new ArrayList<String>();
             loadBalancersForHost = new ArrayList<LoadBalancer>();
 
-            when(mockedLoadBalancerAdapter.getStatsSystemLoadBalancerNames(Matchers.<LoadBalancerEndpointConfiguration> anyObject()))
+            when(mockedLoadBalancerAdapter.getStatsSystemLoadBalancerNames(Matchers.<LoadBalancerEndpointConfiguration>anyObject()))
                     .thenReturn(allLoadBalancerNames);
             when(mockedHostRepository.getLoadBalancersWithStatus(Matchers.anyInt(), Matchers.eq(LoadBalancerStatus.ACTIVE)))
                     .thenReturn(loadBalancersForHost);
 
-            usagePollerJob = new LoadBalancerUsagePoller();
-            usagePollerJob.setReverseProxyLoadBalancerAdapter(mockedLoadBalancerAdapter);
-            usagePollerJob.setHostRepository(mockedHostRepository);
+            usagePollerJob = new LoadBalancerUsagePollerThread("thread", null, mockedLoadBalancerAdapter, mockedHostRepository, null);
         }
 
         @Test
         public void shouldReturnNoNamesWhenSetsAreEmpty() throws InsufficientRequestException, RemoteException {
-            Set<String> validNames = usagePollerJob.getValidNames(fakeHost, null);
+            Set<String> validNames = usagePollerJob.getValidLoadBalancerNamesForHost(fakeHost, null);
 
             Assert.assertTrue(validNames.isEmpty());
         }
@@ -100,7 +97,7 @@ public class UsagePollerJobTest {
         public void shouldReturnNoNamesWhenOneSetIsEmpty() throws InsufficientRequestException, RemoteException {
             allLoadBalancerNames.add("1234_1234");
 
-            Set<String> validNames = usagePollerJob.getValidNames(fakeHost, null);
+            Set<String> validNames = usagePollerJob.getValidLoadBalancerNamesForHost(fakeHost, null);
 
             Assert.assertTrue(validNames.isEmpty());
         }
@@ -110,7 +107,7 @@ public class UsagePollerJobTest {
             allLoadBalancerNames.add("1234_1234");
             loadBalancersForHost.add(createLoadBalancerWithIds(9999, 9999));
 
-            Set<String> validNames = usagePollerJob.getValidNames(fakeHost, null);
+            Set<String> validNames = usagePollerJob.getValidLoadBalancerNamesForHost(fakeHost, null);
 
             Assert.assertTrue(validNames.isEmpty());
         }
@@ -124,7 +121,7 @@ public class UsagePollerJobTest {
             loadBalancersForHost.add(createLoadBalancerWithIds(22, 22));
             loadBalancersForHost.add(createLoadBalancerWithIds(33, 33));
 
-            Set<String> validNames = usagePollerJob.getValidNames(fakeHost, null);
+            Set<String> validNames = usagePollerJob.getValidLoadBalancerNamesForHost(fakeHost, null);
 
             Assert.assertTrue(validNames.isEmpty());
         }
@@ -134,7 +131,7 @@ public class UsagePollerJobTest {
             allLoadBalancerNames.add("1234_1234");
             loadBalancersForHost.add(createLoadBalancerWithIds(1234, 1234));
 
-            Set<String> validNames = usagePollerJob.getValidNames(fakeHost, null);
+            Set<String> validNames = usagePollerJob.getValidLoadBalancerNamesForHost(fakeHost, null);
 
             Assert.assertFalse(validNames.isEmpty());
             Assert.assertEquals(1, validNames.size());
@@ -150,7 +147,7 @@ public class UsagePollerJobTest {
             loadBalancersForHost.add(createLoadBalancerWithIds(2, 2));
             loadBalancersForHost.add(createLoadBalancerWithIds(3, 3));
 
-            Set<String> validNames = usagePollerJob.getValidNames(fakeHost, null);
+            Set<String> validNames = usagePollerJob.getValidLoadBalancerNamesForHost(fakeHost, null);
 
             Assert.assertFalse(validNames.isEmpty());
             Assert.assertEquals(3, validNames.size());
@@ -170,7 +167,7 @@ public class UsagePollerJobTest {
             loadBalancersForHost.add(createLoadBalancerWithIds(33, 33));
             loadBalancersForHost.add(createLoadBalancerWithIds(4, 4));
 
-            Set<String> validNames = usagePollerJob.getValidNames(fakeHost, null);
+            Set<String> validNames = usagePollerJob.getValidLoadBalancerNamesForHost(fakeHost, null);
 
             Assert.assertFalse(validNames.isEmpty());
             Assert.assertEquals(2, validNames.size());
@@ -184,5 +181,5 @@ public class UsagePollerJobTest {
             lb.setAccountId(accountId);
             return lb;
         }
-    }*/
+    }
 }

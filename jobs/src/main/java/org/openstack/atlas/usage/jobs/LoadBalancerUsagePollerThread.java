@@ -46,7 +46,7 @@ public class LoadBalancerUsagePollerThread extends Thread {
     public void run() {
         try {
             final LoadBalancerEndpointConfiguration config = HostConfigHelper.getConfig(host, hostRepository);
-            Set<String> loadBalancerNamesForHost = getValidNames(host, config);
+            Set<String> loadBalancerNamesForHost = getValidLoadBalancerNamesForHost(host, config);
 
             BatchAction<String> batchAction = new BatchAction<String>() {
                 public void execute(List<String> loadBalancerNames) throws Exception {
@@ -104,7 +104,7 @@ public class LoadBalancerUsagePollerThread extends Thread {
         }
     }
 
-    private Set<String> getValidNames(Host host, LoadBalancerEndpointConfiguration config) throws RemoteException, InsufficientRequestException {
+    public Set<String> getValidLoadBalancerNamesForHost(Host host, LoadBalancerEndpointConfiguration config) throws RemoteException, InsufficientRequestException {
         Set<String> allLoadBalancerNames = new HashSet<String>(reverseProxyLoadBalancerAdapter.getStatsSystemLoadBalancerNames(config));
         Set<LoadBalancer> loadBalancersForHost = new HashSet<LoadBalancer>(hostRepository.getLoadBalancersWithStatus(host.getId(), ACTIVE));
         Set<String> loadBalancerNamesForHost = ZxtmNameBuilder.generateNamesWithAccountIdAndLoadBalancerId(loadBalancersForHost);
@@ -114,7 +114,7 @@ public class LoadBalancerUsagePollerThread extends Thread {
 
     private void updateUsageRecords(List<String> loadBalancerNames, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap) {
         Calendar pollTime = Calendar.getInstance();
-        Map<Integer, Integer> lbIdAccountIdMap = stripLbIdAndAccountIdFromZxtmName(loadBalancerNames);
+        Map<Integer, Integer> lbIdAccountIdMap = ZxtmNameHelper.stripLbIdAndAccountIdFromZxtmName(loadBalancerNames);
         List<LoadBalancerUsage> usages = usageRepository.getMostRecentUsageForLoadBalancers(lbIdAccountIdMap.keySet());
         Map<Integer, LoadBalancerUsage> usagesAsMap = convertUsagesToMap(usages);
         UsagesForPollingDatabase usagesForDatabase = new UsagesForPollingDatabase(loadBalancerNames, bytesInMap, bytesOutMap, currentConnectionsMap, pollTime, usagesAsMap).invoke();
@@ -131,23 +131,5 @@ public class LoadBalancerUsagePollerThread extends Thread {
             usagesAsMap.put(usage.getLoadbalancerId(), usage);
         }
         return usagesAsMap;
-    }
-
-    private Map<Integer, Integer> stripLbIdAndAccountIdFromZxtmName(List<String> loadBalancerNames) {
-        Map<Integer, Integer> lbIdAccountIdMap = new HashMap<Integer, Integer>();
-
-        for (String loadBalancerName : loadBalancerNames) {
-            try {
-                Integer accountId = ZxtmNameHelper.stripAccountIdFromZxtmName(loadBalancerName);
-                Integer lbId = ZxtmNameHelper.stripLbIdFromZxtmName(loadBalancerName);
-                lbIdAccountIdMap.put(lbId, accountId);
-            } catch (NumberFormatException e) {
-                LOG.warn(String.format("Invalid load balancer name '%s'. Skipping...", loadBalancerName));
-            } catch (ArrayIndexOutOfBoundsException e) {
-                LOG.warn(String.format("Invalid load balancer name '%s'. Skipping...", loadBalancerName));
-            }
-        }
-
-        return lbIdAccountIdMap;
     }
 }
