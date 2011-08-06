@@ -517,12 +517,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-    private void attachXFFRuleToVirtualServerForced(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
-            LOG.debug(String.format("Attaching the XFF rule and enabling it on load balancer '%s'...", virtualServerName));
-            serviceStubs.getVirtualServerBinding().addRules(new String[]{virtualServerName}, new VirtualServerRule[][]{{ZxtmAdapterImpl.ruleXForwardedFor}});
-            LOG.debug(String.format("XFF rule successfully enabled on load balancer '%s'.", virtualServerName));
-    }
-
     private void removeXFFRuleFromVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
         LOG.debug(String.format("Removing the XFF rule from load balancer '%s'...", virtualServerName));
         VirtualServerRule[][] virtualServerRules = serviceStubs.getVirtualServerBinding().getRules(new String[]{virtualServerName});
