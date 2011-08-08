@@ -160,7 +160,7 @@ app = HuApp()
 
 class ZxtmStubs(object):
     stubMap = {"vs":"getVirtualServerBinding",
-               "ce":"getZxtmConfExtraService",
+               "ce":"getZxtmConfExtraBinding",
                "p" :"getPoolBinding"
 }
 
