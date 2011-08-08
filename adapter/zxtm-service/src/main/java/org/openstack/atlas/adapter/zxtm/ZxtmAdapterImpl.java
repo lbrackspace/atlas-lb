@@ -1091,6 +1091,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         // Use this bizare cherry pick method instead.
     }
 
+    public void uploadFile(LoadBalancerEndpointConfiguration config,String fileName,String content) throws RemoteException{
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        ConfExtraBindingStub extraService = serviceStubs.getZxtmConfExtraService();
+    }
+
     @Override
     public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
