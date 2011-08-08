@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.integration;
 
+import org.apache.axis.AxisFault;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
@@ -62,7 +63,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
             reverseProxyLoadBalancerAdapter.createLoadBalancer(config, lb);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -73,7 +74,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
             reverseProxyLoadBalancerAdapter.deleteLoadBalancer(config, lb);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -85,7 +86,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(id);
         try {
             reverseProxyLoadBalancerAdapter.setRateLimit(config, id, accountId, rateLimit);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -96,7 +97,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(id);
         try {
             reverseProxyLoadBalancerAdapter.deleteRateLimit(config, id, accountId);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -107,7 +108,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(id);
         try {
             reverseProxyLoadBalancerAdapter.updateRateLimit(config, id, accountId, rateLimit);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -118,7 +119,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
             reverseProxyLoadBalancerAdapter.setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), lb.getAlgorithm());
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -129,7 +130,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
             reverseProxyLoadBalancerAdapter.changeHostForLoadBalancer(config, lb, newHost);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -141,7 +142,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         try {
             reverseProxyLoadBalancerAdapter.updatePort(config, lb.getId(), lb.getAccountId(),
                     lb.getPort());
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -153,7 +154,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         try {
             reverseProxyLoadBalancerAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(),
                     lb.getProtocol());
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -164,7 +165,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
             reverseProxyLoadBalancerAdapter.updateConnectionLogging(config, lb.getId(), lb.getAccountId(), lb.isConnectionLogging(), lb.getProtocol());
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -175,7 +176,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.addVirtualIps(config, loadBalancer);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -186,7 +187,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.setNodes(config, lbId, accountId, nodes);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -197,7 +198,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.removeNode(config, lbId, accountId, node.getIpAddress(), node.getPort());
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -221,7 +222,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.setNodeWeights(config, lbId, accountId, nodes);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -233,7 +234,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.updateAccessList(config, lbId, accountId, accessListItems);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
 
@@ -245,7 +246,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.deleteAccessList(config, lbId, accountId);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -258,7 +259,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         try {
             reverseProxyLoadBalancerAdapter.updateConnectionThrottle(config, lbId, accountId,
                     connectionThrottle);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -269,7 +270,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.deleteConnectionThrottle(config, lbId, accountId);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -281,7 +282,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.setSessionPersistence(config, lbId, accountId, persistenceMode);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -292,7 +293,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.removeSessionPersistence(config, lbId, accountId);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -303,7 +304,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.updateHealthMonitor(config, lbId, accountId, monitor);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -314,7 +315,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.removeHealthMonitor(config, lbId, accountId);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -326,7 +327,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
         try {
             reverseProxyLoadBalancerAdapter.createHostBackup(config, backupName);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -337,7 +338,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
         try {
             reverseProxyLoadBalancerAdapter.restoreHostBackup(config, backupName);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -348,7 +349,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
         try {
             reverseProxyLoadBalancerAdapter.deleteHostBackup(config, backupName);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -359,7 +360,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.suspendLoadBalancer(config, lbId, accountId);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -370,7 +371,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(id);
         try {
             reverseProxyLoadBalancerAdapter.removeSuspension(config, id, accountId);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -382,7 +383,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         int conn;
         try {
             conn = reverseProxyLoadBalancerAdapter.getTotalCurrentConnectionsForHost(config);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
@@ -395,7 +396,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
             try {
                 reverseProxyLoadBalancerAdapter.deleteVirtualIp(config, lb, id);
-            } catch (Exception exc) {
+            } catch (AxisFault exc) {
                 checkAndSetIfEndPointBad(config, exc);
                 throw exc;
             }
@@ -410,7 +411,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
             try {
                 reverseProxyLoadBalancerAdapter.deleteVirtualIps(config, lb, ids);
-            } catch (Exception exc) {
+            } catch (AxisFault exc) {
                 checkAndSetIfEndPointBad(config, exc);
                 throw exc;
             }
@@ -434,7 +435,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         Hostssubnet hostssubnet;
         try {
             hostssubnet = reverseProxyLoadBalancerAdapter.getSubnetMappings(getConfig(host), hostName);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(hostConfig, exc);
             throw exc;
         }
@@ -447,7 +448,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         String hostName = host.getHostName();
         try {
             reverseProxyLoadBalancerAdapter.setSubnetMappings(hostConfig, hostssubnet);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(hostConfig, exc);
             throw exc;
         }
@@ -459,7 +460,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         String hostName = host.getHostName();
         try {
             reverseProxyLoadBalancerAdapter.deleteSubnetMappings(hostConfig, hostssubnet);
-        } catch (Exception exc) {
+        } catch (AxisFault exc) {
             checkAndSetIfEndPointBad(hostConfig, exc);
             throw exc;
         }
