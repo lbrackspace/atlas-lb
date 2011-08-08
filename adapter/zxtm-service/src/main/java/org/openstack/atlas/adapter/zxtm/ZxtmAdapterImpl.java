@@ -32,6 +32,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final LoadBalancerAlgorithm DEFAULT_ALGORITHM = LoadBalancerAlgorithm.RANDOM;
     public static final String SOURCE_IP = "SOURCE_IP";
     public static final String HTTP_COOKIE = "HTTP_COOKIE";
+    public static final String DEFAULT_ERROR_PAGE = "default_errorpage";
     public static final String RATE_LIMIT_HTTP = "rate_limit_http";
     public static final String RATE_LIMIT_NON_HTTP = "rate_limit_nonhttp";
     public static final String XFF = "add_x_forwarded_for_header";
@@ -371,21 +372,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.info(String.format("Virtual ips successfully added for virtual server '%s'...", virtualServerName));
     }
 
-
-    @Override
-    public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String fileName) throws AxisFault, InsufficientRequestException {
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancer.getId(), loadBalancer.getAccountId());
-
-        try {
-            serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{fileName});
-        } catch (RemoteException e) {
-            if (e instanceof ObjectDoesNotExist) {
-                LOG.debug("Could not add error file, the virtual server could not be found.");
-            }
-        }
-    }
-
     /*
      *  A traffic ip group consists of only one virtual ip at this time.
      */
@@ -562,6 +548,36 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
             throw new ZxtmRollBackException("Update rate limit request canceled.", e);
         }
+    }
+
+    @Override
+    public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String fileName) throws AxisFault, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancer.getId(), loadBalancer.getAccountId());
+
+        try {
+            serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{fileName});
+        } catch (RemoteException e) {
+            if (e instanceof ObjectDoesNotExist) {
+                LOG.debug("Could not add error file, the virtual server could not be found.");
+            }
+        }
+    }
+
+    @Override
+    public void removeErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, RemoteException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String errorPage = ZxtmNameBuilder.generateErrorPageNameWithAccountIdAndLoadBalancerId(loadBalancer.getId(), loadBalancer.getAccountId());
+        serviceStubs.getZxtmConfExtraService().deleteFile(new String[]{errorPage});
+        setDefaultErrorFile(config, loadBalancer);
+    }
+
+    @Override
+    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, RemoteException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancer.getId(), loadBalancer.getAccountId());
+        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{DEFAULT_ERROR_PAGE});
+
     }
 
     @Override
@@ -1104,11 +1120,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         TrafficIPGroupsSubnetMappingPerHost[] newMap = domain2adaptorSubnetMapping(newSubnet);
         serviceStubs.getTrafficIpGroupBinding().setSubnetMappings(newMap); // Sinze zues delete clobbers all mappings
         // Use this bizare cherry pick method instead.
-    }
-
-    public void uploadFile(LoadBalancerEndpointConfiguration config,String fileName,String content) throws RemoteException{
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        ConfExtraBindingStub extraService = serviceStubs.getZxtmConfExtraService();
     }
 
     @Override

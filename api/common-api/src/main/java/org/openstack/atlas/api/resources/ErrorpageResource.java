@@ -35,13 +35,13 @@ public class ErrorpageResource extends CommonDependencyProvider{
         return resp;
     }
 
-    @POST
-    public Response createErrorpage(Errorpage errorpage){
+    @DELETE
+    public Response deleteErrorpage(){
         String errorcontent;
 
 //        errorcontent = loadBalancerService.setErrorPage(loadBalancerId, accountId);
 //        errorpage.setContent(errorcontent);
-        Response resp = Response.status(200).entity(errorpage).build();
+        Response resp = Response.status(200).build();
         return resp;
     }
 
