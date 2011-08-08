@@ -1,7 +1,10 @@
 #!/usr/bin/env jython
-
+	
+import util
+util.setConfig("slice.json")
 from util import *
-setConfig("slice.xml")
+
+
 
 begin()
 lb = qq("FROM LoadBalancer lb where lb.id=316")[0]
