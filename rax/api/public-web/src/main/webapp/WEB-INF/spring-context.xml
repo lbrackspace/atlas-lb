@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:cxf="http://camel.apache.org/schema/cxf"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
+       http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+
+    <import resource="classpath:rax-spring-context-public.xml"/>
+
+    <jaxrs:server id="loadBalancingPublic" address="/" staticSubresourceResolution="true">
+        <jaxrs:serviceFactories>
+            <ref bean="loadBalancingPublicImplFactory"/>
+        </jaxrs:serviceFactories>
+        <jaxrs:extensionMappings>
+            <entry key="xml" value="application/xml"/>
+            <entry key="json" value="application/json"/>
+            <entry key="atom" value="application/atom+xml"/>
+        </jaxrs:extensionMappings>
+        <!--<jaxrs:providers>
+            <ref bean="jsonProvider"/>
+            <ref bean="atomProvider"/>
+        </jaxrs:providers>-->
+    </jaxrs:server>
+
+    <bean id="loadBalancingPublicImplFactory" class="org.apache.cxf.jaxrs.spring.SpringResourceFactory">
+        <property name="beanId" value="loadBalancingPublicImpl"/>
+    </bean>
+</beans>

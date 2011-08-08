@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema elementFormDefault="qualified"
+            targetNamespace="http://docs.rackspace.com/extensions/rax/api/v1.0"
+            xmlns:tns="http://docs.rackspace.com/extensions/rax/api/v1.0"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            jaxb:version="2.1"
+            xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+            jaxb:extensionBindingPrefixes="xjc" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb">
+
+    <!--<xsd:import schemaLocation="global.xsd" namespace="http://docs.openstack.org/loadbalancers/api/global/v1.0"/>-->
+
+    <xsd:element name="accessList1" type="tns:accessList1"/>
+    <xsd:complexType name="accessList1">
+        <xsd:sequence>
+            <xsd:element name="networkItem1" type="tns:networkItem1" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="networkItem1" type="tns:networkItem1"/>
+    <xsd:complexType name="networkItem1">
+        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:attribute name="address" type="xsd:string"/>
+        <xsd:attribute name="type1" type="tns:networkItemType1"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="networkItemType1">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ALLOW"/>
+            <xsd:enumeration value="DENY"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:attribute name="gender">
+        <xsd:simpleType>
+            <xsd:restriction base="xsd:string">
+                <xsd:pattern value="male|female"/>
+            </xsd:restriction>
+        </xsd:simpleType>
+    </xsd:attribute>
+
+
+</xsd:schema>
