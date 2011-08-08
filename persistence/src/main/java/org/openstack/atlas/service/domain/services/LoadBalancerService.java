@@ -72,4 +72,6 @@ public interface LoadBalancerService {
     public UserPages getUserPages(Integer id,Integer accountId) throws EntityNotFoundException;
 
     public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException;
+
+    public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException;
 }

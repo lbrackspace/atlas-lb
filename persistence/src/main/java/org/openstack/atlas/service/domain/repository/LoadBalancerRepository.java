@@ -73,7 +73,7 @@ public class LoadBalancerRepository {
         return up.getErrorpage();
     }
 
-    public boolean putErrorPage(Integer lid,Integer aid,String errorpage) throws EntityNotFoundException{
+    public boolean setErrorPage(Integer lid,Integer aid,String errorpage) throws EntityNotFoundException{
         boolean out=false;
         LoadBalancer lb = getByIdAndAccountId(lid, aid);
         UserPages up = getUserPages(lid,aid);

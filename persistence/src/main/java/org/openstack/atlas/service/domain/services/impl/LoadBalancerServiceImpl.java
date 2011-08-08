@@ -679,6 +679,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return validLbs;
     }
 
+    @Transactional
+    @Override
+    public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException{
+        return loadBalancerRepository.setErrorPage(lid, accountId, content);
+    }
+
     private void processSpecifiedOrDefaultHost(LoadBalancer lb) throws EntityNotFoundException, BadRequestException {
         Integer hostId = null;
         Host specifiedHost;
