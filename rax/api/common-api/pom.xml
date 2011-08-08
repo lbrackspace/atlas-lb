@@ -14,10 +14,15 @@
     <name>Openstack :: Atlas :: Extension :: RAX :: API :: Common</name>
 
     <dependencies>
-           <dependency>
-               <groupId>${project.groupId}</groupId>
-               <artifactId>atlas-common-api</artifactId>
-               <version>${project.version}</version>
-           </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-common-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-rax-data-model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

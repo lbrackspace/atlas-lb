@@ -101,6 +101,24 @@
                             <goal>xjc</goal>
                         </goals>
                     </execution>
+                     <execution>
+                        <id>generate-load-balancer-api-sources1</id>
+                        <configuration>
+                            <staleFile>target/lb1.staleFile</staleFile>
+                            <extension>true</extension>
+                            <schemaDirectory>
+                                ${basedir}/src/main/resources/META-INF/xsd
+                            </schemaDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <schemaFiles>LoadBalancerApi1.xsd</schemaFiles>
+                            <packageName>org.openstack.atlas.docs.loadbalancers.api.v1</packageName>
+                            <!--<arguments>-Xcollection-setter-injector</arguments>-->
+                            <arguments>-Xxew -setters</arguments>
+                        </configuration>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
