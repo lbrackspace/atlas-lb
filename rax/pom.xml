@@ -13,6 +13,7 @@
     <artifactId>atlas-rax</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>data-model</module>
         <module>persistence</module>
         <module>api</module>
     </modules>
