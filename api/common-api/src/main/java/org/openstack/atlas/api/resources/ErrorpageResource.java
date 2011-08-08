@@ -35,6 +35,16 @@ public class ErrorpageResource extends CommonDependencyProvider{
         return resp;
     }
 
+    @POST
+    public Response createErrorpage(Errorpage errorpage){
+        String errorcontent;
+
+//        errorcontent = loadBalancerService.setErrorPage(loadBalancerId, accountId);
+//        errorpage.setContent(errorcontent);
+        Response resp = Response.status(200).entity(errorpage).build();
+        return resp;
+    }
+
     public Log getLOG() {
         return LOG;
     }

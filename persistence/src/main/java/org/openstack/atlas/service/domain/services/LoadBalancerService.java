@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services;
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
@@ -72,4 +73,6 @@ public interface LoadBalancerService {
     public UserPages getUserPages(Integer id,Integer accountId) throws EntityNotFoundException;
 
     public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException;
+
+    public void setErrorPage(Integer lid, Integer aid, Errorpage errorPage) throws EntityNotFoundException, BadRequestException;
 }

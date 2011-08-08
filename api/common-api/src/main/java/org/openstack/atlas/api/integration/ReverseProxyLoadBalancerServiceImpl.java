@@ -467,6 +467,12 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
+    public void setErrorFile(LoadBalancer lb) throws EntityNotFoundException, MalformedURLException, DecryptException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        reverseProxyLoadBalancerAdapter.setErrorFile(config, lb);
+    }
+
+    @Override
     public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException {
         Cluster cluster = host.getCluster();
         Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());

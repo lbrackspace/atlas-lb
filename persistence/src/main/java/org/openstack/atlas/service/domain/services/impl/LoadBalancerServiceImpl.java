@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.HostStatus;
@@ -460,6 +461,14 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
         }
     }
+
+    @Override
+    public void setErrorPage(Integer lid, Integer aid, Errorpage errorPage) throws BadRequestException {
+          if (errorPage == null) {
+              throw new BadRequestException("Must supply content for the error page.");
+          }
+    }
+
 
     private void verifySessionPersistence(LoadBalancer queueLb) throws BadRequestException {
         if (queueLb.getSessionPersistence() != SessionPersistence.NONE) {

@@ -371,6 +371,21 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.info(String.format("Virtual ips successfully added for virtual server '%s'...", virtualServerName));
     }
 
+
+    @Override
+    public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String fileName) throws AxisFault, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancer.getId(), loadBalancer.getAccountId());
+
+        try {
+            serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{fileName});
+        } catch (RemoteException e) {
+            if (e instanceof ObjectDoesNotExist) {
+                LOG.debug("Could not add error file, the virtual server could not be found.");
+            }
+        }
+    }
+
     /*
      *  A traffic ip group consists of only one virtual ip at this time.
      */

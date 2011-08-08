@@ -90,4 +90,6 @@ public interface ReverseProxyLoadBalancerService {
     public void deleteRateLimit(int id, int accountId) throws Exception;
 
     public void updateRateLimit(int id, int accountId, RateLimit rateLimit) throws Exception;
+
+    public void setErrorFile(LoadBalancer loadBalancer) throws EntityNotFoundException, MalformedURLException, DecryptException;
 }
