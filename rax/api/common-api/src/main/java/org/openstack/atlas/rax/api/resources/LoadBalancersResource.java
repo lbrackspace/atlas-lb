@@ -2,7 +2,7 @@ package org.openstack.atlas.rax.api.resources;
 
 import org.openstack.atlas.docs.loadbalancers.api.extensions.v1.AccessList1;
 import org.openstack.atlas.docs.loadbalancers.api.extensions.v1.NetworkItem1;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
+import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.extensions.v1.ObjectFactory;
 import org.w3c.dom.Element;
 
@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 public class LoadBalancersResource extends org.openstack.atlas.api.resources.LoadBalancersResource {
     Logger logger = Logger.getLogger("LoadBalancersResource");
 
-    @Override
+//    @Override
     public Response createLoadBalancer(LoadBalancer loadBalancer) {
         logger.log(Level.INFO, "loadbalancer: " + loadBalancer);
 

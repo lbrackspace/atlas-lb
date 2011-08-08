@@ -111,7 +111,7 @@
                             </schemaDirectory>
                             <clearOutputDir>false</clearOutputDir>
                             <schemaFiles>LoadBalancerApi1.xsd</schemaFiles>
-                            <packageName>org.openstack.atlas.docs.loadbalancers.api.v1</packageName>
+                            <packageName>org.openstack.atlas.core.api.v1</packageName>
                             <!--<arguments>-Xcollection-setter-injector</arguments>-->
                             <arguments>-Xxew -setters</arguments>
                         </configuration>
