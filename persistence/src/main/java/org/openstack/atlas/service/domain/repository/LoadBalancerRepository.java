@@ -50,16 +50,58 @@ public class LoadBalancerRepository {
         return lb;
     }
 
-    public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException {
-        List<UserPages> up = new ArrayList<UserPages>();
-        String errorpage;
+    public UserPages getUserPages(Integer lid, Integer aid) {
+        List<UserPages> userPagesList = new ArrayList<UserPages>();
+        UserPages up;
         String qStr = "FROM UserPages u where u.loadbalancer.id = :lid and u.loadbalancer.accountId = :aid";
         Query q = entityManager.createQuery(qStr).setParameter("lid", lid).setParameter("aid", aid);
-        up = q.setMaxResults(1).getResultList();
-        if(up.size() < 1) {
-            throw new EntityNotFoundException(Constants.ErrorPageNotFound);
+        userPagesList = q.setMaxResults(1).getResultList();
+        if (userPagesList.size() <= 0) {
+            up = null;
+        } else {
+            up = userPagesList.get(0);
         }
-        return up.get(0).getErrorpage();
+        return up;
+    }
+
+    public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException {
+        UserPages up;
+        up = getUserPages(lid, aid);
+        if (up == null) {
+            return null;
+        }
+        return up.getErrorpage();
+    }
+
+    public boolean putErrorPage(Integer lid,Integer aid,String errorpage) throws EntityNotFoundException{
+        boolean out=false;
+        LoadBalancer lb = getByIdAndAccountId(lid, aid);
+        UserPages up = getUserPages(lid,aid);
+        if(up==null){
+            up = new UserPages();
+            up.setLoadbalancer(lb);
+            up.setErrorpage(errorpage);
+            entityManager.merge(up);
+            return true;
+        }else{
+            up.setErrorpage(errorpage);
+            entityManager.merge(up);
+            return false;
+        }
+    }
+
+    public boolean removeErrorPage(Integer lid, Integer aid) {
+        UserPages up = getUserPages(lid, aid);
+        if (up == null) {
+            return false;
+        } else if (up.getErrorpage() == null) {
+            return false;
+        }
+        up.setErrorpage(null);
+        entityManager.merge(up);
+        return true;
+
+
     }
 
     public LoadBalancer getByIdAndAccountId(Integer id, Integer accountId) throws EntityNotFoundException {
