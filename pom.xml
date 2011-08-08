@@ -25,6 +25,7 @@
         <module>api</module>
         <module>logs</module>
         <module>jobs</module>
+        <module>rax</module>
     </modules>
 
     <build>
