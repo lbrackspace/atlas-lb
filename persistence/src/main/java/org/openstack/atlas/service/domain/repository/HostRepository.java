@@ -155,21 +155,21 @@ public class HostRepository {
     }
 
     public Host getEndPointHost(Integer clusterId) {
-        String hqlStr = "from Host h where h.soapEndpointActive = 1 "
+        String hqlStr = "from Host h where h.endpointActive = 1 "
                 + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER') "
                 + "and h.cluster.id = :clusterId "
                 + "order by h.hostStatus desc, h.id asc";
         Query q = entityManager.createQuery(hqlStr).setParameter("clusterId", clusterId).setMaxResults(1);
         List<Host> results = q.getResultList();
         if (results.size() < 1) {
-            LOG.error(String.format("Error no more SOAP endpoints left for ClusterId %d.",clusterId));
+            LOG.error(String.format("Error no more endpoints left for ClusterId %d.",clusterId));
             return null;
         }
         return results.get(0);
     }
 
     public List<String> getFailoverHostNames (Integer clusterId){
-        String hql = "select h.trafficManagerName from Host h where h.hostStatus = 'FAILOVER' and h.cluster.id = :clusterId";
+        String hql = "select h.hostName from Host h where h.hostStatus = 'FAILOVER' and h.cluster.id = :clusterId";
         Query q = entityManager.createQuery(hql).setParameter("clusterId",clusterId);
         List<String> results = q.getResultList();
         return results;

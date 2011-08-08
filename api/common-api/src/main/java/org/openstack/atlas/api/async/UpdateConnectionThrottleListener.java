@@ -15,7 +15,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.UPDATE_CONNECTION_THROTTLE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.api.atom.EntryHelper.UPDATE_THROTTLE_TITLE;
 
 public class UpdateConnectionThrottleListener extends BaseListener {
@@ -40,14 +40,14 @@ public class UpdateConnectionThrottleListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Updating connection throttle for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+            LOG.debug(String.format("Updating connection throttle for load balancer '%d' in LB Device...", dbLoadBalancer.getId()));
             reverseProxyLoadBalancerService.updateConnectionThrottle(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getConnectionLimit());
-            LOG.debug(String.format("Successfully updated connection throttle for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+            LOG.debug(String.format("Successfully updated connection throttle for load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error updating connection throttle in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());
+            String alertDescription = String.format("Error updating connection throttle in LB Device for loadbalancer '%d'.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             return;
         }

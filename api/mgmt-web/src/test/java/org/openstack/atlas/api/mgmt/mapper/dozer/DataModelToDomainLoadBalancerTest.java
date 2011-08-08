@@ -248,61 +248,61 @@ public class DataModelToDomainLoadBalancerTest {
         }
 
         @Test
-        public void shouldrHost2dHostSoapTrue() {
+        public void shouldrHost2dHostTrue() {
             org.openstack.atlas.docs.loadbalancers.api.management.v1.Host rHost;
             org.openstack.atlas.service.domain.entities.Host dHost;
             rHost = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Host();
-            rHost.setSoapEndpointActive(Boolean.TRUE);
+            rHost.setEndpointActive(Boolean.TRUE);
             dHost = mapper.map(rHost, org.openstack.atlas.service.domain.entities.Host.class);
-            Assert.assertEquals(Boolean.TRUE, dHost.isSoapEndpointActive());
+            Assert.assertEquals(Boolean.TRUE, dHost.isEndpointActive());
         }
 
         @Test
-        public void shouldrHost2dHostSoapActiveFalse() {
+        public void shouldrHost2dHostActiveFalse() {
             org.openstack.atlas.docs.loadbalancers.api.management.v1.Host rHost;
             org.openstack.atlas.service.domain.entities.Host dHost;
             rHost = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Host();
-            rHost.setSoapEndpointActive(Boolean.FALSE);
+            rHost.setEndpointActive(Boolean.FALSE);
             dHost = mapper.map(rHost, org.openstack.atlas.service.domain.entities.Host.class);
-            Assert.assertEquals(Boolean.FALSE, dHost.isSoapEndpointActive());
+            Assert.assertEquals(Boolean.FALSE, dHost.isEndpointActive());
         }
 
         @Test
-        public void shouldrHost2dHostisSoapActiveNull() {
+        public void shouldrHost2dHostisActiveNull() {
             org.openstack.atlas.docs.loadbalancers.api.management.v1.Host rHost;
             org.openstack.atlas.service.domain.entities.Host dHost;
             rHost = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Host();
             dHost = mapper.map(rHost, org.openstack.atlas.service.domain.entities.Host.class);
-            Assert.assertEquals(null, dHost.isSoapEndpointActive());
+            Assert.assertEquals(null, dHost.isEndpointActive());
         }
 
         @Test
-        public void shoulddHost2rHostSoapTrue() {
+        public void shoulddHost2rHostTrue() {
             org.openstack.atlas.docs.loadbalancers.api.management.v1.Host rHost;
             org.openstack.atlas.service.domain.entities.Host dHost;
             dHost = new org.openstack.atlas.service.domain.entities.Host();
-            dHost.setSoapEndpointActive(Boolean.TRUE);
+            dHost.setEndpointActive(Boolean.TRUE);
             rHost = mapper.map(dHost, org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class);
-            Assert.assertEquals(Boolean.TRUE, rHost.isSoapEndpointActive());
+            Assert.assertEquals(Boolean.TRUE, rHost.isEndpointActive());
         }
 
         @Test
-        public void shoulddHost2rHostSoapActiveFalse() {
+        public void shoulddHost2rHostActiveFalse() {
             org.openstack.atlas.docs.loadbalancers.api.management.v1.Host rHost;
             org.openstack.atlas.service.domain.entities.Host dHost;
             dHost = new org.openstack.atlas.service.domain.entities.Host();
-            dHost.setSoapEndpointActive(Boolean.FALSE);
+            dHost.setEndpointActive(Boolean.FALSE);
             rHost = mapper.map(dHost, org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class);
-            Assert.assertEquals(Boolean.FALSE, rHost.isSoapEndpointActive());
+            Assert.assertEquals(Boolean.FALSE, rHost.isEndpointActive());
         }
 
         @Test
-        public void shoulddHost2rHostisSoapActiveNull() {
+        public void shoulddHost2rHostisActiveNull() {
             org.openstack.atlas.docs.loadbalancers.api.management.v1.Host rHost;
             org.openstack.atlas.service.domain.entities.Host dHost;
             dHost = new org.openstack.atlas.service.domain.entities.Host();
             rHost = mapper.map(dHost, org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class);
-            Assert.assertEquals(null, rHost.isSoapEndpointActive());
+            Assert.assertEquals(null, rHost.isEndpointActive());
         }
     }
 

@@ -24,7 +24,7 @@ public class MgmtDeleteHostSubnetMappingListener extends BaseListener {
             return;
         }
         Hostssubnet hostssubnet = getEsbRequestFromMessage(message).getHostssubnet();
-        hostssubnet.getHostsubnets().get(0).setName(dHost.getTrafficManagerName());
+        hostssubnet.getHostsubnets().get(0).setName(dHost.getHostName());
         reverseProxyLoadBalancerService.deleteSubnetMappings(dHost, hostssubnet);
 
     }

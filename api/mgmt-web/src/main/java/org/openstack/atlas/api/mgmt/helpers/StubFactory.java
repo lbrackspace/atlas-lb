@@ -296,7 +296,7 @@ public class StubFactory {
         h.setCoreDeviceId(rndInt(0, 10000).toString());
         h.setStatus((HostStatus) rndChoice(HostStatus.values()));
         h.setManagementIp(rndIp());
-        h.setManagementSoapInterface(String.format("http://%s:8080/soap", rndIp()));
+        h.setManagementInterface(String.format("http://%s:8080/config", rndIp()));
         h.setMaxConcurrentConnections(rndInt(0, 900));
         h.setType((HostType) rndChoice(HostType.values()));
         return h;

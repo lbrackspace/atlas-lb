@@ -2,7 +2,7 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.ZeusRateLimitedLoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LBDeviceRateLimitedLoadBalancer;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4Range;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4Ranges;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
@@ -74,28 +74,28 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
 
     @Override
     @Transactional
-    public List<ZeusRateLimitedLoadBalancer> getRateLimitedLoadBalancersInCluster(Integer clusterId) throws EntityNotFoundException {
+    public List<LBDeviceRateLimitedLoadBalancer> getRateLimitedLoadBalancersInCluster(Integer clusterId) throws EntityNotFoundException {
         List<Host> hostList = clusterRepository.getHosts(clusterId);
         List<Integer> lbids = rateLimitRepository.getAllRateLimitedLoadBalancerIds();
         List<LoadBalancer> lblist = new ArrayList();
-        List<ZeusRateLimitedLoadBalancer> zeusRateLimitedLoadBalancerList = new ArrayList();
-        ZeusRateLimitedLoadBalancer zeusRateLimitedLoadBalancer;
+        List<LBDeviceRateLimitedLoadBalancer> lbDeviceRateLimitedLoadBalancerList = new ArrayList();
+        LBDeviceRateLimitedLoadBalancer lbDeviceRateLimitedLoadBalancer;
         for (Integer lbId : lbids) {
             lblist.add(loadBalancerRepository.getById(lbId));
         }
         for (LoadBalancer lb : lblist) {
             for (Host host : hostList) {
                 if (lb.getHost().getId() == host.getId()) {
-                    zeusRateLimitedLoadBalancer = new ZeusRateLimitedLoadBalancer();
-                    zeusRateLimitedLoadBalancer.setAccountId(lb.getAccountId());
-                    zeusRateLimitedLoadBalancer.setLoadbalancerId(lb.getId());
-                    zeusRateLimitedLoadBalancer.setExpirationTime(lb.getRateLimit().getExpirationTime().getTime().toString());
-                    zeusRateLimitedLoadBalancer.setTickets(ticketService.customTicketMapper(loadBalancerRepository.getTickets(lb.getId())));
-                    zeusRateLimitedLoadBalancerList.add(zeusRateLimitedLoadBalancer);
+                    lbDeviceRateLimitedLoadBalancer = new LBDeviceRateLimitedLoadBalancer();
+                    lbDeviceRateLimitedLoadBalancer.setAccountId(lb.getAccountId());
+                    lbDeviceRateLimitedLoadBalancer.setLoadbalancerId(lb.getId());
+                    lbDeviceRateLimitedLoadBalancer.setExpirationTime(lb.getRateLimit().getExpirationTime().getTime().toString());
+                    lbDeviceRateLimitedLoadBalancer.setTickets(ticketService.customTicketMapper(loadBalancerRepository.getTickets(lb.getId())));
+                    lbDeviceRateLimitedLoadBalancerList.add(lbDeviceRateLimitedLoadBalancer);
                 }
             }
         }
-        return zeusRateLimitedLoadBalancerList;
+        return lbDeviceRateLimitedLoadBalancerList;
     }
 
     @Override

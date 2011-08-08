@@ -209,7 +209,7 @@
         <property name="groupRepository" ref="groupRepository"/>
     </bean>
     <bean id="rateLimitingFilter"
-          class="com.rackspace.cloud.jee.filters.limits.rate.RateLimitingFilter"
+          class="org.openstack.cloud.jee.filters.limits.rate.RateLimitingFilter"
           scope="request"/>-->
     <bean id="validationFilter"
           class="org.openstack.atlas.api.filters.ValidationFilter"

@@ -61,10 +61,10 @@ public class RateLimitDeletionJob extends QuartzJobBean {
                 LOG.info(String.format("Attempting to remove rate limit with id..'%s' from the database... ", rl.getId()));
                 loadBalancerRepository.removeRateLimitByExpiration(rl.getId());
                 LOG.info("Removed the rate limit from the database...");
-                LOG.info(String.format("Attempting to remove rate limit with id..'%s' from zeus... ", rl.getId()));
+                LOG.info(String.format("Attempting to remove rate limit with id..'%s' from LB Device... ", rl.getId()));
                 try {
                     reverseProxyLoadBalancerAdapter.deleteRateLimit(config, rl.getLoadbalancer().getId(), rl.getLoadbalancer().getAccountId());
-                    LOG.info("Removed the rate limit from zeus...");
+                    LOG.info("Removed the rate limit from LB Device...");
 
                 } catch (RemoteException e) {
                     e.printStackTrace();

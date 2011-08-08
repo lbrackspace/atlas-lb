@@ -228,7 +228,7 @@ public class LoadBalancerUsagePoller extends QuartzJobBean {
 
     private void updateUsageRecords(List<String> loadBalancerNames, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap) {
         Calendar pollTime = Calendar.getInstance();
-        Map<Integer, Integer> lbIdAccountIdMap = stripLbIdAndAccountIdFromZxtmName(loadBalancerNames);
+        Map<Integer, Integer> lbIdAccountIdMap = stripLbIdAndAccountIdFromName(loadBalancerNames);
         List<LoadBalancerUsage> usages = usageRepository.getMostRecentUsageForLoadBalancers(lbIdAccountIdMap.keySet());
         Map<Integer, LoadBalancerUsage> usagesAsMap = convertUsagesToMap(usages);
         UsagesForPollingDatabase usagesForDatabase = new UsagesForPollingDatabase(loadBalancerNames, bytesInMap, bytesOutMap, currentConnectionsMap, pollTime, usagesAsMap).invoke();
@@ -247,13 +247,13 @@ public class LoadBalancerUsagePoller extends QuartzJobBean {
         return usagesAsMap;
     }
 
-    public Map<Integer, Integer> stripLbIdAndAccountIdFromZxtmName(List<String> loadBalancerNames) {
+    public Map<Integer, Integer> stripLbIdAndAccountIdFromName(List<String> loadBalancerNames) {
         Map<Integer, Integer> lbIdAccountIdMap = new HashMap<Integer, Integer>();
 
         for (String loadBalancerName : loadBalancerNames) {
             try {
-                Integer accountId = ZxtmNameHelper.stripAccountIdFromZxtmName(loadBalancerName);
-                Integer lbId = ZxtmNameHelper.stripLbIdFromZxtmName(loadBalancerName);
+                Integer accountId = AdapterNameHelper.stripAccountIdFromName(loadBalancerName);
+                Integer lbId = AdapterNameHelper.stripLbIdFromName(loadBalancerName);
                 lbIdAccountIdMap.put(lbId, accountId);
             } catch (NumberFormatException e) {
                 LOG.warn(String.format("Invalid load balancer name '%s'. Skipping...", loadBalancerName));

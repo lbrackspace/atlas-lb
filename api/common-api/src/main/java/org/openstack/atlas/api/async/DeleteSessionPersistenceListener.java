@@ -10,7 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import javax.jms.Message;
 
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
@@ -38,14 +38,14 @@ public class DeleteSessionPersistenceListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Removing session persistence for load balancer '%d' in Zeus...", requestLb.getId()));
+            LOG.debug(String.format("Removing session persistence for load balancer '%d' in LB Device...", requestLb.getId()));
             reverseProxyLoadBalancerService.removeSessionPersistence(requestLb.getId(), requestLb.getAccountId());
-            LOG.debug(String.format("Successfully removed session persistence for load balancer '%d' in Zeus.", requestLb.getId()));
+            LOG.debug(String.format("Successfully removed session persistence for load balancer '%d' in LB Device.", requestLb.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error removing session persistence in Zeus for loadbalancer '%d'.", requestLb.getId());
+            String alertDescription = String.format("Error removing session persistence in LB Device for loadbalancer '%d'.", requestLb.getId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(requestLb.getAccountId(), requestLb.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(requestLb.getAccountId(), requestLb.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(requestLb);
             return;
         }

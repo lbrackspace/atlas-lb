@@ -549,16 +549,16 @@
             <b>managementIp</b>
         </field>
         <field>
-            <a>managementSoapInterface</a>
+            <a>managementInterface</a>
             <b>endpoint</b>
         </field>
         <field>
-            <a>trafficManagerName</a>
-            <b>trafficManagerName</b>
+            <a>hostName</a>
+            <b>hostName</b>
         </field>
         <field>
-            <a get-method="isSoapEndpointActive">soapEndpointActive</a>
-            <b get-method="isSoapEndpointActive">soapEndpointActive</b>
+            <a get-method="isEndpointActive">endpointActive</a>
+            <b get-method="isEndpointActive">endpointActive</b>
         </field>
 
     </mapping>

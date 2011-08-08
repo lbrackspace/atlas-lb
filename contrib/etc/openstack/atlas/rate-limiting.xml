@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<rate-limiting-config xmlns="http://docs.rackspacecloud.com/power-api/rate-limiting/v1.0">
+<rate-limiting-config xmlns="http://docs.openstack.org/power-api/rate-limiting/v1.0">
   <request-endpoint uri-regex="\/loadbalancers/limits" />
 
   <limit-group id="restricted-limits" roles="suspended disabled">

@@ -63,10 +63,10 @@ public class HostValidatorTest {
         h.setZone(Zone.A);
         h.setMaxConcurrentConnections(rndPosInt(0, 900));
         h.setManagementIp(rndIp());
-        h.setManagementSoapInterface(String.format("http://%s:8080/soap", rndIp()));
+        h.setManagementInterface(String.format("http://%s:8080/config", rndIp()));
         h.setType((HostType) rndChoice(HostType.values()));
-        h.setTrafficManagerName("someZuesNode.rackspace.com");
-        h.setSoapEndpointActive(true);
+        h.setHostName("someNode.openstackcloud.org");
+        h.setEndpointActive(true);
         h.setIpv4Public("10.10.10.100");
         h.setIpv4Servicenet("20.20.20.200");
 
@@ -129,8 +129,8 @@ public class HostValidatorTest {
     }
 
     @Test
-    public void shouldRejectifMissingSOAPInterfaceOnPost() {
-        host.setManagementSoapInterface(null);
+    public void shouldRejectifMissingInterfaceOnPost() {
+        host.setManagementInterface(null);
         res = hv.validate(host, POST);
         assertFalse(resultMessage(res, POST), res.passedValidation());
     }
@@ -159,22 +159,22 @@ public class HostValidatorTest {
     }
 
     @Test
-    public void shouldRejectMissingTrafficManagerName() {
-        host.setTrafficManagerName(null);
+    public void shouldRejectMissingHostName() {
+        host.setHostName(null);
         res = hv.validate(host, POST);
         assertFalse(resultMessage(res, POST), res.passedValidation());
     }
 
     @Test
-    public void shouldRejectMissingSoapEndPointActive() {
-        host.setSoapEndpointActive(null);
+    public void shouldRejectMissingEndPointActive() {
+        host.setEndpointActive(null);
         res = hv.validate(host, POST);
         assertFalse(resultMessage(res, POST), res.passedValidation());
     }
 
     @Test
-    public void shouldAcceptSoapEndPointofFalse() {
-        host.setSoapEndpointActive(false);
+    public void shouldAcceptEndPointofFalse() {
+        host.setEndpointActive(false);
         res = hv.validate(host, POST);
         assertTrue(resultMessage(res, POST), res.passedValidation());
     }

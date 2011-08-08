@@ -9,7 +9,7 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import javax.jms.Message;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.API_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.CREATE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
@@ -36,14 +36,14 @@ public class DeleteAccessListListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Deleting access list for load balancer '%s' in Zeus...", dbLoadBalancer.getId()));
+            LOG.debug(String.format("Deleting access list for load balancer '%s' in LB Device...", dbLoadBalancer.getId()));
             reverseProxyLoadBalancerService.deleteAccessList(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
-            LOG.debug(String.format("Access list successfully deleted for load balancer '%s' in Zeus.", dbLoadBalancer.getId()));
+            LOG.debug(String.format("Access list successfully deleted for load balancer '%s' in LB Device.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error deleting access list in Zeus for loadbalancer '%d'.", queueLb.getId());
+            String alertDescription = String.format("Error deleting access list in LB Device for loadbalancer '%d'.", queueLb.getId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb, queueLb.getAccessLists());
             return;
         }

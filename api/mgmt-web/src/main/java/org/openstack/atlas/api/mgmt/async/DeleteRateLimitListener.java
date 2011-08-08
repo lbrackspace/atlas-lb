@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import javax.jms.Message;
 
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
@@ -37,13 +37,13 @@ public class DeleteRateLimitListener extends BaseListener {
         }
 
         try {
-            LOG.debug("Deleting rate limit in Zeus...");
+            LOG.debug("Deleting rate limit in LB Device...");
             reverseProxyLoadBalancerService.deleteRateLimit(queueLb.getId(), dbLoadBalancer.getAccountId());
-            LOG.debug("Successfully deleted rate limit in Zeus.");
+            LOG.debug("Successfully deleted rate limit in LB Device.");
         } catch (Exception e) {
-            String alertDescription = String.format("Error deleting rate limit in Zeus for loadbalancer '%d'.", queueLb.getId());
+            String alertDescription = String.format("Error deleting rate limit in LB Device for loadbalancer '%d'.", queueLb.getId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             return;
         }

@@ -45,7 +45,7 @@ public class MossoAuthTest {
         port = 389;
         config = new MossoAuthConfig(host, port);
 
-        dn = "ou=Users,o=rackspace";
+        dn = "ou=Users,o=openstack";
         sdn = "cn";
         oClass = "(objectClass=*)";
         memberField = "groupMembership";

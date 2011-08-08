@@ -39,10 +39,12 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!--
         <dependency>
-            <groupId>com.rackspace.cloud.jee.filters</groupId>
+            <groupId>org.openstack.cloud.jee.filters</groupId>
             <artifactId>rate-limiting</artifactId>
         </dependency>
+        -->
 
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -50,15 +52,24 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-null-service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
         <!--        <dependency>
             <groupId>org.openstack.atlas.adapter</groupId>
             <artifactId>atlas-zxtm-stubs</artifactId>
         </dependency>-->
 
+        <!--
         <dependency>
-            <groupId>com.rackspace.cloud.powerapi</groupId>
+            <groupId>org.openstack.cloud.powerapi</groupId>
             <artifactId>filterlet</artifactId>
         </dependency>
+        -->
 
         <dependency>
             <groupId>org.javassist</groupId>
