@@ -9,12 +9,12 @@
     </bean>
 
     <bean id="userclass" class="org.openstack.atlas.api.mgmt.helpers.LDAPTools.ClassConfig">
-        <property name="dn" value="ou=Users,o=rackspace"/>
+        <property name="dn" value="ou=Users,o=openstack"/>
         <property name="sdn" value="cn"/>
     </bean>
 
     <bean id="groups" class="org.openstack.atlas.api.mgmt.helpers.LDAPTools.GroupConfig">
-        <property name="dn" value="ou=Users,o=rackspace"/>
+        <property name="dn" value="ou=Users,o=openstack"/>
         <property name="sdn" value="cn"/>
         <property name="objectClass" value="(objectClass=*)"/>
         <property name="memberField" value="groupMembership"/>

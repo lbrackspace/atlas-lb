@@ -177,7 +177,7 @@ public class AtomFeedAdapter implements FeedSourceAdapter {
                 nextLink.setHref(nextLink.getHref() + "?page=" + (page + 1));
         }
 
-        feed.addAuthor("Rackspace Cloud");
+        feed.addAuthor("OpenStack Cloud");
 
         return feed;
     }

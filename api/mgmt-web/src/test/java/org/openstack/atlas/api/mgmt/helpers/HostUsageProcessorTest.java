@@ -104,7 +104,7 @@ public class HostUsageProcessorTest {
     }
 
     @Test
-    public void shouldReturnProperUsageWhenThereAreValidRawUsageRecordsInTwoDaysAndZeusResets() {
+    public void shouldReturnProperUsageWhenThereAreValidRawUsageRecordsInTwoDaysAndLBDeviceResets() {
         Calendar startOfToday = CalendarHelper.zeroOutTime(Calendar.getInstance());
         Calendar fiveMinutesLater = startOfToday;
         fiveMinutesLater.add(Calendar.MINUTE, 5);

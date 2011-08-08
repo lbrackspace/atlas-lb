@@ -29,15 +29,15 @@ public class MgmtReassignLoadBalancerHostListener extends BaseListener {
                     throw new EntityExistsException("There was a problem retrieving one of the requesting load balancers configuration.");
                 }
 
-                LOG.debug("Modifying Host in ZEUS.. ");
-                LOG.debug("Updating host to " + lb.getHost().getId() + " in zeus for loadbalancer " + lb.getId());
+                LOG.debug("Modifying Host in LB Device.. ");
+                LOG.debug("Updating host to " + lb.getHost().getId() + " in LB Device for loadbalancer " + lb.getId());
                 reverseProxyLoadBalancerService.changeHostForLoadBalancer(dbLb, lb.getHost());
                 loadBalancerService.setStatus(lb, LoadBalancerStatus.ACTIVE);
-                LOG.debug("Successfully updated load balancer:" + lb.getId() + " in Zeus.");
+                LOG.debug("Successfully updated load balancer:" + lb.getId() + " in LB Device.");
             }
-            LOG.debug("Successfully reassigned load balancer hosts in zeus.");
+            LOG.debug("Successfully reassigned load balancer hosts in LB Device.");
         } catch (Exception e) {
-            throw new Exception("ZeuFailureException: One or more of the load balancers failed while being configured for Zeus : " + e);
+            throw new Exception("LBDeviceFailureException: One or more of the load balancers failed while being configured for LB Device : " + e);
         }
         loadBalancerService.updateLoadBalancers(requestLbs);
     }

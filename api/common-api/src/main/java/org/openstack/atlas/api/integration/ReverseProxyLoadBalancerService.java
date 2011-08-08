@@ -3,7 +3,7 @@ package org.openstack.atlas.api.integration;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ObjectExistsException;
-import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
+import org.openstack.atlas.adapter.exceptions.AdapterRollBackException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
@@ -17,15 +17,15 @@ import java.util.Set;
 
 public interface ReverseProxyLoadBalancerService {
 
-    void createLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
+    void createLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, AdapterRollBackException, EntityNotFoundException, DecryptException, MalformedURLException, Exception;
 
-    void deleteLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
+    void deleteLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, AdapterRollBackException, EntityNotFoundException, DecryptException, MalformedURLException, Exception;
 
-    void updateAlgorithm(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
+    void updateAlgorithm(LoadBalancer lb) throws RemoteException, InsufficientRequestException, AdapterRollBackException, EntityNotFoundException, DecryptException, MalformedURLException, Exception;
 
-    void updatePort(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, Exception;
+    void updatePort(LoadBalancer lb) throws RemoteException, InsufficientRequestException, AdapterRollBackException, Exception;
 
-    void updateProtocol(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, Exception;
+    void updateProtocol(LoadBalancer lb) throws RemoteException, InsufficientRequestException, AdapterRollBackException, Exception;
 
     void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
 
@@ -79,9 +79,9 @@ public interface ReverseProxyLoadBalancerService {
 
     void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
 
-    public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException;
+    public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException, Exception;
 
-    public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException;
+    public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException, Exception;
 
     public boolean isEndPointWorking(Host host) throws Exception;
 

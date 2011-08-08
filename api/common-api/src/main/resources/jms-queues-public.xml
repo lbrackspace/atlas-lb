@@ -40,7 +40,7 @@
         <property name="hostService" ref="hostService"/>
     </bean>
 
-    <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
+    <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.Null.NullAdapterImpl"/>
 
     <bean id="reverseProxyLoadBalancerService"
           class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl">

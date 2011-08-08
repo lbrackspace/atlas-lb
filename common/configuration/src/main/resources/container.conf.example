@@ -10,7 +10,7 @@ datastore_password = password
 datastore_show_sql = false
 
 
-#ZXTM WebService Configration
-zxtm_endpoint_uri = https://endpoint.rackspacezxtmhost.com:9090/soap
-zxtm_username = username
-zxtm_password = password
+#LB device WebService Configration
+lbdevice_endpoint_uri = https://endpoint.lbdevicehost.com:9090/config
+lbdevice_username = username
+lbdevice_password = password

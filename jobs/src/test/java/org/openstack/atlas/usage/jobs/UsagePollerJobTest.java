@@ -40,21 +40,21 @@ public class UsagePollerJobTest {
 
         @Test
         public void shouldReturnAllLoadbalancerIds() {
-            Assert.assertEquals(loadbalancerNames.size(), usagePollerJob.stripLbIdAndAccountIdFromZxtmName(loadbalancerNames).size());
+            Assert.assertEquals(loadbalancerNames.size(), usagePollerJob.stripLbIdAndAccountIdFromName(loadbalancerNames).size());
         }
 
         @Test
         public void shouldOnlyReturnIdsForProperlyFormattedNames() {
             int expectedSize = loadbalancerNames.size();
             loadbalancerNames.add("1_notvalid");
-            Assert.assertEquals(expectedSize, usagePollerJob.stripLbIdAndAccountIdFromZxtmName(loadbalancerNames).size());
+            Assert.assertEquals(expectedSize, usagePollerJob.stripLbIdAndAccountIdFromName(loadbalancerNames).size());
         }
 
         @Test
         public void shouldOnlyReturnIdsForProperlyFormattedNamesWhenArrayOutOfBoundsExceptionOccurs() {
             int expectedSize = loadbalancerNames.size();
             loadbalancerNames.add("blahblahblah");
-            Assert.assertEquals(expectedSize, usagePollerJob.stripLbIdAndAccountIdFromZxtmName(loadbalancerNames).size());
+            Assert.assertEquals(expectedSize, usagePollerJob.stripLbIdAndAccountIdFromName(loadbalancerNames).size());
         }
     }
 

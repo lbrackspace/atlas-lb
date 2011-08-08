@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<content-negotiation xmlns="http://docs.rackspacecloud.com/power-api/content-negotiation/v1.0">
+<content-negotiation xmlns="http://docs.openstack.org/power-api/content-negotiation/v1.0">
    <headers>
        <header name="Accept" />
 	<header name="Content-Type" />

@@ -10,7 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import javax.jms.Message;
 
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
@@ -39,14 +39,14 @@ public class UpdateHealthMonitorListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Updating health monitor for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+            LOG.debug(String.format("Updating health monitor for load balancer '%d' in LB Device...", dbLoadBalancer.getId()));
             reverseProxyLoadBalancerService.updateHealthMonitor(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getHealthMonitor());
-            LOG.debug(String.format("Successfully updated health monitor for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+            LOG.debug(String.format("Successfully updated health monitor for load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error updating health monitor in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());
+            String alertDescription = String.format("Error updating health monitor in LB Device for loadbalancer '%d'.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             return;
         }

@@ -23,7 +23,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.*;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.api.atom.EntryHelper.*;
 
 public class CreateLoadBalancerListener extends BaseListener {
@@ -49,16 +49,16 @@ public class CreateLoadBalancerListener extends BaseListener {
         }
 
         try {
-            LOG.debug("Creating load balancer in Zeus...");
+            LOG.debug("Creating load balancer in LB Device...");
             reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
-            LOG.debug("Successfully created a load balancer in Zeus.");
+            LOG.debug("Successfully created a load balancer in LB Device.");
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);
             NodesHelper.setNodesToStatus(dbLoadBalancer, OFFLINE);
             loadBalancerService.update(dbLoadBalancer);
-            String alertDescription = String.format("An error occurred while creating loadbalancer '%d' in Zeus.", dbLoadBalancer.getId());
+            String alertDescription = String.format("An error occurred while creating loadbalancer '%d' in LB Device.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             return;
         }

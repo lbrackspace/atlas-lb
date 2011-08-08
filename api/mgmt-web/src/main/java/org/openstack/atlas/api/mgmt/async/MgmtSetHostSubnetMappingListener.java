@@ -27,7 +27,7 @@ public class MgmtSetHostSubnetMappingListener extends BaseListener {
         }
 
         Hostssubnet hostssubnet = getEsbRequestFromMessage(message).getHostssubnet();
-        hostssubnet.getHostsubnets().get(0).setName(dHost.getTrafficManagerName());
+        hostssubnet.getHostsubnets().get(0).setName(dHost.getHostName());
         reverseProxyLoadBalancerService.setSubnetMappings(dHost, hostssubnet);
         //sendSuccessfulResponse(message, hostssubnet);
     }

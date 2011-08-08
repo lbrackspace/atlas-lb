@@ -14,7 +14,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.UPDATE_ACCESS_LIST;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.api.atom.EntryHelper.UPDATE_ACCESS_LIST_TITLE;
 
 public class UpdateAccessListListener extends BaseListener {
@@ -37,15 +37,15 @@ public class UpdateAccessListListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Update access list for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+            LOG.debug(String.format("Update access list for load balancer '%d' in LB Device...", dbLoadBalancer.getId()));
             reverseProxyLoadBalancerService.updateAccessList(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getAccessLists());
-            LOG.debug(String.format("Successfully updated access list in Zeus for load balancer '%d'.", dbLoadBalancer.getId()));
+            LOG.debug(String.format("Successfully updated access list in LB Device for load balancer '%d'.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error updating access list for load balancer '%d' in Zeus.", dbLoadBalancer.getId());
+            String alertDescription = String.format("Error updating access list for load balancer '%d' in LB Device.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
 
-            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb, queueLb.getAccessLists());
             return;
         }

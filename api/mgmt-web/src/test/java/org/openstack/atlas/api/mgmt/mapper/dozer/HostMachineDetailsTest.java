@@ -36,8 +36,8 @@ public class HostMachineDetailsTest {
             host.setName("imAHost");
             host.setManagementIp("10.0.0.0");
             host.setMaxConcurrentConnections(1);
-            host.setTrafficManagerName("imaTrafficeMngr");
-            host.setSoapEndpointActive(true);
+            host.setHostName("imaTrafficeMngr");
+            host.setEndpointActive(true);
             hosts = new ArrayList<org.openstack.atlas.service.domain.entities.Host>();
             hosts.add(host);
 
@@ -69,8 +69,8 @@ public class HostMachineDetailsTest {
             Assert.assertEquals(host.getCoreDeviceId(), dHostMD.getHost().getCoreDeviceId());
             Assert.assertEquals(host.getManagementIp(), dHostMD.getHost().getManagementIp());
             Assert.assertEquals(host.getName(), dHostMD.getHost().getName());
-            Assert.assertEquals(host.getTrafficManagerName(), dHostMD.getHost().getTrafficManagerName());
-            Assert.assertEquals(host.isSoapEndpointActive(), dHostMD.getHost().isSoapEndpointActive());
+            Assert.assertEquals(host.getHostName(), dHostMD.getHost().getHostName());
+            Assert.assertEquals(host.isEndpointActive(), dHostMD.getHost().isEndpointActive());
         }
         //TODO:more test
     }

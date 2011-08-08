@@ -136,7 +136,7 @@ public class ClustersResource extends ManagementDependencyProvider {
                     conn = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(dbHost);
                 } catch (Exception e) {
                     LOG.error(e);
-                    notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), "Error during getting total connections for host " + dbHost.getId());
+                    notificationService.saveAlert(e, AlertType.LBDEVICE_FAILURE.name(), "Error during getting total connections for host " + dbHost.getId());
                 }
                 totalConnections = totalConnections + conn;
 

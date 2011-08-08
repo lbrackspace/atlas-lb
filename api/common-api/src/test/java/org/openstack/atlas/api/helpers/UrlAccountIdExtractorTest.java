@@ -15,7 +15,7 @@ public class UrlAccountIdExtractorTest {
 
         @Test
         public void Should_successfully_grab_accountid_from_a_good_url() {
-            String url = "http://docs.rackspace.api.com/something/7645/loadbalancers/54";
+            String url = "http://docs.openstack.api.org/something/7645/loadbalancers/54";
             Assert.assertEquals(new Integer(7645), new UrlAccountIdExtractor().getAccountId(url));
             url = "http://glassfish-test.sitesv2.org:8080/lb-rest/77777/loadbalancers";
             Assert.assertEquals(new Integer(77777), new UrlAccountIdExtractor().getAccountId(url));
@@ -37,7 +37,7 @@ public class UrlAccountIdExtractorTest {
 
         @Test(expected = MalformedUrlException.class)
         public void should_throw_malformed_url_exception_when_accountid_not_found() {
-            String url = "http://docs.rackspace.api.com/something/loadbalancers/7676";
+            String url = "http://docs.openstack.api.org/something/loadbalancers/7676";
             new UrlAccountIdExtractor().getAccountId(url);
         }
 
@@ -52,7 +52,7 @@ public class UrlAccountIdExtractorTest {
 
         @Test
         public void Should_successfully_grab_content_type_from_a_good_url() {
-            String url = "http://docs.rackspace.api.com/something/7645/loadbalancers/54.xml";
+            String url = "http://docs.openstack.api.org/something/7645/loadbalancers/54.xml";
             Assert.assertEquals("xml", new UrlAccountIdExtractor().getContentType(url));
             url = "http://glassfish-test.sitesv2.org:8080/lb-rest/77777/loadbalancers.json";
             Assert.assertEquals("json", new UrlAccountIdExtractor().getContentType(url));

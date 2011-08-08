@@ -14,7 +14,7 @@ import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Sync;
 import org.openstack.atlas.service.domain.pojos.VirtualIpBlocks;
-import org.openstack.atlas.service.domain.pojos.ZeusEvent;
+import org.openstack.atlas.service.domain.pojos.LBDeviceEvent;
 
 import java.io.Serializable;
 import java.util.List;
@@ -31,14 +31,14 @@ public class EsbRequest implements Serializable {
     private List<Host> hosts;
     private Host host;
     private Suspension suspension;
-    private ZeusEvent zeusEvent;
+    private LBDeviceEvent lbDeviceEvent;
     private Sync syncObject;
     private Alert alert;
     private AccountGroup accountGroup;
     private List<AccountGroup> accountGroups;
     private GroupRateLimit groupRateLimit;
     private Hostssubnet hostssubnet;
-    private int zeusHostConcurrentConnections;
+    private int lbDeviceHostConcurrentConnections;
     private RateLimit rateLimit;
     private List<BlacklistItem> blacklistItems;
     private BlacklistItem blacklistItem;
@@ -77,12 +77,12 @@ public class EsbRequest implements Serializable {
         this.virtualIps = virtualIps;
     }
 
-    public ZeusEvent getZeusEvent() {
-        return zeusEvent;
+    public LBDeviceEvent getLBDeviceEvent() {
+        return lbDeviceEvent;
     }
 
-    public void setZeusEvent(ZeusEvent zeusEvent) {
-        this.zeusEvent = zeusEvent;
+    public void setLBDeviceEvent(LBDeviceEvent lbDeviceEvent) {
+        this.lbDeviceEvent = lbDeviceEvent;
     }
 
     public Suspension getSuspension() {
@@ -172,12 +172,12 @@ public class EsbRequest implements Serializable {
         this.cluster = cluster;
     }
 
-    public void setZeusHostConcurrentConnections(int zeusHostConcurrentConnections) {
-        this.zeusHostConcurrentConnections = zeusHostConcurrentConnections;
+    public void setLBDeviceHostConcurrentConnections(int lbDeviceHostConcurrentConnections) {
+        this.lbDeviceHostConcurrentConnections = lbDeviceHostConcurrentConnections;
     }
 
-    public int getZeusHostConcurrentConnections() {
-        return zeusHostConcurrentConnections;
+    public int getLBDeviceHostConcurrentConnections() {
+        return lbDeviceHostConcurrentConnections;
     }
 
     public Sync getSyncObject() {

@@ -65,7 +65,7 @@ public final class HostUsageProcessor {
                 if (currentBytesSnapshot >= lastBytesSnapshot) {
                     cumulativeBytes += currentBytesSnapshot - lastBytesSnapshot;
                 } else {
-                    cumulativeBytes += currentBytesSnapshot; // Zeus's counter reset.
+                    cumulativeBytes += currentBytesSnapshot; // LB Device's counter reset.
                 }
             }
 
@@ -94,7 +94,7 @@ public final class HostUsageProcessor {
                 if (currentBytesSnapshot >= lastBytesSnapshot) {
                     cumulativeBytes += currentBytesSnapshot - lastBytesSnapshot;
                 } else {
-                    cumulativeBytes += currentBytesSnapshot; // Zeus's counter reset.
+                    cumulativeBytes += currentBytesSnapshot; // LB Device's counter reset.
                 }
             }
 

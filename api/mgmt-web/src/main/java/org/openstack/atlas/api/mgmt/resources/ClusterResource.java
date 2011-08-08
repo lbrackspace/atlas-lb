@@ -116,15 +116,15 @@ public class ClusterResource extends ManagementDependencyProvider {
             return ResponseFactory.accessDenied();
         }
         Integer clusterId = id;
-        List<ZeusRateLimitedLoadBalancer> zeusRateLimitedLoadBalancerList;
-        ZeusRateLimitedLoadBalancers zeusRateLimitedLoadBalancers = new ZeusRateLimitedLoadBalancers();
+        List<LBDeviceRateLimitedLoadBalancer> lbDeviceRateLimitedLoadBalancerList;
+        LBDeviceRateLimitedLoadBalancers lbDeviceRateLimitedLoadBalancers = new LBDeviceRateLimitedLoadBalancers();
         try {
-            zeusRateLimitedLoadBalancerList = clusterService.getRateLimitedLoadBalancersInCluster(clusterId);
+            lbDeviceRateLimitedLoadBalancerList = clusterService.getRateLimitedLoadBalancersInCluster(clusterId);
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
-        zeusRateLimitedLoadBalancers.getZeusRateLimitedLoadBalancers().addAll(zeusRateLimitedLoadBalancerList);
-        return Response.status(200).entity(zeusRateLimitedLoadBalancers).build();
+        lbDeviceRateLimitedLoadBalancers.getLBDeviceRateLimitedLoadBalancers().addAll(lbDeviceRateLimitedLoadBalancerList);
+        return Response.status(200).entity(lbDeviceRateLimitedLoadBalancers).build();
     }
 
      @GET
@@ -160,7 +160,7 @@ public class ClusterResource extends ManagementDependencyProvider {
 
     @GET
     @Path("endpoint")
-    public Response getClusterSoapEndPoint() {
+    public Response getClusterEndPoint() {
         if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
@@ -264,7 +264,7 @@ public class ClusterResource extends ManagementDependencyProvider {
                     conn = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(dbHost);
                 } catch (Exception e) {
                     LOG.error(e);
-                    notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), "Error during getting total connections for host " + dbHost.getId());
+                    notificationService.saveAlert(e, AlertType.LBDEVICE_FAILURE.name(), "Error during getting total connections for host " + dbHost.getId());
                 }
                 totalConnections = totalConnections + conn;
 

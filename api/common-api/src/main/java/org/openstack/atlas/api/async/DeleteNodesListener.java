@@ -17,7 +17,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_NODE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 
 public class DeleteNodesListener extends BaseListener {
 
@@ -44,15 +44,15 @@ public class DeleteNodesListener extends BaseListener {
         String doomedIdsStr = StringConverter.integersAsString(doomedNodeIds);
 
         try {
-            LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in Zeus...", doomedIdsStr, msg.getLoadBalancerId()));
+            LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in LB Device...", doomedIdsStr, msg.getLoadBalancerId()));
             dbLoadBalancer = nodeService.delNodes(dbLoadBalancer, doomedNodes);
             reverseProxyLoadBalancerService.removeNodes(msg.getLoadBalancerId(), msg.getAccountId(), doomedNodes);
-            LOG.debug(String.format("Successfully removed nodes '[%s]' from load balancer '%d' in Zeus.", doomedIdsStr, msg.getLoadBalancerId()));
+            LOG.debug(String.format("Successfully removed nodes '[%s]' from load balancer '%d' in LB Device.", doomedIdsStr, msg.getLoadBalancerId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error removing nodes '%s' in Zeus for loadbalancer '%d'.", doomedIdsStr, msg.getLoadBalancerId());
+            String alertDescription = String.format("Error removing nodes '%s' in LB Device for loadbalancer '%d'.", doomedIdsStr, msg.getLoadBalancerId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(msg.getAccountId(), msg.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
+            notificationService.saveAlert(msg.getAccountId(), msg.getLoadBalancerId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(msg, doomedNodeIds);
             return;
         }

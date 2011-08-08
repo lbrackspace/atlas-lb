@@ -25,19 +25,19 @@ public class UsagesForPollingDatabaseTest {
         private Map<String, Long> bytesOutMap;
         private Map<String, Integer> currentConnectionsMap;
         private Map<Integer, LoadBalancerUsage> usagesAsMap;
-        private String zxtmName;
+        private String name;
         private LoadBalancerUsage currentUsage;
 
         @Before
         public void standUp() {
-            zxtmName = "1234_1234";
+            name = "1234_1234";
             bytesInMap = new HashMap<String, Long>();
             bytesOutMap = new HashMap<String, Long>();
             currentConnectionsMap = new HashMap<String, Integer>();
             usagesAsMap = new HashMap<Integer, LoadBalancerUsage>();
-            bytesInMap.put(zxtmName, 100l);
-            bytesOutMap.put(zxtmName, 200l);
-            currentConnectionsMap.put(zxtmName, 50);
+            bytesInMap.put(name, 100l);
+            bytesOutMap.put(name, 200l);
+            currentConnectionsMap.put(name, 50);
 
             currentUsage = new LoadBalancerUsage();
             currentUsage.setAccountId(1234);
@@ -58,7 +58,7 @@ public class UsagesForPollingDatabaseTest {
         public void shouldRunInProperOrderWhenNumPollsIsZero() {
             LoadBalancerUsage mockedUsageRecord = mock(LoadBalancerUsage.class);
             mockedUsageRecord.setNumberOfPolls(0);
-            usagesForDatabase.updateCurrentRecord(zxtmName, mockedUsageRecord);
+            usagesForDatabase.updateCurrentRecord(name, mockedUsageRecord);
             InOrder inOrder = inOrder(mockedUsageRecord);
 
             inOrder.verify(mockedUsageRecord).setNumberOfPolls(0);
@@ -74,7 +74,7 @@ public class UsagesForPollingDatabaseTest {
         @Test
         public void shouldRunInProperOrderWhenNumPollsIsNotZero() {
             LoadBalancerUsage spy = spy(currentUsage);
-            usagesForDatabase.updateCurrentRecord(zxtmName, spy);
+            usagesForDatabase.updateCurrentRecord(name, spy);
             InOrder inOrder = inOrder(spy);
 
             inOrder.verify(spy).setEndTime(any(Calendar.class));
@@ -94,18 +94,18 @@ public class UsagesForPollingDatabaseTest {
         private Map<String, Long> bytesOutMap;
         private Map<String, Integer> currentConnectionsMap;
         private Map<Integer, LoadBalancerUsage> usagesAsMap;
-        private String zxtmName;
+        private String name;
 
         @Before
         public void standUp() {
-            zxtmName = "1234_1234";
+            name = "1234_1234";
             bytesInMap = new HashMap<String, Long>();
             bytesOutMap = new HashMap<String, Long>();
             currentConnectionsMap = new HashMap<String, Integer>();
             usagesAsMap = new HashMap<Integer, LoadBalancerUsage>();
-            bytesInMap.put(zxtmName, 100l);
-            bytesOutMap.put(zxtmName, 200l);
-            currentConnectionsMap.put(zxtmName, 50);
+            bytesInMap.put(name, 100l);
+            bytesOutMap.put(name, 200l);
+            currentConnectionsMap.put(name, 50);
             
             usagesForDatabase = new UsagesForPollingDatabase(null, bytesInMap, bytesOutMap, currentConnectionsMap, null, usagesAsMap);
         }
@@ -141,7 +141,7 @@ public class UsagesForPollingDatabaseTest {
         }
 
         @Test
-        public void shouldCalculateCumBandwidthBytesInWhenZeusResetsMemory() {
+        public void shouldCalculateCumBandwidthBytesInWhenLBDeviceResetsMemory() {
             LoadBalancerUsage usageRecord = new LoadBalancerUsage();
             usageRecord.setCumulativeBandwidthBytesIn(2048l);
             usageRecord.setLastBandwidthBytesIn(1024l);
@@ -161,7 +161,7 @@ public class UsagesForPollingDatabaseTest {
         }
 
         @Test
-        public void shouldCalculateCumBandwidthBytesInWhenUsageRecordWithOldZeusValue() {
+        public void shouldCalculateCumBandwidthBytesInWhenUsageRecordWithOldLBDeviceValue() {
             LoadBalancerUsage usageRecord = new LoadBalancerUsage();
             usageRecord.setCumulativeBandwidthBytesIn(0l);
             usageRecord.setLastBandwidthBytesIn(1024l);
@@ -171,7 +171,7 @@ public class UsagesForPollingDatabaseTest {
         }
 
         @Test
-        public void shouldCalculateCumBandwidthBytesInWhenUsageRecordWithOldZeusValueAndZeusResets() {
+        public void shouldCalculateCumBandwidthBytesInWhenUsageRecordWithOldLBDeviceValueAndLBDeviceResets() {
             LoadBalancerUsage usageRecord = new LoadBalancerUsage();
             usageRecord.setCumulativeBandwidthBytesIn(0l);
             usageRecord.setLastBandwidthBytesIn(1024l);

@@ -312,7 +312,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             throw new UnprocessableEntityException(msg);
         }
 
-        //this use case requires a loadbalancer in ERROR or SUSPENDED status to be deleted from Zeus and set to deleted in DB
+        //this use case requires a loadbalancer in ERROR or SUSPENDED status to be deleted from LB Device and set to deleted in DB
         LOG.debug(String.format("Updating dbLB[%d] status to pending_delete", dbLb.getId()));
         dbLb.setStatus(LoadBalancerStatus.PENDING_DELETE);
 

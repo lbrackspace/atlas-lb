@@ -8,7 +8,7 @@ import org.openstack.atlas.service.domain.exceptions.UnauthorizedException;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.Sync;
-import org.openstack.atlas.service.domain.pojos.ZeusEvent;
+import org.openstack.atlas.service.domain.pojos.LBDeviceEvent;
 import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
@@ -161,10 +161,10 @@ public abstract class BaseListener implements MessageListener {
         return dataContainer;
     }
 
-    protected ZeusEvent getZeusEventFromMessage(Message message) throws JMSException {
+    protected LBDeviceEvent getLBDeviceEventFromMessage(Message message) throws JMSException {
         ObjectMessage object = (ObjectMessage) message;
-        ZeusEvent zeusEvent = (ZeusEvent) object.getObject();
-        return zeusEvent;
+        LBDeviceEvent lbDeviceEvent = (LBDeviceEvent) object.getObject();
+        return lbDeviceEvent;
     }
 
     protected void sendToRetryDestination(final Message message, final LoadBalancer loadBalancer) throws JMSException {
