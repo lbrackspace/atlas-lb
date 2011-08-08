@@ -53,6 +53,16 @@ public class ErrorpageResource extends CommonDependencyProvider{
         return Response.status(202).build();
     }
 
+    @DELETE
+    public Response deleteErrorpage(){
+        String errorcontent;
+
+//        errorcontent = loadBalancerService.setErrorPage(loadBalancerId, accountId);
+//        errorpage.setContent(errorcontent);
+        Response resp = Response.status(200).build();
+        return resp;
+    }
+
     public Log getLOG() {
         return LOG;
     }

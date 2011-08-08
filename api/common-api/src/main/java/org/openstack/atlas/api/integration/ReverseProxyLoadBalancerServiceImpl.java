@@ -467,6 +467,39 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
+    public void setErrorFile(LoadBalancer lb, String fileName) throws EntityNotFoundException, MalformedURLException, DecryptException, AxisFault, InsufficientRequestException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        try {
+            reverseProxyLoadBalancerAdapter.setErrorFile(config, lb, fileName);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public void removeErrorFile(LoadBalancer lb) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        try {
+            reverseProxyLoadBalancerAdapter.removeErrorFile(config, lb);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public void setDefaultErrorFile(LoadBalancer lb) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        try {
+            reverseProxyLoadBalancerAdapter.removeErrorFile(config, lb);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
     public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException {
         Cluster cluster = host.getCluster();
         Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
