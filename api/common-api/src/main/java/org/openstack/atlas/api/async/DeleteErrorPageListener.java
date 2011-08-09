@@ -30,9 +30,13 @@ public class DeleteErrorPageListener extends BaseListener {
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
 
-        List<Host> hosts = hostService.getAllHosts();
-        for (Host host : hosts) {
-            reverseProxyLoadBalancerService.deleteErrorFile(host, DEFAULT_ERROR_PAGE);
+        if (getDataContainerFromMessage(message).getAccountId() == null && getDataContainerFromMessage(message).getLoadBalancerId() == null) {
+            List<Host> hosts = hostService.getAllHosts();
+            for (Host host : hosts) {
+                reverseProxyLoadBalancerService.deleteErrorFile(host, DEFAULT_ERROR_PAGE);
+            }
+        } else {
+            reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile();
         }
     }
 }

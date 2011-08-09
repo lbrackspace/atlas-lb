@@ -40,19 +40,25 @@ public class ErrorpageResource extends CommonDependencyProvider{
         return resp;
     }
 
-//    @DELETE
-//    public Response deleteErrorpage(){
-//        if () {
-//           //Do management
-//           //Delete default
-//        } else {
-//            //Do public
-//            //Delete custom
-//        }
-//
-//        Response resp = Response.status(200).build();
-//        return resp;
-//    }
+    @DELETE
+    public Response deleteErrorpage(){
+        try {
+            loadBalancerService.removeErrorPage(loadBalancerId, accountId);
+        } catch (EntityNotFoundException ex) {
+            return ResponseFactory.getErrorResponse(ex, null,null);
+        }
+
+        MessageDataContainer container = new MessageDataContainer();
+        container.setAccountId(accountId);
+        container.setLoadBalancerId(loadBalancerId);
+        try {
+            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_ERROR_PAGE, container);
+        } catch (JMSException e) {
+            return ResponseFactory.getErrorResponse(e, null,null);
+        }
+        Response resp = Response.status(200).build();
+        return resp;
+    }
 
     @PUT
     public Response setErrorPage(Errorpage errorpage){
