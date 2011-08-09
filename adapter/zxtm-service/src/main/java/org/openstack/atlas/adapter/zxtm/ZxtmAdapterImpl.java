@@ -1563,7 +1563,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     private String getErrorFileName(Integer loadbalancerId, Integer accountId) {
-        String msg = String.format("%d_%d_error.html", loadbalancerId, accountId);
+        String msg = String.format("%d_%d_error.html", accountId, loadbalancerId);
         return msg;
     }
 }
