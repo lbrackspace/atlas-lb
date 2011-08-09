@@ -2,10 +2,6 @@ package org.openstack.atlas.api.validation.results;
 
 import org.openstack.atlas.api.validation.exceptions.ValidationException;
 
-/**
- *
- * @author John Hopper
- */
 public class ExpectationResultBuilder {
 
     private ValidationException error;

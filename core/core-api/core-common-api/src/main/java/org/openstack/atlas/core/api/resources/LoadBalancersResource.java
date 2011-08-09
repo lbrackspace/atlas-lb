@@ -1,7 +1,14 @@
 package org.openstack.atlas.core.api.resources;
 
 import org.apache.log4j.Logger;
+import org.openstack.atlas.core.api.response.ResponseFactory;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
+import org.openstack.atlas.core.api.validation.Validator;
+import org.openstack.atlas.core.api.validation.ValidatorRepository;
+import org.openstack.atlas.core.api.validation.context.HttpRequestType;
+import org.openstack.atlas.core.api.validation.result.ValidatorResult;
+import org.openstack.atlas.core.api.validation.validator.ResourceValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
@@ -14,26 +21,25 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
 @Controller
-@Scope(value = "request")
+@Scope("request")
 public class LoadBalancersResource {
     private final Logger LOG = Logger.getLogger(LoadBalancersResource.class);
     private HttpHeaders requestHeaders;
     private Integer accountId;
+    @Autowired
+    private ResourceValidator<LoadBalancer> validator;
 
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createLoadBalancer(LoadBalancer loadBalancer) {
-        LOG.info("We created a loadbalancer!");
-        LOG.info(loadBalancer);
-        System.out.print("We created an lb");
-        System.out.print(loadBalancer);
-/*        ValidatorResult result = ValidatorRepository.getValidatorFor(LoadBalancer.class).validate(loadBalancer, HttpRequestType.POST);
+//        ValidatorResult result = ValidatorRepository.getValidatorFor(LoadBalancer.class).validate(loadBalancer, HttpRequestType.POST);
+        ValidatorResult result = validator.validate(loadBalancer, HttpRequestType.POST);
 
         if (!result.passedValidation()) {
-            return getValidationFaultResponse(result);
+            return ResponseFactory.getValidationFaultResponse(result);
         }
 
-        try {
+/*        try {
             org.openstack.atlas.service.domain.entities.LoadBalancer domainLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             domainLb.setAccountId(accountId);
             if (requestHeaders != null) {

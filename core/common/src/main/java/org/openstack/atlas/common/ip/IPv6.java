@@ -4,7 +4,7 @@ import org.openstack.atlas.common.converters.BitConverters;
 import org.openstack.atlas.common.crypto.HashUtil;
 import org.openstack.atlas.common.ip.exception.AccountUnHashableException;
 import org.openstack.atlas.common.ip.exception.IPBigIntegerConversionException;
-import org.openstack.atlas.common.ip.exception.IPStringConversionException;
+import org.openstack.atlas.common.ip.exception.IPStringConversionException1;
 
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
@@ -71,7 +71,7 @@ public class IPv6 implements Comparable<IPv6> {
         return out;
     }
 
-    public static String expand(String ipStr, int nwords) throws IPStringConversionException {
+    public static String expand(String ipStr, int nwords) throws IPStringConversionException1 {
         StringBuffer sb;
         String hex;
         int[] vals;
@@ -80,7 +80,7 @@ public class IPv6 implements Comparable<IPv6> {
         sb = new StringBuffer();
         vals = splitvals(ipStr);
         if (vals == null) {
-            throw new IPStringConversionException("Error converting hex to binary in IPv6 ip");
+            throw new IPStringConversionException1("Error converting hex to binary in IPv6 ip");
         }
         expanded_vals = expand(vals, nwords);
         for (i = 0; i < nwords - 1; i++) {
@@ -92,11 +92,11 @@ public class IPv6 implements Comparable<IPv6> {
         return sb.toString();
     }
 
-    public String expand() throws IPStringConversionException {
+    public String expand() throws IPStringConversionException1 {
         return bytes2IpString(IpString2bytes(ip)); // Silly but just used the inversion to force expansion
     }
 
-    private static int[] expand(int[] vals, int nwords) throws IPStringConversionException {
+    private static int[] expand(int[] vals, int nwords) throws IPStringConversionException1 {
         int[] out;
         int i;
         int j;
@@ -104,7 +104,7 @@ public class IPv6 implements Comparable<IPv6> {
         int negatives;
 
         if (vals.length < 3 || vals.length > nwords) {
-            throw new IPStringConversionException("Invalid Number of 16bit words in IPv6 address");
+            throw new IPStringConversionException1("Invalid Number of 16bit words in IPv6 address");
         }
 
         nvals = vals.length;
@@ -116,7 +116,7 @@ public class IPv6 implements Comparable<IPv6> {
         }
 
         if (negatives > 3) {
-            throw new IPStringConversionException("Invalid IPv6 Zero compression");
+            throw new IPStringConversionException1("Invalid IPv6 Zero compression");
         }
 
         if (negatives == 3 && nvals == 3) {
@@ -172,10 +172,10 @@ public class IPv6 implements Comparable<IPv6> {
             return out;
         }
 
-        throw new IPStringConversionException("Invalid IPv6 ip");
+        throw new IPStringConversionException1("Invalid IPv6 ip");
     }
 
-    public BigInteger toBigInteger() throws IPStringConversionException {
+    public BigInteger toBigInteger() throws IPStringConversionException1 {
         BigInteger out;
         out = new BigInteger(1, this.getBytes());
         return out;
@@ -203,14 +203,14 @@ public class IPv6 implements Comparable<IPv6> {
         }
         try {
             out = new IPv6(bytesOut);
-        } catch (IPStringConversionException ex) {
+        } catch (IPStringConversionException1 ex) {
             throw new IPBigIntegerConversionException("Impossible Exception Conditions where pre checked");
         }
 
         return out;
     }
 
-    public static byte[] IpString2bytes(String ipStr) throws IPStringConversionException {
+    public static byte[] IpString2bytes(String ipStr) throws IPStringConversionException1 {
         int i;
         int j;
         int val;
@@ -250,7 +250,7 @@ public class IPv6 implements Comparable<IPv6> {
         return out;
     }
 
-    public static String bytes2IpString(byte[] in) throws IPStringConversionException {
+    public static String bytes2IpString(byte[] in) throws IPStringConversionException1 {
         int i;
         int hi;
         int lo;
@@ -259,7 +259,7 @@ public class IPv6 implements Comparable<IPv6> {
 
         if (in.length != 16) {
             String msg = "Error IPv6 requires byte array of length 16";
-            throw new IPStringConversionException(msg);
+            throw new IPStringConversionException1(msg);
         }
         sb = new StringBuffer();
         for (i = 0; i < 14; i += 2) {
@@ -281,11 +281,11 @@ public class IPv6 implements Comparable<IPv6> {
         this.ip = ip;
     }
 
-    public IPv6(byte[] in) throws IPStringConversionException {
+    public IPv6(byte[] in) throws IPStringConversionException1 {
         this.ip = bytes2IpString(in);
     }
 
-    public void setIp(byte[] in) throws IPStringConversionException {
+    public void setIp(byte[] in) throws IPStringConversionException1 {
         ip = bytes2IpString(in);
     }
 
@@ -293,7 +293,7 @@ public class IPv6 implements Comparable<IPv6> {
         return ip;
     }
 
-    public byte[] getBytes() throws IPStringConversionException {
+    public byte[] getBytes() throws IPStringConversionException1 {
         return IpString2bytes(this.ip);
     }
 
@@ -301,7 +301,7 @@ public class IPv6 implements Comparable<IPv6> {
         this.ip = ip;
     }
 
-    public void insertInteger(int in, int startBit) throws IPStringConversionException {
+    public void insertInteger(int in, int startBit) throws IPStringConversionException1 {
         int size = 32;
         byte[] intBytes;
         BigInteger bigInt;
@@ -310,7 +310,7 @@ public class IPv6 implements Comparable<IPv6> {
         this.insertBigInteger(bigInt, startBit, size);
     }
 
-    public void insertBigInteger(BigInteger in, int startBit, int size) throws IPStringConversionException {
+    public void insertBigInteger(BigInteger in, int startBit, int size) throws IPStringConversionException1 {
         BigInteger bigInt;
         BigInteger thisIpInt;
         BigInteger mask;
@@ -328,12 +328,12 @@ public class IPv6 implements Comparable<IPv6> {
             this.ip = new IPv6(thisIpInt).expand();
 
         } catch (IPBigIntegerConversionException ex) {
-            throw new IPStringConversionException("Impossible exception conditions where already checked");
+            throw new IPStringConversionException1("Impossible exception conditions where already checked");
 
         }
     }
 
-    public void setAccountPartition(int accountId) throws IPStringConversionException {
+    public void setAccountPartition(int accountId) throws IPStringConversionException1 {
         byte[] accountBytes = String.format("%s", accountId).getBytes();
         byte[] accountSha1;
         try {
@@ -345,22 +345,22 @@ public class IPv6 implements Comparable<IPv6> {
         this.insertBigInteger(sha1Int, 64, 32);
     }
 
-    public void setVipOctets(int lo) throws IPStringConversionException {
+    public void setVipOctets(int lo) throws IPStringConversionException1 {
         this.insertInteger(lo, 96);
     }
 
-    public int getVipOctets() throws IPStringConversionException {
+    public int getVipOctets() throws IPStringConversionException1 {
         Integer out;
         BigInteger bigInt = this.toBigInteger();
         bigInt = bigInt.and(vipOctetMask);
         out = bigInt.intValue();
         if (out < 0) {
-            throw new IPStringConversionException("Negative vipOctet found");
+            throw new IPStringConversionException1("Negative vipOctet found");
         }
         return out;
     }
 
-    public void setClusterPartition(IPv6Cidr clusterCidr) throws IPStringConversionException {
+    public void setClusterPartition(IPv6Cidr clusterCidr) throws IPStringConversionException1 {
         String newIp;
         BigInteger ipDelta = this.toBigInteger();
         BigInteger mask = new BigInteger(1, clusterCidr.getMaskBytes());
@@ -372,7 +372,7 @@ public class IPv6 implements Comparable<IPv6> {
         try {
             this.ip = new IPv6(ipDelta).getString();
         } catch (IPBigIntegerConversionException ex) {
-            throw new IPStringConversionException("Unknown failure converting string. BigNum should have already been trimmed");
+            throw new IPStringConversionException1("Unknown failure converting string. BigNum should have already been trimmed");
         }
 
     }
@@ -383,7 +383,7 @@ public class IPv6 implements Comparable<IPv6> {
 
         try {
             return this.expand();
-        } catch (IPStringConversionException ex) {
+        } catch (IPStringConversionException1 ex) {
             return String.format("{%s:%s}", ex.getClass().getName(), ex.getMessage());
         }
     }
@@ -403,12 +403,12 @@ public class IPv6 implements Comparable<IPv6> {
         String thatIp;
         try {
             thisIp = this.ip == null ? null : this.expand();
-        } catch (IPStringConversionException ex) {
+        } catch (IPStringConversionException1 ex) {
             thisIp = this.ip;
         }
         try {
             thatIp = that.ip == null ? null : that.expand();
-        } catch (IPStringConversionException ex) {
+        } catch (IPStringConversionException1 ex) {
             thatIp = that.ip;
         }
 
@@ -426,7 +426,7 @@ public class IPv6 implements Comparable<IPv6> {
         try {
             thisIp = this.ip == null ? null : this.expand();
 
-        } catch (IPStringConversionException ex) {
+        } catch (IPStringConversionException1 ex) {
             thisIp = this.ip;
         }
         hash = 97 * hash + (this.ip != null ? this.ip.hashCode() : 0);
@@ -441,7 +441,7 @@ public class IPv6 implements Comparable<IPv6> {
         try {
             thisInt = this.toBigInteger();
             thatInt = that.toBigInteger();
-        } catch (IPStringConversionException ex) {
+        } catch (IPStringConversionException1 ex) {
             throw new IllegalArgumentException("One IP address was invalid");
         }
         out = thisInt.compareTo(thatInt);

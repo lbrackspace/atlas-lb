@@ -1,6 +1,6 @@
 package org.openstack.atlas.common.ip;
 
-import org.openstack.atlas.common.ip.exception.IPStringConversionException;
+import org.openstack.atlas.common.ip.exception.IPStringConversionException1;
 import org.openstack.atlas.common.ip.exception.IpTypeMissMatchException;
 
 import java.util.regex.Matcher;
@@ -18,17 +18,17 @@ public class IPv6Cidr {
     public IPv6Cidr() {
     }
 
-    public IPv6Cidr(String cidr) throws IPStringConversionException {
+    public IPv6Cidr(String cidr) throws IPStringConversionException1 {
         this.setCidr(cidr);
     }
 
-    public void setCidr(String in) throws IPStringConversionException {
+    public void setCidr(String in) throws IPStringConversionException1 {
         String msg;
         String ipStr;
         String subnetStr;
         Matcher ipMatcher;
         if (in == null) {
-            throw new IPStringConversionException("INVALID SUBNET, CIDR was NULL");
+            throw new IPStringConversionException1("INVALID SUBNET, CIDR was NULL");
         }
 
         ipMatcher = subnetPattern.matcher(in);
@@ -40,23 +40,23 @@ public class IPv6Cidr {
                 subnetint = Integer.parseInt(subnetStr);
                 if (subnetint < 0 || subnetint > 128 || !IPUtils.isValidIpv6String(ipStr)) {
                     msg = String.format("Subnet %d not in [0,128]", subnetint);
-                    throw new IPStringConversionException(msg);
+                    throw new IPStringConversionException1(msg);
                 }
                 this.subnet = subnetint;
             } catch (NumberFormatException e) {
                 msg = String.format("Error converting %s to integer", subnetStr);
-                throw new IPStringConversionException(msg);
+                throw new IPStringConversionException1(msg);
             }
             this.cidr = in;
             ipBytes = new IPv6(ipStr).getBytes();
             maskBytes = IPUtils.rollMask(subnetint, 16);
         } else {
             msg = String.format("INVALID SUBNET: %s", in);
-            throw new IPStringConversionException(msg);
+            throw new IPStringConversionException1(msg);
         }
     }
 
-    public boolean contains(String ip) throws IPStringConversionException, IpTypeMissMatchException {
+    public boolean contains(String ip) throws IPStringConversionException1, IpTypeMissMatchException {
         boolean out;
         if(!IPUtils.isValidIpv6String(ip)) {
             return false;
@@ -68,7 +68,7 @@ public class IPv6Cidr {
         return out;
     }
 
-    public boolean matches(IPv6Cidr oCidr) throws IpTypeMissMatchException, IPStringConversionException {
+    public boolean matches(IPv6Cidr oCidr) throws IpTypeMissMatchException, IPStringConversionException1 {
         if (oCidr == null) {
             return false;
         }

@@ -1,6 +1,6 @@
 package org.openstack.atlas.common.ip.exception;
 
-public class AccountUnHashableException extends IPStringConversionException {
+public class AccountUnHashableException extends IPStringConversionException1 {
 
     public AccountUnHashableException() {
         super();

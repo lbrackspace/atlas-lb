@@ -2,7 +2,7 @@ package org.openstack.atlas.common.ip;
 
 import org.openstack.atlas.common.converters.BitConverters;
 import org.openstack.atlas.common.ip.exception.IPBigIntegerConversionException;
-import org.openstack.atlas.common.ip.exception.IPStringConversionException;
+import org.openstack.atlas.common.ip.exception.IPStringConversionException1;
 
 import java.math.BigInteger;
 
@@ -38,7 +38,7 @@ public class IPv6Bits extends IPv6{
         }
         try {
             out = new IPv6(bytesOut);
-        } catch (IPStringConversionException ex) {
+        } catch (IPStringConversionException1 ex) {
             throw new IPBigIntegerConversionException("Impossible Exception Conditions where pre checked");
         }
 

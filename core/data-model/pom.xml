@@ -48,7 +48,7 @@
                      <execution>
                         <id>generate-core-api-sources</id>
                         <configuration>
-                            <staleFile>target/lb1.staleFile</staleFile>
+                            <staleFile>target/core-api.staleFile</staleFile>
                             <extension>true</extension>
                             <schemaDirectory>
                                 ${basedir}/src/main/resources/META-INF/xsd
@@ -57,6 +57,23 @@
                             <schemaFiles>CoreApi.xsd</schemaFiles>
                             <packageName>org.openstack.atlas.core.api.v1</packageName>
                             <arguments>-Xxew -setters</arguments>
+                        </configuration>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate-core-exception-sources</id>
+                        <configuration>
+                            <staleFile>target/core-exception.staleFile</staleFile>
+                            <extension>true</extension>
+                            <schemaDirectory>
+                                ${basedir}/src/main/resources/META-INF/xsd
+                            </schemaDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <schemaFiles>CoreExceptions.xsd</schemaFiles>
+                            <packageName>org.openstack.atlas.core.api.v1.exceptions</packageName>
+                            <arguments>-Xcollection-setter-injector</arguments>
                         </configuration>
                         <goals>
                             <goal>xjc</goal>

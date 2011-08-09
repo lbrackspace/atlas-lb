@@ -1,6 +1,6 @@
 package org.openstack.atlas.common.ip;
 
-import org.openstack.atlas.common.ip.exception.IPStringConversionException;
+import org.openstack.atlas.common.ip.exception.IPStringConversionException1;
 import org.openstack.atlas.common.ip.exception.IpTypeMissMatchException;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class IPv6Cidrs {
         this.cidrs = cidrs;
     }
 
-    public boolean contains(String ip) throws IPStringConversionException, IpTypeMissMatchException {
+    public boolean contains(String ip) throws IPStringConversionException1, IpTypeMissMatchException {
         for(IPv6Cidr cidr : cidrs){
             if(cidr.contains(ip)) {
                 return true;

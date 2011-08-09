@@ -1,6 +1,6 @@
 package org.openstack.atlas.common.ip;
 
-import org.openstack.atlas.common.ip.exception.IPStringConversionException;
+import org.openstack.atlas.common.ip.exception.IPStringConversionException1;
 import org.openstack.atlas.common.ip.exception.IpTypeMissMatchException;
 
 import java.util.regex.Matcher;
@@ -18,18 +18,18 @@ public class IPv4Cidr {
     public IPv4Cidr() {
     }
 
-    public IPv4Cidr(String cidr) throws IPStringConversionException  {
+    public IPv4Cidr(String cidr) throws IPStringConversionException1 {
         this.setCidr(cidr);
     }
 
-    public void setCidr(String in) throws IPStringConversionException {
+    public void setCidr(String in) throws IPStringConversionException1 {
         String msg;
         String ip;
         String subnet;
         Matcher ipMatcher;
         if (in == null) {
             msg = String.format("INVALID SUBNET %s", in);
-            throw new IPStringConversionException(msg);
+            throw new IPStringConversionException1(msg);
         }
 
         ipMatcher = subnetPattern.matcher(in);
@@ -41,23 +41,23 @@ public class IPv4Cidr {
                 subnetint = Integer.parseInt(subnet);
                 if (subnetint < 0 || subnetint > 32 || !IPUtils.isValidIpv4String(ip)) {
                     msg = String.format("Subnet %i not in [0,32]", subnetint);
-                    throw new IPStringConversionException(msg);
+                    throw new IPStringConversionException1(msg);
                 }
                 this.subnet = subnetint;
             } catch (NumberFormatException e) {
                 msg = String.format("Error converting %s to integer", subnet);
-                throw new IPStringConversionException(msg);
+                throw new IPStringConversionException1(msg);
             }
             this.cidr = in;
             ipBytes = new IPv4(ip).getBytes();
             maskBytes = IPUtils.rollMask(subnetint,4);
         } else {
             msg = String.format("INVALID SUBNET: %s", in);
-            throw new IPStringConversionException(msg);
+            throw new IPStringConversionException1(msg);
         }
     }
 
-    public boolean contains(String ip) throws IPStringConversionException, IpTypeMissMatchException {
+    public boolean contains(String ip) throws IPStringConversionException1, IpTypeMissMatchException {
         boolean out;
         if(!IPUtils.isValidIpv4String(ip)) {
             return false;

@@ -2,7 +2,7 @@ package org.openstack.atlas.common.ip;
 
 
 import org.openstack.atlas.common.converters.BitConverters;
-import org.openstack.atlas.common.ip.exception.IPStringConversionException;
+import org.openstack.atlas.common.ip.exception.IPStringConversionException1;
 import org.openstack.atlas.common.ip.exception.IpTypeMissMatchException;
 
 import java.util.Random;
@@ -17,7 +17,7 @@ public class IPUtils {
         IPv6 ip = new IPv6(in);
         try {
             ip.getBytes();
-        } catch (IPStringConversionException ex) {
+        } catch (IPStringConversionException1 ex) {
             return false;
         }
         return true;
@@ -80,7 +80,7 @@ public class IPUtils {
         IPv4 ip = new IPv4(in);
         try {
             ip.getBytes();
-        } catch (IPStringConversionException ex) {
+        } catch (IPStringConversionException1 ex) {
             return false;
         }
         return true;
@@ -96,14 +96,14 @@ public class IPUtils {
         return out;
     }
 
-    public static byte[] opBytes(byte[] a1, byte[] a2, ByteStreamOperation bop) throws IpTypeMissMatchException, IPStringConversionException {
+    public static byte[] opBytes(byte[] a1, byte[] a2, ByteStreamOperation bop) throws IpTypeMissMatchException, IPStringConversionException1 {
         byte[] out;
         int i;
         if (a1.length != a2.length) {
             throw new IpTypeMissMatchException("Incompatible IP Operation");
         }
         if (bop == null) {
-            throw new IPStringConversionException("No ByteStrteamOperation defined");
+            throw new IPStringConversionException1("No ByteStrteamOperation defined");
         }
         out = new byte[a1.length];
         for (i = 0; i < a1.length; i++) {
