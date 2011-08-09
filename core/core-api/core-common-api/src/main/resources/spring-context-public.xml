@@ -25,46 +25,5 @@
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 
     <!--RESOURCE BEANS-->
-    <bean id="loadBalancingPublicImpl"
-          class="org.openstack.atlas.core.api.resources.RootResource"
-          scope="request"/>
-    
-    <!--<bean id="loadBalancingPublicImpl"
-          class="org.openstack.atlas.core.api.resources.RootResource"
-          scope="request">
-        <property name="loadBalancersResource">
-            <bean class="org.openstack.atlas.api.resources.LoadBalancersResource"
-                  parent="commonDependencyProvider"
-                  scope="request">
-                <property name="stubResource" ref="stubResource"/>
-                <property name="bounceResource" ref="bounceResource"/>
-                <property name="protocolsResource">
-                    <bean class="org.openstack.atlas.api.resources.ProtocolsResource"
-                          parent="commonDependencyProvider"
-                          scope="request"/>
-                </property>
-                <property name="loadBalancerResource">
-                    <bean class="org.openstack.atlas.api.resources.LoadBalancerResource"
-                          parent="commonDependencyProvider"
-                          scope="request">
-                        <property name="sessionPersistenceResource" ref="sessionPersistenceResource"/>
-                        <property name="nodesResource" ref="nodesResource"/>
-                        <property name="accessListResource" ref="accessListResource"/>
-                        <property name="connectionLoggingResource" ref="connectionLoggingResource"/>
-                        <property name="virtualIpsResource" ref="virtualIpsResource"/>
-                        <property name="connectionThrottleResource" ref="connectionThrottleResource"/>
-                        <property name="healthMonitorResource" ref="healthMonitorResource"/>
-                        <property name="usageResource" ref="usageResource"/>
-                    </bean>
-                </property>
-                <property name="algorithmsResource">
-                    <bean class="org.openstack.atlas.api.resources.AlgorithmsResource"
-                          parent="commonDependencyProvider"
-                          scope="request"/>
-                </property>
-            </bean>
-        </property>
-    </bean>-->
-
-
+    <bean id="loadBalancingPublicImpl" class="org.openstack.atlas.api.resource.RootResource" scope="request"/>
 </beans>
