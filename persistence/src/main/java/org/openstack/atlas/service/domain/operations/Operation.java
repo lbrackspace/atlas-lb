@@ -94,5 +94,6 @@ public enum Operation {
     UPDATE_NODE,
     UPDATE_RATE_LIMIT,
     UPDATE_STICKY,
-    UPDATE_VIRTUAL_IP;
+    UPDATE_VIRTUAL_IP,
+    UPDATE_ERRORFILE;
 }

@@ -11,6 +11,7 @@ public class MessageDataContainer implements Serializable {
     private Integer accountId;
     private Integer loadBalancerId;
     private Integer virtualIpId;
+    private String errorFileContents;
     private Integer nodeId;
     private List<Integer> newVipIds;
     private List<Integer> newNodeIds;
@@ -88,5 +89,19 @@ public class MessageDataContainer implements Serializable {
 
     public void setNewNodeIds(List<Integer> newNodeIds) {
         this.newNodeIds = newNodeIds;
+    }
+
+    /**
+     * @return the errorFileContents
+     */
+    public String getErrorFileContents() {
+        return errorFileContents;
+    }
+
+    /**
+     * @param errorFileContents the errorFileContents to set
+     */
+    public void setErrorFileContents(String errorFileContents) {
+        this.errorFileContents = errorFileContents;
     }
 }
