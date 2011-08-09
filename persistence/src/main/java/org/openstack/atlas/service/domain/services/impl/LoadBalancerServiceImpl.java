@@ -65,6 +65,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     @Transactional
+    public String getDefaultErrorPage() throws EntityNotFoundException {
+        return loadBalancerRepository.getDefaultErrorPage().getValue();
+    }
+
+    @Override
+    @Transactional
     public LoadBalancer create(LoadBalancer lb) throws Exception {
         if (isLoadBalancerLimitReached(lb.getAccountId())) {
             LOG.error("Load balancer limit reached. Sending error response to client...");
@@ -680,12 +686,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return validLbs;
     }
 
-    @Transactional
-    @Override
-    public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException{
-        return loadBalancerRepository.setErrorPage(lid, accountId, content);
-    }
-
     private void processSpecifiedOrDefaultHost(LoadBalancer lb) throws EntityNotFoundException, BadRequestException {
         Integer hostId = null;
         Host specifiedHost;
@@ -703,6 +703,18 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 lb.setHost(hostService.getDefaultActiveHost());
             }
         }
+    }
+
+    @Transactional
+    @Override
+    public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException{
+        return loadBalancerRepository.setErrorPage(lid, accountId, content);
+    }
+
+    @Transactional
+    @Override
+    public boolean setDefaultErrorPage(String content) throws EntityNotFoundException{
+        return loadBalancerRepository.setDefaultErrorPage(content);
     }
 
     @Transactional

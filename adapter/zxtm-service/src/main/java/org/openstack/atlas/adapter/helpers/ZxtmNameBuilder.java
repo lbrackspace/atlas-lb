@@ -65,6 +65,6 @@ public final class ZxtmNameBuilder {
             throw new InsufficientRequestException("Missing account id for load balancer.");
         }
 
-        return accountId + "_" + lbId + "error.html";
+        return accountId + "_" + lbId + "_error.html";
     }
 }

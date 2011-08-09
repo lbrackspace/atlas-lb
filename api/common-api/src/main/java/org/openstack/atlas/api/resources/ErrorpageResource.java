@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.service.domain.entities.UserPages;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.api.config.RestApiConfiguration;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
@@ -24,13 +25,15 @@ public class ErrorpageResource extends CommonDependencyProvider{
     private int accountId;
 
     @GET
-    public Response retrieveErrorpage(){
+    public Response retrieveErrorpage() throws BadRequestException {
         Errorpage errorpage = new Errorpage();
         String errorcontent;
         try {
             errorcontent = loadBalancerService.getErrorPage(loadBalancerId, accountId);
             if(errorcontent == null){
-                throw new EntityNotFoundException("Errorpage was empty");
+                errorcontent = loadBalancerService.getDefaultErrorPage();
+            } if (errorcontent == null) {
+                throw new BadRequestException("Could not retrive the error pages.");
             }
         } catch (EntityNotFoundException ex) {
             return ResponseFactory.getErrorResponse(ex, null,null);

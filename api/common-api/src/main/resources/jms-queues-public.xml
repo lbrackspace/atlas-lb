@@ -76,7 +76,7 @@
     <bean id="deleteErrorPageListenerContainer"
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
-        <property name="messageListener" ref="deleteLoadBalancerListener"/>
+        <property name="messageListener" ref="deleteErrorPageListener"/>
         <property name="destinationName" value="DELETE_ERROR_PAGE"/>
         <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
         <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>

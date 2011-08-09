@@ -595,7 +595,24 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer accountid, Integer loadbalancerId) throws InsufficientRequestException, RemoteException {
+    public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content) throws InsufficientRequestException, RemoteException {
+        ZxtmServiceStubs serviceStubs = null;
+        try {
+            serviceStubs = getServiceStubs(config);
+        } catch (AxisFault axisFault) {
+            axisFault.printStackTrace();
+        }
+        ConfExtraBindingStub extraService = null;
+        if (serviceStubs != null) {
+            extraService = serviceStubs.getZxtmConfExtraBinding();
+            if (extraService != null) {
+                extraService.uploadFile(DEFAULT_ERROR_PAGE, content.getBytes());
+            }
+        }
+    }
+
+    @Override
+    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountid) throws InsufficientRequestException, RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountid);
         serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{DEFAULT_ERROR_PAGE});

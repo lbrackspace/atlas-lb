@@ -32,6 +32,7 @@ public class DeleteErrorPageListener extends BaseListener {
         LOG.debug(message);
         MessageDataContainer data = getDataContainerFromMessage(message);
 
+        LOG.debug("About to remove the error file from zeus... ");
         if (data.getAccountId() != null && data.getLoadBalancerId() != null) {
              reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile(data.getAccountId(), data.getLoadBalancerId());
         } else {
@@ -39,5 +40,6 @@ public class DeleteErrorPageListener extends BaseListener {
             Host host = hostService.getAllHosts().get(0);
             reverseProxyLoadBalancerService.deleteErrorFile(host, DEFAULT_ERROR_PAGE);
         }
+        LOG.debug("Successfully removed the error file from zeus... ");
     }
 }

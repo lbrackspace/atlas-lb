@@ -1,6 +1,5 @@
 package org.openstack.atlas.service.domain.repository;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Errorpage;
 import org.openstack.atlas.service.domain.entities.*;
 
 import org.openstack.atlas.service.domain.exceptions.*;
@@ -11,7 +10,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jws.soap.SOAPBinding;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
@@ -22,8 +20,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.PublicKey;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -64,6 +60,20 @@ public class LoadBalancerRepository {
         return up;
     }
 
+    public Defaults getDefaultErrorPage() {
+        List<Defaults> defaultsList = new ArrayList<Defaults>();
+        Defaults up;
+        String qStr = "FROM Defaults d WHERE name = `global_error.html`";
+        Query q = entityManager.createQuery(qStr);
+        defaultsList = q.setMaxResults(1).getResultList();
+        if (defaultsList.size() <= 0) {
+            up = null;
+        } else {
+            up = defaultsList.get(0);
+        }
+        return up;
+    }
+
     public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException {
         UserPages up;
         up = getUserPages(lid, aid);
@@ -85,6 +95,21 @@ public class LoadBalancerRepository {
             return true;
         }else{
             up.setErrorpage(errorpage);
+            entityManager.merge(up);
+            return false;
+        }
+    }
+
+    public boolean setDefaultErrorPage(String errorpage) throws EntityNotFoundException{
+        boolean out=false;
+        Defaults up = getDefaultErrorPage();
+        if(up==null){
+            up = new Defaults();
+            up.setValue(errorpage);
+            entityManager.merge(up);
+            return true;
+        }else{
+            up.setValue(errorpage);
             entityManager.merge(up);
             return false;
         }
