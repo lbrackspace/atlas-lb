@@ -1,16 +1,16 @@
-package org.openstack.atlas.api.resources;
+package org.openstack.atlas.api.mgmt.resources;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
 import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
-import org.openstack.atlas.service.domain.entities.UserPages;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.core.Response;
 
 
 public class ErrorpageResource extends CommonDependencyProvider{
@@ -35,19 +35,21 @@ public class ErrorpageResource extends CommonDependencyProvider{
         return resp;
     }
 
-//    @DELETE
-//    public Response deleteErrorpage(){
-//        if () {
-//           //Do management
-//           //Delete default
-//        } else {
-//            //Do public
-//            //Delete custom
-//        }
-//
-//        Response resp = Response.status(200).build();
-//        return resp;
-//    }
+    @DELETE
+    public Response deleteErrorpage(){
+        //Delete error file from all hosts...
+
+        Response resp = Response.status(200).build();
+        return resp;
+    }
+
+    @PUT
+    public Response createErrorpage(){
+        //create error file from all hosts...
+
+        Response resp = Response.status(200).build();
+        return resp;
+    }
 
     public Log getLOG() {
         return LOG;

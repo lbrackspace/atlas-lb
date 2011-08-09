@@ -28,6 +28,7 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
     private SyncResource syncResource;
     private TicketsResource ticketsResource;
     private int id;
+    private ErrorpageResource errorPageResource;
 
     @GET
     @Path("host")
@@ -298,5 +299,13 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
 
     public int getId() {
         return id;
+    }
+
+    public void setErrorPageResource(ErrorpageResource errorPageResource) {
+        this.errorPageResource = errorPageResource;
+    }
+
+    public ErrorpageResource getErrorPageResource() {
+        return errorPageResource;
     }
 }

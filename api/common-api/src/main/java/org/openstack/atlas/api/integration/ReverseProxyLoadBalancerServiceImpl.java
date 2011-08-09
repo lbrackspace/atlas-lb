@@ -467,9 +467,47 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void setErrorFile(LoadBalancer lb) throws EntityNotFoundException, MalformedURLException, DecryptException {
+    public void setErrorFile(LoadBalancer lb, String fileName) throws EntityNotFoundException, MalformedURLException, DecryptException, AxisFault, InsufficientRequestException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-        reverseProxyLoadBalancerAdapter.setErrorFile(config, lb);
+        try {
+            reverseProxyLoadBalancerAdapter.setErrorFile(config, lb, fileName);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public void removeAndSetDefaultErrorFile(LoadBalancer lb) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        try {
+            reverseProxyLoadBalancerAdapter.removeAndSetDefaultErrorFile(config, lb);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public void setDefaultErrorFile(LoadBalancer lb) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        try {
+            reverseProxyLoadBalancerAdapter.removeAndSetDefaultErrorFile(config, lb);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public void deleteErrorFile(Host host, String fileName) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+        LoadBalancerEndpointConfiguration config = getConfig(host);
+        try {
+            reverseProxyLoadBalancerAdapter.deleteErrorFile(config, fileName);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
     }
 
     @Override

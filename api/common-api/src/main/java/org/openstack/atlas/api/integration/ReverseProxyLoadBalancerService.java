@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.integration;
 
+import org.apache.axis.AxisFault;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ObjectExistsException;
@@ -91,5 +92,11 @@ public interface ReverseProxyLoadBalancerService {
 
     public void updateRateLimit(int id, int accountId, RateLimit rateLimit) throws Exception;
 
-    public void setErrorFile(LoadBalancer loadBalancer) throws EntityNotFoundException, MalformedURLException, DecryptException;
+    public void setErrorFile(LoadBalancer loadBalancer, String fileName) throws EntityNotFoundException, MalformedURLException, DecryptException, AxisFault, InsufficientRequestException;
+
+    public void removeAndSetDefaultErrorFile(LoadBalancer loadBalancer) throws EntityNotFoundException, MalformedURLException, DecryptException, RemoteException, InsufficientRequestException;
+
+    public void setDefaultErrorFile(LoadBalancer loadBalancer) throws EntityNotFoundException, MalformedURLException, DecryptException, RemoteException, InsufficientRequestException;
+
+    public void deleteErrorFile(Host host, String fileName) throws EntityNotFoundException, MalformedURLException, DecryptException, RemoteException, InsufficientRequestException;
 }
