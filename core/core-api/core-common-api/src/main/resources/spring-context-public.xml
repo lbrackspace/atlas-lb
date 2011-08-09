@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd ">
+
+    <import resource="classpath:META-INF/cxf/cxf.xml"/>
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
+    <!--<import resource="db-services.xml" />-->
+    <!--<import resource="db-usage-services.xml" />-->
+    <!--<import resource="jms-queues-public.xml" />-->
+
+    <context:annotation-config/>
+
+    <!--STANDALONE SPRING SETTINGS-->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="file:/etc/openstack/atlas/public-api.conf"/>
+    </bean>
+
+    <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
+
+    <!--RESOURCE BEANS-->
+    <bean id="loadBalancingPublicImpl"
+          class="org.openstack.atlas.core.api.resources.RootResource"
+          scope="request"/>
+    
+    <!--<bean id="loadBalancingPublicImpl"
+          class="org.openstack.atlas.core.api.resources.RootResource"
+          scope="request">
+        <property name="loadBalancersResource">
+            <bean class="org.openstack.atlas.api.resources.LoadBalancersResource"
+                  parent="commonDependencyProvider"
+                  scope="request">
+                <property name="stubResource" ref="stubResource"/>
+                <property name="bounceResource" ref="bounceResource"/>
+                <property name="protocolsResource">
+                    <bean class="org.openstack.atlas.api.resources.ProtocolsResource"
+                          parent="commonDependencyProvider"
+                          scope="request"/>
+                </property>
+                <property name="loadBalancerResource">
+                    <bean class="org.openstack.atlas.api.resources.LoadBalancerResource"
+                          parent="commonDependencyProvider"
+                          scope="request">
+                        <property name="sessionPersistenceResource" ref="sessionPersistenceResource"/>
+                        <property name="nodesResource" ref="nodesResource"/>
+                        <property name="accessListResource" ref="accessListResource"/>
+                        <property name="connectionLoggingResource" ref="connectionLoggingResource"/>
+                        <property name="virtualIpsResource" ref="virtualIpsResource"/>
+                        <property name="connectionThrottleResource" ref="connectionThrottleResource"/>
+                        <property name="healthMonitorResource" ref="healthMonitorResource"/>
+                        <property name="usageResource" ref="usageResource"/>
+                    </bean>
+                </property>
+                <property name="algorithmsResource">
+                    <bean class="org.openstack.atlas.api.resources.AlgorithmsResource"
+                          parent="commonDependencyProvider"
+                          scope="request"/>
+                </property>
+            </bean>
+        </property>
+    </bean>-->
+
+
+</beans>

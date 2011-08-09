@@ -8,7 +8,7 @@
             xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
             jaxb:extensionBindingPrefixes="xjc">
 
-    <xsd:import schemaLocation="global1.xsd" namespace="http://docs.openstack.org/loadbalancers/api/global/v1.1"/>
+    <xsd:import schemaLocation="CoreGlobal.xsd" namespace="http://docs.openstack.org/loadbalancers/api/global/v1.1"/>
 
     <xsd:element name="loadBalancers">
         <xsd:complexType>

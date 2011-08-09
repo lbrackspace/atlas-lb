@@ -20,7 +20,7 @@
                                printMethod="javax.xml.bind.DatatypeConverter.printDate"/>
                 <jaxb:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
                                parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
-                               printMethod="org.openstack.atlas.util.converters.DateTimeConverters.calToisoNoExc"/>
+                               printMethod="org.openstack.atlas.datamodel.DateTimeConverters.calToisoNoExc"/>
             </jaxb:globalBindings>
         </xsd:appinfo>
     </xsd:annotation>

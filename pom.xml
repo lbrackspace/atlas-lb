@@ -26,6 +26,7 @@
         <module>logs</module>
         <module>jobs</module>
         <module>rax</module>
+        <module>core</module>
     </modules>
 
     <build>
@@ -127,66 +128,6 @@
                 </exclusions>
             </dependency>
 
-           <!-- <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>configuration</artifactId>
-                <version>${project.version}</version>
-            </dependency>-->
-
-            <!--<dependency>
-                <groupId>org.openstack.atlas.shared</groupId>
-                <artifactId>atlas-shared-data-model</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.openstack.atlas.shared</groupId>
-                <artifactId>atlas-shared-domain</artifactId>
-                <version>${project.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-context</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-tx</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-orm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-aop</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.openstack.atlas.shared</groupId>
-                <artifactId>atlas-shared-util</artifactId>
-                <version>${project.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.openstack.atlas.adapter</groupId>
-                <artifactId>atlas-adapter-service</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.openstack.atlas.adapter</groupId>
-                <artifactId>atlas-zxtm-stubs</artifactId>
-                <version>${project.version}</version>
-            </dependency>
--->
             <dependency>
                 <groupId>net.sf.dozer</groupId>
                 <artifactId>dozer</artifactId>
@@ -466,7 +407,7 @@
                 <version>1.1.1</version>
             </dependency>
 
-                        <dependency>
+            <dependency>
                 <groupId>com.mosso.client</groupId>
                 <artifactId>cloudfiles</artifactId>
                 <version>1.3.1</version>
@@ -701,6 +642,12 @@
                 <version>2.8.1</version>
             </dependency>
 
+            <!--CORE REFACTOR STUFF-->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+                <version>2.4.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
