@@ -6,6 +6,8 @@ import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -37,8 +39,11 @@ public class ErrorpageResource extends CommonDependencyProvider{
 
     @DELETE
     public Response deleteErrorpage(){
-        //Delete error file from all hosts...
-
+        try {
+            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_ERROR_PAGE, new MessageDataContainer());
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, null,null);
+        }
         Response resp = Response.status(200).build();
         return resp;
     }

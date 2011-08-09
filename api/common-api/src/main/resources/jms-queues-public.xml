@@ -69,6 +69,23 @@
         <property name="sessionTransacted" value="true"/>
     </bean>
 
+    <bean id="deleteErrorPageListener"
+          class="org.openstack.atlas.api.async.DeleteErrorPageListener"
+          parent="baseListener"/>
+
+    <bean id="deleteErrorPageListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="deleteLoadBalancerListener"/>
+        <property name="destinationName" value="DELETE_ERROR_PAGE"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
     <bean id="batchDeleteLoadBalancerListener"
           class="org.openstack.atlas.api.async.BatchDeleteLoadBalancerListener"
           parent="baseListener"/>

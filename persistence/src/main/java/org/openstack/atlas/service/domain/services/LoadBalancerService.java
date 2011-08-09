@@ -76,4 +76,6 @@ public interface LoadBalancerService {
 
     public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException;
 
+    public boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException;
+
 }

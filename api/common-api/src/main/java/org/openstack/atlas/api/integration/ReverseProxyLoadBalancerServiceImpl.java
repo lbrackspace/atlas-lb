@@ -511,14 +511,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content) throws EntityNotFoundException, MalformedURLException, DecryptException, RemoteException, InsufficientRequestException {
+    public void removeAndSetDefaultErrorFile(Integer accountid, Integer loadbalancerId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
-
-
         try {
-            reverseProxyLoadBalancerAdapter.setErrorFile(config, loadbalancerId, accountId, content);
-
-
+            reverseProxyLoadBalancerAdapter.removeAndSetDefaultErrorFile(config, accountid, loadbalancerId);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
 
@@ -530,33 +526,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void removeAndSetDefaultErrorFile(LoadBalancer lb) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-
-
+    public void setDefaultErrorFile(Integer accountid, Integer loadbalancerId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
         try {
-            reverseProxyLoadBalancerAdapter.removeAndSetDefaultErrorFile(config, lb);
-
-
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-
-
-            throw af;
-
-
-        }
-    }
-
-    @Override
-    public void setDefaultErrorFile(LoadBalancer lb) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-
-
-        try {
-            reverseProxyLoadBalancerAdapter.removeAndSetDefaultErrorFile(config, lb);
-
-
+            reverseProxyLoadBalancerAdapter.removeAndSetDefaultErrorFile(config, accountid, loadbalancerId);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
 

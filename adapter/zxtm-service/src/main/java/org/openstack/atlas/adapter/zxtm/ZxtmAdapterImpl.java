@@ -602,16 +602,16 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 //    }
 
     @Override
-    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, RemoteException {
-        final String errorPageName = ZxtmNameBuilder.generateErrorPageNameWithAccountIdAndLoadBalancerId(loadBalancer.getId(), loadBalancer.getAccountId());
+    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer accountid, Integer loadbalancerId) throws InsufficientRequestException, RemoteException {
+        final String errorPageName = ZxtmNameBuilder.generateErrorPageNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountid);
         deleteErrorFile(config, errorPageName);
-        setDefaultErrorFile(config, loadBalancer);
+        setDefaultErrorFile(config, accountid, loadbalancerId);
     }
 
     @Override
-    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, RemoteException {
+    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer accountid, Integer loadbalancerId) throws InsufficientRequestException, RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancer.getId(), loadBalancer.getAccountId());
+        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountid);
         serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{DEFAULT_ERROR_PAGE});
     }
 
