@@ -467,10 +467,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void setErrorFile(LoadBalancer lb, String fileName) throws EntityNotFoundException, MalformedURLException, DecryptException, AxisFault, InsufficientRequestException {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+    public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content) throws EntityNotFoundException, MalformedURLException, DecryptException, AxisFault, InsufficientRequestException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
         try {
-            reverseProxyLoadBalancerAdapter.setErrorFile(config, lb, fileName);
+            reverseProxyLoadBalancerAdapter.setErrorFile(config, loadbalancerId, accountId, content);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;

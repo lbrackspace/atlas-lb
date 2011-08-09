@@ -43,14 +43,6 @@ public class ErrorpageResource extends CommonDependencyProvider{
         return resp;
     }
 
-    @PUT
-    public Response createErrorpage(){
-        //create error file from all hosts...
-
-        Response resp = Response.status(200).build();
-        return resp;
-    }
-
     public Log getLOG() {
         return LOG;
     }

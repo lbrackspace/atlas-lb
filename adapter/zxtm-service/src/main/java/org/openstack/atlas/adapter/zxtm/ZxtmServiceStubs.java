@@ -142,7 +142,7 @@ public class ZxtmServiceStubs {
         return zxtmRateCatalogService;
     }
 
-    public ConfExtraBindingStub getZxtmConfExtraService() {
+    public ConfExtraBindingStub getZxtmConfExtraBinding() {
         return zxtmConfExtraService;
     }
 }

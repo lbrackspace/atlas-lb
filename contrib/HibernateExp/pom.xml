@@ -33,6 +33,11 @@
                 <version>${project.version}</version>
             </dependency> 
 
+            <dependency>
+                <groupId>org.openstack.atlas</groupId>
+                <artifactId>atlas-zxtm-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.openstack.atlas</groupId>

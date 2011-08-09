@@ -462,14 +462,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
     }
 
-    @Override
-    public void setErrorPage(Integer lid, Integer aid, Errorpage errorPage) throws BadRequestException {
-          if (errorPage == null) {
-              throw new BadRequestException("Must supply content for the error page.");
-          }
-    }
-
-
     private void verifySessionPersistence(LoadBalancer queueLb) throws BadRequestException {
         if (queueLb.getSessionPersistence() != SessionPersistence.NONE) {
             LOG.info("Session Persistence detected. Verifying that the protocol is HTTP...");
@@ -686,6 +678,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         return validLbs;
+    }
+
+    @Transactional
+    @Override
+    public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException{
+        return loadBalancerRepository.setErrorPage(lid, accountId, content);
     }
 
     private void processSpecifiedOrDefaultHost(LoadBalancer lb) throws EntityNotFoundException, BadRequestException {

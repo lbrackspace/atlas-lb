@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.resources.providers;
 
+import java.util.ArrayList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.*;
@@ -8,7 +9,7 @@ import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.dozer.DozerBeanMapper;
-
+import org.openstack.atlas.api.config.RestApiConfiguration;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -22,6 +23,7 @@ public class CommonDependencyProvider {
     protected final static String USERHEADERNAME = "X-PP-User";
     protected final static String VFAIL = "Validation Failure";
     private RequestStateContainer requestStateContainer;
+    protected RestApiConfiguration restApiConfiguration;
     protected AsyncService asyncService;
     protected LoadBalancerRepository lbRepository;
     protected DozerBeanMapper dozerMapper;
@@ -135,6 +137,12 @@ public class CommonDependencyProvider {
         return vresp;
     }
 
+    public Response getValidationFaultResponse(String errorStr){
+        List<String> errorStrs = new ArrayList<String>();
+        errorStrs.add(errorStr);
+        return getValidationFaultResponse(errorStrs);
+    }
+
     public Response getValidationFaultResponse(List<String> errorStrs) {
         BadRequest badreq;
         int status = 400;
@@ -149,6 +157,10 @@ public class CommonDependencyProvider {
 
     public void setRequestStateContainer(RequestStateContainer requestStateContainer) {
         this.requestStateContainer = requestStateContainer;
+    }
+
+    public void setRestApiConfiguration(RestApiConfiguration restApiConfiguration) {
+        this.restApiConfiguration = restApiConfiguration;
     }
 
 }
