@@ -36,7 +36,7 @@ public class DeleteErrorPageListener extends BaseListener {
                 reverseProxyLoadBalancerService.deleteErrorFile(host, DEFAULT_ERROR_PAGE);
             }
         } else {
-            reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile();
+//            reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile();
         }
     }
 }
