@@ -30,13 +30,12 @@ public class DeleteErrorPageListener extends BaseListener {
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
 
-        if (getDataContainerFromMessage(message).getAccountId() == null && getDataContainerFromMessage(message).getLoadBalancerId() == null) {
-            List<Host> hosts = hostService.getAllHosts();
-            for (Host host : hosts) {
-                reverseProxyLoadBalancerService.deleteErrorFile(host, DEFAULT_ERROR_PAGE);
-            }
+        if (getDataContainerFromMessage(message).getAccountId() != null && getDataContainerFromMessage(message).getLoadBalancerId() != null) {
+             reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile(getDataContainerFromMessage(message).getAccountId(), getDataContainerFromMessage(message).getLoadBalancerId());
         } else {
-//            reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile();
+             //Zeus will mirror across all hosts...
+            Host host = hostService.getAllHosts().get(0);
+            reverseProxyLoadBalancerService.deleteErrorFile(host, DEFAULT_ERROR_PAGE);
         }
     }
 }
