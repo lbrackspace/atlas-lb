@@ -7,6 +7,7 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 
 import javax.jms.Message;
 
@@ -21,17 +22,18 @@ import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATA
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
 
 public class DeleteErrorPageListener extends BaseListener {
-
     private final Log LOG = LogFactory.getLog(DeleteErrorPageListener.class);
+
     //TODO:Grab from config..
     private static final String DEFAULT_ERROR_PAGE = "global_error.html";
 
     public void doOnMessage(final Message message) throws Exception {
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
+        MessageDataContainer data = getDataContainerFromMessage(message);
 
-        if (getDataContainerFromMessage(message).getAccountId() != null && getDataContainerFromMessage(message).getLoadBalancerId() != null) {
-             reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile(getDataContainerFromMessage(message).getAccountId(), getDataContainerFromMessage(message).getLoadBalancerId());
+        if (data.getAccountId() != null && data.getLoadBalancerId() != null) {
+             reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile(data.getAccountId(), data.getLoadBalancerId());
         } else {
              //Zeus will mirror across all hosts...
             Host host = hostService.getAllHosts().get(0);
