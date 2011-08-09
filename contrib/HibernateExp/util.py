@@ -189,7 +189,7 @@ class ZxtmStubs(object):
         
     def __getattr__(self,stubName):
         if not ZxtmStubs.stubMap.has_key(stubName):
-            return None;
+            raise AttributeError("'ZxtmStubs' has no attribute '%s'"%stubName)
         else:
             f = getattr(self.stubs,ZxtmStubs.stubMap[stubName])
             return f()
