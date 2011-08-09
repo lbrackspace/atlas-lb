@@ -2,6 +2,7 @@ package org.openstack.atlas.api.resources;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.jms.JMSException;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -12,7 +13,11 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.service.domain.entities.UserPages;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.api.config.RestApiConfiguration;
+import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.openstack.atlas.service.domain.operations.Operation;
+
+
 public class ErrorpageResource extends CommonDependencyProvider{
     private final Log LOG = LogFactory.getLog(ErrorpageResource.class);
     private int loadBalancerId;
@@ -37,6 +42,7 @@ public class ErrorpageResource extends CommonDependencyProvider{
 
     @PUT
     public Response setErrorPage(Errorpage errorpage){
+        MessageDataContainer dataContainer;
         String content = errorpage.getContent();
         if(content == null){
             return getValidationFaultResponse("You must provide Content to set ErrorPage");
@@ -46,6 +52,15 @@ public class ErrorpageResource extends CommonDependencyProvider{
         }
         try {
             loadBalancerService.setErrorPage(loadBalancerId, accountId, content);
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, null,null);
+        }
+        dataContainer = new MessageDataContainer();
+        dataContainer.setAccountId(accountId);
+        dataContainer.setLoadBalancerId(loadBalancerId);
+        dataContainer.setErrorFileContents(content);
+        try {
+            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_ERRORFILE, dataContainer);
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null,null);
         }
