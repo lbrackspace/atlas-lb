@@ -587,20 +587,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-//    @Override
-//    public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String fileName) throws AxisFault, InsufficientRequestException {
-//        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-//        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancer.getId(), loadBalancer.getAccountId());
-//
-//        try {
-//            serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{fileName});
-//        } catch (RemoteException e) {
-//            if (e instanceof ObjectDoesNotExist) {
-//                LOG.debug("Could not add custom error file, the virtual server could not be found.");
-//            }
-//        }
-//    }
-
     @Override
     public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer accountid, Integer loadbalancerId) throws InsufficientRequestException, RemoteException {
         final String errorPageName = ZxtmNameBuilder.generateErrorPageNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountid);
