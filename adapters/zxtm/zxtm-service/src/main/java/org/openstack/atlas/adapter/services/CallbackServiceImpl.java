@@ -1,5 +1,6 @@
-package org.openstack.atlas.service.domain.services.impl;
+package org.openstack.atlas.adapter.services;
 
+import org.openstack.atlas.service.domain.services.impl.BaseService;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
@@ -12,11 +13,12 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.UPDATE_NODE;
-import static org.openstack.atlas.service.domain.services.helpers.CallbackHelper.NODE_FAIL_TAG;
-import static org.openstack.atlas.service.domain.services.helpers.CallbackHelper.NODE_WORKING_TAG;
+import static org.openstack.atlas.adapter.services.helpers.CallbackHelper.NODE_FAIL_TAG;
+import static org.openstack.atlas.adapter.services.helpers.CallbackHelper.NODE_WORKING_TAG;
 
 public class CallbackServiceImpl extends BaseService implements CallbackService {
     private final Log LOG = LogFactory.getLog(CallbackServiceImpl.class);

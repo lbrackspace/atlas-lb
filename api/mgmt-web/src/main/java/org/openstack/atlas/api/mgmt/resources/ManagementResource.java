@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.mgmt.resources;
 
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
+import org.openstack.atlas.adapter.resources.CallbackResource;
 
 import javax.ws.rs.Path;
 

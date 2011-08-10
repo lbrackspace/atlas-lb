@@ -1,4 +1,4 @@
-package org.openstack.atlas.api.mgmt.resources;
+package org.openstack.atlas.adapter.resources;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LBDeviceEvent;
 import org.openstack.atlas.service.domain.entities.Node;
