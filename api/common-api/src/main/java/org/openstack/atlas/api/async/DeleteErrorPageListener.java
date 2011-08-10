@@ -8,6 +8,7 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
+import org.openstack.atlas.service.domain.util.Constants;
 
 import javax.jms.Message;
 
@@ -24,9 +25,6 @@ import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS
 public class DeleteErrorPageListener extends BaseListener {
     private final Log LOG = LogFactory.getLog(DeleteErrorPageListener.class);
 
-    //TODO:Grab from config..
-    private static final String DEFAULT_ERROR_PAGE = "global_error.html";
-
     public void doOnMessage(final Message message) throws Exception {
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
@@ -38,7 +36,7 @@ public class DeleteErrorPageListener extends BaseListener {
         } else {
              //Zeus will mirror across all hosts...
             Host host = hostService.getAllHosts().get(0);
-            reverseProxyLoadBalancerService.deleteErrorFile(host, DEFAULT_ERROR_PAGE);
+            reverseProxyLoadBalancerService.deleteErrorFile(host, Constants.DEFAULT_ERROR_PAGE);
         }
         LOG.debug("Successfully removed the error file from zeus... ");
     }

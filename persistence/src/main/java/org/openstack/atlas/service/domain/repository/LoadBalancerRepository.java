@@ -105,7 +105,7 @@ public class LoadBalancerRepository {
         Defaults up = getDefaultErrorPage();
         if(up==null){
             up = new Defaults();
-
+            up.setName(Constants.DEFAULT_ERROR_PAGE);
             up.setValue(errorpage);
             entityManager.merge(up);
             return true;
