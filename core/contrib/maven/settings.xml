@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <servers>
+        <server>
+            <id>repos.openstack.atlas</id>
+            <username>openstack-atlas</username>
+            <password>atlas</password>
+        </server>
+    </servers>
+
+    <profiles>
+        <profile>
+            <id>Openstack Atlas Development</id>
+            <repositories>
+                <repository>
+                    <id>repos.openstack.atlas.public</id>
+                    <url>http://50.57.100.173:80/m2/content/groups/public</url>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>repos.openstack.atlas.public.plugins</id>
+                    <url>http://50.57.100.173:80/m2/content/groups/public</url>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>Openstack Atlas Development</activeProfile>
+    </activeProfiles>
+</settings>
