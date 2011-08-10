@@ -3,10 +3,11 @@ package org.openstack.atlas.api.resource;
 import org.apache.log4j.Logger;
 import org.openstack.atlas.api.resource.provider.CommonDependencyProvider;
 import org.openstack.atlas.api.response.ResponseFactory;
-import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.ResourceValidator;
+import org.openstack.atlas.core.api.v1.LoadBalancer;
+import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -28,6 +29,9 @@ public class LoadBalancersResource extends CommonDependencyProvider {
     @Autowired
     private ResourceValidator<LoadBalancer> validator;
 
+    @Autowired
+    private LoadBalancerService loadbalancerService;
+
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createLoadBalancer(LoadBalancer loadBalancer) {
@@ -39,22 +43,15 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
         try {
             org.openstack.atlas.service.domain.entity.LoadBalancer domainLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
-            LoadBalancer apiLb = dozerMapper.map(domainLb, LoadBalancer.class);
-            return Response.status(200).entity(apiLb).build();
-/*            domainLb.setAccountId(accountId);
-            if (requestHeaders != null) {
-                domainLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
-            }
-
-            virtualIpService.addAccountRecord(accountId);
-            org.openstack.atlas.service.domain.entities.LoadBalancer returnLb = loadBalancerService.create(domainLb);
-            asyncService.callAsyncLoadBalancingOperation(CREATE_LOADBALANCER, returnLb);
-            return Response.status(Response.Status.ACCEPTED).entity(dozerMapper.map(returnLb, LoadBalancer.class)).build();*/
+            org.openstack.atlas.service.domain.entity.LoadBalancer newlyCreatedLb = loadbalancerService.create(domainLb);
+            // TODO: Call Async Service with newlyCreatedLb
+            return Response.status(200).entity(dozerMapper.map(newlyCreatedLb, LoadBalancer.class)).build();
         } catch (Exception e) {
+            LOG.error(e);
             e.printStackTrace();
-            /*return ResponseFactory.getErrorResponse(e, null, null);*/
+            // TODO: Create error response via response builder
+            return Response.status(500).entity("FAIL").build();
         }
-        return Response.status(200).entity("FAIL").build();
     }
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {
