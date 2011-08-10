@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<power-proxy xmlns="http://docs.openstack.org/power-api/system-model/v1.0">
+<power-proxy xmlns="http://docs.rackspace.com/power-api/system-model/v1.0">
     <proxy id="proxy-n01" host-id="localhost:9090">
         <filters>
             <filter module-name="rate_limiting" />

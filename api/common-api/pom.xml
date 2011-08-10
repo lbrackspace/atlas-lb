@@ -46,17 +46,6 @@
         </dependency>
         -->
 
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>atlas-zxtm-service</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>atlas-null-service</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
 
         <!--        <dependency>
@@ -70,6 +59,18 @@
             <artifactId>filterlet</artifactId>
         </dependency>
         -->
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-adapter-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+	<dependency>
+	    <groupId>org.apache.axis</groupId>
+	    <artifactId>axis</artifactId>
+	    <version>1.4</version>
+	</dependency>
 
         <dependency>
             <groupId>org.javassist</groupId>
