@@ -13,6 +13,7 @@ import org.openstack.atlas.service.domain.pojos.Cidr;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Hostsubnet;
 import org.openstack.atlas.service.domain.pojos.NetInterface;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.converters.StringConverter;
 import org.apache.axis.AxisFault;
@@ -32,7 +33,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final LoadBalancerAlgorithm DEFAULT_ALGORITHM = LoadBalancerAlgorithm.RANDOM;
     public static final String SOURCE_IP = "SOURCE_IP";
     public static final String HTTP_COOKIE = "HTTP_COOKIE";
-    public static final String DEFAULT_ERROR_PAGE = "global_error.html";
     public static final String RATE_LIMIT_HTTP = "rate_limit_http";
     public static final String RATE_LIMIT_NON_HTTP = "rate_limit_nonhttp";
     public static final String XFF = "add_x_forwarded_for_header";
@@ -606,7 +606,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         if (serviceStubs != null) {
             extraService = serviceStubs.getZxtmConfExtraBinding();
             if (extraService != null) {
-                extraService.uploadFile(DEFAULT_ERROR_PAGE, content.getBytes());
+                extraService.uploadFile(Constants.DEFAULT_ERROR_PAGE, content.getBytes());
             }
         }
     }
@@ -615,7 +615,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountid) throws InsufficientRequestException, RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountid);
-        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{DEFAULT_ERROR_PAGE});
+        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{Constants.DEFAULT_ERROR_PAGE});
     }
 
     @Override

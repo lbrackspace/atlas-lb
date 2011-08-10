@@ -3,6 +3,7 @@ package org.openstack.atlas.api.resources;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.jms.JMSException;
+
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,17 +26,15 @@ public class ErrorpageResource extends CommonDependencyProvider{
     private int accountId;
 
     @GET
-    public Response retrieveErrorpage() throws BadRequestException {
+    public Response retrieveErrorpage() {
         Errorpage errorpage = new Errorpage();
         String errorcontent;
         try {
             errorcontent = loadBalancerService.getErrorPage(loadBalancerId, accountId);
             if(errorcontent == null){
                 errorcontent = loadBalancerService.getDefaultErrorPage();
-            } if (errorcontent == null) {
-                throw new BadRequestException("Could not retrive the error pages.");
             }
-        } catch (EntityNotFoundException ex) {
+        } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null,null);
         }
         errorpage.setContent(errorcontent);

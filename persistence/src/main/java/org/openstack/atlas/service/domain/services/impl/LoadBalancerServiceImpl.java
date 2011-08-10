@@ -1,6 +1,5 @@
 package org.openstack.atlas.service.domain.services.impl;
 
-import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.HostStatus;
@@ -66,7 +65,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Override
     @Transactional
     public String getDefaultErrorPage() throws EntityNotFoundException {
-        return loadBalancerRepository.getDefaultErrorPage().getValue();
+        Defaults defaultPage = loadBalancerRepository.getDefaultErrorPage();
+        if (defaultPage == null) throw new EntityNotFoundException("The default error page could not be located.");
+        return defaultPage.getValue();
     }
 
     @Override

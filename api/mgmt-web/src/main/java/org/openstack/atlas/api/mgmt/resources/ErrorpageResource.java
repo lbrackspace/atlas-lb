@@ -1,8 +1,8 @@
 package org.openstack.atlas.api.mgmt.resources;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
@@ -17,19 +17,17 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.core.Response;
 
 
-public class ErrorpageResource extends CommonDependencyProvider{
+public class ErrorpageResource extends ManagementDependencyProvider {
     private final Log LOG = LogFactory.getLog(ErrorpageResource.class);
 
     @GET
-    public Response retrieveErrorpage() throws BadRequestException {
+    public Response retrieveErrorpage() {
         Errorpage errorpage = new Errorpage();
         String errorcontent;
         try {
             errorcontent = loadBalancerService.getDefaultErrorPage();
-            if (errorcontent == null) {
-                throw new BadRequestException("Could not retrive the error pages.");
-            }
-        } catch (EntityNotFoundException ex) {
+            errorpage.setContent(errorcontent);
+        } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
         }
         errorpage.setContent(errorcontent);
@@ -40,7 +38,7 @@ public class ErrorpageResource extends CommonDependencyProvider{
     @DELETE
     public Response deleteErrorpage(){
         try {
-            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_ERROR_PAGE, new MessageDataContainer());
+            getManagementAsyncService().callAsyncLoadBalancingOperation(Operation.DELETE_ERROR_PAGE, new MessageDataContainer());
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null,null);
         }
@@ -66,7 +64,7 @@ public class ErrorpageResource extends CommonDependencyProvider{
         dataContainer = new MessageDataContainer();
         dataContainer.setErrorFileContents(content);
         try {
-            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_ERRORFILE, dataContainer);
+            getManagementAsyncService().callAsyncLoadBalancingOperation(Operation.UPDATE_ERRORFILE, dataContainer);
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null,null);
         }

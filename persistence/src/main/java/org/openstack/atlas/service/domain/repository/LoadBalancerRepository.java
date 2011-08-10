@@ -63,8 +63,8 @@ public class LoadBalancerRepository {
     public Defaults getDefaultErrorPage() {
         List<Defaults> defaultsList = new ArrayList<Defaults>();
         Defaults up;
-        String qStr = "FROM Defaults d WHERE name = `global_error.html`";
-        Query q = entityManager.createQuery(qStr);
+        String qStr = "FROM Defaults d WHERE d.name = :globalError";
+        Query q = entityManager.createQuery(qStr).setParameter("globalError", "global_error.html");
         defaultsList = q.setMaxResults(1).getResultList();
         if (defaultsList.size() <= 0) {
             up = null;
@@ -105,6 +105,7 @@ public class LoadBalancerRepository {
         Defaults up = getDefaultErrorPage();
         if(up==null){
             up = new Defaults();
+
             up.setValue(errorpage);
             entityManager.merge(up);
             return true;

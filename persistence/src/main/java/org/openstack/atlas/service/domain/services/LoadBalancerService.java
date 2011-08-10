@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services;
 
+import javassist.tools.rmi.ObjectNotFoundException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -74,7 +75,7 @@ public interface LoadBalancerService {
 
     public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException;
 
-    public String getDefaultErrorPage() throws EntityNotFoundException;
+    public String getDefaultErrorPage() throws ObjectNotFoundException, EntityNotFoundException;
 
     public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException;
 

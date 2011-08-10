@@ -99,6 +99,10 @@ public class ManagementResource extends ManagementDependencyProvider {
         return errorpageResource;
     }
 
+    public void setErrorpageResource(ErrorpageResource errorpageResource) {
+        this.errorpageResource = errorpageResource;
+    }
+
     public void setBounceResource(BounceResource bounceResource) {
         this.bounceResource = bounceResource;
     }
