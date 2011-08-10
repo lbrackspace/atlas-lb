@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @javax.persistence.Entity
-@Table(name = "virtual_ip_ipv4")
+@Table(name = "virtual_ipv4")
 public class VirtualIp extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 

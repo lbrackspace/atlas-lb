@@ -9,8 +9,8 @@ public class HealthMonitor extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @OneToOne
-    @JoinColumn(name = "loadbalancer_id")
-    private LoadBalancer loadbalancer;
+    @JoinColumn(name = "load_balancer_id")
+    private LoadBalancer loadBalancer;
 
     @JoinColumn(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -25,15 +25,23 @@ public class HealthMonitor extends Entity implements Serializable {
     @Column(name = "attempts_before_deactivation", nullable = false)
     private Integer attemptsBeforeDeactivation;
 
-    @Column(length = 128, nullable = true)
+    @Column(name = "path", length = 128, nullable = true)
     private String path;
 
-    public LoadBalancer getLoadbalancer() {
-        return loadbalancer;
+    public LoadBalancer getLoadBalancer() {
+        return loadBalancer;
     }
 
-    public void setLoadbalancer(LoadBalancer loadbalancer) {
-        this.loadbalancer = loadbalancer;
+    public void setLoadBalancer(LoadBalancer loadBalancer) {
+        this.loadBalancer = loadBalancer;
+    }
+
+    public HealthMonitorType getType() {
+        return type;
+    }
+
+    public void setType(HealthMonitorType type) {
+        this.type = type;
     }
 
     public Integer getDelay() {
@@ -68,11 +76,14 @@ public class HealthMonitor extends Entity implements Serializable {
         this.path = path;
     }
 
-    public HealthMonitorType getType() {
-        return type;
-    }
-
-    public void setType(HealthMonitorType type) {
-        this.type = type;
+    @Override
+    public String toString() {
+        return "HealthMonitor{" +
+                "path='" + path + '\'' +
+                ", attemptsBeforeDeactivation=" + attemptsBeforeDeactivation +
+                ", timeout=" + timeout +
+                ", delay=" + delay +
+                ", type=" + type +
+                '}';
     }
 }

@@ -9,8 +9,8 @@ public class Node extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @ManyToOne
-    @JoinColumn(name = "loadbalancer_id")
-    private LoadBalancer loadbalancer;
+    @JoinColumn(name = "load_balancer_id")
+    private LoadBalancer loadBalancer;
 
     @Column(name = "ip_address", length = 39)
     private String ipAddress;
@@ -35,12 +35,12 @@ public class Node extends Entity implements Serializable {
     @Transient
     private boolean isToBeUpdated;
 
-    public LoadBalancer getLoadbalancer() {
-        return loadbalancer;
+    public LoadBalancer getLoadBalancer() {
+        return loadBalancer;
     }
 
-    public void setLoadbalancer(LoadBalancer loadbalancer) {
-        this.loadbalancer = loadbalancer;
+    public void setLoadBalancer(LoadBalancer loadBalancer) {
+        this.loadBalancer = loadBalancer;
     }
 
     public String getIpAddress() {
@@ -102,14 +102,13 @@ public class Node extends Entity implements Serializable {
     @Override
     public String toString() {
         return "Node{" +
-                "loadbalancer=" + loadbalancer +
-                ", ipAddress='" + ipAddress + '\'' +
-                ", port=" + port +
-                ", weight=" + weight +
-                ", condition=" + condition +
-                ", status=" + status +
+                "isToBeUpdated=" + isToBeUpdated +
                 ", isNew=" + isNew +
-                ", isToBeUpdated=" + isToBeUpdated +
+                ", status=" + status +
+                ", condition=" + condition +
+                ", weight=" + weight +
+                ", port=" + port +
+                ", ipAddress='" + ipAddress + '\'' +
                 '}';
     }
 }

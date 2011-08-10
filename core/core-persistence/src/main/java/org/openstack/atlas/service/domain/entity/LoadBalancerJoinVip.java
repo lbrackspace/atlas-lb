@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @javax.persistence.Entity
-@Table(name = "loadbalancer_virtualip")
+@Table(name = "load_balancer_virtual_ipv4")
 public class LoadBalancerJoinVip implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
@@ -12,10 +12,10 @@ public class LoadBalancerJoinVip implements Serializable {
     public static class Id implements Serializable {
         private final static long serialVersionUID = 532512316L;
 
-        @Column(name = "loadbalancer_id")
+        @Column(name = "load_balancer_id")
         private Integer loadBalancerId;
 
-        @Column(name = "virtualip_id")
+        @Column(name = "virtual_ipv4_id")
         private Integer virtualIpId;
 
         public Id() {}
@@ -54,11 +54,11 @@ public class LoadBalancerJoinVip implements Serializable {
     private Integer port;
 
     @ManyToOne
-    @JoinColumn(name = "loadbalancer_id", insertable = false, updatable = false)
+    @JoinColumn(name = "load_balancer_id", insertable = false, updatable = false)
     private LoadBalancer loadBalancer;
 
     @ManyToOne
-    @JoinColumn(name = "virtualip_id", insertable = false, updatable = false)
+    @JoinColumn(name = "virtual_ipv4_id", insertable = false, updatable = false)
     private VirtualIp virtualIp;
 
     public LoadBalancerJoinVip() {}

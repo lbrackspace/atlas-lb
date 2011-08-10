@@ -23,11 +23,11 @@ public class LoadBalancer extends Entity implements Serializable {
     private Set<LoadBalancerJoinVip6> loadBalancerJoinVip6Set = new HashSet<LoadBalancerJoinVip6>();
 
     @OrderBy("id")
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadBalancer", orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<Node> nodes = new HashSet<Node>();
 
     @OrderBy("id")
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadBalancer", fetch = FetchType.LAZY)
     private Set<UsageRecord> usage = new HashSet<UsageRecord>();
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -52,10 +52,10 @@ public class LoadBalancer extends Entity implements Serializable {
     @Enumerated(EnumType.STRING)
     private LoadBalancerStatus status;
 
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadBalancer")
     private ConnectionThrottle connectionThrottle;
 
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadBalancer")
     private HealthMonitor healthMonitor;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -186,7 +186,7 @@ public class LoadBalancer extends Entity implements Serializable {
     }
 
     public void addNode(Node node) {
-        node.setLoadbalancer(this);
+        node.setLoadBalancer(this);
         nodes.add(node);
     }
 

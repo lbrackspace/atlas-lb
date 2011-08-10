@@ -10,8 +10,8 @@ public class UsageRecord extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @ManyToOne
-    @JoinColumn(name="loadbalancer_id", nullable = false)
-    private LoadBalancer loadbalancer;
+    @JoinColumn(name="load_balancer_id", nullable = false)
+    private LoadBalancer loadBalancer;
 
     @Column(name = "transfer_bytes_in", nullable = false)
     private Long transferBytesIn;
@@ -27,12 +27,12 @@ public class UsageRecord extends Entity implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar endTime;
 
-    public LoadBalancer getLoadbalancer() {
-        return loadbalancer;
+    public LoadBalancer getLoadBalancer() {
+        return loadBalancer;
     }
 
-    public void setLoadbalancer(LoadBalancer loadbalancer) {
-        this.loadbalancer = loadbalancer;
+    public void setLoadBalancer(LoadBalancer loadBalancer) {
+        this.loadBalancer = loadBalancer;
     }
 
     public Long getTransferBytesIn() {
@@ -70,11 +70,10 @@ public class UsageRecord extends Entity implements Serializable {
     @Override
     public String toString() {
         return "UsageRecord{" +
-                "loadbalancer=" + loadbalancer +
-                ", transferBytesIn=" + transferBytesIn +
-                ", transferBytesOut=" + transferBytesOut +
+                "endTime=" + endTime +
                 ", startTime=" + startTime +
-                ", endTime=" + endTime +
+                ", transferBytesOut=" + transferBytesOut +
+                ", transferBytesIn=" + transferBytesIn +
                 '}';
     }
 }

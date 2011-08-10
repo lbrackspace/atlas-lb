@@ -12,8 +12,8 @@ public class ConnectionThrottle extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
 	@OneToOne
-	@JoinColumn(name = "loadbalancer_id")
-	private LoadBalancer loadbalancer;
+	@JoinColumn(name = "load_balancer_id")
+	private LoadBalancer loadBalancer;
 
 	@Column(name = "max_request_rate", nullable = false)
 	private Integer maxRequestRate;
@@ -22,11 +22,11 @@ public class ConnectionThrottle extends Entity implements Serializable {
 	private Integer rateInterval;
 
 	public LoadBalancer getLoadBalancer() {
-		return loadbalancer;
+		return loadBalancer;
 	}
 
 	public void setLoadBalancer(LoadBalancer loadBalancer) {
-		this.loadbalancer = loadBalancer;
+		this.loadBalancer = loadBalancer;
 	}
 
 	public Integer getMaxRequestRate() {
@@ -44,4 +44,12 @@ public class ConnectionThrottle extends Entity implements Serializable {
 	public void setRateInterval(Integer rateInterval) {
 		this.rateInterval = rateInterval;
 	}
+
+    @Override
+    public String toString() {
+        return "ConnectionThrottle{" +
+                "rateInterval=" + rateInterval +
+                ", maxRequestRate=" + maxRequestRate +
+                '}';
+    }
 }
