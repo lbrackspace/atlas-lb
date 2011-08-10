@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+    <bean id="mossoAuthConfig" class="org.openstack.atlas.api.mgmt.helpers.LDAPTools.MossoAuthConfig">
+        <constructor-arg value="/etc/openstack/atlas/ldap.conf"/>
+    </bean>
+
+    <bean id="userclass" class="org.openstack.atlas.api.mgmt.helpers.LDAPTools.ClassConfig">
+        <property name="dn" value="ou=Users,o=rackspace"/>
+        <property name="sdn" value="cn"/>
+    </bean>
+
+    <bean id="groups" class="org.openstack.atlas.api.mgmt.helpers.LDAPTools.GroupConfig">
+        <property name="dn" value="ou=Users,o=rackspace"/>
+        <property name="sdn" value="cn"/>
+        <property name="objectClass" value="(objectClass=*)"/>
+        <property name="memberField" value="groupMembership"/>
+        <property name="userQuery" value="(cn=%s)"/>
+    </bean>
+
+    <bean id="mossoClassMap" class="java.util.HashMap">
+        <constructor-arg index="0">
+            <map>
+                <entry key="user" value-ref="userclass"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="mossoGroupMap" class="java.util.HashMap">
+        <constructor-arg index="0">
+            <map>
+                <entry key="groups" value-ref="groups"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="mossoAuth" class="org.openstack.atlas.api.mgmt.helpers.LDAPTools.MossoAuth">
+        <property name="config" ref="mossoAuthConfig"/>
+        <property name="classMap" ref="mossoClassMap"/>
+        <property name="groupMap" ref="mossoGroupMap"/>
+    </bean>
+
+</beans>
