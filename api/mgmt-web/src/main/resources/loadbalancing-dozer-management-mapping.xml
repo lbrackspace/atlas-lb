@@ -12,24 +12,24 @@
         <wildcard>true</wildcard>
         <!-- default wildcard policy that will apply to all class maps unless the class mapping explicitly overrides it -->
         <custom-converters> <!-- these are always bi-directional -->
-            <converter type="org.openstack.atlas.api.mapper.dozer.converter.PersistenceConverter">
+            <converter type="org.openstack.atlas.api.mapper.dozer.converters.PersistenceConverter">
                 <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence</class-a>
                 <class-b>org.openstack.atlas.service.domain.entities.SessionPersistence</class-b>
             </converter>
-            <converter type="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <converter type="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
                 <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType</class-a>
                 <class-b>org.openstack.atlas.service.domain.entities.SessionPersistence</class-b>
             </converter>
 
-            <converter type="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <converter type="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
                 <class-a>java.lang.String</class-a>
                 <class-b>org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm</class-b>
             </converter>
-            <converter type="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <converter type="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
                 <class-a>java.lang.String</class-a>
                 <class-b>org.openstack.atlas.service.domain.entities.LoadBalancerStatus</class-b>
             </converter>
-            <converter type="org.openstack.atlas.api.mapper.dozer.converter.IntegerToAccountConverter">
+            <converter type="org.openstack.atlas.api.mapper.dozer.converters.IntegerToAccountConverter">
                 <class-a>java.lang.Integer</class-a>
                 <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.Account</class-b>
             </converter>
@@ -47,15 +47,15 @@
             <a>name</a>
             <b>name</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
             <a>algorithm</a>
             <b>algorithm</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
             <a>protocol</a>
             <b>protocol</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.ConnectionLoggingConverter">
             <a get-method="isConnectionLogging">connectionLogging</a>
             <b>connectionLogging</b>
         </field>
@@ -63,19 +63,19 @@
             <a get-method="isSticky">sticky</a>
             <b get-method="isSticky">isSticky</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.CalendarConverter">
             <a>created</a>
             <b>created</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.CalendarConverter">
             <a>updated</a>
             <b>updated</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
             <a>status</a>
             <b>status</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VirtualIpConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.VirtualIpConverter">
             <a>virtualIpDozerWrapper</a>
             <b>virtualIps</b>
         </field>
@@ -290,11 +290,11 @@
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entities.HealthMonitor</b-hint>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
             <a>protocol</a>
             <b>protocol</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.ConnectionLoggingConverter">
             <a>connectionLogging</a>
             <b get-method="isConnectionLogging">connectionLogging</b>
         </field>
@@ -302,15 +302,15 @@
             <!--<a get-method="isSticky">isSticky</a>-->
             <!--<b get-method="isSticky">sticky</b>-->
         <!--</field>-->
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.CalendarConverter">
             <a>created</a>
             <b>created</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.CalendarConverter">
             <a>updated</a>
             <b>updated</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
             <a>status</a>
             <b>status</b>
         </field>
@@ -341,7 +341,7 @@
             <a>name</a>
             <b>name</b>
         </field>
-       <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+       <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
             <a>status</a>
             <b>status</b>
         </field>
@@ -377,7 +377,7 @@
             <a>type</a>
             <b>vipType</b>
         </field>
-      <!--  <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+      <!--  <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
             <a>ipVersion</a>
             <b>ipVersion</b>
         </field>  -->
@@ -398,7 +398,7 @@
             <a>type</a>
             <b>virtualIp.vipType</b>
         </field>
-       <!-- <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+       <!-- <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
             <a>ipVersion</a>
             <b>virtualIp.ipVersion</b>
         </field> -->
@@ -419,7 +419,7 @@
             <a>type</a>
             <b>virtualIp.vipType</b>
         </field>
-    <!--    <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+    <!--    <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
             <a>ipVersion</a>
             <b>virtualIp.ipVersion</b>
         </field>   -->
@@ -629,7 +629,7 @@
             <a>name</a>
             <b>name</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
             <a>status</a>
             <b>status</b>
         </field>
@@ -703,7 +703,7 @@
             <b>numPolls</b>
         </field>
         <!-- Future Profing for JIRA:SITESLB-687
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SslTagConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.SslTagConverter">
             <a>tags</a>
             <b get-method="isSsl">ssl</b>
         </field>  -->
@@ -756,7 +756,7 @@
     <mapping map-null="false">
         <class-a>org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit</class-a>
         <class-b>org.openstack.atlas.service.domain.entities.AccountLimit</class-b>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">
             <a>name</a>
             <b>limitType.name</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit</a-hint>

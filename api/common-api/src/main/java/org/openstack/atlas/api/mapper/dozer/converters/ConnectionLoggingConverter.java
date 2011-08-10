@@ -1,4 +1,4 @@
-package org.openstack.atlas.api.mapper.dozer.converter;
+package org.openstack.atlas.api.mapper.dozer.converters;
 
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.service.domain.exceptions.NoMappableConstantException;

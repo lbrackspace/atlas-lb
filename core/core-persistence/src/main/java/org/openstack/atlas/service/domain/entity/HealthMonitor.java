@@ -28,12 +28,6 @@ public class HealthMonitor extends Entity implements Serializable {
     @Column(length = 128, nullable = true)
     private String path;
 
-    @Column(name = "status_regex", length = 128, nullable = true)
-    private String statusRegex;
-
-    @Column(name = "body_regex", length = 128, nullable = true)
-    private String bodyRegex;
-
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;
     }
@@ -72,22 +66,6 @@ public class HealthMonitor extends Entity implements Serializable {
 
     public void setPath(String path) {
         this.path = path;
-    }
-
-    public String getStatusRegex() {
-        return statusRegex;
-    }
-
-    public void setStatusRegex(String statusRegex) {
-        this.statusRegex = statusRegex;
-    }
-
-    public String getBodyRegex() {
-        return bodyRegex;
-    }
-
-    public void setBodyRegex(String bodyRegex) {
-        this.bodyRegex = bodyRegex;
     }
 
     public HealthMonitorType getType() {

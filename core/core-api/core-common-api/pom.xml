@@ -17,7 +17,12 @@
         <!--Internal Dependencies-->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>data-model</artifactId>
+            <artifactId>core-data-model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>core-persistence</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -46,13 +51,21 @@
             <artifactId>cglib</artifactId>
         </dependency>
         <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+
+        <!--Dozer Dependencies-->
+        <dependency>
             <groupId>net.sf.dozer</groupId>
             <artifactId>dozer</artifactId>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>org.apache.xmlbeans</groupId>
+            <artifactId>xmlbeans</artifactId>
+            <version>2.4.0</version>
         </dependency>
+
     </dependencies>
 
 

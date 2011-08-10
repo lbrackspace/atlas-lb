@@ -1,17 +1,19 @@
-package org.openstack.atlas.api.mgmt.mapper.dozer;
+package org.openstack.atlas.api.mapper.dozer;
 
 import org.dozer.DozerBeanMapper;
 import org.dozer.DozerEventListener;
-import org.openstack.atlas.api.mapper.dozer.converters.EventListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-// The things we have to copy to makeing testing more flexible.
 public class MapperBuilder {
     public static DozerBeanMapper getConfiguredMapper(String mappingFile) {
         List<String> mappingFiles = new ArrayList<String>();
         mappingFiles.add(mappingFile);
+        return getConfiguredMapper(mappingFiles);
+    }
+
+    public static DozerBeanMapper getConfiguredMapper(List<String> mappingFiles) {
         DozerBeanMapper mapper = new DozerBeanMapper(mappingFiles);
         ArrayList<DozerEventListener> eventListeners = new ArrayList<DozerEventListener>();
         eventListeners.add(new EventListener());

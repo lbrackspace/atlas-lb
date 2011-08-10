@@ -15,14 +15,8 @@ public class ConnectionThrottle extends Entity implements Serializable {
 	@JoinColumn(name = "loadbalancer_id")
 	private LoadBalancer loadbalancer;
 
-	@Column(name = "min_connections", nullable = false)
-	private Integer minConnections;
-
-	@Column(name = "max_connection", nullable = false)
-	private Integer maxConnections;
-
-	@Column(name = "max_connectionrate", nullable = false)
-	private Integer maxConnectionRate;
+	@Column(name = "max_request_rate", nullable = false)
+	private Integer maxRequestRate;
 
 	@Column(name = "rate_interval", nullable = false)
 	private Integer rateInterval;
@@ -35,32 +29,12 @@ public class ConnectionThrottle extends Entity implements Serializable {
 		this.loadbalancer = loadBalancer;
 	}
 
-	private static String vorn(Object obj) {
-		return obj == null ? "null" : obj.toString();
+	public Integer getMaxRequestRate() {
+		return maxRequestRate;
 	}
 
-	public Integer getMinConnections() {
-		return minConnections;
-	}
-
-	public void setMinConnections(Integer minConnections) {
-		this.minConnections = minConnections;
-	}
-
-	public Integer getMaxConnections() {
-		return maxConnections;
-	}
-
-	public void setMaxConnections(Integer maxConnections) {
-		this.maxConnections = maxConnections;
-	}
-
-	public Integer getMaxConnectionRate() {
-		return maxConnectionRate;
-	}
-
-	public void setMaxConnectionRate(Integer maxConnectionRate) {
-		this.maxConnectionRate = maxConnectionRate;
+	public void setMaxRequestRate(Integer maxRequestRate) {
+		this.maxRequestRate = maxRequestRate;
 	}
 
 	public Integer getRateInterval() {
@@ -70,22 +44,4 @@ public class ConnectionThrottle extends Entity implements Serializable {
 	public void setRateInterval(Integer rateInterval) {
 		this.rateInterval = rateInterval;
 	}
-
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append("{");
-		sb.append(String.format("id=%s, ", vorn(this.getId())));
-		sb.append(String.format("loadbalancer_id=%s, ",
-				vorn(this.getLoadBalancer())));
-		sb.append(String.format("MaxConnectionRate=%s, ",
-				this.getMaxConnectionRate()));
-		sb.append(String.format("RateInterval=%s, ", this.getRateInterval()));
-		sb.append(String.format("MaxConnections=%s, ",
-				vorn(this.getMaxConnections())));
-		sb.append(String.format("MinConnections=%s",
-				vorn(this.getMinConnections())));
-		sb.append("}");
-		return sb.toString();
-	}
-
 }

@@ -1,6 +1,5 @@
 package org.openstack.atlas.service.domain.entity;
 
-import org.hibernate.annotations.Cascade;
 import org.openstack.atlas.service.domain.pojo.VirtualIpDozerWrapper;
 
 import javax.persistence.*;
@@ -13,7 +12,7 @@ import java.util.Set;
 @Table(name = "load_balancer")
 public class LoadBalancer extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
-    
+
     @Column(name = "name", length = 128)
     private String name;
 
@@ -24,8 +23,7 @@ public class LoadBalancer extends Entity implements Serializable {
     private Set<LoadBalancerJoinVip6> loadBalancerJoinVip6Set = new HashSet<LoadBalancerJoinVip6>();
 
     @OrderBy("id")
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<Node> nodes = new HashSet<Node>();
 
     @OrderBy("id")
@@ -45,9 +43,6 @@ public class LoadBalancer extends Entity implements Serializable {
 
     @Column(name = "account_id", nullable = false, length = 32)
     private Integer accountId;
-
-    @Column(name = "connection_logging", nullable = false)
-    private Boolean connectionLogging;
 
     @JoinColumn(name = "protocol", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -120,14 +115,6 @@ public class LoadBalancer extends Entity implements Serializable {
 
     public void setHealthMonitor(HealthMonitor healthMonitor) {
         this.healthMonitor = healthMonitor;
-    }
-
-    public Boolean isConnectionLogging() {
-        return connectionLogging;
-    }
-
-    public void setConnectionLogging(Boolean connectionLogging) {
-        this.connectionLogging = connectionLogging;
     }
 
     public ConnectionThrottle getConnectionThrottle() {

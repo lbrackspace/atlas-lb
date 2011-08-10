@@ -63,7 +63,7 @@
         </property>
     </bean>
     <bean id="dozerEventListener"
-          class="org.openstack.atlas.api.mapper.dozer.converter.EventListener"/>
+          class="org.openstack.atlas.api.mapper.dozer.converters.EventListener"/>
 
     <!--RESOURCE BEANS-->
     <bean id="loadBalancingPublicImpl"

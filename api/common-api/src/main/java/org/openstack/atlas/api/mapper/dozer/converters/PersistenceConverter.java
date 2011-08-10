@@ -1,4 +1,4 @@
-package org.openstack.atlas.api.mapper.dozer.converter;
+package org.openstack.atlas.api.mapper.dozer.converters;
 
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
 import org.openstack.atlas.service.domain.exceptions.NoMappableConstantException;

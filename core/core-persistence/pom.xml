@@ -16,12 +16,12 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>core-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>data-model</artifactId>
+            <artifactId>core-data-model</artifactId>
             <version>${project.version}</version>
         </dependency>
 

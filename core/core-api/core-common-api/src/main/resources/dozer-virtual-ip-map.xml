@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozer.sourceforge.net"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://dozer.sourceforge.net
+          http://dozer.sourceforge.net/schema/beanmapping.xsd">
+
+    <mapping map-null="false" wildcard="false">
+        <class-a>org.openstack.atlas.core.api.v1.VirtualIp</class-a>
+        <class-b>org.openstack.atlas.service.domain.entity.VirtualIp</class-b>
+        <field>
+            <a>address</a>
+            <b>ipAddress</b>
+        </field>
+        <field>
+            <a>type</a>
+            <b>vipType</b>
+        </field>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+    </mapping>
+
+    <mapping map-null="false" wildcard="false">
+        <class-a>org.openstack.atlas.core.api.v1.VirtualIp</class-a>
+        <class-b>org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip</class-b>
+        <field>
+            <a>address</a>
+            <b>virtualIp.ipAddress</b>
+        </field>
+        <field>
+            <a>type</a>
+            <b>virtualIp.vipType</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumConverter">
+            <a>ipVersion</a>
+            <b>virtualIp</b>
+        </field>
+        <field>
+            <a>id</a>
+            <b>virtualIp.id</b>
+        </field>
+    </mapping>
+    
+</mappings>
