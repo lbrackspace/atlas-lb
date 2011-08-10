@@ -36,17 +36,17 @@ public class LoadBalancer extends Entity implements Serializable {
 
     @Column(name = "algorithm", nullable = false)
     @Enumerated(EnumType.STRING)
-    private LoadBalancerAlgorithm algorithm;
+    private LoadBalancerAlgorithm algorithm = LoadBalancerAlgorithm.ROUND_ROBIN;
 
     @Column(name = "port", nullable = false)
-    private Integer port;
+    private Integer port = 80;
 
     @Column(name = "account_id", nullable = false, length = 32)
     private Integer accountId;
 
     @JoinColumn(name = "protocol", nullable = false)
     @Enumerated(EnumType.STRING)
-    private LoadBalancerProtocol protocol;
+    private LoadBalancerProtocol protocol = LoadBalancerProtocol.HTTP;
 
     @JoinColumn(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)

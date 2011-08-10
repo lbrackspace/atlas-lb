@@ -42,8 +42,9 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         }
 
         try {
-            org.openstack.atlas.service.domain.entity.LoadBalancer domainLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
-            org.openstack.atlas.service.domain.entity.LoadBalancer newlyCreatedLb = loadbalancerService.create(domainLb);
+            org.openstack.atlas.service.domain.entity.LoadBalancer mappedLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
+            mappedLb.setAccountId(accountId);
+            org.openstack.atlas.service.domain.entity.LoadBalancer newlyCreatedLb = loadbalancerService.create(mappedLb);
             // TODO: Call Async Service with newlyCreatedLb
             return Response.status(200).entity(dozerMapper.map(newlyCreatedLb, LoadBalancer.class)).build();
         } catch (Exception e) {

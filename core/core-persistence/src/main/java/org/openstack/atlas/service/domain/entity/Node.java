@@ -7,22 +7,23 @@ import java.io.Serializable;
 @Table(name = "node")
 public class Node extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
+    public final static Integer DEFAULT_NODE_WEIGHT = 1;
 
     @ManyToOne
     @JoinColumn(name = "load_balancer_id")
     private LoadBalancer loadBalancer;
 
-    @Column(name = "ip_address", length = 39)
+    @Column(name = "ip_address", length = 39, nullable = false)
     private String ipAddress;
 
-    @Column(name = "port")
+    @Column(name = "port", nullable = false)
     private Integer port;
 
-    @Column(nullable = false)
-    private Integer weight;
+    @Column(name = "weight", nullable = false)
+    private Integer weight = DEFAULT_NODE_WEIGHT;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "node_condition")
+    @Column(name = "node_condition", nullable = false)
     private NodeCondition condition;
 
     @Enumerated(EnumType.STRING)
