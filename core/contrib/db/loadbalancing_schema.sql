@@ -48,11 +48,11 @@ CREATE TABLE `connection_throttle` (
   `max_connection` int(11) NOT NULL,
   `min_connections` int(11) NOT NULL,
   `rate_interval` int(11) NOT NULL,
-  `loadbalancer_id` int(11) DEFAULT NULL,
+  `load_balancer_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
-  KEY `FK45EA176BD166A451` (`loadbalancer_id`),
-  CONSTRAINT `FK45EA176BD166A451` FOREIGN KEY (`loadbalancer_id`) REFERENCES `load_balancer` (`id`)
+  KEY `FK45EA176BD166A451` (`load_balancer_id`),
+  CONSTRAINT `FK45EA176BD166A451` FOREIGN KEY (`load_balancer_id`) REFERENCES `load_balancer` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -72,11 +72,11 @@ CREATE TABLE `health_monitor` (
   `status_regex` varchar(128) DEFAULT NULL,
   `timeout` int(11) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
-  `loadbalancer_id` int(11) DEFAULT NULL,
+  `load_balancer_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
-  KEY `FK59EB4A77D166A451` (`loadbalancer_id`),
-  CONSTRAINT `FK59EB4A77D166A451` FOREIGN KEY (`loadbalancer_id`) REFERENCES `load_balancer` (`id`)
+  KEY `FK59EB4A77D166A451` (`load_balancer_id`),
+  CONSTRAINT `FK59EB4A77D166A451` FOREIGN KEY (`load_balancer_id`) REFERENCES `load_balancer` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -118,6 +118,38 @@ CREATE TABLE `host` (
   KEY `FK30F5A85B94F923` (`cluster_id`),
   CONSTRAINT `FK30F5A85B94F923` FOREIGN KEY (`cluster_id`) REFERENCES `cluster` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
+DROP TABLE IF EXISTS `host`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `host` (
+  `id` int(11) NOT NULL auto_increment,
+  `core_device_id` varchar(64) NOT NULL,
+  `host_status` varchar(32) NOT NULL,
+  `management_ip` varchar(255) NOT NULL,
+  `max_concurrent_connections` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `endpoint` varchar(255) NOT NULL,
+  `host_name` varchar(255) NOT NULL,
+  `cluster_id` int(11) NOT NULL,
+  `zone` varchar(4) NOT NULL,
+  `endpoint_active` tinyint(1) NOT NULL,
+  `ipv6_servicenet` varchar(39) default NULL,
+  `ipv4_servicenet` varchar(39) default NULL,
+  `ipv4_public` varchar(39) default NULL,
+  `ipv6_public` varchar(39) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `id` (`id`),
+  UNIQUE KEY `target_host` (`host_name`),
+  KEY `FK30F5A8D56C3599` (`cluster_id`),
+  KEY `host_status_fk` (`host_status`),
+  KEY `host_ibfk_3` (`zone`),
+  CONSTRAINT `FK30F5A8D56C3599` FOREIGN KEY (`cluster_id`) REFERENCES `cluster` (`id`),
+  CONSTRAINT `host_ibfk_1` FOREIGN KEY (`host_status`) REFERENCES `host_status` (`name`),
+  CONSTRAINT `host_ibfk_3` FOREIGN KEY (`zone`) REFERENCES `lb_zone` (`zone`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -180,49 +212,49 @@ CREATE TABLE `load_balancer_usage` (
   `start_time` datetime DEFAULT NULL,
   `transfer_bytes_in` bigint(20) NOT NULL,
   `transfer_bytes_out` bigint(20) NOT NULL,
-  `loadbalancer_id` int(11) NOT NULL,
+  `load_balancer_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
-  KEY `FK63225B1D166A451` (`loadbalancer_id`),
-  CONSTRAINT `FK63225B1D166A451` FOREIGN KEY (`loadbalancer_id`) REFERENCES `load_balancer` (`id`)
+  KEY `FK63225B1D166A451` (`load_balancer_id`),
+  CONSTRAINT `FK63225B1D166A451` FOREIGN KEY (`load_balancer_id`) REFERENCES `load_balancer` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `loadbalancer_virtualip`
+-- Table structure for table `load_balancer_virtual_ip`
 --
 
-DROP TABLE IF EXISTS `loadbalancer_virtualip`;
+DROP TABLE IF EXISTS `load_balancer_virtual_ip`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `loadbalancer_virtualip` (
-  `loadbalancer_id` int(11) NOT NULL,
-  `virtualip_id` int(11) NOT NULL,
+CREATE TABLE `load_balancer_virtual_ip` (
+  `load_balancer_id` int(11) NOT NULL,
+  `virtual_ip_id` int(11) NOT NULL,
   `port` int(11) DEFAULT NULL,
-  PRIMARY KEY (`loadbalancer_id`,`virtualip_id`),
-  KEY `FKEDA4B0EFD166A451` (`loadbalancer_id`),
-  KEY `FKEDA4B0EFC3EDC03` (`virtualip_id`),
-  CONSTRAINT `FKEDA4B0EFC3EDC03` FOREIGN KEY (`virtualip_id`) REFERENCES `virtual_ip_ipv4` (`id`),
-  CONSTRAINT `FKEDA4B0EFD166A451` FOREIGN KEY (`loadbalancer_id`) REFERENCES `load_balancer` (`id`)
+  PRIMARY KEY (`load_balancer_id`,`virtual_ip_id`),
+  KEY `FKEDA4B0EFD166A451` (`load_balancer_id`),
+  KEY `FKEDA4B0EFC3EDC03` (`virtual_ip_id`),
+  CONSTRAINT `FKEDA4B0EFC3EDC03` FOREIGN KEY (`virtual_ip_id`) REFERENCES `virtual_ip_ipv4` (`id`),
+  CONSTRAINT `FKEDA4B0EFD166A451` FOREIGN KEY (`load_balancer_id`) REFERENCES `load_balancer` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `loadbalancer_virtualipv6`
+-- Table structure for table `load_balancer_virtual_ipv6`
 --
 
-DROP TABLE IF EXISTS `loadbalancer_virtualipv6`;
+DROP TABLE IF EXISTS `load_balancer_virtual_ipv6`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `loadbalancer_virtualipv6` (
-  `loadbalancer_id` int(11) NOT NULL,
-  `virtualip6_id` int(11) NOT NULL,
+CREATE TABLE `load_balancer_virtual_ipv6` (
+  `load_balancer_id` int(11) NOT NULL,
+  `virtual_ip6_id` int(11) NOT NULL,
   `port` int(11) DEFAULT NULL,
-  PRIMARY KEY (`loadbalancer_id`,`virtualip6_id`),
-  KEY `FK173C3FAFD166A451` (`loadbalancer_id`),
-  KEY `FK173C3FAF475792F1` (`virtualip6_id`),
-  CONSTRAINT `FK173C3FAF475792F1` FOREIGN KEY (`virtualip6_id`) REFERENCES `virtual_ip_ipv6` (`id`),
-  CONSTRAINT `FK173C3FAFD166A451` FOREIGN KEY (`loadbalancer_id`) REFERENCES `load_balancer` (`id`)
+  PRIMARY KEY (`load_balancer_id`,`virtual_ip6_id`),
+  KEY `FK173C3FAFD166A451` (`load_balancer_id`),
+  KEY `FK173C3FAF475792F1` (`virtual_ip6_id`),
+  CONSTRAINT `FK173C3FAF475792F1` FOREIGN KEY (`virtual_ip6_id`) REFERENCES `virtual_ip_ipv6` (`id`),
+  CONSTRAINT `FK173C3FAFD166A451` FOREIGN KEY (`load_balancer_id`) REFERENCES `load_balancer` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -265,11 +297,11 @@ CREATE TABLE `node` (
   `port` int(11) DEFAULT NULL,
   `status` varchar(255) DEFAULT NULL,
   `weight` int(11) NOT NULL,
-  `loadbalancer_id` int(11) DEFAULT NULL,
+  `load_balancer_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
-  KEY `FK33AE02D166A451` (`loadbalancer_id`),
-  CONSTRAINT `FK33AE02D166A451` FOREIGN KEY (`loadbalancer_id`) REFERENCES `load_balancer` (`id`)
+  KEY `FK33AE02D166A451` (`load_balancer_id`),
+  CONSTRAINT `FK33AE02D166A451` FOREIGN KEY (`load_balancer_id`) REFERENCES `load_balancer` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
