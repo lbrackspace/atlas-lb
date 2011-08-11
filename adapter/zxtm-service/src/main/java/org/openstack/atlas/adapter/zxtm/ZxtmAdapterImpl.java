@@ -581,7 +581,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws InsufficientRequestException, RemoteException {
-        final String errorPageName = ZxtmNameBuilder.generateErrorPageNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountId);
         deleteErrorFile(config, loadbalancerId,accountId);
         setDefaultErrorFile(config, loadbalancerId, accountId);
     }
@@ -596,7 +595,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
         ConfExtraBindingStub extraService = null;
         if (serviceStubs != null) {
-            LOG.info("Attempting to upload the default error file...");
+            LOG.debug("Attempting to upload the default error file...");
             extraService = serviceStubs.getZxtmConfExtraBinding();
             if (extraService != null) {
                 extraService.uploadFile(Constants.DEFAULT_ERROR_PAGE, content.getBytes());
@@ -609,7 +608,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountid) throws InsufficientRequestException, RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountid);
-        LOG.info(String.format("Attempting to set the default error file for: %s_%s", accountid, loadbalancerId));
+        LOG.debug(String.format("Attempting to set the default error file for: %s_%s", accountid, loadbalancerId));
         serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{Constants.DEFAULT_ERROR_PAGE});
         LOG.info(String.format("Successfully set the default error file for: %s_%s", accountid, loadbalancerId));
 
@@ -620,7 +619,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         String fileToDelete = getErrorFileName(loadbalancerId, accountId);
            try {
-            LOG.info(String.format("Attempting to delete a custom error file for: %s%s",accountId,loadbalancerId));
+            LOG.debug(String.format("Attempting to delete a custom error file for: %s%s",accountId,loadbalancerId));
             serviceStubs.getZxtmConfExtraBinding().deleteFile(new String[]{fileToDelete});
             LOG.info(String.format("Successfully deleted a custom error file for: %s%s",accountId,loadbalancerId));
         } catch (RemoteException e) {
