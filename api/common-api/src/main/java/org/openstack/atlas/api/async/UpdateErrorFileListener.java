@@ -30,12 +30,10 @@ public class UpdateErrorFileListener extends BaseListener {
                 LOG.error(tmpMsg, e);
                 return; //TODO: Put alert stuff here
             }
-        } else {
+        } else if(clusterId != null){
             LOG.debug("Attempting to set default error file in zeus...");
             reverseProxyLoadBalancerService.uploadDefaultErrorFile(clusterId, content);
             LOG.debug("Successfully updated default error file in zeus.");
         }
-
     }
-
 }

@@ -94,7 +94,7 @@ public interface ReverseProxyLoadBalancerService {
 
     public void updateRateLimit(int id, int accountId, RateLimit rateLimit) throws Exception;
 
-    public void removeAndSetDefaultErrorFile(Integer accountid, Integer loadbalancerId) throws EntityNotFoundException, MalformedURLException, DecryptException, RemoteException, InsufficientRequestException;
+    public void removeAndSetDefaultErrorFile(Integer loadbalancerId, Integer accountId) throws EntityNotFoundException, MalformedURLException, DecryptException, RemoteException, InsufficientRequestException;
 
     public void deleteErrorFile(Integer loadbalancerId,Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
 

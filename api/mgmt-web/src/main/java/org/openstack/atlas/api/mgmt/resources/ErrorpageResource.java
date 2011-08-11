@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 
 public class ErrorpageResource extends ManagementDependencyProvider {
     private final Log LOG = LogFactory.getLog(ErrorpageResource.class);
+    private int clusterId;
 
     @GET
     public Response retrieveErrorpage() {
@@ -32,17 +33,6 @@ public class ErrorpageResource extends ManagementDependencyProvider {
         }
         errorpage.setContent(errorcontent);
         Response resp = Response.status(200).entity(errorpage).build();
-        return resp;
-    }
-
-    @DELETE
-    public Response deleteErrorpage(){
-        try {
-            getManagementAsyncService().callAsyncLoadBalancingOperation(Operation.DELETE_ERROR_PAGE, new MessageDataContainer());
-        } catch (Exception ex) {
-            return ResponseFactory.getErrorResponse(ex, null,null);
-        }
-        Response resp = Response.status(200).build();
         return resp;
     }
 
@@ -63,6 +53,7 @@ public class ErrorpageResource extends ManagementDependencyProvider {
         }
         dataContainer = new MessageDataContainer();
         dataContainer.setErrorFileContents(content);
+        dataContainer.setClusterId(clusterId);
         try {
             getManagementAsyncService().callAsyncLoadBalancingOperation(Operation.UPDATE_ERRORFILE, dataContainer);
         } catch (Exception ex) {
@@ -74,5 +65,13 @@ public class ErrorpageResource extends ManagementDependencyProvider {
 
     public Log getLOG() {
         return LOG;
+    }
+
+    public int getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(int clusterId) {
+        this.clusterId = clusterId;
     }
 }

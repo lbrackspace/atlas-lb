@@ -471,7 +471,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void removeAndSetDefaultErrorFile(Integer accountId, Integer loadbalancerId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+    public void removeAndSetDefaultErrorFile(Integer loadbalancerId, Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
         try {
             reverseProxyLoadBalancerAdapter.removeAndSetDefaultErrorFile(config, loadbalancerId, accountId);

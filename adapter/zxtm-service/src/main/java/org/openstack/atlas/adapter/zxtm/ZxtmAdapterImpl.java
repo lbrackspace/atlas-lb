@@ -591,7 +591,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws InsufficientRequestException, RemoteException {
         final String errorPageName = ZxtmNameBuilder.generateErrorPageNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountId);
         deleteErrorFile(config, loadbalancerId,accountId);
-        setDefaultErrorFile(config, accountId, loadbalancerId);
+        setDefaultErrorFile(config, loadbalancerId, accountId);
     }
 
     @Override
