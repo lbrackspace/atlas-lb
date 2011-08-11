@@ -48,7 +48,7 @@ public class ErrorpageResource extends CommonDependencyProvider{
         container.setAccountId(accountId);
         container.setLoadBalancerId(loadBalancerId);
         try {
-            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_ERROR_PAGE, container);
+            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_ERRORFILE, container);
         } catch (JMSException e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

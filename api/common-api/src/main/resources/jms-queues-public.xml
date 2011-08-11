@@ -69,15 +69,15 @@
         <property name="sessionTransacted" value="true"/>
     </bean>
 
-    <bean id="deleteErrorPageListener"
-          class="org.openstack.atlas.api.async.DeleteErrorPageListener"
+    <bean id="deleteErrorFileListener"
+          class="org.openstack.atlas.api.async.DeleteErrorFileListener"
           parent="baseListener"/>
 
     <bean id="deleteErrorPageListenerContainer"
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
-        <property name="messageListener" ref="deleteErrorPageListener"/>
-        <property name="destinationName" value="DELETE_ERROR_PAGE"/>
+        <property name="messageListener" ref="deleteErrorFileListener"/>
+        <property name="destinationName" value="DELETE_ERRORFILE"/>
         <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
         <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
         <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
