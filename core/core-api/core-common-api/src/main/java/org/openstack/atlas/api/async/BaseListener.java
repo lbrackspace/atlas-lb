@@ -11,25 +11,21 @@ import org.openstack.atlas.service.domain.exception.UnauthorizedException;
 import org.openstack.atlas.service.domain.pojo.LBDeviceEvent;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojo.Sync;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 
 import javax.jms.*;
 
 public abstract class BaseListener implements MessageListener {
-
     protected Log LOG = LogFactory.getLog(this.getClass());
-
     protected JmsTemplate jmsTemplate;
 
+    @Autowired
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
 
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
-    }
-
-    public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
-        this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
     }
 
     public final void onMessage(Message message) {
