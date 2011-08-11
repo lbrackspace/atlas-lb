@@ -1,9 +1,6 @@
 package org.openstack.atlas.api.resources;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.jms.JMSException;
-
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,10 +8,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
-import org.openstack.atlas.service.domain.entities.UserPages;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.api.config.RestApiConfiguration;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.operations.Operation;
@@ -43,11 +37,11 @@ public class ErrorpageResource extends CommonDependencyProvider{
     }
 
     @DELETE
-    public Response deleteErrorpage(){
+    public Response deleteErrorpage() {
         try {
             loadBalancerService.removeErrorPage(loadBalancerId, accountId);
         } catch (EntityNotFoundException ex) {
-            return ResponseFactory.getErrorResponse(ex, null,null);
+            return ResponseFactory.getErrorResponse(ex, null, null);
         }
 
         MessageDataContainer container = new MessageDataContainer();
@@ -56,8 +50,9 @@ public class ErrorpageResource extends CommonDependencyProvider{
         try {
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_ERROR_PAGE, container);
         } catch (JMSException e) {
-            return ResponseFactory.getErrorResponse(e, null,null);
+            return ResponseFactory.getErrorResponse(e, null, null);
         }
+
         Response resp = Response.status(200).build();
         return resp;
     }
