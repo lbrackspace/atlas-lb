@@ -26,8 +26,8 @@ import static org.openstack.atlas.service.domain.event.entity.CategoryType.UPDAT
 import static org.openstack.atlas.service.domain.event.entity.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.event.entity.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.event.entity.EventType.*;
-import static org.openstack.atlas.service.domain.service.helper.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.service.helper.AlertType.LBDEVICE_FAILURE;
+import static org.openstack.atlas.service.domain.common.AlertType.DATABASE_FAILURE;
+import static org.openstack.atlas.service.domain.common.AlertType.LBDEVICE_FAILURE;
 
 @Component
 public class CreateLoadBalancerListener extends BaseListener {
