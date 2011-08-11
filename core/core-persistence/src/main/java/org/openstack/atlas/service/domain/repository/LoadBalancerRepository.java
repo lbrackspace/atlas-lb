@@ -12,6 +12,9 @@ import org.openstack.atlas.service.domain.pojo.AccountLoadBalancer;
 import org.openstack.atlas.service.domain.pojo.CustomQuery;
 import org.openstack.atlas.service.domain.pojo.LbQueryStatus;
 import org.openstack.atlas.service.domain.pojo.QueryParameter;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
+import org.openstack.atlas.service.domain.entity.VirtualIp;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.openstack.atlas.service.domain.entity.LoadBalancerStatus.DELETED;
+import java.util.Calendar;
+import java.util.Set;
 
 @Repository
 @Transactional
@@ -39,7 +44,6 @@ public class LoadBalancerRepository {
     final Log LOG = LogFactory.getLog(LoadBalancerRepository.class);
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;/**/
-
 
     public LoadBalancer getById(Integer id) throws EntityNotFoundException {
         LoadBalancer lb = entityManager.find(LoadBalancer.class, id);
@@ -194,7 +198,7 @@ public class LoadBalancerRepository {
         }
 
         LoadBalancer lb = lbList.get(0);
-        if (lb.getStatus().equals(DELETED)) throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);
+        if (lb.getStatus().equals(DELETED)) throw new UnprocessableEntityException(org.openstack.atlas.service.domain.common.Constants.LoadBalancerDeleted);
         final boolean isActive = lb.getStatus().equals(LoadBalancerStatus.ACTIVE);
         final boolean isPendingOrActive = lb.getStatus().equals(LoadBalancerStatus.PENDING_UPDATE) || isActive;
 

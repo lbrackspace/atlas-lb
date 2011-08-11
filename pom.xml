@@ -318,6 +318,11 @@
                 <artifactId>activemq-camel</artifactId>
                 <version>5.3.1</version>
             </dependency>
+            <dependency>
+                <groupId>javax.jms</groupId>
+                <artifactId>jms</artifactId>
+                <version>1.1</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -332,6 +337,11 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-orm</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jms</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>

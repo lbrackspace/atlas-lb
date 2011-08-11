@@ -1,11 +1,9 @@
 package org.openstack.atlas.service.domain.service;
 
-
 import org.openstack.atlas.service.domain.entity.Host;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exception.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
 
 import java.util.List;
@@ -75,6 +73,6 @@ public interface HostService {
 
     public Host getDefaultActiveHost() throws EntityNotFoundException;
 
-//    /public boolean isActiveHost(Host host) throws EntityNotFoundException;
+    //public boolean isActiveHost(Host host) throws EntityNotFoundException;
 
 }
