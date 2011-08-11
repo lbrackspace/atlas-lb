@@ -129,6 +129,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         LOG.debug(String.format("Deleting load balancer '%s'...", virtualServerName));
 
+        removeAndSetDefaultErrorFile(config, lb.getId(), lb.getAccountId());
         removeHealthMonitor(config, lb.getId(), lb.getAccountId());
         deleteRateLimit(config, lb.getId(), lb.getAccountId());
         deleteVirtualServer(serviceStubs, virtualServerName);

@@ -19,7 +19,7 @@ public class DeleteErrorFileListener extends BaseListener {
         LOG.debug("About to remove the error file from zeus... ");
         if (data.getAccountId() != null && data.getLoadBalancerId() != null) {
             try {
-             reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile(data.getLoadBalancerId(),data.getAccountId());
+                reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile(data.getLoadBalancerId(), data.getAccountId());
             } catch (Exception e) {
                 String tmpMsg = String.format("Error setting Errorfile for %d_%d", data.getAccountId(), data.getLoadBalancerId());
                 LOG.error(tmpMsg, e);

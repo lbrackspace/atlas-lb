@@ -32,10 +32,17 @@ public class UpdateErrorFileListener extends BaseListener {
                 notificationService.saveAlert(aid, lid, e, AlertType.ZEUS_FAILURE.name(), msg);
                 return;
             }
-        } else if(clusterId != null){
-            LOG.debug("Attempting to set default error file in zeus...");
-            reverseProxyLoadBalancerService.uploadDefaultErrorFile(clusterId, content);
-            LOG.debug("Successfully updated default error file in zeus.");
+        } else if (clusterId != null) {
+            LOG.debug("Attempting to upload default error file in zeus...");
+            try {
+                reverseProxyLoadBalancerService.uploadDefaultErrorFile(clusterId, content);
+                LOG.debug("Successfully uploaded default error file in zeus.");
+            } catch (Exception e) {
+                String tmpMsg = String.format("Error uploading default error file...");
+                LOG.error(tmpMsg, e);
+                notificationService.saveAlert(null, null, e, AlertType.ZEUS_FAILURE.name(), msg);
+                return;
+            }
         }
     }
 }
