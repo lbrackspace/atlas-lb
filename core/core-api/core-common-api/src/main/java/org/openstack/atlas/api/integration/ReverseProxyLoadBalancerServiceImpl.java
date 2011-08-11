@@ -16,12 +16,14 @@ import org.openstack.atlas.service.domain.service.HealthMonitorService;
 import org.openstack.atlas.service.domain.service.HostService;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+@Service
 public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBalancerService {
     final Log LOG = LogFactory.getLog(ReverseProxyLoadBalancerServiceImpl.class);
     private Configuration configuration;

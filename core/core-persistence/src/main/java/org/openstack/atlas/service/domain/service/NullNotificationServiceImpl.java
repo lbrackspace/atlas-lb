@@ -4,7 +4,9 @@ import org.openstack.atlas.service.domain.event.entity.Alert;
 import org.openstack.atlas.service.domain.event.entity.CategoryType;
 import org.openstack.atlas.service.domain.event.entity.EventSeverity;
 import org.openstack.atlas.service.domain.event.entity.EventType;
+import org.springframework.stereotype.Service;
 
+@Service
 public class NullNotificationServiceImpl implements NotificationService {
     @Override
     public void saveNodeEvent(String userName, Integer accountId, Integer loadbalancerId, Integer nodeId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity) {
