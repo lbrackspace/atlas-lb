@@ -570,14 +570,20 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         String errorFileName = getErrorFileName(loadbalancerId, accountId);
 
-        ZxtmServiceStubs serviceStubs = null;
+        ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
         ConfExtraBindingStub extraService = serviceStubs.getZxtmConfExtraBinding();
         VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
 
+        LOG.debug("Attempting to upload the error file...");
         extraService.uploadFile(errorFileName, content.getBytes());
+        LOG.info("Successfully uploaded the error file...");
+
         vsNames[0] = String.format("%d_%d", accountId, loadbalancerId);
         errorFiles[0] = errorFileName;
+
+        LOG.debug("Attempting to set the error file...");
         virtualServerService.setErrorFile(vsNames, errorFiles);
+        LOG.info("Successfully set the error file...");
     }
 
     @Override
@@ -589,19 +595,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content) throws InsufficientRequestException, RemoteException {
         ZxtmServiceStubs serviceStubs = null;
-        try {
-            serviceStubs = getServiceStubs(config);
-        } catch (AxisFault axisFault) {
-            axisFault.printStackTrace();
-        }
+        serviceStubs = getServiceStubs(config);
         ConfExtraBindingStub extraService = null;
-        if (serviceStubs != null) {
-            LOG.debug("Attempting to upload the default error file...");
-            extraService = serviceStubs.getZxtmConfExtraBinding();
-            if (extraService != null) {
-                extraService.uploadFile(Constants.DEFAULT_ERROR_PAGE, content.getBytes());
-                LOG.info("Successfully uploaded the default error file...");
-            }
+        LOG.debug("Attempting to upload the default error file...");
+        extraService = serviceStubs.getZxtmConfExtraBinding();
+        if (extraService != null) {
+            extraService.uploadFile(Constants.DEFAULT_ERRORFILE, content.getBytes());
+            LOG.info("Successfully uploaded the default error file...");
         }
     }
 
@@ -610,7 +610,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountid);
         LOG.debug(String.format("Attempting to set the default error file for: %s_%s", accountid, loadbalancerId));
-        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{Constants.DEFAULT_ERROR_PAGE});
+        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{Constants.DEFAULT_ERRORFILE});
         LOG.info(String.format("Successfully set the default error file for: %s_%s", accountid, loadbalancerId));
 
     }

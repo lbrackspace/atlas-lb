@@ -23,7 +23,7 @@ public class UpdateErrorFileListener extends BaseListener {
         Integer clusterId = data.getClusterId();
         if (aid != null && lid != null) {
             try {
-                LOG.debug("Attempting to set error file in zeus...");
+                LOG.debug("Attempting to set error file in zeus...calling setErrorFile");
                 reverseProxyLoadBalancerService.setErrorFile(lid, aid, content);
                 LOG.debug("Successfully updated error file in zeus.");
             } catch (Exception e) {
@@ -33,7 +33,7 @@ public class UpdateErrorFileListener extends BaseListener {
                 return;
             }
         } else if (clusterId != null) {
-            LOG.debug("Attempting to upload default error file in zeus...");
+            LOG.debug("Attempting to upload default error file in zeus...calling uploadDefaultErrorFile");
             try {
                 reverseProxyLoadBalancerService.uploadDefaultErrorFile(clusterId, content);
                 LOG.debug("Successfully uploaded default error file in zeus.");
