@@ -93,7 +93,9 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entities.LoadBalancer domainLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             domainLb.setAccountId(accountId);
             if (requestHeaders != null) {
-                domainLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
+                if(requestHeaders.getRequestHeader("X-PP-User") != null && requestHeaders.getRequestHeader("X-PP-User").size() > 0) {
+                    domainLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
+                }
             }
 
             virtualIpService.addAccountRecord(accountId);

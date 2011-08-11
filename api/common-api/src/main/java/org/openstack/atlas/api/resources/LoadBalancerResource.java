@@ -101,7 +101,9 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             domainLb.setId(id);
             domainLb.setAccountId(accountId);
             if (requestHeaders != null) {
-                domainLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
+                if(requestHeaders.getRequestHeader("X-PP-User") != null && requestHeaders.getRequestHeader("X-PP-User").size() > 0) {
+                    domainLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
+                }
             }
 
             loadBalancerService.prepareForUpdate(domainLb);
