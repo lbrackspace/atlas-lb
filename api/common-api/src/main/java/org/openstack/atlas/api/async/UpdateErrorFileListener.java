@@ -17,10 +17,10 @@ public class UpdateErrorFileListener extends BaseListener {
         LOG.info(msg);
         MessageDataContainer data = getDataContainerFromMessage(message);
         String content = data.getErrorFileContents();
-
-        if (data.getAccountId() != null && data.getLoadBalancerId() != null) {
-            Integer aid = data.getAccountId();
-            Integer lid = data.getLoadBalancerId();
+        Integer aid = data.getAccountId();
+        Integer lid = data.getLoadBalancerId();
+        Integer clusterId = data.getClusterId();
+        if (aid != null && lid != null) {
             try {
                 LOG.debug("Attempting to set error file in zeus...");
                 reverseProxyLoadBalancerService.setErrorFile(lid, aid, content);
@@ -30,12 +30,10 @@ public class UpdateErrorFileListener extends BaseListener {
                 LOG.error(tmpMsg, e);
                 return; //TODO: Put alert stuff here
             }
-        } else {
+        } else if(clusterId != null){
             LOG.debug("Attempting to set default error file in zeus...");
-            reverseProxyLoadBalancerService.uploadDefaultErrorFile(hostService.getAllHosts().get(0), content);
+            reverseProxyLoadBalancerService.uploadDefaultErrorFile(clusterId, content);
             LOG.debug("Successfully updated default error file in zeus.");
         }
-
     }
-
 }

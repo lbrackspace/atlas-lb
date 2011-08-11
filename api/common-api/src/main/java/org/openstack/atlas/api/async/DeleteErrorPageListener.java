@@ -32,11 +32,9 @@ public class DeleteErrorPageListener extends BaseListener {
 
         LOG.debug("About to remove the error file from zeus... ");
         if (data.getAccountId() != null && data.getLoadBalancerId() != null) {
-             reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile(data.getAccountId(), data.getLoadBalancerId());
+             reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile(data.getLoadBalancerId(),data.getAccountId());
         } else {
-             //Zeus will mirror across all hosts...
-            Host host = hostService.getAllHosts().get(0);
-            reverseProxyLoadBalancerService.deleteErrorFile(host, Constants.DEFAULT_ERROR_PAGE);
+            LOG.error("Error LoadbalancerId or accountId was null in call to DeleteErrorPageListener");
         }
         LOG.debug("Successfully removed the error file from zeus... ");
     }

@@ -202,6 +202,11 @@ public class HostRepository {
         return backups.get(0);
     }
 
+    public Cluster getClusterById(Integer clusterId){
+        Cluster cluster = entityManager.find(Cluster.class,clusterId);
+        return cluster;
+    }
+
     public Backup createBackup(Host host, Backup backup) {
         backup.setHost(host);
         backup.setBackupTime(Calendar.getInstance());

@@ -22,7 +22,6 @@ public class ManagementResource extends ManagementDependencyProvider {
     private JobsResource jobsResource;
     private AuditResource auditResource;
     private BlackListResource blackListResource;
-    private ErrorpageResource errorpageResource;
 
     @Path("accounts")
     public AccountsResource retrieveAccountsResource() {
@@ -92,15 +91,6 @@ public class ManagementResource extends ManagementDependencyProvider {
     @Path("jobs")
     public JobsResource retrieveJobsResource() {
         return jobsResource;
-    }
-
-    @Path("errorpage")
-    public ErrorpageResource retrieveErrorPageResource() {
-        return errorpageResource;
-    }
-
-    public void setErrorpageResource(ErrorpageResource errorpageResource) {
-        this.errorpageResource = errorpageResource;
     }
 
     public void setBounceResource(BounceResource bounceResource) {

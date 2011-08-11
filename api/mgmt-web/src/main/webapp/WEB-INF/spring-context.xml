@@ -128,12 +128,6 @@
                           parent="managementDependencyProvider"
                           scope="request"/>
                 </property>
-                <property name="errorpageResource">
-                    <bean id="errorpageResource"
-                          class="org.openstack.atlas.api.mgmt.resources.ErrorpageResource"
-                          parent="managementDependencyProvider"
-                          scope="request"/>
-                </property>
                 <property name="stubResource">
                     <bean class="org.openstack.atlas.api.mgmt.resources.StubResource"
                           parent="managementDependencyProvider"
@@ -197,6 +191,9 @@
                                   parent="managementDependencyProvider"
                                   scope="request">
                                 <property name="virtualIpsResource" ref="mgmtVirtualIpsResource"/>
+                                <property name="errorpageResource"  ref="mgmtErrorPageResource"/>
+
+
                             </bean>
                         </property>
                     </bean>
@@ -258,6 +255,11 @@
                   scope="request"/>
         </property>
     </bean>
+    <bean id="mgmtErrorPageResource"
+          class="org.openstack.atlas.api.mgmt.resources.ErrorpageResource"
+                parent="managementDependencyProvider"
+                scope="request"/>
+
     <bean name="mgmtVirtualIpsResource"
           class="org.openstack.atlas.api.mgmt.resources.VirtualIpsResource"
           parent="managementDependencyProvider"
