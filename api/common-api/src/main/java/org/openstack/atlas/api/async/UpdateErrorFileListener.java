@@ -7,6 +7,7 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
+import org.openstack.atlas.service.domain.services.helpers.AlertType;
 
 public class UpdateErrorFileListener extends BaseListener {
     private final Log LOG = LogFactory.getLog(UpdateErrorFileListener.class);
@@ -28,7 +29,8 @@ public class UpdateErrorFileListener extends BaseListener {
             } catch (Exception e) {
                 String tmpMsg = String.format("Error setting Errorfile for %d_%d", aid, lid);
                 LOG.error(tmpMsg, e);
-                return; //TODO: Put alert stuff here
+                notificationService.saveAlert(aid, lid, e, AlertType.ZEUS_FAILURE.name(), msg);
+                return;
             }
         } else if(clusterId != null){
             LOG.debug("Attempting to set default error file in zeus...");
