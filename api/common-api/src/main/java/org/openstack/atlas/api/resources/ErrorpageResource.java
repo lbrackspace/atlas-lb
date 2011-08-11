@@ -58,7 +58,7 @@ public class ErrorpageResource extends CommonDependencyProvider{
         } catch (JMSException e) {
             return ResponseFactory.getErrorResponse(e, null,null);
         }
-        Response resp = Response.status(200).build();
+        Response resp = Response.status(202).build();
         return resp;
     }
 

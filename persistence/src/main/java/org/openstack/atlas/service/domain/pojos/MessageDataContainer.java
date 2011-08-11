@@ -13,6 +13,7 @@ public class MessageDataContainer implements Serializable {
     private Integer virtualIpId;
     private String errorFileContents;
     private Integer nodeId;
+    private Integer clusterId;
     private List<Integer> newVipIds;
     private List<Integer> newNodeIds;
     //for batch deletes
@@ -91,17 +92,19 @@ public class MessageDataContainer implements Serializable {
         this.newNodeIds = newNodeIds;
     }
 
-    /**
-     * @return the errorFileContents
-     */
     public String getErrorFileContents() {
         return errorFileContents;
     }
 
-    /**
-     * @param errorFileContents the errorFileContents to set
-     */
     public void setErrorFileContents(String errorFileContents) {
         this.errorFileContents = errorFileContents;
+    }
+
+    public Integer getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Integer clusterId) {
+        this.clusterId = clusterId;
     }
 }

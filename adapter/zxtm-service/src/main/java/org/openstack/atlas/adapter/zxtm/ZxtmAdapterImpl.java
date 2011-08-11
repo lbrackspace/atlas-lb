@@ -588,10 +588,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer accountid, Integer loadbalancerId) throws InsufficientRequestException, RemoteException {
-        final String errorPageName = ZxtmNameBuilder.generateErrorPageNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountid);
-        deleteErrorFile(config, errorPageName);
-        setDefaultErrorFile(config, accountid, loadbalancerId);
+    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws InsufficientRequestException, RemoteException {
+        final String errorPageName = ZxtmNameBuilder.generateErrorPageNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountId);
+        deleteErrorFile(config, loadbalancerId,accountId);
+        setDefaultErrorFile(config, accountId, loadbalancerId);
     }
 
     @Override
@@ -619,14 +619,17 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, String fileToDelete) throws AxisFault {
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId,Integer accountId) throws AxisFault {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        String fileToDelete = getErrorFileName(loadbalancerId, accountId);
            try {
             serviceStubs.getZxtmConfExtraBinding().deleteFile(new String[]{fileToDelete});
         } catch (RemoteException e) {
                if (e instanceof ObjectDoesNotExist) {
                 LOG.warn(String.format("Cannot delete custom error page as, %s, it does not exist. Ignoring...", fileToDelete));
             }
+        }catch(Exception ex){
+            LOG.error(String.format("Exception: ",ex));
         }
     }
 
