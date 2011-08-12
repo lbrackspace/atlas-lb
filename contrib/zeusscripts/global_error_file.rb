@@ -65,7 +65,7 @@ class Zeus
     
     p = proxy "http://soap.zeus.com/zxtm/1.0/VirtualServer/"
     p.add_method "setErrorFile", "names", "values"
-    val = p.setErrorFile [virtual_server], [[default_file]]
+    val = p.setErrorFile [virtual_server], [default_file]
     val
     
   end
