@@ -576,14 +576,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         LOG.debug("Attempting to upload the error file...");
         extraService.uploadFile(errorFileName, content.getBytes());
-        LOG.info("Successfully uploaded the error file...");
+        LOG.info(String.format("Successfully uploaded the error file for: %s_%s...", accountId, loadbalancerId));
 
         vsNames[0] = String.format("%d_%d", accountId, loadbalancerId);
         errorFiles[0] = errorFileName;
 
         LOG.debug("Attempting to set the error file...");
         virtualServerService.setErrorFile(vsNames, errorFiles);
-        LOG.info("Successfully set the error file...");
+        LOG.info(String.format("Successfully set the error file for: %s_%s...", accountId, loadbalancerId));
     }
 
     @Override

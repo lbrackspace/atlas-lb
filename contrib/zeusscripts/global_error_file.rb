@@ -93,10 +93,10 @@ virtual_servers.each do |virtual_server|
   
   if protocol == "http"
     
-    rules_struct = zeus.get_error_file_by_virtual_server virtual_server
+    error_file = zeus.get_error_file_by_virtual_server virtual_server
 
-    puts "*** VS #{virtual_server} has rules: #{rules_struct.inspect}"
-    unless rules_struct.include? @options[:rule_name]
+    puts "*** VS #{virtual_server} has error file: #{error_file.inspect}"
+    unless error_file.include? @options[:rule_name]
       
       begin
         
@@ -111,7 +111,7 @@ virtual_servers.each do |virtual_server|
       
     else
       
-      puts "*** Skipping #{virtual_server} it already has rule #{@options[:rule_name]} ***"
+      puts "*** Skipping #{virtual_server} it already has error file #{@options[:rule_name]} ***"
       
     end
   
