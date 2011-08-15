@@ -24,12 +24,15 @@ public class Host extends Entity implements Serializable {
     @Column(name = "ipv4_public", nullable = true)
     private String ipv4Public;
 
-
     @Column(name = "core_device_id", nullable = false)
     private String coreDeviceId;
 
     @Column(name = "max_concurrent_connections", nullable = false)
     private Integer maxConcurrentConnections;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "host_status", length = 32, nullable = false)
+    private HostStatus hostStatus;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cluster_id", nullable = false)
@@ -44,9 +47,6 @@ public class Host extends Entity implements Serializable {
 
     @Column(name = "endpoint", nullable = false)
     private String endpoint;
-
-    @Column(name = "host_name", nullable = false)
-    private String hostName;
 
     @Column(name = "endpoint_active")
     private Boolean endpointActive;
@@ -119,21 +119,12 @@ public class Host extends Entity implements Serializable {
         sb.append(String.format("clusterid = %s, ", this.getCluster() == null ? "" : this.getCluster().getId()));
         sb.append(String.format("managementip = \"%s\", ", vorn(this.getManagementIp())));
         sb.append(String.format("maxconnections= %s, ", vorn(this.getMaxConcurrentConnections())));
-        sb.append(String.format("hostName = \"%s\", ", vorn(this.getHostName())));
         sb.append(String.format("coreid= %s,", vorn(this.getCoreDeviceId())));
         sb.append(String.format("endpoint=\"%s\",", vorn(this.getEndpoint())));
         sb.append(String.format("endpointActive=\"%s\"", vorn(this.isEndpointActive())));
         sb.append("}");
 
         return sb.toString();
-    }
-
-    public String getHostName() {
-        return hostName;
-    }
-
-    public void setHostName(String hostName) {
-        this.hostName = hostName;
     }
 
     public String getIpv6Servicenet() {
@@ -168,4 +159,11 @@ public class Host extends Entity implements Serializable {
         this.ipv4Servicenet = ipv4Servicenet;
     }
 
+    public HostStatus getHostStatus() {
+        return hostStatus;
+    }
+
+    public void setHostStatus(HostStatus hostStatus) {
+        this.hostStatus = hostStatus;
+    }
 }

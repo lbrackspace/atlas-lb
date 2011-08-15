@@ -12,6 +12,7 @@ import org.openstack.atlas.service.domain.pojo.LBDeviceEvent;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojo.Sync;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 
@@ -24,6 +25,7 @@ public abstract class BaseListener implements MessageListener {
     @Autowired
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
 
+    @Required
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
     }

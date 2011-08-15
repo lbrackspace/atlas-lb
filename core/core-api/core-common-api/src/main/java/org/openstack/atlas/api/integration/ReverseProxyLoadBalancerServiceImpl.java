@@ -16,6 +16,7 @@ import org.openstack.atlas.service.domain.service.HealthMonitorService;
 import org.openstack.atlas.service.domain.service.HostService;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
@@ -25,7 +26,7 @@ import java.util.Set;
 
 @Service
 public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBalancerService {
-    final Log LOG = LogFactory.getLog(ReverseProxyLoadBalancerServiceImpl.class);
+    private final Log LOG = LogFactory.getLog(ReverseProxyLoadBalancerServiceImpl.class);
     private Configuration configuration;
     private LoadBalancerAdapter loadBalancerAdapter;
 
@@ -34,14 +35,15 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     @Autowired
     private HostService hostService;
 
+//    @Required
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
     }
 
+//    @Required
     public void setLoadBalancerAdapter(LoadBalancerAdapter loadBalancerAdapter) {
         this.loadBalancerAdapter = loadBalancerAdapter;
     }
-
 
     @Override
     public void createLoadBalancer(LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {

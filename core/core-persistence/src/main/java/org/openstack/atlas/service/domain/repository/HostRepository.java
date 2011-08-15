@@ -169,7 +169,7 @@ public class HostRepository {
     }
 
     public List<String> getFailoverHostNames (Integer clusterId){
-        String hql = "select h.hostName from Host h where h.hostStatus = 'FAILOVER' and h.cluster.id = :clusterId";
+        String hql = "select h.name from Host h where h.hostStatus = 'FAILOVER' and h.cluster.id = :clusterId";
         Query q = entityManager.createQuery(hql).setParameter("clusterId",clusterId);
         List<String> results = q.getResultList();
         return results;

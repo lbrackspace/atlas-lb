@@ -43,7 +43,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
 
-        LoadBalancer queueLb = getLoadbalancerFromMessage(message);
+        LoadBalancer queueLb = getDataContainerFromMessage(message).getLoadBalancer();
         LoadBalancer dbLoadBalancer;
 
         try {

@@ -12,7 +12,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `host` WRITE;
 /*!40000 ALTER TABLE `host` DISABLE KEYS */;
-INSERT INTO `host` VALUES (2,'100', 'A', 1, 'host1', '10.0.0.0','0.0.0.0','::', '::', '1.1.1.1', 1500, 'host1', 1);
+INSERT INTO `host` (`id`, `core_device_id`, `host_status`, `management_ip`, `max_concurrent_connections`, `name`, `endpoint`, `cluster_id`, `endpoint_active`, `ipv6_servicenet`, `ipv4_servicenet`, `ipv4_public`, `ipv6_public`) VALUES (1,'100', 'ACTIVE_TARGET', '10.2.4.4', '1500', 'host1_cluster1','https://127.0.0.1:1234', '1', TRUE, '4FDE:0000:0000:0002:0022:F376:FF3B:AB3F', '10.2.2.6', '172.1.1.1', '4FDE:0000:0000:0002:0022:F376:FF3B:AB3F');
 /*!40000 ALTER TABLE `host` ENABLE KEYS */;
 UNLOCK TABLES;
 

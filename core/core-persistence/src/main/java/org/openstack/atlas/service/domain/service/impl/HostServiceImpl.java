@@ -102,10 +102,6 @@ public class HostServiceImpl extends BaseService implements HostService {
 
             dbHost.setMaxConcurrentConnections(queueHost.getMaxConcurrentConnections());
         }
-        if (queueHost.getHostName() != null) {
-
-            dbHost.setHostName(queueHost.getHostName());
-        }
 
         if (queueHost.isEndpointActive() != null) {
 
@@ -323,7 +319,7 @@ public class HostServiceImpl extends BaseService implements HostService {
 
     public static boolean detectDuplicateHosts(List<Host> allHosts, Host queueHost) {
         for (Host h : allHosts) {
-            if (h.getHostName().equals(queueHost.getHostName())) return true;
+            if (h.getName().equals(queueHost.getName())) return true;
         }
         return false;
     }

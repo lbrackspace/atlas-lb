@@ -7,6 +7,8 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.ResourceValidator;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
+import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.VirtualIpService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,8 +50,11 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entity.LoadBalancer mappedLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
             mappedLb.setAccountId(accountId);
             virtualIpService.addAccountRecord(accountId);
+
             org.openstack.atlas.service.domain.entity.LoadBalancer newlyCreatedLb = loadbalancerService.create(mappedLb);
-            // TODO: Call Async Service with newlyCreatedLb
+            MessageDataContainer msg = new MessageDataContainer();
+            msg.setLoadBalancer(newlyCreatedLb);
+            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_LOADBALANCER, msg);
             return Response.status(Response.Status.ACCEPTED).entity(dozerMapper.map(newlyCreatedLb, LoadBalancer.class)).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
