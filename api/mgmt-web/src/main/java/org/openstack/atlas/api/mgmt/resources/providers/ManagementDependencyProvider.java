@@ -13,6 +13,7 @@ import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
 import org.openstack.atlas.api.resources.providers.RequestStateContainer;
 import org.openstack.atlas.util.ip.IPv6;
 import org.dozer.DozerBeanMapper;
+import org.openstack.atlas.cfg.Configuration;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -55,6 +56,7 @@ public class ManagementDependencyProvider {
     protected SuspensionService suspensionService;
     protected ClusterService clusterService;
     protected JobStateService jobStateService;
+    protected Configuration configuration;
 
     public static String getStackTraceMessage(Exception e) {
         StringBuffer sb = new StringBuffer();
@@ -143,6 +145,14 @@ public class ManagementDependencyProvider {
 
     public void setCallbackService(CallbackService callbackService) {
             this.callbackService = callbackService;
+    }
+
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
     }
 
     public ClusterRepository getClusterRepository() {
