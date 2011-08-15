@@ -38,6 +38,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 import javax.ws.rs.core.Response;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 
 public class StubResource extends CommonDependencyProvider {
 
@@ -165,6 +166,16 @@ public class StubResource extends CommonDependencyProvider {
         Updated updated = new Updated();
         updated.setTime(now);
         return Response.status(200).entity(updated).build();
+    }
+
+    @GET
+    @Path("errorpage")
+    public Response stubErrorPage(){
+        String format="<html><big><big><big><big><big><big>%s</big></big></big></big></big></big></html>";
+        String msg=String.format(format,"<b>Error or something happened</b>");
+        Errorpage errorpage = new Errorpage();
+        errorpage.setContent(msg);
+        return Response.status(200).entity(errorpage).build();
     }
 
     private Node newNode(Integer id, Integer port, String address) {

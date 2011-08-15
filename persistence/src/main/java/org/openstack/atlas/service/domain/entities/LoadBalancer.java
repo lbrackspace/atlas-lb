@@ -9,31 +9,27 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 
 @javax.persistence.Entity
 @Table(name = "loadbalancer")
 public class LoadBalancer extends Entity implements Serializable {
+
     private final static long serialVersionUID = 532512316L;
     @Column(name = "name", length = 128)
     private String name;
-
     @OneToMany(mappedBy = "loadBalancer", fetch = FetchType.EAGER)
     private Set<LoadBalancerJoinVip> loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
-
-
     @OneToMany(mappedBy = "loadBalancer", fetch = FetchType.EAGER)
     private Set<LoadBalancerJoinVip6> loadBalancerJoinVip6Set = new HashSet<LoadBalancerJoinVip6>();
-
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
     @OrderBy("id")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<Node> nodes = new HashSet<Node>();
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.LAZY)
     @OrderBy("id")
     private Set<Usage> usage = new HashSet<Usage>();
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
     @OrderBy("id")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
@@ -67,6 +63,9 @@ public class LoadBalancer extends Entity implements Serializable {
     private Suspension suspension;
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private RateLimit rateLimit;
+    @OneToOne(mappedBy = "loadbalancer",fetch=FetchType.LAZY,optional=false)
+    @LazyToOne(LazyToOneOption.NO_PROXY)
+    private UserPages userPages;
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar created;
     @Temporal(TemporalType.TIMESTAMP)
@@ -77,7 +76,6 @@ public class LoadBalancer extends Entity implements Serializable {
     @OrderBy("ticketId")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<Ticket> tickets = new HashSet<Ticket>();
-
     @Transient
     private VirtualIpDozerWrapper virtualIpDozerWrapper;
     @Transient
@@ -107,9 +105,10 @@ public class LoadBalancer extends Entity implements Serializable {
         this.suspension = suspension;
     }
 
-
     public Set<LoadBalancerJoinVip> getLoadBalancerJoinVipSet() {
-        if (loadBalancerJoinVipSet == null) loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
+        if (loadBalancerJoinVipSet == null) {
+            loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
+        }
         return loadBalancerJoinVipSet;
     }
 
@@ -276,10 +275,10 @@ public class LoadBalancer extends Entity implements Serializable {
     }
 
     public boolean isUsingSsl() {
-        return (protocol.equals(LoadBalancerProtocol.HTTPS) ||
-                protocol.equals(LoadBalancerProtocol.IMAPS) ||
-                protocol.equals(LoadBalancerProtocol.LDAPS) ||
-                protocol.equals(LoadBalancerProtocol.POP3S));
+        return (protocol.equals(LoadBalancerProtocol.HTTPS)
+                || protocol.equals(LoadBalancerProtocol.IMAPS)
+                || protocol.equals(LoadBalancerProtocol.LDAPS)
+                || protocol.equals(LoadBalancerProtocol.POP3S));
     }
 
     public String getIpv6Servicenet() {
@@ -319,7 +318,6 @@ public class LoadBalancer extends Entity implements Serializable {
     }
 
     public void setIpv6Public(String throwaway) {
-
     }
 
     public void setIpv4Servicenet(String throwaway) {
@@ -346,4 +344,17 @@ public class LoadBalancer extends Entity implements Serializable {
         this.setLoadBalancerJoinVip6Set(this.virtualIpDozerWrapper.getLoadBalancerJoinVip6Set());
     }
 
+    /**
+     * @return the userPages
+     */
+    public UserPages getUserPages() {
+        return userPages;
+    }
+
+    /**
+     * @param userPages the userPages to set
+     */
+    public void setUserPages(UserPages userPages) {
+        this.userPages = userPages;
+    }
 }

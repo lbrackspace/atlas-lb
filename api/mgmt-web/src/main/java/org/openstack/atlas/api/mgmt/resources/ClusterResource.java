@@ -26,6 +26,8 @@ public class ClusterResource extends ManagementDependencyProvider {
     private final Log LOG = LogFactory.getLog(ClusterResource.class);
 
     private VirtualIpsResource virtualIpsResource;
+    private ErrorpageResource errorpageResource;
+
     private int id;
 
     @GET // Jira:https://jira.mosso.com/browse/SITESLB-231
@@ -49,6 +51,14 @@ public class ClusterResource extends ManagementDependencyProvider {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
     }
+
+    @Path("errorpage")
+    public ErrorpageResource retrieveErrorPageResource() {
+        errorpageResource.setClusterId(id);
+        return errorpageResource;
+    }
+
+
 
     @GET
     @Path("hosts")
@@ -273,5 +283,19 @@ public class ClusterResource extends ManagementDependencyProvider {
 
         }
         return (utilization + " %");
+    }
+
+    /**
+     * @return the errorpageResource
+     */
+    public ErrorpageResource getErrorpageResource() {
+        return errorpageResource;
+    }
+
+    /**
+     * @param errorpageResource the errorpageResource to set
+     */
+    public void setErrorpageResource(ErrorpageResource errorpageResource) {
+        this.errorpageResource = errorpageResource;
     }
 }

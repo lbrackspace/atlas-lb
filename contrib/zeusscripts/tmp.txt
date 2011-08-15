@@ -1,0 +1,47 @@
+*** VS 354934_316 is of type http ***
+*** VS 354934_316 has rules: "global_error.html"
+*** Skipping 354934_316 it already has rule global_error.html ***
+*** VS 406271_12 is of type http ***
+*** VS 406271_12 has rules: "Default"
+*** Adding global_error.html to 406271_12 ***
+*** VS 406271_14 is of type http ***
+*** VS 406271_14 has rules: "406271_14_error.html"
+*** Adding global_error.html to 406271_14 ***
+*** VS 406271_16 is of type http ***
+*** VS 406271_16 has rules: "Default"
+*** Adding global_error.html to 406271_16 ***
+*** VS 406271_308 is of type http ***
+*** VS 406271_308 has rules: "Default"
+*** Adding global_error.html to 406271_308 ***
+*** VS 406271_312 is of type http ***
+*** VS 406271_312 has rules: "Default"
+*** Adding global_error.html to 406271_312 ***
+*** VS 406271_317 is of type http ***
+*** VS 406271_317 has rules: "406271_317_error.html"
+*** Adding global_error.html to 406271_317 ***
+*** VS 528830_287 is of type http ***
+*** VS 528830_287 has rules: "Default"
+*** Adding global_error.html to 528830_287 ***
+*** VS 528830_288 is of type http ***
+*** VS 528830_288 has rules: "Default"
+*** Adding global_error.html to 528830_288 ***
+*** VS 546428_307 is of type https ***
+*** Skipping 546428_307 because it is of type https ***
+*** VS 548939_318 is of type http ***
+*** VS 548939_318 has rules: "Default"
+*** Adding global_error.html to 548939_318 ***
+*** VS 548939_319 is of type http ***
+*** VS 548939_319 has rules: "Default"
+*** Adding global_error.html to 548939_319 ***
+*** VS 548939_320 is of type http ***
+*** VS 548939_320 has rules: "Default"
+*** Adding global_error.html to 548939_320 ***
+*** VS ortiz_test_http is of type http ***
+*** VS ortiz_test_http has rules: "Default"
+*** Adding global_error.html to ortiz_test_http ***
+*** VS zeus_test is of type http ***
+*** VS zeus_test has rules: "Default"
+*** Adding global_error.html to zeus_test ***
+*** VS zeus_test_dummy is of type http ***
+*** VS zeus_test_dummy has rules: "Default"
+*** Adding global_error.html to zeus_test_dummy ***

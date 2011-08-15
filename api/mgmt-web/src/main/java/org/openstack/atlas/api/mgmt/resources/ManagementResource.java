@@ -3,6 +3,7 @@ package org.openstack.atlas.api.mgmt.resources;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
 public class ManagementResource extends ManagementDependencyProvider {
 

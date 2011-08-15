@@ -11,8 +11,11 @@ import org.openstack.atlas.service.domain.pojos.Customer;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHostId;
 
 import java.util.List;
+import org.openstack.atlas.service.domain.entities.Cluster;
 
 public interface HostService {
+    public Cluster getClusterById(Integer id) throws EntityNotFoundException;
+
     public Host getById(Integer id) throws EntityNotFoundException;
 
     public List<Host> getAll(Integer... p);

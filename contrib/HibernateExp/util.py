@@ -1,6 +1,9 @@
 #!/usr/bin/env jython
 
 
+import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs as ZxtmServiceStubs
+import java.net.URL as URL
+
 import org.openstack.atlas.util.crypto.CryptoUtil as CryptoUtil
 import org.hexp.hibernateexp.util.BitUtil as BitUtil
 import org.hexp.hibernateexp.util.BitUtil.BitOp as BitOp
@@ -57,6 +60,7 @@ import org.openstack.atlas.service.domain.entities.JobState as State
 import org.openstack.atlas.service.domain.entities.RateLimit as RateLimit
 import org.openstack.atlas.service.domain.entities.AccountLimit as AccountLimit
 import org.openstack.atlas.service.domain.entities.LimitType as LimitType
+import org.openstack.atlas.service.domain.entities.UserPages as UserPages
 
 
 import org.openstack.atlas.util.ip.IPUtils   as IPUtils
@@ -90,7 +94,6 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfInts as Li
 
 import time
 import datetime
-from xmlpack import config_read, config_write
 import simplejson as json
 import java.util.Calendar as Calendar
 import netcidr
@@ -149,9 +152,48 @@ weeks4 = 60*60*24*7*4
 getter_re = re.compile("get.*|is.*",re.IGNORECASE)
 setter_re = re.compile("set.*",re.IGNORECASE)
 
+stubs = None
+
 app = HuApp()
 
 #select v.id,v.ip_address,lv.loadbalancer_id,l.account_id from virtual_ip_ipv4 v left join loadbalancer_virtualip lv on v.id = lv.virtualip_id join loadbalancer l on lv.loadbalancer_id = l.id order by v.id;
+
+class ZxtmStubs(object):
+    stubMap = {"vs":"getVirtualServerBinding",
+               "ce":"getZxtmConfExtraBinding",
+               "p" :"getPoolBinding"
+}
+
+    def __init__(self,endpoints,user,passwd):
+        self.user = user
+        self.passwd = passwd
+        self.endpoints = endpoints
+        endpointkeys = endpoints.keys()
+        self.endpoint = endpoints[endpointkeys[0]]
+        endpoint = self.endpoint
+        self.stubs = ZxtmServiceStubs.getServiceStubs(endpoint,user,passwd)
+
+    def setEndpoint(self,id):
+        self.endpoint = self.endpoints[id]
+        endpoint = self.endpoint
+        user = self.user
+        passwd = self.passwd
+        self.stubs = ZxtmServiceStubs.getServiceStubs(endpoint,user,passwd)
+        
+    def getMethods(self,stubName):
+        out = []
+        out = dir(self.__getattr__(stubName))
+        out.sort()
+        return out
+        
+        
+    def __getattr__(self,stubName):
+        if not ZxtmStubs.stubMap.has_key(stubName):
+            raise AttributeError("'ZxtmStubs' has no attribute '%s'"%stubName)
+        else:
+            f = getattr(self.stubs,ZxtmStubs.stubMap[stubName])
+            return f()
+
 
 class CidrBlackList(object):
     def __init__(self):
@@ -298,24 +340,36 @@ def close(s):
     app.getSession().close()
 
 def setConfig(*args):
+    global zxtmUser,zxtmPasswd,stubs
+
     if len(args)<1:
-        file_name = "./local.xml"
+        file_name = "./local.json"
     else:
         file_name = args[0]
-    dbConfigs = config_read(file_name)["database"]
+    config = load_json(file_name)
+    dbConfigs = config["database"]
     default_db = dbConfigs[0]["db_key"]
+    zxtm = config["zxtm"]
+    zxtmUser = zxtm["user"]
+    zxtmPasswd = CryptoUtil.decrypt(zxtm["passwd"])
+    endpoints = {}
+    for(k,v) in zxtm["endpoints"].items():
+        ki = int(k)
+        endpoints[ki] = URL(v)
+    stubs = ZxtmStubs(endpoints,zxtmUser,zxtmPasswd)
     for dbConfig in dbConfigs:
         db_key = dbConfig["db_key"]
         url = dbConfig["url"]
         user = dbConfig["user"]
         passwd = CryptoUtil.decrypt(dbConfig["passwd"])
         hbm2ddl = dbConfig["hbm2ddl"]
-        mapcfg = config_read(dbConfig["mapfile"])
+        mapcfg = load_json(dbConfig["mapfile"])
         package = mapcfg["package"] if mapcfg.has_key("package") else None
         mapped = mapcfg["classes"]
         printf("adding %s\n",(db_key,url,user,passwd,hbm2ddl,package,mapped))
         app.setDbMap(db_key,url,user,passwd,hbm2ddl,package,mapped)
     app.setDb(default_db)
+
 
 def getDate(dateStr):
     sdf = SimpleDateFormat("yyyy-MM-dd")
@@ -1156,7 +1210,7 @@ def save_json(json_file,obj):
     full_path = os.path.expanduser(json_file)
     full_path = os.path.abspath(full_path)
     fp = open(full_path,"w")
-    out = json.dumps(obj)
+    out = json.dumps(obj, indent=2)
     fp.write(out)
     fp.close()
 

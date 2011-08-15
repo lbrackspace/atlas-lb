@@ -100,6 +100,7 @@
                         <property name="connectionThrottleResource" ref="connectionThrottleResource"/>
                         <property name="healthMonitorResource" ref="healthMonitorResource"/>
                         <property name="usageResource" ref="usageResource"/>
+                        <property name="errorpageResource" ref="errorpageResource"/>
                     </bean>
                 </property>
                 <property name="algorithmsResource">
@@ -110,6 +111,14 @@
             </bean>
         </property>
     </bean>
+
+    <bean id="errorpageResource"
+          class="org.openstack.atlas.api.resources.ErrorpageResource"
+          parent="commonDependencyProvider"
+          scope="request"
+          >
+    </bean>
+
     <bean id="stubResource"
           class="org.openstack.atlas.api.resources.StubResource"
           parent="commonDependencyProvider"

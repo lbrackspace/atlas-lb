@@ -10,7 +10,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jws.soap.SOAPBinding;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
@@ -21,8 +20,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.PublicKey;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -47,6 +44,90 @@ public class LoadBalancerRepository {
             throw new EntityNotFoundException(message);
         }
         return lb;
+    }
+
+    public UserPages getUserPages(Integer lid, Integer aid) {
+        List<UserPages> userPagesList = new ArrayList<UserPages>();
+        UserPages up;
+        String qStr = "FROM UserPages u where u.loadbalancer.id = :lid and u.loadbalancer.accountId = :aid";
+        Query q = entityManager.createQuery(qStr).setParameter("lid", lid).setParameter("aid", aid);
+        userPagesList = q.setMaxResults(1).getResultList();
+        if (userPagesList.size() <= 0) {
+            up = null;
+        } else {
+            up = userPagesList.get(0);
+        }
+        return up;
+    }
+
+    public Defaults getDefaultErrorPage() {
+        List<Defaults> defaultsList = new ArrayList<Defaults>();
+        Defaults up;
+        String qStr = "FROM Defaults d WHERE d.name = :globalError";
+        Query q = entityManager.createQuery(qStr).setParameter("globalError", "global_error.html");
+        defaultsList = q.setMaxResults(1).getResultList();
+        if (defaultsList.size() <= 0) {
+            up = null;
+        } else {
+            up = defaultsList.get(0);
+        }
+        return up;
+    }
+
+    public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException {
+        UserPages up;
+        up = getUserPages(lid, aid);
+        if (up == null) {
+            return null;
+        }
+        return up.getErrorpage();
+    }
+
+    public boolean setErrorPage(Integer lid,Integer aid,String errorpage) throws EntityNotFoundException{
+        boolean out=false;
+        LoadBalancer lb = getByIdAndAccountId(lid, aid);
+        UserPages up = getUserPages(lid,aid);
+        if(up==null){
+            up = new UserPages();
+            up.setLoadbalancer(lb);
+            up.setErrorpage(errorpage);
+            entityManager.merge(up);
+            return true;
+        }else{
+            up.setErrorpage(errorpage);
+            entityManager.merge(up);
+            return false;
+        }
+    }
+
+    public boolean setDefaultErrorPage(String errorpage) throws EntityNotFoundException{
+        boolean out=false;
+        Defaults up = getDefaultErrorPage();
+        if(up==null){
+            up = new Defaults();
+            up.setName(Constants.DEFAULT_ERRORFILE);
+            up.setValue(errorpage);
+            entityManager.merge(up);
+            return true;
+        }else{
+            up.setValue(errorpage);
+            entityManager.merge(up);
+            return false;
+        }
+    }
+
+    public boolean removeErrorPage(Integer lid, Integer aid) {
+        UserPages up = getUserPages(lid, aid);
+        if (up == null) {
+            return false;
+        } else if (up.getErrorpage() == null) {
+            return false;
+        }
+        up.setErrorpage(null);
+        entityManager.merge(up);
+        return true;
+
+
     }
 
     public LoadBalancer getByIdAndAccountId(Integer id, Integer accountId) throws EntityNotFoundException {
@@ -192,11 +273,13 @@ public class LoadBalancerRepository {
         }
 
         LoadBalancer lb = lbList.get(0);
-        if (lb.getStatus().equals(DELETED)) throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);
+        if (lb.getStatus().equals(DELETED)) {
+            throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);
+        }
         final boolean isActive = lb.getStatus().equals(LoadBalancerStatus.ACTIVE);
         final boolean isPendingOrActive = lb.getStatus().equals(LoadBalancerStatus.PENDING_UPDATE) || isActive;
 
-        if(allowConcurrentModifications ? isPendingOrActive : isActive) {
+        if (allowConcurrentModifications ? isPendingOrActive : isActive) {
             lb.setStatus(statusToChangeTo);
             lb.setUpdated(Calendar.getInstance());
             entityManager.merge(lb);
@@ -212,7 +295,7 @@ public class LoadBalancerRepository {
         return getUsageByLbId(loadBalancerId, startTime, endTime);
     }
 
-    public void setStatus(Integer accountId,Integer loadbalancerId,LoadBalancerStatus status) throws EntityNotFoundException{
+    public void setStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus status) throws EntityNotFoundException {
         String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
         List<LoadBalancer> lbList;
         Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).

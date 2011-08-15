@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.integration;
 
+import org.apache.axis.AxisFault;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ObjectExistsException;
@@ -71,6 +72,8 @@ public interface ReverseProxyLoadBalancerService {
 
     void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
 
+    void setErrorFile(Integer lid,Integer aid,String content) throws Exception,DecryptException, MalformedURLException;
+
     int getTotalCurrentConnectionsForHost(Host host) throws Exception;
 
     Hostssubnet getSubnetMappings(Host host) throws Exception;
@@ -90,4 +93,12 @@ public interface ReverseProxyLoadBalancerService {
     public void deleteRateLimit(int id, int accountId) throws Exception;
 
     public void updateRateLimit(int id, int accountId, RateLimit rateLimit) throws Exception;
+
+    public void removeAndSetDefaultErrorFile(Integer loadbalancerId, Integer accountId) throws EntityNotFoundException, MalformedURLException, DecryptException, RemoteException, InsufficientRequestException;
+
+    public void deleteErrorFile(Integer loadbalancerId,Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
+
+    public void uploadDefaultErrorFile(Integer clusterId, String content) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
+
+    public void setDefaultErrorFile(Integer loadbalancerId, Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
 }

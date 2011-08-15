@@ -58,6 +58,20 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     @Transactional
+    public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException {
+        return loadBalancerRepository.getErrorPage(lid, aid);
+    }
+
+    @Override
+    @Transactional
+    public String getDefaultErrorPage() throws EntityNotFoundException {
+        Defaults defaultPage = loadBalancerRepository.getDefaultErrorPage();
+        if (defaultPage == null) throw new EntityNotFoundException("The default error page could not be located.");
+        return defaultPage.getValue();
+    }
+
+    @Override
+    @Transactional
     public LoadBalancer create(LoadBalancer lb) throws Exception {
         if (isLoadBalancerLimitReached(lb.getAccountId())) {
             LOG.error("Load balancer limit reached. Sending error response to client...");
@@ -228,6 +242,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         // TODO: Sending db loadbalancer causes everything to update. Tweek for performance
         LOG.debug("Leaving " + getClass());
         return dbLoadBalancer;
+    }
+
+    @Transactional
+    public UserPages getUserPages(Integer id,Integer accountId) throws EntityNotFoundException{
+    LoadBalancer dLb = loadBalancerRepository.getByIdAndAccountId(id, accountId);
+    UserPages up = dLb.getUserPages();
+    return up;
     }
 
     @Override
@@ -683,6 +704,24 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 lb.setHost(hostService.getDefaultActiveHost());
             }
         }
+    }
+
+    @Transactional
+    @Override
+    public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException{
+        return loadBalancerRepository.setErrorPage(lid, accountId, content);
+    }
+
+    @Transactional
+    @Override
+    public boolean setDefaultErrorPage(String content) throws EntityNotFoundException{
+        return loadBalancerRepository.setDefaultErrorPage(content);
+    }
+
+    @Transactional
+    @Override
+    public boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException{
+        return loadBalancerRepository.removeErrorPage(lid, accountId);
     }
 
     private List<LoadBalancer> verifySharedVipsOnLoadBalancers(List<LoadBalancer> lbs) throws EntityNotFoundException, BadRequestException {

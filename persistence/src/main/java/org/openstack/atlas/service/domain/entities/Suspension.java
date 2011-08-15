@@ -9,7 +9,7 @@ public class Suspension extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @OneToOne
-    @JoinColumn(name = "loadbalancer_id")
+    @JoinColumn(name = "loadbalancer_id",nullable=false)
     private LoadBalancer loadbalancer;
 
     @Column(name = "user")

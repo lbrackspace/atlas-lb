@@ -26,6 +26,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Updated;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.api.helpers.JsonDeserializer.DeserializerProviderBuilder;
 
 import java.util.Calendar;
@@ -34,7 +35,6 @@ import java.util.GregorianCalendar;
 public class JsonObjectMapper extends ObjectMapper {
 
     //protected DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-
     public void init() {
         //this.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false);
         //this.getSerializationConfig().setDateFormat(df);
@@ -45,17 +45,18 @@ public class JsonObjectMapper extends ObjectMapper {
         SerializationConfig serConf = this.getSerializationConfig();
         DeserializationConfig deserConf = this.getDeserializationConfig();
 
-        csf.addSpecificMapping(GregorianCalendar.class,new DateTimeSerializer(serConf,null));
+        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(serConf, null));
         cdf.addSpecificMapping(Calendar.class, new DateTimeDeserializer(Calendar.class));
 
 
         Class[] serializerWrapperClasses = new Class[]{HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class,
-            Node.class, RateLimit.class};
+            Node.class, RateLimit.class, Errorpage.class};
 
         Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class,
-            ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class};
+            ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
+            Errorpage.class};
 
 
         for (Class wrapperClass : serializerWrapperClasses) {
@@ -81,10 +82,10 @@ public class JsonObjectMapper extends ObjectMapper {
 
         csf.addSpecificMapping(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems"));
         csf.addSpecificMapping(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes"));
-        
+
         cdf.addSpecificMapping(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems"));
 
-        
+
         this.setSerializerFactory(csf);
         this.setDeserializerProvider(new DeserializerProviderBuilder(cdf));
         // Suppress null properties from being serialized.

@@ -325,4 +325,9 @@ public class HostServiceImpl extends BaseService implements HostService {
         }
         return false;
     }
+
+    @Override
+    public Cluster getClusterById(Integer id) throws EntityNotFoundException {
+        return hostRepository.getClusterById(id);
+    }
 }

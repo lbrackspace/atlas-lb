@@ -309,4 +309,12 @@
         <xsd:attribute name="name" type="xsd:string"/>
         <xsd:attribute name="value" type="xsd:int"/>
     </xsd:complexType>
+
+    <xsd:element name="errorpage" type="tns:errorpage"/>
+    <xsd:complexType name="errorpage">
+        <xsd:sequence>
+            <xsd:element name="content" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
 </xsd:schema>
