@@ -16,6 +16,7 @@ import org.openstack.atlas.usage.helpers.*;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
@@ -23,7 +24,7 @@ import java.net.ConnectException;
 import java.util.Calendar;
 import java.util.List;
 
-public class HostUsagePoller extends Job {
+public class HostUsagePoller extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(HostUsagePoller.class);
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
     private HostRepository hostRepository;

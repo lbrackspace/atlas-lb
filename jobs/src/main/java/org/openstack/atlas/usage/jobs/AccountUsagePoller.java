@@ -12,12 +12,13 @@ import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.util.Calendar;
 import java.util.List;
 
-public class AccountUsagePoller extends Job {
+public class AccountUsagePoller extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(AccountUsagePoller.class);
     private LoadBalancerRepository loadBalancerRepository;
     private AccountUsageRepository accountUsageRepository;
