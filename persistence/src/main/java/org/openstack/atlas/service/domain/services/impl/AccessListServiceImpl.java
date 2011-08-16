@@ -121,19 +121,28 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
             throw new ImmutableEntityException(message);
         }
 
+        List<AccessList> goodList = new ArrayList<AccessList>();
+        List<AccessList> badList = new ArrayList<AccessList>();
         for (Integer networkItem : networkItemIds) {
             Boolean isFound = false;
             for (AccessList al : domainLB.getAccessLists()) {
                 if (networkItem.equals(al.getId())) {
-                    isFound = true;
-                    accessLists.add(al);
+                    goodList.add(al);
+                } else {
+                    badList.add(al);
                 }
             }
-            if (!isFound) {
-                throw new EntityNotFoundException("Network Item with id " + networkItem + " not found.");
-            }
-            domainLB.getAccessLists().removeAll(accessLists);
         }
+
+        if (badList.size() != 0) {
+            String outList = "";
+            for (AccessList list : badList) {
+                outList += list.getId() + ", ";
+            }
+            String out = outList.substring(0, outList.length() - 2);
+            throw new EntityNotFoundException("Network Items with ids " + out + " not found.");
+        }
+        domainLB.getAccessLists().removeAll(accessLists);
 
         LOG.debug("Updating the lb status to pending_update");
         domainLB.setStatus(LoadBalancerStatus.PENDING_UPDATE);

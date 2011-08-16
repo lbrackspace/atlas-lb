@@ -1,7 +1,6 @@
 package org.openstack.atlas.util.common;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class ListUtil {
@@ -27,5 +26,20 @@ public class ListUtil {
          if (list2.contains(i)) returnList.add(i);
        }
        return returnList;
+    }
+
+    /**
+     * Made by Suda's suggestion
+     */
+    public static <T> String generateCommaSeparatedString(List<T> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+
+        String outList = "";
+        for (T t : list) {
+            outList += t + ", ";
+        }
+        return outList.substring(0, outList.length() - 2);
     }
 }
