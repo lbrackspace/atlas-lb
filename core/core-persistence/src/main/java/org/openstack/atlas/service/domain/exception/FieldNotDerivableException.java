@@ -1,7 +1,7 @@
 package org.openstack.atlas.service.domain.exception;
 
 public class FieldNotDerivableException extends EntityNotFoundException{
-        public FieldNotDerivableException(String message) {
+    public FieldNotDerivableException(String message) {
         super(message);
     }
 
@@ -12,7 +12,5 @@ public class FieldNotDerivableException extends EntityNotFoundException{
     public FieldNotDerivableException(Throwable throable){
         super(throable);
     }
-    public FieldNotDerivableException(){
-        super();
-    }
+
 }
