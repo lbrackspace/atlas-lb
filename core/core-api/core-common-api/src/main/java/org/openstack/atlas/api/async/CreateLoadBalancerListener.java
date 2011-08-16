@@ -8,6 +8,7 @@ import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.event.UsageEvent;
 import org.openstack.atlas.service.domain.event.entity.EventType;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,8 @@ public class CreateLoadBalancerListener extends BaseListener {
     private LoadBalancerService loadBalancerService;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private LoadBalancerRepository loadBalancerRepository;
 
     @Override
     public void doOnMessage(final Message message) throws Exception {
@@ -47,7 +50,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
+            dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(queueLb.getId(), queueLb.getAccountId());
         } catch (EntityNotFoundException e) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
             LOG.error(alertDescription, e);
@@ -63,7 +66,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);
             NodesHelper.setNodesToStatus(dbLoadBalancer, OFFLINE);
-            loadBalancerService.update(dbLoadBalancer);
+            loadBalancerRepository.update(dbLoadBalancer);
             String alertDescription = String.format("An error occurred while creating loadbalancer '%d' via adapter.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
@@ -74,7 +77,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         // Update load balancer in DB
         dbLoadBalancer.setStatus(ACTIVE);
         NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
-        dbLoadBalancer = loadBalancerService.update(dbLoadBalancer);
+        dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
 
         addAtomEntryForLoadBalancer(queueLb, dbLoadBalancer);
         addAtomEntriesForNodes(queueLb, dbLoadBalancer);

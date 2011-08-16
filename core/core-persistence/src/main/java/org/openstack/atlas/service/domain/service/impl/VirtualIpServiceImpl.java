@@ -35,7 +35,43 @@ public class VirtualIpServiceImpl implements VirtualIpService {
 
     @Override
     public LoadBalancer assignVIpsToLoadBalancer(LoadBalancer loadBalancer) throws PersistenceServiceException {
-        return setVipConfigForLoadBalancer(loadBalancer);
+        if (!loadBalancer.getLoadBalancerJoinVipSet().isEmpty()) {
+            Set<LoadBalancerJoinVip> newVipConfig = new HashSet<LoadBalancerJoinVip>();
+            List<VirtualIp> vipsOnAccount = virtualIpRepository.getVipsByAccountId(loadBalancer.getAccountId());
+            for (LoadBalancerJoinVip loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVipSet()) {
+                if (loadBalancerJoinVip.getVirtualIp().getId() == null) {
+                    // Add a new vip to set
+                    VirtualIp newVip = allocateIpv4VirtualIp(loadBalancerJoinVip.getVirtualIp(), loadBalancer.getHost().getCluster());
+                    LoadBalancerJoinVip newJoinRecord = new LoadBalancerJoinVip();
+                    newJoinRecord.setVirtualIp(newVip);
+                    newVipConfig.add(newJoinRecord);
+                } else {
+                    // Add shared vip to set
+                    newVipConfig.addAll(getSharedIpv4Vips(loadBalancerJoinVip.getVirtualIp(), vipsOnAccount, loadBalancer.getPort()));
+                }
+            }
+            loadBalancer.setLoadBalancerJoinVipSet(newVipConfig);
+        }
+
+        if (!loadBalancer.getLoadBalancerJoinVip6Set().isEmpty()) {
+            Set<LoadBalancerJoinVip6> newVip6Config = new HashSet<LoadBalancerJoinVip6>();
+            List<VirtualIpv6> vips6OnAccount = virtualIpv6Repository.getVips6ByAccountId(loadBalancer.getAccountId());
+            Set<LoadBalancerJoinVip6> loadBalancerJoinVip6SetConfig = loadBalancer.getLoadBalancerJoinVip6Set();
+            loadBalancer.setLoadBalancerJoinVip6Set(null);
+            for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancerJoinVip6SetConfig) {
+                if (loadBalancerJoinVip6.getVirtualIp().getId() == null) {
+                    VirtualIpv6 ipv6 = allocateIpv6VirtualIp(loadBalancer);
+                    LoadBalancerJoinVip6 jbjv6 = new LoadBalancerJoinVip6();
+                    jbjv6.setVirtualIp(ipv6);
+                    newVip6Config.add(jbjv6);
+                } else {
+                    //share ipv6 vip here..
+                    newVip6Config.addAll(getSharedIpv6Vips(loadBalancerJoinVip6.getVirtualIp(), vips6OnAccount, loadBalancer.getPort()));
+                }
+                loadBalancer.setLoadBalancerJoinVip6Set(newVip6Config);
+            }
+        }
+        return loadBalancer;
     }
 
     @Transactional
@@ -53,47 +89,6 @@ public class VirtualIpServiceImpl implements VirtualIpService {
         } catch (Exception e) {
             LOG.warn("High concurrency detected. Ignoring...");
         }
-    }
-
-    private LoadBalancer setVipConfigForLoadBalancer(LoadBalancer lbFromApi) throws OutOfVipsException, AccountMismatchException, UniqueLbPortViolationException, EntityNotFoundException {
-
-        if (!lbFromApi.getLoadBalancerJoinVipSet().isEmpty()) {
-            Set<LoadBalancerJoinVip> newVipConfig = new HashSet<LoadBalancerJoinVip>();
-            List<VirtualIp> vipsOnAccount = virtualIpRepository.getVipsByAccountId(lbFromApi.getAccountId());
-            for (LoadBalancerJoinVip loadBalancerJoinVip : lbFromApi.getLoadBalancerJoinVipSet()) {
-                if (loadBalancerJoinVip.getVirtualIp().getId() == null) {
-                    // Add a new vip to set
-                    VirtualIp newVip = allocateIpv4VirtualIp(loadBalancerJoinVip.getVirtualIp(), lbFromApi.getHost().getCluster());
-                    LoadBalancerJoinVip newJoinRecord = new LoadBalancerJoinVip();
-                    newJoinRecord.setVirtualIp(newVip);
-                    newVipConfig.add(newJoinRecord);
-                } else {
-                    // Add shared vip to set
-                    newVipConfig.addAll(getSharedIpv4Vips(loadBalancerJoinVip.getVirtualIp(), vipsOnAccount, lbFromApi.getPort()));
-                }
-            }
-            lbFromApi.setLoadBalancerJoinVipSet(newVipConfig);
-        }
-
-        if (!lbFromApi.getLoadBalancerJoinVip6Set().isEmpty()) {
-            Set<LoadBalancerJoinVip6> newVip6Config = new HashSet<LoadBalancerJoinVip6>();
-            List<VirtualIpv6> vips6OnAccount = virtualIpv6Repository.getVips6ByAccountId(lbFromApi.getAccountId());
-            Set<LoadBalancerJoinVip6> loadBalancerJoinVip6SetConfig = lbFromApi.getLoadBalancerJoinVip6Set();
-            lbFromApi.setLoadBalancerJoinVip6Set(null);
-            for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancerJoinVip6SetConfig) {
-                if (loadBalancerJoinVip6.getVirtualIp().getId() == null) {
-                    VirtualIpv6 ipv6 = allocateIpv6VirtualIp(lbFromApi);
-                    LoadBalancerJoinVip6 jbjv6 = new LoadBalancerJoinVip6();
-                    jbjv6.setVirtualIp(ipv6);
-                    newVip6Config.add(jbjv6);
-                } else {
-                    //share ipv6 vip here..
-                    newVip6Config.addAll(getSharedIpv6Vips(loadBalancerJoinVip6.getVirtualIp(), vips6OnAccount, lbFromApi.getPort()));
-                }
-                lbFromApi.setLoadBalancerJoinVip6Set(newVip6Config);
-            }
-        }
-        return lbFromApi;
     }
 
     public boolean isIpv4VipPortCombinationInUse(VirtualIp virtualIp, Integer loadBalancerPort) {

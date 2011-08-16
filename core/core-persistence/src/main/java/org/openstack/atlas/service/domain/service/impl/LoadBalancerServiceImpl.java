@@ -49,14 +49,14 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         return dbLoadBalancer;
     }
 
-    @Override
+/*    @Override
     public LoadBalancer get(Integer id) throws EntityNotFoundException {
         return loadBalancerRepository.getById(id);
     }
 
     @Override
     @Transactional
-    public LoadBalancer update(LoadBalancer lb) throws Exception {
+    public LoadBalancer update(LoadBalancer lb) {
         return loadBalancerRepository.update(lb);
     }
 
@@ -64,7 +64,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     @Transactional
     public LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException {
         return loadBalancerRepository.getByIdAndAccountId(id, accountId);
-    }
+    }*/
 
     @Transactional
     private void joinIpv6OnLoadBalancer(LoadBalancer lb) {

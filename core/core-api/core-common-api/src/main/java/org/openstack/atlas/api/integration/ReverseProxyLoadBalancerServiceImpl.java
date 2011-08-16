@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.integration;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.Loader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerAdapter;
@@ -12,6 +13,7 @@ import org.openstack.atlas.common.crypto.CryptoUtil;
 import org.openstack.atlas.common.crypto.exception.DecryptException;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.HealthMonitorService;
 import org.openstack.atlas.service.domain.service.HostService;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
@@ -34,6 +36,8 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     private LoadBalancerService loadBalancerService;
     @Autowired
     private HostService hostService;
+    @Autowired
+    private LoadBalancerRepository loadBalancerRepository;
 
 //    @Required
     public void setConfiguration(Configuration configuration) {
@@ -294,7 +298,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     private LoadBalancerEndpointConfiguration getConfigbyLoadBalancerId(Integer lbId) throws EntityNotFoundException, DecryptException, MalformedURLException {
-        LoadBalancer loadBalancer = loadBalancerService.get(lbId);
+        LoadBalancer loadBalancer = loadBalancerRepository.getById(lbId);
         Host host = loadBalancer.getHost();
         Cluster cluster = host.getCluster();
         Host endpointHost = hostService.getEndPointHost(cluster.getId());
