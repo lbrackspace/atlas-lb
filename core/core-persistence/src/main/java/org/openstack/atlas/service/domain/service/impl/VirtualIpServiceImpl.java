@@ -2,6 +2,7 @@ package org.openstack.atlas.service.domain.service.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.common.crypto.HashUtil;
 import org.openstack.atlas.service.domain.common.Constants;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.*;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +36,23 @@ public class VirtualIpServiceImpl implements VirtualIpService {
     @Override
     public LoadBalancer assignVIpsToLoadBalancer(LoadBalancer loadBalancer) throws PersistenceServiceException {
         return setVipConfigForLoadBalancer(loadBalancer);
+    }
+
+    @Transactional
+    public void addAccountRecord(Integer accountId) throws NoSuchAlgorithmException {
+        Set<Integer> accountsInAccountTable = new HashSet<Integer>(virtualIpv6Repository.getAccountIdsAlreadyShaHashed());
+
+        if (accountsInAccountTable.contains(accountId)) return;
+
+        Account account = new Account();
+        String accountIdStr = String.format("%d", accountId);
+        account.setId(accountId);
+        account.setSha1SumForIpv6(HashUtil.sha1sumHex(accountIdStr.getBytes(), 0, 4));
+        try {
+            virtualIpRepository.persist(account);
+        } catch (Exception e) {
+            LOG.warn("High concurrency detected. Ignoring...");
+        }
     }
 
     private LoadBalancer setVipConfigForLoadBalancer(LoadBalancer lbFromApi) throws OutOfVipsException, AccountMismatchException, UniqueLbPortViolationException, EntityNotFoundException {

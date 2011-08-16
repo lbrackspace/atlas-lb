@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.pojo;
 
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,7 @@ public class MessageDataContainer implements Serializable {
     private List<Integer> newNodeIds;
     //for batch deletes
     private List<Integer> ids;
+    private LoadBalancer loadBalancer;
 
     public List<Integer> getIds() {
         if(ids == null){
@@ -88,5 +91,13 @@ public class MessageDataContainer implements Serializable {
 
     public void setNewNodeIds(List<Integer> newNodeIds) {
         this.newNodeIds = newNodeIds;
+    }
+
+    public void setLoadBalancer(LoadBalancer loadBalancer) {
+        this.loadBalancer = loadBalancer;
+    }
+
+    public LoadBalancer getLoadBalancer() {
+        return loadBalancer;
     }
 }

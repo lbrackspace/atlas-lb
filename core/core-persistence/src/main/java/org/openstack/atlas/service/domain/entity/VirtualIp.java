@@ -34,7 +34,7 @@ public class VirtualIp extends Entity implements Serializable {
     private Calendar lastAllocation;
 
     @Column(name = "is_allocated", nullable = false)
-    private Boolean isAllocated;
+    private Boolean isAllocated = false;
 
     @Transient
     private IpVersion ipVersion;

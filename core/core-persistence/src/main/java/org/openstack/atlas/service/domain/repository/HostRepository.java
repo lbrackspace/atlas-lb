@@ -50,6 +50,22 @@ public class HostRepository {
         entityManager.flush();
         return host;
     }
+/*    public List<String> getFailoverHostNames (Integer clusterId){
+        String hql = "select h.name from Host h where h.hostStatus = 'FAILOVER' and h.cluster.id = :clusterId";
+        Query q = entityManager.createQuery(hql).setParameter("clusterId",clusterId);
+        List<String> results = q.getResultList();
+        return results;
+    }*/
+/*
+
+    public String getEndPoint(Integer clusterId) {
+        Host host = getEndPointHost(clusterId);
+        if(host==null) {
+            return null;
+        }
+        return host.getEndpoint();
+    }
+*/
 
     public Host getDefaultActiveHost() throws EntityNotFoundException {
         //get a host based on the following algorithm

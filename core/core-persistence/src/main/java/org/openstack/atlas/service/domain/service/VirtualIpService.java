@@ -14,4 +14,6 @@ import java.util.Set;
 
 public interface VirtualIpService {
     LoadBalancer assignVIpsToLoadBalancer(LoadBalancer loadBalancer) throws PersistenceServiceException;
+
+    void addAccountRecord(Integer accountId) throws NoSuchAlgorithmException;
 }

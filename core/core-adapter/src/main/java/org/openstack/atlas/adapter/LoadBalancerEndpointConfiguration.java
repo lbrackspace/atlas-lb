@@ -31,7 +31,7 @@ public class LoadBalancerEndpointConfiguration {
         this.username = username;
         this.password = password;
         this.host = host;
-        this.hostName = host.getHostName();
+        this.hostName = host.getName();
         this.failoverHostNames = failoverHostNames;
     }
 
@@ -45,7 +45,7 @@ public class LoadBalancerEndpointConfiguration {
         this.username = username;
         this.password = password;
         this.host = host;
-        this.hostName = host.getHostName();
+        this.hostName = host.getName();
         this.failoverHostNames = failoverHostNames;
         this.logFileLocation = logFileLocation;
     }

@@ -27,6 +27,11 @@ public class VirtualIpv6Repository {
         return vips;
     }
 
+    public List<Integer> getAccountIdsAlreadyShaHashed() {
+        return entityManager.createQuery("select a.id from Account a").getResultList();
+    }
+
+
     public Account getLockedAccountRecord(Integer accountId) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Account> criteria = builder.createQuery(Account.class);

@@ -31,8 +31,8 @@ import static org.openstack.atlas.service.domain.common.AlertType.LBDEVICE_FAILU
 
 @Component
 public class CreateLoadBalancerListener extends BaseListener {
-
     private final Log LOG = LogFactory.getLog(CreateLoadBalancerListener.class);
+
     @Autowired
     private LoadBalancerService loadBalancerService;
     @Autowired
@@ -43,28 +43,28 @@ public class CreateLoadBalancerListener extends BaseListener {
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
 
-        LoadBalancer queueLb = getLoadbalancerFromMessage(message);
+        LoadBalancer queueLb = getDataContainerFromMessage(message).getLoadBalancer();
         LoadBalancer dbLoadBalancer;
 
         try {
             dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
-        } catch (EntityNotFoundException enfe) {
+        } catch (EntityNotFoundException e) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
-            LOG.error(alertDescription, enfe);
-            notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
+            LOG.error(alertDescription, e);
+            notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), e, DATABASE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             return;
         }
 
         try {
-            LOG.debug("Creating load balancer in LB Device...");
+            LOG.debug(String.format("Creating load balancer '%d' via adapter...", dbLoadBalancer.getId()));
             reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
-            LOG.debug("Successfully created a load balancer in LB Device.");
+            LOG.debug("Successfully created a load balancer via adapter.");
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);
             NodesHelper.setNodesToStatus(dbLoadBalancer, OFFLINE);
             loadBalancerService.update(dbLoadBalancer);
-            String alertDescription = String.format("An error occurred while creating loadbalancer '%d' in LB Device.", dbLoadBalancer.getId());
+            String alertDescription = String.format("An error occurred while creating loadbalancer '%d' via adapter.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
@@ -86,7 +86,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
         if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
 
-        LOG.info(String.format("Created load balancer '%d' successfully.", dbLoadBalancer.getId()));
+        LOG.info(String.format("Successfully created load balancer '%d'.", dbLoadBalancer.getId()));
     }
 
     private void addAtomEntryForConnectionThrottle(LoadBalancer queueLb, LoadBalancer dbLoadBalancer) {
