@@ -29,33 +29,11 @@ public class HostServiceImpl implements HostService {
         if (hosts.size() == 1) {
             return (hosts.get(0));
         } else {
-            Host hostWithMinimumLoadBalancers = null;
-
-            long mincount = 0;
-            long count = 0;
-
-            //fewest number
-            for (Host host : hosts) {
-                count = hostRepository.countLoadBalancersInHost(host);
-                if (count == 0) {
-                    return host;
-                } else {
-                    if (mincount == 0) {
-                        mincount = count;
-                        hostWithMinimumLoadBalancers = host;
-                    } else if (mincount <= count) {
-                        //do nothing
-                    } else {
-                        mincount = count;
-                        hostWithMinimumLoadBalancers = host;
-                    }
-                }
-            }
             return hostRepository.getHostWithMinimumLoadBalancers(hosts);
         }
     }
 
-    @Override
+/*    @Override
     public Host update(Host host) {
         return hostRepository.update(host);
     }
@@ -63,7 +41,7 @@ public class HostServiceImpl implements HostService {
     @Override
     public List<String> getFailoverHostNames(Integer clusterId) {
         return hostRepository.getFailoverHostNames(clusterId);
-    }
+    }*/
 
 
     @Override
@@ -132,124 +110,9 @@ public class HostServiceImpl implements HostService {
     }
 
 
-    @Override
+  /*  @Override
     public Host getEndPointHost(Integer clusterId) {
         return hostRepository.getEndPointHost(clusterId);
-    }
+    }*/
 
 }
-
-   /* @Override
-    public String getEndPoint(Integer clusterId) {
-        return hostRepository.getEndPoint(clusterId);
-    }
-
-    @Override
-    public Host getHostsByLoadBalancerId(Integer loadBalancerId) {
-        return hostRepository.getHostsByLoadBalancerId(loadBalancerId);
-    }
-*/
-   /* @Override
-    public Backup getBackupByHostIdAndBackupId(Integer hostId, Integer backupId) throws EntityNotFoundException {
-        return hostRepository.getBackupByHostIdAndBackupId(hostId, backupId);
-    }
-
-    @Override
-    @Transactional
-    public Backup createBackup(Host host, Backup backup) throws EntityNotFoundException, ImmutableEntityException {
-        Host dbHost = hostRepository.getById(host.getId());
-
-        LOG.debug("Adding the backup to the database...");
-        backup = hostRepository.createBackup(dbHost, backup);
-        LOG.debug("Backup successfully added to the database.");
-        
-        return backup;
-    }
-
-    @Override
-    @Transactional
-    public void deleteBackup(Backup backup) {
-        hostRepository.deleteBackup(backup);
-    }
-*/
-   /* @Override
-    public List<LoadBalancerCountByAccountIdHostId> getAccountsInHost(Integer id) {
-        return hostRepository.getAccountsInHost(id);
-    }
-
-    @Override
-    public List<Customer> getCustomerList(Object key) {
-        return hostRepository.getCustomerList(key);
-    }
-*/
-    /*@Override
-    public long getHostsConnectionsForCluster(Integer clusterId) {
-        return hostRepository.getHostsConnectionsForCluster(clusterId);
-    }
-
-    @Override
-    public Integer getNumberOfUniqueAccountsForHost(Integer id) {
-        return hostRepository.getNumberOfUniqueAccountsForHost(id);
-    }
-*/
-/*
-    @Override
-    public long getActiveLoadBalancerForHost(Integer id) {
-        return hostRepository.getActiveLoadBalancerForHost(id);
-    }*/
-
-
-     /*@Override
-     @Transactional
-     public void activateHost(Host host) throws Exception {
-         Host dbHost = null;
-
-         try {
-             dbHost = hostRepository.getById(host.getId());
-         } catch (EntityNotFoundException enfe) {
-            throw new EntityNotFoundException(String.format("Cannot find host with id #%d", host.getId()));
-         }
-
-         if (!(dbHost.getHostStatus().equals(HostStatus.BURN_IN) || dbHost.getHostStatus().equals(HostStatus.OFFLINE))) {
-             throw new ImmutableEntityException(String.format("Host %d is currently active. Canceling request...", host.getId()));
-         }
-
-//       TODO: Make LB Device call here       "Activating Host in LB Device.. TODO: No LB Device call yet :(");
-         hostRepository.update(dbHost);
-
-     }*/
-
-     /*@Override
-     @Transactional
-     public void inActivateHost(Host host) throws Exception {
-         Host dbHost = null;
-
-         try {
-             dbHost = hostRepository.getById(host.getId());
-         } catch (EntityNotFoundException enfe) {
-            throw new EntityNotFoundException(String.format("Cannot find host with id #%d", host.getId()));
-         }
-
-         if (!(dbHost.getHostStatus().equals(HostStatus.BURN_IN) || dbHost.getHostStatus().equals(HostStatus.OFFLINE))) {
-             throw new ImmutableEntityException(String.format("Host %d is currently active. Canceling request...", host.getId()));
-         }
-
-//       TODO: Make LB Device call here       "In Activating Host in LB Device.. TODO: No LB Device call yet :(");
-         hostRepository.update(dbHost);
-
-     }*/
-
-    /*@Override
-    public boolean isActiveHost(Host host) throws EntityNotFoundException {
-        if(host.getHostStatus() == null) host = hostRepository.getById(host.getId());
-        return !(host.getHostStatus().equals(HostStatus.BURN_IN) || host.getHostStatus().equals(HostStatus.OFFLINE));
-
-    }*/
-
-/*    public static boolean detectDuplicateHosts(List<Host> allHosts, Host queueHost) {
-        for (Host h : allHosts) {
-            if (h.getName().equals(queueHost.getName())) return true;
-        }
-        return false;
-    }
-}*/

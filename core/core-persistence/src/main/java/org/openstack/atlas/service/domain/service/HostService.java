@@ -9,13 +9,13 @@ import java.util.List;
 public interface HostService {
     Host getDefaultActiveHost() throws PersistenceServiceException;
 
-    Host update(Host host) throws EntityNotFoundException;
-
+    /*Host update(Host host) throws EntityNotFoundException;
+*/
     void updateHost(Host queueHost) throws EntityNotFoundException;
 
-    Host getEndPointHost(Integer clusterId);
+    /*Host getEndPointHost(Integer clusterId);
 
-    List<String> getFailoverHostNames(Integer clusterId);
+    List<String> getFailoverHostNames(Integer clusterId);*/
 
 
 }
