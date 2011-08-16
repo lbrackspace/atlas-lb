@@ -47,25 +47,24 @@ public class LoadBalancerRepository {
     private EntityManager entityManager;
 
     public LoadBalancer getById(Integer id) throws EntityNotFoundException {
-        LoadBalancer lb = entityManager.find(LoadBalancer.class, id);
-        if (lb == null) {
+        LoadBalancer loadBalancer = entityManager.find(LoadBalancer.class, id);
+        if (loadBalancer == null) {
             String message = Constants.LoadBalancerNotFound;
             LOG.warn(message);
             throw new EntityNotFoundException(message);
         }
-        return lb;
+        return loadBalancer;
     }
 
     public LoadBalancer getByIdAndAccountId(Integer id, Integer accountId) throws EntityNotFoundException {
-        LoadBalancer lb;
-        lb = getById(id);
-        if (!lb.getAccountId().equals(accountId)) {
+        LoadBalancer loadBalancer = getById(id);
+        if (!loadBalancer.getAccountId().equals(accountId)) {
             String message = Constants.LoadBalancerNotFound;
             LOG.warn(message);
             throw new EntityNotFoundException(message);
         }
 
-        return lb;
+        return loadBalancer;
     }
 
     public LoadBalancer create(LoadBalancer loadBalancer) {

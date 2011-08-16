@@ -2,21 +2,19 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.common.ip.IPv4Range;
-import org.openstack.atlas.common.ip.IPv4Ranges;
-import org.openstack.atlas.common.ip.IPv4ToolSet;
-import org.openstack.atlas.common.ip.exception.IPStringException;
 import org.openstack.atlas.service.domain.common.Constants;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.OutOfVipsException;
-import org.openstack.atlas.service.domain.pojo.VirtualIpBlock;
-import org.openstack.atlas.service.domain.pojo.VirtualIpBlocks;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.*;
-import javax.persistence.criteria.*;
-import java.math.BigInteger;
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.*;
 
 @Repository
@@ -32,9 +30,8 @@ public class VirtualIpRepository {
     }
 
     public List<VirtualIp> getVipsByAccountId(Integer accountId) {
-        List<VirtualIp> vips;
         String query = "select distinct(j.virtualIp) from LoadBalancerJoinVip j where j.loadBalancer.accountId = :accountId";
-        vips = entityManager.createQuery(query).setParameter("accountId", accountId).getResultList();
+        List<VirtualIp> vips = entityManager.createQuery(query).setParameter("accountId", accountId).getResultList();
         return vips;
     }
 
