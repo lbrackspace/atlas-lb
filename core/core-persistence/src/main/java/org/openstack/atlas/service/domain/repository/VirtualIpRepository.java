@@ -211,7 +211,7 @@ public class VirtualIpRepository {
                     out.add(lb);
                 }
                 VirtualIp vip = new VirtualIp();
-                vip.setIpAddress(ip);
+                vip.setAddress(ip);
                 vip.setId(vid);
 //                vip.setIpVersion(ipVersion);
                 vip.setVipType(vType);

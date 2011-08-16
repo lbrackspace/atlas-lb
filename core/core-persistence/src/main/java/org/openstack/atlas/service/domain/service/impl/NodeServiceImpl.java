@@ -3,8 +3,6 @@ package org.openstack.atlas.service.domain.service.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.common.converters.StringConverter;
-import org.openstack.atlas.common.ip.exception.IPStringConversionException;
-import org.openstack.atlas.common.ip.exception.IpTypeMissMatchException;
 import org.openstack.atlas.service.domain.common.NodesHelper;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.*;
@@ -12,7 +10,6 @@ import org.openstack.atlas.service.domain.pojo.NodeMap;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.NodeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -143,8 +140,8 @@ public class NodeServiceImpl extends BaseService implements NodeService {
                 if (nodeToUpdate.getCondition() != null) {
                     n.setCondition(nodeToUpdate.getCondition());
                 }
-                if (nodeToUpdate.getIpAddress() != null) {
-                    n.setIpAddress(nodeToUpdate.getIpAddress());
+                if (nodeToUpdate.getAddress() != null) {
+                    n.setAddress(nodeToUpdate.getAddress());
                 }
                 if (nodeToUpdate.getPort() != null) {
                     n.setPort(nodeToUpdate.getPort());
@@ -215,10 +212,10 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     public boolean detectDuplicateNodes(LoadBalancer dbLoadBalancer, LoadBalancer queueLb) {
         Set<String> ipAddressesAndPorts = new HashSet<String>();
         for (Node dbNode : dbLoadBalancer.getNodes()) {
-            ipAddressesAndPorts.add(dbNode.getIpAddress() + ":" + dbNode.getPort());
+            ipAddressesAndPorts.add(dbNode.getAddress() + ":" + dbNode.getPort());
         }
         for (Node queueNode : queueLb.getNodes()) {
-            if (!ipAddressesAndPorts.add(queueNode.getIpAddress() + ":" + queueNode.getPort())) return true;
+            if (!ipAddressesAndPorts.add(queueNode.getAddress() + ":" + queueNode.getPort())) return true;
         }
         return false;
     }
@@ -227,7 +224,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     public boolean areAddressesValidForUse(Set<Node> nodes, LoadBalancer dbLb) {
         for (LoadBalancerJoinVip loadBalancerJoinVip : dbLb.getLoadBalancerJoinVipSet()) {
             for (Node node : nodes) {
-                if (loadBalancerJoinVip.getVirtualIp().getIpAddress().equals(node.getIpAddress())) {
+                if (loadBalancerJoinVip.getVirtualIp().getAddress().equals(node.getAddress())) {
                     return false;
                 }
             }

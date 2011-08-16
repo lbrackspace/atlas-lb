@@ -81,6 +81,16 @@ public class EnumConverter implements CustomConverter {
             return HealthMonitorType.valueOf((String)sourceFieldValue);
         }
 
+        // LoadBalancerStatus -> String
+        if (sourceFieldValue instanceof SessionPersistence && destinationClass == String.class) {
+            return ((SessionPersistence)sourceFieldValue).toString();
+        }
+
+        // String -> LoadBalancerStatus
+        if(sourceFieldValue instanceof String && destinationClass == SessionPersistence.class) {
+            return SessionPersistence.valueOf((String)sourceFieldValue);
+        }
+
         throw new NoMappableConstantException("Cannot map source type: " + sourceClass.getName());
     }
 }

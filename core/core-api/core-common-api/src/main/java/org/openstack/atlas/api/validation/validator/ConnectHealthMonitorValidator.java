@@ -31,7 +31,6 @@ public class ConnectHealthMonitorValidator implements ResourceValidator<HealthMo
 
                 // SHARED EXPECTATIONS
                 result(validationTarget().getType()).must().exist().withMessage("Must provide a type for the health monitor.");
-                result(validationTarget().getId()).must().not().exist().withMessage("Health monitor id field cannot be modified.");
                 result(validationTarget().getPath()).must().not().exist().withMessage("A connect health monitor may not have a path. Use HTTP/HTTPS health monitor instead.");
                 result(validationTarget().getDelay()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Delay for the health monitor must be between %d and %d.", FLOOR, CEILING));
                 result(validationTarget().getTimeout()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Timeout for the health monitor must be between %d and %d.", FLOOR, CEILING));

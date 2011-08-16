@@ -8,16 +8,8 @@
         <class-a>org.openstack.atlas.core.api.v1.VirtualIp</class-a>
         <class-b>org.openstack.atlas.service.domain.entity.VirtualIp</class-b>
         <field>
-            <a>address</a>
-            <b>ipAddress</b>
-        </field>
-        <field>
             <a>type</a>
             <b>vipType</b>
-        </field>
-        <field>
-            <a>id</a>
-            <b>id</b>
         </field>
     </mapping>
 
@@ -26,7 +18,7 @@
         <class-b>org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip</class-b>
         <field>
             <a>address</a>
-            <b>virtualIp.ipAddress</b>
+            <b>virtualIp.address</b>
         </field>
         <field>
             <a>type</a>

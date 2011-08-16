@@ -4,18 +4,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.common.collections.ListUtil;
 import org.openstack.atlas.common.crypto.HashUtil;
-import org.openstack.atlas.common.ip.IPv6;
-import org.openstack.atlas.common.ip.IPv6Cidr;
-import org.openstack.atlas.common.ip.exception.IPStringConversionException;
-import org.openstack.atlas.common.ip.exception.IPStringConversionException1;
-import org.openstack.atlas.common.ip.exception.IpTypeMissMatchException;
 import org.openstack.atlas.service.domain.common.Constants;
 import org.openstack.atlas.service.domain.common.StringHelper;
 import org.openstack.atlas.service.domain.common.StringUtilities;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.*;
 import org.openstack.atlas.service.domain.service.VirtualIpService;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -522,7 +516,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     private boolean testForDuplicatesByCluster(VirtualIp vip, Integer clusterId) {
         List<VirtualIp> dbVips = virtualIpRepository.getVipsByClusterId(clusterId);
         for (VirtualIp nvip : dbVips) {
-            if (vip.getIpAddress().equals(nvip.getIpAddress())) {
+            if (vip.getAddress().equals(nvip.getAddress())) {
                 return true;
             }
         }

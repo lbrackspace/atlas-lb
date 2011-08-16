@@ -25,11 +25,11 @@ public final class NodesHelper {
         Set<String> ipAddressAndPorts = new HashSet<String>();
 
         for (Node node : lbWithSubsetToChange.getNodes()) {
-            ipAddressAndPorts.add(ipAndPortToString(node.getIpAddress(), node.getPort()));
+            ipAddressAndPorts.add(ipAndPortToString(node.getAddress(), node.getPort()));
         }
 
         for (Node node : lbWithSuperSet.getNodes()) {
-            String ipAddressAndPort = ipAndPortToString(node.getIpAddress(), node.getPort());
+            String ipAddressAndPort = ipAndPortToString(node.getAddress(), node.getPort());
 
             if(ipAddressAndPorts.contains(ipAddressAndPort)) {
                 setNodeToStatus(status, node);

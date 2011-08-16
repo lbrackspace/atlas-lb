@@ -18,11 +18,9 @@ import org.openstack.atlas.service.domain.pojo.VirtualIpBlocks;
 import org.openstack.atlas.service.domain.service.ClusterService;
 import org.openstack.atlas.service.domain.service.VirtualIpService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -135,16 +133,16 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
         for (IPv4Range range : ranges.getRanges()) {
             for (ip = range.getLo(); ip <= range.getHi(); ip++) {
                 vip = new VirtualIp();
-                vip.setIpAddress(IPv4ToolSet.long2ip(ip));
+                vip.setAddress(IPv4ToolSet.long2ip(ip));
                 vip.setVipType(vipType);
                 vip.setCluster(cluster);
                 vip.setAllocated(false);
                 if (testForDuplicatesByCluster(vip, clusterId)) {
                     LOG.warn("Duplicate vips detected");
-                    throw new BadRequestException(String.format("IP addresses must be unique within a cluster: Ip is duplicated: %s", vip.getIpAddress()));
+                    throw new BadRequestException(String.format("IP addresses must be unique within a cluster: Ip is duplicated: %s", vip.getAddress()));
                 }
 
-                LOG.info(String.format("calling persist for %s\n", vip.getIpAddress()));
+                LOG.info(String.format("calling persist for %s\n", vip.getAddress()));
                 virtualIpService.persist(vip);
                 LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
                 loadBalancerJoinVip.setVirtualIp(vip);
@@ -157,7 +155,7 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
     private boolean testForDuplicatesByCluster(VirtualIp vip, Integer clusterId) {
         List<VirtualIp> dbVips = virtualIpService.getVipsByClusterId(clusterId);
         for (VirtualIp nvip : dbVips) {
-            if (vip.getIpAddress().equals(nvip.getIpAddress())) {
+            if (vip.getAddress().equals(nvip.getAddress())) {
                 return true;
             }
         }

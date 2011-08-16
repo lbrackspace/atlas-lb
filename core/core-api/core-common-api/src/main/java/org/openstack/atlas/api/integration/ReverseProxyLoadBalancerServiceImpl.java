@@ -12,11 +12,9 @@ import org.openstack.atlas.common.crypto.CryptoUtil;
 import org.openstack.atlas.common.crypto.exception.DecryptException;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
-import org.openstack.atlas.service.domain.service.HealthMonitorService;
 import org.openstack.atlas.service.domain.service.HostService;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
@@ -139,7 +137,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public void removeNode(Integer lbId, Integer accountId, Node node) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.removeNode(config, lbId, accountId, node.getIpAddress(), node.getPort());
+            loadBalancerAdapter.removeNode(config, lbId, accountId, node.getAddress(), node.getPort());
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;

@@ -35,7 +35,7 @@ public class VirtualIpConverter implements CustomConverter {
                 for (LoadBalancerJoinVip loadBalancerJoinVip : dozerWrapper.getLoadBalancerJoinVipSet()) {
                     VirtualIp vip = new VirtualIp();
                     vip.setId(loadBalancerJoinVip.getVirtualIp().getId());
-                    vip.setAddress(loadBalancerJoinVip.getVirtualIp().getIpAddress());
+                    vip.setAddress(loadBalancerJoinVip.getVirtualIp().getAddress());
                     vip.setIpVersion(IpVersion.IPV4);
 
                     switch (loadBalancerJoinVip.getVirtualIp().getVipType()) {
@@ -129,7 +129,7 @@ public class VirtualIpConverter implements CustomConverter {
                     LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
                     org.openstack.atlas.service.domain.entity.VirtualIp domainVip = new org.openstack.atlas.service.domain.entity.VirtualIp();
                     domainVip.setId(vip.getId());
-                    domainVip.setIpAddress(vip.getAddress());
+                    domainVip.setAddress(vip.getAddress());
 
                     switch (vip.getType()) {
                         case PUBLIC:
@@ -164,7 +164,7 @@ public class VirtualIpConverter implements CustomConverter {
 
         org.openstack.atlas.service.domain.entity.VirtualIp domainVip = new org.openstack.atlas.service.domain.entity.VirtualIp();
         domainVip.setId(vip.getId());
-        domainVip.setIpAddress(vip.getAddress());
+        domainVip.setAddress(vip.getAddress());
 
         switch (vip.getType()) {
             case PUBLIC:

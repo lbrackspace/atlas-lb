@@ -14,8 +14,8 @@ public class VirtualIp extends Entity implements Serializable {
     @OneToMany(mappedBy = "virtualIp")
     private Set<LoadBalancerJoinVip> loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
 
-    @Column(name = "ip_address", length = 39, unique = true, nullable = false)
-    private String ipAddress;
+    @Column(name = "address", length = 39, unique = true, nullable = false)
+    private String address;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
@@ -56,12 +56,12 @@ public class VirtualIp extends Entity implements Serializable {
         this.loadBalancerJoinVipSet = loadBalancerJoinVipSet;
     }
 
-    public String getIpAddress() {
-        return ipAddress;
+    public String getAddress() {
+        return address;
     }
 
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public VirtualIpType getVipType() {
@@ -108,7 +108,7 @@ public class VirtualIp extends Entity implements Serializable {
     public String toString() {
         return "VirtualIp{" +
                 "loadBalancerJoinVipSet=" + loadBalancerJoinVipSet +
-                ", ipAddress='" + ipAddress + '\'' +
+                ", ipAddress='" + address + '\'' +
                 ", vipType=" + vipType +
                 ", cluster=" + cluster +
                 ", lastDeallocation=" + lastDeallocation +
