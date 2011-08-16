@@ -14,13 +14,14 @@ import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.net.MalformedURLException;
 import java.util.Calendar;
 import java.util.List;
 
-public class HostEndpointPollerJob extends Job {
+public class HostEndpointPollerJob extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(HostEndpointPollerJob.class);
     private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;

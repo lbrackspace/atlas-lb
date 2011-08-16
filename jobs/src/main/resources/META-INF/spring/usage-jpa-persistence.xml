@@ -55,5 +55,4 @@
         <property name="jobStateRepository" ref="jobStateRepository" />
     </bean>
     <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl" parent="baseService"/>
-
 </beans>
