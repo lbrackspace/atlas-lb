@@ -17,11 +17,12 @@ import org.openstack.atlas.usage.logic.UsageRollupMerger;
 import org.openstack.atlas.usage.logic.UsagesForDay;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.util.*;
 
-public class LoadBalancerUsageRollupJob extends Job {
+public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsageRollupJob.class);
 
     private UsageRepository rollUpUsageRepository;
