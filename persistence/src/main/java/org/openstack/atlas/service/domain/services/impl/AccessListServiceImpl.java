@@ -121,26 +121,30 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
             throw new ImmutableEntityException(message);
         }
 
-        List<AccessList> goodList = new ArrayList<AccessList>();
-        List<AccessList> badList = new ArrayList<AccessList>();
-        for (Integer networkItem : networkItemIds) {
-            Boolean isFound = false;
+        List<Integer> badList = new ArrayList<Integer>();
+        for (Integer networkItemId : networkItemIds) {
+            boolean isFound = false;
             for (AccessList al : domainLB.getAccessLists()) {
-                if (networkItem.equals(al.getId())) {
-                    goodList.add(al);
-                } else {
-                    badList.add(al);
+                if (networkItemId.equals(al.getId())) {
+                    isFound = true;
                 }
+            }
+            if (!isFound) {
+                badList.add(networkItemId);
             }
         }
 
         if (badList.size() != 0) {
             String outList = "";
-            for (AccessList list : badList) {
-                outList += list.getId() + ", ";
+            for (Integer list : badList) {
+                outList += list + ", ";
             }
             String out = outList.substring(0, outList.length() - 2);
-            throw new EntityNotFoundException("Network Items with ids " + out + " not found.");
+            String plural = "";
+            if (badList.size() > 1) {
+                plural = "s";
+            }
+            throw new EntityNotFoundException("Network item" + plural + " with id" + plural + " " + out + " not found.");
         }
         domainLB.getAccessLists().removeAll(accessLists);
 
