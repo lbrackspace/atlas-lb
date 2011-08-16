@@ -159,9 +159,12 @@ app = HuApp()
 #select v.id,v.ip_address,lv.loadbalancer_id,l.account_id from virtual_ip_ipv4 v left join loadbalancer_virtualip lv on v.id = lv.virtualip_id join loadbalancer l on lv.loadbalancer_id = l.id order by v.id;
 
 class ZxtmStubs(object):
-    stubMap = {"vs":"getVirtualServerBinding",
+    stubMap = {
                "ce":"getZxtmConfExtraBinding",
-               "p" :"getPoolBinding"
+               "p" :"getPoolBinding",
+               "pc":"getProtectionBinding",
+               "tg":"getTrafficIpGroupBinding",
+               "vs":"getVirtualServerBinding"
 }
 
     def __init__(self,endpoints,user,passwd):
