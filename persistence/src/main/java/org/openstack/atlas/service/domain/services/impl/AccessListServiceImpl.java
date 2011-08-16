@@ -108,7 +108,7 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
 
     @Override
     @Transactional
-    public LoadBalancer markForDeletionNetworkItems(LoadBalancer returnLB, List<Integer> networkItemIds) throws EntityNotFoundException, ImmutableEntityException {
+    public LoadBalancer markForDeletionNetworkItems(LoadBalancer returnLB, List<Integer> networkItemIds) throws BadRequestException, ImmutableEntityException, EntityNotFoundException {
         LoadBalancer domainLB;
         List<AccessList> accessLists = new ArrayList<AccessList>();
         LOG.debug("Entering " + getClass());
@@ -121,19 +121,32 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
             throw new ImmutableEntityException(message);
         }
 
-        for (Integer networkItem : networkItemIds) {
-            Boolean isFound = false;
+        List<Integer> badList = new ArrayList<Integer>();
+        for (Integer networkItemId : networkItemIds) {
+            boolean isFound = false;
             for (AccessList al : domainLB.getAccessLists()) {
-                if (networkItem.equals(al.getId())) {
+                if (networkItemId.equals(al.getId())) {
                     isFound = true;
-                    accessLists.add(al);
                 }
             }
             if (!isFound) {
-                throw new EntityNotFoundException("Network Item with id " + networkItem + " not found.");
+                badList.add(networkItemId);
             }
-            domainLB.getAccessLists().removeAll(accessLists);
         }
+
+        if (badList.size() != 0) {
+            String outList = "";
+            for (Integer list : badList) {
+                outList += list + ", ";
+            }
+            String out = outList.substring(0, outList.length() - 2);
+            String plural = "";
+            if (badList.size() > 1) {
+                plural = "s";
+            }
+            throw new BadRequestException("Network item" + plural + " with id" + plural + " " + out + " not found.");
+        }
+        domainLB.getAccessLists().removeAll(accessLists);
 
         LOG.debug("Updating the lb status to pending_update");
         domainLB.setStatus(LoadBalancerStatus.PENDING_UPDATE);
