@@ -12,8 +12,8 @@ import org.openstack.atlas.common.crypto.CryptoUtil;
 import org.openstack.atlas.common.crypto.exception.DecryptException;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
-import org.openstack.atlas.service.domain.service.HostService;
-import org.openstack.atlas.service.domain.service.LoadBalancerService;
+import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,16 +29,16 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     private LoadBalancerAdapter loadBalancerAdapter;
 
     @Autowired
-    private LoadBalancerService loadBalancerService;
+    private LoadBalancerRepository loadBalancerRepository;
     @Autowired
-    private HostService hostService;
+    private HostRepository hostRepository;
 
-//    @Required
+    //    @Required
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
     }
 
-//    @Required
+    //    @Required
     public void setLoadBalancerAdapter(LoadBalancerAdapter loadBalancerAdapter) {
         this.loadBalancerAdapter = loadBalancerAdapter;
     }
@@ -277,8 +277,8 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     @Override
     public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException {
         Cluster cluster = host.getCluster();
-        Host endpointHost = hostService.getEndPointHost(cluster.getId());
-        List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
+        Host endpointHost = hostRepository.getEndPointHost(cluster.getId());
+        List<String> failoverHosts = hostRepository.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
         return new LoadBalancerEndpointConfiguration(endpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
     }
@@ -286,17 +286,17 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     @Override
     public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException {
         Cluster cluster = host.getCluster();
-        List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
+        List<String> failoverHosts = hostRepository.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
         return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
     }
 
     private LoadBalancerEndpointConfiguration getConfigbyLoadBalancerId(Integer lbId) throws EntityNotFoundException, DecryptException, MalformedURLException {
-        LoadBalancer loadBalancer = loadBalancerService.get(lbId);
+        LoadBalancer loadBalancer = loadBalancerRepository.getById(lbId);
         Host host = loadBalancer.getHost();
         Cluster cluster = host.getCluster();
-        Host endpointHost = hostService.getEndPointHost(cluster.getId());
-        List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
+        Host endpointHost = hostRepository.getEndPointHost(cluster.getId());
+        List<String> failoverHosts = hostRepository.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
         return new LoadBalancerEndpointConfiguration(endpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
     }
@@ -317,7 +317,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         if (isConnectionExcept(exc)) {
             LOG.error(String.format("Endpoint %s went bad marking host[%d] as bad.", badHost.getEndpoint(), badHost.getId()));
             badHost.setEndpointActive(Boolean.FALSE);
-            hostService.update(badHost);
+            hostRepository.update(badHost);
         }
     }
 }

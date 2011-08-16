@@ -1,9 +1,11 @@
 package org.openstack.atlas.service.domain.exception;
 
-public class BadRequestException extends Exception {
+public class BadRequestException extends PersistenceServiceException {
 
-    public BadRequestException(String message) {
-        super(message);
+    private String message;
+
+    public BadRequestException(final String message) {
+        this.message = message;
     }
 
     public BadRequestException(String message, Throwable th) {
@@ -16,5 +18,10 @@ public class BadRequestException extends Exception {
 
     public BadRequestException() {
         super();
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
     }
 }
