@@ -388,7 +388,7 @@
         <xsd:attribute name="availableConcurrentConnections" type="xsd:int"/>
         <xsd:attribute name="allocatedConcurrentConnections" type="xsd:int"/>
         <xsd:attribute name="allocatedConcurrentConnectionsToday" type="xsd:int"/>
-        <xsd:attribute name="allocatedConcurrentConnectionsInPastSevenDays" type="xsd:int"/>
+        <xsd:attribute name="allocatedConcurrentConnectionsInLastSevenDays" type="xsd:int"/>
         <xsd:attribute name="remainingDaysOfCapacity" type="xsd:double"/>
     </xsd:complexType>
 
