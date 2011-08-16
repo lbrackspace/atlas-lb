@@ -24,7 +24,9 @@
             <xsd:element name="virtualIps" type="tns:virtualIps" minOccurs="0"/>
             <xsd:element name="nodes" type="tns:nodes" minOccurs="0"/>
             <xsd:element name="healthMonitor" type="tns:healthMonitor" minOccurs="0"/>
+            <xsd:element name="sessionPersistence" type="tns:sessionPersistence" minOccurs="0"/>
             <xsd:element name="connectionThrottle" type="tns:connectionThrottle" minOccurs="0"/>
+            <xsd:element name="connectionLogging" type="tns:connectionLogging" minOccurs="0"/>
             <xsd:element name="cluster" type="tns:cluster" minOccurs="0"/>
             <xsd:element name="created" type="tns:created" minOccurs="0"/>
             <xsd:element name="updated" type="tns:updated" minOccurs="0"/>
@@ -79,7 +81,7 @@
     <xsd:simpleType name="vipType">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="PUBLIC"/>
-            <xsd:enumeration value="SERVICE_NET"/>
+            <xsd:enumeration value="PRIVATE"/>
         </xsd:restriction>
     </xsd:simpleType>
 
@@ -101,10 +103,22 @@
         <xsd:anyAttribute namespace="##other" processContents="strict"/>
     </xsd:complexType>
 
+    <xsd:element name="sessionPersistence" type="tns:sessionPersistence"/>
+    <xsd:complexType name="sessionPersistence">
+        <xsd:attribute name="persistenceType" type="xsd:string"/>
+        <xsd:anyAttribute namespace="##other" processContents="strict"/>
+    </xsd:complexType>
+
     <xsd:element name="connectionThrottle" type="tns:connectionThrottle"/>
     <xsd:complexType name="connectionThrottle">
         <xsd:attribute name="maxRequestRate" type="xsd:int"/>
         <xsd:attribute name="rateInterval" type="xsd:int" />
+        <xsd:anyAttribute namespace="##other" processContents="strict"/>
+    </xsd:complexType>
+
+    <xsd:element name="connectionLogging" type="tns:connectionLogging"/>
+    <xsd:complexType name="connectionLogging">
+        <xsd:attribute name="enabled" type="xsd:boolean"/>
         <xsd:anyAttribute namespace="##other" processContents="strict"/>
     </xsd:complexType>
 

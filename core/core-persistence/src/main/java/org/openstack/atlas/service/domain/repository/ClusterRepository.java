@@ -598,7 +598,7 @@ public class ClusterRepository  {
                     case PUBLIC:
                         put(tClusterId, tCount, null);
                         break;
-                    case SERVICE_NET:
+                    case PRIVATE:
                         put(tClusterId, null, tCount);
                         break;
                     default:

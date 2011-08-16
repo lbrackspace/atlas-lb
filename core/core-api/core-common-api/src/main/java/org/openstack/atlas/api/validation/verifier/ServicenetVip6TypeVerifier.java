@@ -14,7 +14,7 @@ public class ServicenetVip6TypeVerifier implements Verifier<VirtualIp> {
     @Override
     public VerifierResult verify(VirtualIp virtualIp) {
         List<ValidationResult> validationResults = new ArrayList<ValidationResult>();
-        if (virtualIp.getType() == VipType.SERVICE_NET && virtualIp.getIpVersion() == IpVersion.IPV6) {
+        if (virtualIp.getType() == VipType.PRIVATE && virtualIp.getIpVersion() == IpVersion.IPV6) {
             validationResults.add(new ValidationResult(false, "IPv6 virtual Ip type must be PUBLIC"));
             return new VerifierResult(false, validationResults);
         }

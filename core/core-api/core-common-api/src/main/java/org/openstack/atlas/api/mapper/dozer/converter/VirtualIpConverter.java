@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.openstack.atlas.core.api.v1.VipType.PUBLIC;
-import static org.openstack.atlas.core.api.v1.VipType.SERVICE_NET;
+import static org.openstack.atlas.core.api.v1.VipType.PRIVATE;
 
 public class VirtualIpConverter implements CustomConverter {
     @Override
@@ -42,8 +42,8 @@ public class VirtualIpConverter implements CustomConverter {
                         case PUBLIC:
                             vip.setType(PUBLIC);
                             break;
-                        case SERVICE_NET:
-                            vip.setType(SERVICE_NET);
+                        case PRIVATE:
+                            vip.setType(PRIVATE);
                             break;
                         default:
                             throw new RuntimeException(String.format("Unsupported vip type '%s' given while mapping.", loadBalancerJoinVip.getVirtualIp().getVipType().name()));
@@ -107,7 +107,7 @@ public class VirtualIpConverter implements CustomConverter {
                         vip.setIpVersion(IpVersion.IPV4);
                         loadBalancerJoinVipSet = buildLoadBalancerJoinVipSet(vip);
 
-                    }else if (vip.getType() != null && vip.getType().equals(VipType.SERVICE_NET)) {
+                    }else if (vip.getType() != null && vip.getType().equals(VipType.PRIVATE)) {
                         vip.setIpVersion(IpVersion.IPV4);
                         loadBalancerJoinVipSet = buildLoadBalancerJoinVipSet(vip);
                     }
@@ -135,8 +135,8 @@ public class VirtualIpConverter implements CustomConverter {
                         case PUBLIC:
                             domainVip.setVipType(VirtualIpType.PUBLIC);
                             break;
-                        case SERVICE_NET:
-                            domainVip.setVipType(VirtualIpType.SERVICE_NET);
+                        case PRIVATE:
+                            domainVip.setVipType(VirtualIpType.PRIVATE);
                             break;
                     }
 
@@ -170,8 +170,8 @@ public class VirtualIpConverter implements CustomConverter {
             case PUBLIC:
                 domainVip.setVipType(VirtualIpType.PUBLIC);
                 break;
-            case SERVICE_NET:
-                domainVip.setVipType(VirtualIpType.SERVICE_NET);
+            case PRIVATE:
+                domainVip.setVipType(VirtualIpType.PRIVATE);
                 break;
         }
 
