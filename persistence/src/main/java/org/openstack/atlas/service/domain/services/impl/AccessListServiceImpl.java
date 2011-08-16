@@ -108,7 +108,7 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
 
     @Override
     @Transactional
-    public LoadBalancer markForDeletionNetworkItems(LoadBalancer returnLB, List<Integer> networkItemIds) throws EntityNotFoundException, ImmutableEntityException {
+    public LoadBalancer markForDeletionNetworkItems(LoadBalancer returnLB, List<Integer> networkItemIds) throws BadRequestException, ImmutableEntityException, EntityNotFoundException {
         LoadBalancer domainLB;
         List<AccessList> accessLists = new ArrayList<AccessList>();
         LOG.debug("Entering " + getClass());
@@ -144,7 +144,7 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
             if (badList.size() > 1) {
                 plural = "s";
             }
-            throw new EntityNotFoundException("Network item" + plural + " with id" + plural + " " + out + " not found.");
+            throw new BadRequestException("Network item" + plural + " with id" + plural + " " + out + " not found.");
         }
         domainLB.getAccessLists().removeAll(accessLists);
 

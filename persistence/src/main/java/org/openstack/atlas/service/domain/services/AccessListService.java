@@ -17,7 +17,7 @@ public interface AccessListService {
     List<AccessList> getAccessListByAccountIdLoadBalancerId(int accountId, int loadbalancerId,
                                                                    Integer... p) throws EntityNotFoundException, DeletedStatusException;
 
-    public LoadBalancer markForDeletionNetworkItems(LoadBalancer returnLB, List<Integer> networkItemIds) throws EntityNotFoundException, ImmutableEntityException;
+    public LoadBalancer markForDeletionNetworkItems(LoadBalancer returnLB, List<Integer> networkItemIds) throws BadRequestException, EntityNotFoundException, ImmutableEntityException;
 
     LoadBalancer updateAccessList(LoadBalancer rLb) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException;
 
