@@ -33,16 +33,6 @@ public class HostServiceImpl implements HostService {
         }
     }
 
-/*    @Override
-    public Host update(Host host) {
-        return hostRepository.update(host);
-    }
-
-    @Override
-    public List<String> getFailoverHostNames(Integer clusterId) {
-        return hostRepository.getFailoverHostNames(clusterId);
-    }*/
-
 
     @Override
     @Transactional
@@ -108,11 +98,5 @@ public class HostServiceImpl implements HostService {
         hostRepository.update(dbHost);
 
     }
-
-
-  /*  @Override
-    public Host getEndPointHost(Integer clusterId) {
-        return hostRepository.getEndPointHost(clusterId);
-    }*/
 
 }
