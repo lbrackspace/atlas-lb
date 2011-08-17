@@ -34,6 +34,7 @@ public class VirtualIpServiceImpl implements VirtualIpService {
     private ClusterRepository clusterRepository;
 
     @Override
+    @Transactional
     public LoadBalancer assignVIpsToLoadBalancer(LoadBalancer loadBalancer) throws PersistenceServiceException {
         if (!loadBalancer.getLoadBalancerJoinVipSet().isEmpty()) {
             Set<LoadBalancerJoinVip> newVipConfig = new HashSet<LoadBalancerJoinVip>();
@@ -89,37 +90,6 @@ public class VirtualIpServiceImpl implements VirtualIpService {
         } catch (Exception e) {
             LOG.warn("High concurrency detected. Ignoring...");
         }
-    }
-
-    public boolean isIpv4VipPortCombinationInUse(VirtualIp virtualIp, Integer loadBalancerPort) {
-        return virtualIpRepository.getPorts(virtualIp.getId()).containsKey(loadBalancerPort);
-    }
-
-    public boolean isIpv6VipPortCombinationInUse(VirtualIpv6 virtualIp, Integer loadBalancerPort) {
-        return virtualIpv6Repository.getPorts(virtualIp.getId()).containsKey(loadBalancerPort);
-    }
-
-    @Transactional
-    public VirtualIpv6 allocateIpv6VirtualIp(LoadBalancer loadBalancer) throws EntityNotFoundException {
-        // Acquire lock on account row due to concurrency issue
-        virtualIpv6Repository.getLockedAccountRecord(loadBalancer.getAccountId());
-
-        VirtualIpv6 v6;
-        Integer clusterId = loadBalancer.getHost().getCluster().getId();
-        Integer accountId = loadBalancer.getAccountId();
-        Integer vipOctets = virtualIpv6Repository.getNextVipOctet(accountId);
-        v6 = newVirtualIpv6(clusterId, accountId, vipOctets);
-        virtualIpRepository.persist(v6);
-        return v6;
-    }
-
-    public VirtualIpv6 newVirtualIpv6(Integer clusterId, Integer accountId, Integer vipOctets) throws EntityNotFoundException {
-        VirtualIpv6 v6 = new VirtualIpv6();
-        Cluster c = clusterRepository.getById(clusterId);
-        v6.setCluster(c);
-        v6.setAccountId(accountId);
-        v6.setVipOctets(vipOctets);
-        return v6;
     }
 
     private Set<LoadBalancerJoinVip> getSharedIpv4Vips(VirtualIp vipConfig, List<VirtualIp> vipsOnAccount, Integer lbPort) throws AccountMismatchException, UniqueLbPortViolationException {
@@ -188,5 +158,29 @@ public class VirtualIpServiceImpl implements VirtualIpService {
                 throw e2;
             }
         }
+    }
+
+    @Transactional
+    public VirtualIpv6 allocateIpv6VirtualIp(LoadBalancer loadBalancer) throws EntityNotFoundException {
+        // Acquire lock on account row due to concurrency issue
+        virtualIpv6Repository.getLockedAccountRecord(loadBalancer.getAccountId());
+
+        Integer vipOctets = virtualIpv6Repository.getNextVipOctet(loadBalancer.getAccountId());
+        Cluster c = clusterRepository.getById(loadBalancer.getHost().getCluster().getId());
+
+        VirtualIpv6 ipv6 = new VirtualIpv6();
+        ipv6.setCluster(c);
+        ipv6.setAccountId(loadBalancer.getAccountId());
+        ipv6.setVipOctets(vipOctets);
+        virtualIpRepository.persist(ipv6);
+        return ipv6;
+    }
+
+    public boolean isIpv4VipPortCombinationInUse(VirtualIp virtualIp, Integer loadBalancerPort) {
+        return virtualIpRepository.getPorts(virtualIp.getId()).containsKey(loadBalancerPort);
+    }
+
+    public boolean isIpv6VipPortCombinationInUse(VirtualIpv6 virtualIp, Integer loadBalancerPort) {
+        return virtualIpv6Repository.getPorts(virtualIp.getId()).containsKey(loadBalancerPort);
     }
 }
