@@ -7,4 +7,3 @@ create table user_pages(
 )Engine=InnoDb CHARSET=utf8;
 
 #insert into user_pages(loadbalancer_id,errorpage)values(316,"<html>Test</html>");
-

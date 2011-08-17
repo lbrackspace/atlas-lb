@@ -6,6 +6,3 @@ CREATE TABLE `defaults` (
  `value` mediumtext,
  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-update `meta` set `meta_value` = '30' where `meta_key`='version';
