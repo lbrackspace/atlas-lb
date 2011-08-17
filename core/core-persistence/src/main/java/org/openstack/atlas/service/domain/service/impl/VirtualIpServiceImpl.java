@@ -139,20 +139,20 @@ public class VirtualIpServiceImpl implements VirtualIpService {
     }
 
     @Transactional
-    public VirtualIp allocateIpv4VirtualIp(VirtualIp vipConfig, Cluster cluster) throws OutOfVipsException {
+    public VirtualIp allocateIpv4VirtualIp(VirtualIp virtualIp, Cluster cluster) throws OutOfVipsException {
         Calendar timeConstraintForVipReuse = Calendar.getInstance();
         timeConstraintForVipReuse.add(Calendar.DATE, -Constants.NUM_DAYS_BEFORE_VIP_REUSE);
 
-        if (vipConfig.getVipType() == null) {
-            vipConfig.setVipType(VirtualIpType.PUBLIC);
+        if (virtualIp.getVipType() == null) {
+            virtualIp.setVipType(VirtualIpType.PUBLIC);
         }
 
         try {
-            return virtualIpRepository.allocateIpv4VipBeforeDate(cluster, timeConstraintForVipReuse, vipConfig.getVipType());
+            return virtualIpRepository.allocateIpv4VipBeforeDate(cluster, timeConstraintForVipReuse, virtualIp.getVipType());
         } catch (OutOfVipsException e) {
             LOG.warn(String.format("Out of IPv4 virtual ips that were de-allocated before '%s'.", timeConstraintForVipReuse.getTime()));
             try {
-                return virtualIpRepository.allocateIpv4VipAfterDate(cluster, timeConstraintForVipReuse, vipConfig.getVipType());
+                return virtualIpRepository.allocateIpv4VipAfterDate(cluster, timeConstraintForVipReuse, virtualIp.getVipType());
             } catch (OutOfVipsException e2) {
                 e2.printStackTrace();
                 throw e2;

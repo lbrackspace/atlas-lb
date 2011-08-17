@@ -76,8 +76,9 @@ public class LoadBalancerRepository {
 
         loadBalancer = setLbIdOnChildObjects(loadBalancer);
 
-        loadBalancer.setCreated(Calendar.getInstance());
-        loadBalancer.setUpdated(Calendar.getInstance());
+        Calendar current = Calendar.getInstance();
+        loadBalancer.setCreated(current);
+        loadBalancer.setUpdated(current);
         loadBalancer = entityManager.merge(loadBalancer);
 
         // Now attach loadbalancer to vips
@@ -87,11 +88,26 @@ public class LoadBalancerRepository {
             entityManager.merge(loadBalancerJoinVip);
         }
 
-        loadBalancer.setLoadBalancerJoinVip6Set(lbJoinVip6sToLink);
+        for(LoadBalancerJoinVip6 lbJoinVipToLink : lbJoinVip6sToLink) {
+            LoadBalancerJoinVip6 jv = new LoadBalancerJoinVip6(loadBalancer.getPort(), loadBalancer, lbJoinVipToLink.getVirtualIp());
+            entityManager.persist(jv);
+        }
 
         entityManager.flush();
         return loadBalancer;
     }
+
+    /*@Transactional
+    private void joinIpv6OnLoadBalancer(LoadBalancer lb) {
+        Set<LoadBalancerJoinVip6> loadBalancerJoinVip6SetConfig = lb.getLoadBalancerJoinVip6Set();
+        lb.setLoadBalancerJoinVip6Set(null);
+        Set<LoadBalancerJoinVip6> newLbVip6Setconfig = new HashSet<LoadBalancerJoinVip6>();
+        lb.setLoadBalancerJoinVip6Set(newLbVip6Setconfig);
+        for (LoadBalancerJoinVip6 jv6 : loadBalancerJoinVip6SetConfig) {
+            LoadBalancerJoinVip6 jv = new LoadBalancerJoinVip6(lb.getPort(), lb, jv6.getVirtualIp());
+            entityManager.persist(jv);
+        }
+    }*/
 
     private LoadBalancer setLbIdOnChildObjects(final LoadBalancer loadBalancer) {
         if (loadBalancer.getNodes() != null) {
