@@ -127,4 +127,11 @@ public class LoadBalancerRepository {
         entityManager.flush();
         return loadBalancer;
     }
+
+    public Integer getNumNonDeletedLoadBalancersForAccount(Integer accountId) {
+        Query query = entityManager.createNativeQuery(
+                "select count(account_id) from loadbalancer where status != 'DELETED' and account_id = :accountId").setParameter("accountId", accountId);
+
+        return ((BigInteger) query.getSingleResult()).intValue();
+    }
 }

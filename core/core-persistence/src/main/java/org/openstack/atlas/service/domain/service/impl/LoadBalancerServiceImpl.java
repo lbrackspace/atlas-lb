@@ -4,7 +4,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip6;
-import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.PersistenceServiceException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
@@ -32,11 +31,20 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     @Autowired
     private VirtualIpRepository virtualIpRepository;
 
+    @Autowired
+    private AccountLimitService accountLimitService;
+
+    @Autowired
+    private BlacklistService blacklistService;
+
     @Override
     @Transactional
     public LoadBalancer create(LoadBalancer loadBalancer) throws PersistenceServiceException {
         Validator.verifyTCPProtocolandPort(loadBalancer);
         Validator.verifyProtocolAndHealthMonitorType(loadBalancer);
+
+        accountLimitService.verifyLoadBalancerLimit(loadBalancer.getAccountId());
+        blacklistService.verifyNoBlacklistNodes(loadBalancer.getNodes());
 
         LoadBalancerDefaultBuilder.addDefaultValues(loadBalancer);
 
@@ -48,23 +56,6 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         joinIpv6OnLoadBalancer(dbLoadBalancer);
         return dbLoadBalancer;
     }
-
-/*    @Override
-    public LoadBalancer get(Integer id) throws EntityNotFoundException {
-        return loadBalancerRepository.getById(id);
-    }
-
-    @Override
-    @Transactional
-    public LoadBalancer update(LoadBalancer lb) {
-        return loadBalancerRepository.update(lb);
-    }
-
-    @Override
-    @Transactional
-    public LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException {
-        return loadBalancerRepository.getByIdAndAccountId(id, accountId);
-    }*/
 
     @Transactional
     private void joinIpv6OnLoadBalancer(LoadBalancer lb) {

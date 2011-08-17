@@ -7,10 +7,4 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface LoadBalancerService {
     LoadBalancer create(LoadBalancer loadBalancer) throws PersistenceServiceException;
-
-/*    LoadBalancer get(Integer id) throws EntityNotFoundException;
-
-    LoadBalancer update(LoadBalancer lb);
-
-    LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException;*/
 }
