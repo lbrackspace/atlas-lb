@@ -8,10 +8,15 @@
         <class>org.openstack.atlas.service.domain.entity.Entity</class>
 
         <class>org.openstack.atlas.service.domain.entity.Account</class>
+        <class>org.openstack.atlas.service.domain.entity.AccountLimit</class>
+        <class>org.openstack.atlas.service.domain.entity.AccountLimitType</class>
+        <class>org.openstack.atlas.service.domain.entity.BlacklistItem</class>
+        <class>org.openstack.atlas.service.domain.entity.BlacklistType</class>
         <class>org.openstack.atlas.service.domain.entity.Cluster</class>
         <class>org.openstack.atlas.service.domain.entity.ConnectionThrottle</class>
         <class>org.openstack.atlas.service.domain.entity.HealthMonitor</class>
         <class>org.openstack.atlas.service.domain.entity.Host</class>
+        <class>org.openstack.atlas.service.domain.entity.LimitType</class>
         <class>org.openstack.atlas.service.domain.entity.LoadBalancer</class>
         <class>org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip</class>
         <class>org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip6</class>

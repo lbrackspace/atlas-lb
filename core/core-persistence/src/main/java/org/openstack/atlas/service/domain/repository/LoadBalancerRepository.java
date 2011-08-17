@@ -88,16 +88,26 @@ public class LoadBalancerRepository {
             entityManager.merge(loadBalancerJoinVip);
         }
 
-        for(LoadBalancerJoinVip6 lbJoinVipToLink : lbJoinVip6sToLink) {
+/*        for(LoadBalancerJoinVip6 lbJoinVipToLink : lbJoinVip6sToLink) {
             LoadBalancerJoinVip6 jv = new LoadBalancerJoinVip6(loadBalancer.getPort(), loadBalancer, lbJoinVipToLink.getVirtualIp());
             entityManager.persist(jv);
-        }
+        }*/
 
+        loadBalancer.setLoadBalancerJoinVip6Set(lbJoinVip6sToLink);
         entityManager.flush();
+
+        Set<LoadBalancerJoinVip6> loadBalancerJoinVip6SetConfig = loadBalancer.getLoadBalancerJoinVip6Set();
+        loadBalancer.setLoadBalancerJoinVip6Set(null);
+        Set<LoadBalancerJoinVip6> newLbVip6Setconfig = new HashSet<LoadBalancerJoinVip6>();
+        loadBalancer.setLoadBalancerJoinVip6Set(newLbVip6Setconfig);
+        for (LoadBalancerJoinVip6 jv6 : loadBalancerJoinVip6SetConfig) {
+            LoadBalancerJoinVip6 jv = new LoadBalancerJoinVip6(loadBalancer.getPort(), loadBalancer, jv6.getVirtualIp());
+            entityManager.persist(jv);
+        }
         return loadBalancer;
     }
 
-    /*@Transactional
+/*    @Transactional
     private void joinIpv6OnLoadBalancer(LoadBalancer lb) {
         Set<LoadBalancerJoinVip6> loadBalancerJoinVip6SetConfig = lb.getLoadBalancerJoinVip6Set();
         lb.setLoadBalancerJoinVip6Set(null);
@@ -146,7 +156,7 @@ public class LoadBalancerRepository {
 
     public Integer getNumNonDeletedLoadBalancersForAccount(Integer accountId) {
         Query query = entityManager.createNativeQuery(
-                "select count(account_id) from loadbalancer where status != 'DELETED' and account_id = :accountId").setParameter("accountId", accountId);
+                "select count(account_id) from load_balancer where status != 'DELETED' and account_id = :accountId").setParameter("accountId", accountId);
 
         return ((BigInteger) query.getSingleResult()).intValue();
     }

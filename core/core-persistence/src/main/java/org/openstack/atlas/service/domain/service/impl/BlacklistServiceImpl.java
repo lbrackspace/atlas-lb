@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.service.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.common.ip.IPv4Cidr;
 import org.openstack.atlas.common.ip.IPv4Cidrs;
 import org.openstack.atlas.common.ip.IPv6Cidr;
@@ -19,6 +21,7 @@ import java.util.Set;
 
 @Service
 public class BlacklistServiceImpl implements BlacklistService {
+    private final Log LOG = LogFactory.getLog(BlacklistServiceImpl.class);
 
     @Autowired
     private BlacklistRepository blacklistRepository;
@@ -52,7 +55,8 @@ public class BlacklistServiceImpl implements BlacklistService {
         } catch (Exception e) {
             throw new BadRequestException(String.format("Error while trying to validate the nodes."));
         }
-        if (badNode != null) {
+        if (badNode != null && badNode.getAddress() != null) {
+            LOG.info("Found a blacklisted node: " + badNode);
             throw new BadRequestException(String.format("Invalid node address. The address '%s' is currently not accepted for this request.", badNode.getAddress()));
         }
     }
