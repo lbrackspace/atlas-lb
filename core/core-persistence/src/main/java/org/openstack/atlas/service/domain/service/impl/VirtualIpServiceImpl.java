@@ -99,7 +99,6 @@ public class VirtualIpServiceImpl implements VirtualIpService {
         return virtualIpv6Repository.getPorts(virtualIp.getId()).containsKey(loadBalancerPort);
     }
 
-
     @Transactional
     public VirtualIpv6 allocateIpv6VirtualIp(LoadBalancer loadBalancer) throws EntityNotFoundException {
         // Acquire lock on account row due to concurrency issue

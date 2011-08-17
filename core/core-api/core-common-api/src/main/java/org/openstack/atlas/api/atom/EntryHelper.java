@@ -15,7 +15,7 @@ public final class EntryHelper {
     public static String createNodeSummary(Node node) {
         StringBuffer atomSummary = new StringBuffer();
         atomSummary.append("Node successfully created with ");
-        atomSummary.append("address: '").append(node.getIpAddress()).append("', ");
+        atomSummary.append("address: '").append(node.getAddress()).append("', ");
         atomSummary.append("port: '").append(node.getPort()).append("', ");
         atomSummary.append("condition: '").append(node.getCondition()).append("', ");
         atomSummary.append("weight: '").append(node.getWeight()).append("'");
@@ -25,7 +25,7 @@ public final class EntryHelper {
     public static String createVirtualIpSummary(VirtualIp virtualIp) {
         StringBuffer atomSummary = new StringBuffer();
         atomSummary.append("Virtual ip successfully added with ");
-        atomSummary.append("address: '").append(virtualIp.getIpAddress()).append("', ");
+        atomSummary.append("address: '").append(virtualIp.getAddress()).append("', ");
         atomSummary.append("type: '").append(virtualIp.getVipType()).append("'");
         return atomSummary.toString();
     }

@@ -44,6 +44,13 @@ public class LoadBalancer extends Entity implements Serializable {
     @Column(name = "account_id", nullable = false, length = 32)
     private Integer accountId;
 
+    @JoinColumn(name = "sessionPersistence", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private SessionPersistence sessionPersistence;
+
+    @Column(name = "connection_logging", nullable = false)
+    private Boolean connectionLogging = false;
+
     @JoinColumn(name = "protocol", nullable = false)
     @Enumerated(EnumType.STRING)
     private LoadBalancerProtocol protocol = LoadBalancerProtocol.HTTP;
@@ -228,4 +235,19 @@ public class LoadBalancer extends Entity implements Serializable {
         this.setLoadBalancerJoinVip6Set(this.virtualIpDozerWrapper.getLoadBalancerJoinVip6Set());
     }
 
+    public Boolean getConnectionLogging() {
+        return connectionLogging;
+    }
+
+    public void setConnectionLogging(Boolean connectionLogging) {
+        this.connectionLogging = connectionLogging;
+    }
+
+    public SessionPersistence getSessionPersistence() {
+        return sessionPersistence;
+    }
+
+    public void setSessionPersistence(SessionPersistence sessionPersistence) {
+        this.sessionPersistence = sessionPersistence;
+    }
 }

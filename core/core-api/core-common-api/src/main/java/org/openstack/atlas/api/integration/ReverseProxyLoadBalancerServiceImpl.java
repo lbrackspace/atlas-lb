@@ -33,12 +33,12 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     @Autowired
     private HostRepository hostRepository;
 
-//    @Required
+    //    @Required
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
     }
 
-//    @Required
+    //    @Required
     public void setLoadBalancerAdapter(LoadBalancerAdapter loadBalancerAdapter) {
         this.loadBalancerAdapter = loadBalancerAdapter;
     }
@@ -137,7 +137,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public void removeNode(Integer lbId, Integer accountId, Node node) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.removeNode(config, lbId, accountId, node.getIpAddress(), node.getPort());
+            loadBalancerAdapter.removeNode(config, lbId, accountId, node.getAddress(), node.getPort());
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;

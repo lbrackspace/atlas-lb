@@ -163,6 +163,7 @@
         <!--<field custom-converter="org.openstack.atlas.api.mapper.dozer.converters.EnumCustomConverter">-->
         <!--<a>sessionPersistence.persistenceType</a>-->
         <!--<b>sessionPersistence</b>-->
+        <!--<b>sessionPersistence</b>-->
         <!--</field>-->
         <field>
             <a>cluster</a>

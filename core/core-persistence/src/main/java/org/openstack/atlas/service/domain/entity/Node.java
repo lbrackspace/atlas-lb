@@ -13,8 +13,8 @@ public class Node extends Entity implements Serializable {
     @JoinColumn(name = "load_balancer_id")
     private LoadBalancer loadBalancer;
 
-    @Column(name = "ip_address", length = 39, nullable = false)
-    private String ipAddress;
+    @Column(name = "address", length = 39, nullable = false)
+    private String address;
 
     @Column(name = "port", nullable = false)
     private Integer port;
@@ -44,12 +44,12 @@ public class Node extends Entity implements Serializable {
         this.loadBalancer = loadBalancer;
     }
 
-    public String getIpAddress() {
-        return ipAddress;
+    public String getAddress() {
+        return address;
     }
 
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public Integer getPort() {
@@ -109,7 +109,7 @@ public class Node extends Entity implements Serializable {
                 ", condition=" + condition +
                 ", weight=" + weight +
                 ", port=" + port +
-                ", ipAddress='" + ipAddress + '\'' +
+                ", ipAddress='" + address + '\'' +
                 '}';
     }
 }

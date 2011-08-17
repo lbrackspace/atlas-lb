@@ -53,7 +53,6 @@
 
     <xsd:element name="healthMonitor" type="tns:healthMonitor"/>
     <xsd:complexType name="healthMonitor">
-        <xsd:attribute name="id" type="xsd:int"/>
         <xsd:attribute name="type" type="xsd:string"/>
         <xsd:attribute name="delay" type="xsd:int"/>
         <xsd:attribute name="timeout" type="xsd:int"/>
