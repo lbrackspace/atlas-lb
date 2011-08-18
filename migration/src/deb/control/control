@@ -1,0 +1,10 @@
+Package: [[artifactId]]
+Version: [[version]]
+Section: libs
+Priority: optional
+Architecture: all
+Depends: 
+Maintainer: Carlos D. Garza <carlos.garza@rackspace.com>
+Description: The rackspace LBAAS rest api Schema package
+ The rackspace lbaas REST Schema
+Distribution: development
