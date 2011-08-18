@@ -19,7 +19,7 @@
                     <plugin>
                         <artifactId>jdeb-rs</artifactId>
                         <groupId>org.vafer</groupId>
-                        <version>0.0.1-SNAPSHOT</version>
+                        <version>1.0.0</version>
                         <executions>
                             <execution>
                                 <phase>package</phase>

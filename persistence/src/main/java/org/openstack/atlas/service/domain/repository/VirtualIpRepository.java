@@ -23,6 +23,7 @@ import java.util.*;
 @Repository
 @Transactional
 public class VirtualIpRepository {
+
     private final Log LOG = LogFactory.getLog(VirtualIpRepository.class);
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
@@ -34,25 +35,24 @@ public class VirtualIpRepository {
         this.entityManager = em;
     }
 
-    public VirtualIpv6 getVirtualIpv6BytClusterAccountOctet(Integer cid,Integer aid,Integer vo) throws EntityNotFoundException {
-        List<VirtualIpv6> vips=new ArrayList<VirtualIpv6>();
-        if(cid == null)
-        {
+    public VirtualIpv6 getVirtualIpv6BytClusterAccountOctet(Integer cid, Integer aid, Integer vo) throws EntityNotFoundException {
+        List<VirtualIpv6> vips = new ArrayList<VirtualIpv6>();
+        if (cid == null) {
             throw new EntityNotFoundException("Cluster not found");
         }
 
-        if(aid == null){
+        if (aid == null) {
             throw new EntityNotFoundException("Account not found");
         }
 
-        if(vo == null){
+        if (vo == null) {
             throw new EntityNotFoundException("vipOctets is null");
         }
 
         String qStr = "select v from VirtualIpv6 v where v.cluster.id=:cid and v.accountId=:aid and v.vipOctets=:vo";
-        Query q = entityManager.createQuery(qStr).setParameter("cid",cid).setParameter("aid",aid).setParameter("vo", vo);
+        Query q = entityManager.createQuery(qStr).setParameter("cid", cid).setParameter("aid", aid).setParameter("vo", vo);
         vips = q.getResultList();
-        if(vips.isEmpty()) {
+        if (vips.isEmpty()) {
             throw new EntityNotFoundException("Vip not found");
         }
         return vips.get(0);
@@ -110,10 +110,9 @@ public class VirtualIpRepository {
     public List<LoadBalancer> getLoadBalancerByVip6Address(Integer vip6Id) {
         List<LoadBalancer> loadBalancers;
         String query = "select j.loadBalancer from LoadBalancerJoinVip6 j where j.virtualIp.id=:vipId";
-        loadBalancers = entityManager.createQuery(query).setParameter("vipId",vip6Id).getResultList();
+        loadBalancers = entityManager.createQuery(query).setParameter("vipId", vip6Id).getResultList();
         return loadBalancers;
     }
-
 
     public List<LoadBalancer> getLoadBalancersByVipId(Integer vipId) {
         List<LoadBalancer> loadBalancers;
@@ -152,10 +151,9 @@ public class VirtualIpRepository {
             if (offset == null) {
                 offset = 0;
             }
-            if (limit == null || limit > 100) {
+            if (limit == null) {
                 limit = 100;
             }
-
             query = query.setFirstResult(offset).setMaxResults(limit);
         }
         vips = query.getResultList();
@@ -181,8 +179,8 @@ public class VirtualIpRepository {
 
         LoadBalancer lb;
 
-        String qStr = "select j.virtualIp.ipAddress, j.virtualIp.id, j.virtualIp.accountId, j.loadBalancer.port, j.virtualIp.ipVersion, j.virtualIp.vipType " +
-                "from LoadBalancerJoinVip j order by j.loadBalancer.accountId, j.loadBalancer.id, j.loadBalancer.port, j.virtualIp.id";
+        String qStr = "select j.virtualIp.ipAddress, j.virtualIp.id, j.virtualIp.accountId, j.loadBalancer.port, j.virtualIp.ipVersion, j.virtualIp.vipType "
+                + "from LoadBalancerJoinVip j order by j.loadBalancer.accountId, j.loadBalancer.id, j.loadBalancer.port, j.virtualIp.id";
 
 //        String qStr = "select v.ipAddress,v.id,l.id,l.accountId,l.port, "
 //                + "v.ipVersion, v.vipType "
@@ -236,7 +234,7 @@ public class VirtualIpRepository {
         entityManager.remove(obj);
     }
 
-    public void refresh(Object obj){
+    public void refresh(Object obj) {
         entityManager.refresh(obj);
     }
 
@@ -404,11 +402,10 @@ public class VirtualIpRepository {
         return accountIds;
     }
 
-
-    public List<Integer> getAccountBySha1Sum(String sha1){
+    public List<Integer> getAccountBySha1Sum(String sha1) {
         List<Integer> accountIds;
         String qStr = "select a.id from Account a where a.sha1SumForIpv6=:sha";
-        accountIds = entityManager.createQuery(qStr).setParameter("sha",sha1).getResultList();
+        accountIds = entityManager.createQuery(qStr).setParameter("sha", sha1).getResultList();
         return accountIds;
     }
 
@@ -416,8 +413,8 @@ public class VirtualIpRepository {
         Map<Integer, List<LoadBalancer>> map = new TreeMap<Integer, List<LoadBalancer>>();
         List<Object> hResults;
 
-        String query = "select j.virtualIp.id, j.loadBalancer.id, j.loadBalancer.accountId, j.loadBalancer.port " +
-                "from LoadBalancerJoinVip j where j.virtualIp.id = :vid order by j.loadBalancer.port, j.loadBalancer.id";
+        String query = "select j.virtualIp.id, j.loadBalancer.id, j.loadBalancer.accountId, j.loadBalancer.port "
+                + "from LoadBalancerJoinVip j where j.virtualIp.id = :vid order by j.loadBalancer.port, j.loadBalancer.id";
 
         hResults = entityManager.createQuery(query).setParameter("vid", vid).getResultList();
         for (Object r : hResults) {
@@ -434,6 +431,4 @@ public class VirtualIpRepository {
         }
         return map;
     }
-
-
 }
