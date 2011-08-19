@@ -20,15 +20,15 @@ public class HostRepository {
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
 
-    public Host getById(Integer id) throws EntityNotFoundException {
-        Host host = entityManager.find(Host.class, id);
-        if (host == null) {
-            String errMsg = String.format("Cannot access host {id=%d}", id);
-            LOG.warn(errMsg);
-            throw new EntityNotFoundException(errMsg);
-        }
-        return host;
-    }
+//    public Host getById(Integer id) throws EntityNotFoundException {
+//        Host host = entityManager.find(Host.class, id);
+//        if (host == null) {
+//            String errMsg = String.format("Cannot access host {id=%d}", id);
+//            LOG.warn(errMsg);
+//            throw new EntityNotFoundException(errMsg);
+//        }
+//        return host;
+//    }
 
     public Host getEndPointHost(Integer clusterId) {
         String hqlStr = "from Host h where h.endpointActive = 1 "
@@ -44,13 +44,13 @@ public class HostRepository {
         return results.get(0);
     }
 
-    public String getEndPoint(Integer clusterId) {
+/*    public String getEndPoint(Integer clusterId) {
         Host host = getEndPointHost(clusterId);
         if(host==null) {
             return null;
         }
         return host.getEndpoint();
-    }
+    }*/
 
     public Host update(Host host) {
         LOG.info("Updating Host " + host.getId() + "...");

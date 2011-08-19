@@ -40,3 +40,17 @@ INSERT INTO `virtual_ipv4` VALUES ('CORE', 1,'10.0.0.1', FALSE, NULL, NULL ,'PUB
                                   ,('CORE', 20,'10.0.0.20', FALSE, NULL, NULL ,'PRIVATE',1);
 /*!40000 ALTER TABLE `virtual_ipv4` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping data for table `limit_type`
+--
+
+LOCK TABLES `limit_type` WRITE;
+/*!40000 ALTER TABLE `limit_type` DISABLE KEYS */;
+INSERT INTO `limit_type` VALUES ('ACCESS_LIST_LIMIT',100,'Max number of items for an access list');
+INSERT INTO `limit_type` VALUES ('BATCH_DELETE_LIMIT',10,'Max number of items that can be deleted for batch delete operations');
+INSERT INTO `limit_type` VALUES ('IPV6_LIMIT',25,'Max number of IPv6 addresses for a load balancer');
+INSERT INTO `limit_type` VALUES ('LOADBALANCER_LIMIT',25,'Max number of load balancers for an account');
+INSERT INTO `limit_type` VALUES ('NODE_LIMIT',25,'Max number of nodes for a load balancer');
+/*!40000 ALTER TABLE `limit_type` ENABLE KEYS */;
+UNLOCK TABLES;

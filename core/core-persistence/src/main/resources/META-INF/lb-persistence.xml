@@ -22,6 +22,8 @@
         <class>org.openstack.atlas.service.domain.entity.VirtualIp</class>
         <class>org.openstack.atlas.service.domain.entity.VirtualIpv6</class>
 
+        <class>org.openstack.atlas.service.domain.entity.AccountLimitType</class>
+        <class>org.openstack.atlas.service.domain.entity.BlacklistType</class>
         <class>org.openstack.atlas.service.domain.entity.HealthMonitorType</class>
         <class>org.openstack.atlas.service.domain.entity.IpVersion</class>
         <class>org.openstack.atlas.service.domain.entity.LoadBalancerAlgorithm</class>

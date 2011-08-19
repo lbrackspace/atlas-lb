@@ -13,8 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
+import java.math.BigInteger;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Set;
 
 @Repository
@@ -55,8 +58,9 @@ public class LoadBalancerRepository {
 
         loadBalancer = setLbIdOnChildObjects(loadBalancer);
 
-        loadBalancer.setCreated(Calendar.getInstance());
-        loadBalancer.setUpdated(Calendar.getInstance());
+        Calendar current = Calendar.getInstance();
+        loadBalancer.setCreated(current);
+        loadBalancer.setUpdated(current);
         loadBalancer = entityManager.merge(loadBalancer);
 
         // Now attach loadbalancer to vips
@@ -66,11 +70,36 @@ public class LoadBalancerRepository {
             entityManager.merge(loadBalancerJoinVip);
         }
 
-        loadBalancer.setLoadBalancerJoinVip6Set(lbJoinVip6sToLink);
+/*        for(LoadBalancerJoinVip6 lbJoinVipToLink : lbJoinVip6sToLink) {
+            LoadBalancerJoinVip6 jv = new LoadBalancerJoinVip6(loadBalancer.getPort(), loadBalancer, lbJoinVipToLink.getVirtualIp());
+            entityManager.persist(jv);
+        }*/
 
+        loadBalancer.setLoadBalancerJoinVip6Set(lbJoinVip6sToLink);
         entityManager.flush();
+
+        Set<LoadBalancerJoinVip6> loadBalancerJoinVip6SetConfig = loadBalancer.getLoadBalancerJoinVip6Set();
+        loadBalancer.setLoadBalancerJoinVip6Set(null);
+        Set<LoadBalancerJoinVip6> newLbVip6Setconfig = new HashSet<LoadBalancerJoinVip6>();
+        loadBalancer.setLoadBalancerJoinVip6Set(newLbVip6Setconfig);
+        for (LoadBalancerJoinVip6 jv6 : loadBalancerJoinVip6SetConfig) {
+            LoadBalancerJoinVip6 jv = new LoadBalancerJoinVip6(loadBalancer.getPort(), loadBalancer, jv6.getVirtualIp());
+            entityManager.persist(jv);
+        }
         return loadBalancer;
     }
+
+/*    @Transactional
+    private void joinIpv6OnLoadBalancer(LoadBalancer lb) {
+        Set<LoadBalancerJoinVip6> loadBalancerJoinVip6SetConfig = lb.getLoadBalancerJoinVip6Set();
+        lb.setLoadBalancerJoinVip6Set(null);
+        Set<LoadBalancerJoinVip6> newLbVip6Setconfig = new HashSet<LoadBalancerJoinVip6>();
+        lb.setLoadBalancerJoinVip6Set(newLbVip6Setconfig);
+        for (LoadBalancerJoinVip6 jv6 : loadBalancerJoinVip6SetConfig) {
+            LoadBalancerJoinVip6 jv = new LoadBalancerJoinVip6(lb.getPort(), lb, jv6.getVirtualIp());
+            entityManager.persist(jv);
+        }
+    }*/
 
     private LoadBalancer setLbIdOnChildObjects(final LoadBalancer loadBalancer) {
         if (loadBalancer.getNodes() != null) {
@@ -105,5 +134,12 @@ public class LoadBalancerRepository {
 
         entityManager.flush();
         return loadBalancer;
+    }
+
+    public Integer getNumNonDeletedLoadBalancersForAccount(Integer accountId) {
+        Query query = entityManager.createNativeQuery(
+                "select count(account_id) from load_balancer where status != 'DELETED' and account_id = :accountId").setParameter("accountId", accountId);
+
+        return ((BigInteger) query.getSingleResult()).intValue();
     }
 }
