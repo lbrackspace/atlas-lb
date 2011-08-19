@@ -4,6 +4,12 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @javax.persistence.Entity
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        name = "vendor",
+        discriminatorType = DiscriminatorType.STRING
+)
+@DiscriminatorValue("CORE")
 @Table(name = "load_balancer_virtual_ipv6")
 public class LoadBalancerJoinVip6 implements Serializable {
     private final static long serialVersionUID = 532512316L;
@@ -18,7 +24,8 @@ public class LoadBalancerJoinVip6 implements Serializable {
         @Column(name = "virtual_ipv6_id")
         private Integer virtualIpId;
 
-        public Id() {}
+        public Id() {
+        }
 
         public Id(Integer loadBalancerId, Integer virtualIpId) {
             this.loadBalancerId = loadBalancerId;
@@ -61,7 +68,8 @@ public class LoadBalancerJoinVip6 implements Serializable {
     @JoinColumn(name = "virtual_ipv6_id", insertable = false, updatable = false)
     private VirtualIpv6 virtualIp;
 
-    public LoadBalancerJoinVip6() {}
+    public LoadBalancerJoinVip6() {
+    }
 
     public LoadBalancerJoinVip6(Integer port, LoadBalancer loadBalancer, VirtualIpv6 virtualIpv6) {
         this.port = port;

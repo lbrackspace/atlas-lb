@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema elementFormDefault="qualified"
-            targetNamespace="http://docs.openstack.org/loadbalancers/api/v1.1"
-            xmlns:tns="http://docs.openstack.org/loadbalancers/api/v1.1"
+            targetNamespace="http://docs.openstack.org/atlas/api/v1.1"
+            xmlns:tns="http://docs.openstack.org/atlas/api/v1.1"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
             jaxb:version="2.1"
             xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
             jaxb:extensionBindingPrefixes="xjc">
 
-    <xsd:import schemaLocation="CoreGlobal.xsd" namespace="http://docs.openstack.org/loadbalancers/api/global/v1.1"/>
+    <xsd:import schemaLocation="CoreGlobal.xsd" namespace="http://docs.openstack.org/atlas/api/v1.1/global"/>
 
     <xsd:element name="lbaasException" type="tns:lbaasException"/>
     <xsd:complexType name="lbaasException">

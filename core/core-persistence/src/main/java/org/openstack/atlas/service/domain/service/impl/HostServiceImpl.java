@@ -86,13 +86,13 @@ public class HostServiceImpl implements HostService {
             dbHost.setIpv6Public(queueHost.getIpv6Public());
         }
 
-        if (queueHost.getIpv4Servicenet() != null) {
+        if (queueHost.getIpv4ServiceNet() != null) {
 
-            dbHost.setIpv4Servicenet(queueHost.getIpv4Servicenet());
+            dbHost.setIpv4ServiceNet(queueHost.getIpv4ServiceNet());
         }
-        if (queueHost.getIpv6Servicenet() != null) {
+        if (queueHost.getIpv6ServiceNet() != null) {
 
-            dbHost.setIpv6Servicenet(queueHost.getIpv6Servicenet());
+            dbHost.setIpv6ServiceNet(queueHost.getIpv6ServiceNet());
         }
 
         hostRepository.update(dbHost);

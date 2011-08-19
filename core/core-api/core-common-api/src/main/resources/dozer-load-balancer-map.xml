@@ -5,7 +5,7 @@
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
 
     <mapping map-null="false">
-        <class-a bean-factory="org.openstack.atlas.api.mapper.dozer.factory.LoadBalancerFactory">
+        <class-a bean-factory="org.openstack.atlas.api.mapper.dozer.factory.CoreLoadBalancerFactory">
             org.openstack.atlas.core.api.v1.LoadBalancer
         </class-a>
         <class-b>

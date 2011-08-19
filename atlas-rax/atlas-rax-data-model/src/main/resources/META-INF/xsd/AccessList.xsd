@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema elementFormDefault="qualified"
+            targetNamespace="http://docs.openstack.org/atlas/api/v1.1/extensions/rax"
+            xmlns:tns="http://docs.openstack.org/atlas/api/v1.1/extensions/rax"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+            jaxb:version="2.1"
+            xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+            jaxb:extensionBindingPrefixes="xjc">
+
+    <xsd:element name="accessList" type="tns:accessList"/>
+    <xsd:complexType name="accessList">
+        <xsd:sequence>
+            <xsd:element name="networkItem" type="tns:networkItem" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="networkItem" type="tns:networkItem"/>
+    <xsd:complexType name="networkItem">
+        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:attribute name="address" type="xsd:string"/>
+        <xsd:attribute name="type1" type="tns:networkItemType"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="networkItemType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ALLOW"/>
+            <xsd:enumeration value="DENY"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+</xsd:schema>

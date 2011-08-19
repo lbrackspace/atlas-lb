@@ -7,8 +7,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 @javax.persistence.Entity
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        name = "vendor",
+        discriminatorType = DiscriminatorType.STRING
+)
+@DiscriminatorValue("CORE")
 @Table(name = "virtual_ipv4")
-public class VirtualIp extends Entity implements Serializable {
+public class VirtualIp extends org.openstack.atlas.service.domain.entity.Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @OneToMany(mappedBy = "virtualIp")

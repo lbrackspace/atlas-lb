@@ -10,14 +10,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 @javax.persistence.Entity
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        name = "vendor",
+        discriminatorType = DiscriminatorType.STRING
+)
+@DiscriminatorValue("CORE")
 @Table(name = "virtual_ipv6")
-public class VirtualIpv6 extends Entity implements Serializable {
-
+public class VirtualIpv6 extends org.openstack.atlas.service.domain.entity.Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
     @OneToMany(mappedBy = "virtualIp")
     private Set<LoadBalancerJoinVip6> loadBalancerJoinVip6Set = new HashSet<LoadBalancerJoinVip6>();
 

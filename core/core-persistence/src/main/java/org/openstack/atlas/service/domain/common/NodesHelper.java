@@ -1,9 +1,8 @@
 package org.openstack.atlas.service.domain.common;
 
+import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
-import org.openstack.atlas.service.domain.entity.NodeCondition;
-import org.openstack.atlas.service.domain.entity.NodeStatus;
 
 import java.util.HashSet;
 import java.util.Set;

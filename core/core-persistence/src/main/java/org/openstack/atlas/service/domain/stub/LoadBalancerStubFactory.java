@@ -1,6 +1,6 @@
 package org.openstack.atlas.service.domain.stub;
 
-import org.openstack.atlas.core.api.v1.SessionPersistence;
+import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
 
 import java.util.Calendar;
@@ -102,8 +102,8 @@ public class LoadBalancerStubFactory {
     }
 
 
-    public static org.openstack.atlas.service.domain.entity.LoadBalancer createHydratedDomainLoadBalancer() {
-        org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer = new org.openstack.atlas.service.domain.entity.LoadBalancer();
+    public static LoadBalancer createHydratedDomainLoadBalancer() {
+        LoadBalancer loadBalancer = new LoadBalancer();
 
         loadBalancer.setId(LOAD_BALANCER_ID);
         loadBalancer.setName(LOAD_BALANCER_NAME);
@@ -112,7 +112,7 @@ public class LoadBalancerStubFactory {
         loadBalancer.setAlgorithm(org.openstack.atlas.service.domain.entity.LoadBalancerAlgorithm.valueOf(LOAD_BALANCER_ALGORITHM));
         loadBalancer.setStatus(org.openstack.atlas.service.domain.entity.LoadBalancerStatus.valueOf(LOAD_BALANCER_STATUS));
 
-        org.openstack.atlas.service.domain.entity.Node node1 = new org.openstack.atlas.service.domain.entity.Node();
+        Node node1 = new Node();
         node1.setId(NODE1_ID);
         node1.setAddress(NODE1_ADDRESS);
         node1.setPort(NODE1_PORT);
@@ -120,7 +120,7 @@ public class LoadBalancerStubFactory {
         node1.setStatus(org.openstack.atlas.service.domain.entity.NodeStatus.valueOf(NODE1_STATUS));
         loadBalancer.getNodes().add(node1);
 
-        org.openstack.atlas.service.domain.entity.Node node2 = new org.openstack.atlas.service.domain.entity.Node();
+        Node node2 = new Node();
         node2.setId(NODE2_ID);
         node2.setAddress(NODE2_ADDRESS);
         node2.setPort(NODE2_PORT);
@@ -128,7 +128,7 @@ public class LoadBalancerStubFactory {
         node2.setStatus(org.openstack.atlas.service.domain.entity.NodeStatus.valueOf(NODE2_STATUS));
         loadBalancer.getNodes().add(node2);
 
-        org.openstack.atlas.service.domain.entity.VirtualIp virtualIp1 = new org.openstack.atlas.service.domain.entity.VirtualIp();
+        VirtualIp virtualIp1 = new VirtualIp();
         virtualIp1.setId(VIP1_ID);
         virtualIp1.setAddress(VIP1_ADDRESS);
         virtualIp1.setVipType(org.openstack.atlas.service.domain.entity.VirtualIpType.valueOf(VIP1_TYPE));
@@ -137,12 +137,12 @@ public class LoadBalancerStubFactory {
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip(LOAD_BALANCER_PORT, loadBalancer, virtualIp1);
         loadBalancer.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);
 
-        org.openstack.atlas.service.domain.entity.ConnectionThrottle throttle = new org.openstack.atlas.service.domain.entity.ConnectionThrottle();
+        ConnectionThrottle throttle = new ConnectionThrottle();
         throttle.setMaxRequestRate(CONNECTION_THROTTLE_MAX_REQUEST_RATE);
         throttle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
         loadBalancer.setConnectionThrottle(throttle);
 
-        org.openstack.atlas.service.domain.entity.HealthMonitor healthMonitor = new org.openstack.atlas.service.domain.entity.HealthMonitor();
+        HealthMonitor healthMonitor = new HealthMonitor();
         healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
         healthMonitor.setDelay(HEALTH_MONITOR_DELAY);
         healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);

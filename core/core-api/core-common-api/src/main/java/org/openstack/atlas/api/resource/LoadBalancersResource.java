@@ -23,7 +23,7 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
-@Controller
+@Controller("CORE-LoadBalancersResource")
 @Scope("request")
 public class LoadBalancersResource extends CommonDependencyProvider {
     private final Logger LOG = Logger.getLogger(LoadBalancersResource.class);

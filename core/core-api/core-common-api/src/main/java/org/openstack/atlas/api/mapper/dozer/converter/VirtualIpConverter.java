@@ -5,9 +5,9 @@ import org.openstack.atlas.core.api.v1.IpVersion;
 import org.openstack.atlas.core.api.v1.VipType;
 import org.openstack.atlas.core.api.v1.VirtualIp;
 import org.openstack.atlas.core.api.v1.VirtualIps;
+import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip6;
-import org.openstack.atlas.service.domain.entity.VirtualIpType;
 import org.openstack.atlas.service.domain.exception.NoMappableConstantException;
 import org.openstack.atlas.service.domain.pojo.VirtualIpDozerWrapper;
 import org.openstack.atlas.common.ip.exception.IPStringConversionException1;
@@ -91,7 +91,7 @@ public class VirtualIpConverter implements CustomConverter {
 
                     } else if (vip.getIpVersion().equals(IpVersion.IPV6)) {
                         LoadBalancerJoinVip6 loadBalancerJoinVip6 = new LoadBalancerJoinVip6();
-                        org.openstack.atlas.service.domain.entity.VirtualIpv6 domainVip = new org.openstack.atlas.service.domain.entity.VirtualIpv6();
+                        VirtualIpv6 domainVip = new VirtualIpv6();
                         domainVip.setId(vip.getId());
                         loadBalancerJoinVip6.setVirtualIp(domainVip);
                         loadBalancerJoinVip6Set.add(loadBalancerJoinVip6);
@@ -99,7 +99,7 @@ public class VirtualIpConverter implements CustomConverter {
                 } else {
                     if (vip.getType() != null && vip.getType().equals(VipType.PUBLIC)) {
                         LoadBalancerJoinVip6 loadBalancerJoinVip6 = new LoadBalancerJoinVip6();
-                        org.openstack.atlas.service.domain.entity.VirtualIpv6 domainVip = new org.openstack.atlas.service.domain.entity.VirtualIpv6();
+                        VirtualIpv6 domainVip = new VirtualIpv6();
                         domainVip.setId(vip.getId());
                         loadBalancerJoinVip6.setVirtualIp(domainVip);
                         loadBalancerJoinVip6Set.add(loadBalancerJoinVip6);
@@ -114,7 +114,10 @@ public class VirtualIpConverter implements CustomConverter {
                 }
             }
 
-            return new VirtualIpDozerWrapper(loadBalancerJoinVipSet, loadBalancerJoinVip6Set);
+            VirtualIpDozerWrapper dozerWrapper = new VirtualIpDozerWrapper();
+            dozerWrapper.setLoadBalancerJoinVipSet(loadBalancerJoinVipSet);
+            dozerWrapper.setLoadBalancerJoinVip6Set(loadBalancerJoinVip6Set);
+            return dozerWrapper;
         }
 
         if (sourceFieldValue instanceof VirtualIps) {
@@ -144,7 +147,7 @@ public class VirtualIpConverter implements CustomConverter {
                     loadBalancerJoinVipSet.add(loadBalancerJoinVip);
                 } else if (vip.getIpVersion().equals(IpVersion.IPV6)) {
                     LoadBalancerJoinVip6 loadBalancerJoinVip6 = new LoadBalancerJoinVip6();
-                    org.openstack.atlas.service.domain.entity.VirtualIpv6 domainVip = new org.openstack.atlas.service.domain.entity.VirtualIpv6();
+                    VirtualIpv6 domainVip = new VirtualIpv6();
                     domainVip.setId(vip.getId());
 
                     loadBalancerJoinVip6.setVirtualIp(domainVip);
@@ -152,7 +155,10 @@ public class VirtualIpConverter implements CustomConverter {
                 }
             }
 
-            return new VirtualIpDozerWrapper(loadBalancerJoinVipSet, loadBalancerJoinVip6Set);
+            VirtualIpDozerWrapper dozerWrapper = new VirtualIpDozerWrapper();
+            dozerWrapper.setLoadBalancerJoinVipSet(loadBalancerJoinVipSet);
+            dozerWrapper.setLoadBalancerJoinVip6Set(loadBalancerJoinVip6Set);
+            return dozerWrapper;
         }
 
         throw new NoMappableConstantException("Cannot map source type: " + sourceClass.getName());
@@ -207,7 +213,7 @@ public class VirtualIpConverter implements CustomConverter {
         LoadBalancerJoinVip6 loadBalancerJoinVip6 = new LoadBalancerJoinVip6();
         Set<LoadBalancerJoinVip6> loadBalancerJoinVip6Set = new HashSet<LoadBalancerJoinVip6>();
 
-        org.openstack.atlas.service.domain.entity.VirtualIpv6 domainVip6 = new org.openstack.atlas.service.domain.entity.VirtualIpv6();
+        VirtualIpv6 domainVip6 = new VirtualIpv6();
         domainVip6.setId(vip.getId());
 
         loadBalancerJoinVip6.setVirtualIp(domainVip6);

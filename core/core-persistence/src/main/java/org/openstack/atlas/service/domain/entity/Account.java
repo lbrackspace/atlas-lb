@@ -1,20 +1,24 @@
 package org.openstack.atlas.service.domain.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 @javax.persistence.Entity
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        name = "vendor",
+        discriminatorType = DiscriminatorType.STRING
+)
+@DiscriminatorValue("CORE")
 @Table(name = "account")
-public class Account implements Serializable{
+public class Account implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @Id
-    @Column(name="id",unique=true,nullable=false)
+    @Column(name = "id", unique = true, nullable = false)
     private Integer id;
-    
-    @Column(name="sha1sum_ipv6",unique=true,nullable=false)
+
+    @Column(name = "sha1sum_ipv6", unique = true, nullable = false)
     private String sha1SumForIpv6;
 
     public static long getSerialVersionUID() {

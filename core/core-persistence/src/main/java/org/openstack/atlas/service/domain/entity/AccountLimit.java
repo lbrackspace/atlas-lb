@@ -1,13 +1,20 @@
 package org.openstack.atlas.service.domain.entity;
 
+
 import javax.persistence.*;
 import java.io.Serializable;
 
 @javax.persistence.Entity
-@Table(name = "account_limits")
-public class AccountLimit extends Entity implements Serializable {
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        name = "vendor",
+        discriminatorType = DiscriminatorType.STRING
+)
+@DiscriminatorValue("CORE")
+@Table(name = "account_limit")
+public class AccountLimit extends org.openstack.atlas.service.domain.entity.Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
- 
+
     @Column(name = "account_id", nullable = false)
     private int accountId;
 
@@ -50,7 +57,4 @@ public class AccountLimit extends Entity implements Serializable {
         return String.format(format,tid,this.accountId,this.limit,tlimitType,tuserName);
     }
 }
-
-
-
 

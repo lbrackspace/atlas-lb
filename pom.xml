@@ -25,7 +25,7 @@
         <module>api</module>
         <module>logs</module>
         <module>jobs</module>
-        <module>rax</module>
+        <module>atlas-rax</module>
         <module>core</module>
     </modules>
 

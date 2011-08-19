@@ -76,9 +76,9 @@ public class VirtualIpServiceImpl implements VirtualIpService {
 
     @Transactional
     public void addAccountRecord(Integer accountId) throws NoSuchAlgorithmException {
-        Set<Integer> accountsInAccountTable = new HashSet<Integer>(virtualIpv6Repository.getAccountIdsAlreadyShaHashed());
+        Set<Integer> accountsInAccount = new HashSet<Integer>(virtualIpv6Repository.getAccountIdsAlreadyShaHashed());
 
-        if (accountsInAccountTable.contains(accountId)) return;
+        if (accountsInAccount.contains(accountId)) return;
 
         Account account = new Account();
         String accountIdStr = String.format("%d", accountId);

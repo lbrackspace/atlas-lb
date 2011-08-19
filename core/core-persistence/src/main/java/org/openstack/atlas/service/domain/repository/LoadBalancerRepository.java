@@ -4,14 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.common.Constants;
 import org.openstack.atlas.service.domain.entity.*;
-import org.openstack.atlas.service.domain.exception.BadRequestException;
-import org.openstack.atlas.service.domain.exception.DeletedStatusException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
-import org.openstack.atlas.service.domain.pojo.AccountLoadBalancer;
-import org.openstack.atlas.service.domain.pojo.CustomQuery;
-import org.openstack.atlas.service.domain.pojo.LbQueryStatus;
-import org.openstack.atlas.service.domain.pojo.QueryParameter;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
 import org.openstack.atlas.service.domain.entity.VirtualIp;
@@ -19,21 +12,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static org.openstack.atlas.service.domain.entity.LoadBalancerStatus.DELETED;
 
 import java.util.Calendar;
 import java.util.Set;

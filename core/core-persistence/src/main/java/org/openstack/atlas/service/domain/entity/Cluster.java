@@ -6,13 +6,19 @@ import java.util.HashSet;
 import java.util.Set;
 
 @javax.persistence.Entity
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        name = "vendor",
+        discriminatorType = DiscriminatorType.STRING
+)
+@DiscriminatorValue("CORE")
 @Table(name = "cluster")
-public class Cluster extends Entity implements Serializable {
+public class Cluster extends org.openstack.atlas.service.domain.entity.Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @Column(name = "name", unique = true, nullable = false)
     private String name;
-    
+
     @Column(name = "description", nullable = false)
     private String description;
 
@@ -22,14 +28,14 @@ public class Cluster extends Entity implements Serializable {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @OneToMany(fetch=FetchType.LAZY,mappedBy="cluster")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "cluster")
     private Set<VirtualIp> virtualIps = new HashSet<VirtualIp>();
 
-    @Column(name = "cluster_ipv6_cidr",length=43,nullable=true)
+    @Column(name = "cluster_ipv6_cidr", length = 43, nullable = true)
     private String clusterIpv6Cidr;
 
     public Set<VirtualIp> getVirtualIps() {
-        if(virtualIps == null) {
+        if (virtualIps == null) {
             virtualIps = new HashSet<VirtualIp>();
         }
         return virtualIps;

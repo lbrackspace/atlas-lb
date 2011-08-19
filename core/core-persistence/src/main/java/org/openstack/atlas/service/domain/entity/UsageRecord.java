@@ -5,8 +5,14 @@ import java.io.Serializable;
 import java.util.Calendar;
 
 @javax.persistence.Entity
-@Table(name="load_balancer_usage")
-public class UsageRecord extends Entity implements Serializable {
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        name = "vendor",
+        discriminatorType = DiscriminatorType.STRING
+)
+@DiscriminatorValue("CORE")
+@Table(name = "load_balancer_usage")
+public class UsageRecord extends org.openstack.atlas.service.domain.entity.Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @ManyToOne

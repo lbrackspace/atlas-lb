@@ -5,21 +5,27 @@ import java.io.Serializable;
 import java.util.List;
 
 @javax.persistence.Entity
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        name = "vendor",
+        discriminatorType = DiscriminatorType.STRING
+)
+@DiscriminatorValue("CORE")
 @Table(name = "host")
-public class Host extends Entity implements Serializable {
+public class Host extends org.openstack.atlas.service.domain.entity.Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "ipv6_servicenet", nullable = true)
-    private String ipv6Servicenet;
+    @Column(name = "ipv6_service_net", nullable = true)
+    private String ipv6ServiceNet;
 
     @Column(name = "ipv6_public", nullable = true)
     private String ipv6Public;
 
-    @Column(name = "ipv4_servicenet", nullable = true)
-    private String ipv4Servicenet;
+    @Column(name = "ipv4_service_net", nullable = true)
+    private String ipv4ServiceNet;
 
     @Column(name = "ipv4_public", nullable = true)
     private String ipv4Public;
@@ -127,12 +133,12 @@ public class Host extends Entity implements Serializable {
         return sb.toString();
     }
 
-    public String getIpv6Servicenet() {
-        return ipv6Servicenet;
+    public String getIpv6ServiceNet() {
+        return ipv6ServiceNet;
     }
 
-    public void setIpv6Servicenet(String ipv6Servicenet) {
-        this.ipv6Servicenet = ipv6Servicenet;
+    public void setIpv6ServiceNet(String ipv6ServiceNet) {
+        this.ipv6ServiceNet = ipv6ServiceNet;
     }
 
     public String getIpv6Public() {
@@ -151,12 +157,12 @@ public class Host extends Entity implements Serializable {
         this.ipv4Public = ipv4Public;
     }
 
-    public String getIpv4Servicenet() {
-        return ipv4Servicenet;
+    public String getIpv4ServiceNet() {
+        return ipv4ServiceNet;
     }
 
-    public void setIpv4Servicenet(String ipv4Servicenet) {
-        this.ipv4Servicenet = ipv4Servicenet;
+    public void setIpv4ServiceNet(String ipv4ServiceNet) {
+        this.ipv4ServiceNet = ipv4ServiceNet;
     }
 
     public HostStatus getHostStatus() {

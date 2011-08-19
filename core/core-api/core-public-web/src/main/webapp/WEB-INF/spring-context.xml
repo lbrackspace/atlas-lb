@@ -22,10 +22,10 @@
             <entry key="json" value="application/json"/>
             <entry key="atom" value="application/atom+xml"/>
         </jaxrs:extensionMappings>
-        <jaxrs:providers>
-            <ref bean="jsonProvider"/>
+        <!--<jaxrs:providers>-->
+            <!--<ref bean="jsonProvider"/>-->
             <!--<ref bean="atomProvider"/>-->
-        </jaxrs:providers>
+        <!--</jaxrs:providers>-->
     </jaxrs:server>
 
     <bean id="loadBalancingPublicImplFactory" class="org.apache.cxf.jaxrs.spring.SpringResourceFactory">

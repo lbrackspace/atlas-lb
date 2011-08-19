@@ -10,8 +10,8 @@ import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
 import org.openstack.atlas.core.api.v1.VipType;
 import org.openstack.atlas.datamodel.NodeCondition;
+import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
-import org.openstack.atlas.service.domain.entity.NodeStatus;
 import org.openstack.atlas.service.domain.stub.LoadBalancerStubFactory;
 
 import java.util.List;
@@ -59,7 +59,7 @@ public class LoadBalancerMappingTest {
         public void should_map_the_node_list_across_the_two_load_balancers_and_the_properties_of_individual_nodes() {
             Assert.assertEquals(dataModelLoadBalancer.getNodes().size(), domainLoadBalancer.getNodes().size());
 
-            for (org.openstack.atlas.service.domain.entity.Node node : domainLoadBalancer.getNodes()) {
+            for (Node node : domainLoadBalancer.getNodes()) {
                 if (!(node.getId() == 1 || node.getId() == 2))
                     Assert.fail("Did not map the id of the node correctly");
                 if (!(node.getPort() == 80 || node.getPort() == 81))
@@ -97,7 +97,7 @@ public class LoadBalancerMappingTest {
 
         @Test
         public void should_map_health_monitor_and_its_properties() {
-            org.openstack.atlas.service.domain.entity.HealthMonitor healthMonitor = domainLoadBalancer.getHealthMonitor();
+            HealthMonitor healthMonitor = domainLoadBalancer.getHealthMonitor();
             Assert.assertEquals(null, healthMonitor.getId());
             Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getAttemptsBeforeDeactivation(), healthMonitor.getAttemptsBeforeDeactivation());
             Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getDelay(), healthMonitor.getDelay());

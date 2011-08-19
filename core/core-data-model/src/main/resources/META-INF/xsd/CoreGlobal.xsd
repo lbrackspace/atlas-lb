@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema elementFormDefault="qualified"
-            targetNamespace="http://docs.openstack.org/loadbalancers/api/global/v1.1"
-            xmlns:tns="http://docs.openstack.org/loadbalancers/api/global/v1.1"
+            targetNamespace="http://docs.openstack.org/atlas/api/v1.1/global"
+            xmlns:tns="http://docs.openstack.org/atlas/api/v1.1/global"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
             jaxb:version="2.1"

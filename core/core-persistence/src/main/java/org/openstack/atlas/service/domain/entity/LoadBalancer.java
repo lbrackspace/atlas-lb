@@ -9,6 +9,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 @javax.persistence.Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        name = "vendor",
+        discriminatorType = DiscriminatorType.STRING
+)
+@DiscriminatorValue("CORE")
 @Table(name = "load_balancer")
 public class LoadBalancer extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
@@ -100,7 +106,7 @@ public class LoadBalancer extends Entity implements Serializable {
         this.nodes = nodes;
     }
 
-    public Set<UsageRecord> getUsage() {
+    public Set<UsageRecord> getUsageRecordSet() {
         return usage;
     }
 
@@ -190,11 +196,6 @@ public class LoadBalancer extends Entity implements Serializable {
 
     private static String valueOrNull(Object obj) {
         return obj == null ? "null" : obj.toString();
-    }
-
-    public void addNode(Node node) {
-        node.setLoadBalancer(this);
-        nodes.add(node);
     }
 
     public boolean isUsingSsl() {

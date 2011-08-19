@@ -4,6 +4,12 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @javax.persistence.Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        name = "vendor",
+        discriminatorType = DiscriminatorType.STRING
+)
+@DiscriminatorValue("CORE")
 @Table(name = "limit_type")
 public class LimitType implements Serializable {
     private final static long serialVersionUID = 532512316L;
@@ -44,11 +50,11 @@ public class LimitType implements Serializable {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         String format = "{name=\"%s\" description=\"%s\" defaultValue=\"%s\" }";
-        String tname = (this.name==null)?"null":this.name.toString();
-        String tdescription = (this.description==null)?"null":this.description;
-        String tdefaultValue = String.format("%d",this.defaultValue);
-        return String.format(format,tname,tdescription,tdefaultValue);
+        String tname = (this.name == null) ? "null" : this.name.toString();
+        String tdescription = (this.description == null) ? "null" : this.description;
+        String tdefaultValue = String.format("%d", this.defaultValue);
+        return String.format(format, tname, tdescription, tdefaultValue);
     }
 }
