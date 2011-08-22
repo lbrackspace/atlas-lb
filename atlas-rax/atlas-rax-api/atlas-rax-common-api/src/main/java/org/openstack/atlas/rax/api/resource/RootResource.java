@@ -1,7 +1,6 @@
-package org.openstack.atlas.rax.api.resources;
+package org.openstack.atlas.rax.api.resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 

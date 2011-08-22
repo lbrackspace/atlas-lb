@@ -1,4 +1,4 @@
-package org.openstack.atlas.rax.api.resources;
+package org.openstack.atlas.rax.api.resource;
 
 import org.openstack.atlas.api.response.ResponseFactory;
 import org.openstack.atlas.api.v1.extensions.rax.AccessList;

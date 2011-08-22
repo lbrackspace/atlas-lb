@@ -12,6 +12,7 @@ import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.VirtualIpService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
@@ -31,6 +32,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
     protected Integer accountId;
 
     @Autowired
+    @Qualifier("RAX-RaxLoadBalancerValidator")
     protected ResourceValidator<LoadBalancer> validator;
     @Autowired
     protected LoadBalancerService loadbalancerService;

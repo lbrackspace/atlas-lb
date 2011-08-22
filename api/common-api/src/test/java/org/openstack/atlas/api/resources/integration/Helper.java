@@ -31,7 +31,7 @@ public class Helper {
         final Map<String, String> initParams = new HashMap<String, String>();
 
         initParams.put("com.sun.jersey.config.property.packages",
-                "org.openstack.atlas.api.resources");
+                "org.openstack.atlas.api.resource");
 
         SelectorThread threadSelector = GrizzlyWebContainerFactory.create(BASE_URI, initParams);
         return threadSelector;
