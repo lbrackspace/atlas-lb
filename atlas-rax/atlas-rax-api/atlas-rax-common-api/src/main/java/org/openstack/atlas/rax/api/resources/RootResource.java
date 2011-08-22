@@ -21,7 +21,7 @@ public class RootResource {
     @PathParam("id")
     private Integer accountId;
     @Autowired
-    @Qualifier("RAX-LoadBalancersResource")
+    //@Qualifier("RAX-LoadBalancersResource")
     private LoadBalancersResource loadBalancersResource;
 
     @Path("loadbalancers")

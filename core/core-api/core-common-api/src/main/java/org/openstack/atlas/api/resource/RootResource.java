@@ -10,7 +10,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 
-@Controller("CORE-RootResource")
+@Controller//("CORE-RootResource")
 @Scope(value = "request")
 @Path("{id: [-+]?[0-9][0-9]*}")
 public class RootResource {
@@ -21,7 +21,7 @@ public class RootResource {
     @PathParam("id")
     private Integer accountId;
     @Autowired
-    @Qualifier("CORE-LoadBalancersResource")
+    //@Qualifier("CORE-LoadBalancersResource")
     private LoadBalancersResource loadBalancersResource;
 
     @Path("loadbalancers")

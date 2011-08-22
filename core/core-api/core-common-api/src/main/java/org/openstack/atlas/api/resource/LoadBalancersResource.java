@@ -23,19 +23,19 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
-@Controller("CORE-LoadBalancersResource")
+@Controller//("CORE-LoadBalancersResource")
 @Scope("request")
 public class LoadBalancersResource extends CommonDependencyProvider {
     private final Logger LOG = Logger.getLogger(LoadBalancersResource.class);
     private HttpHeaders requestHeaders;
-    private Integer accountId;
+    protected Integer accountId;
 
     @Autowired
-    private ResourceValidator<LoadBalancer> validator;
+    protected ResourceValidator<LoadBalancer> validator;
     @Autowired
-    private LoadBalancerService loadbalancerService;
+    protected LoadBalancerService loadbalancerService;
     @Autowired
-    private VirtualIpService virtualIpService;
+    protected VirtualIpService virtualIpService;
 
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
