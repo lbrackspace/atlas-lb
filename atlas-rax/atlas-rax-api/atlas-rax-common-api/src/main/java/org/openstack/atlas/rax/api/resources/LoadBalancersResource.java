@@ -70,7 +70,7 @@ public class LoadBalancersResource extends org.openstack.atlas.api.resource.Load
             org.openstack.atlas.service.domain.entity.LoadBalancer mappedLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
             mappedLb.setAccountId(accountId);
 
-            RaxLoadBalancer raxLoadBalancer = (RaxLoadBalancer) mappedLb;
+            RaxLoadBalancer raxLoadBalancer = dozerMapper.map(mappedLb, RaxLoadBalancer.class);
             raxLoadBalancer.setAccessLists(accessLists);
             raxLoadBalancer.setCrazyName(crazyName);
 

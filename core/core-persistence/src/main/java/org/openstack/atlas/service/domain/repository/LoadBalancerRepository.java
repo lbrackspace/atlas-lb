@@ -101,7 +101,7 @@ public class LoadBalancerRepository {
         }
     }*/
 
-    private LoadBalancer setLbIdOnChildObjects(final LoadBalancer loadBalancer) {
+    protected LoadBalancer setLbIdOnChildObjects(final LoadBalancer loadBalancer) {
         if (loadBalancer.getNodes() != null) {
             for (Node node : loadBalancer.getNodes()) {
                 node.setLoadBalancer(loadBalancer);
