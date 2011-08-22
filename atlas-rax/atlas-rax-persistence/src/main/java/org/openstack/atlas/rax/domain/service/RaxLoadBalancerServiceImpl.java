@@ -8,8 +8,12 @@ import org.openstack.atlas.service.domain.exception.PersistenceServiceException;
 import org.openstack.atlas.service.domain.service.*;
 import org.openstack.atlas.service.domain.service.impl.LoadBalancerServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Service
+@Primary
 public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
     private final Log LOG = LogFactory.getLog(RaxLoadBalancerServiceImpl.class);
 
