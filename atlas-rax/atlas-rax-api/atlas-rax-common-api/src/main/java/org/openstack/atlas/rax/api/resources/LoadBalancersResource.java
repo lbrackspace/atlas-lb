@@ -76,7 +76,7 @@ public class LoadBalancersResource extends org.openstack.atlas.api.resource.Load
 
             virtualIpService.addAccountRecord(accountId);
 
-            org.openstack.atlas.service.domain.entity.LoadBalancer newlyCreatedLb = loadbalancerService.create(mappedLb);
+            org.openstack.atlas.service.domain.entity.LoadBalancer newlyCreatedLb = loadbalancerService.create(raxLoadBalancer);
             MessageDataContainer msg = new MessageDataContainer();
             msg.setLoadBalancer(newlyCreatedLb);
             asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_LOADBALANCER, msg);
