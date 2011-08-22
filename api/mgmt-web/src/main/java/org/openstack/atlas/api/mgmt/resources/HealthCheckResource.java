@@ -4,6 +4,7 @@ import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HealthCheck;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HealthChecks;
+import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
 import javax.ws.rs.GET;
@@ -30,7 +31,13 @@ public class HealthCheckResource extends ManagementDependencyProvider {
         check.setStatus("ACTIVE");
         Long time = System.currentTimeMillis();
         try {
-            reverseProxyLoadBalancerService.getSubnetMappings(hostRepository.getDefaultActiveHost());
+            Host host = new Host();
+            try {
+                host = hostRepository.getDefaultActiveHost();
+            } catch (Exception e) {
+
+            }
+            reverseProxyLoadBalancerService.getSubnetMappings(host);
         } catch (Exception e) {
             check.setMessage(e.getMessage());
             check.setStatus("INACTIVE");
