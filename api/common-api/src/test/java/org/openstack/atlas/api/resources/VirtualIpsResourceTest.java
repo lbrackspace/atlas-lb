@@ -1,27 +1,25 @@
 package org.openstack.atlas.api.resources;
 
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import junit.framework.Assert;
+import org.dozer.DozerBeanMapper;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
+import org.openstack.atlas.service.domain.entities.VirtualIpType;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
-import junit.framework.Assert;
-
-import org.dozer.DozerBeanMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
-import org.openstack.atlas.service.domain.entities.VirtualIp;
-import org.openstack.atlas.service.domain.entities.VirtualIpType;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @RunWith(Enclosed.class)
 public class VirtualIpsResourceTest {
@@ -64,6 +62,7 @@ public class VirtualIpsResourceTest {
             Assert.assertEquals(1, domainLoadBalancer.getLoadBalancerJoinVipSet().size());
         }
 
+        @Ignore // TODO : Temporary mitigation for SITESLB-1519
         @Test
         public void should_map_correct_virtualip_elements_on_loadbalancer() {
             Assert.assertEquals(new Integer(100), domainLoadBalancer.getId());

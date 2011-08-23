@@ -98,11 +98,12 @@ public class VirtualIpConverter implements CustomConverter {
                     }
                 } else {
                     if (vip.getType() != null && vip.getType().equals(VipType.PUBLIC)) {
-                        LoadBalancerJoinVip6 loadBalancerJoinVip6 = new LoadBalancerJoinVip6();
+                        // TODO : Temporary mitigation for SITESLB - 1519
+                       /* LoadBalancerJoinVip6 loadBalancerJoinVip6 = new LoadBalancerJoinVip6();
                         org.openstack.atlas.service.domain.entities.VirtualIpv6 domainVip = new org.openstack.atlas.service.domain.entities.VirtualIpv6();
                         domainVip.setId(vip.getId());
                         loadBalancerJoinVip6.setVirtualIp(domainVip);
-                        loadBalancerJoinVip6Set.add(loadBalancerJoinVip6);
+                        loadBalancerJoinVip6Set.add(loadBalancerJoinVip6);    */
 
                         vip.setIpVersion(IpVersion.IPV4);
                         loadBalancerJoinVipSet = buildLoadBalancerJoinVipSet(vip);
