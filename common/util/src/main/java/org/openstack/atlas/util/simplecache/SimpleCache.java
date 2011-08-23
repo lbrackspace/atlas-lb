@@ -13,12 +13,29 @@ import java.util.Set;
 
 public class SimpleCache<E> {
 
+    private int count = 0;
+    private int cleanExpiredOn = -1;
     private Map<String, CacheEntry<E>> cache;
     private long ttl;
 
     public SimpleCache() {
         cache = new HashMap<String, CacheEntry<E>>();
         this.ttl = 300; // Use negative values to specify No expiration
+    }
+
+    public int cleanExpiredByCount() {
+        boolean shouldClean=false;
+        synchronized(this){
+            if (cleanExpiredOn > 0 && count >= cleanExpiredOn) {
+                count = 0;
+                shouldClean = true;
+            }
+        }
+        if (shouldClean) {
+            return removeExpired();
+        } else {
+            return -1;
+        }
     }
 
     public SimpleCache(long ttl) {
@@ -93,20 +110,20 @@ public class SimpleCache<E> {
     }
 
     public int numExpiredKeys() {
-        int count = 0;
+        int expiredCount = 0;
         Set<Entry<String, CacheEntry<E>>> entrySet;
         synchronized (this) {
             entrySet = new HashSet<Entry<String, CacheEntry<E>>>(cache.entrySet());
             for (Entry<String, CacheEntry<E>> e : entrySet) {
                 if (e.getValue().isExpired()) {
-                    count++;
+                    expiredCount++;
                 }
             }
         }
-        return count;
+        return expiredCount;
     }
 
-    public void clear(){
+    public void clear() {
         cache.clear();
     }
 
@@ -157,5 +174,21 @@ public class SimpleCache<E> {
             }
         }
         return n;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public int getCleanExpiredOn() {
+        return cleanExpiredOn;
+    }
+
+    public void setCleanExpiredOn(int cleanExpiredOn) {
+        this.cleanExpiredOn = cleanExpiredOn;
     }
 }

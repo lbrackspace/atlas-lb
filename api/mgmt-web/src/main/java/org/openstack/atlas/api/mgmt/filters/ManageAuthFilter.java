@@ -47,8 +47,7 @@ public class ManageAuthFilter implements Filter {
     private static final String LDAPUSER = "LDAPUser";
     private static final Pattern jsonUriPattern = Pattern.compile(".*\\.json$", Pattern.CASE_INSENSITIVE);
     private static final Pattern xmlUriPattern = Pattern.compile(".*\\.xml$", Pattern.CASE_INSENSITIVE);
-    private static final int cacheCleanFrequency = 4096; // Number of requests be fore attempting a cache clean sweep
-    private static int requestCount; // Tracks number of requests for cache clearing
+
 
     static {
         invalidAuth = new BadRequest();
@@ -62,7 +61,6 @@ public class ManageAuthFilter implements Filter {
         unAuthorized = new BadRequest();
         unAuthorized.setCode(SC_UNAUTHORIZED);
         unAuthorized.setMessage("eDir bind failed");
-        requestCount = 0;
     }
 
     @Override
@@ -72,6 +70,7 @@ public class ManageAuthFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest sreq, ServletResponse sresp, FilterChain fc) throws IOException, ServletException {
+        int purged;
         String user;
         String password;
         Set<String> groups;
@@ -82,18 +81,11 @@ public class ManageAuthFilter implements Filter {
         AcceptTypes ats = AcceptTypes.getPrefferedAcceptTypes(accept);
         String acceptType = ats.findSuitableMediaType(JSON, XML);
         HttpHeadersTools httpTools = new HttpHeadersTools(hreq, hresp);
-        int purged = 0;
-        int nr;
         LOG.info(String.format("Requesting URL: %s", hreq.getRequestURI()));
-        synchronized (this) { // Test and set the static nRequests variable with Mutex
-            requestCount = (requestCount + 1) % cacheCleanFrequency;
-            nr = requestCount; // nr is the Local copy of nRequest
-        }
-        if (nr == 0) { // For every
-            purged = ldapCache.removeExpired(); // Prevent unchecked entries from Living forever
+        purged = ldapCache.cleanExpiredByCount(); // Prevent unchecked entries from Living forever
+        if(purged>0){
             LOG.info(String.format("cleaning eDir cache: purged %d stale entries", purged));
         }
-
         String[] splitUrl = hreq.getRequestURL().toString().split(hreq.getContextPath());
         if (hreq.getRequestURL().toString().equals(splitUrl[0] + hreq.getContextPath() + "/application.wadl")) {
             RequestDispatcher dispatcher = hreq.getRequestDispatcher(hreq.getContextPath() + "/?_wadl");
