@@ -4,7 +4,7 @@
 
     <persistence-unit name="loadbalancing" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <jta-data-source>jdbc/loadBalancerDB</jta-data-source>
+        <jta-data-source>jdbc/atlasCoreDB</jta-data-source>
 
         <class>org.openstack.atlas.service.domain.entity.Account</class>
         <class>org.openstack.atlas.service.domain.entity.AccountLimit</class>
