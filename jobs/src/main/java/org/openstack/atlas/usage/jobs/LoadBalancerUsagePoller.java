@@ -4,11 +4,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.jobs.Job;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.JobName;
-import org.openstack.atlas.service.domain.entities.JobStateVal;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
@@ -24,14 +26,21 @@ import org.springframework.beans.factory.annotation.Required;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
 public class LoadBalancerUsagePoller extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsagePoller.class);
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
+    LoadBalancerRepository loadBalancerRepository;
     private HostRepository hostRepository;
     private LoadBalancerUsageRepository usageRepository;
     private LoadBalancerUsageEventRepository usageEventRepository;
     private final int BATCH_SIZE = 100;
+
+    @Required
+    public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
+        this.loadBalancerRepository = loadBalancerRepository;
+    }
 
     @Required
     public void setReverseProxyLoadBalancerAdapter(ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter) {
@@ -67,8 +76,8 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
 
         for (LoadBalancerUsageEvent usageEventEntry : usageEventEntries) {
             UsageEvent usageEvent = UsageEvent.valueOf(usageEventEntry.getEventType());
-            LoadBalancerUsage recentUsage = usageRepository.getMostRecentUsageForLoadBalancer(usageEventEntry.getId());
-            int updatedTags = getTags(usageEvent, recentUsage);
+            LoadBalancerUsage recentUsage = usageRepository.getMostRecentUsageForLoadBalancer(usageEventEntry.getLoadbalancerId());
+            int updatedTags = getTags(usageEventEntry.getAccountId(), usageEventEntry.getLoadbalancerId(), usageEvent, recentUsage);
 
             Calendar eventTime;
             if (recentUsage != null && recentUsage.getEndTime().after(usageEventEntry.getStartTime())) {
@@ -106,31 +115,36 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
         LOG.info(String.format("%d usage events processed.", newUsages.size()));
     }
 
-    private int getTags(UsageEvent usageEvent, LoadBalancerUsage recentUsage) {
-        int tags = 0;
+    private int getTags(Integer accountId, Integer lbId, UsageEvent usageEvent, LoadBalancerUsage recentUsage) {
+        BitTags tags;
 
         if (recentUsage != null) {
-            tags = recentUsage.getTags();
+            tags = new BitTags(recentUsage.getTags());
+        } else {
+            tags = new BitTags();
         }
 
         switch (usageEvent) {
             case CREATE_LOADBALANCER:
-                tags = 0;
+                tags.flipAllTagsOff();
                 break;
             case DELETE_LOADBALANCER:
-                tags = 0;
+                tags.flipAllTagsOff();
                 break;
             case SSL_OFF:
-                if (tags % 2 == 1)
-                    tags = tags - BitTags.BIT_TAG_SSL;
+                tags.flipTagOff(BitTag.SSL);
                 break;
             case SSL_ON:
-                if (tags % 2 == 0)
-                    tags = tags + BitTags.BIT_TAG_SSL;
+                tags.flipTagOn(BitTag.SSL);
                 break;
             default:
         }
-        return tags;
+
+            if (isServiceNetLoadBalancer(accountId, lbId)) {
+                tags.flipTagOn(BitTag.SERVICENET_LB);
+            }
+
+        return tags.getBitTags();
     }
 
     private void startUsagePoller() {
@@ -150,7 +164,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
         }
 
         for (final Host host : hosts) {
-            LoadBalancerUsagePollerThread thread = new LoadBalancerUsagePollerThread(host.getName() + "-poller-thread", host, reverseProxyLoadBalancerAdapter, hostRepository, usageRepository);
+            LoadBalancerUsagePollerThread thread = new LoadBalancerUsagePollerThread(loadBalancerRepository, host.getName() + "-poller-thread", host, reverseProxyLoadBalancerAdapter, hostRepository, usageRepository);
             threads.add(thread);
             thread.start();
         }
@@ -172,6 +186,23 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
 
         if (failed) jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FAILED);
         else jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FINISHED);
+    }
+
+    private boolean isServiceNetLoadBalancer(Integer accountId, Integer lbId) {
+        try {
+            final Set<VirtualIp> vipsByAccountIdLoadBalancerId = loadBalancerRepository.getVipsByAccountIdLoadBalancerId(accountId, lbId);
+
+            for (VirtualIp virtualIp : vipsByAccountIdLoadBalancerId) {
+                if (virtualIp.getVipType().equals(VirtualIpType.SERVICENET)) return true;
+            }
+
+        } catch (EntityNotFoundException e) {
+            return false;
+        } catch (DeletedStatusException e) {
+            return false;
+        }
+
+        return false;
     }
 
 }

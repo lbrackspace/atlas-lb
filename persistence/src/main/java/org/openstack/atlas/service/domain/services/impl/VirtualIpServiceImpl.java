@@ -312,10 +312,14 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             reclaimVirtualIp(lb, loadBalancerJoinVip.getVirtualIp());
         }
 
+        lb.getLoadBalancerJoinVipSet().clear();
+
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : lb.getLoadBalancerJoinVip6Set()) {
             virtualIpv6Repository.removeJoinRecord(loadBalancerJoinVip6);
             reclaimIpv6VirtualIp(lb, loadBalancerJoinVip6.getVirtualIp());
         }
+
+        lb.getLoadBalancerJoinVip6Set().clear();
     }
 
     @Override

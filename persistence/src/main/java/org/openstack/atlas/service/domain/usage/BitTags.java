@@ -1,12 +1,6 @@
 package org.openstack.atlas.service.domain.usage;
 
 public final class BitTags {
-    public static final int BIT_TAG_SSL = 1;
-    /* Reserved bits for future use. We should
-     * have a total of 32 bit flags. */
-    public static final int BIT_TAG_RESERVED_1 = 2;
-    public static final int BIT_TAG_RESERVED_2 = 4;
-
     private int bitTags = 0;
 
     public BitTags() {
@@ -16,13 +10,27 @@ public final class BitTags {
         this.bitTags = bitTags;
     }
 
-    public boolean isSsl() {
-        return BitTags.isSsl(bitTags);
+    public void flipTagOn(BitTag bitTag) {
+        if (!isTagOn(bitTag)) bitTags += bitTag.tagValue();
     }
 
-    public static boolean isSsl(int bitTags){
-        return (BIT_TAG_SSL&bitTags)==1;
+    public void flipTagOff(BitTag bitTag) {
+        if (isTagOn(bitTag)) bitTags -= bitTag.tagValue();
     }
 
+    public void flipAllTagsOff() {
+        bitTags = 0;
+    }
 
+    public boolean isTagOn(BitTag bitTag) {
+        return BitTags.isTagOn(bitTags, bitTag);
+    }
+
+    public static boolean isTagOn(int bitTags, BitTag bitTag) {
+        return (bitTag.tagValue() & bitTags) == bitTag.tagValue();
+    }
+
+    public int getBitTags() {
+        return bitTags;
+    }
 }
