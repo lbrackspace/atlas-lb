@@ -562,28 +562,37 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
 
-    // upload the file then set the Errorpage.
+   // upload the file then set the Errorpage.
     @Override
     public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content) throws RemoteException {
         String[] vsNames = new String[1];
         String[] errorFiles = new String[1];
 
-        String errorFileName = getErrorFileName(loadbalancerId, accountId);
-
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
         ConfExtraBindingStub extraService = serviceStubs.getZxtmConfExtraBinding();
         VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
 
-        LOG.debug("Attempting to upload the error file...");
-        extraService.uploadFile(errorFileName, content.getBytes());
-        LOG.info(String.format("Successfully uploaded the error file for: %s_%s...", accountId, loadbalancerId));
+        try {
+            String errorFileName = getErrorFileName(loadbalancerId, accountId);
 
-        vsNames[0] = String.format("%d_%d", accountId, loadbalancerId);
-        errorFiles[0] = errorFileName;
+            LOG.debug("Attempting to upload the error file...");
+            extraService.uploadFile(errorFileName, content.getBytes());
+            LOG.info(String.format("Successfully uploaded the error file for: %s_%s...", accountId, loadbalancerId));
 
-        LOG.debug("Attempting to set the error file...");
-        virtualServerService.setErrorFile(vsNames, errorFiles);
-        LOG.info(String.format("Successfully set the error file for: %s_%s...", accountId, loadbalancerId));
+            vsNames[0] = String.format("%d_%d", accountId, loadbalancerId);
+            errorFiles[0] = errorFileName;
+
+            LOG.debug("Attempting to set the error file...");
+            virtualServerService.setErrorFile(vsNames, errorFiles);
+            LOG.info(String.format("Successfully set the error file for: %s_%s...", accountId, loadbalancerId));
+        } catch (AxisFault af) {
+            if (af instanceof InvalidInput) {
+                //Couldn't find a custom 'default' error file...
+                errorFiles[1] = "Default";
+                virtualServerService.setErrorFile(vsNames, errorFiles);
+
+            }
+        }
     }
 
     @Override
