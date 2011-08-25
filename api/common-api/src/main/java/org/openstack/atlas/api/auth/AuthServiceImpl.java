@@ -6,7 +6,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
-
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.List;
@@ -52,14 +51,14 @@ public class AuthServiceImpl implements AuthService {
         if (xmlRpcReturn instanceof Integer) {
             switch ((Integer) xmlRpcReturn) {
                 case 1:
-                    throw new RuntimeException(String.format("XLM RPC Authentication Failed While Validating Token.  Token: %s", authToken));
+                    throw new XmlRpcException(String.format("XLM RPC Authentication Failed While Validating Token.  Token: %s", authToken));
 
                 case 2:
                     return validToken;
 //                    throw new RuntimeException(String.format("Token Validation Failed.  Token: %s", authToken));
 
                 default:
-                    throw new RuntimeException(String.format("Unknown XML RPC Error Code While Validating Token.  Token: %s, Error Code: %d", authToken, xmlRpcReturn));
+                    throw new XmlRpcException(String.format("Unknown XML RPC Error Code While Validating Token.  Token: %s, Error Code: %d", authToken, xmlRpcReturn));
             }
         } else {
             Object[] objArray = (Object[]) xmlRpcReturn;

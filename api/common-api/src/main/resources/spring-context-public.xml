@@ -201,7 +201,7 @@
           scope="request"/>
     <bean id="authenticationFilter"
           class="org.openstack.atlas.api.filters.AuthenticationFilter"
-          scope="request">
+          scope="request" init-method="startConfig">
         <constructor-arg index="0">
             <bean class="org.openstack.atlas.api.auth.AuthTokenValidator">
                 <constructor-arg index="0" ref="authServiceImpl" />
@@ -211,7 +211,7 @@
         <constructor-arg index="1">
             <bean class="org.openstack.atlas.api.helpers.UrlAccountIdExtractor" scope="request"/>
         </constructor-arg>
-        <property name="authenticatedUsers" ref="authCache"/>
+        <property name="userCache" ref="userCache"/>
     </bean>
     <bean id="groupRateLimitFilter"
           class="org.openstack.atlas.api.filters.GroupRateLimitFilter"
@@ -271,13 +271,12 @@
           scope="request"/>
 
     <!--CACHING-->
-    <bean id="cacheManagerFactory" class="org.openstack.atlas.api.caching.CacheManagerFactory"/>
-    <bean id="authCache"
-          class="org.openstack.atlas.api.caching.CacheRepositoryImpl">
-        <constructor-arg index="0" value="authenticatedUsers"/>
-        <constructor-arg index="1" ref="cacheManagerFactory"/>
+    <bean id="ldapCache" class="org.openstack.atlas.util.simplecache.SimpleCache" scope="singleton">
+        <property name="cleanExpiredOn" value="4096"/>
     </bean>
 
-
-    <bean id="ldapCache" class="org.openstack.atlas.util.simplecache.SimpleCache" scope="singleton"/>
+    <bean id="userCache" class="org.openstack.atlas.util.simplecache.SimpleCache" scope="singleton">
+        <property name="ttl" value="300"/>
+        <property name="cleanExpiredOn" value="4096"/>
+    </bean>
 </beans>
