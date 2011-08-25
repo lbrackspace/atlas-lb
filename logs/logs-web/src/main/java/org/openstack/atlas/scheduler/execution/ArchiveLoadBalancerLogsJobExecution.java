@@ -97,6 +97,8 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
                     } catch(Exception e){
                         // Usually its caused by SSL Exception due to some weird staging & test accounts. So ignoring for now.
                         // Catch all so we can proceed.
+                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, runner.getInputString() + ":" + absoluteFileName);
+                        failJob(individualState);
                         LOG.error("Unexpected Error trying to upload to CloudFiles: " + absoluteFileName, e);
                     }
                 }
