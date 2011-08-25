@@ -14,6 +14,8 @@ public enum LbLogsConfigurationKeys implements ConfigurationKey {
     mapreduce_output_prefix,
     filesystem_root_dir,
 
+    cloud_files_auth_url,
+
     cloudfiles_container_name,
 
     rawlogs_part,
