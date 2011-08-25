@@ -129,7 +129,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
                 tags.flipAllTagsOff();
                 break;
             case DELETE_LOADBALANCER:
-                tags.flipAllTagsOff();
+                // Leave tags as they were
                 break;
             case SSL_OFF:
                 tags.flipTagOff(BitTag.SSL);
@@ -140,9 +140,9 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
             default:
         }
 
-            if (isServiceNetLoadBalancer(accountId, lbId)) {
-                tags.flipTagOn(BitTag.SERVICENET_LB);
-            }
+        if (isServiceNetLoadBalancer(accountId, lbId)) {
+            tags.flipTagOn(BitTag.SERVICENET_LB);
+        }
 
         return tags.getBitTags();
     }

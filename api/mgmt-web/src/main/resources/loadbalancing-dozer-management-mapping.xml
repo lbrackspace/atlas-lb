@@ -35,7 +35,7 @@
             </converter>
         </custom-converters>
     </configuration>
-    
+
     <mapping map-id="SIMPLE_VIP_LB" type="one-way" wildcard="false" map-null="false">
         <class-a>org.openstack.atlas.service.domain.entities.LoadBalancer</class-a>
         <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer</class-b>
@@ -95,7 +95,6 @@
     </mapping>
 
 
-
     <mapping map-null="false">
         <class-a>org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet</class-a>
         <class-b>org.openstack.atlas.service.domain.pojos.Hostssubnet</class-b>
@@ -138,8 +137,8 @@
         <class-b>org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent</class-b>
     </mapping>
 
-       <mapping map-id="SIMPLE_LIMIT" type="one-way" wildcard="false">
-        <class-a> org.openstack.atlas.service.domain.entities.GroupRateLimit</class-a>
+    <mapping map-id="SIMPLE_LIMIT" type="one-way" wildcard="false">
+        <class-a>org.openstack.atlas.service.domain.entities.GroupRateLimit</class-a>
         <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.GroupRateLimit</class-b>
         <field>
             <a>id</a>
@@ -149,11 +148,11 @@
             <a>name</a>
             <b>name</b>
         </field>
-         <field>
+        <field>
             <a set-method="setDefault" get-method="getDefault">isDefault</a>
             <b set-method="setIsDefault" get-method="isIsDefault">isDefault</b>
         </field>
-  </mapping>
+    </mapping>
 
     <mapping map-null="false">
         <class-a>org.openstack.atlas.service.domain.pojos.LoadBalancerAudits</class-a>
@@ -299,8 +298,8 @@
             <b get-method="isConnectionLogging">connectionLogging</b>
         </field>
         <!--<field>-->
-            <!--<a get-method="isSticky">isSticky</a>-->
-            <!--<b get-method="isSticky">sticky</b>-->
+        <!--<a get-method="isSticky">isSticky</a>-->
+        <!--<b get-method="isSticky">sticky</b>-->
         <!--</field>-->
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
             <a>created</a>
@@ -341,7 +340,7 @@
             <a>name</a>
             <b>name</b>
         </field>
-       <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
             <a>status</a>
             <b>status</b>
         </field>
@@ -377,10 +376,10 @@
             <a>type</a>
             <b>vipType</b>
         </field>
-      <!--  <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
-            <a>ipVersion</a>
-            <b>ipVersion</b>
-        </field>  -->
+        <!--  <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+          <a>ipVersion</a>
+          <b>ipVersion</b>
+      </field>  -->
         <field>
             <a>id</a>
             <b>id</b>
@@ -398,10 +397,10 @@
             <a>type</a>
             <b>virtualIp.vipType</b>
         </field>
-       <!-- <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
-            <a>ipVersion</a>
-            <b>virtualIp.ipVersion</b>
-        </field> -->
+        <!-- <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+           <a>ipVersion</a>
+           <b>virtualIp.ipVersion</b>
+       </field> -->
         <field>
             <a>id</a>
             <b>virtualIp.id</b>
@@ -419,10 +418,10 @@
             <a>type</a>
             <b>virtualIp.vipType</b>
         </field>
-    <!--    <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
-            <a>ipVersion</a>
-            <b>virtualIp.ipVersion</b>
-        </field>   -->
+        <!--    <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+         <a>ipVersion</a>
+         <b>virtualIp.ipVersion</b>
+     </field>   -->
         <field>
             <a>id</a>
             <b>virtualIp.id</b>
@@ -465,7 +464,7 @@
         </field>
     </mapping>
 
-        <mapping map-null="false" wildcard="false">
+    <mapping map-null="false" wildcard="false">
         <class-a>org.openstack.atlas.service.domain.entities.AccountGroup</class-a>
         <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountGroup</class-b>
         <field>
@@ -476,7 +475,7 @@
             <a>groupRateLimit.id</a>
             <b>group.id</b>
         </field>
-         <field>
+        <field>
             <a>groupRateLimit.description</a>
             <b>group.description</b>
         </field>
@@ -707,6 +706,10 @@
             <a>tags</a>
             <b get-method="isSsl">ssl</b>
         </field>  -->
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VipTypeTagConverter">
+            <a>tags</a>
+            <b>vipType</b>
+        </field>
     </mapping>
 
     <mapping map-null="false">
@@ -717,7 +720,7 @@
     <mapping map-null="false">
         <class-a>org.openstack.atlas.service.domain.pojos.ClusterDetails</class-a>
         <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterDetails</class-b>
-          <field>
+        <field>
             <a>hostMachineDetails</a>
             <b>hostMachineDetails</b>
             <a-hint>org.openstack.atlas.service.domain.pojos.HostMachineDetails</a-hint>
@@ -739,13 +742,13 @@
     <mapping map-null="false">
         <class-a>org.openstack.atlas.service.domain.entities.BlacklistItem</class-a>
         <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.BlacklistItem</class-b>
-          <field>
+        <field>
             <a>ipVersion</a>
             <b>ipVersion</b>
             <a-hint>org.openstack.atlas.service.domain.entities.IpVersion</a-hint>
             <b-hint>org.openstack.atlas.docs.loadbalancers.api.management.v1.IpVersion</b-hint>
         </field>
-          <field>
+        <field>
             <a>blacklistType</a>
             <b>type</b>
             <a-hint>org.openstack.atlas.service.domain.entities.BlacklistType</a-hint>
