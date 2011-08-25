@@ -40,7 +40,9 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
     }
 
     public void uploadLocalFile(AuthUser user, String containerName, String localFilename, String remoteFileName) throws FilesException {
-        client = new FilesClient(user.getUsername(), user.getAuthKey());
+        client = new FilesClient(user.getUsername(), user.getAuthKey(), null, 5000);
+        client.setAuthenticationURL(user.getCloudFilesAuthUrl());
+
         String fullFilename = localFilename.replaceAll("\\.\\./", "./");
         // the localFilename will always be before the last slash, if we are using
         // slashes (directories)

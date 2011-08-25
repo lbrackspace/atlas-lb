@@ -394,12 +394,14 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     @Transactional
-    public void pseudoDelete(LoadBalancer lb) throws Exception {
+    public LoadBalancer pseudoDelete(LoadBalancer lb) throws Exception {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
         dbLoadBalancer.setStatus(DELETED);
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
 
         virtualIpService.removeAllVipsFromLoadBalancer(dbLoadBalancer);
+
+        return dbLoadBalancer;
     }
 
 

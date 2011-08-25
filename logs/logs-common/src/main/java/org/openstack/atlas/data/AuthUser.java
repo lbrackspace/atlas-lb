@@ -8,6 +8,16 @@ public class AuthUser {
     private String authKey;
     private boolean enabled;
 
+    private String cloudFilesAuthUrl;
+
+    public String getCloudFilesAuthUrl() {
+        return cloudFilesAuthUrl;
+    }
+
+    public void setCloudFilesAuthUrl(String cloudFilesAuthUrl) {
+        this.cloudFilesAuthUrl = cloudFilesAuthUrl;
+    }
+
     public String getAuthKey() {
         return authKey;
     }

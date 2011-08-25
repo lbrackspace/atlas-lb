@@ -392,7 +392,7 @@ public class LoadBalancerRepository {
         return lbs;
     }
 
-    private List<LoadBalancerJoinVip> getVipsByLoadBalancerId(Integer loadBalancerId) {
+    public List<LoadBalancerJoinVip> getVipsByLoadBalancerId(Integer loadBalancerId) {
         List<LoadBalancerJoinVip> vips;
         String query = "select j from LoadBalancerJoinVip j where j.loadBalancer.id = :loadBalancerId";
         //String query = "select l.virtualIps from LoadBalancer l where l.id = :loadBalancerId";

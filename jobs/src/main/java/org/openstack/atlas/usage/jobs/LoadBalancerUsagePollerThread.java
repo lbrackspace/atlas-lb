@@ -10,6 +10,7 @@ import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
 import org.openstack.atlas.usage.BatchAction;
@@ -30,12 +31,14 @@ public class LoadBalancerUsagePollerThread extends Thread {
     private final int BATCH_SIZE = 100;
 
     private Host host;
+    private LoadBalancerRepository loadBalancerRepository;
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
     private HostRepository hostRepository;
     private LoadBalancerUsageRepository usageRepository;
 
-    public LoadBalancerUsagePollerThread(String threadName, Host host, ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter, HostRepository hostRepository, LoadBalancerUsageRepository usageRepository) {
+    public LoadBalancerUsagePollerThread(LoadBalancerRepository loadBalancerRepository, String threadName, Host host, ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter, HostRepository hostRepository, LoadBalancerUsageRepository usageRepository) {
         super(threadName);
+        this.loadBalancerRepository = loadBalancerRepository;
         this.host = host;
         this.reverseProxyLoadBalancerAdapter = reverseProxyLoadBalancerAdapter;
         this.usageRepository = usageRepository;
@@ -117,7 +120,7 @@ public class LoadBalancerUsagePollerThread extends Thread {
         Map<Integer, Integer> lbIdAccountIdMap = ZxtmNameHelper.stripLbIdAndAccountIdFromZxtmName(loadBalancerNames);
         List<LoadBalancerUsage> usages = usageRepository.getMostRecentUsageForLoadBalancers(lbIdAccountIdMap.keySet());
         Map<Integer, LoadBalancerUsage> usagesAsMap = convertUsagesToMap(usages);
-        UsagesForPollingDatabase usagesForDatabase = new UsagesForPollingDatabase(loadBalancerNames, bytesInMap, bytesOutMap, currentConnectionsMap, pollTime, usagesAsMap).invoke();
+        UsagesForPollingDatabase usagesForDatabase = new UsagesForPollingDatabase(loadBalancerRepository, loadBalancerNames, bytesInMap, bytesOutMap, currentConnectionsMap, pollTime, usagesAsMap).invoke();
 
         if (!usagesForDatabase.getRecordsToInsert().isEmpty())
             usageRepository.batchCreate(usagesForDatabase.getRecordsToInsert());

@@ -1,17 +1,22 @@
 package org.openstack.atlas.usage.logic;
 
-import org.openstack.atlas.usage.helpers.ZxtmNameHelper;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.VirtualIp;
+import org.openstack.atlas.service.domain.entities.VirtualIpType;
+import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.usage.BitTag;
+import org.openstack.atlas.service.domain.usage.BitTags;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
+import org.openstack.atlas.usage.helpers.ZxtmNameHelper;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class UsagesForPollingDatabase {
     private final Log LOG = LogFactory.getLog(UsagesForPollingDatabase.class);
+    private LoadBalancerRepository loadBalancerRepository;
     private List<String> loadBalancerNames;
     private Map<String, Long> bytesInMap;
     private Map<String, Long> bytesOutMap;
@@ -21,7 +26,8 @@ public class UsagesForPollingDatabase {
     private List<LoadBalancerUsage> recordsToInsert;
     private List<LoadBalancerUsage> recordsToUpdate;
 
-    public UsagesForPollingDatabase(List<String> loadBalancerNames, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap, Calendar pollTime, Map<Integer, LoadBalancerUsage> usagesAsMap) {
+    public UsagesForPollingDatabase(LoadBalancerRepository loadBalancerRepository, List<String> loadBalancerNames, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap, Calendar pollTime, Map<Integer, LoadBalancerUsage> usagesAsMap) {
+        this.loadBalancerRepository = loadBalancerRepository;
         this.loadBalancerNames = loadBalancerNames;
         this.bytesInMap = bytesInMap;
         this.bytesOutMap = bytesOutMap;
@@ -95,7 +101,7 @@ public class UsagesForPollingDatabase {
             currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(zxtmName)));
             currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(zxtmName)));
         }
-        
+
         currentRecord.setLastBandwidthBytesIn(bytesInMap.get(zxtmName));
         currentRecord.setLastBandwidthBytesOut(bytesOutMap.get(zxtmName));
     }
@@ -112,10 +118,16 @@ public class UsagesForPollingDatabase {
         newRecord.setStartTime(pollTime);
         newRecord.setEndTime(pollTime);
         newRecord.setNumberOfPolls(1);
-        // TODO: Query main DB for vip and tags info
-        newRecord.setNumVips(1);
+        newRecord.setNumVips(1); // TODO: Query main DB for vip info
         newRecord.setTags(0);
         newRecord.setEventType(null);
+
+        if (isServiceNetLoadBalancer(accountId, lbId)) {
+            BitTags bitTags = new BitTags();
+            bitTags.flipTagOn(BitTag.SERVICENET_LB);
+            newRecord.setTags(bitTags.getBitTags());
+        }
+
         return newRecord;
     }
 
@@ -133,5 +145,22 @@ public class UsagesForPollingDatabase {
         } else {
             return currentRecord.getCumulativeBandwidthBytesOut() + currentSnapshotValue;
         }
+    }
+
+    private boolean isServiceNetLoadBalancer(Integer accountId, Integer lbId) {
+        try {
+            final Set<VirtualIp> vipsByAccountIdLoadBalancerId = loadBalancerRepository.getVipsByAccountIdLoadBalancerId(accountId, lbId);
+
+            for (VirtualIp virtualIp : vipsByAccountIdLoadBalancerId) {
+                if (virtualIp.getVipType().equals(VirtualIpType.SERVICENET)) return true;
+            }
+
+        } catch (EntityNotFoundException e) {
+            return false;
+        } catch (DeletedStatusException e) {
+            return false;
+        }
+
+        return false;
     }
 }

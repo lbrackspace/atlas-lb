@@ -329,6 +329,10 @@
             <a>tags</a>
             <b get-method="isSsl">ssl</b>
         </field>  -->
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VipTypeTagConverter">
+            <a>tags</a>
+            <b>vipType</b>
+        </field>
     </mapping>
 
 </mappings>

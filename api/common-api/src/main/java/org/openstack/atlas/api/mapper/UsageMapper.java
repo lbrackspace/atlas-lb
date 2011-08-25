@@ -2,7 +2,9 @@ package org.openstack.atlas.api.mapper;
 
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 
 import java.util.ArrayList;
@@ -49,10 +51,18 @@ public final class UsageMapper {
         rusage.setOutgoingTransfer(dusage.getOutgoingTransfer());
         rusage.setNumVips(dusage.getNumVips());
         rusage.setNumPolls(dusage.getNumberOfPolls());
-        // rusage.setSsl((dusage.getTags() & BitTags.BIT_TAG_SSL) == 1); Hidden per JIRA:SITESLB-687
         rusage.setStartTime(dusage.getStartTime());
         rusage.setEndTime(dusage.getEndTime());
         rusage.setEventType(dusage.getEventType());
+        // rusage.setSsl((dusage.getTags() & BitTags.BIT_TAG_SSL) == 1); Hidden per JIRA:SITESLB-687
+
+        BitTags bitTags = new BitTags(dusage.getTags());
+
+        if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
+            rusage.setVipType(VipType.SERVICENET);
+        } else {
+            rusage.setVipType(VipType.PUBLIC);
+        }
 
         return rusage;
     }

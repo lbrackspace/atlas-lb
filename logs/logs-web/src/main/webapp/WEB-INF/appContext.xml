@@ -19,7 +19,7 @@
 
     <bean id="fileSystemUtils" class="org.openstack.atlas.util.FileSystemUtils"/>
 
-    <bean id="authService" class="org.openstack.atlas.auth.AuthServiceImpl">
+    <bean id="authService" class="org.openstack.atlas.auth.AuthServiceImpl" scope="prototype" >
         <constructor-arg index="0"  ref="conf"/>
     </bean>
 
@@ -81,9 +81,9 @@
         </property>
     </bean>
 
-    <bean id="timeZone" class="java.util.TimeZone" factory-method="getTimeZone">
+   <!-- <bean id="timeZone" class="java.util.TimeZone" factory-method="getTimeZone">
         <constructor-arg value="America/Chicago"/>
-    </bean>
+    </bean>-->
 
     <bean name="fileWatchdogJob" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass" value="org.openstack.atlas.scheduler.FileWatchdogJob"/>

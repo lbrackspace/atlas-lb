@@ -17,5 +17,6 @@ public enum JobName {
     FILEASSEMBLE,
     WATCHDOG,
     FILES_SPLIT,
-    MAPREDUCE;
+    MAPREDUCE,
+    LOG_FILE_CF_UPLOAD;
 }
