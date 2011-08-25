@@ -60,13 +60,21 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
                     String absoluteFileName = accountDir + "/" + accountLogFile;
                     try {
                         String account = getAccount(accountDir);
+                        String runTimeForFile = getRuntimeForFile(accountDir);
 
                         LOG.info("Preparing to upload LogFile to Cloud Files: " + absoluteFileName);
 
+                        File file = new File(absoluteFileName);
+                        if(!file.exists()) {
+                            LOG.info("Couldn't find the file anymore. Probably uploaded by another thread already. So ignoring file: " + absoluteFileName);
+                            continue;
+                        }
+
                         String loadBalancerId = getLoadBalancerIdFromFileName(accountLogFile);
                         LoadBalancer lb = loadBalancerRepository.getByIdAndAccountId(Integer.parseInt(loadBalancerId), Integer.parseInt(account));
-                        String containername = getContainerName(loadBalancerId, lb.getName(), runner.getRawlogsFileDate());
-                        String remoteFileName = getRemoteFileName(loadBalancerId, lb.getName(), runner.getRawlogsFileDate());
+
+                        String containername = getContainerName(loadBalancerId, lb.getName(), runTimeForFile);
+                        String remoteFileName = getRemoteFileName(loadBalancerId, lb.getName(), runTimeForFile);
 
                         dao.uploadLocalFile(authService.getUser(account), containername, absoluteFileName, remoteFileName);
 
@@ -75,21 +83,21 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
 
                     //We will log each individual upload event only if it fails. No need to track those that succeeded.
                     } catch (EntityNotFoundException e) {
-                        JobState individualState = createJob(JobName.ARCHIVE, runner.getInputString() + ":" + absoluteFileName);
+                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, runner.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         LOG.error("Error trying to upload to CloudFiles for loadbalancer that doesn't exist: " + absoluteFileName, e);
                     } catch(FilesException e){
-                        JobState individualState = createJob(JobName.ARCHIVE, runner.getInputString() + ":" + absoluteFileName);
+                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, runner.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         LOG.error("Error trying to upload to CloudFiles: " + absoluteFileName, e);
                     } catch(AuthException e){
-                        JobState individualState = createJob(JobName.ARCHIVE, runner.getInputString() + ":" + absoluteFileName);
+                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, runner.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         LOG.error("Error trying to upload to CloudFiles: " + absoluteFileName, e);
                     } catch(Exception e){
                         // Usually its caused by SSL Exception due to some weird staging & test accounts. So ignoring for now.
                         // Catch all so we can proceed.
-                        LOG.error("Unexpected Error trying to upload to CloudFiles. ", e);
+                        LOG.error("Unexpected Error trying to upload to CloudFiles: " + absoluteFileName, e);
                     }
                 }
 
@@ -112,6 +120,18 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
             String inputDate = runner.getInputString(); //20110215-130916
             DateFormat df = new SimpleDateFormat("yyyyMMdd-HHmmss");
             startDate = df.parse(inputDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return startDate;
+    }
+
+    private Date getDate(String runTimeForFile) {
+        Date startDate = new Date();
+        try {
+            //20110215-130916
+            DateFormat df = new SimpleDateFormat("yyyyMMdd-HHmmss");
+            startDate = df.parse(runTimeForFile);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -149,8 +169,9 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
         return localileName.split("_")[2];
     }
 
-    private String getContainerName(String lbId, String lbName, String rawlogsFileDate) {
-        String monthYear = getMonthYear(rawlogsFileDate);
+    private String getContainerName(String lbId, String lbName, String runTimeForFile) {
+        String rawLogsFileDate = Constants.Rawlogs.RAWLOGS_FORMAT.format(getDate(runTimeForFile));
+        String monthYear = getMonthYear(rawLogsFileDate);
         StringBuilder sb = new StringBuilder();
         sb.append("lb ");
         sb.append(lbId).append(" ");
@@ -159,12 +180,12 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
         return getFormattedName(sb.toString());
     }
 
-    private String getRemoteFileName(String lbId, String lbName, String rawlogsFileDate) {
+    private String getRemoteFileName(String lbId, String lbName, String runTimeForFile) {
         StringBuilder sb = new StringBuilder();
         sb.append("lb ");
         sb.append(lbId).append(" ");
         sb.append(lbName).append(" ");
-        sb.append(rawlogsFileDate);
+        sb.append(Constants.Rawlogs.RAWLOGS_FORMAT.format(getDate(runTimeForFile)));
         sb.append(".zip");
         return getFormattedName(sb.toString());
     }
@@ -225,9 +246,15 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
         return monthYear;
     }
 
-    private String getAccount(String absoluteFileName) {
-        ///var/log/zxtm/hadoop/cache/386085
-        return absoluteFileName.substring(absoluteFileName.lastIndexOf("/") + 1, absoluteFileName.length());
+    private String getAccount(String accountDir) {
+        //var/log/zxtm/hadoop/cache/20110823-161700/10
+        return accountDir.substring(accountDir.lastIndexOf("/") + 1, accountDir.length());
+    }
+
+    private String getRuntimeForFile(String accountDir) {
+        //var/log/zxtm/hadoop/cache/20110823-161700/10
+        String runTimeDir = accountDir.substring(0, accountDir.lastIndexOf("/"));
+        return runTimeDir.substring(runTimeDir.lastIndexOf("/")+1, runTimeDir.length());
     }
 
     public void setCloudFilesDao(CloudFilesDao cloudFilesDao) {

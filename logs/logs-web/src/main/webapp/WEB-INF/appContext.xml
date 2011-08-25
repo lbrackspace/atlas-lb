@@ -19,7 +19,7 @@
 
     <bean id="fileSystemUtils" class="org.openstack.atlas.util.FileSystemUtils"/>
 
-    <bean id="authService" class="org.openstack.atlas.auth.AuthServiceImpl">
+    <bean id="authService" class="org.openstack.atlas.auth.AuthServiceImpl" scope="prototype" >
         <constructor-arg index="0"  ref="conf"/>
     </bean>
 
