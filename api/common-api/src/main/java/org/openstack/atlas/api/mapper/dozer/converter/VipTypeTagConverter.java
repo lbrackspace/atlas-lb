@@ -1,11 +1,12 @@
 package org.openstack.atlas.api.mapper.dozer.converter;
 
+import org.dozer.CustomConverter;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.service.domain.exceptions.NoMappableConstantException;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
-import org.dozer.CustomConverter;
 
-public class SslTagConverter implements CustomConverter {
+public class VipTypeTagConverter implements CustomConverter {
 
     @Override
     public Object convert(Object existingDestinationFieldValue, Object sourceFieldValue, Class destinationClass, Class sourceClass) {
@@ -13,8 +14,9 @@ public class SslTagConverter implements CustomConverter {
             return null;
         }
 
-        if(sourceFieldValue instanceof Integer) {
-            return ((Integer) sourceFieldValue & BitTag.SSL.tagValue()) == 1;
+        if (sourceFieldValue instanceof Integer) {
+            if (BitTags.isTagOn((Integer) sourceFieldValue, BitTag.SERVICENET_LB)) return VipType.SERVICENET;
+            else return VipType.PUBLIC;
         }
 
         throw new NoMappableConstantException("Cannot map source type: " + sourceClass.getName());

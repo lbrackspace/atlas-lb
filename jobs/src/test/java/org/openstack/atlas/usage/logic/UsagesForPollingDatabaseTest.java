@@ -51,7 +51,7 @@ public class UsagesForPollingDatabaseTest {
             currentUsage.setNumVips(1);
 
             usagesAsMap.put(1234, currentUsage);
-            usagesForDatabase = new UsagesForPollingDatabase(null, bytesInMap, bytesOutMap, currentConnectionsMap, null, usagesAsMap);
+            usagesForDatabase = new UsagesForPollingDatabase(null, null, bytesInMap, bytesOutMap, currentConnectionsMap, null, usagesAsMap);
         }
 
         @Test
@@ -107,7 +107,7 @@ public class UsagesForPollingDatabaseTest {
             bytesOutMap.put(zxtmName, 200l);
             currentConnectionsMap.put(zxtmName, 50);
             
-            usagesForDatabase = new UsagesForPollingDatabase(null, bytesInMap, bytesOutMap, currentConnectionsMap, null, usagesAsMap);
+            usagesForDatabase = new UsagesForPollingDatabase(null, null, bytesInMap, bytesOutMap, currentConnectionsMap, null, usagesAsMap);
         }
         
         @Test

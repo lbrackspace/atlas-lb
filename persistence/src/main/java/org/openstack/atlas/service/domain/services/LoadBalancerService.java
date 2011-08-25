@@ -35,7 +35,7 @@ public interface LoadBalancerService {
 
     public void prepareForDelete(LoadBalancer lb) throws Exception;
 
-    public void pseudoDelete(LoadBalancer lb) throws Exception;
+    public LoadBalancer pseudoDelete(LoadBalancer lb) throws Exception;
 
     public SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException;
 
