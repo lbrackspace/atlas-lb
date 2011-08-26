@@ -11,7 +11,7 @@
        http://www.springframework.org/schema/context/spring-context.xsd">
 
     <import resource="classpath:rax-spring-context-public.xml"/>
-    <context:component-scan base-package="org.openstack.atlas.rax,org.openstack.atlas"/>
+    <context:component-scan base-package="org.openstack.atlas"/>
 
     <jaxrs:server id="loadBalancingPublic" address="/" staticSubresourceResolution="true">
         <jaxrs:serviceFactories>

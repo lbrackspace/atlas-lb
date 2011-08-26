@@ -10,7 +10,6 @@ public final class ValidatorRepository {
     private static final Map<Class, ResourceValidator> classKeyedValidatorMap = new HashMap<Class, ResourceValidator>();
 
     public static <R> ResourceValidator<R> getValidatorFor(Class<R> classOfObjectToValidate) {
-        classKeyedValidatorMap.put(LoadBalancer.class, new LoadBalancerValidator());
         classKeyedValidatorMap.put(HealthMonitor.class, new HealthMonitorValidator());
         classKeyedValidatorMap.put(Node.class, new NodeValidator());
         classKeyedValidatorMap.put(VirtualIp.class, new VirtualIpValidator());

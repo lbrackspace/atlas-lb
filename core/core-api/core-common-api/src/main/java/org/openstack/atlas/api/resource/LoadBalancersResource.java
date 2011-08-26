@@ -24,7 +24,7 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
-@Controller//("CORE-LoadBalancersResource")
+@Controller
 @Scope("request")
 public class LoadBalancersResource extends CommonDependencyProvider {
     private final Logger LOG = Logger.getLogger(LoadBalancersResource.class);
@@ -32,7 +32,6 @@ public class LoadBalancersResource extends CommonDependencyProvider {
     protected Integer accountId;
 
     @Autowired
-    @Qualifier("RAX-RaxLoadBalancerValidator")
     protected ResourceValidator<LoadBalancer> validator;
     @Autowired
     protected LoadBalancerService loadbalancerService;

@@ -1,38 +1,37 @@
 package org.openstack.atlas.datamodel;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import java.util.HashSet;
 import java.util.Set;
 
 
-public final class AlgorithmType {
-    private static final Set<String> algorithmTypeSet;
-    private static final String[] algorithmTypeStrs;
+@Component
+@Scope("request")
+public class AlgorithmType implements Algorithm {
+    public static final String LEAST_CONNECTIONS = "LEAST_CONNECTIONS";
+    public static final String ROUND_ROBIN = "ROUND_ROBIN";
+    protected static final Set<String> algorithmTypes;
 
-   static {
-       int i;
-       algorithmTypeSet = new HashSet<String>();
-       algorithmTypeSet.add("LEAST_CONNECTIONS");
-       algorithmTypeSet.add("RANDOM");
-       algorithmTypeSet.add("ROUND_ROBIN");
-       algorithmTypeSet.add("WEIGHTED_LEAST_CONNECTIONS");
-       algorithmTypeSet.add("WEIGHTED_ROUND_ROBIN");
+    static {
+        algorithmTypes = new HashSet<String>();
+        algorithmTypes.add(LEAST_CONNECTIONS);
+        algorithmTypes.add(ROUND_ROBIN);
+    }
 
-       algorithmTypeStrs = new String[algorithmTypeSet.size()];
+    public boolean contains(String str) {
+        boolean out;
+        out = algorithmTypes.contains(str);
+        return out;
+    }
 
-       i = 0;
-       for(String status:algorithmTypeSet) {
-           algorithmTypeStrs[i]=status;
-           i++;
-       }
-   }
+    public static String[] values() {
+        return algorithmTypes.toArray(new String[algorithmTypes.size()]);
+    }
 
-   public boolean contains(String str) {
-       boolean out;
-       out = algorithmTypeSet.contains(str);
-       return out;
-   }
-
-   public static String[] values() {
-       return algorithmTypeStrs;
-   }
+    @Override
+    public String[] toList() {
+        return algorithmTypes.toArray(new String[algorithmTypes.size()]);
+    }
 }
