@@ -41,11 +41,12 @@ public class LoadBalancersResource extends org.openstack.atlas.api.resource.Load
         if (accessList1 == null) {
             logger.log(Level.INFO, "No accesslist found");
         } else {
-            for (NetworkItem networkItem1 : accessList1.getNetworkItem()) {
-                logger.log(Level.INFO, "Element Network Item1: " + networkItem1.getAddress() + " : " + networkItem1.getType1());
+            loadBalancer.getAnies().add(accessList1);
+            for (NetworkItem networkItem1 : accessList1.getNetworkItems()) {
+                logger.log(Level.INFO, "Element Network Item1: " + networkItem1.getAddress() + " : " + networkItem1.getType());
                 org.openstack.atlas.rax.domain.entity.AccessList accessList = new org.openstack.atlas.rax.domain.entity.AccessList();
                 accessList.setIpAddress(networkItem1.getAddress());
-                accessList.setType(AccessListType.valueOf(networkItem1.getType1().value()));
+                accessList.setType(AccessListType.valueOf(networkItem1.getType().value()));
                 accessLists.add(accessList);
             }
         }
@@ -100,12 +101,12 @@ public class LoadBalancersResource extends org.openstack.atlas.api.resource.Load
                     Object o = unmarshaller.unmarshal(element);
                     if (o instanceof AccessList) {
                         AccessList list1 = (AccessList) o;
-                        List<NetworkItem> ns = list1.getNetworkItem();
+                        List<NetworkItem> ns = list1.getNetworkItems();
                         return list1;
                     } else if (o instanceof JAXBElement) {
                         JAXBElement<AccessList> jaxbElement = (JAXBElement) o;
                         AccessList list1 = jaxbElement.getValue();
-                        List<NetworkItem> ns = list1.getNetworkItem();
+                        List<NetworkItem> ns = list1.getNetworkItems();
                         return list1;
                     }
                 } catch (JAXBException e) {

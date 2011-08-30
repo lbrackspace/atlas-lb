@@ -2,6 +2,8 @@ package org.openstack.atlas.rax.api.validation.validator.builder;
 
 import org.openstack.atlas.api.validation.validator.builder.LoadBalancerValidatorBuilder;
 import org.openstack.atlas.datamodel.Algorithm;
+import org.openstack.atlas.rax.api.validation.validator.RaxLoadBalancerValidator;
+import org.openstack.atlas.rax.api.validation.verifier.RaxLoadBalancerElementVerifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
@@ -17,7 +19,8 @@ public class RaxLoadBalancerValidatorBuilder extends LoadBalancerValidatorBuilde
     @Autowired
     public RaxLoadBalancerValidatorBuilder(Algorithm algorithm) {
         super(algorithm);
+
         // POST EXPECTATIONS
-//        result(validationTarget().getName()).must().not().exist().forContext(POST).withMessage("Must NOT provide a name for the load balancer. I guess your stuck! :)");
+        result(validationTarget().getAnies()).if_().exist().then().must().delegateTo(new RaxLoadBalancerValidator().getValidator(), POST).forContext(POST);
     }
 }

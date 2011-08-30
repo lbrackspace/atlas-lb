@@ -17,6 +17,8 @@ public interface OngoingExpectation {
 
     FinalizedExpectation adhereTo(Verifier customVerifier);
 
+    FinalizedExpectation instanceOf(Class classType);
+
     FinalizedExpectation haveSizeOfAtLeast(int num);
 
     FinalizedExpectation cannotExceedSize(int num);

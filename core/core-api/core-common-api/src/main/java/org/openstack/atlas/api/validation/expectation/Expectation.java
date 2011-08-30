@@ -194,6 +194,13 @@ public class Expectation implements ConditionalExpectation, OngoingExpectation, 
     }
 
     @Override
+    public FinalizedExpectation instanceOf(Class classType) {
+        setVerifier(new IsInstanceOf(classType));
+
+        return this;
+    }
+
+    @Override
     public EmptyExpectation then() {
         return this;
     }
