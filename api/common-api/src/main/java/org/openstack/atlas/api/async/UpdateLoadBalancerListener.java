@@ -21,7 +21,7 @@ import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATA
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 
 // TODO: Refactor this class so that we call one adapter method. Also have adapter deal with rollbacks
-public class UpdateLoadBalancerListener extends BaseListener {
+public class UpdateLoadBalancerListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(UpdateLoadBalancerListener.class);
 

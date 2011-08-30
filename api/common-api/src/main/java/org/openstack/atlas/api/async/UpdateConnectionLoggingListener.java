@@ -16,7 +16,7 @@ import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATA
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.api.atom.EntryHelper.UPDATE_LOGGING_TITLE;
 
-public class UpdateConnectionLoggingListener extends BaseListener {
+public class UpdateConnectionLoggingListener extends _BaseListener {
 
     final Log LOG = LogFactory.getLog(UpdateConnectionLoggingListener.class);
 

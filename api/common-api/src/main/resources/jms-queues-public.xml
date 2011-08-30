@@ -24,7 +24,7 @@
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
     </bean>
 
-    <bean id="baseListener" class="org.openstack.atlas.api.async.BaseListener" abstract="true">
+    <bean id="baseListener" class="org.openstack.atlas.api.async._BaseListener" abstract="true">
         <property name="jmsTemplate" ref="jmsTemplate"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>
         <property name="virtualIpService" ref="virtualIpService"/>

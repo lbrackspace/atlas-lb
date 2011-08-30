@@ -25,23 +25,25 @@ import java.util.Set;
 @Service
 public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBalancerService {
     private final Log LOG = LogFactory.getLog(ReverseProxyLoadBalancerServiceImpl.class);
-    private Configuration configuration;
-    private LoadBalancerAdapter loadBalancerAdapter;
 
+    @Autowired
+    private Configuration configuration;
+    @Autowired
+    private LoadBalancerAdapter loadBalancerAdapter;
     @Autowired
     private LoadBalancerRepository loadBalancerRepository;
     @Autowired
     private HostRepository hostRepository;
 
-    //    @Required
+/*        @Required
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
     }
 
-    //    @Required
+        @Required
     public void setLoadBalancerAdapter(LoadBalancerAdapter loadBalancerAdapter) {
         this.loadBalancerAdapter = loadBalancerAdapter;
-    }
+    }*/
 
     @Override
     public void createLoadBalancer(LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {

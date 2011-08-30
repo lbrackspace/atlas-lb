@@ -26,7 +26,7 @@ import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATA
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.api.atom.EntryHelper.*;
 
-public class CreateLoadBalancerListener extends BaseListener {
+public class CreateLoadBalancerListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(CreateLoadBalancerListener.class);
 

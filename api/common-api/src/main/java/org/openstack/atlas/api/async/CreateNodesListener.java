@@ -20,7 +20,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.I
 import static org.openstack.atlas.service.domain.events.entities.EventType.CREATE_NODE;
 import static org.openstack.atlas.api.atom.EntryHelper.CREATE_NODE_TITLE;
 
-public class CreateNodesListener extends BaseListener {
+public class CreateNodesListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(CreateNodesListener.class);
 

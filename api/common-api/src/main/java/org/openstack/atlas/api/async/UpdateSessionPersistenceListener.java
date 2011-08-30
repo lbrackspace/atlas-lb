@@ -17,7 +17,7 @@ import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATA
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.api.atom.EntryHelper.UPDATE_PERSISTENCE_TITLE;
 
-public class UpdateSessionPersistenceListener extends BaseListener {
+public class UpdateSessionPersistenceListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(UpdateSessionPersistenceListener.class);
 

@@ -16,6 +16,7 @@
     <modules>
         <module>atlas-rax-data-model</module>
         <module>atlas-rax-persistence</module>
+        <module>atlas-rax-adapter</module>
         <module>atlas-rax-api</module>
     </modules>
 

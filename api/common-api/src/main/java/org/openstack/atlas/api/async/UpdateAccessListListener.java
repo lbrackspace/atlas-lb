@@ -17,7 +17,7 @@ import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATA
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.api.atom.EntryHelper.UPDATE_ACCESS_LIST_TITLE;
 
-public class UpdateAccessListListener extends BaseListener {
+public class UpdateAccessListListener extends _BaseListener {
 
     @Override
     public void doOnMessage(Message message) throws Exception {

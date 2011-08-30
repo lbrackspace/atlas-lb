@@ -16,7 +16,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_SESSION_PERSISTENCE;
 
-public class DeleteSessionPersistenceListener extends BaseListener {
+public class DeleteSessionPersistenceListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(DeleteSessionPersistenceListener.class);
 

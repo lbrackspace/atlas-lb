@@ -15,7 +15,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventType.DELET
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 
-public class DeleteHealthMonitorListener extends BaseListener {
+public class DeleteHealthMonitorListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(DeleteHealthMonitorListener.class);
 

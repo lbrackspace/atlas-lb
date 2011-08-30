@@ -18,6 +18,6 @@ public class RaxLoadBalancerValidatorBuilder extends LoadBalancerValidatorBuilde
     public RaxLoadBalancerValidatorBuilder(Algorithm algorithm) {
         super(algorithm);
         // POST EXPECTATIONS
-        result(validationTarget().getName()).must().not().exist().forContext(POST).withMessage("Must NOT provide a name for the load balancer. I guess your stuck! :)");
+//        result(validationTarget().getName()).must().not().exist().forContext(POST).withMessage("Must NOT provide a name for the load balancer. I guess your stuck! :)");
     }
 }

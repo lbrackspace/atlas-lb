@@ -81,6 +81,9 @@ public class LoadBalancer extends Entity implements Serializable {
     private VirtualIpDozerWrapper virtualIpDozerWrapper;
 
 
+    public LoadBalancer() {
+    }
+
     public String getName() {
         return name;
     }

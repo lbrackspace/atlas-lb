@@ -15,7 +15,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_CONNECTION_THROTTLE;
 
-public class DeleteConnectionThrottleListener extends BaseListener {
+public class DeleteConnectionThrottleListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(DeleteConnectionThrottleListener.class);
 

@@ -16,7 +16,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_NODE;
 
-public class DeleteNodeListener extends BaseListener {
+public class DeleteNodeListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(DeleteNodeListener.class);
 

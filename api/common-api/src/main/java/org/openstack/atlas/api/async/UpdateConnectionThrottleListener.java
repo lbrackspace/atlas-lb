@@ -18,7 +18,7 @@ import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATA
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.api.atom.EntryHelper.UPDATE_THROTTLE_TITLE;
 
-public class UpdateConnectionThrottleListener extends BaseListener {
+public class UpdateConnectionThrottleListener extends _BaseListener {
 
     final Log LOG = LogFactory.getLog(UpdateConnectionThrottleListener.class);
 

@@ -9,6 +9,7 @@ import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.rax.domain.entity.AccessListType;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
+import org.openstack.atlas.rax.domain.pojo.RaxMessageDataContainer;
 import org.openstack.atlas.service.domain.operation.Operation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.springframework.context.annotation.Primary;
@@ -78,7 +79,7 @@ public class LoadBalancersResource extends org.openstack.atlas.api.resource.Load
             virtualIpService.addAccountRecord(accountId);
 
             org.openstack.atlas.service.domain.entity.LoadBalancer newlyCreatedLb = loadbalancerService.create(raxLoadBalancer);
-            MessageDataContainer msg = new MessageDataContainer();
+            RaxMessageDataContainer msg = new RaxMessageDataContainer();
             msg.setLoadBalancer(newlyCreatedLb);
             asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_LOADBALANCER, msg);
             return Response.status(Response.Status.ACCEPTED).entity(dozerMapper.map(newlyCreatedLb, LoadBalancer.class)).build();

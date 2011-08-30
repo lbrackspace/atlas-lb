@@ -7,17 +7,16 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import javax.jms.Message;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.API_FAILURE;
+
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
-import static org.openstack.atlas.service.domain.events.entities.CategoryType.CREATE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_ACCESS_LIST;
 
-public class DeleteAccessListListener extends BaseListener {
+public class DeleteAccessListListener extends _BaseListener {
 
     @Override
     public void doOnMessage(Message message) throws Exception {

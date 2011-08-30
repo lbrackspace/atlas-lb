@@ -16,7 +16,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.UPDATE_NODE;
 
-public class UpdateNodeListener extends BaseListener {
+public class UpdateNodeListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(UpdateNodeListener.class);
 

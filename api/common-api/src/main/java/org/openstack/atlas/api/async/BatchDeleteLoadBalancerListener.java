@@ -17,7 +17,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventType.DELET
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 
-public class BatchDeleteLoadBalancerListener extends BaseListener {
+public class BatchDeleteLoadBalancerListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(BatchDeleteLoadBalancerListener.class);
 

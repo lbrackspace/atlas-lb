@@ -17,7 +17,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.I
 import static org.openstack.atlas.service.domain.events.entities.EventType.UPDATE_HEALTH_MONITOR;
 import static org.openstack.atlas.api.atom.EntryHelper.UPDATE_MONITOR_TITLE;
 
-public class UpdateHealthMonitorListener extends BaseListener {
+public class UpdateHealthMonitorListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(UpdateHealthMonitorListener.class);
 

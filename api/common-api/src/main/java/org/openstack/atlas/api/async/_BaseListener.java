@@ -22,7 +22,7 @@ import org.springframework.jms.core.MessageCreator;
 
 import javax.jms.*;
 
-public abstract class BaseListener implements MessageListener {
+public abstract class _BaseListener implements MessageListener {
 
     protected Log LOG = LogFactory.getLog(this.getClass());
 

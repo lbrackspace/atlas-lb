@@ -19,7 +19,7 @@ import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATA
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.LBDEVICE_FAILURE;
 import static org.openstack.atlas.api.atom.EntryHelper.CREATE_VIP_TITLE;
 
-public class AddVirtualIpListener extends BaseListener {
+public class AddVirtualIpListener extends _BaseListener {
 
     private final Log LOG = LogFactory.getLog(AddVirtualIpListener.class);
 
