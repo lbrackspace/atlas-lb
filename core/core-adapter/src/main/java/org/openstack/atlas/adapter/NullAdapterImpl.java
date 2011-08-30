@@ -5,12 +5,13 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.exception.AdapterException;
 import org.openstack.atlas.service.domain.entity.*;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-@Component
+@Service
 public class NullAdapterImpl implements LoadBalancerAdapter {
     public static Log LOG = LogFactory.getLog(NullAdapterImpl.class.getName());
     private static String SOURCE_IP = "SOURCE_IP";

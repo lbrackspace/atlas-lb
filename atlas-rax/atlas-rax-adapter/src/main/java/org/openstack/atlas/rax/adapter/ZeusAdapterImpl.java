@@ -8,13 +8,14 @@ import org.openstack.atlas.adapter.exception.AdapterException;
 import org.openstack.atlas.service.domain.entity.*;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 @Primary
-@Component
+@Service
 public class ZeusAdapterImpl implements LoadBalancerAdapter {
     public static Log LOG = LogFactory.getLog(ZeusAdapterImpl.class.getName());
 
