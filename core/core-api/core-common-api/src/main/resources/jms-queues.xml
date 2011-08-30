@@ -23,13 +23,6 @@
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
     </bean>
 
-    <!--    <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.NullAdapterImpl"/>
-    <bean id="configuration" class="org.openstack.atlas.api.config.RestApiConfiguration"/>
-
-    <bean id="reverseProxyLoadBalancerService" class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl">
-        <property name="configuration" ref="configuration"/>
-        <property name="loadBalancerAdapter" ref="reverseProxyLoadBalancerAdapter"/>
-    </bean>-->
 
     <bean id="baseListener" class="org.openstack.atlas.api.async.BaseListener" abstract="true">
         <property name="jmsTemplate" ref="jmsTemplate"/>

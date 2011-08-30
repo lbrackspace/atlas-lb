@@ -35,16 +35,6 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     @Autowired
     private HostRepository hostRepository;
 
-/*        @Required
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
-    }
-
-        @Required
-    public void setLoadBalancerAdapter(LoadBalancerAdapter loadBalancerAdapter) {
-        this.loadBalancerAdapter = loadBalancerAdapter;
-    }*/
-
     @Override
     public void createLoadBalancer(LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
