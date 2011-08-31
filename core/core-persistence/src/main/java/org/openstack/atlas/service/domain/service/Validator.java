@@ -23,9 +23,9 @@ public class Validator {
         }
     }
 
-    public static LoadBalancer verifyProtocolAndHealthMonitorType(LoadBalancer loadBalancer) throws BadRequestException {
+    public static void verifyProtocolAndHealthMonitorType(LoadBalancer loadBalancer) throws BadRequestException {
         if (loadBalancer.getHealthMonitor() == null || loadBalancer.getHealthMonitor().getType() == null) {
-            return loadBalancer;
+            return;
         }
         LOG.info("Health Monitor detected. Verifying that the load balancer's protocol matches the monitor type.");
         HealthMonitorType type = loadBalancer.getHealthMonitor().getType();
@@ -38,7 +38,7 @@ public class Validator {
                 throw new BadRequestException("Protocol must be HTTPS for an HTTPS health monitor.");
             }
         }
-        return loadBalancer;
+        return;
     }
 
 }

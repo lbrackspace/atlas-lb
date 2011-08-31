@@ -15,23 +15,29 @@ public class LoadBalancerDefaultBuilder {
         if (loadBalancer.getAlgorithm() == null) {
             loadBalancer.setAlgorithm(LoadBalancerAlgorithm.RANDOM);
         }
-        /*if (loadBalancer.isConnectionLogging() == null) {
+        if (loadBalancer.getConnectionLogging() == null) {
             loadBalancer.setConnectionLogging(false);
         }
 
         if (loadBalancer.getProtocol() == null || loadBalancer.getPort() == null) {
-            LoadBalancerProtocolObject defaultProtocol = loadBalancerRepository.getDefaultProtocol();
+            /*LoadBalancerProtocolObject defaultProtocol = loadBalancerRepository.getDefaultProtocol();
             if (loadBalancer.getProtocol() == null) {
                 loadBalancer.setProtocol(defaultProtocol.getName());
             }
             if (loadBalancer.getPort() == null) {
                 loadBalancer.setPort(defaultProtocol.getPort());
+            }*/
+            if(loadBalancer.getProtocol() == null) {
+                loadBalancer.setProtocol(LoadBalancerProtocol.HTTP);
+            }
+            if(loadBalancer.getPort() == null) {
+                loadBalancer.setPort(8080);
             }
         }
 
         if (loadBalancer.getSessionPersistence() == null) {
             loadBalancer.setSessionPersistence(SessionPersistence.NONE);
-        }*/
+        }
 
         for (Node node : loadBalancer.getNodes()) {
             if (node.getWeight() == null) {

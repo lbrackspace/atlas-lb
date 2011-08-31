@@ -9,6 +9,7 @@ import org.openstack.atlas.service.domain.event.UsageEvent;
 import org.openstack.atlas.service.domain.event.entity.EventType;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;

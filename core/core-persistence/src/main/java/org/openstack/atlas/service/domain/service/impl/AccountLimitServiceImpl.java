@@ -9,6 +9,7 @@ import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.LimitReachedException;
 import org.openstack.atlas.service.domain.repository.AccountLimitRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl;
 import org.openstack.atlas.service.domain.service.AccountLimitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
