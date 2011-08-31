@@ -75,7 +75,7 @@ public class NetworkItemValidator implements ResourceValidator<NetworkItem> {
 
                 // FULL EXPECTATIONS
                 result(validationTarget().getAddress()).must().exist().forContext(FULL).withMessage("Must provide an address for the network item.");
-//                result(validationTarget().getIpVersion()).must().not().exist().forContext(FULL).withMessage("The ip version field cannot be modified.");
+                result(validationTarget().getIpVersion()).must().not().exist().forContext(FULL).withMessage("The ip version field cannot be modified.");
                 result(validationTarget().getType()).must().exist().forContext(FULL).withMessage("Must provide a valid type for the network item.");
 
 

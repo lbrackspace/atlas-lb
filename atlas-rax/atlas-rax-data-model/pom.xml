@@ -61,18 +61,20 @@
                 </dependencies>
                 <executions>
                     <execution>
-                        <id>generate-accesslist-api-sources</id>
+                        <id>generate-rax-api-sources</id>
                         <configuration>
-                            <staleFile>target/lba.staleFile</staleFile>
+                            <staleFile>target/raxApi.staleFile</staleFile>
                             <extension>true</extension>
                             <schemaDirectory>
                                 ${basedir}/src/main/resources/META-INF/xsd
                             </schemaDirectory>
                             <clearOutputDir>false</clearOutputDir>
-                            <schemaFiles>AccessList.xsd</schemaFiles>
+                            <schemaFiles>RaxApi.xsd</schemaFiles>
                             <packageName>org.openstack.atlas.api.v1.extensions.rax</packageName>
                             <!--<arguments>-Xcollection-setter-injector</arguments>-->
                             <arguments>-Xxew -setters</arguments>
+                            <bindingDirectory>../../core/core-data-model/src/main/resources/META-INF/xsd</bindingDirectory>
+                            <bindingFiles>CoreApiBindings.xjb</bindingFiles>
                         </configuration>
                         <goals>
                             <goal>xjc</goal>

@@ -52,7 +52,7 @@
                      <execution>
                         <id>generate-core-api-sources</id>
                         <configuration>
-                            <staleFile>target/core-api.staleFile</staleFile>
+                            <staleFile>target/coreApi.staleFile</staleFile>
                             <extension>true</extension>
                             <schemaDirectory>
                                 ${basedir}/src/main/resources/META-INF/xsd
@@ -69,7 +69,7 @@
                     <execution>
                         <id>generate-core-exception-sources</id>
                         <configuration>
-                            <staleFile>target/core-exception.staleFile</staleFile>
+                            <staleFile>target/coreException.staleFile</staleFile>
                             <extension>true</extension>
                             <schemaDirectory>
                                 ${basedir}/src/main/resources/META-INF/xsd
