@@ -196,11 +196,24 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         try {
             LOG.debug(String.format("Deleting traffic ip group '%s'...", trafficIpGroupName));
             serviceStubs.getTrafficIpGroupBinding().deleteTrafficIPGroup(new String[]{trafficIpGroupName});
-            LOG.debug(String.format("Traffic ip group '%s' successfully deleted.", trafficIpGroupName));
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+                LOG.debug(String.format("Traffic ip group '%s' already deleted. Ignoring...", trafficIpGroupName));
+            }
+            if (e instanceof ObjectInUse) {
+                LOG.debug(String.format("Traffic ip group '%s' is in use (i.e. shared). Skipping...", trafficIpGroupName));
+            }
+            if (!(e instanceof ObjectDoesNotExist) && !(e instanceof ObjectInUse)) {
+                LOG.debug(String.format("There was an unknown issues deleting traffic ip group: %s", trafficIpGroupName) + e.getMessage());
+            }
+        }
+
+        try {
+            //Verify the TIG was in fact deleted...
+            String[][] tig = serviceStubs.getTrafficIpGroupBinding().getTrafficManager(new String[]{trafficIpGroupName});
+            if (tig != null) throw new ObjectInUse();
         } catch (ObjectDoesNotExist odne) {
-            LOG.debug(String.format("Traffic ip group '%s' already deleted. Ignoring...", trafficIpGroupName));
-        } catch (ObjectInUse oiu) {
-            LOG.debug(String.format("Traffic ip group '%s' is in use (i.e. shared). Skipping...", trafficIpGroupName));
+            LOG.debug(String.format(String.format("Traffic ip group '%s' successfully deleted.", trafficIpGroupName)));
         }
     }
 
