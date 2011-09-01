@@ -25,7 +25,7 @@ public class LoadBalancersResource extends org.openstack.atlas.api.resource.Load
     Logger logger = Logger.getLogger("LoadBalancersResource");
 
     @Override
-    public Response createLoadBalancer(LoadBalancer loadBalancer) {
+    public Response create(LoadBalancer loadBalancer) {
         logger.log(Level.INFO, "loadbalancer: " + loadBalancer);
 
         AccessList _accessList = AnyObjectMapper.getAccessList(loadBalancer);
@@ -35,7 +35,6 @@ public class LoadBalancersResource extends org.openstack.atlas.api.resource.Load
         if (!result.passedValidation()) {
             return ResponseFactory.getValidationFaultResponse(result);
         }
-
         try {
             org.openstack.atlas.service.domain.entity.LoadBalancer mappedLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
             mappedLb.setAccountId(accountId);

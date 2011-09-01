@@ -19,6 +19,7 @@ import javax.persistence.Query;
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Repository
@@ -51,6 +52,14 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
 
         return loadBalancer;
     }
+
+    @Override
+    public List<LoadBalancer> getByAccountId(Integer accountId) {
+        return entityManager.createQuery("SELECT lb FROM LoadBalancer lb WHERE lb.accountId = :accountId")
+                .setParameter("accountId", accountId)
+                .getResultList();
+    }
+
 
     @Override
     public LoadBalancer create(LoadBalancer loadBalancer) {

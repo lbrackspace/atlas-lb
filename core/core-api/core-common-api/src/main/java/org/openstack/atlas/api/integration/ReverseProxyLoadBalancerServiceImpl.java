@@ -18,6 +18,7 @@ import org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepository
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.inject.Qualifier;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.List;
