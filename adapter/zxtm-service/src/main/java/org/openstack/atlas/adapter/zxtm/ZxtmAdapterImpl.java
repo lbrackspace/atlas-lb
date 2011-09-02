@@ -22,6 +22,7 @@ import org.apache.axis.types.UnsignedInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import sun.nio.cs.ext.ISO_8859_11;
 
 import java.rmi.RemoteException;
 import java.util.*;
