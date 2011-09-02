@@ -57,20 +57,37 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
             Map<Integer, Usage> lbIdRollupUsageMap = generateLbIdUsageMap(rollUpUsages);
             LOG.info("Processing usage entries...");
             UsageRollupMerger usagesForDatabase = new UsageRollupMerger(lbIdUsageMap, lbIdRollupUsageMap).invoke();
-            if (!usagesForDatabase.getUsagesToUpdate().isEmpty()) {
-                try {
-                    rollUpUsageRepository.batchUpdate(usagesForDatabase.getUsagesToUpdate());
-                } catch (PersistenceException e) {
-                    LOG.warn("Deleted load balancer(s) detected! Finding and removing from batch...", e);
-                    deleteBadEntries(usagesForDatabase.getUsagesToUpdate());
+            int retries = 3;
+            while (retries > 0) {
+                if (!usagesForDatabase.getUsagesToUpdate().isEmpty()) {
+                    try {
+                        rollUpUsageRepository.batchUpdate(usagesForDatabase.getUsagesToUpdate());
+                        retries = 0;
+                    } catch (PersistenceException e) {
+                        LOG.warn("Deleted load balancer(s) detected! Finding and removing from batch...", e);
+                        deleteBadEntries(usagesForDatabase.getUsagesToUpdate());
+                        retries--;
+                        LOG.warn(String.format("%d retries left.", retries));
+                    }
+                } else {
+                    break;
                 }
             }
-            if (!usagesForDatabase.getUsagesToInsert().isEmpty()) {
-                try {
-                    rollUpUsageRepository.batchCreate(usagesForDatabase.getUsagesToInsert());
-                } catch (PersistenceException e) {
-                    LOG.warn("Deleted load balancer(s) detected! Finding and removing from batch...", e);
-                    deleteBadEntries(usagesForDatabase.getUsagesToInsert());
+
+            retries = 3;
+            while (retries > 0) {
+                if (!usagesForDatabase.getUsagesToInsert().isEmpty()) {
+                    try {
+                        rollUpUsageRepository.batchCreate(usagesForDatabase.getUsagesToInsert());
+                        retries = 0;
+                    } catch (PersistenceException e) {
+                        LOG.warn("Deleted load balancer(s) detected! Finding and removing from batch...", e);
+                        deleteBadEntries(usagesForDatabase.getUsagesToInsert());
+                        retries--;
+                        LOG.warn(String.format("%d retries left.", retries));
+                    }
+                } else {
+                    break;
                 }
             }
             LOG.info("Deleting processed usage entries...");
@@ -97,6 +114,16 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
         for (Integer loadBalancerId : loadBalancerIdsWithBadId) {
             pollingUsageRepository.deleteAllRecordsForLoadBalancer(loadBalancerId);
         }
+
+        List<Usage> usageItemsToDelete = new ArrayList<Usage>();
+
+        for (Usage usageItem : usagesWithBadEntries) {
+            if (loadBalancerIdsWithBadId.contains(usageItem.getLoadbalancer().getId())) {
+                usageItemsToDelete.add(usageItem);
+            }
+        }
+
+        usagesWithBadEntries.removeAll(usageItemsToDelete);
     }
 
     private Map<Integer, Usage> generateLbIdUsageMap(List<Usage> rollUpUsages) {
