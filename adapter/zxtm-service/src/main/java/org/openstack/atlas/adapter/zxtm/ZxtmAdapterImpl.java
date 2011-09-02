@@ -3,6 +3,7 @@ package org.openstack.atlas.adapter.zxtm;
 import com.zxtm.service.client.*;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.VirtualServerListeningOnAllAddressesException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.helpers.NodeHelper;
@@ -81,6 +82,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             addVirtualIps(config, lb);
+            //Verify that the server is not listening to all addresses, zeus does this by default and is an unwanted behaviour.
+            isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
             /* UPDATE REST OF LOADBALANCER CONFIG */
@@ -118,6 +121,17 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         LOG.info(String.format("Load balancer '%s' successfully created.", virtualServerName));
+    }
+
+    private void isVSListeningOnAllAddresses(ZxtmServiceStubs serviceStubs, String virtualServerName, String poolName) throws RemoteException, VirtualServerListeningOnAllAddressesException {
+        boolean[] isListening = serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(new String[]{virtualServerName});
+
+        //If The VS is listening on all addresses, rollback pools and VS, Log an exception...
+        if (isListening[0]) {
+            deleteNodePool(serviceStubs, poolName);
+            deleteVirtualServer(serviceStubs, virtualServerName);
+            throw new VirtualServerListeningOnAllAddressesException(String.format("The Virtual Server %s was found to be listening on all IP addresses.", virtualServerName));
+        }
     }
 
     @Override
