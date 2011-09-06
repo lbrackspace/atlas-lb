@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+
+import traceback
+import datetime
+import stat
+import cPickle
+import string
+import time
+import json
+import sys
+import os
+import re
+
+BLOCKSIZE = 1024*1024
+
+migration_re = re.compile("[0-9]+-[0-9]+.sql",re.IGNORECASE)
+
+def fprintf(fp,format,*args): fp.write(format%args)
+
+def printf(format,*args):
+    now = datetime.datetime.now().__str__()
+    sys.stdout.write(format%args)
+    msg = format%args
+    lfp.write("%s: %s"%(now,msg))
+    lfp.flush()
+
+def test_re(pattern,text):
+    pattern_re = re.compile(pattern)
+    m = pattern_re.match(text)
+    if m:
+        return m.groups()
+    else:
+        return False
+
+def load_json(file_name):
+    file_path = os.path.expanduser(file_name)
+    fp = open(file_path,"r")
+    jtext = fp.read()
+    fp.close()
+    obj = json.loads(jtext)
+    return obj
+
+def save_json(obj,file_name):
+    file_path = os.path.expanduser(file_name)
+    try:
+        jtext = json.dumps(obj,indent=2)
+    except:
+        printf("Error %s\n",traceback.format_exc())
+        sys.exit()
+    fp = open(file_path,"w")
+    fp.write(jtext)
+    fp.close()
+
+def stripbasedir(basedir,fulldir):
+    basedir_components = splitpath(basedir)
+    fulldir_components = splitpath(fulldir)
+    stripeddir_components = fulldir_components[len(basedir_components):]
+    striped_dir = joinpath(stripeddir_components)
+    return striped_dir
+
+
+def fullpath(path_in):
+    return os.path.abspath(os.path.expanduser(path_in))
+
+def getdatestr(datetimeobj):
+    do = datetimeobj
+    year  = pad(4,"0",do.year)
+    month = pad(2,"0",do.month)
+    day   = pad(2,"0",do.day)
+    hour  = pad(2,"0",do.hour)
+    min   = pad(2,"0",do.minute)
+    sec   = pad(2,"0",do.second)
+    date_args = (year,month,day)
+    time_args = (hour,min)
+    return ("%s-%s-%s"%date_args,"%s:%s"%time_args)
+
+
+def pad(digits,ch,val,**kargs):
+    str_out=str(val)
+    if not "side" in kargs:
+        kargs["side"]="LEFT_DIR"
+    if kargs["side"]=="LEFT_DIR" or kargs["side"]=="LEFT":
+        for i in xrange(0,digits-len(str_out)):
+            str_out = ch + str_out
+        return str_out
+    if kargs["side"]=="RIGHT_DIR" or kargs["side"]=="RIGHT":
+        for i in xrange(0,digits-len(str_out)):
+            str_out = str_out + ch
+        return str_out
+
+def getmigrationLs(dirname):
+    files_out = []
+    now = datetime.datetime.now()
+    (date_str,time_str) = getdatestr(now)
+    fformat = "-rw-r--r-- 1 root root %i %s %s %s"
+    files_out.append("drwxr-xr-x 2 root root  4096 2011-08-17 22:09 ./")
+    files_out.append("drwxr-xr-x 2 root root  4096 2011-08-17 22:09 ../")
+    for file_name in os.listdir(dirname):
+        full_path = os.path.join(dirname,file_name)
+        m = migration_re.match(file_name)
+        if not m or not os.path.isfile(full_path):
+            continue
+        fsize = os.stat(full_path)[stat.ST_SIZE]
+        files_out.append(fformat%(fsize,date_str,time_str,file_name))
+    total = "total %i"%(len(files_out))
+    files_out.insert(0,total)
+    return string.join(files_out,"\n")
+
+
+if __name__ == "__main__":
+    lfp = open(fullpath("~/populate.log"),"a")
+    printf("prebuild started in dir %s\n",os.getcwd())
+    cnf = load_json("~/populate.json")
+    atlasdir = os.environ["PWD"]
+    for(migration_file,migration_dir) in cnf["migrations"].items():
+        full_dir = os.path.join(atlasdir,migration_dir)
+        printf("Writing migrations for %s into %s\n",migration_dir,migration_file)
+        lfp.flush()
+        fp = open(migration_file,"w")
+        file_list = getmigrationLs(migration_dir)
+        fp.write(file_list)
+        fp.close()

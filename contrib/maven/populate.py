@@ -206,38 +206,6 @@ def pad(digits,ch,val,**kargs):
             str_out = str_out + ch
         return str_out
 
-def getdatestr(datetimeobj):
-    do = datetimeobj
-    year  = pad(4,"0",do.year)
-    month = pad(2,"0",do.month)
-    day   = pad(2,"0",do.day)
-    hour  = pad(2,"0",do.hour)
-    min   = pad(2,"0",do.minute)
-    sec   = pad(2,"0",do.second)
-    date_args = (year,month,day)
-    time_args = (hour,min)
-    return ("%s-%s-%s"%date_args,"%s:%s"%time_args)
-
-def getmigrationLs(dirname):
-    files_out = []
-    now = datetime.datetime.now()
-    (date_str,time_str) = getdatestr(now)
-    fformat = "-rw-r--r-- 1 root root %i %s %s %s"
-    files_out.append("drwxr-xr-x 2 root root  4096 2011-08-17 22:09 ./")
-    files_out.append("drwxr-xr-x 2 root root  4096 2011-08-17 22:09 ../")
-    for file_name in os.listdir(dirname):
-        full_path = os.path.join(dirname,file_name)
-        m = migration_re.match(file_name)
-        if not m or not os.path.isfile(full_path):
-            continue
-        fsize = os.stat(full_path)[stat.ST_SIZE]
-        files_out.append(fformat%(fsize,date_str,time_str,file_name))
-    total = "total %i"%(len(files_out))
-    files_out.insert(0,total)
-    return string.join(files_out,"\n")
-
-
-        
 def makedirp(dirname):
     try:
         os.makedirs(dirname)
@@ -246,7 +214,6 @@ def makedirp(dirname):
         return
 
 if __name__ == "__main__":
-    atlasdir = os.environ["PWD"]
     lfp = open(fullpath("~/populate.log"),"a")
     printf("Build started in dir %s\n",os.getcwd())
     cnf = load_json("~/populate.json")
@@ -264,14 +231,6 @@ if __name__ == "__main__":
             printf("skipping %s\n",file_path)
         else:
             deb_files.append(file_path)
-
-    for(migration_file,migration_dir) in cnf["migrations"].items():
-        full_dir = os.path.join(atlasdir,migration_dir)
-        printf("Writing migrations for %s into %s\n",migration_dir,migration_file)
-        fp = open(migration_file,"w")
-        file_list = getmigrationLs(migration_dir)
-        fp.write(file_list)
-        fp.close()
 
     if len(deb_files)>0:
         deb_files.sort()
