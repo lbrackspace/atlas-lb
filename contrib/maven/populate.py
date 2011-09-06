@@ -2,6 +2,7 @@
 
 import traceback
 import datetime
+import stat
 import cPickle
 import string
 import time
@@ -15,6 +16,7 @@ BLOCKSIZE = 1024*1024
 
 snapshot_re = re.compile(".*snapshot.*\.deb$",re.IGNORECASE)
 package_re = re.compile("([^_]*)_.*\.deb$",re.IGNORECASE)
+migration_re = re.compile("[0-9]+-[0-9]+.sql",re.IGNORECASE)
 
 def fprintf(fp,format,*args): fp.write(format%args)
 
@@ -48,7 +50,7 @@ def save_cpickle(obj,file_name,compress=False):
     file_path = os.path.expanduser(file_name)
     while ignoreCtrlC:
        try:
-           open(file_path,"w",BUFFSIZE).write(data)
+           open(file_path,"w",BLOCKSIZE).write(data)
            break
        except (KeyboardInterrupt,SystemExit):
            printf("KeyPress Ignored\n")
@@ -76,7 +78,7 @@ def save_json(obj,file_name):
 
 def load_cpickle(file_name,compress=False):
     file_path = os.path.expanduser(file_name)
-    data = open(file_path,"r",BUFFSIZE).read()
+    data = open(file_path,"r",BLOCKSIZE).read()
     if(compress):
         data = zlib.decompress(data)
     obj = cPickle.loads(data)
@@ -191,6 +193,51 @@ def pool_name(basedir,dst):
     out_path = os.path.join(basedir,letter,package_name,deb)
     return out_path
 
+def pad(digits,ch,val,**kargs):
+    str_out=str(val)
+    if not "side" in kargs:
+        kargs["side"]="LEFT_DIR"
+    if kargs["side"]=="LEFT_DIR" or kargs["side"]=="LEFT":
+        for i in xrange(0,digits-len(str_out)):
+            str_out = ch + str_out
+        return str_out
+    if kargs["side"]=="RIGHT_DIR" or kargs["side"]=="RIGHT":
+        for i in xrange(0,digits-len(str_out)):
+            str_out = str_out + ch
+        return str_out
+
+def getdatestr(datetimeobj):
+    do = datetimeobj
+    year  = pad(4,"0",do.year)
+    month = pad(2,"0",do.month)
+    day   = pad(2,"0",do.day)
+    hour  = pad(2,"0",do.hour)
+    min   = pad(2,"0",do.minute)
+    sec   = pad(2,"0",do.second)
+    date_args = (year,month,day)
+    time_args = (hour,min)
+    return ("%s-%s-%s"%date_args,"%s:%s"%time_args)
+
+def getmigrationLs(dirname):
+    files_out = []
+    now = datetime.datetime.now()
+    (date_str,time_str) = getdatestr(now)
+    fformat = "-rw-r--r-- 1 root root %i %s %s %s"
+    files_out.append("drwxr-xr-x 2 root root  4096 2011-08-17 22:09 ./")
+    files_out.append("drwxr-xr-x 2 root root  4096 2011-08-17 22:09 ../")
+    for file_name in os.listdir(dirname):
+        full_path = os.path.join(dirname,file_name)
+        m = migration_re.match(file_name)
+        if not m or not os.path.isfile(full_path):
+            continue
+        fsize = os.stat(full_path)[stat.ST_SIZE]
+        files_out.append(fformat%(fsize,date_str,time_str,file_name))
+    total = "total %i"%(len(files_out))
+    files_out.insert(0,total)
+    return string.join(files_out,"\n")
+
+
+        
 def makedirp(dirname):
     try:
         os.makedirs(dirname)
@@ -199,6 +246,7 @@ def makedirp(dirname):
         return
 
 if __name__ == "__main__":
+    atlasdir = os.environ["PWD"]
     lfp = open(fullpath("~/populate.log"),"a")
     printf("Build started in dir %s\n",os.getcwd())
     cnf = load_json("~/populate.json")
@@ -216,6 +264,14 @@ if __name__ == "__main__":
             printf("skipping %s\n",file_path)
         else:
             deb_files.append(file_path)
+
+    for(migration_file,migration_dir) in cnf["migrations"].items():
+        full_dir = os.path.join(atlasdir,migration_dir)
+        printf("Writing migrations for %s into %s\n",migration_dir,migratiion_file)
+        fp = open(migration_file,"w")
+        file_list = getmigrationLs(migration_dir)
+        fp.write(file_list)
+        fp.close()
 
     if len(deb_files)>0:
         deb_files.sort()
