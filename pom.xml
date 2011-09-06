@@ -38,6 +38,7 @@
         <module>data-model</module>
         <module>persistence</module>
         <module>adapter</module>
+        <module>migration</module>
         <module>api</module>
         <module>logs</module>
         <module>jobs</module>

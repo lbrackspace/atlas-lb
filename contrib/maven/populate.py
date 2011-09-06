@@ -267,7 +267,7 @@ if __name__ == "__main__":
 
     for(migration_file,migration_dir) in cnf["migrations"].items():
         full_dir = os.path.join(atlasdir,migration_dir)
-        printf("Writing migrations for %s into %s\n",migration_dir,migratiion_file)
+        printf("Writing migrations for %s into %s\n",migration_dir,migration_file)
         fp = open(migration_file,"w")
         file_list = getmigrationLs(migration_dir)
         fp.write(file_list)
