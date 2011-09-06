@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.7.1-SNAPSHOT</version>
+        <version>1.7.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-schema-migration</artifactId>
@@ -30,7 +30,7 @@
                                     <deb>target/${artifactId}_${version}_all.deb</deb>
                                     <dataSet>
                                         <data>
-                                            <src>${basedir}/schema/loadbalancing</src>>
+                                            <src>${basedir}/schema/loadbalancing</src>&gt;
                                             <type>directory</type>
                                             <mapper>
                                                 <type>ls</type>
@@ -45,7 +45,7 @@
                                         </data>
 
                                         <data>
-                                            <src>${basedir}/schema/loadbalancing_usage</src>>
+                                            <src>${basedir}/schema/loadbalancing_usage</src>&gt;
                                             <type>directory</type>
                                             <mapper>
                                                 <type>ls</type>
