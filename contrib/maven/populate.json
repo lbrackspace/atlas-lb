@@ -1,0 +1,8 @@
+{
+  "topdir": "/var/lib/jenkins/repo/ubuntu-repo/rs-repo", 
+  "pool": "pool/main",
+  "blocksize": 1048576, 
+  "populate_cmd": "/var/lib/jenkins/repo/ubuntu-repo/populate.sh", 
+  "incoming": "incoming/main", 
+  "qa_up": "/var/lib/jenkins/repo/ubuntu-repo/qa_up.sh"
+}
