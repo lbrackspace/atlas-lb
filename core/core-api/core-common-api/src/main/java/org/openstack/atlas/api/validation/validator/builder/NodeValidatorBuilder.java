@@ -16,7 +16,11 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 @Component
 @Scope("request")
 public class NodeValidatorBuilder extends ValidatorBuilder<Node> {
-    private NodeCondition nodeCondition;
+    protected final int MIN_PORT = 1;
+    protected final int MAX_PORT = 65535;
+    protected final int MIN_WEIGHT = 1;
+    protected final int MAX_WEIGHT = 100;
+    protected NodeCondition nodeCondition;
 
     @Autowired
     public NodeValidatorBuilder(NodeCondition nodeCondition) {
@@ -25,9 +29,9 @@ public class NodeValidatorBuilder extends ValidatorBuilder<Node> {
 
         // SHARED EXPECTATIONS
         result(validationTarget().getAddress()).if_().exist().then().must().adhereTo(new IpAddressVerifier()).withMessage("Node ip is invalid. Please specify a valid ip.");
-        result(validationTarget().getPort()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(1, 65535)).withMessage("Node port is invalid. Please specify a valid port.");
+        result(validationTarget().getPort()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MIN_PORT, MAX_PORT)).withMessage("Node port is invalid. Please specify a valid port.");
         result(validationTarget().getCondition()).if_().exist().then().must().adhereTo(new MustBeInArray(nodeCondition.toList())).withMessage("Node condition is invalid. Please specify a valid condition.");
-        result(validationTarget().getWeight()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(1, 100)).withMessage("Node weight is invalid. Range is 1-100. Please specify a valid weight.");
+        result(validationTarget().getWeight()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MIN_WEIGHT, MAX_WEIGHT)).withMessage("Node weight is invalid. Range is 1-100. Please specify a valid weight.");
         result(validationTarget().getStatus()).must().not().exist().withMessage("Node status field cannot be modified.");
         result(validationTarget().getId()).must().not().exist().withMessage("Node id field cannot be modified.");
         must().adhereTo(new Verifier<Node>() {
