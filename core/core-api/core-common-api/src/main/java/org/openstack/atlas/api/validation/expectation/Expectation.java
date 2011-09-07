@@ -159,8 +159,8 @@ public class Expectation implements ConditionalExpectation, OngoingExpectation, 
     }
 
     @Override
-    public FinalizedExpectation cannotExceedSize(int num) {
-        setVerifier(new CannotExceedSize(num));
+    public FinalizedExpectation haveSizeOfAtMost(int num) {
+        setVerifier(new HaveSizeOfAtMost(num));
 
         return this;
     }

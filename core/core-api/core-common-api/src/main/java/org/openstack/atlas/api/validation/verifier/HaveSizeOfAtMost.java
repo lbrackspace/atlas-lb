@@ -2,11 +2,11 @@ package org.openstack.atlas.api.validation.verifier;
 
 import java.util.Collection;
 
-public class CannotExceedSize implements Verifier {
+public class HaveSizeOfAtMost implements Verifier {
 
     private final int num;
 
-    public CannotExceedSize(int num) {
+    public HaveSizeOfAtMost(int num) {
         this.num = num;
     }
 

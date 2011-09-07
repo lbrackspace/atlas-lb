@@ -30,7 +30,7 @@ public class Node extends org.openstack.atlas.service.domain.entity.Entity imple
 
     @Enumerated(EnumType.STRING)
     @Column(name = "node_condition", nullable = false)
-    private NodeCondition condition;
+    private NodeCondition condition = NodeCondition.ENABLED;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

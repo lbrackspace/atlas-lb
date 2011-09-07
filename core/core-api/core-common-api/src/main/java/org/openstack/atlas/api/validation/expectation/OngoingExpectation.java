@@ -21,7 +21,7 @@ public interface OngoingExpectation {
 
     FinalizedExpectation haveSizeOfAtLeast(int num);
 
-    FinalizedExpectation cannotExceedSize(int num);
+    FinalizedExpectation haveSizeOfAtMost(int num);
 
     FinalizedExpectation haveSizeOfExactly(int num);
 

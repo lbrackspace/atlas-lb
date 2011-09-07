@@ -1,5 +1,5 @@
 package org.openstack.atlas.datamodel;
 
-public interface Algorithm {
+public interface PersistenceType {
     String[] toList();
 }

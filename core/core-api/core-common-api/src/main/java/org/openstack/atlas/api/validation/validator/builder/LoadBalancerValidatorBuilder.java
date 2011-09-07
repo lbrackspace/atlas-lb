@@ -7,7 +7,8 @@ import org.openstack.atlas.api.validation.validator.NodeValidator;
 import org.openstack.atlas.api.validation.validator.VirtualIpValidator;
 import org.openstack.atlas.api.validation.verifier.*;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
-import org.openstack.atlas.datamodel.Algorithm;
+import org.openstack.atlas.core.api.v1.Node;
+import org.openstack.atlas.datamodel.AlgorithmType;
 import org.openstack.atlas.datamodel.ProtocolPortBindings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -22,16 +23,16 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
     protected final int MIN_PORT = 1;
     protected final int MAX_PORT = 65535;
     protected final int LB_NAME_LENGTH = 128;
-    protected Algorithm algorithm;
+    protected AlgorithmType algorithmType;
 
     @Autowired
-    public LoadBalancerValidatorBuilder(Algorithm algorithm) {
+    public LoadBalancerValidatorBuilder(AlgorithmType algorithmType, ValidatorBuilder<Node> nodeValidatorBuilder) {
         super(LoadBalancer.class);
-        this.algorithm = algorithm;
+        this.algorithmType = algorithmType;
 
         // SHARED EXPECTATIONS
         result(validationTarget().getProtocol()).if_().exist().then().must().adhereTo(new MustBeInArray(ProtocolPortBindings.getKeysAsArray())).withMessage("Load balancer protocol is invalid. Please specify a valid protocol.");
-        result(validationTarget().getAlgorithm()).if_().exist().then().must().adhereTo(new MustBeInArray(algorithm.toList())).withMessage("Load balancer algorithm is invalid. Please specify a valid algorithm.");
+        result(validationTarget().getAlgorithm()).if_().exist().then().must().adhereTo(new MustBeInArray(algorithmType.toList())).withMessage("Load balancer algorithm is invalid. Please specify a valid algorithm.");
 
         result(validationTarget().getPort()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MIN_PORT, MAX_PORT)).withMessage("Load balancer port is invalid. Please specify a valid port.");
         result(validationTarget().getId()).must().not().exist().withMessage("Load balancer id field cannot be modified.");
@@ -44,9 +45,7 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
         // POST EXPECTATIONS
         result(validationTarget().getName()).must().exist().forContext(POST).withMessage("Must provide a name for the load balancer.");
         result(validationTarget().getName()).must().not().beEmptyOrNull().forContext(POST).withMessage("Load balancer name is invalid. Please specify a valid name");
-        result(validationTarget().getProtocol()).must().exist().forContext(POST).withMessage("Must provide a valid protocol for the load balancer.");
-        result(validationTarget().getVirtualIps()).must().exist().forContext(POST).withMessage("Must provide exactly one virtual ip for the load balancer.");
-        result(validationTarget().getVirtualIps()).must().haveSizeOfExactly(1).forContext(POST).withMessage("Must have only one virtual ip for the load balancer");
+        result(validationTarget().getVirtualIps()).must().haveSizeOfAtMost(1).forContext(POST).withMessage("Must have at most one virtual ip for the load balancer");
         result(validationTarget().getVirtualIps()).if_().exist().then().must().adhereTo(new SharedOrNewVipVerifier()).forContext(POST).withMessage("Must specify either a shared or new virtual ip.");
         result(validationTarget().getVirtualIps()).if_().exist().then().must().delegateTo(new VirtualIpValidator().getValidator(), POST).forContext(POST);
 
@@ -54,11 +53,11 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
         result(validationTarget().getNodes()).must().exist().forContext(POST).withMessage("Must provide at least one node for the load balancer.");
         result(validationTarget().getNodes()).must().adhereTo(new DuplicateNodeVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");
         result(validationTarget().getNodes()).must().adhereTo(new ActiveNodeVerifier()).forContext(POST).withMessage("Please ensure that at least one node has an ENABLED condition.");
-        result(validationTarget().getNodes()).if_().exist().then().must().delegateTo(new NodeValidator().getValidator(), POST).forContext(POST);
+        result(validationTarget().getNodes()).if_().exist().then().must().delegateTo(new NodeValidator(nodeValidatorBuilder).getValidator(), POST).forContext(POST);
         result(validationTarget().getNodes()).must().haveSizeOfAtLeast(1).forContext(POST).withMessage("Must have at least one node.");
         result(validationTarget().getHealthMonitor()).if_().exist().then().must().delegateTo(new HealthMonitorValidator().getValidator(), POST).forContext(POST);
         result(validationTarget().getConnectionThrottle()).if_().exist().then().must().delegateTo(new ConnectionThrottleValidator().getValidator(), POST).forContext(POST);
-        result(validationTarget().getNodes()).if_().exist().then().must().cannotExceedSize(25).withMessage("Must not provide more than twenty five nodes per load balancer.");
+        result(validationTarget().getNodes()).if_().exist().then().must().haveSizeOfAtMost(25).withMessage("Must not provide more than twenty five nodes per load balancer.");
 
 
         // PUT EXPECTATIONS
@@ -72,5 +71,7 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
         result(validationTarget().getVirtualIps()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/virtualips/{virtual ip id} to configure a virtual ip.");
         result(validationTarget().getHealthMonitor()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/healthmonitor to configure your health monitor.");
         result(validationTarget().getConnectionThrottle()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/throttles to configure connection throttling.");
+        result(validationTarget().getConnectionLogging()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/connectionLogging to configure connection throttling.");
+        result(validationTarget().getSessionPersistence()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/sessionPersistence to configure connection throttling.");
     }
 }

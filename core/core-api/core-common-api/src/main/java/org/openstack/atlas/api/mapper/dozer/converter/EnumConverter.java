@@ -33,12 +33,12 @@ public class EnumConverter implements CustomConverter {
             return LoadBalancerStatus.valueOf((String)sourceFieldValue);
         }
 
-        // String -> AlgorithmType
+        // String -> CoreAlgorithmType
         if(sourceFieldValue instanceof String && destinationClass == LoadBalancerAlgorithm.class) {
             return LoadBalancerAlgorithm.valueOf((String)sourceFieldValue);
         }
 
-        // AlgorithmType -> String
+        // CoreAlgorithmType -> String
         if(sourceFieldValue instanceof LoadBalancerAlgorithm && destinationClass == String.class) {
             return ((LoadBalancerAlgorithm)sourceFieldValue).toString();
         }

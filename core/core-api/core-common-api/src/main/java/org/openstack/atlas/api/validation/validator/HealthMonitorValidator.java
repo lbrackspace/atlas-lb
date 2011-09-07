@@ -6,7 +6,7 @@ import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.verifier.HealthMonitorTypeVerifier;
 import org.openstack.atlas.api.validation.verifier.MustBeIntegerInRange;
-import org.openstack.atlas.datamodel.HealthMonitorType;
+import org.openstack.atlas.datamodel.CoreHealthMonitorType;
 
 import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
@@ -32,9 +32,9 @@ public class HealthMonitorValidator implements ResourceValidator<HealthMonitor> 
                 result(validationTarget().getAttemptsBeforeDeactivation()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MAX_ATTEMPTS_BEFORE_DEACTIVATION[0], MAX_ATTEMPTS_BEFORE_DEACTIVATION[1])).withMessage("Must specify valid attempts before deactivation range.");
 
                 // PUT EXPECTATIONS
-                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.CONNECT)).then().must().delegateTo(new ConnectHealthMonitorValidator().getValidator(), PUT).forContext(PUT);
-                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTP)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), PUT).forContext(PUT);
-                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTPS)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), PUT).forContext(PUT);
+                if_().adhereTo(new HealthMonitorTypeVerifier(new CoreHealthMonitorType(CoreHealthMonitorType.CONNECT))).then().must().delegateTo(new ConnectHealthMonitorValidator().getValidator(), PUT).forContext(PUT);
+                if_().adhereTo(new HealthMonitorTypeVerifier(new CoreHealthMonitorType(CoreHealthMonitorType.HTTP))).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), PUT).forContext(PUT);
+                if_().adhereTo(new HealthMonitorTypeVerifier(new CoreHealthMonitorType(CoreHealthMonitorType.HTTPS))).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), PUT).forContext(PUT);
 
             }
         });

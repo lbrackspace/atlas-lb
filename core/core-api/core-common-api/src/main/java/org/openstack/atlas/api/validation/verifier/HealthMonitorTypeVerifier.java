@@ -1,17 +1,17 @@
 package org.openstack.atlas.api.validation.verifier;
 
 import org.openstack.atlas.core.api.v1.HealthMonitor;
-import org.openstack.atlas.datamodel.HealthMonitorType;
+import org.openstack.atlas.datamodel.CoreHealthMonitorType;
 
 public class HealthMonitorTypeVerifier implements Verifier<HealthMonitor> {
-    private final HealthMonitorType type;
+    private final CoreHealthMonitorType healthMonitorType;
 
-    public HealthMonitorTypeVerifier(HealthMonitorType type) {
-        this.type = type;
+    public HealthMonitorTypeVerifier(CoreHealthMonitorType healthMonitorType) {
+        this.healthMonitorType = healthMonitorType;
     }
 
     @Override
     public VerifierResult verify(HealthMonitor monitor) {
-        return new VerifierResult(monitor != null && type.name().equals(monitor.getType()));
+        return new VerifierResult(monitor != null && healthMonitorType.getType().equals(monitor.getType()));
     }
 }

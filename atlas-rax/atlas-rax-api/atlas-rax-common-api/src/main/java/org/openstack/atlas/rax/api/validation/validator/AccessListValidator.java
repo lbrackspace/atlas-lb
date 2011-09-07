@@ -19,7 +19,7 @@ public class AccessListValidator implements ResourceValidator<AccessList> {
             {
                 // SHARED EXPECTATIONS
                 result(validationTarget().getNetworkItems()).must().not().beEmptyOrNull().withMessage("Must provide at least one network item to the access list.");
-                result(validationTarget().getNetworkItems()).if_().exist().then().must().cannotExceedSize(100).withMessage("Must not provide more than one hundred network items for the access list.");
+                result(validationTarget().getNetworkItems()).if_().exist().then().must().haveSizeOfAtMost(100).withMessage("Must not provide more than one hundred network items for the access list.");
 
                 // FULL EXPECTATIONS
                 result(validationTarget().getNetworkItems()).must().delegateTo(new NetworkItemValidator().getValidator(), NetworkItemContext.FULL);

@@ -9,7 +9,7 @@ import org.openstack.atlas.core.api.v1.ConnectionThrottle;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
 import org.openstack.atlas.core.api.v1.VipType;
-import org.openstack.atlas.datamodel.NodeCondition;
+import org.openstack.atlas.datamodel.CoreNodeCondition;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
 import org.openstack.atlas.service.domain.stub.LoadBalancerStubFactory;
@@ -160,8 +160,8 @@ public class LoadBalancerMappingTest {
                 if (!(node.getAddress().equals("10.1.1.1") || node.getAddress().equals("10.1.1.2"))) {
                     Assert.fail();
                 }
-                if (!(node.getCondition().equals(NodeCondition.DISABLED.name())
-                        || node.getCondition().equals(NodeCondition.ENABLED.name()))) {
+                if (!(node.getCondition().equals(CoreNodeCondition.DISABLED)
+                        || node.getCondition().equals(CoreNodeCondition.ENABLED))) {
                     Assert.fail();
                 }
                 if (!(node.getStatus().equals(NodeStatus.OFFLINE.name())
