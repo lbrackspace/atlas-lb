@@ -14,6 +14,4 @@ public interface FinalizedExpectation extends CompleteExpectation {
     FinalizedExpectation forContext(Object... contexts);
 
     FinalizedExpectation forContexts(Object[] contexts);
-
-//    EmptyExpectation then();
 }

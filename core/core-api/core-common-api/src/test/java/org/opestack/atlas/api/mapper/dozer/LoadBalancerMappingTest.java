@@ -12,7 +12,7 @@ import org.openstack.atlas.core.api.v1.VipType;
 import org.openstack.atlas.datamodel.CoreNodeCondition;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
-import org.openstack.atlas.service.domain.stub.LoadBalancerStubFactory;
+import org.openstack.atlas.service.domain.stub.StubFactory;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class LoadBalancerMappingTest {
 
         @Before
         public void setUp() {
-            dataModelLoadBalancer = LoadBalancerStubFactory.createHydratedDataModelLoadBalancer();
+            dataModelLoadBalancer = StubFactory.createHydratedDataModelLoadBalancer();
             domainLoadBalancer = mapper.map(dataModelLoadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
         }
 
@@ -114,7 +114,7 @@ public class LoadBalancerMappingTest {
 
         @Before
         public void setUp() {
-            domainLoadBalancer = LoadBalancerStubFactory.createHydratedDomainLoadBalancer();
+            domainLoadBalancer = StubFactory.createHydratedDomainLoadBalancer();
             dataModelLoadBalancer = mapper.map(domainLoadBalancer, org.openstack.atlas.core.api.v1.LoadBalancer.class);
         }
 

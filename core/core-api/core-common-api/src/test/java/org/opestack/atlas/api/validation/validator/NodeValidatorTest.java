@@ -1,48 +1,39 @@
-package org.openstack.atlas.api.validation.validators;
+package org.opestack.atlas.api.validation.validator;
 
-import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NodeStatus;
-import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.api.validation.result.ValidatorResult;
+import org.openstack.atlas.api.validation.validator.NodeValidator;
+import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
+import org.openstack.atlas.core.api.v1.Node;
+import org.openstack.atlas.datamodel.CoreNodeCondition;
+import org.openstack.atlas.datamodel.CoreNodeStatus;
+import org.openstack.atlas.service.domain.stub.StubFactory;
 
-import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
-import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
+import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 
 @RunWith(Enclosed.class)
 public class NodeValidatorTest {
 
-    public static class WhenValidatingPost {
-
+    public static class WhenValidatingPostContext {
         private Node node;
         private NodeValidator validator;
 
         @Before
         public void standUp() {
-            validator = new NodeValidator();
-
-            node = new Node();
-            node.setAddress("1.0.5.5");
-            node.setPort(80);
-            node.setCondition(NodeCondition.ENABLED);
-            node.setWeight(1);
+            validator = new NodeValidator(new NodeValidatorBuilder(new CoreNodeCondition()));
+            node = StubFactory.createMinimalDataModelNodeForPost();
         }
 
         @Test
-        public void shouldAcceptValidNode() {
-            assertTrue(validator.validate(node, POST).passedValidation());
-        }
-
-        @Test
-        public void shouldRejectCidrIpAddress() {
-            node.setAddress("10.1.1.1/32");
+        public void shouldAcceptValidMinimalNode() {
             ValidatorResult result = validator.validate(node, POST);
-            assertFalse(result.passedValidation());
+            assertTrue(result.passedValidation());
         }
 
         @Test
@@ -53,44 +44,15 @@ public class NodeValidatorTest {
         }
 
         @Test
-        public void shouldRejectInvalidIPv4Address() {
-            Node node1 = new Node();
-            node1.setAddress("0.0.0.0");
-            ValidatorResult result = validator.validate(node1, POST);
-            assertFalse(result.passedValidation());
-        }
-
-        @Test
-        public void shouldRejectInvalidIPv6Address() {
-            node.setAddress("2001:0db8:85a3:0000:0000:8a2e:0370:7334:::");
+        public void shouldRejectInvalidIPv4Address1() {
+            node.setAddress("0.0.0.0");
             ValidatorResult result = validator.validate(node, POST);
             assertFalse(result.passedValidation());
         }
 
         @Test
-        public void shouldAcceptValidIPv6Address() {
-            node.setAddress("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
-            ValidatorResult result = validator.validate(node, POST);
-            assertTrue(result.passedValidation());
-        }
-
-        @Test
-        public void shouldRejectIpv4CidrAddress() {
-            node.setAddress("123.123.123.123/24");
-            ValidatorResult result = validator.validate(node, POST);
-            assertFalse(result.passedValidation());
-        }
-
-        @Test
-        public void shouldRejectIpv6CidrAddress() {
-            node.setAddress("ffff:ffff:ffff:ffff::/64");
-            ValidatorResult result = validator.validate(node, POST);
-            assertFalse(result.passedValidation());
-        }
-
-        @Test
-        public void shouldRejectInvalidIp() {
-            node.setAddress("0.0.0.0.0");
+        public void shouldRejectInvalidIPv4Address2() {
+            node.setAddress("255.255.255.255");
             ValidatorResult result = validator.validate(node, POST);
             assertFalse(result.passedValidation());
         }
@@ -103,15 +65,29 @@ public class NodeValidatorTest {
         }
 
         @Test
-        public void shouldRejectAll255s() {
-            node.setAddress("255.255.255.255");
+        public void shouldRejectIpv4CidrAddress() {
+            node.setAddress("123.123.123.123/24");
             ValidatorResult result = validator.validate(node, POST);
             assertFalse(result.passedValidation());
         }
 
         @Test
-        public void shouldRejectSubnetIp() {
-            node.setAddress("0.0.0.0");
+        public void shouldAcceptValidIPv6Address() {
+            node.setAddress("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
+            ValidatorResult result = validator.validate(node, POST);
+            assertTrue(result.passedValidation());
+        }
+
+        @Test
+        public void shouldRejectInvalidIPv6Address() {
+            node.setAddress("2001:0db8:85a3:0000:0000:8a2e:0370:7334:::");
+            ValidatorResult result = validator.validate(node, POST);
+            assertFalse(result.passedValidation());
+        }
+
+        @Test
+        public void shouldRejectIpv6CidrAddress() {
+            node.setAddress("ffff:ffff:ffff:ffff::/64");
             ValidatorResult result = validator.validate(node, POST);
             assertFalse(result.passedValidation());
         }
@@ -124,15 +100,31 @@ public class NodeValidatorTest {
         }
 
         @Test
-        public void shouldRejectInvalidPort() {
+        public void shouldRejectInvalidPort1() {
             node.setPort(0);
             ValidatorResult result = validator.validate(node, POST);
             assertFalse(result.passedValidation());
         }
 
         @Test
-        public void shouldRejectNullCondition() {
-            node.setCondition(null);
+        public void shouldRejectInvalidPort2() {
+            node.setPort(65536);
+            ValidatorResult result = validator.validate(node, POST);
+            assertFalse(result.passedValidation());
+        }
+
+        @Test
+        public void shouldAcceptCoreConditions() {
+            for (String nodeCondition : CoreNodeCondition.values()) {
+                node.setCondition(nodeCondition);
+                ValidatorResult result = validator.validate(node, POST);
+                assertTrue(result.passedValidation());
+            }
+        }
+
+        @Test
+        public void shouldRejectInvalidNodeCondition() {
+            node.setCondition("SOME_BOGUS_CONDITION");
             ValidatorResult result = validator.validate(node, POST);
             assertFalse(result.passedValidation());
         }
@@ -160,31 +152,39 @@ public class NodeValidatorTest {
 
         @Test
         public void shouldRejectWhenIdIsSet() {
-            node.setId(1);
+            node.setId(1234);
             ValidatorResult result = validator.validate(node, POST);
             assertFalse(result.passedValidation());
         }
 
         @Test
-        public void shouldRejectWhenStatusIsSet() {
-            node.setStatus(NodeStatus.OFFLINE);
+        public void shouldRejectWhenStatusIsSetToCoreNodeStatus() {
+            for (String nodeStatus : CoreNodeStatus.values()) {
+                node.setStatus(nodeStatus);
+                ValidatorResult result = validator.validate(node, POST);
+                assertFalse(result.passedValidation());
+            }
+        }
+
+        @Test
+        public void shouldRejectWhenStatusIsSetToErroneousNodeStatus() {
+            node.setStatus("SOME_BOGUS_STATUS");
             ValidatorResult result = validator.validate(node, POST);
             assertFalse(result.passedValidation());
         }
-
     }
 
-    public static class whenValidatingPut {
 
+    public static class WhenValidatingPutContext {
         private Node node;
         private NodeValidator validator;
 
         @Before
         public void setUp() {
-            validator = new NodeValidator();
+            validator = new NodeValidator(new NodeValidatorBuilder(new CoreNodeCondition()));
 
             node = new Node();
-            node.setCondition(NodeCondition.ENABLED);
+            node.setCondition(CoreNodeCondition.ENABLED);
             node.setWeight(1);
         }
 
@@ -209,7 +209,7 @@ public class NodeValidatorTest {
         }
 
         @Test
-        public void shouldRejectWhenMissingAttributes() {
+        public void shouldRejectWhenMissingAllAttributes() {
             ValidatorResult result = validator.validate(new Node(), PUT);
             assertFalse(result.passedValidation());
         }
@@ -251,15 +251,24 @@ public class NodeValidatorTest {
 
         @Test
         public void shouldRejectWhenIdIsSet() {
-            node.setId(1);
-            ValidatorResult result = validator.validate(node, PUT);
+            node.setId(1234);
+            ValidatorResult result = validator.validate(node, POST);
             assertFalse(result.passedValidation());
         }
 
         @Test
-        public void shouldRejectWhenStatusIsSet() {
-            node.setStatus(NodeStatus.OFFLINE);
-            ValidatorResult result = validator.validate(node, PUT);
+        public void shouldRejectWhenStatusIsSetToCoreNodeStatus() {
+            for (String nodeStatus : CoreNodeStatus.values()) {
+                node.setStatus(nodeStatus);
+                ValidatorResult result = validator.validate(node, POST);
+                assertFalse(result.passedValidation());
+            }
+        }
+
+        @Test
+        public void shouldRejectWhenStatusIsSetToErroneousNodeStatus() {
+            node.setStatus("SOME_BOGUS_STATUS");
+            ValidatorResult result = validator.validate(node, POST);
             assertFalse(result.passedValidation());
         }
     }

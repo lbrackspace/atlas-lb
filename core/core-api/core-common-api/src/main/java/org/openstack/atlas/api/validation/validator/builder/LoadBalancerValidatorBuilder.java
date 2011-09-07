@@ -23,6 +23,9 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
     protected final int MIN_PORT = 1;
     protected final int MAX_PORT = 65535;
     protected final int LB_NAME_LENGTH = 128;
+    protected final int MIN_NODES = 1;
+    protected final int MAX_NODES = 25;
+    protected final int MAX_VIPS = 1;
     protected AlgorithmType algorithmType;
 
     @Autowired
@@ -45,19 +48,17 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
         // POST EXPECTATIONS
         result(validationTarget().getName()).must().exist().forContext(POST).withMessage("Must provide a name for the load balancer.");
         result(validationTarget().getName()).must().not().beEmptyOrNull().forContext(POST).withMessage("Load balancer name is invalid. Please specify a valid name");
-        result(validationTarget().getVirtualIps()).must().haveSizeOfAtMost(1).forContext(POST).withMessage("Must have at most one virtual ip for the load balancer");
+        result(validationTarget().getVirtualIps()).must().haveSizeOfAtMost(MAX_VIPS).forContext(POST).withMessage("Must have at most one virtual ip for the load balancer");
         result(validationTarget().getVirtualIps()).if_().exist().then().must().adhereTo(new SharedOrNewVipVerifier()).forContext(POST).withMessage("Must specify either a shared or new virtual ip.");
         result(validationTarget().getVirtualIps()).if_().exist().then().must().delegateTo(new VirtualIpValidator().getValidator(), POST).forContext(POST);
-
-        // Need to determine how to get validation working for the collections.
         result(validationTarget().getNodes()).must().exist().forContext(POST).withMessage("Must provide at least one node for the load balancer.");
         result(validationTarget().getNodes()).must().adhereTo(new DuplicateNodeVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");
         result(validationTarget().getNodes()).must().adhereTo(new ActiveNodeVerifier()).forContext(POST).withMessage("Please ensure that at least one node has an ENABLED condition.");
+        result(validationTarget().getNodes()).must().haveSizeOfAtLeast(MIN_NODES).forContext(POST).withMessage("Must have at least one node.");
+        result(validationTarget().getNodes()).must().haveSizeOfAtMost(MAX_NODES).forContext(POST).withMessage("Must not provide more than twenty five nodes per load balancer.");
         result(validationTarget().getNodes()).if_().exist().then().must().delegateTo(new NodeValidator(nodeValidatorBuilder).getValidator(), POST).forContext(POST);
-        result(validationTarget().getNodes()).must().haveSizeOfAtLeast(1).forContext(POST).withMessage("Must have at least one node.");
         result(validationTarget().getHealthMonitor()).if_().exist().then().must().delegateTo(new HealthMonitorValidator().getValidator(), POST).forContext(POST);
         result(validationTarget().getConnectionThrottle()).if_().exist().then().must().delegateTo(new ConnectionThrottleValidator().getValidator(), POST).forContext(POST);
-        result(validationTarget().getNodes()).if_().exist().then().must().haveSizeOfAtMost(25).withMessage("Must not provide more than twenty five nodes per load balancer.");
 
 
         // PUT EXPECTATIONS

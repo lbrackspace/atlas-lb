@@ -26,8 +26,6 @@ public class HaveSizeOfAtMost implements Verifier {
             verifiedCorrectly = countNonNullObjects <= num;
         } else if (obj instanceof String) {
             verifiedCorrectly = ((String) obj).length() <= num;
-        } else if (obj == null) {
-            verifiedCorrectly = true; // Let MustNotBeEmpty flag errors on Null. This validator only checks max length
         }
 
         return new VerifierResult(verifiedCorrectly);

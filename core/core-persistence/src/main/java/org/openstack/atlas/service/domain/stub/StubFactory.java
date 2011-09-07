@@ -1,14 +1,21 @@
 package org.openstack.atlas.service.domain.stub;
 
-import org.openstack.atlas.core.api.v1.ConnectionLogging;
+import org.openstack.atlas.core.api.v1.*;
 import org.openstack.atlas.service.domain.entity.*;
+import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
+import org.openstack.atlas.service.domain.entity.HealthMonitor;
+import org.openstack.atlas.service.domain.entity.IpVersion;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.SessionPersistence;
+import org.openstack.atlas.service.domain.entity.VirtualIp;
 
 import java.util.Calendar;
 
 /*
     Used for testing purposes.
  */
-public class LoadBalancerStubFactory {
+public class StubFactory {
     private static final Integer LOAD_BALANCER_ID = 1;
     private static final String LOAD_BALANCER_NAME = "My first load balancer";
     private static final Integer LOAD_BALANCER_PORT = 80;
@@ -25,6 +32,8 @@ public class LoadBalancerStubFactory {
     private static final String NODE2_STATUS = "OFFLINE";
     private static final String NODE1_ADDRESS = "10.1.1.1";
     private static final String NODE2_ADDRESS = "10.1.1.2";
+    private static final Integer NODE1_WEIGHT = 1;
+    private static final Integer NODE2_WEIGHT = 2;
     private static final Integer VIP1_ID = 1;
     private static final Integer VIP2_ID = 2;
     private static final String VIP1_ADDRESS = "10.10.10.1";
@@ -42,15 +51,29 @@ public class LoadBalancerStubFactory {
     private static final String HEALTH_MONITOR_TYPE = "CONNECT";
     private static final String SESSION_PERSISTENCE_TYPE = "HTTP_COOKIE";
 
+    public static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost() {
+        return createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, null, null);
+    }
+
+    private static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost(Integer id, String address, Integer port, Integer weight, String condition, String status) {
+        org.openstack.atlas.core.api.v1.Node node = new org.openstack.atlas.core.api.v1.Node();
+        
+        node.setId(id);
+        node.setAddress(address);
+        node.setPort(port);
+        node.setWeight(weight);
+        node.setCondition(condition);
+        node.setStatus(status);
+
+        return node;
+    }
+
     public static org.openstack.atlas.core.api.v1.LoadBalancer createMinimalDataModelLoadBalancerForPost() {
         org.openstack.atlas.core.api.v1.LoadBalancer loadBalancer = new org.openstack.atlas.core.api.v1.LoadBalancer();
 
         loadBalancer.setName(LOAD_BALANCER_NAME);
 
-        org.openstack.atlas.core.api.v1.Node node1 = new org.openstack.atlas.core.api.v1.Node();
-        node1.setAddress(NODE1_ADDRESS);
-        node1.setPort(NODE1_PORT);
-
+        org.openstack.atlas.core.api.v1.Node node1 = createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, null, null);
         final org.openstack.atlas.core.api.v1.Nodes nodes = new org.openstack.atlas.core.api.v1.Nodes();
         nodes.getNodes().add(node1);
         loadBalancer.getNodes().addAll(nodes.getNodes());
@@ -110,20 +133,8 @@ public class LoadBalancerStubFactory {
         loadBalancer.setAlgorithm(LOAD_BALANCER_ALGORITHM);
         loadBalancer.setStatus(LOAD_BALANCER_STATUS);
 
-        org.openstack.atlas.core.api.v1.Node node1 = new org.openstack.atlas.core.api.v1.Node();
-        node1.setId(NODE1_ID);
-        node1.setAddress(NODE1_ADDRESS);
-        node1.setPort(NODE1_PORT);
-        node1.setCondition(NODE1_CONDITION);
-        node1.setStatus(NODE1_STATUS);
-
-        org.openstack.atlas.core.api.v1.Node node2 = new org.openstack.atlas.core.api.v1.Node();
-        node2.setId(NODE2_ID);
-        node2.setAddress(NODE2_ADDRESS);
-        node2.setPort(NODE2_PORT);
-        node2.setCondition(NODE2_CONDITION);
-        node2.setStatus(NODE2_STATUS);
-
+        org.openstack.atlas.core.api.v1.Node node1 = createMinimalDataModelNodeForPost(NODE1_ID, NODE1_ADDRESS, NODE1_PORT, NODE1_WEIGHT, NODE1_CONDITION, NODE1_STATUS);
+        org.openstack.atlas.core.api.v1.Node node2 = createMinimalDataModelNodeForPost(NODE2_ID, NODE2_ADDRESS, NODE2_PORT, NODE2_WEIGHT, NODE2_CONDITION, NODE2_STATUS);
         final org.openstack.atlas.core.api.v1.Nodes nodes = new org.openstack.atlas.core.api.v1.Nodes();
         nodes.getNodes().add(node1);
         nodes.getNodes().add(node2);

@@ -13,7 +13,7 @@ import org.openstack.atlas.datamodel.CoreAlgorithmType;
 import org.openstack.atlas.datamodel.CoreHealthMonitorType;
 import org.openstack.atlas.datamodel.CoreNodeCondition;
 import org.openstack.atlas.datamodel.CorePersistenceType;
-import org.openstack.atlas.service.domain.stub.LoadBalancerStubFactory;
+import org.openstack.atlas.service.domain.stub.StubFactory;
 
 import java.util.GregorianCalendar;
 
@@ -26,14 +26,13 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 @RunWith(Enclosed.class)
 public class LoadBalancerValidatorTest {
 
-    public static class whenValidatingPost {
-
+    public static class WhenValidatingPostContext {
         private LoadBalancerValidator validator;
         private LoadBalancer loadBalancer;
 
         @Before
         public void setUp() {
-            loadBalancer = LoadBalancerStubFactory.createMinimalDataModelLoadBalancerForPost();
+            loadBalancer = StubFactory.createMinimalDataModelLoadBalancerForPost();
             validator = new LoadBalancerValidator(
                     new LoadBalancerValidatorBuilder(
                             new CoreAlgorithmType(),
@@ -48,14 +47,14 @@ public class LoadBalancerValidatorTest {
 
         @Test
         public void shouldReturnTrueWhenGivenAValidFullyHydratedLoadBalancer() {
-            loadBalancer = LoadBalancerStubFactory.createHydratedDataModelLoadBalancerForPost();
+            loadBalancer = StubFactory.createHydratedDataModelLoadBalancerForPost();
             ValidatorResult result = validator.validate(loadBalancer, POST);
             assertTrue(result.passedValidation());
         }
 
         @Test
         public void shouldRejectIdForVipIfTypeIsSet() {
-            loadBalancer = LoadBalancerStubFactory.createHydratedDataModelLoadBalancerForPost();
+            loadBalancer = StubFactory.createHydratedDataModelLoadBalancerForPost();
             loadBalancer.getVirtualIps().get(0).setId(1234);
 
             ValidatorResult result = validator.validate(loadBalancer, POST);
@@ -101,7 +100,19 @@ public class LoadBalancerValidatorTest {
 
             ValidatorResult result = validator.validate(loadBalancer, POST);
             assertFalse(result.passedValidation());
+        }
 
+        @Test
+        public void shouldReject26OrMoreNodes() {
+            for(int i=0; i<26; i++) {
+                Node node = new Node();
+                node.setAddress("10.1.1." + i);
+                node.setPort(80 + i);
+                loadBalancer.getNodes().add(node);
+            }
+
+            ValidatorResult result = validator.validate(loadBalancer, POST);
+            assertFalse(result.passedValidation());
         }
 
         @Test
@@ -275,7 +286,8 @@ public class LoadBalancerValidatorTest {
         }
     }
 
-    public static class whenValidatingPut {
+
+    public static class WhenValidatingPutContext {
         private LoadBalancerValidator validator;
         private LoadBalancer loadBalancer;
 
