@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class Expectation implements ConditionalExpectation, OngoingExpectation, FinalizedExpectation, Comparable<Expectation> {
+public class Expectation implements IfExpectation, OngoingExpectation, ThenExpectation, FinalizedExpectation, Comparable<Expectation> {
 
     private final int id;
     private final List contextList;

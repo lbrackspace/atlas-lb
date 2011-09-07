@@ -5,31 +5,31 @@ import org.openstack.atlas.api.validation.verifier.Verifier;
 
 import java.util.regex.Pattern;
 
-public interface OngoingExpectation {
+public interface OngoingExpectation<T> {
 
-    OngoingExpectation not();
+    OngoingExpectation<T> not();
 
-    FinalizedExpectation exist();
+    T exist();
 
-    FinalizedExpectation beEmptyOrNull();
+    T beEmptyOrNull();
 
-    FinalizedExpectation match(Pattern regex);
+    T match(Pattern regex);
 
-    FinalizedExpectation adhereTo(Verifier customVerifier);
+    T adhereTo(Verifier customVerifier);
 
-    FinalizedExpectation instanceOf(Class classType);
+    T instanceOf(Class classType);
 
-    FinalizedExpectation haveSizeOfAtLeast(int num);
+    T haveSizeOfAtLeast(int num);
 
-    FinalizedExpectation haveSizeOfAtMost(int num);
+    T haveSizeOfAtMost(int num);
 
-    FinalizedExpectation haveSizeOfExactly(int num);
+    T haveSizeOfExactly(int num);
 
-    FinalizedExpectation delegateTo(Validator validator, Object delegateContext);
+    T delegateTo(Validator validator, Object delegateContext);
 
-    FinalizedExpectation valueEquals(Object obj);
+    T valueEquals(Object obj);
 
-    FinalizedExpectation beValidIpv4Address();
+    T beValidIpv4Address();
 
-    FinalizedExpectation beValidIpv6Address();
+    T beValidIpv6Address();
 }

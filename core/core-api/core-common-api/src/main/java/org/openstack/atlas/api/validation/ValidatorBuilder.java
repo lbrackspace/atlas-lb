@@ -33,7 +33,7 @@ public class ValidatorBuilder<ObjectTypeToValidate> {
         return validationTarget;
     }
 
-    protected OngoingExpectation must() {
+    protected OngoingExpectation<FinalizedExpectation> must() {
         final Expectation freshExpectation = new Expectation(++currentExpectationId);
 
         synchronized (validationTargetList) {
@@ -44,7 +44,7 @@ public class ValidatorBuilder<ObjectTypeToValidate> {
         return freshExpectation.must();
     }
 
-    protected OngoingExpectation if_() {
+    protected OngoingExpectation<ThenExpectation> if_() {
         final Expectation freshExpectation = new Expectation(++currentExpectationId);
 
         synchronized (validationTargetList) {
@@ -55,7 +55,7 @@ public class ValidatorBuilder<ObjectTypeToValidate> {
         return freshExpectation.if_();
     }
 
-    protected <R> ConditionalExpectation result(R methodCallResult) {
+    protected <R> IfExpectation result(R methodCallResult) {
         final Method callResultBelongsTo = sharedCallState.getLastKnownCall();
 
         if (callResultBelongsTo == null) {
