@@ -726,6 +726,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return loadBalancerRepository.removeErrorPage(lid, accountId);
     }
 
+    @Transactional
+    @Override
+    public List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress) throws EntityNotFoundException {
+        return loadBalancerRepository.getAllWithNode(nodeAddress);
+    }
+
     private List<LoadBalancer> verifySharedVipsOnLoadBalancers(List<LoadBalancer> lbs) throws EntityNotFoundException, BadRequestException {
         List<LoadBalancer> lbsWithSharedVips = new ArrayList<LoadBalancer>();
         List<LoadBalancer> lbsNeededForRequest = new ArrayList<LoadBalancer>();

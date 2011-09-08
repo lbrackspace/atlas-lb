@@ -1258,4 +1258,8 @@ public class LoadBalancerRepository {
         Query query = entityManager.createQuery("SELECT distinct l.accountId FROM LoadBalancer l");
         return query.getResultList();
     }
+
+    public List<LoadBalancer> getAllWithNode(String nodeAddress) {
+        return entityManager.createQuery("SELECT l FROM LoadBalancer l WHERE ").getResultList();
+    }
 }
