@@ -1,14 +1,15 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.ZeusEvent;
 import org.openstack.atlas.service.domain.services.CallbackService;
 import org.openstack.atlas.service.domain.services.NodeService;
 import org.openstack.atlas.service.domain.services.NotificationService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,50 +46,72 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
             throw new BadRequestException("We currently do not support this callback request.");
         }
 
-        Integer loadBalancerId = getLoadbalancerId(zeusEvent.getParamLine());
-        String ipAddress = getIpAddress(zeusEvent.getParamLine());
-        Integer ipPort = getIpPort(zeusEvent.getParamLine());
-        Node dbNode = nodeService.getNodeByLoadBalancerIdIpAddressAndPort(loadBalancerId, ipAddress, ipPort);
-        String status;
+        try {
+            Integer loadBalancerId = getLoadbalancerId(zeusEvent.getParamLine());
+            String ipAddress = getIpAddress(zeusEvent.getParamLine());
+            Integer ipPort = getIpPort(zeusEvent.getParamLine());
+            Node dbNode = nodeService.getNodeByLoadBalancerIdIpAddressAndPort(loadBalancerId, ipAddress, ipPort);
+            String status;
 
-        if (zeusEvent.getParamLine().contains(NODE_FAIL_TAG)) {
-            dbNode.setStatus(NodeStatus.OFFLINE);
-            status = NodeStatus.OFFLINE.name();
-        } else if (zeusEvent.getParamLine().contains(NODE_WORKING_TAG)) {
-            dbNode.setStatus(NodeStatus.ONLINE);
-            status = NodeStatus.ONLINE.name();
-        } else {
-            throw new BadRequestException("We currently do not support this callback request.");
+            if (zeusEvent.getParamLine().contains(NODE_FAIL_TAG)) {
+                dbNode.setStatus(NodeStatus.OFFLINE);
+                status = NodeStatus.OFFLINE.name();
+            } else if (zeusEvent.getParamLine().contains(NODE_WORKING_TAG)) {
+                dbNode.setStatus(NodeStatus.ONLINE);
+                status = NodeStatus.ONLINE.name();
+            } else {
+                throw new BadRequestException("We currently do not support this callback request.");
+            }
+
+            nodeService.updateNodeStatus(dbNode);
+
+            // Add atom entry
+            String atomTitle = "Node Status Updated";
+            String atomSummary = String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId);
+            notificationService.saveNodeEvent("Rackspace Cloud", dbNode.getLoadbalancer().getAccountId(), loadBalancerId, dbNode.getId(), atomTitle, atomSummary, UPDATE_NODE, UPDATE, INFO);
+
+            LOG.info(String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId));
+        } catch (Exception e) {
+            String message;
+            if (e instanceof EntityNotFoundException) {
+                message = String.format("Could not process Zeus event as node could not be found: '%s'", zeusEvent.getParamLine());
+            } else {
+                message = String.format("Could not process Zeus event: '%s'", zeusEvent.getParamLine());
+            }
+            LOG.warn(message);
+            throw new BadRequestException(message, e);
         }
-
-        nodeService.updateNodeStatus(dbNode);
-
-        // Add atom entry
-        String atomTitle = "Node Status Updated";
-        String atomSummary = String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId);
-        notificationService.saveNodeEvent("Rackspace Cloud", dbNode.getLoadbalancer().getAccountId(), loadBalancerId, dbNode.getId(), atomTitle, atomSummary, UPDATE_NODE, UPDATE, INFO);
-
-        LOG.info(String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId));
     }
 
-    public static Integer getLoadbalancerId(String paramLine) {
+    public Integer getLoadbalancerId(String paramLine) throws Exception {
         String poolsObject = paramLine.split(" ")[1];
         String poolName = poolsObject.split("/")[1];
         String loadbalancerId = poolName.split("_")[1];
-        return Integer.parseInt(loadbalancerId);
+
+        try {
+            return Integer.parseInt(loadbalancerId);
+        } catch (NumberFormatException e) {
+            LOG.warn(String.format("Error converting string to integer for load balancer id: '%s'", loadbalancerId));
+            throw new Exception(e);
+        }
     }
 
-    public static String getIpAddress(String paramLine) {
+    public String getIpAddress(String paramLine) {
         String nodesObject = paramLine.split(" ")[2];
         String ipAddressWithPort = nodesObject.split("/")[1];
-        String ipAddress = ipAddressWithPort.split(":")[0];
-        return ipAddress;
+        return ipAddressWithPort.split(":")[0];
     }
 
-    public static Integer getIpPort(String paramLine) {
+    public Integer getIpPort(String paramLine) throws Exception {
         String nodesObject = paramLine.split(" ")[2];
         String ipAddressWithPort = nodesObject.split("/")[1];
         String port = ipAddressWithPort.split(":")[1];
-        return Integer.parseInt(port);
+
+        try {
+            return Integer.parseInt(port);
+        } catch (NumberFormatException e) {
+            LOG.warn("Unexpected format for load balancer id.");
+            throw new Exception(e);
+        }
     }
 }
