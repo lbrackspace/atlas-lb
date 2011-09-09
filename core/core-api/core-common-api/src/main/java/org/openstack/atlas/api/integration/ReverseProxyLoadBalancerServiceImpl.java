@@ -15,6 +15,11 @@ import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl;
+import org.openstack.atlas.core.api.v1.LoadBalancer;
+import org.openstack.atlas.core.api.v1.Node;
+import org.openstack.atlas.core.api.v1.HealthMonitor;
+import org.openstack.atlas.core.api.v1.ConnectionLogging;
+import org.openstack.atlas.core.api.v1.ConnectionThrottle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,10 +43,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     private HostRepository hostRepository;
 
     @Override
-    public void createLoadBalancer(LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
+    public void createLoadBalancer(Integer accountId, LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            loadBalancerAdapter.createLoadBalancer(config, lb);
+            loadBalancerAdapter.createLoadBalancer(config, accountId, lb);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -49,10 +54,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void deleteLoadBalancer(LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+    public void updateLoadBalancer(Integer accountId, LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            loadBalancerAdapter.deleteLoadBalancer(config, lb);
+            loadBalancerAdapter.updateLoadBalancer(config, accountId, lb);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -60,10 +65,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void updateAlgorithm(LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+    public void deleteLoadBalancer(Integer accountId, Integer lbId) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), lb.getAlgorithm());
+            loadBalancerAdapter.deleteLoadBalancer(config, accountId, lbId);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -71,10 +76,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws AdapterException, Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+    public void createNodes(Integer accountId, Integer lbId, Set<Node> nodes) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.changeHostForLoadBalancer(config, lb, newHost);
+            loadBalancerAdapter.createNodes(config, accountId, lbId, nodes);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -82,11 +87,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void updatePort(LoadBalancer lb) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+    public void deleteNodes(Integer accountId, Integer lbId, Set<Integer> nodeIds) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.updatePort(config, lb.getId(), lb.getAccountId(),
-                    lb.getPort());
+            loadBalancerAdapter.deleteNodes(config, accountId, lbId, nodeIds);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -94,11 +98,21 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void updateProtocol(LoadBalancer lb) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+    public void updateNode(Integer accountId, Integer lbId, Node node) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(),
-                    lb.getProtocol());
+            loadBalancerAdapter.updateNode(config, accountId, lbId, node);
+        } catch (ConnectionException exc) {
+            checkAndSetIfEndPointBad(config, exc);
+            throw exc;
+        }
+    }
+
+    @Override 
+    public void deleteNode(Integer accountId, Integer lbId, Integer nodeId) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        try {
+            loadBalancerAdapter.deleteNode(config, accountId, lbId, nodeId);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -106,10 +120,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void addVirtualIps(Integer lbId, Integer accountId, LoadBalancer loadBalancer) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void updateConnectionLogging(Integer accountId, Integer lbId, ConnectionLogging conLog) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.addVirtualIps(config, loadBalancer);
+            loadBalancerAdapter.updateConnectionLogging(config, accountId, lbId, conLog);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -117,10 +131,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void setNodes(Integer lbId, Integer accountId, Set<Node> nodes) throws AdapterException, Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle conThrottle) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.setNodes(config, lbId, accountId, nodes);
+            loadBalancerAdapter.updateConnectionThrottle(config, accountId, lbId, conThrottle);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -128,47 +142,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void removeNode(Integer lbId, Integer accountId, Node node) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void deleteConnectionThrottle(Integer accountId, Integer lbId) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.removeNode(config, lbId, accountId, node.getAddress(), node.getPort());
-        } catch (ConnectionException exc) {
-            checkAndSetIfEndPointBad(config, exc);
-            throw exc;
-        }
-    }
-
-
-    @Override
-    public void removeNodes(Integer lbId, Integer accountId, Collection<Node> nodes) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
-        try {
-            loadBalancerAdapter.removeNodes(config, lbId, accountId, nodes);
-        } catch (Exception exc) {
-            checkAndSetIfEndPointBad(config, exc);
-            throw exc;
-        }
-    }
-
-
-    @Override
-    public void setNodeWeights(Integer lbId, Integer accountId, Set<Node> nodes) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
-        try {
-            loadBalancerAdapter.setNodeWeights(config, lbId, accountId, nodes);
-        } catch (ConnectionException exc) {
-            checkAndSetIfEndPointBad(config, exc);
-            throw exc;
-        }
-
-    }
-
-    @Override
-    public void updateConnectionThrottle(Integer lbId, Integer accountId, ConnectionThrottle connectionThrottle) throws AdapterException, Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
-        try {
-            loadBalancerAdapter.updateConnectionThrottle(config, lbId, accountId,
-                    connectionThrottle);
+            loadBalancerAdapter.deleteConnectionThrottle(config, accountId, lbId);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -176,10 +153,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void deleteConnectionThrottle(Integer lbId, Integer accountId) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void updateHealthMonitor(Integer accountId, Integer lbId, HealthMonitor monitor) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.deleteConnectionThrottle(config, lbId, accountId);
+            loadBalancerAdapter.updateHealthMonitor(config, accountId, lbId, monitor);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -187,106 +164,19 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void updateHealthMonitor(Integer lbId, Integer accountId, HealthMonitor monitor) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void deleteHealthMonitor(Integer accountId, Integer lbId) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.updateHealthMonitor(config, lbId, accountId, monitor);
+            loadBalancerAdapter.deleteHealthMonitor(config, accountId, lbId);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
     }
 
-    @Override
-    public void removeHealthMonitor(Integer lbId, Integer accountId) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
-        try {
-            loadBalancerAdapter.removeHealthMonitor(config, lbId, accountId);
-        } catch (ConnectionException exc) {
-            checkAndSetIfEndPointBad(config, exc);
-            throw exc;
-        }
-    }
-
-    @Override
-    public void suspendLoadBalancer(Integer lbId, Integer accountId) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
-        try {
-            loadBalancerAdapter.suspendLoadBalancer(config, lbId, accountId);
-        } catch (ConnectionException exc) {
-            checkAndSetIfEndPointBad(config, exc);
-            throw exc;
-        }
-    }
-
-    @Override
-    public void removeSuspension(Integer id, Integer accountId) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(id);
-        try {
-            loadBalancerAdapter.removeSuspension(config, id, accountId);
-        } catch (ConnectionException exc) {
-            checkAndSetIfEndPointBad(config, exc);
-            throw exc;
-        }
-    }
-
-    @Override
-    public void deleteVirtualIp(LoadBalancer lb, Integer id) {
-        try {
-            LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-            try {
-                loadBalancerAdapter.deleteVirtualIp(config, lb, id);
-            } catch (ConnectionException exc) {
-                checkAndSetIfEndPointBad(config, exc);
-                throw exc;
-            }
-        } catch (Exception e) {
-            LOG.error("Error during removal of the virtualIp:", e);
-        }
-    }
-
-    @Override
-    public void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) {
-        try {
-            LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-            try {
-                loadBalancerAdapter.deleteVirtualIps(config, lb, ids);
-            } catch (ConnectionException exc) {
-                checkAndSetIfEndPointBad(config, exc);
-                throw exc;
-            }
-        } catch (Exception e) {
-            LOG.error("Error during removal of the virtualIp:", e);
-        }
-    }
-
-    @Override
-    public boolean isEndPointWorking(Host host) throws Exception {
-        boolean out;
-        LoadBalancerEndpointConfiguration hostConfig = getConfigHost(host);
-        out = loadBalancerAdapter.isEndPointWorking(hostConfig);
-        return out;
-    }
-
-    @Override
-    public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException {
-        Cluster cluster = host.getCluster();
-        Host endpointHost = hostRepository.getEndPointHost(cluster.getId());
-        List<String> failoverHosts = hostRepository.getFailoverHostNames(cluster.getId());
-        String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
-        return new LoadBalancerEndpointConfiguration(endpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
-    }
-
-    @Override
-    public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException {
-        Cluster cluster = host.getCluster();
-        List<String> failoverHosts = hostRepository.getFailoverHostNames(cluster.getId());
-        String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
-        return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
-    }
 
     private LoadBalancerEndpointConfiguration getConfigbyLoadBalancerId(Integer lbId) throws EntityNotFoundException, DecryptException, MalformedURLException {
-        LoadBalancer loadBalancer = loadBalancerRepository.getById(lbId);
+        org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer = loadBalancerRepository.getById(lbId);
         Host host = loadBalancer.getHost();
         Cluster cluster = host.getCluster();
         Host endpointHost = hostRepository.getEndPointHost(cluster.getId());
@@ -314,4 +204,6 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             hostRepository.update(badHost);
         }
     }
+
+
 }

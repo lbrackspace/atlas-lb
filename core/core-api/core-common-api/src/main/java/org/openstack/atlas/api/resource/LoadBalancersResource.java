@@ -63,9 +63,15 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             virtualIpService.addAccountRecord(accountId);
 
             org.openstack.atlas.service.domain.entity.LoadBalancer newlyCreatedLb = loadbalancerService.create(loadBalancer);
-            MessageDataContainer msg = new MessageDataContainer();
-            msg.setLoadBalancer(newlyCreatedLb);
-            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_LOADBALANCER, msg);
+
+            _loadBalancer.setId(newlyCreatedLb.getId());
+
+            MessageDataContainer dataContainer = new MessageDataContainer();
+            dataContainer.setLoadBalancer(_loadBalancer);
+            dataContainer.setAccountId(newlyCreatedLb.getAccountId());
+ 
+            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_LOADBALANCER, dataContainer);
+
             return Response.status(Response.Status.ACCEPTED).entity(dozerMapper.map(newlyCreatedLb, LoadBalancer.class)).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);

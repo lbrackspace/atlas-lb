@@ -1,7 +1,13 @@
 package org.openstack.atlas.api.integration;
 
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
-import org.openstack.atlas.service.domain.entity.*;
+import org.openstack.atlas.core.api.v1.LoadBalancer;
+import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
+import org.openstack.atlas.core.api.v1.LoadBalancer;
+import org.openstack.atlas.core.api.v1.Node;
+import org.openstack.atlas.core.api.v1.HealthMonitor;
+import org.openstack.atlas.core.api.v1.ConnectionLogging;
+import org.openstack.atlas.core.api.v1.ConnectionThrottle;
 
 import java.util.Collection;
 import java.util.List;
@@ -9,47 +15,27 @@ import java.util.Set;
 
 public interface ReverseProxyLoadBalancerService {
 
-    void createLoadBalancer(LoadBalancer lb) throws Exception;
+    void createLoadBalancer(Integer accountId, LoadBalancer lb) throws Exception;
 
-    void deleteLoadBalancer(LoadBalancer lb) throws Exception;
+    void updateLoadBalancer(Integer accountId, LoadBalancer lb) throws Exception;
 
-    void updateAlgorithm(LoadBalancer lb) throws Exception;
+    void deleteLoadBalancer(Integer accountId, Integer lbId) throws Exception;
 
-    void updatePort(LoadBalancer lb) throws Exception;
+    void createNodes(Integer accountId, Integer lbId, Set<Node> nodes) throws Exception;
 
-    void updateProtocol(LoadBalancer lb) throws Exception;
+    void deleteNodes(Integer accountId, Integer lbId, Set<Integer> nodeIds) throws Exception;
 
-    void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws Exception;
+    void updateNode(Integer accountId, Integer lbId, Node node) throws Exception;
+ 
+    void deleteNode(Integer accountId, Integer lbId, Integer nodeId) throws Exception;
 
-    void setNodes(Integer id, Integer accountId, Set<Node> nodes) throws Exception;
+    void updateConnectionLogging(Integer accountId, Integer lbId, ConnectionLogging conLog) throws Exception;
 
-    void removeNode(Integer id, Integer accountId, Node node) throws Exception;
+    void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle conThrottle) throws Exception;
 
-    void removeNodes(Integer lbId, Integer accountId, Collection<Node> nodes) throws Exception;
+    void deleteConnectionThrottle(Integer accountId, Integer lbId) throws Exception;
 
-    void setNodeWeights(Integer id, Integer accountId, Set<Node> nodes) throws Exception;
+    void updateHealthMonitor(Integer accountId, Integer lbId, HealthMonitor monitor) throws Exception;
 
-    void updateConnectionThrottle(Integer id, Integer accountId, ConnectionThrottle connectionThrottle) throws Exception;
-
-    void deleteConnectionThrottle(Integer id, Integer accountId) throws Exception;
-
-    void updateHealthMonitor(Integer lbId, Integer accountId, HealthMonitor monitor) throws Exception;
-
-    void removeHealthMonitor(Integer lbId, Integer accountId) throws Exception;
-
-    void suspendLoadBalancer(Integer id, Integer accountId) throws Exception;
-
-    void removeSuspension(Integer id, Integer accountId) throws Exception;
-
-    void addVirtualIps(Integer id, Integer accountId, LoadBalancer loadBalancer) throws Exception;
-
-    void deleteVirtualIp(LoadBalancer lb, Integer id) throws Exception;
-
-    void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
-
-    public boolean isEndPointWorking(Host host) throws Exception;
-
-    LoadBalancerEndpointConfiguration getConfig(Host host) throws Exception;
-
-    public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws Exception;
+    void deleteHealthMonitor(Integer accountId, Integer lbId) throws Exception;
 }

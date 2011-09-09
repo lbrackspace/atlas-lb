@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.validation.validator.builder;
 
 import org.openstack.atlas.api.validation.ValidatorBuilder;
+import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
 import org.openstack.atlas.api.validation.validator.ConnectionThrottleValidator;
 import org.openstack.atlas.api.validation.validator.HealthMonitorValidator;
 import org.openstack.atlas.api.validation.validator.NodeValidator;
@@ -29,7 +30,7 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
     protected AlgorithmType algorithmType;
 
     @Autowired
-    public LoadBalancerValidatorBuilder(AlgorithmType algorithmType, ValidatorBuilder<Node> nodeValidatorBuilder) {
+    public LoadBalancerValidatorBuilder(AlgorithmType algorithmType, NodeValidatorBuilder nodeValidatorBuilder) {
         super(LoadBalancer.class);
         this.algorithmType = algorithmType;
 

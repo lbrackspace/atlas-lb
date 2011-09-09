@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.validation.validator;
 
 import org.openstack.atlas.api.validation.Validator;
-import org.openstack.atlas.api.validation.ValidatorBuilder;
+import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.core.api.v1.Node;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +10,10 @@ import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
 
 public class NodeValidator implements ResourceValidator<Node> {
     protected Validator<Node> validator;
-    protected ValidatorBuilder<Node> validatorBuilder;
+    protected NodeValidatorBuilder validatorBuilder;
 
     @Autowired
-    public NodeValidator(ValidatorBuilder<Node> validatorBuilder) {
+    public NodeValidator(NodeValidatorBuilder validatorBuilder) {
         this.validatorBuilder = validatorBuilder;
         validator = build(validatorBuilder);
     }

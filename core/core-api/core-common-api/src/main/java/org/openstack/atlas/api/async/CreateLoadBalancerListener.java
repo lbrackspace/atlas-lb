@@ -4,12 +4,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.helper.NodesHelper;
+
+import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
+
 import org.openstack.atlas.service.domain.entity.*;
+
 import org.openstack.atlas.service.domain.event.UsageEvent;
 import org.openstack.atlas.service.domain.event.entity.EventType;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,25 +47,35 @@ public class CreateLoadBalancerListener extends BaseListener {
 
     @Override
     public void doOnMessage(final Message message) throws Exception {
+        Integer lbid;
+        Integer;
+        LoadBalancer dbLoadBalancer = null;
+
+
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
 
-        LoadBalancer queueLb = getDataContainerFromMessage(message).getLoadBalancer();
-        LoadBalancer dbLoadBalancer;
+        MessageDataContainer dataContainer = (MessageDataContainer) getDataContainerFromMessage(message);
+
+        org.openstack.atlas.core.api.v1.LoadBalancer queueLb = dataContainer.getLoadBalancer();
 
         try {
-            dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(queueLb.getId(), queueLb.getAccountId());
+            lbid = queueLb.getId();
+            accountId = dataContainer.getAccountId();
+
+            dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbid, accountId);
         } catch (EntityNotFoundException e) {
+            LOG.error("Error retrieving loadbalancer from DB");
             String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), e, DATABASE_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(queueLb);
+            notificationService.saveAlert(accountId, lbid, e, DATABASE_FAILURE.name(), alertDescription);
+            sendErrorToEventResource(dbLoadBalancer);
             return;
         }
 
         try {
-            LOG.debug(String.format("Creating load balancer '%d' via adapter...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
+            LOG.debug(String.format("Creating load balancer '%d' via adapter...", lbid));
+            reverseProxyLoadBalancerService.createLoadBalancer(accountId, queueLb);
             LOG.debug("Successfully created a load balancer via adapter.");
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);
@@ -71,7 +84,7 @@ public class CreateLoadBalancerListener extends BaseListener {
             String alertDescription = String.format("An error occurred while creating loadbalancer '%d' via adapter.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(queueLb);
+            sendErrorToEventResource(dbLoadBalancer);
             return;
         }
 
@@ -80,11 +93,11 @@ public class CreateLoadBalancerListener extends BaseListener {
         NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
 
-        addAtomEntryForLoadBalancer(queueLb, dbLoadBalancer);
-        addAtomEntriesForNodes(queueLb, dbLoadBalancer);
-        addAtomEntriesForVips(queueLb, dbLoadBalancer);
-        addAtomEntryForHealthMonitor(queueLb, dbLoadBalancer);
-        addAtomEntryForConnectionThrottle(queueLb, dbLoadBalancer);
+        addAtomEntryForLoadBalancer(dbLoadBalancer, dbLoadBalancer);
+        addAtomEntriesForNodes(dbLoadBalancer, dbLoadBalancer);
+        addAtomEntriesForVips(dbLoadBalancer, dbLoadBalancer);
+        addAtomEntryForHealthMonitor(dbLoadBalancer, dbLoadBalancer);
+        addAtomEntryForConnectionThrottle(dbLoadBalancer, dbLoadBalancer);
 
         // Notify usage processor
         notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
@@ -93,19 +106,19 @@ public class CreateLoadBalancerListener extends BaseListener {
         LOG.info(String.format("Successfully created load balancer '%d'.", dbLoadBalancer.getId()));
     }
 
-    private void addAtomEntryForConnectionThrottle(LoadBalancer queueLb, LoadBalancer dbLoadBalancer) {
+    private void addAtomEntryForConnectionThrottle(LoadBalancer queueLb, org.openstack.atlas.service.domain.entity.LoadBalancer dbLoadBalancer) {
         if (dbLoadBalancer.getConnectionThrottle() != null) {
             notificationService.saveConnectionLimitEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getConnectionThrottle().getId(), UPDATE_THROTTLE_TITLE, EntryHelper.createConnectionThrottleSummary(dbLoadBalancer), UPDATE_CONNECTION_THROTTLE, UPDATE, INFO);
         }
     }
 
-    private void addAtomEntryForHealthMonitor(LoadBalancer queueLb, LoadBalancer dbLoadBalancer) {
+    private void addAtomEntryForHealthMonitor(LoadBalancer queueLb, org.openstack.atlas.service.domain.entity.LoadBalancer dbLoadBalancer) {
         if (dbLoadBalancer.getHealthMonitor() != null) {
             notificationService.saveHealthMonitorEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getHealthMonitor().getId(), UPDATE_MONITOR_TITLE, EntryHelper.createHealthMonitorSummary(dbLoadBalancer), UPDATE_HEALTH_MONITOR, UPDATE, INFO);
         }
     }
 
-    private void addAtomEntriesForVips(LoadBalancer queueLb, LoadBalancer dbLoadBalancer) {
+    private void addAtomEntriesForVips(LoadBalancer queueLb, org.openstack.atlas.service.domain.entity.LoadBalancer dbLoadBalancer) {
         for (LoadBalancerJoinVip loadBalancerJoinVip : dbLoadBalancer.getLoadBalancerJoinVipSet()) {
             VirtualIp vip = loadBalancerJoinVip.getVirtualIp();
             notificationService.saveVirtualIpEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), vip.getId(), CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(vip), EventType.CREATE_VIRTUAL_IP, CREATE, INFO);
@@ -117,14 +130,15 @@ public class CreateLoadBalancerListener extends BaseListener {
         }
     }
 
-    private void addAtomEntriesForNodes(LoadBalancer queueLb, LoadBalancer dbLoadBalancer) {
-        for (Node node : queueLb.getNodes()) {
+    private void addAtomEntriesForNodes(LoadBalancer queueLb, org.openstack.atlas.service.domain.entity.LoadBalancer dbLoadBalancer) {
+        for (Node node : dbLoadBalancer.getNodes()) {
+            
             notificationService.saveNodeEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(),
                     node.getId(), CREATE_NODE_TITLE, EntryHelper.createNodeSummary(node), CREATE_NODE, CREATE, INFO);
         }
     }
 
-    private void addAtomEntryForLoadBalancer(LoadBalancer queueLb, LoadBalancer dbLoadBalancer) {
+    private void addAtomEntryForLoadBalancer(LoadBalancer queueLb, org.openstack.atlas.service.domain.entity.LoadBalancer dbLoadBalancer) {
         String atomTitle = "Load Balancer Successfully Created";
         String atomSummary = createAtomSummary(dbLoadBalancer).toString();
         notificationService.saveLoadBalancerEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
@@ -136,7 +150,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         notificationService.saveLoadBalancerEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, CREATE_LOADBALANCER, CREATE, CRITICAL);
     }
 
-    private StringBuffer createAtomSummary(LoadBalancer lb) {
+    private StringBuffer createAtomSummary(org.openstack.atlas.service.domain.entity.LoadBalancer lb) {
         StringBuffer atomSummary = new StringBuffer();
         atomSummary.append("Load balancer successfully created with ");
         atomSummary.append("name: '").append(lb.getName()).append("', ");
