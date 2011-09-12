@@ -110,7 +110,7 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
         try {
             return Integer.parseInt(port);
         } catch (NumberFormatException e) {
-            LOG.warn("Unexpected format for load balancer id.");
+            LOG.warn(String.format("Error converting string to integer for port: '%s'", port));
             throw new Exception(e);
         }
     }
