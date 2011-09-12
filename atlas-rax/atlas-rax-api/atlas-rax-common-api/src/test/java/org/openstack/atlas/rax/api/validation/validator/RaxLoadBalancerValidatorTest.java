@@ -1,4 +1,4 @@
-package org.opestack.atlas.api.validation.validator;
+package org.openstack.atlas.rax.api.validation.validator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -6,13 +6,14 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.LoadBalancerValidator;
-import org.openstack.atlas.api.validation.validator.builder.LoadBalancerValidatorBuilder;
 import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
 import org.openstack.atlas.core.api.v1.*;
 import org.openstack.atlas.datamodel.CoreAlgorithmType;
 import org.openstack.atlas.datamodel.CoreHealthMonitorType;
 import org.openstack.atlas.datamodel.CoreNodeCondition;
 import org.openstack.atlas.datamodel.CorePersistenceType;
+import org.openstack.atlas.rax.api.validation.validator.builder.RaxLoadBalancerValidatorBuilder;
+import org.openstack.atlas.rax.datamodel.RaxAlgorithmType;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
 import java.util.GregorianCalendar;
@@ -24,9 +25,8 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 
 @RunWith(Enclosed.class)
-public class LoadBalancerValidatorTest {
-
-    public static class WhenValidatingPostContext {
+public class RaxLoadBalancerValidatorTest {
+public static class WhenValidatingPostContext {
         private LoadBalancerValidator validator;
         private LoadBalancer loadBalancer;
 
@@ -34,8 +34,8 @@ public class LoadBalancerValidatorTest {
         public void setUp() {
             loadBalancer = StubFactory.createMinimalDataModelLoadBalancerForPost();
             validator = new LoadBalancerValidator(
-                    new LoadBalancerValidatorBuilder(
-                            new CoreAlgorithmType(),
+                    new RaxLoadBalancerValidatorBuilder(
+                            new RaxAlgorithmType(),
                             new NodeValidatorBuilder(new CoreNodeCondition())));
         }
 
@@ -139,17 +139,17 @@ public class LoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldAcceptCoreAlgorithms() {
-            for (String coreAlgorithm : CoreAlgorithmType.values()) {
-                loadBalancer.setAlgorithm(coreAlgorithm);
+        public void shouldAcceptRaxAlgorithms() {
+            for (String raxAlgorithm : RaxAlgorithmType.values()) {
+                loadBalancer.setAlgorithm(raxAlgorithm);
                 ValidatorResult result = validator.validate(loadBalancer, POST);
                 assertTrue(result.passedValidation());
             }
         }
 
         @Test
-        public void shouldNotAcceptRandomAlgorithm() {
-            loadBalancer.setAlgorithm("RANDOM");
+        public void shouldNotAcceptBogusAlgorithm() {
+            loadBalancer.setAlgorithm("BOGUS_ALGORITHM");
             ValidatorResult result = validator.validate(loadBalancer, POST);
             assertFalse(result.passedValidation());
         }
@@ -303,8 +303,8 @@ public class LoadBalancerValidatorTest {
         @Before
         public void setUpValidator() {
             validator = new LoadBalancerValidator(
-                    new LoadBalancerValidatorBuilder(
-                            new CoreAlgorithmType(),
+                    new RaxLoadBalancerValidatorBuilder(
+                            new RaxAlgorithmType(),
                             new NodeValidatorBuilder(new CoreNodeCondition())));
         }
 
@@ -450,9 +450,20 @@ public class LoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldNotAcceptRandomAlgorithm() {
+        public void shouldAcceptRaxAlgorithms() {
             loadBalancer = new LoadBalancer();
-            loadBalancer.setAlgorithm("RANDOM");
+
+            for (String raxAlgorithm : RaxAlgorithmType.values()) {
+                loadBalancer.setAlgorithm(raxAlgorithm);
+                ValidatorResult result = validator.validate(loadBalancer, PUT);
+                assertTrue(result.passedValidation());
+            }
+        }
+
+        @Test
+        public void shouldNotAcceptBogusAlgorithm() {
+            loadBalancer = new LoadBalancer();
+            loadBalancer.setAlgorithm("BOGUS_ALGORITHM");
             ValidatorResult result = validator.validate(loadBalancer, PUT);
             assertFalse(result.passedValidation());
         }

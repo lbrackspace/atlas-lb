@@ -2,6 +2,7 @@ package org.openstack.atlas.rax.api.validation.validator.builder;
 
 import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.validator.builder.LoadBalancerValidatorBuilder;
+import org.openstack.atlas.api.validation.verifier.MustBeEmptyOrNull;
 import org.openstack.atlas.api.validation.verifier.Verifier;
 import org.openstack.atlas.api.validation.verifier.VerifierResult;
 import org.openstack.atlas.core.api.v1.Node;
@@ -28,7 +29,7 @@ public class RaxLoadBalancerValidatorBuilder extends LoadBalancerValidatorBuilde
 
         // POST EXPECTATIONS
         result(validationTarget().getAnies()).if_().exist().then().must().delegateTo(new RaxLoadBalancerValidator().getValidator(), POST).forContext(POST);
-        result(validationTarget().getOtherAttributes()).if_().exist().then().must().adhereTo(new Verifier<Map<QName, String>>() {
+        result(validationTarget().getOtherAttributes()).if_().not().adhereTo(new MustBeEmptyOrNull()).then().must().adhereTo(new Verifier<Map<QName, String>>() {
             @Override
             public VerifierResult verify(Map<QName, String> otherAttributes) {
                 String crazyNameValue = otherAttributes.get(new QName("http://docs.openstack.org/atlas/api/v1.1/extensions/rax", "crazyName", "rax"));
