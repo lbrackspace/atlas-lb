@@ -1,8 +1,8 @@
 package org.openstack.atlas.service.domain.repository;
 
-import org.openstack.atlas.service.domain.entities.Usage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.Usage;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,8 +24,8 @@ public class UsageRepository {
     private EntityManager entityManager;
 
     public List<Usage> getMostRecentUsageForLoadBalancers(Collection<Integer> loadBalancerIds) {
-        if(loadBalancerIds == null || loadBalancerIds.isEmpty()) return new ArrayList<Usage>();
-        
+        if (loadBalancerIds == null || loadBalancerIds.isEmpty()) return new ArrayList<Usage>();
+
         Query query = entityManager.createNativeQuery("SELECT a.* " +
                 "FROM lb_usage a, " +
                 "(SELECT loadbalancer_id, max(end_time) as end_time FROM lb_usage WHERE loadbalancer_id in (:loadbalancerIds) GROUP BY loadbalancer_id) b " +
@@ -89,7 +89,7 @@ public class UsageRepository {
             sb.append(usage.getNumberOfPolls()).append(",");
             sb.append(usage.getNumVips()).append(",");
             sb.append(usage.getTags()).append(",");
-            if(usage.getEventType() == null) {
+            if (usage.getEventType() == null) {
                 sb.append(usage.getEventType());
             } else {
                 sb.append("'").append(usage.getEventType()).append("'");
@@ -101,5 +101,18 @@ public class UsageRepository {
             sb.deleteCharAt(sb.lastIndexOf(","));
         }
         return sb.toString();
+    }
+
+    public List<Integer> getLoadBalancerIdsIn(Collection<Integer> lbIdsToCheckAgainst) {
+        if (lbIdsToCheckAgainst == null || lbIdsToCheckAgainst.isEmpty()) return new ArrayList<Integer>();
+
+        Query query = entityManager.createNativeQuery("SELECT id FROM loadbalancer WHERE id in (:loadbalancerIds);")
+                .setParameter("loadbalancerIds", lbIdsToCheckAgainst);
+
+        List<Integer> idsInDatabase = (List<Integer>) query.getResultList();
+        if (idsInDatabase == null) return new ArrayList<Integer>();
+
+        return idsInDatabase;
+
     }
 }

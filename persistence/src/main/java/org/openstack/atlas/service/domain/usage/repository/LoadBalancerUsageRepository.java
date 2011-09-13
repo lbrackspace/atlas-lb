@@ -73,6 +73,13 @@ public class LoadBalancerUsageRepository {
         LOG.info(String.format("Deleted %d rows with endTime before %s", numRowsDeleted, time.getTime()));
     }
 
+    public void deleteAllRecordsForLoadBalancer(Integer loadBalancerId) {
+        Query query = entityManager.createQuery("DELETE FROM LoadBalancerUsage u WHERE u.loadbalancerId = :loadBalancerId")
+                .setParameter("loadBalancerId", loadBalancerId);
+        int numRowsDeleted = query.executeUpdate();
+        LOG.info(String.format("Deleted %d rows with load balancer id %s", numRowsDeleted, loadBalancerId));
+    }
+
     public void deleteOldRecords() {
         Calendar deletePoint = Calendar.getInstance();
         deletePoint.add(Calendar.DATE, -NUM_DAYS_RETENTION);

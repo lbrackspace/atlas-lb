@@ -20,6 +20,7 @@ import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 
+import javax.persistence.PersistenceException;
 import java.util.*;
 
 public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
@@ -56,10 +57,39 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
             Map<Integer, Usage> lbIdRollupUsageMap = generateLbIdUsageMap(rollUpUsages);
             LOG.info("Processing usage entries...");
             UsageRollupMerger usagesForDatabase = new UsageRollupMerger(lbIdUsageMap, lbIdRollupUsageMap).invoke();
-            if (!usagesForDatabase.getUsagesToUpdate().isEmpty())
-                rollUpUsageRepository.batchUpdate(usagesForDatabase.getUsagesToUpdate());
-            if (!usagesForDatabase.getUsagesToInsert().isEmpty())
-                rollUpUsageRepository.batchCreate(usagesForDatabase.getUsagesToInsert());
+            int retries = 3;
+            while (retries > 0) {
+                if (!usagesForDatabase.getUsagesToUpdate().isEmpty()) {
+                    try {
+                        rollUpUsageRepository.batchUpdate(usagesForDatabase.getUsagesToUpdate());
+                        retries = 0;
+                    } catch (PersistenceException e) {
+                        LOG.warn("Deleted load balancer(s) detected! Finding and removing from batch...", e);
+                        deleteBadEntries(usagesForDatabase.getUsagesToUpdate());
+                        retries--;
+                        LOG.warn(String.format("%d retries left.", retries));
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            retries = 3;
+            while (retries > 0) {
+                if (!usagesForDatabase.getUsagesToInsert().isEmpty()) {
+                    try {
+                        rollUpUsageRepository.batchCreate(usagesForDatabase.getUsagesToInsert());
+                        retries = 0;
+                    } catch (PersistenceException e) {
+                        LOG.warn("Deleted load balancer(s) detected! Finding and removing from batch...", e);
+                        deleteBadEntries(usagesForDatabase.getUsagesToInsert());
+                        retries--;
+                        LOG.warn(String.format("%d retries left.", retries));
+                    }
+                } else {
+                    break;
+                }
+            }
             LOG.info("Deleting processed usage entries...");
             pollingUsageRepository.deleteAllRecordsBefore(rollupTimeMarker);
         } catch (Exception e) {
@@ -70,6 +100,30 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
         Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
         jobStateService.updateJobState(JobName.LB_USAGE_ROLLUP, JobStateVal.FINISHED);
         LOG.info(String.format("Usage rollup job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
+    }
+
+    private void deleteBadEntries(List<Usage> usagesWithBadEntries) {
+        List<Integer> loadBalancerIdsWithBadId = new ArrayList<Integer>();
+        for (Usage usage : usagesWithBadEntries) {
+            loadBalancerIdsWithBadId.add(usage.getLoadbalancer().getId());
+        }
+
+        List<Integer> loadBalancersFromDatabase = rollUpUsageRepository.getLoadBalancerIdsIn(loadBalancerIdsWithBadId);
+        loadBalancerIdsWithBadId.removeAll(loadBalancersFromDatabase); // Remove valid ids from list
+
+        for (Integer loadBalancerId : loadBalancerIdsWithBadId) {
+            pollingUsageRepository.deleteAllRecordsForLoadBalancer(loadBalancerId);
+        }
+
+        List<Usage> usageItemsToDelete = new ArrayList<Usage>();
+
+        for (Usage usageItem : usagesWithBadEntries) {
+            if (loadBalancerIdsWithBadId.contains(usageItem.getLoadbalancer().getId())) {
+                usageItemsToDelete.add(usageItem);
+            }
+        }
+
+        usagesWithBadEntries.removeAll(usageItemsToDelete);
     }
 
     private Map<Integer, Usage> generateLbIdUsageMap(List<Usage> rollUpUsages) {
