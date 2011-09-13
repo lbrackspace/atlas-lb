@@ -78,6 +78,6 @@ public interface LoadBalancerService {
 
     public boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException;
 
-    public List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress) throws EntityNotFoundException;
+    public List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId);
 
 }

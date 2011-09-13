@@ -43,7 +43,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
-    public Response retrieveLoadBalancers(@QueryParam("status") String status, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker, @QueryParam("page") Integer page, @QueryParam("changes-since") String changedSince) {
+    public Response retrieveLoadBalancers(@QueryParam("status") String status, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker, @QueryParam("page") Integer page, @QueryParam("changes-since") String changedSince, @QueryParam("nodeAddress") String nodeAddress) {
         if (requestHeaders.getRequestHeader("Accept").get(0).equals(APPLICATION_ATOM_XML)) {
             return getFeedResponse(page);
         }
@@ -54,25 +54,33 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         LbQueryStatus qs = null;
 
         try {
-            if (status != null) {
-                qs = LbQueryStatus.INCLUDE;
+            if (nodeAddress != null) {
+                domainLbs = loadBalancerService.getLoadBalancersWithNode(nodeAddress, accountId);
+                for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
+                    dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "LB_NAME_ID"));
+                }
             } else {
-                qs = LbQueryStatus.EXCLUDE;
-                status = "DELETED";
-            }
 
-            if (changedSince != null) {
-                changedCal = isoTocal(changedSince);
-            }
+                if (status != null) {
+                    qs = LbQueryStatus.INCLUDE;
+                } else {
+                    qs = LbQueryStatus.EXCLUDE;
+                    status = "DELETED";
+                }
 
-            if (limit == null || limit < 0 || limit > 100) {
-                limit = 100;
-            }
+                if (changedSince != null) {
+                    changedCal = isoTocal(changedSince);
+                }
 
-            domainLbs = loadBalancerService.getLoadbalancersGeneric(accountId, status, qs, changedCal, offset, limit, marker);
+                if (limit == null || limit < 0 || limit > 100) {
+                    limit = 100;
+                }
 
-            for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
-                dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB"));
+                domainLbs = loadBalancerService.getLoadbalancersGeneric(accountId, status, qs, changedCal, offset, limit, marker);
+
+                for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
+                    dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB"));
+                }
             }
             return Response.status(200).entity(dataModelLbs).build();
         } catch (Exception e) {

@@ -127,13 +127,6 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
 //            domainLbs = virtualIpService.getLoadBalancerByVipId(vipId);
 //        }
 
-        if (nodeAddress != null) {
-            try {
-                return Response.status(200).entity(loadBalancerService.getLoadBalancersWithNode(nodeAddress)).build();
-            } catch (EntityNotFoundException e) {
-                return ResponseFactory.getErrorResponse(e, null, null);
-            }
-        }
         if (vipId != null) {
             domainLbs = retrieveAllVipsById(vipId);
         }
