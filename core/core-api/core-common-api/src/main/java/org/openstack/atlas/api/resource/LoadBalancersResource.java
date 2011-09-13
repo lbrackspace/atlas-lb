@@ -5,6 +5,7 @@ import org.openstack.atlas.api.resource.provider.CommonDependencyProvider;
 import org.openstack.atlas.api.response.ResponseFactory;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
+import org.openstack.atlas.api.validation.validator.LoadBalancerValidator;
 import org.openstack.atlas.api.validation.validator.ResourceValidator;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.core.api.v1.LoadBalancers;
@@ -37,7 +38,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
     protected Integer accountId;
 
     @Autowired
-    protected ResourceValidator<LoadBalancer> validator;
+    protected LoadBalancerValidator validator;
     @Autowired
     protected LoadBalancerService loadbalancerService;
     @Autowired

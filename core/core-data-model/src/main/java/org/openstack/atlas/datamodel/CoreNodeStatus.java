@@ -1,8 +1,13 @@
 package org.openstack.atlas.datamodel;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import java.util.HashSet;
 import java.util.Set;
 
+@Component
+@Scope("request")
 public class CoreNodeStatus implements NodeStatus {
     public static final String ONLINE = "ONLINE";
     public static final String OFFLINE = "OFFLINE";

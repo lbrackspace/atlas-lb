@@ -1,14 +1,13 @@
 package org.openstack.atlas.rax.api.validation.validator.builder;
 
-import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.validator.builder.LoadBalancerValidatorBuilder;
+import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
 import org.openstack.atlas.api.validation.verifier.MustBeEmptyOrNull;
 import org.openstack.atlas.api.validation.verifier.Verifier;
 import org.openstack.atlas.api.validation.verifier.VerifierResult;
-import org.openstack.atlas.core.api.v1.Node;
-import org.openstack.atlas.datamodel.AlgorithmType;
+import org.openstack.atlas.datamodel.CoreNodeCondition;
 import org.openstack.atlas.rax.api.validation.validator.RaxLoadBalancerValidator;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.openstack.atlas.rax.datamodel.RaxAlgorithmType;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -23,9 +22,8 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 @Scope("request")
 public class RaxLoadBalancerValidatorBuilder extends LoadBalancerValidatorBuilder {
 
-    @Autowired
-    public RaxLoadBalancerValidatorBuilder(AlgorithmType algorithmType, ValidatorBuilder<Node> nodeValidator) {
-        super(algorithmType, nodeValidator);
+    public RaxLoadBalancerValidatorBuilder() {
+        super(new RaxAlgorithmType(), new NodeValidatorBuilder(new CoreNodeCondition()));
 
         // POST EXPECTATIONS
         result(validationTarget().getAnies()).if_().exist().then().must().delegateTo(new RaxLoadBalancerValidator().getValidator(), POST).forContext(POST);

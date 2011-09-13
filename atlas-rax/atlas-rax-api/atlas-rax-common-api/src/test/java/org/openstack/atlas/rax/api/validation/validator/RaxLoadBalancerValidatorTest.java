@@ -6,6 +6,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.LoadBalancerValidator;
+import org.openstack.atlas.api.validation.validator.NodeValidator;
 import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
 import org.openstack.atlas.core.api.v1.*;
 import org.openstack.atlas.datamodel.CoreAlgorithmType;
@@ -34,9 +35,7 @@ public static class WhenValidatingPostContext {
         public void setUp() {
             loadBalancer = StubFactory.createMinimalDataModelLoadBalancerForPost();
             validator = new LoadBalancerValidator(
-                    new RaxLoadBalancerValidatorBuilder(
-                            new RaxAlgorithmType(),
-                            new NodeValidatorBuilder(new CoreNodeCondition())));
+                    new RaxLoadBalancerValidatorBuilder());
         }
 
         @Test
@@ -303,9 +302,7 @@ public static class WhenValidatingPostContext {
         @Before
         public void setUpValidator() {
             validator = new LoadBalancerValidator(
-                    new RaxLoadBalancerValidatorBuilder(
-                            new RaxAlgorithmType(),
-                            new NodeValidatorBuilder(new CoreNodeCondition())));
+                    new RaxLoadBalancerValidatorBuilder());
         }
 
         @Before

@@ -16,41 +16,54 @@ public class Expectation implements IfExpectation, OngoingExpectation, ThenExpec
     private Verifier verifier;
     //TODO: Extract into seperate class. Adapter class?
     private Verifier ifVerifier;
+    private Verifier thenVerifier;
     private String messageTemplate;
     private boolean notFlag;
+    private boolean notFlagForThen;
     private boolean ifFlag;
+    private boolean thenFlag;
 
     public Expectation(int id) {
         this.id = id;
         contextList = new LinkedList();
 
         notFlag = false;
+        notFlagForThen = false;
         ifFlag = false;
+        thenFlag = false;
         verifier = null;
         ifVerifier = null;
+        thenVerifier = null;
     }
 
     public boolean hasVerifierSet() {
-        return verifier != null;
+        return  verifier != null || (ifVerifier != null && thenVerifier != null);
     }
 
     public List<ValidationResult> validate(Object obj, Object context) {
         List<ValidationResult> validationResults = new ArrayList<ValidationResult>();
+        VerifierResult result;
+        boolean valid;
+
+        if (!contextIsMet(context)) {
+            validationResults.add(new ValidationResult(true, "Context doesn't match. Skipping..."));
+            return validationResults;
+        }
 
         if (ifVerifier != null) {
-            VerifierResult result = ifVerifier.verify(obj);
-            boolean valid = notFlag ? !result.passed() : result.passed();
+            result = ifVerifier.verify(obj);
+            valid = notFlag ? !result.passed() : result.passed();
             if (!valid) {
                 return validationResults;
             }
         }
 
-        VerifierResult result = verifier.verify(obj);
-        boolean valid = notFlag ? !result.passed() : result.passed();
-
-        if (!contextIsMet(context)) {
-            validationResults.add(new ValidationResult(true, "Context doesn't match. Skipping..."));
-            return validationResults;
+        if (thenVerifier != null) {
+            result = thenVerifier.verify(obj);
+            valid = notFlagForThen ? !result.passed() : result.passed();
+        } else {
+            result = verifier.verify(obj);
+            valid = notFlag ? !result.passed() : result.passed();
         }
 
         if (valid) {
@@ -88,19 +101,23 @@ public class Expectation implements IfExpectation, OngoingExpectation, ThenExpec
 
     //Default Validations
     @Override
-    public OngoingExpectation must() {
+    public OngoingExpectation<FinalizedExpectation> must() {
         return this;
     }
 
     @Override
-    public OngoingExpectation if_() {
+    public OngoingExpectation<ThenExpectation> if_() {
         ifFlag = true;
         return this;
     }
 
     @Override
     public OngoingExpectation not() {
-        notFlag = !notFlag;
+        if (thenFlag) {
+            notFlagForThen = !notFlagForThen;
+        } else {
+            notFlag = !notFlag;
+        }
 
         return this;
     }
@@ -202,6 +219,7 @@ public class Expectation implements IfExpectation, OngoingExpectation, ThenExpec
 
     @Override
     public EmptyExpectation then() {
+        thenFlag = true;
         return this;
     }
 
@@ -209,6 +227,9 @@ public class Expectation implements IfExpectation, OngoingExpectation, ThenExpec
         if (ifFlag) {
             ifFlag = false;
             this.ifVerifier = verifier;
+        } else if (thenFlag) {
+            thenFlag = false;
+            this.thenVerifier = verifier;
         } else {
             this.verifier = verifier;
         }

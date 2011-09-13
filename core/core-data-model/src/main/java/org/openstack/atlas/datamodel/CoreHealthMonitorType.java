@@ -1,8 +1,13 @@
 package org.openstack.atlas.datamodel;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import java.util.HashSet;
 import java.util.Set;
 
+@Component
+@Scope("request")
 public class CoreHealthMonitorType implements HealthMonitorType {
     public static final String CONNECT = "CONNECT";
     public static final String HTTP = "HTTP";

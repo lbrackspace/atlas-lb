@@ -1,8 +1,13 @@
 package org.openstack.atlas.datamodel;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import java.util.HashSet;
 import java.util.Set;
 
+@Component
+@Scope("request")
 public class CorePersistenceType implements PersistenceType {
     public static final String HTTP_COOKIE = "HTTP_COOKIE";
     protected static final Set<String> persistenceTypes;
