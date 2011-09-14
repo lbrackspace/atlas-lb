@@ -16,46 +16,46 @@ import java.util.Calendar;
     Used for testing purposes.
  */
 public class StubFactory {
-    private static final Integer LOAD_BALANCER_ID = 1;
-    private static final String LOAD_BALANCER_NAME = "My first load balancer";
-    private static final Integer LOAD_BALANCER_PORT = 80;
-    private static final String LOAD_BALANCER_PROTOCOL = "HTTP";
-    private static final String LOAD_BALANCER_ALGORITHM = "ROUND_ROBIN";
-    private static final String LOAD_BALANCER_STATUS = "ACTIVE";
-    private static final Integer NODE1_ID = 1;
-    private static final Integer NODE2_ID = 2;
-    private static final Integer NODE1_PORT = 80;
-    private static final Integer NODE2_PORT = 81;
-    private static final String NODE1_CONDITION = "ENABLED";
-    private static final String NODE2_CONDITION = "DISABLED";
-    private static final String NODE1_STATUS = "ONLINE";
-    private static final String NODE2_STATUS = "OFFLINE";
-    private static final String NODE1_ADDRESS = "10.1.1.1";
-    private static final String NODE2_ADDRESS = "10.1.1.2";
-    private static final Integer NODE1_WEIGHT = 1;
-    private static final Integer NODE2_WEIGHT = 2;
-    private static final Integer VIP1_ID = 1;
-    private static final Integer VIP2_ID = 2;
-    private static final String VIP1_ADDRESS = "10.10.10.1";
-    private static final String VIP2_ADDRESS = "10.10.10.2";
-    private static final String VIP1_TYPE = "PUBLIC";
-    private static final String VIP2_TYPE = "PUBLIC";
-    private static final String VIP1_VERSION = "IPV4";
-    private static final String VIP2_VERSION = "IPV4";
-    private static final Integer CONNECTION_THROTTLE_MAX_REQUEST_RATE = 100;
-    private static final Integer CONNECTION_THROTTLE_RATE_INTERVAL = 20;
-    private static final Integer HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION = 3;
-    private static final Integer HEALTH_MONITOR_DELAY = 5;
-    private static final Integer HEALTH_MONITOR_TIMEOUT = 10;
-    private static final String HEALTH_MONITOR_PATH = "/";
-    private static final String HEALTH_MONITOR_TYPE = "CONNECT";
-    private static final String SESSION_PERSISTENCE_TYPE = "HTTP_COOKIE";
+    protected static final Integer LOAD_BALANCER_ID = 1;
+    protected static final String LOAD_BALANCER_NAME = "My first load balancer";
+    protected static final Integer LOAD_BALANCER_PORT = 80;
+    protected static final String LOAD_BALANCER_PROTOCOL = "HTTP";
+    protected static final String LOAD_BALANCER_ALGORITHM = "ROUND_ROBIN";
+    protected static final String LOAD_BALANCER_STATUS = "ACTIVE";
+    protected static final Integer NODE1_ID = 1;
+    protected static final Integer NODE2_ID = 2;
+    protected static final Integer NODE1_PORT = 80;
+    protected static final Integer NODE2_PORT = 81;
+    protected static final String NODE1_CONDITION = "ENABLED";
+    protected static final String NODE2_CONDITION = "DISABLED";
+    protected static final String NODE1_STATUS = "ONLINE";
+    protected static final String NODE2_STATUS = "OFFLINE";
+    protected static final String NODE1_ADDRESS = "10.1.1.1";
+    protected static final String NODE2_ADDRESS = "10.1.1.2";
+    protected static final Integer NODE1_WEIGHT = 1;
+    protected static final Integer NODE2_WEIGHT = 2;
+    protected static final Integer VIP1_ID = 1;
+    protected static final Integer VIP2_ID = 2;
+    protected static final String VIP1_ADDRESS = "10.10.10.1";
+    protected static final String VIP2_ADDRESS = "10.10.10.2";
+    protected static final String VIP1_TYPE = "PUBLIC";
+    protected static final String VIP2_TYPE = "PUBLIC";
+    protected static final String VIP1_VERSION = "IPV4";
+    protected static final String VIP2_VERSION = "IPV4";
+    protected static final Integer CONNECTION_THROTTLE_MAX_REQUEST_RATE = 100;
+    protected static final Integer CONNECTION_THROTTLE_RATE_INTERVAL = 20;
+    protected static final Integer HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION = 3;
+    protected static final Integer HEALTH_MONITOR_DELAY = 5;
+    protected static final Integer HEALTH_MONITOR_TIMEOUT = 10;
+    protected static final String HEALTH_MONITOR_PATH = "/";
+    protected static final String HEALTH_MONITOR_TYPE = "CONNECT";
+    protected static final String SESSION_PERSISTENCE_TYPE = "HTTP_COOKIE";
 
     public static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost() {
         return createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, null, null);
     }
 
-    private static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost(Integer id, String address, Integer port, Integer weight, String condition, String status) {
+    protected static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost(Integer id, String address, Integer port, Integer weight, String condition, String status) {
         org.openstack.atlas.core.api.v1.Node node = new org.openstack.atlas.core.api.v1.Node();
         
         node.setId(id);

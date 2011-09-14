@@ -23,7 +23,7 @@
             <list>
                 <value>dozer-config-map.xml</value>
                 <value>dozer-health-monitor-map.xml</value>
-                <value>dozer-load-balancer-map.xml</value>
+                <value>dozer-rax-load-balancer-map.xml</value>
                 <value>dozer-node-map.xml</value>
                 <value>dozer-virtual-ip-map.xml</value>
             </list>
