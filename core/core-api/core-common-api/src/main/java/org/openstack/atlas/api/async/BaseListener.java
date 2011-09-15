@@ -10,20 +10,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
+import org.springframework.stereotype.Component;
 
 import javax.jms.*;
 
+@Component
 public abstract class BaseListener implements MessageListener {
     protected Log LOG = LogFactory.getLog(BaseListener.class);
+    @Autowired
     protected JmsTemplate jmsTemplate;
 
     @Autowired
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
 
+/*
     @Required
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
     }
+*/
 
     public final void onMessage(Message message) {
         try {

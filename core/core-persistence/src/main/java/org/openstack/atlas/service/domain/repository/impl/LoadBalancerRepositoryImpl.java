@@ -8,11 +8,13 @@ import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
 import org.openstack.atlas.service.domain.entity.VirtualIp;
+import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -156,5 +158,76 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
                 "select count(account_id) from load_balancer where status != 'DELETED' and account_id = :accountId").setParameter("accountId", accountId);
 
         return ((BigInteger) query.getSingleResult()).intValue();
+    }
+
+    public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
+        String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
+        List<LoadBalancer> lbList;
+        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
+                setParameter("aid", accountId).
+                setParameter("lid", loadbalancerId);
+        lbList = q.getResultList();
+        if (lbList.size() < 1) {
+            throw new EntityNotFoundException(Constants.LoadBalancerNotFound);
+        }
+
+        LoadBalancer lb = lbList.get(0);
+        if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);
+        final boolean isActive = lb.getStatus().equals(LoadBalancerStatus.ACTIVE);
+        final boolean isPendingOrActive = lb.getStatus().equals(LoadBalancerStatus.PENDING_UPDATE) || isActive;
+
+        if(allowConcurrentModifications ? isPendingOrActive : isActive) {
+            lb.setStatus(statusToChangeTo);
+            lb.setUpdated(Calendar.getInstance());
+            entityManager.merge(lb);
+            return true;
+        }
+
+        return false;
+    }
+
+    public void updatePortInJoinTable(LoadBalancer lb) {
+        String queryString = "from LoadBalancerJoinVip where loadBalancer.id = :lbId";
+        Query query = entityManager.createQuery(queryString).setParameter("lbId", lb.getId());
+        LoadBalancerJoinVip loadBalancerJoinVip = (LoadBalancerJoinVip) query.getSingleResult();
+        loadBalancerJoinVip.setPort(lb.getPort());
+        entityManager.merge(loadBalancerJoinVip);
+    }
+
+    public boolean canUpdateToNewPort(Integer newPort, Set<LoadBalancerJoinVip> setToCheckAgainst) {
+        Set<VirtualIp> vipsToCheckAgainst = new HashSet<VirtualIp>();
+
+        for (LoadBalancerJoinVip loadBalancerJoinVip : setToCheckAgainst) {
+            vipsToCheckAgainst.add(loadBalancerJoinVip.getVirtualIp());
+        }
+
+        String queryString = "select j from LoadBalancerJoinVip j where j.virtualIp in (:vips)";
+        Query query = entityManager.createQuery(queryString).setParameter("vips", vipsToCheckAgainst);
+
+        List<LoadBalancerJoinVip> entriesWithPortsToCheckAgainst = query.getResultList();
+
+        for (LoadBalancerJoinVip entryWithPortToCheckAgainst : entriesWithPortsToCheckAgainst) {
+            if (entryWithPortToCheckAgainst.getPort().equals(newPort)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void setStatus(LoadBalancer loadBalancer,LoadBalancerStatus status) throws EntityNotFoundException{
+        String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
+        List<LoadBalancer> lbList;
+        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
+                setParameter("aid", loadBalancer.getAccountId()).
+                setParameter("lid", loadBalancer.getId());
+        lbList = q.getResultList();
+        if (lbList.size() < 1) {
+            throw new EntityNotFoundException(Constants.LoadBalancerNotFound);
+        }
+
+
+        lbList.get(0).setStatus(status);
+        entityManager.merge(lbList.get(0));
     }
 }

@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface LoadBalancerService {
     LoadBalancer create(LoadBalancer loadBalancer) throws PersistenceServiceException;
+
+    LoadBalancer update(LoadBalancer loadBalancer) throws PersistenceServiceException;
+
 }

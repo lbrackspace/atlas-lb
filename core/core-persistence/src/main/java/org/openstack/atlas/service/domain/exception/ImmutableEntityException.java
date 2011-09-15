@@ -1,20 +1,14 @@
 package org.openstack.atlas.service.domain.exception;
 
-public class ImmutableEntityException extends Exception {
+public class ImmutableEntityException extends PersistenceServiceException {
+    private final String message;
 
-    public ImmutableEntityException() {
-        super();
+    public ImmutableEntityException(final String message) {
+        this.message = message;
     }
 
-    public ImmutableEntityException(String message) {
-        super(message);
-    }
-
-    public ImmutableEntityException(String message, Throwable th) {
-        super(message, th);
-    }
-
-    public ImmutableEntityException(Throwable th) {
-        super(th);
+    @Override
+    public String getMessage() {
+        return message;
     }
 }
