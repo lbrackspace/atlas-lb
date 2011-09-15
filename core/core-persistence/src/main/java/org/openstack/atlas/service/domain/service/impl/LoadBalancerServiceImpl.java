@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.service.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.common.StringHelper;
+import org.openstack.atlas.service.domain.common.StringUtilities;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entity.LoadBalancerStatus;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -47,7 +49,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     }
 
     @Override
-    @Transactional(rollbackFor = {Exception.class})
+    @Transactional
     public LoadBalancer update(LoadBalancer loadBalancer) throws PersistenceServiceException {
         LoadBalancer dbLoadBalancer;
         boolean portHMTypecheck = true;
@@ -138,6 +140,45 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         // TODO: Sending db loadbalancer causes everything to update. Tweek for performance
         LOG.debug("Leaving " + getClass());
         return dbLoadBalancer;
+    }
+
+    @Override
+    @Transactional
+    public void delete(LoadBalancer lb) throws PersistenceServiceException {
+        List<Integer> loadBalancerIds = new ArrayList<Integer>();
+        loadBalancerIds.add(lb.getId());
+        delete(lb.getAccountId(), loadBalancerIds);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Integer accountId, List<Integer> loadBalancerIds) throws PersistenceServiceException {
+        List<Integer> badLbIds = new ArrayList<Integer>();
+        List<Integer> badLbStatusIds = new ArrayList<Integer>();
+        List<LoadBalancer> loadBalancersToDelete = new ArrayList<LoadBalancer>();
+        for (int lbIdToDelete : loadBalancerIds) {
+            try {
+                LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbIdToDelete, accountId);
+                if(!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE, false)) {
+                    LOG.warn(StringHelper.immutableLoadBalancer(dbLoadBalancer));
+                    badLbStatusIds.add(lbIdToDelete);
+                }
+                loadBalancersToDelete.add(dbLoadBalancer);
+            } catch (Exception e) {
+                badLbIds.add(lbIdToDelete);
+            }
+        }
+        if (!badLbIds.isEmpty()) throw new BadRequestException(String.format("Must provide valid load balancers, %s , could not be found.", StringUtilities.DelimitString(badLbIds, ",")));
+        if (!badLbStatusIds.isEmpty()) throw new BadRequestException(String.format("Must provide valid load balancers, %s , are immutable and could not be processed.", StringUtilities.DelimitString(badLbStatusIds, ",")));
+    }
+
+    @Transactional
+    public void pseudoDelete(LoadBalancer lb) throws Exception {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
+        dbLoadBalancer.setStatus(LoadBalancerStatus.DELETED);
+        dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
+
+        virtualIpService.removeAllVipsFromLoadBalancer(dbLoadBalancer);
     }
 
     protected void validate(LoadBalancer loadBalancer) throws BadRequestException, EntityNotFoundException, LimitReachedException {

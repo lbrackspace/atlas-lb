@@ -29,10 +29,37 @@ public class VirtualIpRepository {
         entityManager.persist(obj);
     }
 
+    public List<LoadBalancerJoinVip> getJoinRecordsForVip(VirtualIp virtualIp) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerJoinVip> criteria = builder.createQuery(LoadBalancerJoinVip.class);
+        Root<LoadBalancerJoinVip> lbJoinVipRoot = criteria.from(LoadBalancerJoinVip.class);
+
+        Predicate hasVip = builder.equal(lbJoinVipRoot.get(LoadBalancerJoinVip_.virtualIp), virtualIp);
+
+        criteria.select(lbJoinVipRoot);
+        criteria.where(hasVip);
+        return entityManager.createQuery(criteria).setLockMode(LockModeType.PESSIMISTIC_WRITE).getResultList();
+    }
+
     public List<VirtualIp> getVipsByAccountId(Integer accountId) {
         String query = "select distinct(j.virtualIp) from LoadBalancerJoinVip j where j.loadBalancer.accountId = :accountId";
         List<VirtualIp> vips = entityManager.createQuery(query).setParameter("accountId", accountId).getResultList();
         return vips;
+    }
+
+    public void removeJoinRecord(LoadBalancerJoinVip loadBalancerJoinVip) {
+        loadBalancerJoinVip = entityManager.find(LoadBalancerJoinVip.class, loadBalancerJoinVip.getId());
+        VirtualIp virtualIp = entityManager.find(VirtualIp.class, loadBalancerJoinVip.getVirtualIp().getId());
+        virtualIp.getLoadBalancerJoinVipSet().remove(loadBalancerJoinVip);
+        entityManager.remove(loadBalancerJoinVip);
+    }
+
+    public void deallocateVirtualIp(VirtualIp virtualIp) {
+        virtualIp = entityManager.find(VirtualIp.class, virtualIp.getId());
+        virtualIp.setAllocated(false);
+        virtualIp.setLastDeallocation(Calendar.getInstance());
+        entityManager.merge(virtualIp);
+        LOG.info(String.format("Virtual Ip '%d' de-allocated.", virtualIp.getId()));
     }
 
     public VirtualIp allocateIpv4VipBeforeDate(Cluster cluster, Calendar vipReuseTime, VirtualIpType vipType) throws OutOfVipsException {

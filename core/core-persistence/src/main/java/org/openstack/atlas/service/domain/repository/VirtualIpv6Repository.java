@@ -31,6 +31,31 @@ public class VirtualIpv6Repository {
         return entityManager.createQuery("select a.id from Account a").getResultList();
     }
 
+    public void deleteVirtualIp(VirtualIpv6 virtualIpv6) {
+        virtualIpv6 = entityManager.find(VirtualIpv6.class, virtualIpv6.getId());
+        entityManager.remove(virtualIpv6);
+        LOG.info(String.format("IPv6 virtual Ip '%d' deleted.", virtualIpv6.getId()));
+    }
+
+        public void removeJoinRecord(LoadBalancerJoinVip6 loadBalancerJoinVip6) {
+        loadBalancerJoinVip6 = entityManager.find(LoadBalancerJoinVip6.class, loadBalancerJoinVip6.getId());
+        VirtualIpv6 virtualIpv6 = entityManager.find(VirtualIpv6.class, loadBalancerJoinVip6.getVirtualIp().getId());
+        virtualIpv6.getLoadBalancerJoinVip6Set().remove(loadBalancerJoinVip6);
+        entityManager.remove(loadBalancerJoinVip6);
+    }
+
+     public List<LoadBalancerJoinVip6> getJoinRecordsForVip(VirtualIpv6 virtualIp) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerJoinVip6> criteria = builder.createQuery(LoadBalancerJoinVip6.class);
+        Root<LoadBalancerJoinVip6> lbJoinVipRoot = criteria.from(LoadBalancerJoinVip6.class);
+
+        Predicate hasVip = builder.equal(lbJoinVipRoot.get(LoadBalancerJoinVip6_.virtualIp), virtualIp);
+
+        criteria.select(lbJoinVipRoot);
+        criteria.where(hasVip);
+        return entityManager.createQuery(criteria).setLockMode(LockModeType.PESSIMISTIC_WRITE).getResultList();
+    }
+
 
     public Account getLockedAccountRecord(Integer accountId) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();

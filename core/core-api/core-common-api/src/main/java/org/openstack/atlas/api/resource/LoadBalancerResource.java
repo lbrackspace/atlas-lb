@@ -15,10 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.MediaType.*;
@@ -69,6 +66,25 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             msg.setLoadBalancer(loadBalancer);
 
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_LOADBALANCER, msg);
+            return Response.status(Response.Status.ACCEPTED).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @DELETE
+    public Response deleteLoadBalancer() {
+        try {
+            org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer = new org.openstack.atlas.service.domain.entity.LoadBalancer();
+            loadBalancer.setId(id);
+            loadBalancer.setAccountId(accountId);
+
+            loadBalancerService.delete(loadBalancer);
+
+            MessageDataContainer data = new MessageDataContainer();
+            data.setLoadBalancer(loadBalancer);
+
+            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_LOADBALANCER, data);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
