@@ -1,4 +1,4 @@
-package org.openstack.atlas.service.domain.service;
+package org.openstack.atlas.service.domain.common;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,7 +18,7 @@ public class Validator {
         if (loadBalancer.getProtocol() != null && (loadBalancer.getProtocol().equals(LoadBalancerProtocol.TCP))) {
             LOG.info("TCP Protocol detected. Port must exists");
             if (loadBalancer.getPort() == null) {
-                throw new BadRequestException("Must Provide port for TCP Protocol.");
+                throw new BadRequestException(ErrorMessages.TCP_PORT_REQUIRED);
             }
         }
     }
@@ -31,11 +31,11 @@ public class Validator {
         HealthMonitorType type = loadBalancer.getHealthMonitor().getType();
         if (type.equals(HealthMonitorType.HTTP)) {
             if (!(loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP))) {
-                throw new BadRequestException("Protocol must be HTTP for an HTTP health monitor.");
+                throw new BadRequestException(ErrorMessages.HTTP_HEALTH_MONITOR_PROTOCOL_INCOMPATIBLE);
             }
         } else if (type.equals(HealthMonitorType.HTTPS)) {
             if (!(loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTPS))) {
-                throw new BadRequestException("Protocol must be HTTPS for an HTTPS health monitor.");
+                throw new BadRequestException(ErrorMessages.HTTPS_HEALTH_MONITOR_PROTOCOL_INCOMPATIBLE);
             }
         }
         return;

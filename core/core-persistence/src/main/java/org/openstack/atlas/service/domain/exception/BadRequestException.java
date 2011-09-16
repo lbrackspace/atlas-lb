@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.exception;
 
+import org.openstack.atlas.service.domain.common.ErrorMessages;
+
 public class BadRequestException extends PersistenceServiceException {
 
     private String message;
@@ -16,8 +18,8 @@ public class BadRequestException extends PersistenceServiceException {
         super(th);
     }
 
-    public BadRequestException() {
-        super();
+    public BadRequestException(ErrorMessages messages) {
+        this.message = messages.toString();
     }
 
     @Override

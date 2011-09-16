@@ -2,8 +2,7 @@ package org.openstack.atlas.service.domain.service.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.common.StringHelper;
-import org.openstack.atlas.service.domain.common.StringUtilities;
+import org.openstack.atlas.service.domain.common.*;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entity.LoadBalancerStatus;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 @Service
@@ -40,9 +38,9 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
 
     @Override
     @Transactional
-    public final LoadBalancer create(LoadBalancer loadBalancer) throws PersistenceServiceException {
-        validate(loadBalancer);
-        loadBalancer = addDefaultValues(loadBalancer);
+    public final LoadBalancer create(final LoadBalancer loadBalancer) throws PersistenceServiceException {
+        validateCreate(loadBalancer);
+        addDefaultValuesForCreate(loadBalancer);
         LoadBalancer dbLoadBalancer = loadBalancerRepository.create(loadBalancer);
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
         return dbLoadBalancer;
@@ -50,40 +48,50 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
 
     @Override
     @Transactional
-    public LoadBalancer update(LoadBalancer loadBalancer) throws PersistenceServiceException {
-        LoadBalancer dbLoadBalancer;
+    public LoadBalancer update(final LoadBalancer loadBalancer) throws PersistenceServiceException {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
+
+        loadBalancerRepository.changeStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+
+        setName(loadBalancer, dbLoadBalancer);
+        setAlgorithm(loadBalancer, dbLoadBalancer);
+        setPort(loadBalancer, dbLoadBalancer);
+        setProtocol(loadBalancer, dbLoadBalancer);
+        setConnectionLogging(loadBalancer, dbLoadBalancer);
+
+        dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
+        dbLoadBalancer.setUserName(loadBalancer.getUserName());
+
+        return dbLoadBalancer;
+    }
+
+    @Override
+    @Transactional
+    public void delete(final LoadBalancer lb) throws PersistenceServiceException {
+        List<Integer> loadBalancerIds = new ArrayList<Integer>();
+        loadBalancerIds.add(lb.getId());
+        delete(lb.getAccountId(), loadBalancerIds);
+    }
+
+    @Override
+    @Transactional
+    public void delete(final Integer accountId, final List<Integer> loadBalancerIds) throws PersistenceServiceException {
+        validateDelete(accountId, loadBalancerIds);
+        for(int lbIdToDelete : loadBalancerIds) {
+            loadBalancerRepository.changeStatus(lbIdToDelete, accountId, LoadBalancerStatus.PENDING_DELETE);
+        }
+    }
+
+    @Transactional
+    public void pseudoDelete(final LoadBalancer lb) throws EntityNotFoundException {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
+        dbLoadBalancer.setStatus(LoadBalancerStatus.DELETED);
+        dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
+        virtualIpService.removeAllVipsFromLoadBalancer(dbLoadBalancer);
+    }
+
+    private void setProtocol(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
         boolean portHMTypecheck = true;
-
-        dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
-
-        LOG.debug("Updating the lb status to pending_update");
-        if(!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
-            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
-            LOG.warn(message);
-            throw new ImmutableEntityException(message);
-        }
-
-        if (loadBalancer.getPort() != null && !loadBalancer.getPort().equals(dbLoadBalancer.getPort())) {
-            LOG.debug("Updating loadbalancer port to " + loadBalancer.getPort());
-            if (loadBalancerRepository.canUpdateToNewPort(loadBalancer.getPort(), dbLoadBalancer.getLoadBalancerJoinVipSet())) {
-                loadBalancerRepository.updatePortInJoinTable(loadBalancer);
-                dbLoadBalancer.setPort(loadBalancer.getPort());
-            } else {
-                LOG.error("Cannot update load balancer port as it is currently in use by another virtual ip.");
-                throw new BadRequestException(String.format("Port currently assigned to one of the virtual ips. Please try another port."));
-            }
-        }
-
-        if (loadBalancer.getName() != null && !loadBalancer.getName().equals(dbLoadBalancer.getName())) {
-            LOG.debug("Updating loadbalancer name to " + loadBalancer.getName());
-            dbLoadBalancer.setName(loadBalancer.getName());
-        }
-
-        if (loadBalancer.getAlgorithm() != null && !loadBalancer.getAlgorithm().equals(dbLoadBalancer.getAlgorithm())) {
-            LOG.debug("Updating loadbalancer algorithm to " + loadBalancer.getAlgorithm());
-            dbLoadBalancer.setAlgorithm(loadBalancer.getAlgorithm());
-        }
-
         if (loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(dbLoadBalancer.getProtocol())) {
 
             //check for health monitor type and allow update only if protocol matches health monitory type for HTTP and HTTPS
@@ -116,12 +124,41 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                 }
             } else {
                 LOG.error("Cannot update port as the loadbalancer has a incompatible Health Monitor type");
-                throw new BadRequestException(String.format("Cannot update port as the loadbalancer has a incompatible Health Monitor type"));
+                throw new BadRequestException(ErrorMessages.PORT_HEALTH_MONITOR_INCOMPATIBLE);
             }
         }
+    }
 
+    private void setAlgorithm(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) {
+        if (loadBalancer.getAlgorithm() != null && !loadBalancer.getAlgorithm().equals(dbLoadBalancer.getAlgorithm())) {
+            LOG.debug("Updating loadbalancer algorithm to " + loadBalancer.getAlgorithm());
+            dbLoadBalancer.setAlgorithm(loadBalancer.getAlgorithm());
+        }
+    }
+
+    private void setName(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) {
+        if (loadBalancer.getName() != null && !loadBalancer.getName().equals(dbLoadBalancer.getName())) {
+            LOG.debug("Updating loadbalancer name to " + loadBalancer.getName());
+            dbLoadBalancer.setName(loadBalancer.getName());
+        }
+    }
+
+    private void setPort(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
+        if (loadBalancer.getPort() != null && !loadBalancer.getPort().equals(dbLoadBalancer.getPort())) {
+            LOG.debug("Updating loadbalancer port to " + loadBalancer.getPort());
+            if (loadBalancerRepository.canUpdateToNewPort(loadBalancer.getPort(), dbLoadBalancer.getLoadBalancerJoinVipSet())) {
+                loadBalancerRepository.updatePortInJoinTable(loadBalancer);
+                dbLoadBalancer.setPort(loadBalancer.getPort());
+            } else {
+                LOG.error("Cannot update load balancer port as it is currently in use by another virtual ip.");
+                throw new BadRequestException(ErrorMessages.PORT_IN_USE);
+            }
+        }
+    }
+
+    private void setConnectionLogging(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
         if (loadBalancer.getConnectionLogging() != null && !loadBalancer.getConnectionLogging().equals(dbLoadBalancer.getConnectionLogging())) {
-            if (loadBalancer.getConnectionLogging()) {
+            /*if (loadBalancer.getConnectionLogging()) {
                 if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
                     LOG.error("Protocol must be HTTP for connection logging.");
                     throw new UnprocessableEntityException(String.format("Protocol must be HTTP for connection logging."));
@@ -129,70 +166,45 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                 LOG.debug("Enabling connection logging on the loadbalancer...");
             } else {
                 LOG.debug("Disabling connection logging on the loadbalancer...");
-            }
+            }*/
             dbLoadBalancer.setConnectionLogging(loadBalancer.getConnectionLogging());
         }
-
-        dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
-        dbLoadBalancer.setUserName(loadBalancer.getUserName());
-        LOG.debug("Updated the loadbalancer in DB. Now sending response back.");
-
-        // TODO: Sending db loadbalancer causes everything to update. Tweek for performance
-        LOG.debug("Leaving " + getClass());
-        return dbLoadBalancer;
     }
 
-    @Override
-    @Transactional
-    public void delete(LoadBalancer lb) throws PersistenceServiceException {
-        List<Integer> loadBalancerIds = new ArrayList<Integer>();
-        loadBalancerIds.add(lb.getId());
-        delete(lb.getAccountId(), loadBalancerIds);
-    }
-
-    @Override
-    @Transactional
-    public void delete(Integer accountId, List<Integer> loadBalancerIds) throws PersistenceServiceException {
+    protected void validateDelete(final Integer accountId, final List<Integer> loadBalancerIds) throws BadRequestException {
         List<Integer> badLbIds = new ArrayList<Integer>();
         List<Integer> badLbStatusIds = new ArrayList<Integer>();
-        List<LoadBalancer> loadBalancersToDelete = new ArrayList<LoadBalancer>();
-        for (int lbIdToDelete : loadBalancerIds) {
+        for (int loadBalancerId : loadBalancerIds) {
             try {
-                LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbIdToDelete, accountId);
-                if(!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE, false)) {
+                LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
+                if(!dbLoadBalancer.getStatus().equals(LoadBalancerStatus.ACTIVE)) {
                     LOG.warn(StringHelper.immutableLoadBalancer(dbLoadBalancer));
-                    badLbStatusIds.add(lbIdToDelete);
+                    badLbStatusIds.add(loadBalancerId);
                 }
-                loadBalancersToDelete.add(dbLoadBalancer);
-            } catch (Exception e) {
-                badLbIds.add(lbIdToDelete);
+            } catch (EntityNotFoundException e) {
+                badLbIds.add(loadBalancerId);
             }
         }
-        if (!badLbIds.isEmpty()) throw new BadRequestException(String.format("Must provide valid load balancers, %s , could not be found.", StringUtilities.DelimitString(badLbIds, ",")));
-        if (!badLbStatusIds.isEmpty()) throw new BadRequestException(String.format("Must provide valid load balancers, %s , are immutable and could not be processed.", StringUtilities.DelimitString(badLbStatusIds, ",")));
+        ErrorMessages.LB_DELETED.getMessage(1,2);
+        if (!badLbIds.isEmpty()) {
+            throw new BadRequestException(String.format("Must provide valid load balancers, %s , could not be found.", StringUtilities.DelimitString(badLbIds, ",")));
+        }
+        if (!badLbStatusIds.isEmpty()) {
+            throw new BadRequestException(String.format("Must provide valid load balancers, %s , are immutable and could not be processed.", StringUtilities.DelimitString(badLbStatusIds, ",")));
+        }
     }
 
-    @Transactional
-    public void pseudoDelete(LoadBalancer lb) throws Exception {
-        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
-        dbLoadBalancer.setStatus(LoadBalancerStatus.DELETED);
-        dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
-
-        virtualIpService.removeAllVipsFromLoadBalancer(dbLoadBalancer);
-    }
-
-    protected void validate(LoadBalancer loadBalancer) throws BadRequestException, EntityNotFoundException, LimitReachedException {
+    protected void validateCreate(final LoadBalancer loadBalancer) throws BadRequestException, EntityNotFoundException, LimitReachedException {
         Validator.verifyTCPProtocolandPort(loadBalancer);
         Validator.verifyProtocolAndHealthMonitorType(loadBalancer);
         accountLimitService.verifyLoadBalancerLimit(loadBalancer.getAccountId());
         blacklistService.verifyNoBlacklistNodes(loadBalancer.getNodes());
     }
 
-    protected LoadBalancer addDefaultValues(LoadBalancer loadBalancer) throws PersistenceServiceException {
+    protected void addDefaultValuesForCreate(final LoadBalancer loadBalancer) throws PersistenceServiceException {
         LoadBalancerDefaultBuilder.addDefaultValues(loadBalancer);
         loadBalancer.setHost(hostService.getDefaultActiveHost());
-        loadBalancer = virtualIpService.assignVIpsToLoadBalancer(loadBalancer);
-        return loadBalancer;
+        virtualIpService.assignVIpsToLoadBalancer(loadBalancer);
     }
 }
 

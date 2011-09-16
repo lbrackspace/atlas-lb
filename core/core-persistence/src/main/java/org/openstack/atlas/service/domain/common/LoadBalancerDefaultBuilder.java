@@ -1,4 +1,4 @@
-package org.openstack.atlas.service.domain.service;
+package org.openstack.atlas.service.domain.common;
 
 import org.openstack.atlas.service.domain.common.Constants;
 import org.openstack.atlas.service.domain.common.NodesHelper;

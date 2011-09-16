@@ -22,7 +22,9 @@ public interface LoadBalancerRepository {
 
     Integer getNumNonDeletedLoadBalancersForAccount(Integer accountId);
 
-    boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException;
+    void changeStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus newStatus, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException;
+
+    void changeStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus newStatus) throws EntityNotFoundException, UnprocessableEntityException;
 
     void updatePortInJoinTable(LoadBalancer lb);
 
