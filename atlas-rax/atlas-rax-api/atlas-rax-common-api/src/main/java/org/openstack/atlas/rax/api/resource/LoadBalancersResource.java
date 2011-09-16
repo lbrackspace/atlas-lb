@@ -3,13 +3,9 @@ package org.openstack.atlas.rax.api.resource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.response.ResponseFactory;
-import org.openstack.atlas.api.v1.extensions.rax.AccessList;
-import org.openstack.atlas.api.v1.extensions.rax.NetworkItem;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
-import org.openstack.atlas.rax.api.mapper.dozer.converter.AnyObjectMapper;
-import org.openstack.atlas.rax.domain.entity.AccessListType;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.rax.domain.pojo.RaxMessageDataContainer;
 import org.openstack.atlas.service.domain.operation.Operation;
@@ -17,10 +13,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.core.Response;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Controller("RAX-LoadBalancersResource")
 @Scope("request")

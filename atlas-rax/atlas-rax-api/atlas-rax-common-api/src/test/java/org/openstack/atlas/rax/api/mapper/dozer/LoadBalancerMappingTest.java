@@ -10,6 +10,8 @@ import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
 import org.openstack.atlas.core.api.v1.VipType;
 import org.openstack.atlas.datamodel.CoreNodeCondition;
+import org.openstack.atlas.rax.api.mapper.dozer.converter.AnyObjectMapper;
+import org.openstack.atlas.rax.domain.entity.AccessList;
 import org.openstack.atlas.rax.domain.stub.RaxStubFactory;
 import org.openstack.atlas.service.domain.entity.*;
 
@@ -226,6 +228,12 @@ public class LoadBalancerMappingTest {
         public void shouldMapCrazyNameToOtherAttributes() {
             String crazyNameValue = dataModelLoadBalancer.getOtherAttributes().get(new QName("http://docs.openstack.org/atlas/api/v1.1/extensions/rax", "crazyName", "rax"));
             Assert.assertEquals(domainLoadBalancer.getCrazyName(), crazyNameValue);
+        }
+
+        @Test
+        public void shouldMapAccessListWhenAccessListExists() {
+            org.openstack.atlas.api.v1.extensions.rax.AccessList accessList = AnyObjectMapper.getAnyElement(dataModelLoadBalancer.getAnies(), org.openstack.atlas.api.v1.extensions.rax.AccessList.class);
+            Assert.assertNotNull(accessList);
         }
     }
 }

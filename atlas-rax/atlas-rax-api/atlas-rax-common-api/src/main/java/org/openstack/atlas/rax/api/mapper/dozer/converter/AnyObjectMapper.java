@@ -2,10 +2,7 @@ package org.openstack.atlas.rax.api.mapper.dozer.converter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.api.v1.extensions.rax.AccessList;
-import org.openstack.atlas.api.v1.extensions.rax.NetworkItem;
 import org.openstack.atlas.api.v1.extensions.rax.ObjectFactory;
-import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.w3c.dom.Element;
 
 import javax.xml.bind.JAXBContext;
@@ -17,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 public class AnyObjectMapper {
-    public static Log LOG = LogFactory.getLog(AnyObjectMapper.class.getName());
+    private static Log LOG = LogFactory.getLog(AnyObjectMapper.class.getName());
 
     public static <T> T getOtherAttribute(Map<QName, String> otherAttributes, String attributeName) {
         T otherAttribute = null;
@@ -35,6 +32,11 @@ public class AnyObjectMapper {
     public static <T> T getAnyElement(List<Object> anies, Class<T> classType) {
         for (Object any : anies) {
             LOG.debug("Class: " + any.getClass());
+
+            if(any instanceof JAXBElement) {
+                LOG.info("I AM A JAXBELEMENT!");
+            }
+
             if (any instanceof Element) {
                 Element element = (Element) any;
                 try {

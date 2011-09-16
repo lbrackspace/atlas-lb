@@ -3,12 +3,15 @@ package org.openstack.atlas.rax.domain.stub;
 import org.openstack.atlas.api.v1.extensions.rax.AccessList;
 import org.openstack.atlas.api.v1.extensions.rax.NetworkItem;
 import org.openstack.atlas.api.v1.extensions.rax.NetworkItemType;
+import org.openstack.atlas.rax.domain.entity.AccessListType;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
 import javax.xml.namespace.QName;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RaxStubFactory extends StubFactory {
 
@@ -95,6 +98,14 @@ public class RaxStubFactory extends StubFactory {
 
         // Rax specific values
         loadBalancer.setCrazyName("foobar");
+
+        org.openstack.atlas.rax.domain.entity.AccessList accessList = new org.openstack.atlas.rax.domain.entity.AccessList();
+        accessList.setIpAddress("10.1.1.1");
+        accessList.setIpVersion(IpVersion.IPV4);
+        accessList.setType(AccessListType.DENY);
+        Set<org.openstack.atlas.rax.domain.entity.AccessList> accessLists = new HashSet<org.openstack.atlas.rax.domain.entity.AccessList>();
+        accessLists.add(accessList);
+        loadBalancer.setAccessLists(accessLists);
 
         return loadBalancer;
     }
