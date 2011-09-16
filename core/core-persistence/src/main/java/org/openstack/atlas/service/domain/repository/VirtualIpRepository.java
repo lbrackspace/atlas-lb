@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.common.Constants;
+import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.OutOfVipsException;
 import org.springframework.stereotype.Repository;
@@ -81,7 +82,7 @@ public class VirtualIpRepository {
             vipCandidate = entityManager.createQuery(criteria).setLockMode(LockModeType.PESSIMISTIC_WRITE).setMaxResults(1).getSingleResult();
         } catch (Exception e) {
             LOG.error(e);
-            throw new OutOfVipsException(Constants.OutOfVips);
+            throw new OutOfVipsException(ErrorMessages.OUT_OF_VIPS);
         }
 
         vipCandidate.setAllocated(true);
@@ -108,7 +109,7 @@ public class VirtualIpRepository {
             vipCandidate = entityManager.createQuery(criteria).setLockMode(LockModeType.PESSIMISTIC_WRITE).setMaxResults(1).getSingleResult();
         } catch (Exception e) {
             LOG.error(e);
-            throw new OutOfVipsException(Constants.OutOfVips);
+            throw new OutOfVipsException(ErrorMessages.OUT_OF_VIPS);
         }
 
         vipCandidate.setAllocated(true);

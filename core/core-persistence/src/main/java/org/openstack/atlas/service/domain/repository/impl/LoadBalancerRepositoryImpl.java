@@ -2,7 +2,7 @@ package org.openstack.atlas.service.domain.repository.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.common.Constants;
+import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
@@ -36,9 +36,7 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
     public LoadBalancer getById(Integer id) throws EntityNotFoundException {
         LoadBalancer loadBalancer = entityManager.find(LoadBalancer.class, id);
         if (loadBalancer == null) {
-            String message = Constants.LoadBalancerNotFound;
-            LOG.warn(message);
-            throw new EntityNotFoundException(message);
+            throw new EntityNotFoundException(ErrorMessages.LB_NOT_FOUND);
         }
         return loadBalancer;
     }
@@ -47,9 +45,7 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
     public LoadBalancer getByIdAndAccountId(Integer id, Integer accountId) throws EntityNotFoundException {
         LoadBalancer loadBalancer = getById(id);
         if (!loadBalancer.getAccountId().equals(accountId)) {
-            String message = Constants.LoadBalancerNotFound;
-            LOG.warn(message);
-            throw new EntityNotFoundException(message);
+            throw new EntityNotFoundException(ErrorMessages.LB_NOT_FOUND);
         }
 
         return loadBalancer;
@@ -160,30 +156,33 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         return ((BigInteger) query.getSingleResult()).intValue();
     }
 
-    public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
-        String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
-        List<LoadBalancer> lbList;
-        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
+    public void changeStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus newStatus) throws EntityNotFoundException, UnprocessableEntityException {
+        changeStatus(accountId, loadbalancerId, newStatus, false);
+    }
+
+    public void changeStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus newStatus, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
+        String queryString = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
+        Query q = entityManager.createQuery(queryString).setLockMode(LockModeType.PESSIMISTIC_WRITE).
                 setParameter("aid", accountId).
                 setParameter("lid", loadbalancerId);
-        lbList = q.getResultList();
+
+        List<LoadBalancer> lbList = q.getResultList();
         if (lbList.size() < 1) {
-            throw new EntityNotFoundException(Constants.LoadBalancerNotFound);
+            throw new EntityNotFoundException(ErrorMessages.LB_NOT_FOUND);
         }
 
         LoadBalancer lb = lbList.get(0);
-        if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);
+        if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
+            throw new UnprocessableEntityException(ErrorMessages.LB_DELETED);
+        }
         final boolean isActive = lb.getStatus().equals(LoadBalancerStatus.ACTIVE);
         final boolean isPendingOrActive = lb.getStatus().equals(LoadBalancerStatus.PENDING_UPDATE) || isActive;
 
         if(allowConcurrentModifications ? isPendingOrActive : isActive) {
-            lb.setStatus(statusToChangeTo);
+            lb.setStatus(newStatus);
             lb.setUpdated(Calendar.getInstance());
             entityManager.merge(lb);
-            return true;
         }
-
-        return false;
     }
 
     public void updatePortInJoinTable(LoadBalancer lb) {
@@ -223,7 +222,7 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
                 setParameter("lid", loadBalancer.getId());
         lbList = q.getResultList();
         if (lbList.size() < 1) {
-            throw new EntityNotFoundException(Constants.LoadBalancerNotFound);
+            throw new EntityNotFoundException(ErrorMessages.LB_NOT_FOUND);
         }
 
 
