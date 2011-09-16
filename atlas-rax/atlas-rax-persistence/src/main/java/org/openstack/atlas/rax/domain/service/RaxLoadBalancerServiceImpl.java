@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 @Primary
 public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
 
-    @Override
+//    @Override
     protected void validate(LoadBalancer loadBalancer) throws BadRequestException, EntityNotFoundException, LimitReachedException {
-        super.validate(loadBalancer);
+//        super.validate(loadBalancer);
         //Add validation for any service level extension here.
     }
 }
