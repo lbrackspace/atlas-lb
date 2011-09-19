@@ -23,10 +23,10 @@ import static javax.ws.rs.core.MediaType.*;
 @Controller
 @Scope("request")
 public class LoadBalancerResource extends CommonDependencyProvider {
-    private final Logger LOG = Logger.getLogger(LoadBalancerResource.class);
+    protected final Logger LOG = Logger.getLogger(LoadBalancerResource.class);
 
-    private Integer id;
-    private Integer accountId;
+    protected Integer id;
+    protected Integer accountId;
     @Autowired
     protected LoadBalancerRepository loadBalancerRepository;
     @Autowired

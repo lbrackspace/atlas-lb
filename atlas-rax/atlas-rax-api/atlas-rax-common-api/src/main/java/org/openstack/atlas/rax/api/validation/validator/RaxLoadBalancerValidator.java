@@ -7,10 +7,16 @@ import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.ResourceValidator;
 import org.openstack.atlas.api.validation.validator.ValidatorUtilities;
 import org.openstack.atlas.api.validation.verifier.IsInstanceOf;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 
+@Primary
+@Component
+@Scope("request")
 public class RaxLoadBalancerValidator implements ResourceValidator<Object> {
 
     private final Validator<Object> validator;
