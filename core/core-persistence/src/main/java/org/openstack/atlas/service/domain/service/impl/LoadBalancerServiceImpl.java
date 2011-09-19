@@ -185,12 +185,11 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                 badLbIds.add(loadBalancerId);
             }
         }
-        ErrorMessages.LB_DELETED.getMessage(1,2);
         if (!badLbIds.isEmpty()) {
-            throw new BadRequestException(String.format("Must provide valid load balancers, %s , could not be found.", StringUtilities.DelimitString(badLbIds, ",")));
+            throw new BadRequestException(ErrorMessages.LBS_NOT_FOUND.getMessage(StringUtilities.DelimitString(badLbIds, ",")));
         }
         if (!badLbStatusIds.isEmpty()) {
-            throw new BadRequestException(String.format("Must provide valid load balancers, %s , are immutable and could not be processed.", StringUtilities.DelimitString(badLbStatusIds, ",")));
+            throw new BadRequestException(ErrorMessages.LBS_IMMUTABLE.getMessage(StringUtilities.DelimitString(badLbStatusIds, ",")));
         }
     }
 

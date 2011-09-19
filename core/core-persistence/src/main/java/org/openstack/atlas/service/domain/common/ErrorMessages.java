@@ -8,6 +8,7 @@ public enum ErrorMessages {
     LB_DELETED("The load balancer is deleted and considered immutable"),
     LB_IMMUTABLE("Load Balancer {0} has a status of {1} and is considered immutable."),
     LBS_NOT_FOUND("Must provide valid load balancers, {0} , could not be found."),
+    LBS_IMMUTABLE("Must provide valid load balancers, {0} , are immutable and could not be processed."),
 
     VIP_NOT_FOUND("Virtual ip not found"),
     OUT_OF_VIPS("No available virtual ips. Please contact support."),
