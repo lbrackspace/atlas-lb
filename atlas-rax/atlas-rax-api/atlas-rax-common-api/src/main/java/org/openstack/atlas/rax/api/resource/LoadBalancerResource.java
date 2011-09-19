@@ -4,6 +4,7 @@ import org.openstack.atlas.api.response.ResponseFactory;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
+import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.service.domain.operation.Operation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.springframework.context.annotation.Scope;
@@ -24,14 +25,14 @@ public class LoadBalancerResource extends org.openstack.atlas.api.resource.LoadB
         }
 
         try {
-            org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer  = dozerMapper.map(_loadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
-            loadBalancer.setId(id);
-            loadBalancer.setAccountId(accountId);
+            RaxLoadBalancer raxLoadBalancer  = dozerMapper.map(_loadBalancer, RaxLoadBalancer.class);
+            raxLoadBalancer.setId(id);
+            raxLoadBalancer.setAccountId(accountId);
 
-            loadBalancerService.update(loadBalancer);
+            loadBalancerService.update(raxLoadBalancer);
 
             MessageDataContainer msg = new MessageDataContainer();
-            msg.setLoadBalancer(loadBalancer);
+            msg.setLoadBalancer(raxLoadBalancer);
 
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_LOADBALANCER, msg);
             return Response.status(Response.Status.ACCEPTED).build();
