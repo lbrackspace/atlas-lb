@@ -64,7 +64,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
             return;
         }
 
-        loadBalancerService.pseudoDelete(dbLoadBalancer);
+        loadBalancerService.delete(dbLoadBalancer);
 
         // Add atom entry
         String atomTitle = "Load Balancer Successfully Deleted";

@@ -10,10 +10,10 @@ public interface LoadBalancerService {
 
     LoadBalancer update(LoadBalancer loadBalancer) throws PersistenceServiceException;
 
-    void delete(Integer accountId, List<Integer> loadBalancerIds) throws PersistenceServiceException;
+    void preDelete(Integer accountId, List<Integer> loadBalancerIds) throws PersistenceServiceException;
+
+    void preDelete(LoadBalancer lb) throws PersistenceServiceException;
 
     void delete(LoadBalancer lb) throws PersistenceServiceException;
-
-    void pseudoDelete(LoadBalancer lb) throws Exception;
 
 }

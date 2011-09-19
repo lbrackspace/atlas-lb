@@ -5,9 +5,6 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
-import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
-import org.openstack.atlas.service.domain.entity.VirtualIp;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.springframework.stereotype.Repository;
@@ -17,7 +14,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -130,21 +126,21 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
 
     @Override
     public LoadBalancer update(LoadBalancer loadBalancer) {
-        final Set<LoadBalancerJoinVip> lbJoinVipsToLink = loadBalancer.getLoadBalancerJoinVipSet();
-        loadBalancer.setLoadBalancerJoinVipSet(null);
+        //final Set<LoadBalancerJoinVip> lbJoinVipsToLink = loadBalancer.getLoadBalancerJoinVipSet();
+        //loadBalancer.setLoadBalancerJoinVipSet(null);
 
         loadBalancer.setUpdated(Calendar.getInstance());
         loadBalancer = entityManager.merge(loadBalancer);
 
         // Now attach loadbalancer to vips
-        for (LoadBalancerJoinVip lbJoinVipToLink : lbJoinVipsToLink) {
+   /*     for (LoadBalancerJoinVip lbJoinVipToLink : lbJoinVipsToLink) {
             VirtualIp virtualIp = entityManager.find(VirtualIp.class, lbJoinVipToLink.getVirtualIp().getId());
             LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip(loadBalancer.getPort(), loadBalancer, virtualIp);
             entityManager.merge(loadBalancerJoinVip);
             entityManager.merge(lbJoinVipToLink.getVirtualIp());
         }
 
-        entityManager.flush();
+        entityManager.flush();*/
         return loadBalancer;
     }
 
