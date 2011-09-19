@@ -23,7 +23,7 @@ public class CrazyNameConverter implements CustomConverter {
         }
 
         if(destinationClass == String.class) {
-            return AnyObjectMapper.<String>getOtherAttribute((Map<QName,String>) sourceFieldValue, "crazyName");
+            return ExtensionObjectMapper.<String>getOtherAttribute((Map<QName, String>) sourceFieldValue, "crazyName");
         }
 
         throw new NoMappableConstantException("Cannot map source type: " + sourceClass.getName());

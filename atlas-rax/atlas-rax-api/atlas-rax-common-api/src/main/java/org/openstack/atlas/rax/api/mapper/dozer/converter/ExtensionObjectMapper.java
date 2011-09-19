@@ -13,8 +13,8 @@ import javax.xml.namespace.QName;
 import java.util.List;
 import java.util.Map;
 
-public class AnyObjectMapper {
-    private static Log LOG = LogFactory.getLog(AnyObjectMapper.class.getName());
+public final class ExtensionObjectMapper {
+    private static Log LOG = LogFactory.getLog(ExtensionObjectMapper.class.getName());
 
     public static <T> T getOtherAttribute(Map<QName, String> otherAttributes, String attributeName) {
         T otherAttribute = null;
@@ -32,10 +32,6 @@ public class AnyObjectMapper {
     public static <T> T getAnyElement(List<Object> anies, Class<T> classType) {
         for (Object any : anies) {
             LOG.debug("Class: " + any.getClass());
-
-            if(any instanceof JAXBElement) {
-                LOG.info("I AM A JAXBELEMENT!");
-            }
 
             if (any instanceof Element) {
                 Element element = (Element) any;

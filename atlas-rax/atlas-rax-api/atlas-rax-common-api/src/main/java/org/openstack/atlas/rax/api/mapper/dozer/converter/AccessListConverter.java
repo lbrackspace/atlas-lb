@@ -5,17 +5,12 @@ import org.apache.commons.logging.LogFactory;
 import org.dozer.CustomConverter;
 import org.openstack.atlas.api.v1.extensions.rax.NetworkItem;
 import org.openstack.atlas.api.v1.extensions.rax.NetworkItemType;
-import org.openstack.atlas.api.v1.extensions.rax.ObjectFactory;
 import org.openstack.atlas.rax.domain.entity.AccessList;
 import org.openstack.atlas.rax.domain.entity.AccessListType;
 import org.openstack.atlas.service.domain.entity.IpVersion;
 import org.openstack.atlas.service.domain.exception.NoMappableConstantException;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -37,26 +32,9 @@ public class AccessListConverter implements CustomConverter {
             if (anies == null) anies = new ArrayList<Object>();
 
             try {
-                Node node = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-                JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class.getPackage().getName());
-                Marshaller marshaller = jaxbContext.createMarshaller();
-                marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-
-                org.openstack.atlas.api.v1.extensions.rax.AccessList dataModelAccessList = new org.openstack.atlas.api.v1.extensions.rax.AccessList();
-                for (org.openstack.atlas.rax.domain.entity.AccessList accessList : accessListSet) {
-                    NetworkItem networkItem = new NetworkItem();
-                    networkItem.setId(accessList.getId());
-                    networkItem.setAddress(accessList.getIpAddress());
-                    networkItem.setIpVersion(org.openstack.atlas.api.v1.extensions.rax.IpVersion.fromValue(accessList.getIpVersion().name()));
-                    networkItem.setType(NetworkItemType.fromValue(accessList.getType().name()));
-                    dataModelAccessList.getNetworkItems().add(networkItem);
-                }
-
-                jaxbContext.createMarshaller().marshal(dataModelAccessList, node);
-                Node accessListNode = node.getFirstChild();
-                setPrefixRecursively(accessListNode, "rax");
-                clearAttributes(accessListNode);
-                anies.add(accessListNode);
+                org.openstack.atlas.api.v1.extensions.rax.AccessList dataModelAccessList = convertAccessList(accessListSet);
+                Node objectNode = XmlHelper.marshall(dataModelAccessList);
+                anies.add(objectNode);
             } catch (Exception e) {
                 LOG.error("Error converting accessList from domain to data model", e);
             }
@@ -66,7 +44,7 @@ public class AccessListConverter implements CustomConverter {
 
         if (destinationClass == Set.class) {
             Set<org.openstack.atlas.rax.domain.entity.AccessList> accessLists = new HashSet<AccessList>();
-            org.openstack.atlas.api.v1.extensions.rax.AccessList _accessList = AnyObjectMapper.getAnyElement((List<Object>) sourceFieldValue, org.openstack.atlas.api.v1.extensions.rax.AccessList.class);
+            org.openstack.atlas.api.v1.extensions.rax.AccessList _accessList = ExtensionObjectMapper.getAnyElement((List<Object>) sourceFieldValue, org.openstack.atlas.api.v1.extensions.rax.AccessList.class);
 
             if (_accessList == null) return null;
 
@@ -85,17 +63,19 @@ public class AccessListConverter implements CustomConverter {
         throw new NoMappableConstantException("Cannot map source type: " + sourceClass.getName());
     }
 
-    private void setPrefixRecursively(Node node, String prefix) {
-        node.setPrefix(prefix);
-        for (int i = 0; i < node.getChildNodes().getLength(); i++) {
-            setPrefixRecursively(node.getChildNodes().item(i), prefix);
+
+    private org.openstack.atlas.api.v1.extensions.rax.AccessList convertAccessList(Set<AccessList> accessListSet) {
+        org.openstack.atlas.api.v1.extensions.rax.AccessList dataModelAccessList = new org.openstack.atlas.api.v1.extensions.rax.AccessList();
+        for (AccessList accessList : accessListSet) {
+            NetworkItem networkItem = new NetworkItem();
+            networkItem.setId(accessList.getId());
+            networkItem.setAddress(accessList.getIpAddress());
+            networkItem.setIpVersion(org.openstack.atlas.api.v1.extensions.rax.IpVersion.fromValue(accessList.getIpVersion().name()));
+            networkItem.setType(NetworkItemType.fromValue(accessList.getType().name()));
+            dataModelAccessList.getNetworkItems().add(networkItem);
         }
+        return dataModelAccessList;
     }
 
-    private void clearAttributes(Node node) {
-        final NamedNodeMap attributes = node.getAttributes();
-        while (attributes.getLength() > 0) {
-            attributes.removeNamedItem(attributes.item(0).getNodeName());
-        }
-    }
+
 }
