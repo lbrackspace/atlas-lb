@@ -6,15 +6,13 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.LoadBalancerValidator;
-import org.openstack.atlas.api.validation.validator.NodeValidator;
 import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
 import org.openstack.atlas.core.api.v1.*;
-import org.openstack.atlas.datamodel.CoreAlgorithmType;
-import org.openstack.atlas.datamodel.CoreHealthMonitorType;
-import org.openstack.atlas.datamodel.CoreNodeCondition;
-import org.openstack.atlas.datamodel.CorePersistenceType;
+import org.openstack.atlas.datamodel.*;
 import org.openstack.atlas.rax.api.validation.validator.builder.RaxLoadBalancerValidatorBuilder;
 import org.openstack.atlas.rax.datamodel.RaxAlgorithmType;
+import org.openstack.atlas.rax.datamodel.RaxNodeCondition;
+import org.openstack.atlas.rax.datamodel.RaxProtocolType;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
 import java.util.GregorianCalendar;
@@ -27,7 +25,7 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 
 @RunWith(Enclosed.class)
 public class RaxLoadBalancerValidatorTest {
-public static class WhenValidatingPostContext {
+    public static class WhenValidatingPostContext {
         private LoadBalancerValidator validator;
         private LoadBalancer loadBalancer;
 
@@ -35,7 +33,11 @@ public static class WhenValidatingPostContext {
         public void setUp() {
             loadBalancer = StubFactory.createMinimalDataModelLoadBalancerForPost();
             validator = new LoadBalancerValidator(
-                    new RaxLoadBalancerValidatorBuilder());
+                    new RaxLoadBalancerValidatorBuilder(
+                            new RaxAlgorithmType(),
+                            new RaxProtocolType(),
+                            new NodeValidatorBuilder(new RaxNodeCondition())
+                    ));
         }
 
         @Test
@@ -103,7 +105,7 @@ public static class WhenValidatingPostContext {
 
         @Test
         public void shouldReject26OrMoreNodes() {
-            for(int i=0; i<26; i++) {
+            for (int i = 0; i < 26; i++) {
                 Node node = new Node();
                 node.setAddress("10.1.1." + i);
                 node.setPort(80 + i);
@@ -292,6 +294,31 @@ public static class WhenValidatingPostContext {
             ValidatorResult result = validator.validate(loadBalancer, POST);
             assertFalse(result.passedValidation());
         }
+
+        @Test
+        public void shouldAcceptCoreProtocols() {
+            for (String protocol : new CoreProtocolType().toList()) {
+                loadBalancer.setProtocol(protocol);
+                ValidatorResult result = validator.validate(loadBalancer, POST);
+                assertTrue(result.passedValidation());
+            }
+        }
+
+        @Test
+        public void shouldAcceptRaxProtocols() {
+            for (String protocol : new RaxProtocolType().toList()) {
+                loadBalancer.setProtocol(protocol);
+                ValidatorResult result = validator.validate(loadBalancer, POST);
+                assertTrue(result.passedValidation());
+            }
+        }
+
+        @Test
+        public void shouldRejectWhenGivenABadProtocol() {
+            loadBalancer.setProtocol("BAD_PROTOCOL");
+            ValidatorResult result = validator.validate(loadBalancer, POST);
+            assertFalse(result.passedValidation());
+        }
     }
 
 
@@ -302,7 +329,11 @@ public static class WhenValidatingPostContext {
         @Before
         public void setUpValidator() {
             validator = new LoadBalancerValidator(
-                    new RaxLoadBalancerValidatorBuilder());
+                    new RaxLoadBalancerValidatorBuilder(
+                            new RaxAlgorithmType(),
+                            new RaxProtocolType(),
+                            new NodeValidatorBuilder(new RaxNodeCondition())
+                    ));
         }
 
         @Before
@@ -481,6 +512,30 @@ public static class WhenValidatingPostContext {
             assertFalse(result.passedValidation());
         }
 
+        @Test
+        public void shouldAcceptCoreProtocols() {
+            for (String protocol : new CoreProtocolType().toList()) {
+                loadBalancer.setProtocol(protocol);
+                ValidatorResult result = validator.validate(loadBalancer, PUT);
+                assertTrue(result.passedValidation());
+            }
+        }
+
+        @Test
+        public void shouldAcceptRaxProtocols() {
+            for (String protocol : new RaxProtocolType().toList()) {
+                loadBalancer.setProtocol(protocol);
+                ValidatorResult result = validator.validate(loadBalancer, PUT);
+                assertTrue(result.passedValidation());
+            }
+        }
+
+        @Test
+        public void shouldRejectWhenGivenABadProtocol() {
+            loadBalancer.setProtocol("BAD_PROTOCOL");
+            ValidatorResult result = validator.validate(loadBalancer, PUT);
+            assertFalse(result.passedValidation());
+        }
     }
 
     private static String generateStringWithLength(int length) {

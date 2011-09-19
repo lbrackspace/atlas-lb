@@ -122,7 +122,7 @@ public class StubFactory {
         return loadBalancer;
     }
 
-    public static org.openstack.atlas.core.api.v1.LoadBalancer createHydratedDataModelLoadBalancer() {
+    public static org.openstack.atlas.core.api.v1.LoadBalancer createHydratedDataModelLoadBalancer() throws Exception {
         // TODO: Call minimal method first and use the values from it.
         org.openstack.atlas.core.api.v1.LoadBalancer loadBalancer = new org.openstack.atlas.core.api.v1.LoadBalancer();
 

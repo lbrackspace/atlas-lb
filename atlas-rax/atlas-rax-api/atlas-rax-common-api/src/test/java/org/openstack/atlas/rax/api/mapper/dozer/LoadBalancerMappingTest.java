@@ -5,17 +5,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.api.v1.extensions.rax.NetworkItemType;
 import org.openstack.atlas.core.api.v1.ConnectionThrottle;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
 import org.openstack.atlas.core.api.v1.VipType;
 import org.openstack.atlas.datamodel.CoreNodeCondition;
 import org.openstack.atlas.rax.api.mapper.dozer.converter.ExtensionObjectMapper;
+import org.openstack.atlas.rax.domain.entity.AccessList;
 import org.openstack.atlas.rax.domain.stub.RaxStubFactory;
 import org.openstack.atlas.service.domain.entity.*;
 
 import javax.xml.namespace.QName;
 import java.util.List;
+import java.util.Set;
 
 @RunWith(Enclosed.class)
 public class LoadBalancerMappingTest {
@@ -25,7 +28,7 @@ public class LoadBalancerMappingTest {
         private org.openstack.atlas.rax.domain.entity.RaxLoadBalancer domainLoadBalancer;
 
         @Before
-        public void setUp() {
+        public void setUp() throws Exception {
             dataModelLoadBalancer = RaxStubFactory.createHydratedDataModelLoadBalancer();
             domainLoadBalancer = mapper.map(dataModelLoadBalancer, org.openstack.atlas.rax.domain.entity.RaxLoadBalancer.class);
         }
@@ -74,7 +77,7 @@ public class LoadBalancerMappingTest {
                 if (node.getStatus() == null)
                     continue;
                 if (!(node.getStatus().equals(NodeStatus.ONLINE) ||
-                    node.getStatus().equals(NodeStatus.OFFLINE)))
+                        node.getStatus().equals(NodeStatus.OFFLINE)))
                     Assert.fail("Did not map the NodeStatus of the node correctly");
             }
         }
@@ -109,8 +112,22 @@ public class LoadBalancerMappingTest {
 
         @Test
         public void shouldMapCrazyNameAttributeFromOtherAttributes() {
-            String crazyNameValue = dataModelLoadBalancer.getOtherAttributes().get(new QName("http://docs.openstack.org/atlas/api/v1.1/extensions/rax", "crazyName", "rax"));
+            String crazyNameValue = ExtensionObjectMapper.getOtherAttribute(dataModelLoadBalancer.getOtherAttributes(), "crazyName");
             Assert.assertEquals(crazyNameValue, domainLoadBalancer.getCrazyName());
+        }
+
+        @Test
+        public void shouldMapAccessListFromAniesList() {
+            Set<AccessList> accessListSet = domainLoadBalancer.getAccessLists();
+            org.openstack.atlas.api.v1.extensions.rax.AccessList apiAccessList = ExtensionObjectMapper.getAnyElement(dataModelLoadBalancer.getAnies(), org.openstack.atlas.api.v1.extensions.rax.AccessList.class);
+
+            Assert.assertFalse(accessListSet.isEmpty());
+
+            for (AccessList accessList : accessListSet) {
+                Assert.assertEquals(apiAccessList.getNetworkItems().get(0).getAddress(), accessList.getIpAddress());
+                Assert.assertEquals(apiAccessList.getNetworkItems().get(0).getIpVersion().name(), accessList.getIpVersion().name());
+                Assert.assertEquals(apiAccessList.getNetworkItems().get(0).getType().name(), accessList.getType().name());
+            }
         }
     }
 
@@ -231,8 +248,13 @@ public class LoadBalancerMappingTest {
 
         @Test
         public void shouldMapAccessListWhenAccessListExists() {
-            org.openstack.atlas.api.v1.extensions.rax.AccessList accessList = ExtensionObjectMapper.getAnyElement(dataModelLoadBalancer.getAnies(), org.openstack.atlas.api.v1.extensions.rax.AccessList.class);
-            Assert.assertNotNull(accessList);
+            org.openstack.atlas.api.v1.extensions.rax.AccessList apiAccessList = ExtensionObjectMapper.getAnyElement(dataModelLoadBalancer.getAnies(), org.openstack.atlas.api.v1.extensions.rax.AccessList.class);
+            AccessList accessList = domainLoadBalancer.getAccessLists().iterator().next();
+
+            Assert.assertNotNull(apiAccessList);
+            Assert.assertEquals(accessList.getIpAddress(), apiAccessList.getNetworkItems().get(0).getAddress());
+            Assert.assertEquals(accessList.getIpVersion().name(), apiAccessList.getNetworkItems().get(0).getIpVersion().name());
+            Assert.assertEquals(accessList.getType().name(), apiAccessList.getNetworkItems().get(0).getType().name());
         }
     }
 }

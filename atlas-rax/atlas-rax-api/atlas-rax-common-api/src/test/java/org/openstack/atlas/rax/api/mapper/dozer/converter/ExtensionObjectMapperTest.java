@@ -29,7 +29,6 @@ public class ExtensionObjectMapperTest {
         Assert.assertNotNull(accessList);
         Assert.assertEquals("1.1.1.1", accessList.getNetworkItems().get(0).getAddress());
         Assert.assertEquals(IpVersion.IPV4, accessList.getNetworkItems().get(0).getIpVersion());
-        Assert.assertEquals(IpVersion.IPV4, accessList.getNetworkItems().get(0).getIpVersion());
         Assert.assertEquals(NetworkItemType.DENY, accessList.getNetworkItems().get(0).getType());
     }
 

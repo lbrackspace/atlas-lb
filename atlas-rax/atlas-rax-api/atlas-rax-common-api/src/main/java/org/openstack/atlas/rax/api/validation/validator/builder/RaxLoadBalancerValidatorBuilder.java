@@ -5,9 +5,14 @@ import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder
 import org.openstack.atlas.api.validation.verifier.MustBeEmptyOrNull;
 import org.openstack.atlas.api.validation.verifier.Verifier;
 import org.openstack.atlas.api.validation.verifier.VerifierResult;
+import org.openstack.atlas.datamodel.AlgorithmType;
 import org.openstack.atlas.datamodel.CoreNodeCondition;
+import org.openstack.atlas.datamodel.ProtocolType;
+import org.openstack.atlas.rax.api.mapper.dozer.converter.ExtensionObjectMapper;
 import org.openstack.atlas.rax.api.validation.validator.RaxLoadBalancerValidator;
 import org.openstack.atlas.rax.datamodel.RaxAlgorithmType;
+import org.openstack.atlas.rax.datamodel.RaxProtocolType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -22,15 +27,16 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 @Scope("request")
 public class RaxLoadBalancerValidatorBuilder extends LoadBalancerValidatorBuilder {
 
-    public RaxLoadBalancerValidatorBuilder() {
-        super(new RaxAlgorithmType(), new NodeValidatorBuilder(new CoreNodeCondition()));
+    @Autowired
+    public RaxLoadBalancerValidatorBuilder(AlgorithmType algorithmType, ProtocolType protocolType, NodeValidatorBuilder nodeValidatorBuilder) {
+        super(algorithmType, protocolType, nodeValidatorBuilder);
 
         // POST EXPECTATIONS
         result(validationTarget().getAnies()).if_().exist().then().must().delegateTo(new RaxLoadBalancerValidator().getValidator(), POST).forContext(POST);
         result(validationTarget().getOtherAttributes()).if_().not().adhereTo(new MustBeEmptyOrNull()).then().must().adhereTo(new Verifier<Map<QName, String>>() {
             @Override
             public VerifierResult verify(Map<QName, String> otherAttributes) {
-                String crazyNameValue = otherAttributes.get(new QName("http://docs.openstack.org/atlas/api/v1.1/extensions/rax", "crazyName", "rax"));
+                String crazyNameValue = ExtensionObjectMapper.getOtherAttribute(otherAttributes, "crazyName");
                 return new VerifierResult(crazyNameValue.equals("foo"));
             }
         }).forContext(POST).withMessage("'crazyName' attribute must equal foo!");

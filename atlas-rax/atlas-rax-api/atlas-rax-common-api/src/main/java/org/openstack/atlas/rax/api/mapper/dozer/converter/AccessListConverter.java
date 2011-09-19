@@ -4,9 +4,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dozer.CustomConverter;
 import org.openstack.atlas.api.v1.extensions.rax.NetworkItem;
-import org.openstack.atlas.api.v1.extensions.rax.NetworkItemType;
+import org.openstack.atlas.rax.datamodel.XmlHelper;
 import org.openstack.atlas.rax.domain.entity.AccessList;
 import org.openstack.atlas.rax.domain.entity.AccessListType;
+import org.openstack.atlas.rax.domain.helper.ExtensionConverter;
 import org.openstack.atlas.service.domain.entity.IpVersion;
 import org.openstack.atlas.service.domain.exception.NoMappableConstantException;
 import org.w3c.dom.Node;
@@ -32,7 +33,7 @@ public class AccessListConverter implements CustomConverter {
             if (anies == null) anies = new ArrayList<Object>();
 
             try {
-                org.openstack.atlas.api.v1.extensions.rax.AccessList dataModelAccessList = convertAccessList(accessListSet);
+                org.openstack.atlas.api.v1.extensions.rax.AccessList dataModelAccessList = ExtensionConverter.convertAccessList(accessListSet);
                 Node objectNode = XmlHelper.marshall(dataModelAccessList);
                 anies.add(objectNode);
             } catch (Exception e) {
@@ -62,20 +63,5 @@ public class AccessListConverter implements CustomConverter {
 
         throw new NoMappableConstantException("Cannot map source type: " + sourceClass.getName());
     }
-
-
-    private org.openstack.atlas.api.v1.extensions.rax.AccessList convertAccessList(Set<AccessList> accessListSet) {
-        org.openstack.atlas.api.v1.extensions.rax.AccessList dataModelAccessList = new org.openstack.atlas.api.v1.extensions.rax.AccessList();
-        for (AccessList accessList : accessListSet) {
-            NetworkItem networkItem = new NetworkItem();
-            networkItem.setId(accessList.getId());
-            networkItem.setAddress(accessList.getIpAddress());
-            networkItem.setIpVersion(org.openstack.atlas.api.v1.extensions.rax.IpVersion.fromValue(accessList.getIpVersion().name()));
-            networkItem.setType(NetworkItemType.fromValue(accessList.getType().name()));
-            dataModelAccessList.getNetworkItems().add(networkItem);
-        }
-        return dataModelAccessList;
-    }
-
 
 }

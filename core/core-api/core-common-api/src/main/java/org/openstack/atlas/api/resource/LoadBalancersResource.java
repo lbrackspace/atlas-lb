@@ -47,7 +47,10 @@ public class LoadBalancersResource extends CommonDependencyProvider {
     protected LoadBalancerRepository loadBalancerRepository;
     @Autowired
     protected LoadBalancerResource loadBalancerResource;
-
+    @Autowired
+    protected AlgorithmsResource algorithmsResource;
+    @Autowired
+    protected ProtocolsResource protocolsResource;
 
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
@@ -92,6 +95,16 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         loadBalancerResource.setId(id);
         loadBalancerResource.setAccountId(accountId);
         return loadBalancerResource;
+    }
+
+    @Path("protocols")
+    public ProtocolsResource retrieveProtocolsResource() {
+        return protocolsResource;
+    }
+
+    @Path("algorithms")
+    public AlgorithmsResource retrieveAlgorithmsResource() {
+        return algorithmsResource;
     }
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {

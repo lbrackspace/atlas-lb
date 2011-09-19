@@ -6,6 +6,7 @@ import org.openstack.atlas.api.v1.extensions.rax.NetworkItemType;
 import org.openstack.atlas.rax.datamodel.XmlHelper;
 import org.openstack.atlas.rax.domain.entity.AccessListType;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
+import org.openstack.atlas.rax.domain.helper.ExtensionConverter;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
@@ -34,15 +35,26 @@ public class RaxStubFactory extends StubFactory {
         Set<org.openstack.atlas.rax.domain.entity.AccessList> accessListSet = new HashSet<org.openstack.atlas.rax.domain.entity.AccessList>();
         accessListSet.add(accessList);
 
-        loadBalancer.getAnies().add(XmlHelper.marshall(accessListSet));
+        org.openstack.atlas.api.v1.extensions.rax.AccessList dataModelAccessList = ExtensionConverter.convertAccessList(accessListSet);
+        loadBalancer.getAnies().add(XmlHelper.marshall(dataModelAccessList));
 
         return loadBalancer;
     }
 
-    public static org.openstack.atlas.core.api.v1.LoadBalancer createHydratedDataModelLoadBalancer() {
+    public static org.openstack.atlas.core.api.v1.LoadBalancer createHydratedDataModelLoadBalancer() throws Exception {
         org.openstack.atlas.core.api.v1.LoadBalancer loadBalancer = StubFactory.createHydratedDataModelLoadBalancer();
 
         loadBalancer.getOtherAttributes().put(new QName("http://docs.openstack.org/atlas/api/v1.1/extensions/rax", "crazyName", "rax"), "foo");
+
+        org.openstack.atlas.rax.domain.entity.AccessList accessList = new org.openstack.atlas.rax.domain.entity.AccessList();
+        accessList.setIpAddress(NETWORK_ITEM1_ADDRESS);
+        accessList.setIpVersion(IpVersion.valueOf(NETWORK_ITEM1_IP_VERSION));
+        accessList.setType(AccessListType.valueOf(NETWORK_ITEM1_TYPE));
+        Set<org.openstack.atlas.rax.domain.entity.AccessList> accessListSet = new HashSet<org.openstack.atlas.rax.domain.entity.AccessList>();
+        accessListSet.add(accessList);
+
+        org.openstack.atlas.api.v1.extensions.rax.AccessList dataModelAccessList = ExtensionConverter.convertAccessList(accessListSet);
+        loadBalancer.getAnies().add(XmlHelper.marshall(dataModelAccessList));
 
         return loadBalancer;
     }

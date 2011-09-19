@@ -9,10 +9,7 @@ import org.openstack.atlas.api.validation.validator.LoadBalancerValidator;
 import org.openstack.atlas.api.validation.validator.builder.LoadBalancerValidatorBuilder;
 import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
 import org.openstack.atlas.core.api.v1.*;
-import org.openstack.atlas.datamodel.CoreAlgorithmType;
-import org.openstack.atlas.datamodel.CoreHealthMonitorType;
-import org.openstack.atlas.datamodel.CoreNodeCondition;
-import org.openstack.atlas.datamodel.CorePersistenceType;
+import org.openstack.atlas.datamodel.*;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
 import java.util.GregorianCalendar;
@@ -36,6 +33,7 @@ public class LoadBalancerValidatorTest {
             validator = new LoadBalancerValidator(
                     new LoadBalancerValidatorBuilder(
                             new CoreAlgorithmType(),
+                            new CoreProtocolType(),
                             new NodeValidatorBuilder(new CoreNodeCondition())));
         }
 
@@ -104,7 +102,7 @@ public class LoadBalancerValidatorTest {
 
         @Test
         public void shouldReject26OrMoreNodes() {
-            for(int i=0; i<26; i++) {
+            for (int i = 0; i < 26; i++) {
                 Node node = new Node();
                 node.setAddress("10.1.1." + i);
                 node.setPort(80 + i);
@@ -252,13 +250,10 @@ public class LoadBalancerValidatorTest {
 
         @Test
         public void shouldHaveSameErrorsForMultipleValidations() {
-            ValidatorResult result = validator.validate(new LoadBalancer(),
-                    POST);
-            int numMessagesFirstPass = result.getValidationErrorMessages()
-                    .size();
+            ValidatorResult result = validator.validate(new LoadBalancer(), POST);
+            int numMessagesFirstPass = result.getValidationErrorMessages().size();
             result = validator.validate(new LoadBalancer(), POST);
-            int numMessagesSecondPass = result.getValidationErrorMessages()
-                    .size();
+            int numMessagesSecondPass = result.getValidationErrorMessages().size();
             assertEquals(numMessagesFirstPass, numMessagesSecondPass);
         }
 
@@ -293,6 +288,22 @@ public class LoadBalancerValidatorTest {
             ValidatorResult result = validator.validate(loadBalancer, POST);
             assertFalse(result.passedValidation());
         }
+
+        @Test
+        public void shouldAcceptCoreProtocols() {
+            for (String protocol : new CoreProtocolType().toList()) {
+                loadBalancer.setProtocol(protocol);
+                ValidatorResult result = validator.validate(loadBalancer, POST);
+                assertTrue(result.passedValidation());
+            }
+        }
+
+        @Test
+        public void shouldRejectWhenGivenABadProtocol() {
+            loadBalancer.setProtocol("BAD_PROTOCOL");
+            ValidatorResult result = validator.validate(loadBalancer, POST);
+            assertFalse(result.passedValidation());
+        }
     }
 
 
@@ -305,6 +316,7 @@ public class LoadBalancerValidatorTest {
             validator = new LoadBalancerValidator(
                     new LoadBalancerValidatorBuilder(
                             new CoreAlgorithmType(),
+                            new CoreProtocolType(),
                             new NodeValidatorBuilder(new CoreNodeCondition())));
         }
 
@@ -312,8 +324,8 @@ public class LoadBalancerValidatorTest {
         public void setupValidLoadBalancerObject() {
             loadBalancer = new LoadBalancer();
             loadBalancer.setName("an-updated-loadbalancer-name");
-            loadBalancer.setProtocol("FTP");
-            loadBalancer.setPort(800);
+            loadBalancer.setProtocol(CoreProtocolType.HTTP);
+            loadBalancer.setPort(80);
             loadBalancer.setAlgorithm(CoreAlgorithmType.LEAST_CONNECTIONS);
         }
 
@@ -473,6 +485,21 @@ public class LoadBalancerValidatorTest {
             assertFalse(result.passedValidation());
         }
 
+        @Test
+        public void shouldAcceptCoreProtocols() {
+            for (String protocol : new CoreProtocolType().toList()) {
+                loadBalancer.setProtocol(protocol);
+                ValidatorResult result = validator.validate(loadBalancer, PUT);
+                assertTrue(result.passedValidation());
+            }
+        }
+
+        @Test
+        public void shouldRejectWhenGivenABadProtocol() {
+            loadBalancer.setProtocol("BAD_PROTOCOL");
+            ValidatorResult result = validator.validate(loadBalancer, PUT);
+            assertFalse(result.passedValidation());
+        }
     }
 
     private static String generateStringWithLength(int length) {

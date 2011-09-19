@@ -24,7 +24,7 @@ public class LoadBalancerMappingTest {
         private org.openstack.atlas.service.domain.entity.LoadBalancer domainLoadBalancer;
 
         @Before
-        public void setUp() {
+        public void setUp() throws Exception {
             dataModelLoadBalancer = StubFactory.createHydratedDataModelLoadBalancer();
             domainLoadBalancer = mapper.map(dataModelLoadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
         }
