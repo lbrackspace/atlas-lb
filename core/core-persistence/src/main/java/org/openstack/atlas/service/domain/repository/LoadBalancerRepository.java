@@ -12,9 +12,9 @@ import java.util.Set;
 public interface LoadBalancerRepository {
     LoadBalancer getById(Integer id) throws EntityNotFoundException;
 
-    LoadBalancer getByIdAndAccountId(Integer id, Integer accountId) throws EntityNotFoundException;
-
     List<LoadBalancer> getByAccountId(Integer accountId);
+
+    LoadBalancer getByIdAndAccountId(Integer id, Integer accountId) throws EntityNotFoundException;
 
     LoadBalancer create(LoadBalancer loadBalancer);
 

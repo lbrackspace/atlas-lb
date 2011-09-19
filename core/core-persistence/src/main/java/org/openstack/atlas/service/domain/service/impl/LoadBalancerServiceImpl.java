@@ -67,30 +67,31 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
 
     @Override
     @Transactional
-    public void delete(final LoadBalancer lb) throws PersistenceServiceException {
+    public void preDelete(final LoadBalancer lb) throws PersistenceServiceException {
         List<Integer> loadBalancerIds = new ArrayList<Integer>();
         loadBalancerIds.add(lb.getId());
-        delete(lb.getAccountId(), loadBalancerIds);
+        preDelete(lb.getAccountId(), loadBalancerIds);
     }
 
     @Override
     @Transactional
-    public void delete(final Integer accountId, final List<Integer> loadBalancerIds) throws PersistenceServiceException {
+    public void preDelete(final Integer accountId, final List<Integer> loadBalancerIds) throws PersistenceServiceException {
         validateDelete(accountId, loadBalancerIds);
-        for(int lbIdToDelete : loadBalancerIds) {
-            loadBalancerRepository.changeStatus(lbIdToDelete, accountId, LoadBalancerStatus.PENDING_DELETE);
+        for(int lbId : loadBalancerIds) {
+            loadBalancerRepository.changeStatus(lbId, accountId, LoadBalancerStatus.PENDING_DELETE);
         }
     }
 
+    @Override
     @Transactional
-    public void pseudoDelete(final LoadBalancer lb) throws EntityNotFoundException {
+    public void delete(final LoadBalancer lb) throws PersistenceServiceException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
         dbLoadBalancer.setStatus(LoadBalancerStatus.DELETED);
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         virtualIpService.removeAllVipsFromLoadBalancer(dbLoadBalancer);
     }
 
-    private void setProtocol(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
+    protected void setProtocol(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
         boolean portHMTypecheck = true;
         if (loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(dbLoadBalancer.getProtocol())) {
 
@@ -129,21 +130,21 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         }
     }
 
-    private void setAlgorithm(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) {
+    protected void setAlgorithm(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) {
         if (loadBalancer.getAlgorithm() != null && !loadBalancer.getAlgorithm().equals(dbLoadBalancer.getAlgorithm())) {
             LOG.debug("Updating loadbalancer algorithm to " + loadBalancer.getAlgorithm());
             dbLoadBalancer.setAlgorithm(loadBalancer.getAlgorithm());
         }
     }
 
-    private void setName(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) {
+    protected void setName(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) {
         if (loadBalancer.getName() != null && !loadBalancer.getName().equals(dbLoadBalancer.getName())) {
             LOG.debug("Updating loadbalancer name to " + loadBalancer.getName());
             dbLoadBalancer.setName(loadBalancer.getName());
         }
     }
 
-    private void setPort(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
+    protected void setPort(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
         if (loadBalancer.getPort() != null && !loadBalancer.getPort().equals(dbLoadBalancer.getPort())) {
             LOG.debug("Updating loadbalancer port to " + loadBalancer.getPort());
             if (loadBalancerRepository.canUpdateToNewPort(loadBalancer.getPort(), dbLoadBalancer.getLoadBalancerJoinVipSet())) {
@@ -156,7 +157,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         }
     }
 
-    private void setConnectionLogging(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
+    protected void setConnectionLogging(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
         if (loadBalancer.getConnectionLogging() != null && !loadBalancer.getConnectionLogging().equals(dbLoadBalancer.getConnectionLogging())) {
             /*if (loadBalancer.getConnectionLogging()) {
                 if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
@@ -185,12 +186,11 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                 badLbIds.add(loadBalancerId);
             }
         }
-        ErrorMessages.LB_DELETED.getMessage(1,2);
         if (!badLbIds.isEmpty()) {
-            throw new BadRequestException(String.format("Must provide valid load balancers, %s , could not be found.", StringUtilities.DelimitString(badLbIds, ",")));
+            throw new BadRequestException(ErrorMessages.LBS_NOT_FOUND.getMessage(StringUtilities.DelimitString(badLbIds, ",")));
         }
         if (!badLbStatusIds.isEmpty()) {
-            throw new BadRequestException(String.format("Must provide valid load balancers, %s , are immutable and could not be processed.", StringUtilities.DelimitString(badLbStatusIds, ",")));
+            throw new BadRequestException(ErrorMessages.LBS_IMMUTABLE.getMessage(StringUtilities.DelimitString(badLbStatusIds, ",")));
         }
     }
 
