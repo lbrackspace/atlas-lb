@@ -4,11 +4,9 @@ import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.validator.*;
 import org.openstack.atlas.api.validation.verifier.*;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
-import org.openstack.atlas.core.api.v1.Node;
 import org.openstack.atlas.datamodel.AlgorithmType;
-import org.openstack.atlas.datamodel.ProtocolPortBindings;
+import org.openstack.atlas.datamodel.ProtocolType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -25,14 +23,16 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
     protected final int MAX_NODES = 25;
     protected final int MAX_VIPS = 1;
     protected AlgorithmType algorithmType;
+    protected ProtocolType protocolType;
 
     @Autowired
-    public LoadBalancerValidatorBuilder(AlgorithmType algorithmType, NodeValidatorBuilder nodeValidatorBuilder) {
+    public LoadBalancerValidatorBuilder(AlgorithmType algorithmType, ProtocolType protocolType, NodeValidatorBuilder nodeValidatorBuilder) {
         super(LoadBalancer.class);
         this.algorithmType = algorithmType;
+        this.protocolType = protocolType;
 
         // SHARED EXPECTATIONS
-        result(validationTarget().getProtocol()).if_().exist().then().must().adhereTo(new MustBeInArray(ProtocolPortBindings.getKeysAsArray())).withMessage("Load balancer protocol is invalid. Please specify a valid protocol.");
+        result(validationTarget().getProtocol()).if_().exist().then().must().adhereTo(new MustBeInArray(protocolType.toList())).withMessage("Load balancer protocol is invalid. Please specify a valid protocol.");
         result(validationTarget().getAlgorithm()).if_().exist().then().must().adhereTo(new MustBeInArray(algorithmType.toList())).withMessage("Load balancer algorithm is invalid. Please specify a valid algorithm.");
 
         result(validationTarget().getPort()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MIN_PORT, MAX_PORT)).withMessage("Load balancer port is invalid. Please specify a valid port.");

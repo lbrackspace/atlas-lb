@@ -11,13 +11,14 @@ public final class LoadBalancerStatus {
    static {
        int i;
        loadBalancerStatusSet = new HashSet<String>();
-       loadBalancerStatusSet.add("ACTIVE");
+       loadBalancerStatusSet.add("QUEUED");
        loadBalancerStatusSet.add("BUILD");
+       loadBalancerStatusSet.add("ACTIVE");
        loadBalancerStatusSet.add("ERROR");
        loadBalancerStatusSet.add("PENDING_UPDATE");
        loadBalancerStatusSet.add("SUSPENDED");
-       loadBalancerStatusSet.add("DELETED");
        loadBalancerStatusSet.add("PENDING_DELETE");
+       loadBalancerStatusSet.add("DELETED");
 
        loadBalancerStatusStrs = new String[loadBalancerStatusSet.size()];
 

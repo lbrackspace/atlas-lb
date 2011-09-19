@@ -9,8 +9,10 @@
             xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
             jaxb:extensionBindingPrefixes="xjc">
 
-    <xsd:import schemaLocation="../../../../../../../core/core-data-model/src/main/resources/META-INF/xsd/CoreApi.xsd" namespace="http://docs.openstack.org/atlas/api/v1.1"/>
+    <xsd:import schemaLocation="../../../../../../../core/core-data-model/src/main/resources/META-INF/xsd/CoreApi.xsd"
+                namespace="http://docs.openstack.org/atlas/api/v1.1"/>
 
+    <!--ACCESS LIST EXTENSIONS-->
     <xsd:element name="accessList" type="tns:accessList"/>
     <xsd:complexType name="accessList">
         <xsd:sequence>
@@ -33,12 +35,20 @@
         </xsd:restriction>
     </xsd:simpleType>
 
-    <xsd:attribute name="crazyName">
-        <xsd:simpleType>
-            <xsd:restriction base="xsd:string">
-                <!--<xsd:pattern value="A|B"/>-->
-            </xsd:restriction>
-        </xsd:simpleType>
-    </xsd:attribute>
+    <!--CONNECTION THROTTLE EXTENSIONS-->
+    <xsd:attribute name="minConnections" type="xsd:int"/>
+    <xsd:attribute name="maxConnections" type="xsd:int"/>
+
+    <!--HEALTH MONITOR EXTENSIONS-->
+    <xsd:attribute name="statusRegex" type="xsd:string"/>
+    <xsd:attribute name="bodyRegex" type="xsd:string"/>
+
+    <!--USAGE EXTENSIONS-->
+    <xsd:attribute name="averageNumConnections" type="xsd:decimal"/>
+    <xsd:attribute name="numVips" type="xsd:int"/>
+    <xsd:attribute name="numPolls" type="xsd:int"/>
+
+    <!--TODO: DELETE AFTER PROOF OF CONCEPT COMPLETED-->
+    <xsd:attribute name="crazyName" type="xsd:string"/>
 
 </xsd:schema>

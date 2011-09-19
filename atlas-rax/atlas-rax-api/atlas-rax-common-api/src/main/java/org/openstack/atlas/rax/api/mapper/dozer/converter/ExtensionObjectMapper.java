@@ -16,6 +16,7 @@ import java.util.Map;
 public final class ExtensionObjectMapper {
     private static Log LOG = LogFactory.getLog(ExtensionObjectMapper.class.getName());
 
+    // TODO: Should assert against proper namespace?
     public static <T> T getOtherAttribute(Map<QName, String> otherAttributes, String attributeName) {
         T otherAttribute = null;
         for (QName qname : otherAttributes.keySet()) {
