@@ -3,33 +3,38 @@ package org.openstack.atlas.rax.domain.stub;
 import org.openstack.atlas.api.v1.extensions.rax.AccessList;
 import org.openstack.atlas.api.v1.extensions.rax.NetworkItem;
 import org.openstack.atlas.api.v1.extensions.rax.NetworkItemType;
+import org.openstack.atlas.rax.datamodel.XmlHelper;
 import org.openstack.atlas.rax.domain.entity.AccessListType;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.ParserConfigurationException;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
 public class RaxStubFactory extends StubFactory {
+    protected static final Integer NETWORK_ITEM1_ID = 1;
+    protected static final String NETWORK_ITEM1_ADDRESS = "1.1.1.1";
+    protected static final String NETWORK_ITEM1_IP_VERSION = "IPV4";
+    protected static final String NETWORK_ITEM1_TYPE = "DENY";
 
-    public static org.openstack.atlas.core.api.v1.LoadBalancer createHydratedDataModelLoadBalancerForRaxPost() {
+    public static org.openstack.atlas.core.api.v1.LoadBalancer createHydratedDataModelLoadBalancerForRaxPost() throws JAXBException, ParserConfigurationException {
         org.openstack.atlas.core.api.v1.LoadBalancer loadBalancer = StubFactory.createHydratedDataModelLoadBalancerForPost();
 
         loadBalancer.getOtherAttributes().put(new QName("http://docs.openstack.org/atlas/api/v1.1/extensions/rax", "crazyName", "rax"), "foo");
 
-        org.openstack.atlas.api.v1.extensions.rax.AccessList accessList = new AccessList();
-        org.openstack.atlas.api.v1.extensions.rax.NetworkItem networkItem = new NetworkItem();
-        networkItem.setAddress("10.1.1.1");
-        networkItem.setIpVersion(org.openstack.atlas.api.v1.extensions.rax.IpVersion.IPV4);
-        networkItem.setType(NetworkItemType.DENY);
-        accessList.getNetworkItems().add(networkItem);
+        org.openstack.atlas.rax.domain.entity.AccessList accessList = new org.openstack.atlas.rax.domain.entity.AccessList();
+        accessList.setIpAddress(NETWORK_ITEM1_ADDRESS);
+        accessList.setIpVersion(IpVersion.valueOf(NETWORK_ITEM1_IP_VERSION));
+        accessList.setType(AccessListType.valueOf(NETWORK_ITEM1_TYPE));
+        Set<org.openstack.atlas.rax.domain.entity.AccessList> accessListSet = new HashSet<org.openstack.atlas.rax.domain.entity.AccessList>();
+        accessListSet.add(accessList);
 
-        // TODO: Figure out how to create an Element object easily
-//        Element element = new ElementImpl();
-//        loadBalancer.getAnies().add();
+        loadBalancer.getAnies().add(XmlHelper.marshall(accessListSet));
 
         return loadBalancer;
     }
@@ -96,13 +101,14 @@ public class RaxStubFactory extends StubFactory {
         loadBalancer.setCreated(Calendar.getInstance());
         loadBalancer.setUpdated(Calendar.getInstance());
 
-        // Rax specific values
+        // RAX SPECIFIC SETTINGS
         loadBalancer.setCrazyName("foobar");
 
         org.openstack.atlas.rax.domain.entity.AccessList accessList = new org.openstack.atlas.rax.domain.entity.AccessList();
-        accessList.setIpAddress("10.1.1.1");
-        accessList.setIpVersion(IpVersion.IPV4);
-        accessList.setType(AccessListType.DENY);
+        accessList.setId(NETWORK_ITEM1_ID);
+        accessList.setIpAddress(NETWORK_ITEM1_ADDRESS);
+        accessList.setIpVersion(IpVersion.valueOf(NETWORK_ITEM1_IP_VERSION));
+        accessList.setType(AccessListType.valueOf(NETWORK_ITEM1_TYPE));
         Set<org.openstack.atlas.rax.domain.entity.AccessList> accessLists = new HashSet<org.openstack.atlas.rax.domain.entity.AccessList>();
         accessLists.add(accessList);
         loadBalancer.setAccessLists(accessLists);
