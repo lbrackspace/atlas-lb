@@ -10,6 +10,7 @@ import org.openstack.atlas.rax.domain.entity.AccessList;
 import org.openstack.atlas.rax.domain.entity.AccessListType;
 import org.openstack.atlas.service.domain.entity.IpVersion;
 import org.openstack.atlas.service.domain.exception.NoMappableConstantException;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.xml.bind.JAXBContext;
@@ -53,11 +54,8 @@ public class AccessListConverter implements CustomConverter {
 
                 jaxbContext.createMarshaller().marshal(dataModelAccessList, node);
                 Node accessListNode = node.getFirstChild();
-                String prefix = "rax";
-                accessListNode.setPrefix(prefix);
-                for (int i = 0; i < accessListNode.getChildNodes().getLength(); i++) {
-                    accessListNode.getChildNodes().item(i).setPrefix(prefix);
-                }
+                setPrefixRecursively(accessListNode, "rax");
+                clearAttributes(accessListNode);
                 anies.add(accessListNode);
             } catch (Exception e) {
                 LOG.error("Error converting accessList from domain to data model", e);
@@ -85,5 +83,19 @@ public class AccessListConverter implements CustomConverter {
         }
 
         throw new NoMappableConstantException("Cannot map source type: " + sourceClass.getName());
+    }
+
+    private void setPrefixRecursively(Node node, String prefix) {
+        node.setPrefix(prefix);
+        for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+            setPrefixRecursively(node.getChildNodes().item(i), prefix);
+        }
+    }
+
+    private void clearAttributes(Node node) {
+        final NamedNodeMap attributes = node.getAttributes();
+        while (attributes.getLength() > 0) {
+            attributes.removeNamedItem(attributes.item(0).getNodeName());
+        }
     }
 }
