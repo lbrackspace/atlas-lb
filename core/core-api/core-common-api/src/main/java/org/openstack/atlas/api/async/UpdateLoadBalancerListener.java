@@ -55,7 +55,20 @@ public class UpdateLoadBalancerListener extends BaseListener {
             return;
         }
 
-        if (queueLb.getAlgorithm() != null) {
+        try {
+            LOG.debug(String.format("Updating load balancer '%d' in LB Device...", dbLoadBalancer.getId()));
+            reverseProxyLoadBalancerService.updateLoadBalancer(dbLoadBalancer);
+            LOG.debug(String.format("Successfully updated load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
+        } catch (Exception e) {
+            loadBalancerRepository.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+            String alertDescription = String.format("Error updating loadbalancer '%d' in LB Device.", dbLoadBalancer.getId());
+            LOG.error(alertDescription, e);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
+            sendErrorToEventResource(queueLb);
+            return;
+        }
+
+        /*if (queueLb.getAlgorithm() != null) {
             try {
                 LOG.debug(String.format("Updating algorithm for load balancer '%d' to '%s' in LB Device...", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name()));
                 reverseProxyLoadBalancerService.updateAlgorithm(dbLoadBalancer);
@@ -118,7 +131,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
                 return;
             }
         }
-
+*/
         List<String> updateStrList = new ArrayList<String>();
         if (queueLb.getName() != null) {
             LOG.debug("Updating loadbalancer name to " + queueLb.getName());

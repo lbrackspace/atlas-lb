@@ -13,6 +13,8 @@ public interface ReverseProxyLoadBalancerService {
 
     void deleteLoadBalancer(LoadBalancer lb) throws Exception;
 
+    void updateLoadBalancer(LoadBalancer lb) throws Exception;
+
     void updateAlgorithm(LoadBalancer lb) throws Exception;
 
     void updatePort(LoadBalancer lb) throws Exception;
