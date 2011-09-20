@@ -1,15 +1,14 @@
 package org.openstack.atlas.rax.domain.service;
 
+import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerProtocol;
-import org.openstack.atlas.service.domain.entity.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entity.SessionPersistence;
-import org.openstack.atlas.service.domain.exception.*;
+import org.openstack.atlas.service.domain.exception.BadRequestException;
 import org.openstack.atlas.service.domain.service.impl.LoadBalancerServiceImpl;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Primary
@@ -21,6 +20,7 @@ public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
         setPort(loadBalancer, dbLoadBalancer);
         setProtocol(loadBalancer, dbLoadBalancer);
         setConnectionLogging(loadBalancer, dbLoadBalancer);
+        setCrazyName(loadBalancer, dbLoadBalancer);
     }
 
     private void setProtocol(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
@@ -72,6 +72,21 @@ public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
                 LOG.error("Cannot update load balancer port as it is currently in use by another virtual ip.");
                 throw new BadRequestException(ErrorMessages.PORT_IN_USE);
             }
+        }
+    }
+
+    private void setCrazyName(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
+
+        if (loadBalancer instanceof RaxLoadBalancer) {
+            RaxLoadBalancer raxLoadBalancer = (RaxLoadBalancer) loadBalancer;
+            RaxLoadBalancer raxDbLoadBalancer = (RaxLoadBalancer) dbLoadBalancer;
+
+            if (raxLoadBalancer.getCrazyName() != null && !raxLoadBalancer.getCrazyName().equals(raxDbLoadBalancer.getCrazyName())) {
+                LOG.debug("Updating loadbalancer crazy name to " + raxLoadBalancer.getCrazyName());
+                raxDbLoadBalancer.setCrazyName(raxLoadBalancer.getCrazyName());
+            }
+        } else {
+            LOG.error("Trying to set crazy name on a load balancer that is not a RaxLoadBalancer!");
         }
     }
 

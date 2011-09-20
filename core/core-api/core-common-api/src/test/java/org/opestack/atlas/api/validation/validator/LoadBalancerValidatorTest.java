@@ -12,6 +12,7 @@ import org.openstack.atlas.core.api.v1.*;
 import org.openstack.atlas.datamodel.*;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
+import javax.xml.namespace.QName;
 import java.util.GregorianCalendar;
 
 import static junit.framework.Assert.assertEquals;
@@ -503,6 +504,14 @@ public class LoadBalancerValidatorTest {
             loadBalancer.setProtocol("BAD_PROTOCOL");
             ValidatorResult result = validator.validate(loadBalancer, PUT);
             assertFalse(result.passedValidation());
+        }
+
+        @Test
+        public void shouldAcceptWhenOnlyOtherAttributesExist() {
+            loadBalancer = new LoadBalancer();
+            loadBalancer.getOtherAttributes().put(new QName("test"), "test");
+            ValidatorResult result = validator.validate(loadBalancer, PUT);
+            assertTrue(result.passedValidation());
         }
     }
 

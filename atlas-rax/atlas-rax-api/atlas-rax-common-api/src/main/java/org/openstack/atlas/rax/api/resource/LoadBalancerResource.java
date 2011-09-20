@@ -17,15 +17,15 @@ import javax.ws.rs.core.Response;
 public class LoadBalancerResource extends org.openstack.atlas.api.resource.LoadBalancerResource {
 
     @Override
-    public Response update(LoadBalancer _loadBalancer) {
-        ValidatorResult result = validator.validate(_loadBalancer, HttpRequestType.PUT);
+    public Response update(LoadBalancer apiLoadBalancer) {
+        ValidatorResult result = validator.validate(apiLoadBalancer, HttpRequestType.PUT);
 
         if (!result.passedValidation()) {
             return ResponseFactory.getValidationFaultResponse(result);
         }
 
         try {
-            RaxLoadBalancer raxLoadBalancer  = dozerMapper.map(_loadBalancer, RaxLoadBalancer.class);
+            RaxLoadBalancer raxLoadBalancer  = dozerMapper.map(apiLoadBalancer, RaxLoadBalancer.class);
             raxLoadBalancer.setId(id);
             raxLoadBalancer.setAccountId(accountId);
 

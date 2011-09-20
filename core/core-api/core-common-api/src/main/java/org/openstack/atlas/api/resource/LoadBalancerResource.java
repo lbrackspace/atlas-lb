@@ -48,15 +48,15 @@ public class LoadBalancerResource extends CommonDependencyProvider {
 
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
-    public Response update(LoadBalancer _loadBalancer) {
-        ValidatorResult result = validator.validate(_loadBalancer, HttpRequestType.PUT);
+    public Response update(LoadBalancer apiLoadBalancer) {
+        ValidatorResult result = validator.validate(apiLoadBalancer, HttpRequestType.PUT);
 
         if (!result.passedValidation()) {
             return ResponseFactory.getValidationFaultResponse(result);
         }
 
         try {
-            org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer  = dozerMapper.map(_loadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
+            org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer  = dozerMapper.map(apiLoadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
             loadBalancer.setId(id);
             loadBalancer.setAccountId(accountId);
 

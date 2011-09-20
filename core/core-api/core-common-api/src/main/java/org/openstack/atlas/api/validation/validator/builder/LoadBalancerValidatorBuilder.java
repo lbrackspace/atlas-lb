@@ -57,16 +57,15 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
         result(validationTarget().getHealthMonitor()).if_().exist().then().must().delegateTo(new HealthMonitorValidator().getValidator(), POST).forContext(POST);
         result(validationTarget().getConnectionThrottle()).if_().exist().then().must().delegateTo(new ConnectionThrottleValidator().getValidator(), POST).forContext(POST);
 
-
         // PUT EXPECTATIONS
         result(validationTarget().getProtocol()).must().not().exist().forContext(PUT).withMessage("Load balancer protocol field cannot be modified.");
         result(validationTarget().getPort()).must().not().exist().forContext(PUT).withMessage("Load balancer port field cannot be modified.");
         must().adhereTo(new Verifier<LoadBalancer>() {
             @Override
             public VerifierResult verify(LoadBalancer obj) {
-                return new VerifierResult(obj.getName() != null || obj.getAlgorithm() != null);
+                return new VerifierResult(obj.getName() != null || obj.getAlgorithm() != null || !obj.getOtherAttributes().isEmpty());
             }
-        }).forContext(PUT).withMessage("The load balancer must have at least one of the following to update: name, algorithm.");
+        }).forContext(PUT).withMessage("The load balancer must have at least one attribute to update.");
         result(validationTarget().getNodes()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/nodes to configure nodes.");
         result(validationTarget().getVirtualIps()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/virtualips/{virtual ip id} to configure a virtual ip.");
         result(validationTarget().getHealthMonitor()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/healthmonitor to configure your health monitor.");
