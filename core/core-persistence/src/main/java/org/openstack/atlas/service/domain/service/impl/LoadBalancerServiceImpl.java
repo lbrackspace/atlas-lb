@@ -4,10 +4,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.common.*;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entity.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entity.SessionPersistence;
-import org.openstack.atlas.service.domain.exception.*;
+import org.openstack.atlas.service.domain.exception.BadRequestException;
+import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exception.LimitReachedException;
+import org.openstack.atlas.service.domain.exception.PersistenceServiceException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,8 +54,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
 
         loadBalancerRepository.changeStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
 
-        setName(loadBalancer, dbLoadBalancer);
-        setAlgorithm(loadBalancer, dbLoadBalancer);
+        setPropertiesForUpdate(loadBalancer, dbLoadBalancer);
 
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
@@ -74,7 +74,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     @Transactional
     public void preDelete(final Integer accountId, final List<Integer> loadBalancerIds) throws PersistenceServiceException {
         validateDelete(accountId, loadBalancerIds);
-        for(int lbId : loadBalancerIds) {
+        for (int lbId : loadBalancerIds) {
             loadBalancerRepository.changeStatus(lbId, accountId, LoadBalancerStatus.PENDING_DELETE);
         }
     }
@@ -88,14 +88,18 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         virtualIpService.removeAllVipsFromLoadBalancer(dbLoadBalancer);
     }
 
-    protected void setAlgorithm(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) {
+    protected void addDefaultValuesForCreate(final LoadBalancer loadBalancer) throws PersistenceServiceException {
+        LoadBalancerDefaultBuilder.addDefaultValues(loadBalancer);
+        loadBalancer.setHost(hostService.getDefaultActiveHost());
+        virtualIpService.assignVIpsToLoadBalancer(loadBalancer);
+    }
+
+    protected void setPropertiesForUpdate(LoadBalancer loadBalancer, LoadBalancer dbLoadBalancer) throws BadRequestException {
         if (loadBalancer.getAlgorithm() != null && !loadBalancer.getAlgorithm().equals(dbLoadBalancer.getAlgorithm())) {
             LOG.debug("Updating loadbalancer algorithm to " + loadBalancer.getAlgorithm());
             dbLoadBalancer.setAlgorithm(loadBalancer.getAlgorithm());
         }
-    }
 
-    protected void setName(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) {
         if (loadBalancer.getName() != null && !loadBalancer.getName().equals(dbLoadBalancer.getName())) {
             LOG.debug("Updating loadbalancer name to " + loadBalancer.getName());
             dbLoadBalancer.setName(loadBalancer.getName());
@@ -108,7 +112,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         for (int loadBalancerId : loadBalancerIds) {
             try {
                 LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
-                if(!dbLoadBalancer.getStatus().equals(LoadBalancerStatus.ACTIVE)) {
+                if (!dbLoadBalancer.getStatus().equals(LoadBalancerStatus.ACTIVE)) {
                     LOG.warn(StringHelper.immutableLoadBalancer(dbLoadBalancer));
                     badLbStatusIds.add(loadBalancerId);
                 }
@@ -125,16 +129,11 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     }
 
     protected void validateCreate(final LoadBalancer loadBalancer) throws BadRequestException, EntityNotFoundException, LimitReachedException {
-        Validator.verifyTCPProtocolandPort(loadBalancer);
-        Validator.verifyProtocolAndHealthMonitorType(loadBalancer);
+        LoadBalancerCreateValidator.verifyTCPProtocolandPort(loadBalancer);
+        LoadBalancerCreateValidator.verifyProtocolAndHealthMonitorType(loadBalancer);
         accountLimitService.verifyLoadBalancerLimit(loadBalancer.getAccountId());
         blacklistService.verifyNoBlacklistNodes(loadBalancer.getNodes());
     }
 
-    protected void addDefaultValuesForCreate(final LoadBalancer loadBalancer) throws PersistenceServiceException {
-        LoadBalancerDefaultBuilder.addDefaultValues(loadBalancer);
-        loadBalancer.setHost(hostService.getDefaultActiveHost());
-        virtualIpService.assignVIpsToLoadBalancer(loadBalancer);
-    }
 }
 
