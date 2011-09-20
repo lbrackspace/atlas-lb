@@ -729,15 +729,14 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     @Override
     public List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId) {
-        List<LoadBalancer> domainLbs = loadBalancerRepository.getAllWithNode(nodeAddress, accountId);
-//        List<LoadBalancer> retLbs = new ArrayList<LoadBalancer>();
-
-//        for (Object domainLb : domainLbs) {
-//            LoadBalancer lb = new LoadBalancer();
-//            lb.setName(domainLb.);
-//            lb.setId(domainLb.getId());
-//            retLbs.add(lb);
-//        }
+        List<LoadBalancer> retLbs = loadBalancerRepository.getAllWithNode(nodeAddress, accountId);
+        List<LoadBalancer> domainLbs = new ArrayList<LoadBalancer>();
+        for (LoadBalancer loadbalancer : retLbs) {
+            LoadBalancer lb = new LoadBalancer();
+            lb.setName(loadbalancer.getName());
+            lb.setId(loadbalancer.getId());
+            domainLbs.add(loadbalancer);
+        }
         return domainLbs;
     }
 
