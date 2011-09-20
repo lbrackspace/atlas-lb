@@ -1,20 +1,6 @@
 package org.openstack.atlas.api.resources;
 
-import org.openstack.atlas.service.domain.services.impl.NodeServiceImpl;
-import java.util.Collections;
-
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfInts;
-import org.openstack.atlas.service.domain.pojos.NodeMap;
-import java.util.List;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
-import org.openstack.atlas.service.domain.entities.AccountLimitType;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.NodeCondition;
-import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
-import org.openstack.atlas.service.domain.operations.Operation;
-import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
+import org.apache.abdera.model.Feed;
 import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.api.helpers.LoadBalancerProperties;
 import org.openstack.atlas.api.helpers.ResponseFactory;
@@ -22,15 +8,18 @@ import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.util.converters.StringConverter;
-import org.apache.abdera.model.Feed;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
+import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static javax.ws.rs.core.MediaType.*;
 

@@ -51,7 +51,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
     @Override
     @Transactional
-    public Node getNodeByLoadBalancerIdIpAddressAndPort(Integer loadBalancerId, String ipAddress, Integer ipPort) {
+    public Node getNodeByLoadBalancerIdIpAddressAndPort(Integer loadBalancerId, String ipAddress, Integer ipPort) throws EntityNotFoundException {
         return nodeRepository.getNodeByLoadBalancerIdIpAddressAndPort(loadBalancerId, ipAddress, ipPort);
     }
 
