@@ -7,10 +7,10 @@ import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.exception.BadRequestException;
 
-public class Validator {
-    private static final Log LOG = LogFactory.getLog(Validator.class);
+public class LoadBalancerCreateValidator {
+    private static final Log LOG = LogFactory.getLog(LoadBalancerCreateValidator.class);
 
-    private Validator() {
+    private LoadBalancerCreateValidator() {
 
     }
 

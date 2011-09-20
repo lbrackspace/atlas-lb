@@ -60,6 +60,12 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
+    public void updateLoadBalancer(LoadBalancer lb) throws Exception {
+
+    }
+
+
+    @Override
     public void updateAlgorithm(LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {

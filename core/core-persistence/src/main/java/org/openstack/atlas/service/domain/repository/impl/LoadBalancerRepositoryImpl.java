@@ -63,7 +63,7 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         final Set<LoadBalancerJoinVip6> lbJoinVip6sToLink = loadBalancer.getLoadBalancerJoinVip6Set();
         loadBalancer.setLoadBalancerJoinVip6Set(null);
 
-        loadBalancer = setLbIdOnChildObjects(loadBalancer);
+        setLbIdOnChildObjects(loadBalancer);
 
         Calendar current = Calendar.getInstance();
         loadBalancer.setCreated(current);
@@ -108,7 +108,7 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         }
     }*/
 
-    protected LoadBalancer setLbIdOnChildObjects(final LoadBalancer loadBalancer) {
+    protected void setLbIdOnChildObjects(final LoadBalancer loadBalancer) {
         if (loadBalancer.getNodes() != null) {
             for (Node node : loadBalancer.getNodes()) {
                 node.setLoadBalancer(loadBalancer);
@@ -121,7 +121,6 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         if (loadBalancer.getHealthMonitor() != null) {
             loadBalancer.getHealthMonitor().setLoadBalancer(loadBalancer);
         }
-        return loadBalancer;
     }
 
     @Override

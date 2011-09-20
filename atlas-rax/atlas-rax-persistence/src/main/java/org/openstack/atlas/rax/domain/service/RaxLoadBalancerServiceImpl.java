@@ -16,25 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
 
     @Override
-    @Transactional
-    public LoadBalancer update(final LoadBalancer loadBalancer) throws PersistenceServiceException {
-        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
-
-        loadBalancerRepository.changeStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
-
-        setName(loadBalancer, dbLoadBalancer);
-        setAlgorithm(loadBalancer, dbLoadBalancer);
+    protected void setPropertiesForUpdate(LoadBalancer loadBalancer, LoadBalancer dbLoadBalancer) throws BadRequestException {
+        super.setPropertiesForUpdate(loadBalancer, dbLoadBalancer);
         setPort(loadBalancer, dbLoadBalancer);
         setProtocol(loadBalancer, dbLoadBalancer);
         setConnectionLogging(loadBalancer, dbLoadBalancer);
-
-        dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
-        dbLoadBalancer.setUserName(loadBalancer.getUserName());
-
-        return dbLoadBalancer;
     }
 
-    protected void setProtocol(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
+    private void setProtocol(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
         boolean portHMTypecheck = true;
         if (loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(dbLoadBalancer.getProtocol())) {
 
@@ -73,7 +62,7 @@ public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
         }
     }
 
-    protected void setPort(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
+    private void setPort(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws BadRequestException {
         if (loadBalancer.getPort() != null && !loadBalancer.getPort().equals(dbLoadBalancer.getPort())) {
             LOG.debug("Updating loadbalancer port to " + loadBalancer.getPort());
             if (loadBalancerRepository.canUpdateToNewPort(loadBalancer.getPort(), dbLoadBalancer.getLoadBalancerJoinVipSet())) {
@@ -86,7 +75,7 @@ public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
         }
     }
 
-    protected void setConnectionLogging(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
+    private void setConnectionLogging(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) {
         if (loadBalancer.getConnectionLogging() != null && !loadBalancer.getConnectionLogging().equals(dbLoadBalancer.getConnectionLogging())) {
             /*if (loadBalancer.getConnectionLogging()) {
                 if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
