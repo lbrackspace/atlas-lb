@@ -730,14 +730,15 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Override
     public List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId) {
         List<LoadBalancer> domainLbs = loadBalancerRepository.getAllWithNode(nodeAddress, accountId);
-        List<LoadBalancer> retLbs = new ArrayList<LoadBalancer>();
-        for (LoadBalancer domainLb : domainLbs) {
-            LoadBalancer lb = new LoadBalancer();
-            lb.setName(domainLb.getName());
-            lb.setId(domainLb.getId());
-            retLbs.add(lb);
-        }
-        return retLbs;
+//        List<LoadBalancer> retLbs = new ArrayList<LoadBalancer>();
+
+//        for (Object domainLb : domainLbs) {
+//            LoadBalancer lb = new LoadBalancer();
+//            lb.setName(domainLb.);
+//            lb.setId(domainLb.getId());
+//            retLbs.add(lb);
+//        }
+        return domainLbs;
     }
 
     private List<LoadBalancer> verifySharedVipsOnLoadBalancers(List<LoadBalancer> lbs) throws EntityNotFoundException, BadRequestException {

@@ -1260,6 +1260,7 @@ public class LoadBalancerRepository {
     }
 
     public List<LoadBalancer> getAllWithNode(String nodeAddress, Integer accountId) {
-        return entityManager.createNativeQuery("SELECT l.* FROM loadbalancer l, node n WHERE l.id = n.loadbalancer_id AND l.account_id = :accountId AND n.ip_address = :address").setParameter("accountId", accountId).setParameter("address", nodeAddress).getResultList();
+        List<LoadBalancer> loadbalancers = entityManager.createQuery("SELECT l.* FROM LoadBalancer l, Node n WHERE l.id = n.loadbalancerId AND l.accountId = :accountId AND n.ipAddress = :address").setParameter("accountId", accountId).setParameter("address", nodeAddress).getResultList();
+        return loadbalancers;
     }
 }
