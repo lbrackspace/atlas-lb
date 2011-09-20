@@ -340,9 +340,13 @@ public class RaxLoadBalancerValidatorTest {
         public void setupValidLoadBalancerObject() {
             loadBalancer = new LoadBalancer();
             loadBalancer.setName("an-updated-loadbalancer-name");
-            loadBalancer.setProtocol("FTP");
-            loadBalancer.setPort(800);
             loadBalancer.setAlgorithm(CoreAlgorithmType.LEAST_CONNECTIONS);
+        }
+
+        @Test
+        public void shouldAcceptValidLoadBalancer() {
+            ValidatorResult result = validator.validate(loadBalancer, PUT);
+            assertTrue(result.passedValidation());
         }
 
         @Test
@@ -435,9 +439,9 @@ public class RaxLoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldAcceptOnlyPort() {
+        public void shouldAcceptOnlyName() {
             loadBalancer = new LoadBalancer();
-            loadBalancer.setPort(80);
+            loadBalancer.setName("Biased load BALANCER. Ha!");
             ValidatorResult result = validator.validate(loadBalancer, PUT);
             assertTrue(result.passedValidation());
         }
@@ -451,19 +455,19 @@ public class RaxLoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldAcceptOnlyProtocol() {
+        public void shouldRejectOnlyProtocol() {
             loadBalancer = new LoadBalancer();
             loadBalancer.setProtocol("HTTP");
             ValidatorResult result = validator.validate(loadBalancer, PUT);
-            assertTrue(result.passedValidation());
+            assertFalse(result.passedValidation());
         }
 
         @Test
-        public void shouldAcceptOnlyName() {
+        public void shouldRejectOnlyPort() {
             loadBalancer = new LoadBalancer();
-            loadBalancer.setName("Biased load BALANCER. Ha!");
+            loadBalancer.setPort(80);
             ValidatorResult result = validator.validate(loadBalancer, PUT);
-            assertTrue(result.passedValidation());
+            assertFalse(result.passedValidation());
         }
 
         @Test
@@ -513,20 +517,20 @@ public class RaxLoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldAcceptCoreProtocols() {
+        public void shouldRejectCoreProtocols() {
             for (String protocol : new CoreProtocolType().toList()) {
                 loadBalancer.setProtocol(protocol);
                 ValidatorResult result = validator.validate(loadBalancer, PUT);
-                assertTrue(result.passedValidation());
+                assertFalse(result.passedValidation());
             }
         }
 
         @Test
-        public void shouldAcceptRaxProtocols() {
+        public void shouldRejectRaxProtocols() {
             for (String protocol : new RaxProtocolType().toList()) {
                 loadBalancer.setProtocol(protocol);
                 ValidatorResult result = validator.validate(loadBalancer, PUT);
-                assertTrue(result.passedValidation());
+                assertFalse(result.passedValidation());
             }
         }
 

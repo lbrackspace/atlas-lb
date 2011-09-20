@@ -324,9 +324,13 @@ public class LoadBalancerValidatorTest {
         public void setupValidLoadBalancerObject() {
             loadBalancer = new LoadBalancer();
             loadBalancer.setName("an-updated-loadbalancer-name");
-            loadBalancer.setProtocol(CoreProtocolType.HTTP);
-            loadBalancer.setPort(80);
             loadBalancer.setAlgorithm(CoreAlgorithmType.LEAST_CONNECTIONS);
+        }
+
+        @Test
+        public void shouldAcceptValidLoadBalancer() {
+            ValidatorResult result = validator.validate(loadBalancer, PUT);
+            assertTrue(result.passedValidation());
         }
 
         @Test
@@ -419,9 +423,9 @@ public class LoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldAcceptOnlyPort() {
+        public void shouldAcceptOnlyName() {
             loadBalancer = new LoadBalancer();
-            loadBalancer.setPort(80);
+            loadBalancer.setName("Biased load BALANCER. Ha!");
             ValidatorResult result = validator.validate(loadBalancer, PUT);
             assertTrue(result.passedValidation());
         }
@@ -435,19 +439,19 @@ public class LoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldAcceptOnlyProtocol() {
+        public void shouldRejectOnlyPort() {
             loadBalancer = new LoadBalancer();
-            loadBalancer.setProtocol("HTTP");
+            loadBalancer.setPort(80);
             ValidatorResult result = validator.validate(loadBalancer, PUT);
-            assertTrue(result.passedValidation());
+            assertFalse(result.passedValidation());
         }
 
         @Test
-        public void shouldAcceptOnlyName() {
+        public void shouldRejectOnlyProtocol() {
             loadBalancer = new LoadBalancer();
-            loadBalancer.setName("Biased load BALANCER. Ha!");
+            loadBalancer.setProtocol("HTTP");
             ValidatorResult result = validator.validate(loadBalancer, PUT);
-            assertTrue(result.passedValidation());
+            assertFalse(result.passedValidation());
         }
 
         @Test
@@ -486,11 +490,11 @@ public class LoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldAcceptCoreProtocols() {
+        public void shouldRejectCoreProtocols() {
             for (String protocol : new CoreProtocolType().toList()) {
                 loadBalancer.setProtocol(protocol);
                 ValidatorResult result = validator.validate(loadBalancer, PUT);
-                assertTrue(result.passedValidation());
+                assertFalse(result.passedValidation());
             }
         }
 
