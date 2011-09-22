@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.services.impl;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.AllAbsoluteLimits;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
 import org.apache.commons.logging.Log;
@@ -98,6 +99,36 @@ public class AccountLimitServiceImpl extends BaseService implements AccountLimit
 
         for (AccountLimit customAccountLimit : customAccountLimits) {
             limitsForAccount.put(customAccountLimit.getLimitType().getName().name(), customAccountLimit.getLimit());
+        }
+
+        return limitsForAccount;
+    }
+
+    @Override
+    public AllAbsoluteLimits getAllAbsoluteLimitsForAccount(Integer accountId) {
+        AllAbsoluteLimits limitsForAccount = new AllAbsoluteLimits();
+        List<LimitType> allLimitTypes = getAllLimitTypes();
+        List<AccountLimit> customAccountLimits = getCustomAccountLimits(accountId);
+
+        List<LimitType> removalList = new ArrayList<LimitType>();
+        for (LimitType limitType : allLimitTypes) {
+            for (AccountLimit customAccountLimit : customAccountLimits) {
+                if (limitType.getName().equals(customAccountLimit.getLimitType().getName())) {
+                    removalList.add(limitType);
+                }
+            }
+        }
+
+        if (removalList.size() > 0) {
+            allLimitTypes.removeAll(removalList);
+        }
+
+        if (allLimitTypes.size() > 0) {
+            limitsForAccount.setDefaultLimits(allLimitTypes);
+        }
+
+        if (customAccountLimits.size() > 0) {
+            limitsForAccount.setCustomLimits(customAccountLimits);
         }
 
         return limitsForAccount;

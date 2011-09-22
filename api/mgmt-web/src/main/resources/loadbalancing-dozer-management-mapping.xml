@@ -772,6 +772,11 @@
     </mapping>
 
     <mapping map-null="false">
+        <class-a>package org.openstack.atlas.docs.loadbalancers.api.management.v1.AllAbsoluteLimits</class-a>
+        <class-b>org.openstack.atlas.service.domain.pojos.AllAbsoluteLimits</class-b>
+    </mapping>
+
+    <mapping map-null="false">
         <class-a>org.openstack.atlas.docs.loadbalancers.api.management.v1.Job</class-a>
         <class-b>org.openstack.atlas.service.domain.entities.JobState</class-b>
     </mapping>

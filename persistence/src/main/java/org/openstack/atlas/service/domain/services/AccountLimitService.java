@@ -5,6 +5,7 @@ import org.openstack.atlas.service.domain.entities.AccountLimitType;
 import org.openstack.atlas.service.domain.entities.LimitType;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.AllAbsoluteLimits;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,8 @@ public interface AccountLimitService {
     Map<Integer, List<AccountLimit>> getAllAccountLimits();
 
     Map<String, Integer> getAllLimitsForAccount(Integer accountId);
+
+    AllAbsoluteLimits getAllAbsoluteLimitsForAccount(Integer accountId);
 
     Map<Integer, List<AccountLimit>> getAccountLimitsForCluster(Integer clusterId);
 

@@ -798,4 +798,12 @@
         <xsd:attribute name="message" type="xsd:string" />
     </xsd:complexType>
 
+    <xsd:element name="allAbsoluteLimits" type="tns:allAbsoluteLimits" />
+    <xsd:complexType name="allAbsoluteLimits">
+        <xsd:sequence>
+            <xsd:element name="customLimits" type="tns:CustomLimits" minOccurs="1" maxOccurs="unbounded" />
+            <xsd:element name="limits" type="papi:limits" minOccurs="1" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+
 </xsd:schema>
