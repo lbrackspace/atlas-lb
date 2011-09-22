@@ -11,7 +11,9 @@ public class MessageDataContainer implements Serializable {
     private Integer accountId;
     private Integer loadBalancerId;
     private Integer virtualIpId;
+    private String errorFileContents;
     private Integer nodeId;
+    private Integer clusterId;
     private List<Integer> newVipIds;
     private List<Integer> newNodeIds;
     //for batch deletes
@@ -88,5 +90,21 @@ public class MessageDataContainer implements Serializable {
 
     public void setNewNodeIds(List<Integer> newNodeIds) {
         this.newNodeIds = newNodeIds;
+    }
+
+    public String getErrorFileContents() {
+        return errorFileContents;
+    }
+
+    public void setErrorFileContents(String errorFileContents) {
+        this.errorFileContents = errorFileContents;
+    }
+
+    public Integer getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Integer clusterId) {
+        this.clusterId = clusterId;
     }
 }

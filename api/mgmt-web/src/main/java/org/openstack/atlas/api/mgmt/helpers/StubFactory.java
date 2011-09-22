@@ -259,7 +259,7 @@ public class StubFactory {
     public static HostCapacityReport rndHostCapacityReport() {
         HostCapacityReport h = new HostCapacityReport();
         h.setAllocatedConcurrentConnections(rndInt(0, 10000));
-        h.setAllocatedConcurrentConnectionsInPastSevenDays(rndInt(0, 250));
+        h.setAllocatedConcurrentConnectionsInLastSevenDays(rndInt(0, 250));
         h.setAllocatedConcurrentConnectionsToday(rndInt(0, 1000));
         h.setAvailableConcurrentConnections(rndInt(0, 64));
         h.setHostId(rndInt(0, 10000));

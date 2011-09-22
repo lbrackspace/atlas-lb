@@ -36,6 +36,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     private ConnectionThrottleResource connectionThrottleResource;
     private VirtualIpsResource virtualIpsResource;
     private UsageResource usageResource;
+    private ErrorpageResource errorpageResource;
     private int id;
     private Integer accountId;
     private HttpHeaders requestHeaders;
@@ -72,7 +73,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             domainLb.setId(id);
             domainLb.setAccountId(accountId);
             if (requestHeaders != null) {
-                if(requestHeaders.getRequestHeader("X-PP-User") != null && requestHeaders.getRequestHeader("X-PP-User").size() > 0) {
+                if (requestHeaders.getRequestHeader("X-PP-User") != null && requestHeaders.getRequestHeader("X-PP-User").size() > 0) {
                     domainLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
                 }
             }
@@ -175,6 +176,13 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         return usageResource;
     }
 
+    @Path("errorpage")
+    public ErrorpageResource retrieveErrorpageResource(){
+        errorpageResource.setAccountId(accountId);
+        errorpageResource.setLoadBalancerId(id);
+        return errorpageResource;
+    }
+
     private Response getFeedResponse(Integer page) {
         Map<String, Object> feedAttributes = new HashMap<String, Object>();
         feedAttributes.put("feedType", FeedType.LOADBALANCER_FEED);
@@ -240,5 +248,9 @@ public class LoadBalancerResource extends CommonDependencyProvider {
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {
         this.requestHeaders = requestHeaders;
+    }
+
+    public void setErrorpageResource(ErrorpageResource errorpageResource) {
+        this.errorpageResource = errorpageResource;
     }
 }

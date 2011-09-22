@@ -4,12 +4,17 @@ import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerServiceEvents;
+import org.openstack.atlas.service.domain.pojos.DateTimeToolException;
+import org.openstack.atlas.util.converters.exceptions.ConverterException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import java.util.Calendar;
+
+import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
 
 public class EventResource extends ManagementDependencyProvider {
 
@@ -34,13 +39,25 @@ public class EventResource extends ManagementDependencyProvider {
 
     @GET
     @Path("user/{username: [0-9A-Za-z ]+}")
-    public Response getAllEventsByUsername(@PathParam("username") String username, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate, @QueryParam("page") Integer page) {
+    public Response getAllEventsByUsername(@PathParam("username") String username, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate, @QueryParam("page") Integer page) throws DateTimeToolException, ConverterException {
         if (!isUserInRole("ops")) {
             return ResponseFactory.accessDenied();
         }
 
-        org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents dEvents;
-        LoadBalancerServiceEvents rEvents = new LoadBalancerServiceEvents();
+        Calendar startCal;
+        if (startDate == null) {
+            startCal = Calendar.getInstance();
+            startCal.add(Calendar.MONTH, -4);
+        } else {
+            startCal = isoTocal(startDate);
+        }
+
+        Calendar endCal;
+        if (endDate == null) {
+            endCal = Calendar.getInstance();
+        } else {
+            endCal = isoTocal(endDate);
+        }
 
         if (page == null) {
             page = 1;
@@ -50,8 +67,10 @@ public class EventResource extends ManagementDependencyProvider {
             page = 1;
         }
 
+        org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents dEvents;
+        LoadBalancerServiceEvents rEvents = new LoadBalancerServiceEvents();
         try {
-            dEvents = getEventRepository().getAllEventsForUsername(username, page);
+            dEvents = getEventRepository().getAllEventsForUsername(username, page, startCal, endCal);
             rEvents = getDozerMapper().map(dEvents, rEvents.getClass());
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);

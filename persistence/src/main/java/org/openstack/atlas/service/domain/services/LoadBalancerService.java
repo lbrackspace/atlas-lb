@@ -1,9 +1,7 @@
 package org.openstack.atlas.service.domain.services;
 
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.SessionPersistence;
-import org.openstack.atlas.service.domain.entities.Suspension;
+import javassist.tools.rmi.ObjectNotFoundException;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -66,5 +64,20 @@ public interface LoadBalancerService {
 
     public void prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws EntityNotFoundException, BadRequestException;
 
-    public boolean testAndSetStatusPending(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException;
+    public boolean testAndSetStatusPending(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException;   
+
+    public UserPages getUserPages(Integer id,Integer accountId) throws EntityNotFoundException;
+
+    public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException;
+
+    public String getDefaultErrorPage() throws ObjectNotFoundException, EntityNotFoundException;
+
+    public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException;
+
+    public boolean setDefaultErrorPage(String content) throws EntityNotFoundException;
+
+    public boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException;
+
+    public List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId);
+
 }

@@ -1,6 +1,8 @@
 package org.openstack.atlas.api.mgmt.resources.providers;
 
+import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.events.repository.AlertRepository;
 import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository;
 import org.openstack.atlas.service.domain.repository.*;
@@ -13,18 +15,18 @@ import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
 import org.openstack.atlas.api.resources.providers.RequestStateContainer;
 import org.openstack.atlas.util.ip.IPv6;
 import org.dozer.DozerBeanMapper;
+import org.openstack.atlas.cfg.Configuration;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import javax.ws.rs.core.Response;
+import java.util.*;
 
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class ManagementDependencyProvider {
 
-    private boolean mockitoAuth = false; // Mock Testing sucks
+    private boolean mockitoAuth = false;
+    protected final static String VFAIL = "Validation Failure";
     private MossoAuthConfig mossoAuthConfig;
     private RequestStateContainer requestStateContainer;
     protected ManagementAsyncService managementAsyncService;
@@ -55,6 +57,7 @@ public class ManagementDependencyProvider {
     protected SuspensionService suspensionService;
     protected ClusterService clusterService;
     protected JobStateService jobStateService;
+    protected Configuration configuration;
 
     public static String getStackTraceMessage(Exception e) {
         StringBuffer sb = new StringBuffer();
@@ -143,6 +146,14 @@ public class ManagementDependencyProvider {
 
     public void setCallbackService(CallbackService callbackService) {
             this.callbackService = callbackService;
+    }
+
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
     }
 
     public ClusterRepository getClusterRepository() {
@@ -360,6 +371,20 @@ public class ManagementDependencyProvider {
             return null;
         }
         return expanded;
+    }
+
+    public Response getValidationFaultResponse(String errorStr){
+        List<String> errorStrs = new ArrayList<String>();
+        errorStrs.add(errorStr);
+        return getValidationFaultResponse(errorStrs);
+    }
+
+     public Response getValidationFaultResponse(List<String> errorStrs) {
+        BadRequest badreq;
+        int status = 400;
+        badreq = HttpResponseBuilder.buildBadRequestResponse(VFAIL, errorStrs);
+        Response resp = Response.status(status).entity(badreq).build();
+        return resp;
     }
 
     // Got tired of always import StringUtils.getExtendedStackTrace so I'm aliasing it

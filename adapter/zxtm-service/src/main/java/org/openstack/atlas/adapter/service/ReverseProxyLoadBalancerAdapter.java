@@ -140,4 +140,15 @@ public interface ReverseProxyLoadBalancerAdapter {
 
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, int id, int accountId, RateLimit rateLimit)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+
+    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws RemoteException, InsufficientRequestException;
+
+    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config,  Integer loadbalancerId, Integer accountId) throws RemoteException, InsufficientRequestException;
+
+    public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config,  String content) throws RemoteException, InsufficientRequestException;
+
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId,Integer accountId) throws AxisFault;
+
+    public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content)
+            throws RemoteException;
 }

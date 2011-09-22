@@ -2,6 +2,7 @@ package org.openstack.atlas.api.mgmt.resources;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
@@ -102,7 +103,10 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
-    public Response retrieveLoadBalancers(@QueryParam("vipaddress") String address, @QueryParam("vipid") Integer vipId, @QueryParam("status") String status, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker, @QueryParam("page") Integer page, @QueryParam("changes-since") Integer time) {
+    public Response retrieveLoadBalancers(@QueryParam("vipaddress") String address, @QueryParam("vipid") Integer vipId, @QueryParam("status") String status,
+                                          @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker,
+                                          @QueryParam("page") Integer page, @QueryParam("changes-since") Integer time, @QueryParam("nodeAddress") String nodeAddress) throws EntityNotFoundException {
+
         CheckQueryParams checkParams = new CheckQueryParams();
         Response checkResponseParams = checkParams.checkParams(address, vipId);
         if (checkResponseParams != null) {

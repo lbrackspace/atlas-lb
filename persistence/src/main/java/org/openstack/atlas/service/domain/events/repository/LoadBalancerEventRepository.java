@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.events.repository;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.events.entities.*;
 import org.openstack.atlas.service.domain.events.pojos.AccountLoadBalancerServiceEvents;
@@ -7,20 +9,17 @@ import org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.DateTimeToolException;
 import org.openstack.atlas.service.domain.pojos.DateTimeTools;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import java.util.List;
-import java.util.Map;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.*;
 
 @Repository
 @Transactional
@@ -81,17 +80,18 @@ public class LoadBalancerEventRepository {
         return query.getResultList();
     }
 
-    public LoadBalancerServiceEvents getAllEventsForUsername(String username, Integer page) {
-        Query query = entityManager.createQuery("SELECT evt FROM LoadBalancerServiceEvent evt where evt.author = :username order by evt.created desc").setParameter("username", username).setMaxResults(PAGE_SIZE);
-
-        if (page != null && page > 0) {
-            query = query.setFirstResult((page - 1) * PAGE_SIZE);
-        }
-
-        LoadBalancerServiceEvents dEvents = new LoadBalancerServiceEvents();
-        dEvents.getLoadBalancerServiceEvents().addAll(query.getResultList());
-
-        return dEvents;
+    public LoadBalancerServiceEvents getAllEventsForUsername(String username, Integer page, Calendar startDate, Calendar endDate) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerServiceEvent> query = builder.createQuery(LoadBalancerServiceEvent.class);
+        Root<LoadBalancerServiceEvent> root = query.from(LoadBalancerServiceEvent.class);
+        Predicate userEvents = builder.equal(root.get(LoadBalancerServiceEvent_.author), username);
+        Predicate timeRange = builder.between(root.get(LoadBalancerServiceEvent_.created), startDate, endDate);
+        query.where(userEvents, timeRange);
+        query.select(root);
+        List<LoadBalancerServiceEvent> lsv = entityManager.createQuery(query).getResultList();
+        LoadBalancerServiceEvents events = new LoadBalancerServiceEvents();
+        events.getLoadBalancerServiceEvents().addAll(lsv);
+        return events;
     }
 
     public List<NodeEvent> getAllNodeEvents(Integer accountId, Integer loadbalancerId, Integer page) {

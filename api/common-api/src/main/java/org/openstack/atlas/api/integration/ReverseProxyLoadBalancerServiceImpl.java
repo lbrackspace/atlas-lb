@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -29,17 +30,11 @@ import java.util.Set;
 public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBalancerService {
 
     final Log LOG = LogFactory.getLog(ReverseProxyLoadBalancerServiceImpl.class);
-
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
-
     private LoadBalancerService loadBalancerService;
-
     private HostService hostService;
-
     private NotificationService notificationService;
-
     private HealthMonitorService healthMonitorService;
-
     private Configuration configuration;
 
     public void setLoadBalancerService(LoadBalancerService loadBalancerService) {
@@ -79,7 +74,6 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             throw af;
         }
     }
-
 
     @Override
     public void setRateLimit(int id, int accountId, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
@@ -204,18 +198,16 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         }
     }
 
-
     @Override
-    public void removeNodes(Integer lbId, Integer accountId,Collection<Node> nodes) throws Exception {
+    public void removeNodes(Integer lbId, Integer accountId, Collection<Node> nodes) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            reverseProxyLoadBalancerAdapter.removeNodes(config, lbId, accountId,nodes);
+            reverseProxyLoadBalancerAdapter.removeNodes(config, lbId, accountId, nodes);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
         }
     }
-
 
     @Override
     public void setNodeWeights(Integer lbId, Integer accountId, Set<Node> nodes) throws Exception {
@@ -254,7 +246,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void updateConnectionThrottle(Integer lbId, Integer accountId,
-                                         ConnectionLimit connectionThrottle) throws Exception {
+            ConnectionLimit connectionThrottle) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.updateConnectionThrottle(config, lbId, accountId,
@@ -275,7 +267,6 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             throw af;
         }
     }
-
 
     @Override
     public void updateSessionPersistence(Integer lbId, Integer accountId, SessionPersistence persistenceMode) throws Exception {
@@ -323,7 +314,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void createHostBackup(Host host,
-                                 String backupName) throws RemoteException, MalformedURLException, DecryptException {
+            String backupName) throws RemoteException, MalformedURLException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
         try {
             reverseProxyLoadBalancerAdapter.createHostBackup(config, backupName);
@@ -406,6 +397,19 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
+    public void setErrorFile(Integer lid, Integer aid, String content) throws DecryptException, MalformedURLException, RemoteException, EntityNotFoundException {
+        LoadBalancer lb = loadBalancerService.get(lid, aid);
+        Host host = lb.getHost();
+        LoadBalancerEndpointConfiguration config = getConfig(host);
+        try {
+            reverseProxyLoadBalancerAdapter.setErrorFile(config, lid, aid, content);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
     public void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) {
         try {
             LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
@@ -467,12 +471,70 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
+    public void removeAndSetDefaultErrorFile(Integer loadbalancerId, Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
+        try {
+            reverseProxyLoadBalancerAdapter.removeAndSetDefaultErrorFile(config, loadbalancerId, accountId);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public void setDefaultErrorFile(Integer loadbalancerId, Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+        LoadBalancer lb = loadBalancerService.get(loadbalancerId, accountId);
+        LoadBalancerEndpointConfiguration config = getConfig(lb.getHost());
+        try {
+            reverseProxyLoadBalancerAdapter.setDefaultErrorFile(config, accountId, loadbalancerId);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public void uploadDefaultErrorFile(Integer clusterId, String content) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+        LoadBalancerEndpointConfiguration config = getConfigbyClusterId(clusterId);
+        try {
+            reverseProxyLoadBalancerAdapter.uploadDefaultErrorFile(config, content);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public void deleteErrorFile(Integer loadbalancerId,Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+        LoadBalancer lb = loadBalancerService.get(loadbalancerId,accountId);
+        LoadBalancerEndpointConfiguration config = getConfig(lb.getHost());
+        try {
+            reverseProxyLoadBalancerAdapter.deleteErrorFile(config,loadbalancerId,accountId);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    LoadBalancerEndpointConfiguration getConfigbyClusterId(Integer clusterId) throws EntityNotFoundException, DecryptException {
+        Cluster cluster = hostService.getClusterById(clusterId);
+        Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
+        List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
+        String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
+        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), soapEndpointHost, failoverHosts, logFileLocation);
+    }
+
+    @Override
     public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException {
         Cluster cluster = host.getCluster();
         Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
+
+
         return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
+
+
     }
 
     @Override
@@ -480,7 +542,11 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         Cluster cluster = host.getCluster();
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
+
+
         return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
+
+
     }
 
     private LoadBalancerEndpointConfiguration getConfigbyLoadBalancerId(Integer lbId) throws EntityNotFoundException, DecryptException, MalformedURLException {
@@ -490,34 +556,53 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
+
+
         return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
+
+
     }
 
     public void setReverseProxyLoadBalancerAdapter(ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter) {
         this.reverseProxyLoadBalancerAdapter = reverseProxyLoadBalancerAdapter;
+
+
     }
 
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
+
+
     }
 
     private boolean isConnectionExcept(AxisFault af) {
         String faultString = af.getFaultString();
+
+
         if (faultString == null) {
             return false;
+
+
         }
         if (faultString.split(":")[0].equals("java.net.ConnectException")) {
             return true;
+
+
         }
         return false;
+
+
     }
 
     private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, AxisFault af) throws AxisFault {
         Host badHost = config.getTrafficManagerHost();
+
+
         if (isConnectionExcept(af)) {
             LOG.error(String.format("SOAP endpoint %s went bad marking host[%d] as bad.", badHost.getEndpoint(), badHost.getId()));
             badHost.setSoapEndpointActive(Boolean.FALSE);
             hostService.update(badHost);
+
         }
     }
 }

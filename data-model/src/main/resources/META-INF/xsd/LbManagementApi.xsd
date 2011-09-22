@@ -388,7 +388,7 @@
         <xsd:attribute name="availableConcurrentConnections" type="xsd:int"/>
         <xsd:attribute name="allocatedConcurrentConnections" type="xsd:int"/>
         <xsd:attribute name="allocatedConcurrentConnectionsToday" type="xsd:int"/>
-        <xsd:attribute name="allocatedConcurrentConnectionsInPastSevenDays" type="xsd:int"/>
+        <xsd:attribute name="allocatedConcurrentConnectionsInLastSevenDays" type="xsd:int"/>
         <xsd:attribute name="remainingDaysOfCapacity" type="xsd:double"/>
     </xsd:complexType>
 
@@ -781,6 +781,21 @@
         <xsd:attribute name="startTime" type="xsd:dateTime"/>
         <xsd:attribute name="endTime" type="xsd:dateTime"/>
         <xsd:attribute name="inputPath" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:element name="healthChecks" type="tns:healthChecks" />
+    <xsd:complexType name="healthChecks">
+        <xsd:sequence>
+            <xsd:element name="healthCheck" minOccurs="1" maxOccurs="unbounded" type="tns:healthCheck" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="healthCheck" type="tns:healthCheck" />
+    <xsd:complexType name="healthCheck">
+        <xsd:attribute name="type" type="xsd:string" />
+        <xsd:attribute name="status" type="xsd:string" />
+        <xsd:attribute name="time" type="xsd:long" />
+        <xsd:attribute name="message" type="xsd:string" />
     </xsd:complexType>
 
 </xsd:schema>

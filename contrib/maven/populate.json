@@ -1,0 +1,12 @@
+{
+  "populate_cmd": "/var/lib/jenkins/repo/ubuntu-repo/populate.sh", 
+  "incoming": "incoming/main", 
+  "topdir": "/var/lib/jenkins/repo/ubuntu-repo/rs-repo", 
+  "blocksize": 1048576, 
+  "migrations": {
+    "migration/schema/loadbalancing_migrations.txt": "migration/schema/loadbalancing", 
+    "migration/schema/loadbalancing_usage_migrations.txt": "migration/schema/loadbalancing_usage"
+  }, 
+  "pool": "pool/main", 
+  "qa_up": "/var/lib/jenkins/repo/ubuntu-repo/qa_up.sh"
+}

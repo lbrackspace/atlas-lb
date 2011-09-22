@@ -90,6 +90,7 @@ public class ZxtmAdapterImplTest {
             when(serviceStubs.getZxtmRateCatalogService()).thenReturn(rateStub);
 
             when(serviceStubs.getVirtualServerBinding().getRules(Matchers.<String[]>any())).thenReturn(new VirtualServerRule[][]{{}});
+            when(serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(Matchers.<String[]>any())).thenReturn(new boolean[]{false});
             when(serviceStubs.getVirtualServerBinding().getProtocol(Matchers.<String[]>any())).thenReturn(new VirtualServerProtocol[]{VirtualServerProtocol.fromValue(VirtualServerProtocol._http)});
             when(serviceStubs.getZxtmRuleCatalogService().getRuleNames()).thenReturn(new String[]{});
         }

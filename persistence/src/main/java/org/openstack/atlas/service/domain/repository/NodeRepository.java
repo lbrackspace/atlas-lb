@@ -110,9 +110,16 @@ public class NodeRepository {
         return loadBalancer;
     }
 
-    public Node getNodeByLoadBalancerIdIpAddressAndPort(Integer lbId, String ipAddress, Integer port) {
-        return (Node) entityManager.createQuery(
-                "from Node n where n.loadbalancer.id = :loadbalancerId and n.ipAddress = :ipAddress and n.port = :port").setParameter("loadbalancerId", lbId).setParameter("ipAddress", ipAddress).setParameter("port", port).getSingleResult();
+    public Node getNodeByLoadBalancerIdIpAddressAndPort(Integer lbId, String ipAddress, Integer port) throws EntityNotFoundException {
+        try {
+            return (Node) entityManager.createQuery("from Node n where n.loadbalancer.id = :loadbalancerId and n.ipAddress = :ipAddress and n.port = :port")
+                    .setParameter("loadbalancerId", lbId)
+                    .setParameter("ipAddress", ipAddress)
+                    .setParameter("port", port)
+                    .getSingleResult();
+        } catch (Exception e) {
+            throw new EntityNotFoundException(e);
+        }
     }
 
     public Node getNodeByAccountIdLoadBalancerIdNodeId(LoadBalancer loadBalancer,

@@ -15,6 +15,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Updated;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 
 import javax.ws.rs.Consumes;
@@ -108,6 +109,15 @@ public class BounceResource extends CommonDependencyProvider {
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response echoUpdated(Updated updated) {
         Response resp = Response.status(200).entity(updated).build();
+        return resp;
+    }
+
+    @POST
+    @Path("errorpage")
+    public Response echoErrorpage(Errorpage errorpage){
+        Errorpage errorpage_out = new Errorpage();
+        errorpage_out.setContent(errorpage.getContent());
+        Response resp = Response.status(200).entity(errorpage_out).build();
         return resp;
     }
 }

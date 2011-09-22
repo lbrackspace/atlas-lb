@@ -79,6 +79,7 @@
     <bean id="managementDependencyProvider"
           class="org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider"
           scope="request">
+        <property name="configuration" ref="configuration" />
         <property name="mossoAuthConfig" ref="mossoAuthConfig"/>
         <property name="alertService" ref="alertService"/>
         <property name="requestStateContainer" ref="requestStateContainer"/>
@@ -191,6 +192,9 @@
                                   parent="managementDependencyProvider"
                                   scope="request">
                                 <property name="virtualIpsResource" ref="mgmtVirtualIpsResource"/>
+                                <property name="errorpageResource"  ref="mgmtErrorPageResource"/>
+
+
                             </bean>
                         </property>
                     </bean>
@@ -209,9 +213,14 @@
                 </property>
                 <property name="callbackResource" ref="callbackResource"/>
                 <property name="blackListResource" ref="blackListResource"/>
+                <property name="healthCheckResource" ref="healthCheckResource"/>
             </bean>
         </property>
     </bean>
+    <bean id="healthCheckResource"
+          class="org.openstack.atlas.api.mgmt.resources.HealthCheckResource"
+          parent="managementDependencyProvider"
+          scope="request" />
     <bean id="blackListResource"
           class="org.openstack.atlas.api.mgmt.resources.BlackListResource"
           parent="managementDependencyProvider"
@@ -252,6 +261,11 @@
                   scope="request"/>
         </property>
     </bean>
+    <bean id="mgmtErrorPageResource"
+          class="org.openstack.atlas.api.mgmt.resources.ErrorpageResource"
+                parent="managementDependencyProvider"
+                scope="request"/>
+
     <bean name="mgmtVirtualIpsResource"
           class="org.openstack.atlas.api.mgmt.resources.VirtualIpsResource"
           parent="managementDependencyProvider"
@@ -269,6 +283,7 @@
         <property name="loadBalancerResource" ref="loadBalancerResource"/>
         <property name="accountLimitsResource" ref="accountLimitsResource"/>
     </bean>
+
 
     <bean name="loadBalancerResource" class="org.openstack.atlas.api.mgmt.resources.LoadBalancerResource"
           parent="managementDependencyProvider"

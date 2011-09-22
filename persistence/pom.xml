@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.6.14-SNAPSHOT</version>
+        <version>1.7.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-persistence</artifactId>
@@ -91,6 +91,36 @@
                     </excludes>-->
                 </configuration>
             </plugin>
+
+
+<!-- The antrun plug installs the instrumentation bytecode so that Hibernate can honor LAZY fetchtype operations on the domain classes -->
+           <plugin>
+             <artifactId>maven-antrun-plugin</artifactId>
+              <executions>
+               <execution>
+                 <phase>process-classes</phase>
+                 <goals>
+                   <goal>run</goal>
+                 </goals>
+               </execution>
+             </executions>
+             <configuration>
+               <tasks>
+                 <taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask">
+                   <classpath>
+                     <path refid="maven.runtime.classpath" />
+                     <path refid="maven.plugin.classpath" />
+                   </classpath>
+                 </taskdef>
+                 <instrument verbose="true">
+                   <fileset dir="${project.build.outputDirectory}/org/openstack/atlas/service/domain">
+                     <include name="entities/*.class" />
+                   </fileset>
+                 </instrument>
+               </tasks>
+             </configuration>
+           </plugin> 
+
         </plugins>
     </build>
 
