@@ -15,11 +15,11 @@ import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl;
-import org.openstack.atlas.core.api.v1.LoadBalancer;
-import org.openstack.atlas.core.api.v1.Node;
-import org.openstack.atlas.core.api.v1.HealthMonitor;
-import org.openstack.atlas.core.api.v1.ConnectionLogging;
-import org.openstack.atlas.core.api.v1.ConnectionThrottle;
+
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.HealthMonitor;
+import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -120,10 +120,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void updateConnectionLogging(Integer accountId, Integer lbId, ConnectionLogging conLog) throws AdapterException, DecryptException, MalformedURLException, Exception {
+    public void updateConnectionLogging(Integer accountId, Integer lbId, Boolean enabled) throws AdapterException, DecryptException, MalformedURLException, Exception {
           LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.updateConnectionLogging(config, accountId, lbId, conLog);
+            loadBalancerAdapter.updateConnectionLogging(config, accountId, lbId, enabled);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;

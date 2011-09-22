@@ -1,13 +1,12 @@
 package org.openstack.atlas.api.integration;
 
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
-import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
-import org.openstack.atlas.core.api.v1.LoadBalancer;
-import org.openstack.atlas.core.api.v1.Node;
-import org.openstack.atlas.core.api.v1.HealthMonitor;
-import org.openstack.atlas.core.api.v1.ConnectionLogging;
-import org.openstack.atlas.core.api.v1.ConnectionThrottle;
+
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.HealthMonitor;
+import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +28,7 @@ public interface ReverseProxyLoadBalancerService {
  
     void deleteNode(Integer accountId, Integer lbId, Integer nodeId) throws Exception;
 
-    void updateConnectionLogging(Integer accountId, Integer lbId, ConnectionLogging conLog) throws Exception;
+    void updateConnectionLogging(Integer accountId, Integer lbId, Boolean enabled) throws Exception;
 
     void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle conThrottle) throws Exception;
 

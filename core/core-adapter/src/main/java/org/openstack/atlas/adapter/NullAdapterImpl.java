@@ -7,11 +7,10 @@ import org.openstack.atlas.adapter.exception.AdapterException;
 import org.openstack.atlas.service.domain.entity.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entity.LoadBalancerAlgorithm;
 
-import org.openstack.atlas.core.api.v1.LoadBalancer;
-import org.openstack.atlas.core.api.v1.Node;
-import org.openstack.atlas.core.api.v1.ConnectionLogging;
-import org.openstack.atlas.core.api.v1.ConnectionThrottle;
-import org.openstack.atlas.core.api.v1.HealthMonitor;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
+import org.openstack.atlas.service.domain.entity.HealthMonitor;
 
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -63,7 +62,7 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
     }
 
     @Override
-    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, ConnectionLogging conLog) throws AdapterException {
+    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Boolean enabled) throws AdapterException {
         LOG.info("updateConnectionLogging");// NOP
     }
 

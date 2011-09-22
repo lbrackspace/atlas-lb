@@ -1,8 +1,8 @@
 package org.openstack.atlas.service.domain.pojo;
 
-import org.openstack.atlas.core.api.v1.LoadBalancer;
-import org.openstack.atlas.core.api.v1.Node;
-import org.openstack.atlas.core.api.v1.VirtualIp;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.VirtualIp;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,7 +11,6 @@ import java.util.List;
 public class MessageDataContainer implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
-    private String userName;
     private Integer accountId;
     private Integer loadBalancerId;
     private Integer resourceId;
@@ -27,14 +26,6 @@ public class MessageDataContainer implements Serializable {
 
     public void setIds(List<Integer> ids) {
         this.resourceIds = ids;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
     }
 
     public Integer getAccountId() {

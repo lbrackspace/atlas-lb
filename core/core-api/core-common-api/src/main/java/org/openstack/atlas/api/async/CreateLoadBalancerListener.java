@@ -17,6 +17,7 @@ import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
 
 import javax.jms.Message;
 
@@ -34,6 +35,10 @@ import static org.openstack.atlas.service.domain.event.entity.EventType.*;
 import static org.openstack.atlas.service.domain.common.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.common.AlertType.LBDEVICE_FAILURE;
 
+
+
+
+
 @Component
 public class CreateLoadBalancerListener extends BaseListener {
     private final Log LOG = LogFactory.getLog(CreateLoadBalancerListener.class);
@@ -47,8 +52,8 @@ public class CreateLoadBalancerListener extends BaseListener {
 
     @Override
     public void doOnMessage(final Message message) throws Exception {
-        Integer lbid;
-        Integer;
+        Integer lbid = null;
+        Integer accountId = null;
         LoadBalancer dbLoadBalancer = null;
 
 
@@ -57,11 +62,11 @@ public class CreateLoadBalancerListener extends BaseListener {
 
         MessageDataContainer dataContainer = (MessageDataContainer) getDataContainerFromMessage(message);
 
-        org.openstack.atlas.core.api.v1.LoadBalancer queueLb = dataContainer.getLoadBalancer();
+        LoadBalancer queueLb = dataContainer.getLoadBalancer();
 
         try {
             lbid = queueLb.getId();
-            accountId = dataContainer.getAccountId();
+            accountId = queueLb.getAccountId();
 
             dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbid, accountId);
         } catch (EntityNotFoundException e) {
@@ -75,7 +80,7 @@ public class CreateLoadBalancerListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Creating load balancer '%d' via adapter...", lbid));
-            reverseProxyLoadBalancerService.createLoadBalancer(accountId, queueLb);
+            reverseProxyLoadBalancerService.createLoadBalancer(accountId, dbLoadBalancer);
             LOG.debug("Successfully created a load balancer via adapter.");
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);

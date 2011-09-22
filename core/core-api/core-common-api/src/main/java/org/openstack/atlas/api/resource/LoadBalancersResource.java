@@ -64,11 +64,8 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
             org.openstack.atlas.service.domain.entity.LoadBalancer newlyCreatedLb = loadbalancerService.create(loadBalancer);
 
-            _loadBalancer.setId(newlyCreatedLb.getId());
-
             MessageDataContainer dataContainer = new MessageDataContainer();
-            dataContainer.setLoadBalancer(_loadBalancer);
-            dataContainer.setAccountId(newlyCreatedLb.getAccountId());
+            dataContainer.setLoadBalancer(newlyCreatedLb);
  
             asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_LOADBALANCER, dataContainer);
 
