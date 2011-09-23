@@ -57,10 +57,17 @@ public class MethodLoggingInterceptor {
             sb.append(parameterClassName).append(" ").append(arg);
             sb.append(", ");
         }
-        sb.append(")");
+        String sbString = sb.toString();
+        String arguments = null;
+        if(sb.toString().length() >= 3) {
+            arguments = sbString.substring(0, sbString.length()-2);
+            arguments = arguments + ")";
+        } else {
+            arguments = sbString + ")";
+        }
 
         long start = System.currentTimeMillis();
-        LOG.debug("Entering: " + className + "." + methodName + sb.toString());
+        LOG.debug("Entering: " + className + "." + methodName + arguments);
 
         // retrieve the methods parameter types (static):
         final Signature signature = pjp.getStaticPart().getSignature();
@@ -75,7 +82,7 @@ public class MethodLoggingInterceptor {
 
         Object output = pjp.proceed();
         long elapsedTime = System.currentTimeMillis() - start;
-        LOG.debug("Leaving: " + className + "." + methodName + sb.toString() + " Total Time taken in ms: " + elapsedTime);
+        LOG.debug("Leaving: " + className + "." + methodName + arguments + " Total Time taken in ms: " + elapsedTime);
         return output;
     }
 
