@@ -28,7 +28,7 @@ public class NodeResource {
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response updateNode(Node _node) {
-        ValidatorResult result = validator.validate(_node, HttpRequestType.POST);
+        ValidatorResult result = validator.validate(_node, HttpRequestType.PUT);
 
         if (!result.passedValidation()) {
             return ResponseFactory.getValidationFaultResponse(result);
