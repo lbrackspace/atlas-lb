@@ -29,9 +29,9 @@ public class AlgorithmsResource {
                 algorithms.getAlgorithms().add(algorithm);
             }
 
-            return Response.status(200).entity(algorithms).build();
+            return Response.status(Response.Status.OK).entity(algorithms).build();
         } catch (Exception e) {
-            return ResponseFactory.getErrorResponse(e, null, null);
+            return ResponseFactory.getErrorResponse(e);
         }
     }
 }

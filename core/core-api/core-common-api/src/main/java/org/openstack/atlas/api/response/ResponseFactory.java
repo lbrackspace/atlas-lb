@@ -46,6 +46,10 @@ public class ResponseFactory {
         return fault;
     }
 
+    public static Response getErrorResponse(Exception e) {
+        return getErrorResponse(e, null, null);
+    }
+
     public static Response getErrorResponse(Exception e, String message, String detail) {
         String errMsg;
         LbaasException lbaasException = ResponseMapper.getFault(e, message, detail);
