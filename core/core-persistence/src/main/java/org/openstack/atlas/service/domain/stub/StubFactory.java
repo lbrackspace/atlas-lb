@@ -230,4 +230,21 @@ public class StubFactory {
 
         return loadBalancer;
     }
+
+    public static Nodes createMinimalDataModelNodesForPost() {
+        Nodes nodes = new Nodes();
+
+        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, null, null));
+
+        return nodes;
+    }
+
+    public static Nodes createHydratedDataModelNodesForPost() {
+        Nodes nodes = new Nodes();
+
+        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, NODE1_WEIGHT, NODE1_CONDITION, null));
+        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE2_ADDRESS, NODE2_PORT, NODE2_WEIGHT, NODE2_CONDITION, null));
+
+        return nodes;
+    }
 }
