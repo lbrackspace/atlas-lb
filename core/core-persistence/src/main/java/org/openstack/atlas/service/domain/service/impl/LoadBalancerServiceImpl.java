@@ -64,10 +64,10 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
 
     @Override
     @Transactional
-    public void preDelete(final LoadBalancer lb) throws PersistenceServiceException {
+    public void preDelete(final Integer accountId, final Integer loadBalancerId) throws PersistenceServiceException {
         List<Integer> loadBalancerIds = new ArrayList<Integer>();
-        loadBalancerIds.add(lb.getId());
-        preDelete(lb.getAccountId(), loadBalancerIds);
+        loadBalancerIds.add(loadBalancerId);
+        preDelete(accountId, loadBalancerIds);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     public void preDelete(final Integer accountId, final List<Integer> loadBalancerIds) throws PersistenceServiceException {
         validateDelete(accountId, loadBalancerIds);
         for (int lbId : loadBalancerIds) {
-            loadBalancerRepository.changeStatus(lbId, accountId, LoadBalancerStatus.PENDING_DELETE);
+            loadBalancerRepository.changeStatus(accountId, lbId, LoadBalancerStatus.PENDING_DELETE);
         }
     }
 

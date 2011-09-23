@@ -209,7 +209,7 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         return true;
     }
 
-    public void setStatus(LoadBalancer loadBalancer,LoadBalancerStatus status) throws EntityNotFoundException{
+    public LoadBalancer changeStatus(LoadBalancer loadBalancer,LoadBalancerStatus status) throws EntityNotFoundException{
         String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
         List<LoadBalancer> lbList;
         Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
@@ -220,8 +220,9 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
             throw new EntityNotFoundException(ErrorMessages.LB_NOT_FOUND);
         }
 
-
-        lbList.get(0).setStatus(status);
-        entityManager.merge(lbList.get(0));
+        loadBalancer = lbList.get(0);
+        loadBalancer.setStatus(status);
+        entityManager.persist(loadBalancer);
+        return loadBalancer;
     }
 }

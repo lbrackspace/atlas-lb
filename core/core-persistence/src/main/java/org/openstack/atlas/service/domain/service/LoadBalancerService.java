@@ -12,7 +12,7 @@ public interface LoadBalancerService {
 
     void preDelete(Integer accountId, List<Integer> loadBalancerIds) throws PersistenceServiceException;
 
-    void preDelete(LoadBalancer lb) throws PersistenceServiceException;
+    void preDelete(Integer accountId, Integer loadBalancerId) throws PersistenceServiceException;
 
     void delete(LoadBalancer lb) throws PersistenceServiceException;
 

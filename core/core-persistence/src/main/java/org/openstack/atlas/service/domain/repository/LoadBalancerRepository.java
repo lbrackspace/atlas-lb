@@ -30,6 +30,6 @@ public interface LoadBalancerRepository {
 
     boolean canUpdateToNewPort(Integer newPort, Set<LoadBalancerJoinVip> setToCheckAgainst);
 
-    void setStatus(LoadBalancer loadBalancer,LoadBalancerStatus status) throws EntityNotFoundException;
+    LoadBalancer changeStatus(LoadBalancer loadBalancer, LoadBalancerStatus status) throws EntityNotFoundException;
 
 }

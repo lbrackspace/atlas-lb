@@ -79,7 +79,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             loadBalancer.setId(id);
             loadBalancer.setAccountId(accountId);
 
-            loadBalancerService.preDelete(loadBalancer);
+            loadBalancerService.preDelete(accountId, id);
 
             MessageDataContainer data = new MessageDataContainer();
             data.setLoadBalancer(loadBalancer);
