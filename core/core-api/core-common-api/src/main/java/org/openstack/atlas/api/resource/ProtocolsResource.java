@@ -29,9 +29,9 @@ public class ProtocolsResource {
                 protocols.getProtocols().add(protocol);
             }
 
-            return Response.status(200).entity(protocols).build();
+            return Response.status(Response.Status.OK).entity(protocols).build();
         } catch (Exception e) {
-            return ResponseFactory.getErrorResponse(e, null, null);
+            return ResponseFactory.getErrorResponse(e);
         }
     }
 }

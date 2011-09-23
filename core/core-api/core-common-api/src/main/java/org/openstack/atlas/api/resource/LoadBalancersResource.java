@@ -74,7 +74,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_LOADBALANCER, msg);
             return Response.status(Response.Status.ACCEPTED).entity(dozerMapper.map(loadBalancer, LoadBalancer.class)).build();
         } catch (Exception e) {
-            return ResponseFactory.getErrorResponse(e, null, null);
+            return ResponseFactory.getErrorResponse(e);
         }
     }
 
@@ -86,7 +86,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         for (org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer : loadbalancers) {
             _loadbalancers.getLoadBalancers().add(dozerMapper.map(loadBalancer, org.openstack.atlas.core.api.v1.LoadBalancer.class));
         }
-        return Response.status(200).entity(_loadbalancers).build();
+        return Response.status(Response.Status.OK).entity(_loadbalancers).build();
 
     }
 

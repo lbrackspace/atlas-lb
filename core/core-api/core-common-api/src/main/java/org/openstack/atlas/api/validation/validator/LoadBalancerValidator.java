@@ -1,12 +1,10 @@
 package org.openstack.atlas.api.validation.validator;
 
 import org.openstack.atlas.api.validation.Validator;
-import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.builder.LoadBalancerValidatorBuilder;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -16,12 +14,12 @@ import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
 @Scope("request")
 public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
     protected Validator<LoadBalancer> validator;
-    protected LoadBalancerValidatorBuilder myBuilder;
+    protected LoadBalancerValidatorBuilder ruleBuilder;
 
     @Autowired
-    public LoadBalancerValidator(LoadBalancerValidatorBuilder myBuilder) {
-        this.myBuilder = myBuilder;
-        validator = build(myBuilder);
+    public LoadBalancerValidator(LoadBalancerValidatorBuilder ruleBuilder) {
+        this.ruleBuilder = ruleBuilder;
+        validator = build(ruleBuilder);
     }
 
     @Override
@@ -34,6 +32,5 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
     public Validator<LoadBalancer> getValidator() {
         return validator;
     }
-
 
 }

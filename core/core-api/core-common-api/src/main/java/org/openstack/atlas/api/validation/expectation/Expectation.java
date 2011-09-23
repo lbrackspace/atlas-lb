@@ -70,7 +70,7 @@ public class Expectation implements IfExpectation, OngoingExpectation, ThenExpec
             validationResults.add(new ValidationResult(valid, ""));
         } else {
             validationResults.add(new ValidationResult(valid, messageTemplate));
-            if (verifier instanceof MustDelegateTo) {
+            if (verifier instanceof MustDelegateTo || thenVerifier instanceof MustDelegateTo) {
                 validationResults.addAll(result.getResultList());
             }
         }

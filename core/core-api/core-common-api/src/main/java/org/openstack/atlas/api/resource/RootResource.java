@@ -10,14 +10,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 
-@Path("{id: [-+]?[0-9][0-9]*}")
+@Path("{accountId: [-+]?[0-9][0-9]*}")
 public class RootResource {
-
-    @Context
-    HttpHeaders requestHeaders;
-
-    @PathParam("id")
+    @PathParam("accountId")
     private Integer accountId;
+    @Context
+    private HttpHeaders requestHeaders;
+
     @Autowired
     private LoadBalancersResource loadBalancersResource;
 

@@ -24,7 +24,6 @@ import static javax.ws.rs.core.MediaType.*;
 @Scope("request")
 public class LoadBalancerResource extends CommonDependencyProvider {
     protected final Logger LOG = Logger.getLogger(LoadBalancerResource.class);
-
     protected Integer id;
     protected Integer accountId;
     @Autowired
@@ -33,6 +32,8 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     protected LoadBalancerValidator validator;
     @Autowired
     protected LoadBalancerService loadBalancerService;
+    @Autowired
+    protected NodesResource nodesResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
@@ -42,21 +43,21 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             LoadBalancer _loadBalancer = dozerMapper.map(loadBalancer, LoadBalancer.class);
             return Response.status(Response.Status.OK).entity(_loadBalancer).build();
         } catch (Exception e) {
-            return ResponseFactory.getErrorResponse(e, null, null);
+            return ResponseFactory.getErrorResponse(e);
         }
     }
 
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
-    public Response update(LoadBalancer apiLoadBalancer) {
-        ValidatorResult result = validator.validate(apiLoadBalancer, HttpRequestType.PUT);
+    public Response update(LoadBalancer _loadBalancer) {
+        ValidatorResult result = validator.validate(_loadBalancer, HttpRequestType.PUT);
 
         if (!result.passedValidation()) {
             return ResponseFactory.getValidationFaultResponse(result);
         }
 
         try {
-            org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer  = dozerMapper.map(apiLoadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
+            org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer  = dozerMapper.map(_loadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
             loadBalancer.setId(id);
             loadBalancer.setAccountId(accountId);
 
@@ -68,7 +69,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_LOADBALANCER, msg);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
-            return ResponseFactory.getErrorResponse(e, null, null);
+            return ResponseFactory.getErrorResponse(e);
         }
     }
 
@@ -87,20 +88,19 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_LOADBALANCER, data);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
-            return ResponseFactory.getErrorResponse(e, null, null);
+            return ResponseFactory.getErrorResponse(e);
         }
     }
 
-    public int getId() {
-        return id;
+    @Path("nodes")
+    public NodesResource retrieveNodesResource() {
+        nodesResource.setLoadBalancerId(id);
+        nodesResource.setAccountId(accountId);
+        return nodesResource;
     }
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public Integer getAccountId() {
-        return accountId;
     }
 
     public void setAccountId(Integer accountId) {
