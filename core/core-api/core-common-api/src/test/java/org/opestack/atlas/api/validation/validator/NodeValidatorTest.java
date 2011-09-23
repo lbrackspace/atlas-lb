@@ -252,7 +252,7 @@ public class NodeValidatorTest {
         @Test
         public void shouldRejectWhenIdIsSet() {
             node.setId(1234);
-            ValidatorResult result = validator.validate(node, POST);
+            ValidatorResult result = validator.validate(node, PUT);
             assertFalse(result.passedValidation());
         }
 
@@ -260,7 +260,7 @@ public class NodeValidatorTest {
         public void shouldRejectWhenStatusIsSetToCoreNodeStatus() {
             for (String nodeStatus : CoreNodeStatus.values()) {
                 node.setStatus(nodeStatus);
-                ValidatorResult result = validator.validate(node, POST);
+                ValidatorResult result = validator.validate(node, PUT);
                 assertFalse(result.passedValidation());
             }
         }
@@ -268,7 +268,7 @@ public class NodeValidatorTest {
         @Test
         public void shouldRejectWhenStatusIsSetToErroneousNodeStatus() {
             node.setStatus("SOME_BOGUS_STATUS");
-            ValidatorResult result = validator.validate(node, POST);
+            ValidatorResult result = validator.validate(node, PUT);
             assertFalse(result.passedValidation());
         }
     }

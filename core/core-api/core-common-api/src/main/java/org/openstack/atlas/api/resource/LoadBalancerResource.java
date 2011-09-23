@@ -32,6 +32,8 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     protected LoadBalancerValidator validator;
     @Autowired
     protected LoadBalancerService loadBalancerService;
+    @Autowired
+    protected NodesResource nodesResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
@@ -88,6 +90,13 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }
+    }
+
+    @Path("nodes")
+    public NodesResource retrieveNodesResource() {
+        nodesResource.setLoadBalancerId(id);
+        nodesResource.setAccountId(accountId);
+        return nodesResource;
     }
 
     public void setId(int id) {
