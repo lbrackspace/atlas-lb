@@ -17,20 +17,44 @@ public class MethodLoggingInterceptor {
     protected final Logger LOG = Logger.getLogger(MethodLoggingInterceptor.class);
 
     @Pointcut("within(org.openstack.atlas.api.resource..*)")
-    public void inResources() {
+    public void resources() {
+    }
+
+    @Pointcut("within(org.openstack.atlas.service.domain.service..*)")
+    public void services() {
+    }
+
+    @Pointcut("within(org.openstack.atlas.adapter..*)")
+    public void adapters() {
     }
 
     @Around("execution(!private * org.openstack.atlas.api.resource.*.*(..))")
-    public Object profile(ProceedingJoinPoint pjp) throws Throwable {
+    public Object profileResource(ProceedingJoinPoint pjp) throws Throwable {
+        return timerLog(pjp);
+    }
+
+    @Around("execution(!private * org.openstack.atlas.service.domain.service.*.*(..))")
+    public Object profileService(ProceedingJoinPoint pjp) throws Throwable {
+        return timerLog(pjp);
+    }
+
+    @Around("execution(!private * org.openstack.atlas.adapter.*.*(..))")
+    public Object profileAdapter(ProceedingJoinPoint pjp) throws Throwable {
+        return timerLog(pjp);
+    }
+
+    private Object timerLog(ProceedingJoinPoint pjp) throws Throwable {
         String methodName = pjp.getSignature().getName();
         String className = pjp.getTarget().getClass().getName();
 
         // retrieve the runtime method arguments (dynamic)
         StringBuilder sb = new StringBuilder();
         sb.append("(");
-        java.lang.Object[] args = pjp.getArgs();
+        Object[] args = pjp.getArgs();
         for (Object arg : args) {
-            sb.append(arg.getClass().getName()).append(" ").append(arg);
+            String fullParameterClassName = arg.getClass().getName();
+            String parameterClassName = fullParameterClassName.substring(fullParameterClassName.lastIndexOf(".") +1, fullParameterClassName.length());
+            sb.append(parameterClassName).append(" ").append(arg);
             sb.append(", ");
         }
         sb.append(")");
@@ -55,22 +79,5 @@ public class MethodLoggingInterceptor {
         return output;
     }
 
-    /* public Object invoke(MethodInvocation method) throws Throwable {
-        String classMethodIdentifier = method.getMethod().getDeclaringClass() + "." + method.getMethod().getName();
-        LOG.debug("Entering: " + classMethodIdentifier);
-        long start = System.currentTimeMillis();
-        Object result = method.proceed();
-        long diff = System.currentTimeMillis() - start;;
-        LOG.debug("Leaving: " + classMethodIdentifier + "Total Time taken in ms: " + diff);
-        return result;
-    }*/
 
-    /*@Around("inResources()")
-    public Object doBasicProfiling(ProceedingJoinPoint pjp) throws Throwable {
-    // start stopwatch
-
-    Object retVal = pjp.proceed();
-    // stop stopwatch
-    return retVal;
-    }*/
 }
