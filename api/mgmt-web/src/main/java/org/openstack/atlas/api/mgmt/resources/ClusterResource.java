@@ -1,9 +1,23 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.service.domain.entities.AccountLimit;
-import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
+import org.openstack.atlas.service.domain.pojos.Hostssubnet;
+import org.openstack.atlas.service.domain.pojos.Hostsubnet;
+import org.openstack.atlas.service.domain.pojos.NetInterface;
+import static org.openstack.atlas.util.ip.IPUtils.isValidIpv4Subnet;
+import static org.openstack.atlas.util.ip.IPUtils.isValidIpv6Subnet;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4Range;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4Ranges;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
+
+import org.openstack.atlas.util.ip.IPv4Cidrs;
+import org.openstack.atlas.util.ip.IPv6Cidrs;
+import org.openstack.atlas.util.ip.IPv4Cidr;
+import org.openstack.atlas.util.ip.IPv6Cidr;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
@@ -20,14 +34,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
+import org.openstack.atlas.util.ip.IPUtils;
 
 public class ClusterResource extends ManagementDependencyProvider {
 
     private final Log LOG = LogFactory.getLog(ClusterResource.class);
-
     private VirtualIpsResource virtualIpsResource;
     private ErrorpageResource errorpageResource;
-
     private int id;
 
     @GET // Jira:https://jira.mosso.com/browse/SITESLB-231
@@ -57,8 +72,6 @@ public class ClusterResource extends ManagementDependencyProvider {
         errorpageResource.setClusterId(id);
         return errorpageResource;
     }
-
-
 
     @GET
     @Path("hosts")
@@ -106,12 +119,9 @@ public class ClusterResource extends ManagementDependencyProvider {
         if (!isUserInRole("cp,ops")) {
             return ResponseFactory.accessDenied();
         }
-        EsbRequest esbRequest = new EsbRequest();
         try {
-            org.openstack.atlas.service.domain.pojos.VirtualIpBlocks vipBlocks = clusterService.addVirtualIpBlocks(getDozerMapper().map(vBlocks, org.openstack.atlas.service.domain.pojos.VirtualIpBlocks.class), id);
-/*          currently unused
-            esbRequest.setVirtualIpBlocks(vipBlocks);
-            getManagementEsbService().callAsyncLoadBalancingOperation(Operation.MGMT_CREATE_VIRTUAL_IPBLOCKS, esbRequest); */
+            IPv4Cidrs ipv4Cidrs = getIpv4SubnetCidrs(id);
+            clusterService.addVirtualIpBlocks(getDozerMapper().map(vBlocks, org.openstack.atlas.service.domain.pojos.VirtualIpBlocks.class), id);
             return Response.status(200).entity(vBlocks).build();
         } catch (Exception ex) {
             LOG.error(ex);
@@ -137,7 +147,7 @@ public class ClusterResource extends ManagementDependencyProvider {
         return Response.status(200).entity(zeusRateLimitedLoadBalancers).build();
     }
 
-     @GET
+    @GET
     @Path("apiratelimit")
     public Response getApiRateLimitsForCluster() {
         if (!isUserInRole("cp, ops, support")) {
@@ -205,7 +215,6 @@ public class ClusterResource extends ManagementDependencyProvider {
         return Response.status(200).entity(rVipReports).build();
     }
 
-
     @POST
     @Path("virtualips")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -259,7 +268,6 @@ public class ClusterResource extends ManagementDependencyProvider {
         return id;
     }
 
-
     public String getUtilization(Integer id) {
         //get sum of max allowed connections for all host in cluster
         long maxAllowed = getHostRepository().getHostsConnectionsForCluster(id);
@@ -277,25 +285,50 @@ public class ClusterResource extends ManagementDependencyProvider {
                     notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), "Error during getting total connections for host " + dbHost.getId());
                 }
                 totalConnections = totalConnections + conn;
-
             }
             utilization = (totalConnections / maxAllowed) * 100;
-
         }
         return (utilization + " %");
     }
 
-    /**
-     * @return the errorpageResource
-     */
     public ErrorpageResource getErrorpageResource() {
         return errorpageResource;
     }
 
-    /**
-     * @param errorpageResource the errorpageResource to set
-     */
     public void setErrorpageResource(ErrorpageResource errorpageResource) {
         this.errorpageResource = errorpageResource;
+    }
+
+    private List<String> getIpsThatNotContainedInASubnet(VirtualIpBlocks vBlocks, IPv4Cidrs ipv4Cidrs) {
+        List<String> errors = new ArrayList<String>();
+        for(VirtualIpBlock vBlock : vBlocks.getVirtualIpBlocks()){
+            String first = vBlock.getFirstIp();
+            String last = vBlock.getLastIp();
+        }
+        return errors;
+    }
+
+    private IPv4Cidrs getIpv4SubnetCidrs(Integer clusterId) throws Exception {
+        IPv4Cidrs ipv4Cidrs = new IPv4Cidrs();
+        Set<String> cidrs = new HashSet<String>();
+        List<org.openstack.atlas.service.domain.entities.Host> hosts = clusterService.getHosts(clusterId);
+        List<org.openstack.atlas.service.domain.pojos.Cidr> x;
+        for (org.openstack.atlas.service.domain.entities.Host host : hosts) {
+            Hostssubnet hostssubnet = reverseProxyLoadBalancerService.getSubnetMappings(host);
+            for (Hostsubnet hostsubnet : hostssubnet.getHostsubnets()) {
+                for (NetInterface ni : hostsubnet.getNetInterfaces()) {
+                    for (org.openstack.atlas.service.domain.pojos.Cidr cidr : ni.getCidrs()) {
+                        String block = cidr.getBlock();
+                        if (IPUtils.isValidIpv4Subnet(block)) {
+                            cidrs.add(block);// Avoid the duplicates we will be seeing by adding to a set only
+                        }
+                    }
+                }
+            }
+        }
+        for (String block : cidrs) {
+            ipv4Cidrs.getCidrs().add(new IPv4Cidr(block));
+        }
+        return ipv4Cidrs;
     }
 }

@@ -4,7 +4,7 @@ import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeExcep
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringException;
 
-public class IPv4Range {
+ public class IPv4Range {
 
     private long lo;
     private long hi;
