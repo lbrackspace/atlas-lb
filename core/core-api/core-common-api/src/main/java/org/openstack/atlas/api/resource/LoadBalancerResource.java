@@ -34,6 +34,8 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     protected LoadBalancerService loadBalancerService;
     @Autowired
     protected NodesResource nodesResource;
+    @Autowired
+    protected VirtualIpsResource virtualIpsResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
@@ -90,6 +92,13 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }
+    }
+
+    @Path("virtualips")
+    public VirtualIpsResource retrieveVirtualIpsResource() {
+        virtualIpsResource.setLoadBalancerId(id);
+        virtualIpsResource.setAccountId(accountId);
+        return virtualIpsResource;
     }
 
     @Path("nodes")

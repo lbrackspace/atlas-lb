@@ -11,7 +11,6 @@ public final class ValidatorRepository {
 
     public static <R> ResourceValidator<R> getValidatorFor(Class<R> classOfObjectToValidate) {
         classKeyedValidatorMap.put(HealthMonitor.class, new HealthMonitorValidator());
-        classKeyedValidatorMap.put(VirtualIp.class, new VirtualIpValidator());
         classKeyedValidatorMap.put(ConnectionThrottle.class, new ConnectionThrottleValidator());
 
         if (!classKeyedValidatorMap.containsKey(classOfObjectToValidate)) {

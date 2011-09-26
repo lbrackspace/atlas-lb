@@ -26,7 +26,7 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
     protected ProtocolType protocolType;
 
     @Autowired
-    public LoadBalancerValidatorBuilder(AlgorithmType algorithmType, ProtocolType protocolType, NodeValidatorBuilder nodeValidatorBuilder) {
+    public LoadBalancerValidatorBuilder(AlgorithmType algorithmType, ProtocolType protocolType, NodeValidatorBuilder nodeValidatorBuilder, VirtualIpValidatorBuilder virtualIpValidatorBuilder) {
         super(LoadBalancer.class);
         this.algorithmType = algorithmType;
         this.protocolType = protocolType;
@@ -47,7 +47,7 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
         result(validationTarget().getPort()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MIN_PORT, MAX_PORT)).forContext(POST).withMessage("Load balancer port is invalid. Please specify a valid port.");
         result(validationTarget().getVirtualIps()).must().haveSizeOfAtMost(MAX_VIPS).forContext(POST).withMessage(String.format("Must have at most %d virtual ip for the load balancer", MAX_VIPS));
         result(validationTarget().getVirtualIps()).if_().exist().then().must().adhereTo(new SharedOrNewVipVerifier()).forContext(POST).withMessage("Must specify either a shared or new virtual ip.");
-        result(validationTarget().getVirtualIps()).if_().exist().then().must().delegateTo(new VirtualIpValidator().getValidator(), POST).forContext(POST);
+        result(validationTarget().getVirtualIps()).if_().exist().then().must().delegateTo(new VirtualIpValidator(virtualIpValidatorBuilder).getValidator(), POST).forContext(POST);
         result(validationTarget().getNodes()).must().exist().forContext(POST).withMessage("Must provide at least 1 node for the load balancer.");
         result(validationTarget().getNodes()).must().adhereTo(new DuplicateNodeVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");
         result(validationTarget().getNodes()).must().adhereTo(new ActiveNodeVerifier()).forContext(POST).withMessage("Please ensure that at least 1 node has an ENABLED condition.");

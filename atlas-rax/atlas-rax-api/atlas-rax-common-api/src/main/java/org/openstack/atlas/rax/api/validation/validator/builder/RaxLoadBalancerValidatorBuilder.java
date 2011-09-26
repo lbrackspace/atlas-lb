@@ -2,6 +2,7 @@ package org.openstack.atlas.rax.api.validation.validator.builder;
 
 import org.openstack.atlas.api.validation.validator.builder.LoadBalancerValidatorBuilder;
 import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
+import org.openstack.atlas.api.validation.validator.builder.VirtualIpValidatorBuilder;
 import org.openstack.atlas.api.validation.verifier.MustBeEmptyOrNull;
 import org.openstack.atlas.api.validation.verifier.Verifier;
 import org.openstack.atlas.api.validation.verifier.VerifierResult;
@@ -28,8 +29,8 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 public class RaxLoadBalancerValidatorBuilder extends LoadBalancerValidatorBuilder {
 
     @Autowired
-    public RaxLoadBalancerValidatorBuilder(AlgorithmType algorithmType, ProtocolType protocolType, NodeValidatorBuilder nodeValidatorBuilder) {
-        super(algorithmType, protocolType, nodeValidatorBuilder);
+    public RaxLoadBalancerValidatorBuilder(AlgorithmType algorithmType, ProtocolType protocolType, NodeValidatorBuilder nodeValidatorBuilder, VirtualIpValidatorBuilder virtualIpValidatorBuilder) {
+        super(algorithmType, protocolType, nodeValidatorBuilder, virtualIpValidatorBuilder);
 
         // POST EXPECTATIONS
         result(validationTarget().getAnies()).if_().exist().then().must().delegateTo(new RaxLoadBalancerValidator().getValidator(), POST).forContext(POST);

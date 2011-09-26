@@ -1,14 +1,9 @@
 package org.openstack.atlas.service.domain.stub;
 
-import org.openstack.atlas.core.api.v1.*;
+import org.openstack.atlas.core.api.v1.ConnectionLogging;
+import org.openstack.atlas.core.api.v1.Nodes;
+import org.openstack.atlas.core.api.v1.VipType;
 import org.openstack.atlas.service.domain.entity.*;
-import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
-import org.openstack.atlas.service.domain.entity.HealthMonitor;
-import org.openstack.atlas.service.domain.entity.IpVersion;
-import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.Node;
-import org.openstack.atlas.service.domain.entity.SessionPersistence;
-import org.openstack.atlas.service.domain.entity.VirtualIp;
 
 import java.util.Calendar;
 
@@ -51,13 +46,40 @@ public class StubFactory {
     protected static final String HEALTH_MONITOR_TYPE = "CONNECT";
     protected static final String SESSION_PERSISTENCE_TYPE = "HTTP_COOKIE";
 
+    public static org.openstack.atlas.core.api.v1.VirtualIp createSharedDataModelVipForPost() {
+        return createMinimalDataModelVipForPost(VIP1_ID, null, null, null);
+    }
+
+    public static org.openstack.atlas.core.api.v1.VirtualIp createDataModelVipWithIpVersionForPost() {
+        return createMinimalDataModelVipForPost(null, null, org.openstack.atlas.core.api.v1.IpVersion.valueOf(VIP1_VERSION), null);
+    }
+
+    public static org.openstack.atlas.core.api.v1.VirtualIp createDataModelVipWithVipTypeForPost() {
+        return createMinimalDataModelVipForPost(null, null, null, VipType.valueOf(VIP1_TYPE));
+    }
+
+    public static org.openstack.atlas.core.api.v1.VirtualIp createHydratedDataModelVipForPost() {
+        return createMinimalDataModelVipForPost(null, null, org.openstack.atlas.core.api.v1.IpVersion.valueOf(VIP1_VERSION), VipType.valueOf(VIP1_TYPE));
+    }
+
+    protected static org.openstack.atlas.core.api.v1.VirtualIp createMinimalDataModelVipForPost(Integer id, String address, org.openstack.atlas.core.api.v1.IpVersion ipVersion, VipType vipType) {
+        org.openstack.atlas.core.api.v1.VirtualIp virtualIp = new org.openstack.atlas.core.api.v1.VirtualIp();
+
+        virtualIp.setId(id);
+        virtualIp.setAddress(address);
+        virtualIp.setIpVersion(ipVersion);
+        virtualIp.setType(vipType);
+
+        return virtualIp;
+    }
+
     public static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost() {
         return createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, null, null);
     }
 
     protected static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost(Integer id, String address, Integer port, Integer weight, String condition, String status) {
         org.openstack.atlas.core.api.v1.Node node = new org.openstack.atlas.core.api.v1.Node();
-        
+
         node.setId(id);
         node.setAddress(address);
         node.setPort(port);
@@ -118,7 +140,7 @@ public class StubFactory {
         org.openstack.atlas.core.api.v1.ConnectionLogging connectionLogging = new ConnectionLogging();
         connectionLogging.setEnabled(true);
         loadBalancer.setConnectionLogging(connectionLogging);
-        
+
         return loadBalancer;
     }
 
