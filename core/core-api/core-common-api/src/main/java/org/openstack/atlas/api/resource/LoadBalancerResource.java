@@ -33,9 +33,11 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     @Autowired
     protected LoadBalancerService loadBalancerService;
     @Autowired
+    protected VirtualIpsResource virtualIpsResource;
+    @Autowired
     protected NodesResource nodesResource;
     @Autowired
-    protected VirtualIpsResource virtualIpsResource;
+    protected HealthMonitorResource healthMonitorResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
@@ -106,6 +108,13 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         nodesResource.setLoadBalancerId(id);
         nodesResource.setAccountId(accountId);
         return nodesResource;
+    }
+
+    @Path("healthmonitor")
+    public HealthMonitorResource retrieveHealthMonitorResource() {
+        healthMonitorResource.setLoadBalancerId(id);
+        healthMonitorResource.setAccountId(accountId);
+        return healthMonitorResource;
     }
 
     public void setId(int id) {
