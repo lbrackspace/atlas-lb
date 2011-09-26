@@ -60,7 +60,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
             reverseProxyLoadBalancerService.updateLoadBalancer(dbLoadBalancer);
             LOG.debug(String.format("Successfully updated load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
         } catch (Exception e) {
-            loadBalancerRepository.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+            loadBalancerRepository.changeStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error updating loadbalancer '%d' in LB Device.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
@@ -140,7 +140,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
         }
 
         // Update load balancer status in DB
-        loadBalancerRepository.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+        loadBalancerRepository.changeStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
         // Add atom entry
         String atomTitle = "Load Balancer Successfully Updated";

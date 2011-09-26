@@ -55,7 +55,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
             reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
             LOG.debug(String.format("Successfully deleted load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
         } catch (Exception e) {
-            loadBalancerRepository.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+            loadBalancerRepository.changeStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             LOG.error(String.format("LoadBalancer status before error was: '%s'", dbLoadBalancer.getStatus()));
             String alertDescription = String.format("Error deleting loadbalancer '%d' in LB Device.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
