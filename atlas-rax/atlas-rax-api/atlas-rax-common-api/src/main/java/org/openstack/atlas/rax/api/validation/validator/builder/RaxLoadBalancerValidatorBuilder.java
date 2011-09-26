@@ -1,5 +1,6 @@
 package org.openstack.atlas.rax.api.validation.validator.builder;
 
+import org.openstack.atlas.api.validation.validator.builder.HealthMonitorValidatorBuilder;
 import org.openstack.atlas.api.validation.validator.builder.LoadBalancerValidatorBuilder;
 import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
 import org.openstack.atlas.api.validation.validator.builder.VirtualIpValidatorBuilder;
@@ -29,8 +30,12 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 public class RaxLoadBalancerValidatorBuilder extends LoadBalancerValidatorBuilder {
 
     @Autowired
-    public RaxLoadBalancerValidatorBuilder(AlgorithmType algorithmType, ProtocolType protocolType, NodeValidatorBuilder nodeValidatorBuilder, VirtualIpValidatorBuilder virtualIpValidatorBuilder) {
-        super(algorithmType, protocolType, nodeValidatorBuilder, virtualIpValidatorBuilder);
+    public RaxLoadBalancerValidatorBuilder(AlgorithmType algorithmType,
+                                           ProtocolType protocolType,
+                                           NodeValidatorBuilder nodeValidatorBuilder,
+                                           VirtualIpValidatorBuilder virtualIpValidatorBuilder,
+                                           HealthMonitorValidatorBuilder healthMonitorValidatorBuilder) {
+        super(algorithmType, protocolType, nodeValidatorBuilder, virtualIpValidatorBuilder, healthMonitorValidatorBuilder);
 
         // POST EXPECTATIONS
         result(validationTarget().getAnies()).if_().exist().then().must().delegateTo(new RaxLoadBalancerValidator().getValidator(), POST).forContext(POST);

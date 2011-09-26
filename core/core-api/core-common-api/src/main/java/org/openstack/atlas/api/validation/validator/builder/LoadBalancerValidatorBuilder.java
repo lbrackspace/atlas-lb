@@ -26,7 +26,11 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
     protected ProtocolType protocolType;
 
     @Autowired
-    public LoadBalancerValidatorBuilder(AlgorithmType algorithmType, ProtocolType protocolType, NodeValidatorBuilder nodeValidatorBuilder, VirtualIpValidatorBuilder virtualIpValidatorBuilder) {
+    public LoadBalancerValidatorBuilder(AlgorithmType algorithmType,
+                                        ProtocolType protocolType,
+                                        NodeValidatorBuilder nodeValidatorBuilder,
+                                        VirtualIpValidatorBuilder virtualIpValidatorBuilder,
+                                        HealthMonitorValidatorBuilder healthMonitorValidatorBuilder) {
         super(LoadBalancer.class);
         this.algorithmType = algorithmType;
         this.protocolType = protocolType;
@@ -54,7 +58,7 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
         result(validationTarget().getNodes()).must().haveSizeOfAtLeast(MIN_NODES).forContext(POST).withMessage(String.format("Must have at least %d node(s).", MIN_NODES));
         result(validationTarget().getNodes()).must().haveSizeOfAtMost(MAX_NODES).forContext(POST).withMessage(String.format("Must not provide more than %d nodes per load balancer.", MAX_NODES));
         result(validationTarget().getNodes()).if_().exist().then().must().delegateTo(new NodeValidator(nodeValidatorBuilder).getValidator(), POST).forContext(POST);
-        result(validationTarget().getHealthMonitor()).if_().exist().then().must().delegateTo(new HealthMonitorValidator().getValidator(), POST).forContext(POST);
+        result(validationTarget().getHealthMonitor()).if_().exist().then().must().delegateTo(new HealthMonitorValidator(healthMonitorValidatorBuilder).getValidator(), PUT).forContext(POST);
         result(validationTarget().getConnectionThrottle()).if_().exist().then().must().delegateTo(new ConnectionThrottleValidator().getValidator(), POST).forContext(POST);
 
         // PUT EXPECTATIONS

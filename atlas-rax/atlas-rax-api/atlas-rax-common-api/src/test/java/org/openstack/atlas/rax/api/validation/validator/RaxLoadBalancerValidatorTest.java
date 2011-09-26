@@ -6,8 +6,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.LoadBalancerValidator;
-import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
-import org.openstack.atlas.api.validation.validator.builder.VirtualIpValidatorBuilder;
+import org.openstack.atlas.api.validation.validator.builder.*;
 import org.openstack.atlas.core.api.v1.*;
 import org.openstack.atlas.datamodel.*;
 import org.openstack.atlas.rax.api.validation.validator.builder.RaxLoadBalancerValidatorBuilder;
@@ -38,8 +37,12 @@ public class RaxLoadBalancerValidatorTest {
                     new RaxLoadBalancerValidatorBuilder(
                             new RaxAlgorithmType(),
                             new RaxProtocolType(),
-                            new NodeValidatorBuilder(new RaxNodeCondition()),
-                            new VirtualIpValidatorBuilder()
+                            new NodeValidatorBuilder(
+                                    new RaxNodeCondition()),
+                            new VirtualIpValidatorBuilder(),
+                            new HealthMonitorValidatorBuilder(
+                                    new ConnectMonitorValidatorBuilder(),
+                                    new HttpMonitorValidatorBuilder())
                     ));
         }
 
@@ -335,8 +338,12 @@ public class RaxLoadBalancerValidatorTest {
                     new RaxLoadBalancerValidatorBuilder(
                             new RaxAlgorithmType(),
                             new RaxProtocolType(),
-                            new NodeValidatorBuilder(new RaxNodeCondition()),
-                            new VirtualIpValidatorBuilder()
+                            new NodeValidatorBuilder(
+                                    new RaxNodeCondition()),
+                            new VirtualIpValidatorBuilder(),
+                            new HealthMonitorValidatorBuilder(
+                                    new ConnectMonitorValidatorBuilder(),
+                                    new HttpMonitorValidatorBuilder())
                     ));
         }
 
