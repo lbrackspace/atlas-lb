@@ -57,7 +57,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Updating load balancer '%d' in LB Device...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.updateLoadBalancer(dbLoadBalancer);
+            reverseProxyLoadBalancerService.updateLoadBalancer(dbLoadBalancer.getAccountId(), dbLoadBalancer);
             LOG.debug(String.format("Successfully updated load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerRepository.changeStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

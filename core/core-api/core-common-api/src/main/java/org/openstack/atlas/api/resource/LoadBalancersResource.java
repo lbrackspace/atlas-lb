@@ -68,10 +68,10 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
             loadBalancer = loadbalancerService.create(loadBalancer);
 
-            MessageDataContainer msg = new MessageDataContainer();
-            msg.setLoadBalancer(loadBalancer);
+            MessageDataContainer dataContainer = new MessageDataContainer();
+            dataContainer.setLoadBalancer(loadBalancer);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_LOADBALANCER, msg);
+            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_LOADBALANCER, dataContainer);
             return Response.status(Response.Status.ACCEPTED).entity(dozerMapper.map(loadBalancer, LoadBalancer.class)).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);

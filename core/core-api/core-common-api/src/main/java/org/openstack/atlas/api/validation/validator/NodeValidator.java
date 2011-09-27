@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.validation.validator;
 
 import org.openstack.atlas.api.validation.Validator;
+import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
 import org.openstack.atlas.core.api.v1.Node;
