@@ -1,6 +1,8 @@
 package org.openstack.atlas.service.domain.pojo;
 
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.VirtualIp;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -9,34 +11,21 @@ import java.util.List;
 public class MessageDataContainer implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
-    private String userName;
     private Integer accountId;
     private Integer loadBalancerId;
-    private Integer virtualIpId;
-    private Integer nodeId;
-    private List<Integer> newVipIds;
-    private List<Integer> newNodeIds;
-    //for batch deletes
-    private List<Integer> ids;
-    private LoadBalancer loadBalancer;
+    private Integer resourceId;
+    private List<Integer> resourceIds;
+    private Object resource; 
 
     public List<Integer> getIds() {
-        if(ids == null){
-            ids = new ArrayList<Integer>();
+        if(resourceIds == null){
+            resourceIds = new ArrayList<Integer>();
         }
-        return ids;
+        return resourceIds;
     }
 
     public void setIds(List<Integer> ids) {
-        this.ids = ids;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
+        this.resourceIds = ids;
     }
 
     public Integer getAccountId() {
@@ -56,48 +45,88 @@ public class MessageDataContainer implements Serializable {
     }
 
     public Integer getVirtualIpId() {
-        return virtualIpId;
+        return resourceId;
     }
 
     public void setVirtualIpId(Integer virtualIpId) {
-        this.virtualIpId = virtualIpId;
+        this.resourceId = virtualIpId;
     }
 
     public Integer getNodeId() {
-        return nodeId;
+        return resourceId;
     }
 
     public void setNodeId(Integer nodeId) {
-        this.nodeId = nodeId;
+        this.resourceId = nodeId;
     }
 
     public List<Integer> getNewVipIds() {
-        if (newVipIds == null) {
-            newVipIds = new ArrayList<Integer>();
+        if (resourceIds == null) {
+            resourceIds = new ArrayList<Integer>();
         }
-        return newVipIds;
+        return resourceIds;
     }
 
     public void setNewVipIds(List<Integer> newVipIds) {
-        this.newVipIds = newVipIds;
+        this.resourceIds = newVipIds;
     }
 
     public List<Integer> getNewNodeIds() {
-        if (newNodeIds == null) {
-            newNodeIds = new ArrayList<Integer>();
+        if (resourceIds == null) {
+            resourceIds = new ArrayList<Integer>();
         }
-        return newNodeIds;
+        return resourceIds;
     }
 
     public void setNewNodeIds(List<Integer> newNodeIds) {
-        this.newNodeIds = newNodeIds;
+        this.resourceIds = newNodeIds;
     }
 
     public void setLoadBalancer(LoadBalancer loadBalancer) {
-        this.loadBalancer = loadBalancer;
+        this.resource = loadBalancer;
     }
 
     public LoadBalancer getLoadBalancer() {
-        return loadBalancer;
+        return (LoadBalancer) resource;
+    }
+
+    public void setNode(Node node) {
+        this.resource = node;
+    }
+
+    public Node getNode() {
+        return (Node) resource;
+    }
+
+    public void setVirtualIp(VirtualIp virtualIp) {
+        this.resource = virtualIp;
+    }
+
+    public VirtualIp getVirtualIp() {
+        return (VirtualIp) resource;
+    }
+
+    public void setLoadBalancers(List<LoadBalancer> loadBalancers) {
+        this.resource =  loadBalancers;
+    }
+
+    public List<LoadBalancer> getLoadBalancers() {
+        return  (List<LoadBalancer>) this.resource;
+    }
+
+    public void setNodes(List<Node> nodes) {
+        this.resource = nodes;
+    }
+
+    public List<Node> getNodes() {
+        return  (List<Node>) this.resource;
+    }
+
+    public void setVirtualIps(List<VirtualIp> virtualIps) {
+        this.resource = virtualIps;
+    }
+
+    public List<VirtualIp> getVirtualIps() {
+        return (List<VirtualIp>) this.resource;
     }
 }
