@@ -1,10 +1,7 @@
 package org.openstack.atlas.api.validation.validator.builder;
 
 import org.openstack.atlas.api.validation.ValidatorBuilder;
-import org.openstack.atlas.api.validation.validator.ConnectionThrottleValidator;
-import org.openstack.atlas.api.validation.validator.HealthMonitorValidator;
-import org.openstack.atlas.api.validation.validator.NodeValidator;
-import org.openstack.atlas.api.validation.validator.VirtualIpValidator;
+import org.openstack.atlas.api.validation.validator.*;
 import org.openstack.atlas.api.validation.verifier.*;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.datamodel.AlgorithmType;
