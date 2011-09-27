@@ -30,7 +30,8 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
                                         ProtocolType protocolType,
                                         NodeValidatorBuilder nodeValidatorBuilder,
                                         VirtualIpValidatorBuilder virtualIpValidatorBuilder,
-                                        HealthMonitorValidatorBuilder healthMonitorValidatorBuilder) {
+                                        HealthMonitorValidatorBuilder healthMonitorValidatorBuilder,
+                                        ConnectionThrottleValidatorBuilder connectionThrottleValidatorBuilder) {
         super(LoadBalancer.class);
         this.algorithmType = algorithmType;
         this.protocolType = protocolType;
@@ -59,7 +60,7 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
         result(validationTarget().getNodes()).must().haveSizeOfAtMost(MAX_NODES).forContext(POST).withMessage(String.format("Must not provide more than %d nodes per load balancer.", MAX_NODES));
         result(validationTarget().getNodes()).if_().exist().then().must().delegateTo(new NodeValidator(nodeValidatorBuilder).getValidator(), POST).forContext(POST);
         result(validationTarget().getHealthMonitor()).if_().exist().then().must().delegateTo(new HealthMonitorValidator(healthMonitorValidatorBuilder).getValidator(), PUT).forContext(POST);
-        result(validationTarget().getConnectionThrottle()).if_().exist().then().must().delegateTo(new ConnectionThrottleValidator().getValidator(), POST).forContext(POST);
+        result(validationTarget().getConnectionThrottle()).if_().exist().then().must().delegateTo(new ConnectionThrottleValidator(connectionThrottleValidatorBuilder).getValidator(), POST).forContext(POST);
 
         // PUT EXPECTATIONS
         result(validationTarget().getProtocol()).must().not().exist().forContext(PUT).withMessage("Load balancer protocol field cannot be modified.");

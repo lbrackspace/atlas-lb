@@ -1,19 +1,13 @@
 package org.openstack.atlas.rax.api.validation.validator.builder;
 
-import org.openstack.atlas.api.validation.validator.builder.HealthMonitorValidatorBuilder;
-import org.openstack.atlas.api.validation.validator.builder.LoadBalancerValidatorBuilder;
-import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
-import org.openstack.atlas.api.validation.validator.builder.VirtualIpValidatorBuilder;
+import org.openstack.atlas.api.validation.validator.builder.*;
 import org.openstack.atlas.api.validation.verifier.MustBeEmptyOrNull;
 import org.openstack.atlas.api.validation.verifier.Verifier;
 import org.openstack.atlas.api.validation.verifier.VerifierResult;
 import org.openstack.atlas.datamodel.AlgorithmType;
-import org.openstack.atlas.datamodel.CoreNodeCondition;
 import org.openstack.atlas.datamodel.ProtocolType;
 import org.openstack.atlas.rax.api.mapper.dozer.converter.ExtensionObjectMapper;
 import org.openstack.atlas.rax.api.validation.validator.RaxLoadBalancerValidator;
-import org.openstack.atlas.rax.datamodel.RaxAlgorithmType;
-import org.openstack.atlas.rax.datamodel.RaxProtocolType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
@@ -34,8 +28,9 @@ public class RaxLoadBalancerValidatorBuilder extends LoadBalancerValidatorBuilde
                                            ProtocolType protocolType,
                                            NodeValidatorBuilder nodeValidatorBuilder,
                                            VirtualIpValidatorBuilder virtualIpValidatorBuilder,
-                                           HealthMonitorValidatorBuilder healthMonitorValidatorBuilder) {
-        super(algorithmType, protocolType, nodeValidatorBuilder, virtualIpValidatorBuilder, healthMonitorValidatorBuilder);
+                                           HealthMonitorValidatorBuilder healthMonitorValidatorBuilder,
+                                           ConnectionThrottleValidatorBuilder connectionThrottleValidatorBuilder) {
+        super(algorithmType, protocolType, nodeValidatorBuilder, virtualIpValidatorBuilder, healthMonitorValidatorBuilder, connectionThrottleValidatorBuilder);
 
         // POST EXPECTATIONS
         result(validationTarget().getAnies()).if_().exist().then().must().delegateTo(new RaxLoadBalancerValidator().getValidator(), POST).forContext(POST);

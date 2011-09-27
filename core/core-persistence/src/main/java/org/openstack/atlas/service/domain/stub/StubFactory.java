@@ -291,4 +291,13 @@ public class StubFactory {
 
         return monitor;
     }
+
+    public static org.openstack.atlas.core.api.v1.ConnectionThrottle createHydratedDataModelConnectionThrottleForPut() {
+        org.openstack.atlas.core.api.v1.ConnectionThrottle throttle = new org.openstack.atlas.core.api.v1.ConnectionThrottle();
+
+        throttle.setMaxRequestRate(CONNECTION_THROTTLE_MAX_REQUEST_RATE);
+        throttle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
+        
+        return throttle;
+    }
 }

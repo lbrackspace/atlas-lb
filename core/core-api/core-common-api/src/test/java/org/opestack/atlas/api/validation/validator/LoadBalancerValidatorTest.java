@@ -34,12 +34,14 @@ public class LoadBalancerValidatorTest {
                     new LoadBalancerValidatorBuilder(
                             new CoreAlgorithmType(),
                             new CoreProtocolType(),
-                            new NodeValidatorBuilder(new CoreNodeCondition()),
+                            new NodeValidatorBuilder(
+                                    new CoreNodeCondition()),
                             new VirtualIpValidatorBuilder(),
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),
                                     new HttpMonitorValidatorBuilder()
-                            )));
+                            ),
+                            new ConnectionThrottleValidatorBuilder()));
         }
 
         @Test
@@ -322,12 +324,14 @@ public class LoadBalancerValidatorTest {
                     new LoadBalancerValidatorBuilder(
                             new CoreAlgorithmType(),
                             new CoreProtocolType(),
-                            new NodeValidatorBuilder(new CoreNodeCondition()),
+                            new NodeValidatorBuilder(
+                                    new CoreNodeCondition()),
                             new VirtualIpValidatorBuilder(),
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),
                                     new HttpMonitorValidatorBuilder()
-                            )));
+                            ),
+                            new ConnectionThrottleValidatorBuilder()));
         }
 
         @Before
