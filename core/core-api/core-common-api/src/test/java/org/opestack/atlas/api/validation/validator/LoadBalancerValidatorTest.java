@@ -41,7 +41,9 @@ public class LoadBalancerValidatorTest {
                                     new ConnectMonitorValidatorBuilder(),
                                     new HttpMonitorValidatorBuilder()
                             ),
-                            new ConnectionThrottleValidatorBuilder()));
+                            new ConnectionThrottleValidatorBuilder(),
+                            new SessionPersistenceValidatorBuilder(
+                                    new CorePersistenceType())));
         }
 
         @Test
@@ -331,7 +333,9 @@ public class LoadBalancerValidatorTest {
                                     new ConnectMonitorValidatorBuilder(),
                                     new HttpMonitorValidatorBuilder()
                             ),
-                            new ConnectionThrottleValidatorBuilder()));
+                            new ConnectionThrottleValidatorBuilder(),
+                            new SessionPersistenceValidatorBuilder(
+                                    new CorePersistenceType())));
         }
 
         @Before

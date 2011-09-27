@@ -29,8 +29,9 @@ public class RaxLoadBalancerValidatorBuilder extends LoadBalancerValidatorBuilde
                                            NodeValidatorBuilder nodeValidatorBuilder,
                                            VirtualIpValidatorBuilder virtualIpValidatorBuilder,
                                            HealthMonitorValidatorBuilder healthMonitorValidatorBuilder,
-                                           ConnectionThrottleValidatorBuilder connectionThrottleValidatorBuilder) {
-        super(algorithmType, protocolType, nodeValidatorBuilder, virtualIpValidatorBuilder, healthMonitorValidatorBuilder, connectionThrottleValidatorBuilder);
+                                           ConnectionThrottleValidatorBuilder connectionThrottleValidatorBuilder,
+                                           SessionPersistenceValidatorBuilder sessionPersistenceValidatorBuilder) {
+        super(algorithmType, protocolType, nodeValidatorBuilder, virtualIpValidatorBuilder, healthMonitorValidatorBuilder, connectionThrottleValidatorBuilder, sessionPersistenceValidatorBuilder);
 
         // POST EXPECTATIONS
         result(validationTarget().getAnies()).if_().exist().then().must().delegateTo(new RaxLoadBalancerValidator().getValidator(), POST).forContext(POST);

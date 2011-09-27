@@ -1,6 +1,7 @@
 package org.openstack.atlas.service.domain.stub;
 
 import org.openstack.atlas.core.api.v1.*;
+import org.openstack.atlas.core.api.v1.SessionPersistence;
 import org.openstack.atlas.datamodel.*;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
@@ -299,5 +300,11 @@ public class StubFactory {
         throttle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
         
         return throttle;
+    }
+
+    public static SessionPersistence createHydratedDataModelSessionPersistence() {
+        org.openstack.atlas.core.api.v1.SessionPersistence sessionPersistence = new org.openstack.atlas.core.api.v1.SessionPersistence();
+        sessionPersistence.setPersistenceType(SESSION_PERSISTENCE_TYPE);
+        return sessionPersistence;
     }
 }

@@ -40,6 +40,8 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     protected HealthMonitorResource healthMonitorResource;
     @Autowired
     protected ConnectionThrottleResource connectionThrottleResource;
+    @Autowired
+    protected SessionPersistenceResource sessionPersistenceResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
@@ -124,6 +126,13 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         connectionThrottleResource.setLoadBalancerId(id);
         connectionThrottleResource.setAccountId(accountId);
         return connectionThrottleResource;
+    }
+
+    @Path("sessionpersistence")
+    public SessionPersistenceResource retrieveSessionPersistenceResource() {
+        sessionPersistenceResource.setLoadBalancerId(id);
+        sessionPersistenceResource.setAccountId(accountId);
+        return sessionPersistenceResource;
     }
 
     public void setId(int id) {

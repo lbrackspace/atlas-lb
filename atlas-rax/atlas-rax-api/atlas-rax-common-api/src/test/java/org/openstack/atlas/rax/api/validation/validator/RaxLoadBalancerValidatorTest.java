@@ -43,8 +43,9 @@ public class RaxLoadBalancerValidatorTest {
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),
                                     new HttpMonitorValidatorBuilder()),
-                            new ConnectionThrottleValidatorBuilder()
-                    ));
+                            new ConnectionThrottleValidatorBuilder(),
+                            new SessionPersistenceValidatorBuilder(
+                                    new CorePersistenceType())));
         }
 
         @Test
@@ -345,8 +346,9 @@ public class RaxLoadBalancerValidatorTest {
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),
                                     new HttpMonitorValidatorBuilder()),
-                            new ConnectionThrottleValidatorBuilder()
-                    ));
+                            new ConnectionThrottleValidatorBuilder(),
+                            new SessionPersistenceValidatorBuilder(
+                                    new CorePersistenceType())));
         }
 
         @Before
