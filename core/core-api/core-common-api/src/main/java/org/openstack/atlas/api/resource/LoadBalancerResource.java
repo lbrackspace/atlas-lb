@@ -38,6 +38,8 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     protected NodesResource nodesResource;
     @Autowired
     protected HealthMonitorResource healthMonitorResource;
+    @Autowired
+    protected ConnectionThrottleResource connectionThrottleResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
@@ -115,6 +117,13 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         healthMonitorResource.setLoadBalancerId(id);
         healthMonitorResource.setAccountId(accountId);
         return healthMonitorResource;
+    }
+
+    @Path("connectionthrottle")
+    public ConnectionThrottleResource retrieveConnectionThrottleResource() {
+        connectionThrottleResource.setLoadBalancerId(id);
+        connectionThrottleResource.setAccountId(accountId);
+        return connectionThrottleResource;
     }
 
     public void setId(int id) {

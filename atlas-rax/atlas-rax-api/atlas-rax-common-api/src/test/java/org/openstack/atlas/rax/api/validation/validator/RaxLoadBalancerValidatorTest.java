@@ -42,7 +42,8 @@ public class RaxLoadBalancerValidatorTest {
                             new VirtualIpValidatorBuilder(),
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),
-                                    new HttpMonitorValidatorBuilder())
+                                    new HttpMonitorValidatorBuilder()),
+                            new ConnectionThrottleValidatorBuilder()
                     ));
         }
 
@@ -343,7 +344,8 @@ public class RaxLoadBalancerValidatorTest {
                             new VirtualIpValidatorBuilder(),
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),
-                                    new HttpMonitorValidatorBuilder())
+                                    new HttpMonitorValidatorBuilder()),
+                            new ConnectionThrottleValidatorBuilder()
                     ));
         }
 
