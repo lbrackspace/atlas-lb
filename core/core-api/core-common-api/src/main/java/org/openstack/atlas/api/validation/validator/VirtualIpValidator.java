@@ -23,8 +23,8 @@ public class VirtualIpValidator implements ResourceValidator<VirtualIp> {
     }
 
     @Override
-    public ValidatorResult validate(VirtualIp virtualIp, Object httpRequestType) {
-        ValidatorResult result = validator.validate(virtualIp, httpRequestType);
+    public ValidatorResult validate(VirtualIp virtualIp, Object context) {
+        ValidatorResult result = validator.validate(virtualIp, context);
         return ValidatorUtilities.removeEmptyMessages(result);
     }
 

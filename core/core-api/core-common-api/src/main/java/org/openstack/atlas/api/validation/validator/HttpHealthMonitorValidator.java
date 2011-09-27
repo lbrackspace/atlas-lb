@@ -1,50 +1,30 @@
 package org.openstack.atlas.api.validation.validator;
 
-import org.openstack.atlas.core.api.v1.HealthMonitor;
 import org.openstack.atlas.api.validation.Validator;
-import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
-import org.openstack.atlas.api.validation.verifier.*;
+import org.openstack.atlas.api.validation.validator.builder.HttpMonitorValidatorBuilder;
+import org.openstack.atlas.core.api.v1.HealthMonitor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
-import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
-import static org.openstack.atlas.api.validation.validator.HealthMonitorValidator.CEILING;
-import static org.openstack.atlas.api.validation.validator.HealthMonitorValidator.FLOOR;
 
+@Component
+@Scope("request")
 public class HttpHealthMonitorValidator implements ResourceValidator<HealthMonitor> {
-    private Validator<HealthMonitor> validator;
-    private static final int MAXSTR=128;
-    private static final String maxStrMsg = String.format(" can not exceed %d characters.",MAXSTR);
+    protected Validator<HealthMonitor> validator;
+    protected HttpMonitorValidatorBuilder ruleBuilder;
 
-    public HttpHealthMonitorValidator() {
-        this.validator = build(new ValidatorBuilder<HealthMonitor>(HealthMonitor.class) {
-            {
-                // SHARED EXPECTATIONS
-                result(validationTarget().getType()).must().exist().withMessage("Must provide a type for the health monitor.");
-                result(validationTarget().getDelay()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Delay for the health monitor must be between %d and %d.", FLOOR, CEILING));
-                result(validationTarget().getTimeout()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Timeout for the health monitor must be between %d and %d.", FLOOR, CEILING));
-                result(validationTarget().getAttemptsBeforeDeactivation()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Attempts before deactivation for the health monitor must be between %d and %d.", FLOOR, CEILING));
-                result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a valid path for the health monitor.");
-                result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new HaveSizeOfAtMost(MAXSTR)).withMessage("path" + maxStrMsg);
-                result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new HealthMonitorPathVerifier()).withMessage("Must provide a foward slash(/) as the begining of the path.");                                                                                                                         
-
-                // PUT EXPECTATIONS
-                must().adhereTo(new Verifier<HealthMonitor>() {
-                    @Override
-                    public VerifierResult verify(HealthMonitor monitor) {
-                        return new VerifierResult(monitor.getDelay() != null ||
-                                monitor.getTimeout() != null ||
-                                monitor.getAttemptsBeforeDeactivation() != null ||
-                                monitor.getPath() != null);
-                    }
-                }).forContext(PUT).withMessage("The health monitor must have at least one of the following to update: delay, timeout, attempts before deactivation, path, status regex, body regex.");
-            }
-        });
+    @Autowired
+    public HttpHealthMonitorValidator(HttpMonitorValidatorBuilder ruleBuilder) {
+        this.ruleBuilder = ruleBuilder;
+        validator = build(ruleBuilder);
     }
 
     @Override
-    public ValidatorResult validate(HealthMonitor monitor, Object monitorContext) {
-        ValidatorResult result = validator.validate(monitor, monitorContext);
+    public ValidatorResult validate(HealthMonitor monitor, Object context) {
+        ValidatorResult result = validator.validate(monitor, context);
         return ValidatorUtilities.removeEmptyMessages(result);
     }
 

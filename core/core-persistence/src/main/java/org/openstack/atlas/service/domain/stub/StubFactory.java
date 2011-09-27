@@ -1,9 +1,13 @@
 package org.openstack.atlas.service.domain.stub;
 
-import org.openstack.atlas.core.api.v1.ConnectionLogging;
-import org.openstack.atlas.core.api.v1.Nodes;
-import org.openstack.atlas.core.api.v1.VipType;
+import org.openstack.atlas.core.api.v1.*;
+import org.openstack.atlas.datamodel.*;
 import org.openstack.atlas.service.domain.entity.*;
+import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
+import org.openstack.atlas.service.domain.entity.HealthMonitor;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.VirtualIp;
 
 import java.util.Calendar;
 
@@ -126,10 +130,9 @@ public class StubFactory {
         loadBalancer.setConnectionThrottle(throttle);
 
         org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = new org.openstack.atlas.core.api.v1.HealthMonitor();
-        healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
         healthMonitor.setDelay(HEALTH_MONITOR_DELAY);
         healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
-        healthMonitor.setPath(HEALTH_MONITOR_PATH);
+        healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
         healthMonitor.setType(HEALTH_MONITOR_TYPE);
         loadBalancer.setHealthMonitor(healthMonitor);
 
@@ -175,10 +178,9 @@ public class StubFactory {
         loadBalancer.setConnectionThrottle(throttle);
 
         org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = new org.openstack.atlas.core.api.v1.HealthMonitor();
-        healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
         healthMonitor.setDelay(HEALTH_MONITOR_DELAY);
         healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
-        healthMonitor.setPath(HEALTH_MONITOR_PATH);
+        healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
         healthMonitor.setType(HEALTH_MONITOR_TYPE);
         loadBalancer.setHealthMonitor(healthMonitor);
 
@@ -268,5 +270,34 @@ public class StubFactory {
         nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE2_ADDRESS, NODE2_PORT, NODE2_WEIGHT, NODE2_CONDITION, null));
 
         return nodes;
+    }
+
+    public static org.openstack.atlas.core.api.v1.HealthMonitor createHydratedDataModelConnectMonitorForPut() {
+        org.openstack.atlas.core.api.v1.HealthMonitor monitor = new org.openstack.atlas.core.api.v1.HealthMonitor();
+
+        monitor.setType(CoreHealthMonitorType.CONNECT);
+        monitor.setDelay(HEALTH_MONITOR_DELAY);
+        monitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
+        monitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
+
+        return monitor;
+    }
+
+    public static org.openstack.atlas.core.api.v1.HealthMonitor createHydratedDataModelHttpMonitorForPut() {
+        org.openstack.atlas.core.api.v1.HealthMonitor monitor = createHydratedDataModelConnectMonitorForPut();
+
+        monitor.setType(CoreHealthMonitorType.HTTP);
+        monitor.setPath(HEALTH_MONITOR_PATH);
+
+        return monitor;
+    }
+
+    public static org.openstack.atlas.core.api.v1.ConnectionThrottle createHydratedDataModelConnectionThrottleForPut() {
+        org.openstack.atlas.core.api.v1.ConnectionThrottle throttle = new org.openstack.atlas.core.api.v1.ConnectionThrottle();
+
+        throttle.setMaxRequestRate(CONNECTION_THROTTLE_MAX_REQUEST_RATE);
+        throttle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
+        
+        return throttle;
     }
 }

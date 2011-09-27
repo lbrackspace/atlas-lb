@@ -6,9 +6,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.LoadBalancerValidator;
-import org.openstack.atlas.api.validation.validator.builder.LoadBalancerValidatorBuilder;
-import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
-import org.openstack.atlas.api.validation.validator.builder.VirtualIpValidatorBuilder;
+import org.openstack.atlas.api.validation.validator.builder.*;
 import org.openstack.atlas.core.api.v1.*;
 import org.openstack.atlas.datamodel.*;
 import org.openstack.atlas.service.domain.stub.StubFactory;
@@ -36,8 +34,14 @@ public class LoadBalancerValidatorTest {
                     new LoadBalancerValidatorBuilder(
                             new CoreAlgorithmType(),
                             new CoreProtocolType(),
-                            new NodeValidatorBuilder(new CoreNodeCondition()),
-                            new VirtualIpValidatorBuilder()));
+                            new NodeValidatorBuilder(
+                                    new CoreNodeCondition()),
+                            new VirtualIpValidatorBuilder(),
+                            new HealthMonitorValidatorBuilder(
+                                    new ConnectMonitorValidatorBuilder(),
+                                    new HttpMonitorValidatorBuilder()
+                            ),
+                            new ConnectionThrottleValidatorBuilder()));
         }
 
         @Test
@@ -320,8 +324,14 @@ public class LoadBalancerValidatorTest {
                     new LoadBalancerValidatorBuilder(
                             new CoreAlgorithmType(),
                             new CoreProtocolType(),
-                            new NodeValidatorBuilder(new CoreNodeCondition()),
-                            new VirtualIpValidatorBuilder()));
+                            new NodeValidatorBuilder(
+                                    new CoreNodeCondition()),
+                            new VirtualIpValidatorBuilder(),
+                            new HealthMonitorValidatorBuilder(
+                                    new ConnectMonitorValidatorBuilder(),
+                                    new HttpMonitorValidatorBuilder()
+                            ),
+                            new ConnectionThrottleValidatorBuilder()));
         }
 
         @Before
