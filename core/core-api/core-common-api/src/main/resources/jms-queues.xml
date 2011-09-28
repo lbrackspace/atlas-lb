@@ -60,7 +60,7 @@
         <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
         <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
         <property name="sessionTransacted" value="true"/>
-    </bean>-->
+    </bean>
 
      <bean id="updateLoadBalancerListenerContainer"
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">
@@ -74,7 +74,7 @@
         <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
         <property name="sessionTransacted" value="true"/>
     </bean>
-
+    -->
      <bean id="createLoadBalancerListenerContainer"
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
