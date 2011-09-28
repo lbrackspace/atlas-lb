@@ -50,6 +50,9 @@
     <bean id="virtualIpRepository" class="org.openstack.atlas.service.domain.repository.VirtualIpRepository" />
     <bean id="clusterRepository" class="org.openstack.atlas.service.domain.repository.ClusterRepository" />
 
+    <bean id="atlasTypeHelper" class="org.openstack.atlas.datamodel.AtlasTypeHelper" />
+    <bean id="algorithmType" class="org.openstack.atlas.datamodel.CoreAlgorithmType" />
+    <bean id="protocolType" class="org.openstack.atlas.datamodel.CoreProtocolType" />
 
 
 </beans>

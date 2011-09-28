@@ -3,6 +3,8 @@ package org.openstack.atlas.service.domain.service;
 import org.junit.*;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.datamodel.AtlasTypeHelper;
+import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.BadRequestException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
@@ -34,6 +36,9 @@ public class LoadBalancerServiceImplIntegrationTest {
         @Autowired
         private LoadBalancerRepository loadBalancerRepository;
 
+        @Autowired
+        private AtlasTypeHelper atlasTypeHelper;
+
         @PersistenceContext(unitName = "loadbalancing")
         private EntityManager entityManager;
 
@@ -45,7 +50,7 @@ public class LoadBalancerServiceImplIntegrationTest {
             loadBalancer.setAccountId(1000);
             loadBalancer.setName("integration testing");
             loadBalancer.setPort(80);
-            loadBalancer.setProtocol(LoadBalancerProtocol.POP3);
+            loadBalancer.setProtocol(CoreProtocolType.HTTP);
 
             Set<Node> nodes = new HashSet<Node>();
             Node node = new Node();
@@ -118,7 +123,7 @@ public class LoadBalancerServiceImplIntegrationTest {
             loadBalancer.setAccountId(1000);
             loadBalancer.setName("integration testing");
             loadBalancer.setPort(80);
-            loadBalancer.setProtocol(LoadBalancerProtocol.POP3);
+            loadBalancer.setProtocol(CoreProtocolType.HTTP);
 
             Set<Node> nodes = new HashSet<Node>();
             Node node = new Node();

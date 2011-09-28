@@ -1,5 +1,4 @@
 package org.openstack.atlas.datamodel;
 
-public interface ProtocolType {
-    String[] toList();
+public interface ProtocolType extends AtlasType {
 }

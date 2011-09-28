@@ -226,26 +226,15 @@ public class LoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldRejectCluster() {
-            loadBalancer.setCluster(new Cluster());
-            ValidatorResult result = validator.validate(loadBalancer, POST);
-            assertFalse(result.passedValidation());
-        }
-
-        @Test
         public void shouldRejectCreated() {
-            Created created = new Created();
-            created.setTime(new GregorianCalendar());
-            loadBalancer.setCreated(created);
+            loadBalancer.setCreated(new GregorianCalendar());
             ValidatorResult result = validator.validate(loadBalancer, POST);
             assertFalse(result.passedValidation());
         }
 
         @Test
         public void shouldRejectUpdated() {
-            Updated updated = new Updated();
-            updated.setTime(new GregorianCalendar());
-            loadBalancer.setUpdated(updated);
+            loadBalancer.setUpdated(new GregorianCalendar());
             ValidatorResult result = validator.validate(loadBalancer, POST);
             assertFalse(result.passedValidation());
         }
@@ -386,26 +375,15 @@ public class LoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldRejectCluster() {
-            loadBalancer.setCluster(new Cluster());
-            ValidatorResult result = validator.validate(loadBalancer, PUT);
-            assertFalse(result.passedValidation());
-        }
-
-        @Test
         public void shouldRejectCreated() {
-            Created created = new Created();
-            created.setTime(new GregorianCalendar());
-            loadBalancer.setCreated(created);
+            loadBalancer.setCreated(new GregorianCalendar());
             ValidatorResult result = validator.validate(loadBalancer, PUT);
             assertFalse(result.passedValidation());
         }
 
         @Test
         public void shouldRejectUpdated() {
-            Updated updated = new Updated();
-            updated.setTime(new GregorianCalendar());
-            loadBalancer.setUpdated(updated);
+            loadBalancer.setUpdated(new GregorianCalendar());
             ValidatorResult result = validator.validate(loadBalancer, PUT);
             assertFalse(result.passedValidation());
         }

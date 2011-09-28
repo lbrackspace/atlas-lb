@@ -66,8 +66,8 @@ public class RaxStubFactory extends StubFactory {
         loadBalancer.setId(LOAD_BALANCER_ID);
         loadBalancer.setName(LOAD_BALANCER_NAME);
         loadBalancer.setPort(LOAD_BALANCER_PORT);
-        loadBalancer.setProtocol(org.openstack.atlas.service.domain.entity.LoadBalancerProtocol.valueOf(LOAD_BALANCER_PROTOCOL));
-        loadBalancer.setAlgorithm(org.openstack.atlas.service.domain.entity.LoadBalancerAlgorithm.valueOf(LOAD_BALANCER_ALGORITHM));
+        loadBalancer.setProtocol(LOAD_BALANCER_PROTOCOL);
+        loadBalancer.setAlgorithm(LOAD_BALANCER_ALGORITHM);
         loadBalancer.setStatus(org.openstack.atlas.service.domain.entity.LoadBalancerStatus.valueOf(LOAD_BALANCER_STATUS));
 
         Node node1 = new Node();

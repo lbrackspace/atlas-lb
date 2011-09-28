@@ -1,5 +1,4 @@
 package org.openstack.atlas.datamodel;
 
-public interface NodeCondition {
-    String[] toList();
+public interface NodeCondition extends AtlasType {
 }

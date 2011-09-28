@@ -3,6 +3,9 @@ package org.opestack.atlas.api.mapper.dozer;
 import org.dozer.DozerBeanMapper;
 import org.junit.BeforeClass;
 import org.openstack.atlas.api.mapper.dozer.MapperBuilder;
+import org.openstack.atlas.datamodel.AtlasTypeHelper;
+import org.openstack.atlas.datamodel.CoreAlgorithmType;
+import org.openstack.atlas.datamodel.CoreProtocolType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,5 +27,13 @@ public class MappingBase {
         mappingFiles.add(nodeDozerConfigFile);
         mappingFiles.add(virtualIpDozerConfigFile);
         mapper = MapperBuilder.getConfiguredMapper(mappingFiles);
+    }
+
+    @BeforeClass
+    public static void setupAutoWiredDependencies() {
+        /* TODO: Figure out how to get rid of this hack */
+        AtlasTypeHelper atlasTypeHelper = new AtlasTypeHelper();
+        atlasTypeHelper.setAlgorithmType(new CoreAlgorithmType());
+        atlasTypeHelper.setProtocolType(new CoreProtocolType());
     }
 }

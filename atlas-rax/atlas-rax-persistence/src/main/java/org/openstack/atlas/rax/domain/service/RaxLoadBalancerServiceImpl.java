@@ -1,9 +1,9 @@
 package org.openstack.atlas.rax.domain.service;
 
+import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entity.SessionPersistence;
 import org.openstack.atlas.service.domain.exception.BadRequestException;
 import org.openstack.atlas.service.domain.service.impl.LoadBalancerServiceImpl;
@@ -30,14 +30,14 @@ public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
             //check for health monitor type and allow update only if protocol matches health monitory type for HTTP and HTTPS
             if (dbLoadBalancer.getHealthMonitor() != null) {
                 if (dbLoadBalancer.getHealthMonitor().getType() != null) {
-                    if (dbLoadBalancer.getHealthMonitor().getType().name().equals(LoadBalancerProtocol.HTTP.name())) {
+                    if (dbLoadBalancer.getHealthMonitor().getType().name().equals(CoreProtocolType.HTTP)) {
                         //incoming port not HTTP
-                        if (!(loadBalancer.getProtocol().name().equals(LoadBalancerProtocol.HTTP.name()))) {
+                        if (!(loadBalancer.getProtocol().equals(CoreProtocolType.HTTP))) {
                             portHMTypecheck = false;
                         }
-                    } else if (dbLoadBalancer.getHealthMonitor().getType().name().equals(LoadBalancerProtocol.HTTPS.name())) {
+                    } else if (dbLoadBalancer.getHealthMonitor().getType().name().equals(CoreProtocolType.HTTPS)) {
                         //incoming port not HTTP
-                        if (!(loadBalancer.getProtocol().name().equals(LoadBalancerProtocol.HTTPS.name()))) {
+                        if (!(loadBalancer.getProtocol().equals(CoreProtocolType.HTTPS))) {
                             portHMTypecheck = false;
                         }
                     }
@@ -48,7 +48,7 @@ public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
                 /* Notify the Usage Processor on changes of protocol to and from secure protocols */
                 //notifyUsageProcessorOfSslChanges(message, queueLb, dbLoadBalancer);
 
-                if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+                if (loadBalancer.getProtocol().equals(CoreProtocolType.HTTP)) {
                     LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
                     dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                 } else {

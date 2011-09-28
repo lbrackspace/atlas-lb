@@ -74,7 +74,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         LoadBalancers _loadbalancers = new LoadBalancers();
         List<org.openstack.atlas.service.domain.entity.LoadBalancer> loadbalancers = loadBalancerRepository.getByAccountId(accountId);
         for (org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer : loadbalancers) {
-            _loadbalancers.getLoadBalancers().add(dozerMapper.map(loadBalancer, org.openstack.atlas.core.api.v1.LoadBalancer.class));
+            _loadbalancers.getLoadBalancers().add(dozerMapper.map(loadBalancer, org.openstack.atlas.core.api.v1.LoadBalancer.class, "SIMPLE_LB"));
         }
         return Response.status(Response.Status.OK).entity(_loadbalancers).build();
 

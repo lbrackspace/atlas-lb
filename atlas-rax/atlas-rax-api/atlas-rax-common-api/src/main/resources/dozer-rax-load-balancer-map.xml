@@ -11,11 +11,11 @@
         <class-b>
             org.openstack.atlas.rax.domain.entity.RaxLoadBalancer
         </class-b>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumConverter">
+        <field>
             <a>algorithm</a>
             <b>algorithm</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumConverter">
+        <field>
             <a>protocol</a>
             <b>protocol</b>
         </field>
@@ -52,14 +52,10 @@
             <b>connectionLogging</b>
         </field>
         <field>
-            <a>cluster</a>
-            <b>host</b>
-        </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
             <a>created</a>
             <b>created</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
+        <field>
             <a>updated</a>
             <b>updated</b>
         </field>

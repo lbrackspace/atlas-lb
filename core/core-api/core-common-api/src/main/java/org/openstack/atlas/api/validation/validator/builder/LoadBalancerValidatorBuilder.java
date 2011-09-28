@@ -42,7 +42,6 @@ public class LoadBalancerValidatorBuilder extends ValidatorBuilder<LoadBalancer>
         result(validationTarget().getName()).if_().exist().then().must().adhereTo(new MustHaveLengthVerifier(LB_NAME_LENGTH)).withMessage("Load Balancer name must be less than or equal to " + LB_NAME_LENGTH);
         result(validationTarget().getAlgorithm()).if_().exist().then().must().adhereTo(new MustBeInArray(algorithmType.toList())).withMessage("Load balancer algorithm is invalid. Please specify a valid algorithm.");
         result(validationTarget().getStatus()).must().not().exist().withMessage("Load balancer status field cannot be modified.");
-        result(validationTarget().getCluster()).must().not().exist().withMessage("Load balancer cluster field cannot be modified.");
         result(validationTarget().getCreated()).must().not().exist().withMessage("Load balancer created field cannot be modified.");
         result(validationTarget().getUpdated()).must().not().exist().withMessage("Load balancer updated field cannot be modified.");
         

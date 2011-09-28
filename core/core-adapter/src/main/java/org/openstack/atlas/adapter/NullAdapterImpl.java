@@ -3,29 +3,18 @@ package org.openstack.atlas.adapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.exception.AdapterException;
-
-import org.openstack.atlas.service.domain.entity.LoadBalancerProtocol;
-import org.openstack.atlas.service.domain.entity.LoadBalancerAlgorithm;
-
-import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
 import org.openstack.atlas.service.domain.entity.HealthMonitor;
-
-import org.springframework.stereotype.Component;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.Node;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.Set;
-import java.util.Map;
 
 @Service
 public class NullAdapterImpl implements LoadBalancerAdapter {
     public static Log LOG = LogFactory.getLog(NullAdapterImpl.class.getName());
-    private static String SOURCE_IP = "SOURCE_IP";
-    private static String HTTP_COOKIE = "HTTP_COOKIE";
-    private static LoadBalancerAlgorithm DEFAULT_ALGORITHM = LoadBalancerAlgorithm.ROUND_ROBIN;
-    
+
     @Override
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, Integer accountId, LoadBalancer lb) throws AdapterException {
         LOG.info("createLoadBalancer"); // NOP
@@ -55,7 +44,7 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
     public void updateNode(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Node node) throws AdapterException {
         LOG.info("updateNodes");// NOP
     }
- 
+
     @Override
     public void deleteNode(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Integer nodeId) throws AdapterException {
         LOG.info("deleteNode");// NOP

@@ -13,16 +13,6 @@ public class EnumConverter implements CustomConverter {
             return null;
         }
 
-        // LoadBalancerProtocol -> String
-        if (sourceClass == LoadBalancerProtocol.class && destinationClass == String.class) {
-            return ((LoadBalancerProtocol) sourceFieldValue).name();
-        }
-
-        // String -> LoadBalancerProtocol
-        if (sourceClass == String.class && destinationClass ==  LoadBalancerProtocol.class) {
-            return LoadBalancerProtocol.valueOf((String)sourceFieldValue);
-        }
-
         // LoadBalancerStatus -> String
         if (sourceFieldValue instanceof LoadBalancerStatus && destinationClass == String.class) {
             return ((LoadBalancerStatus)sourceFieldValue).toString();
@@ -31,16 +21,6 @@ public class EnumConverter implements CustomConverter {
         // String -> LoadBalancerStatus
         if(sourceFieldValue instanceof String && destinationClass == LoadBalancerStatus.class) {
             return LoadBalancerStatus.valueOf((String)sourceFieldValue);
-        }
-
-        // String -> CoreAlgorithmType
-        if(sourceFieldValue instanceof String && destinationClass == LoadBalancerAlgorithm.class) {
-            return LoadBalancerAlgorithm.valueOf((String)sourceFieldValue);
-        }
-
-        // CoreAlgorithmType -> String
-        if(sourceFieldValue instanceof LoadBalancerAlgorithm && destinationClass == String.class) {
-            return ((LoadBalancerAlgorithm)sourceFieldValue).toString();
         }
 
         if (sourceFieldValue instanceof VirtualIp) {
@@ -79,16 +59,6 @@ public class EnumConverter implements CustomConverter {
         // String -> HealthMonitorType
         if (sourceClass == String.class && destinationClass ==  HealthMonitorType.class) {
             return HealthMonitorType.valueOf((String)sourceFieldValue);
-        }
-
-        // LoadBalancerStatus -> String
-        if (sourceFieldValue instanceof SessionPersistence && destinationClass == String.class) {
-            return ((SessionPersistence)sourceFieldValue).toString();
-        }
-
-        // String -> LoadBalancerStatus
-        if(sourceFieldValue instanceof String && destinationClass == SessionPersistence.class) {
-            return SessionPersistence.valueOf((String)sourceFieldValue);
         }
 
         throw new NoMappableConstantException("Cannot map source type: " + sourceClass.getName());

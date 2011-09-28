@@ -1,5 +1,8 @@
 package org.openstack.atlas.service.domain.entity;
 
+import org.openstack.atlas.datamodel.AtlasTypeHelper;
+import org.openstack.atlas.datamodel.CoreAlgorithmType;
+import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.pojo.VirtualIpDozerWrapper;
 
 import javax.persistence.*;
@@ -41,8 +44,7 @@ public class LoadBalancer extends Entity implements Serializable {
     private Host host;
 
     @Column(name = "algorithm", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LoadBalancerAlgorithm algorithm = LoadBalancerAlgorithm.ROUND_ROBIN;
+    private String algorithm = CoreAlgorithmType.ROUND_ROBIN;
 
     @Column(name = "port", nullable = false)
     private Integer port = 80;
@@ -58,8 +60,7 @@ public class LoadBalancer extends Entity implements Serializable {
     private Boolean connectionLogging = false;
 
     @JoinColumn(name = "protocol", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LoadBalancerProtocol protocol = LoadBalancerProtocol.HTTP;
+    private String protocol = CoreProtocolType.HTTP;
 
     @JoinColumn(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -79,7 +80,6 @@ public class LoadBalancer extends Entity implements Serializable {
 
     @Transient
     private VirtualIpDozerWrapper virtualIpDozerWrapper;
-
 
     public LoadBalancer() {
     }
@@ -165,19 +165,21 @@ public class LoadBalancer extends Entity implements Serializable {
         this.updated = updated;
     }
 
-    public LoadBalancerAlgorithm getAlgorithm() {
+    public String getAlgorithm() {
         return algorithm;
     }
 
-    public void setAlgorithm(LoadBalancerAlgorithm algorithm) {
+    public void setAlgorithm(String algorithm) {
+        if (!AtlasTypeHelper.isValidAlgorithm(algorithm)) throw new RuntimeException("Algorithm not supported.");
         this.algorithm = algorithm;
     }
 
-    public LoadBalancerProtocol getProtocol() {
+    public String getProtocol() {
         return protocol;
     }
 
-    public void setProtocol(LoadBalancerProtocol protocol) {
+    public void setProtocol(String protocol) {
+        if (!AtlasTypeHelper.isValidProtocol(protocol)) throw new RuntimeException("Protocol not supported.");
         this.protocol = protocol;
     }
 
@@ -202,10 +204,7 @@ public class LoadBalancer extends Entity implements Serializable {
     }
 
     public boolean isUsingSsl() {
-        return (protocol.equals(LoadBalancerProtocol.HTTPS) ||
-                protocol.equals(LoadBalancerProtocol.IMAPS) ||
-                protocol.equals(LoadBalancerProtocol.LDAPS) ||
-                protocol.equals(LoadBalancerProtocol.POP3S));
+        return (protocol.equals(CoreProtocolType.HTTPS));
     }
 
     public void getIpv6Servicenet(String throwaway) {

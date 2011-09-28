@@ -4,11 +4,13 @@ import java.io.Serializable;
 
 public enum LoadBalancerStatus implements Serializable {
     ACTIVE,
+    QUEUED,
     BUILD,
-    ERROR,
     PENDING_UPDATE,
     PENDING_DELETE,
     SUSPENDED,
-    DELETED;
+    DELETED,
+    ERROR;
+    
     private final static long serialVersionUID = 532512316L;
 }

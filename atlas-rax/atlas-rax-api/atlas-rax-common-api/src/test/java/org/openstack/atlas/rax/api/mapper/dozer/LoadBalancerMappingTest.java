@@ -48,14 +48,14 @@ public class LoadBalancerMappingTest {
             Assert.assertEquals(dataModelLoadBalancer.getId(), domainLoadBalancer.getId());
             Assert.assertEquals(dataModelLoadBalancer.getName(), domainLoadBalancer.getName());
             Assert.assertEquals(dataModelLoadBalancer.getPort(), domainLoadBalancer.getPort());
-            Assert.assertEquals(dataModelLoadBalancer.getCreated().getTime(), domainLoadBalancer.getCreated());
-            Assert.assertEquals(dataModelLoadBalancer.getUpdated().getTime(), domainLoadBalancer.getUpdated());
+            Assert.assertEquals(dataModelLoadBalancer.getCreated(), domainLoadBalancer.getCreated());
+            Assert.assertEquals(dataModelLoadBalancer.getUpdated(), domainLoadBalancer.getUpdated());
         }
 
         @Test
         public void should_map_enumerations_on_the_loadbalancer() {
-            Assert.assertEquals(dataModelLoadBalancer.getProtocol(), domainLoadBalancer.getProtocol().name());
-            Assert.assertEquals(dataModelLoadBalancer.getAlgorithm(), domainLoadBalancer.getAlgorithm().name());
+            Assert.assertEquals(dataModelLoadBalancer.getProtocol(), domainLoadBalancer.getProtocol());
+            Assert.assertEquals(dataModelLoadBalancer.getAlgorithm(), domainLoadBalancer.getAlgorithm());
             Assert.assertEquals(dataModelLoadBalancer.getStatus(), domainLoadBalancer.getStatus().name());
         }
 
@@ -157,16 +157,16 @@ public class LoadBalancerMappingTest {
             Assert.assertEquals(domainLoadBalancer.getId(), dataModelLoadBalancer.getId());
             Assert.assertEquals(domainLoadBalancer.getName(), dataModelLoadBalancer.getName());
             Assert.assertEquals(domainLoadBalancer.getPort(), dataModelLoadBalancer.getPort());
-            Assert.assertEquals(domainLoadBalancer.getCreated(), dataModelLoadBalancer.getCreated().getTime());
-            Assert.assertEquals(domainLoadBalancer.getUpdated(), dataModelLoadBalancer.getUpdated().getTime());
+            Assert.assertEquals(domainLoadBalancer.getCreated(), dataModelLoadBalancer.getCreated());
+            Assert.assertEquals(domainLoadBalancer.getUpdated(), dataModelLoadBalancer.getUpdated());
             Assert.assertEquals(domainLoadBalancer.getConnectionLogging(), dataModelLoadBalancer.getConnectionLogging().isEnabled());
         }
 
         @Test
         public void should_map_all_loadbalancer_enumerations() {
             Assert.assertTrue(dataModelLoadBalancer.getStatus().equals(domainLoadBalancer.getStatus().name()));
-            Assert.assertTrue(dataModelLoadBalancer.getProtocol().equals(domainLoadBalancer.getProtocol().name()));
-            Assert.assertTrue(dataModelLoadBalancer.getAlgorithm().equals(domainLoadBalancer.getAlgorithm().name()));
+            Assert.assertTrue(dataModelLoadBalancer.getProtocol().equals(domainLoadBalancer.getProtocol()));
+            Assert.assertTrue(dataModelLoadBalancer.getAlgorithm().equals(domainLoadBalancer.getAlgorithm()));
         }
 
         @Test

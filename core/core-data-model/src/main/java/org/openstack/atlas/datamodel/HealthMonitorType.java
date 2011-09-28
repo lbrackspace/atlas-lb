@@ -1,5 +1,4 @@
 package org.openstack.atlas.datamodel;
 
-public interface HealthMonitorType {
-    String[] toList();
+public interface HealthMonitorType extends AtlasType {
 }

@@ -4,6 +4,7 @@
           xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
 
+    <!--Default mapping-->
     <mapping map-null="false">
         <class-a bean-factory="org.openstack.atlas.api.mapper.dozer.factory.CoreLoadBalancerFactory">
             org.openstack.atlas.core.api.v1.LoadBalancer
@@ -12,12 +13,8 @@
             org.openstack.atlas.service.domain.entity.LoadBalancer
         </class-b>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumConverter">
-            <a>algorithm</a>
-            <b>algorithm</b>
-        </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumConverter">
-            <a>protocol</a>
-            <b>protocol</b>
+            <a>status</a>
+            <b>status</b>
         </field>
         <field>
             <a>nodes</a>
@@ -51,21 +48,47 @@
             <a>connectionLogging</a>
             <b>connectionLogging</b>
         </field>
+    </mapping>
+
+    <!--Mapping for GET /loadbalancers-->
+    <mapping map-id="SIMPLE_LB" type="one-way" wildcard="false" map-null="false">
+        <class-a>
+            org.openstack.atlas.service.domain.entity.LoadBalancer
+        </class-a>
+        <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.CoreLoadBalancerFactory">
+            org.openstack.atlas.core.api.v1.LoadBalancer
+        </class-b>
         <field>
-            <a>cluster</a>
-            <b>host</b>
+            <a>id</a>
+            <b>id</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
-            <a>created</a>
-            <b>created</b>
+        <field>
+            <a>name</a>
+            <b>name</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
-            <a>updated</a>
-            <b>updated</b>
+        <field>
+            <a>protocol</a>
+            <b>protocol</b>
+        </field>
+        <field>
+            <a>port</a>
+            <b>port</b>
+        </field>
+        <field>
+            <a>algorithm</a>
+            <b>algorithm</b>
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumConverter">
             <a>status</a>
             <b>status</b>
+        </field>
+        <field>
+            <a>created</a>
+            <b>created</b>
+        </field>
+        <field>
+            <a>updated</a>
+            <b>updated</b>
         </field>
     </mapping>
 
