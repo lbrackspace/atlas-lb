@@ -12,7 +12,7 @@ public class CoreHealthMonitorType implements HealthMonitorType {
     public static final String CONNECT = "CONNECT";
     public static final String HTTP = "HTTP";
     public static final String HTTPS = "HTTPS";
-    protected static final Set<String> healthMonitorTypes;
+    private static final Set<String> healthMonitorTypes;
     private String type;
 
     static {
@@ -46,5 +46,9 @@ public class CoreHealthMonitorType implements HealthMonitorType {
     @Override
     public String[] toList() {
         return healthMonitorTypes.toArray(new String[healthMonitorTypes.size()]);
+    }
+
+    protected static void add(String heatlMonitorType) {
+        healthMonitorTypes.add(heatlMonitorType);
     }
 }

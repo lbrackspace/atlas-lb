@@ -34,7 +34,7 @@ public class CoreAlgorithmType implements AlgorithmType {
         return algorithmTypes.toArray(new String[algorithmTypes.size()]);
     }
 
-    protected void add(String algorithm) {
+    protected static void add(String algorithm) {
         algorithmTypes.add(algorithm);
     }
 }

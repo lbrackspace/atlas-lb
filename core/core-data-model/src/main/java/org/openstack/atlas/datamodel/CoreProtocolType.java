@@ -12,7 +12,7 @@ public class CoreProtocolType implements ProtocolType {
     public static final String HTTP = "HTTP";
     public static final String HTTPS = "HTTPS";
     public static final String TCP = "TCP";
-    protected static final Map<String, Integer> protocolPortMap;
+    private static final Map<String, Integer> protocolPortMap;
 
     static {
         protocolPortMap = new HashMap<String, Integer>();
@@ -29,4 +29,9 @@ public class CoreProtocolType implements ProtocolType {
     public String[] toList() {
         return protocolPortMap.keySet().toArray(new String[protocolPortMap.keySet().size()]);
     }
+
+    protected static void add(String protocol, Integer defaultPort) {
+        protocolPortMap.put(protocol, defaultPort);
+    }
+
 }

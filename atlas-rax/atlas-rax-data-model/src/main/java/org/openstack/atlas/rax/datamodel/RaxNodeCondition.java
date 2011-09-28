@@ -12,6 +12,6 @@ public class RaxNodeCondition extends CoreNodeCondition {
     public static final String DRAINING = "DRAINING";
 
     static {
-        nodeConditions.add(DRAINING);
+        CoreNodeCondition.add(DRAINING);
     }
 }

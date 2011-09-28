@@ -11,7 +11,7 @@ import java.util.Set;
 public class CoreNodeCondition implements NodeCondition {
     public static final String ENABLED = "ENABLED";
     public static final String DISABLED = "DISABLED";
-    protected static final Set<String> nodeConditions;
+    private static final Set<String> nodeConditions;
 
     static {
         nodeConditions = new HashSet<String>();
@@ -35,5 +35,10 @@ public class CoreNodeCondition implements NodeCondition {
     @Override
     public String[] toList() {
         return nodeConditions.toArray(new String[nodeConditions.size()]);
+    }
+
+
+    protected static void add(String nodeCondition) {
+        nodeConditions.add(nodeCondition);
     }
 }
