@@ -6,7 +6,6 @@ import org.openstack.atlas.api.response.ResponseFactory;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.LoadBalancerValidator;
-import org.openstack.atlas.api.validation.validator.ResourceValidator;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.core.api.v1.LoadBalancers;
 import org.openstack.atlas.service.domain.operation.Operation;
@@ -15,20 +14,15 @@ import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.VirtualIpService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-
-import java.util.Calendar;
 import java.util.List;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.MediaType.APPLICATION_XML;
+import static javax.ws.rs.core.MediaType.*;
 
 @Controller
 @Scope("request")
@@ -47,10 +41,6 @@ public class LoadBalancersResource extends CommonDependencyProvider {
     protected LoadBalancerRepository loadBalancerRepository;
     @Autowired
     protected LoadBalancerResource loadBalancerResource;
-    @Autowired
-    protected AlgorithmsResource algorithmsResource;
-    @Autowired
-    protected ProtocolsResource protocolsResource;
 
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
@@ -95,16 +85,6 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         loadBalancerResource.setId(id);
         loadBalancerResource.setAccountId(accountId);
         return loadBalancerResource;
-    }
-
-    @Path("protocols")
-    public ProtocolsResource retrieveProtocolsResource() {
-        return protocolsResource;
-    }
-
-    @Path("algorithms")
-    public AlgorithmsResource retrieveAlgorithmsResource() {
-        return algorithmsResource;
     }
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {

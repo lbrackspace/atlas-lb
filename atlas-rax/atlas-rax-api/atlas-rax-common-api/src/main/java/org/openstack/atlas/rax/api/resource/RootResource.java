@@ -1,5 +1,7 @@
 package org.openstack.atlas.rax.api.resource;
 
+import org.openstack.atlas.api.resource.AlgorithmsResource;
+import org.openstack.atlas.api.resource.ProtocolsResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
@@ -21,12 +23,26 @@ public class RootResource {
     @Autowired
     @Qualifier("RAX-LoadBalancersResource")
     private LoadBalancersResource loadBalancersResource;
+    @Autowired
+    protected AlgorithmsResource algorithmsResource;
+    @Autowired
+    protected ProtocolsResource protocolsResource;
 
     @Path("loadbalancers")
     public LoadBalancersResource retrieveLoadBalancersResource() {
         loadBalancersResource.setRequestHeaders(requestHeaders);
         loadBalancersResource.setAccountId(accountId);
         return loadBalancersResource;
+    }
+
+    @Path("protocols")
+    public ProtocolsResource retrieveProtocolsResource() {
+        return protocolsResource;
+    }
+
+    @Path("algorithms")
+    public AlgorithmsResource retrieveAlgorithmsResource() {
+        return algorithmsResource;
     }
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {
