@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.helper;
 
+import org.openstack.atlas.datamodel.CoreNodeStatus;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
@@ -9,7 +10,7 @@ import java.util.Set;
 
 public final class NodesHelper {
 
-    public static void setNodesToStatus(LoadBalancer lb, NodeStatus status) {
+    public static void setNodesToStatus(LoadBalancer lb, String status) {
         for (Node node : lb.getNodes()) {
             setNodeToStatus(status, node);
         }
@@ -19,7 +20,7 @@ public final class NodesHelper {
         Given a super-set of nodes and a subset of nodes this method will update the intersection on the loadbalancer
         with the super-set
      */
-    public static void setNodesToStatus(LoadBalancer lbWithSubsetToChange, LoadBalancer lbWithSuperSet, NodeStatus status) {
+    public static void setNodesToStatus(LoadBalancer lbWithSubsetToChange, LoadBalancer lbWithSuperSet, String status) {
         Set<String> ipAddressAndPorts = new HashSet<String>();
 
         for (Node node : lbWithSubsetToChange.getNodes()) {
@@ -35,9 +36,9 @@ public final class NodesHelper {
         }
     }
 
-    private static void setNodeToStatus(NodeStatus status, Node node) {
-        if (node.getCondition() == NodeCondition.DISABLED) {
-            node.setStatus(NodeStatus.OFFLINE);
+    private static void setNodeToStatus(String status, Node node) {
+        if (!node.isEnabled()) {
+            node.setStatus(CoreNodeStatus.OFFLINE);
         } else {
             node.setStatus(status);
         }

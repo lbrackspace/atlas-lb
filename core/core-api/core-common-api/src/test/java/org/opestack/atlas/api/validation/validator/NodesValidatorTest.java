@@ -11,7 +11,6 @@ import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder
 import org.openstack.atlas.api.validation.validator.builder.NodesValidatorBuilder;
 import org.openstack.atlas.core.api.v1.Node;
 import org.openstack.atlas.core.api.v1.Nodes;
-import org.openstack.atlas.datamodel.CoreNodeCondition;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
 import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
@@ -28,8 +27,7 @@ public class NodesValidatorTest {
             nodes = StubFactory.createMinimalDataModelNodesForPost();
             validator = new NodesValidator(
                     new NodesValidatorBuilder(
-                            new NodeValidatorBuilder(
-                                    new CoreNodeCondition())));
+                            new NodeValidatorBuilder()));
         }
 
         @Test

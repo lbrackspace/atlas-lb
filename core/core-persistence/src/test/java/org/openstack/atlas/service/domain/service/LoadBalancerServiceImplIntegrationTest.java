@@ -57,7 +57,7 @@ public class LoadBalancerServiceImplIntegrationTest {
             Node node = new Node();
             node.setAddress("2.2.2.2");
             node.setPort(80);
-            node.setCondition(NodeCondition.ENABLED);
+            node.setEnabled(true);
             nodes.add(node);
             loadBalancer.setNodes(nodes);
         }
@@ -130,7 +130,7 @@ public class LoadBalancerServiceImplIntegrationTest {
             Node node = new Node();
             node.setAddress("2.2.2.2");
             node.setPort(80);
-            node.setCondition(NodeCondition.ENABLED);
+            node.setEnabled(true);
             nodes.add(node);
             loadBalancer.setNodes(nodes);
         }

@@ -21,26 +21,6 @@ public class EnumConverter implements CustomConverter {
             return org.openstack.atlas.service.domain.entity.IpVersion.fromDataType((IpVersion) sourceFieldValue);
         }
 
-        // NodeCondition -> String
-        if (sourceClass == NodeCondition.class && destinationClass == String.class) {
-            return ((NodeCondition) sourceFieldValue).name();
-        }
-
-        // String -> NodeCondition
-        if (sourceClass == String.class && destinationClass ==  NodeCondition.class) {
-            return NodeCondition.valueOf((String)sourceFieldValue);
-        }
-
-        // NodeStatus -> String
-        if (sourceClass == NodeStatus.class && destinationClass == String.class) {
-            return ((NodeStatus) sourceFieldValue).name();
-        }
-
-        // String -> NodeStatus
-        if (sourceClass == String.class && destinationClass ==  NodeStatus.class) {
-            return NodeStatus.valueOf((String)sourceFieldValue);
-        }
-
         // HealthMonitorType -> String
         if (sourceClass == HealthMonitorType.class && destinationClass == String.class) {
             return ((HealthMonitorType) sourceFieldValue).name();

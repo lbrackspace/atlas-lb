@@ -34,8 +34,7 @@ public class LoadBalancerValidatorTest {
                     new LoadBalancerValidatorBuilder(
                             new CoreAlgorithmType(),
                             new CoreProtocolType(),
-                            new NodeValidatorBuilder(
-                                    new CoreNodeCondition()),
+                            new NodeValidatorBuilder(),
                             new VirtualIpValidatorBuilder(),
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),
@@ -272,7 +271,7 @@ public class LoadBalancerValidatorTest {
             Node node = new Node();
             node.setAddress("10.1.1.1");
             node.setPort(80);
-            node.setCondition(CoreNodeCondition.ENABLED);
+            node.setEnabled(true);
             loadBalancer.getNodes().add(node);
 
             ValidatorResult result = validator.validate(loadBalancer, POST);
@@ -315,8 +314,7 @@ public class LoadBalancerValidatorTest {
                     new LoadBalancerValidatorBuilder(
                             new CoreAlgorithmType(),
                             new CoreProtocolType(),
-                            new NodeValidatorBuilder(
-                                    new CoreNodeCondition()),
+                            new NodeValidatorBuilder(),
                             new VirtualIpValidatorBuilder(),
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),

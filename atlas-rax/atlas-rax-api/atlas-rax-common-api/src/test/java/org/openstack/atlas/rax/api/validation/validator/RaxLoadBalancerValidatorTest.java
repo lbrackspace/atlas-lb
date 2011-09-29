@@ -11,7 +11,6 @@ import org.openstack.atlas.core.api.v1.*;
 import org.openstack.atlas.datamodel.*;
 import org.openstack.atlas.rax.api.validation.validator.builder.RaxLoadBalancerValidatorBuilder;
 import org.openstack.atlas.rax.datamodel.RaxAlgorithmType;
-import org.openstack.atlas.rax.datamodel.RaxNodeCondition;
 import org.openstack.atlas.rax.datamodel.RaxProtocolType;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
@@ -37,8 +36,7 @@ public class RaxLoadBalancerValidatorTest {
                     new RaxLoadBalancerValidatorBuilder(
                             new RaxAlgorithmType(),
                             new RaxProtocolType(),
-                            new NodeValidatorBuilder(
-                                    new RaxNodeCondition()),
+                            new NodeValidatorBuilder(),
                             new VirtualIpValidatorBuilder(),
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),
@@ -277,7 +275,7 @@ public class RaxLoadBalancerValidatorTest {
             Node node = new Node();
             node.setAddress("10.1.1.1");
             node.setPort(80);
-            node.setCondition(CoreNodeCondition.ENABLED);
+            node.setEnabled(true);
             loadBalancer.getNodes().add(node);
 
             ValidatorResult result = validator.validate(loadBalancer, POST);
@@ -329,8 +327,7 @@ public class RaxLoadBalancerValidatorTest {
                     new RaxLoadBalancerValidatorBuilder(
                             new RaxAlgorithmType(),
                             new RaxProtocolType(),
-                            new NodeValidatorBuilder(
-                                    new RaxNodeCondition()),
+                            new NodeValidatorBuilder(),
                             new VirtualIpValidatorBuilder(),
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),

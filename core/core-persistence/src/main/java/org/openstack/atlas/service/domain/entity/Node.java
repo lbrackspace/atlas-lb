@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.entity;
 
+import org.openstack.atlas.datamodel.AtlasTypeHelper;
+
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -28,13 +30,11 @@ public class Node extends org.openstack.atlas.service.domain.entity.Entity imple
     @Column(name = "weight", nullable = false)
     private Integer weight = DEFAULT_NODE_WEIGHT;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "node_condition", nullable = false)
-    private NodeCondition condition = NodeCondition.ENABLED;
+    @Column(name = "enabled", nullable = false)
+    private Boolean enabled = true;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private NodeStatus status;
+    private String status;
 
     @Transient
     private boolean isNew;
@@ -74,19 +74,20 @@ public class Node extends org.openstack.atlas.service.domain.entity.Entity imple
         this.weight = weight;
     }
 
-    public NodeCondition getCondition() {
-        return condition;
+    public Boolean isEnabled() {
+        return enabled;
     }
 
-    public void setCondition(NodeCondition condition) {
-        this.condition = condition;
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 
-    public NodeStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(NodeStatus status) {
+    public void setStatus(String status) {
+        if (!AtlasTypeHelper.isValidNodeStatus(status)) throw new RuntimeException("Node status not supported.");
         this.status = status;
     }
 
@@ -110,12 +111,12 @@ public class Node extends org.openstack.atlas.service.domain.entity.Entity imple
     public String toString() {
         return "Node{" +
                 "isToBeUpdated=" + isToBeUpdated +
-                ", isNew=" + isNew +
-                ", status=" + status +
-                ", condition=" + condition +
-                ", weight=" + weight +
+                ", address='" + address + '\'' +
                 ", port=" + port +
-                ", ipAddress='" + address + '\'' +
+                ", weight=" + weight +
+                ", enabled=" + enabled +
+                ", status='" + status + '\'' +
+                ", isNew=" + isNew +
                 '}';
     }
 }

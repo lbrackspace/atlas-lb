@@ -86,7 +86,7 @@
         <xsd:attribute name="address" type="xsd:string"/>
         <xsd:attribute name="port" type="xsd:int"/>
         <xsd:attribute name="weight" type="xsd:int"/>
-        <xsd:attribute name="condition" type="xsd:string"/>
+        <xsd:attribute name="enabled" type="xsd:boolean"/>
         <xsd:attribute name="status" type="xsd:string"/>
         <xsd:anyAttribute namespace="##other" processContents="strict"/>
     </xsd:complexType>

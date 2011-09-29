@@ -3,10 +3,7 @@ package org.openstack.atlas.rax.api.mapper.dozer;
 import org.dozer.DozerBeanMapper;
 import org.junit.BeforeClass;
 import org.openstack.atlas.api.mapper.dozer.MapperBuilder;
-import org.openstack.atlas.datamodel.AtlasTypeHelper;
-import org.openstack.atlas.datamodel.CoreAlgorithmType;
-import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
-import org.openstack.atlas.datamodel.CoreProtocolType;
+import org.openstack.atlas.datamodel.*;
 import org.openstack.atlas.rax.datamodel.RaxAlgorithmType;
 import org.openstack.atlas.rax.datamodel.RaxProtocolType;
 
@@ -39,5 +36,6 @@ public class MappingBase {
         atlasTypeHelper.setAlgorithmType(new RaxAlgorithmType());
         atlasTypeHelper.setProtocolType(new RaxProtocolType());
         atlasTypeHelper.setLoadBalancerStatus(new CoreLoadBalancerStatus());
+        atlasTypeHelper.setNodeStatus(new CoreNodeStatus());
     }
 }

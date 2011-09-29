@@ -1,8 +1,5 @@
 package org.openstack.atlas.rax.domain.stub;
 
-import org.openstack.atlas.api.v1.extensions.rax.AccessList;
-import org.openstack.atlas.api.v1.extensions.rax.NetworkItem;
-import org.openstack.atlas.api.v1.extensions.rax.NetworkItemType;
 import org.openstack.atlas.rax.datamodel.XmlHelper;
 import org.openstack.atlas.rax.domain.entity.AccessListType;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
@@ -74,16 +71,16 @@ public class RaxStubFactory extends StubFactory {
         node1.setId(NODE1_ID);
         node1.setAddress(NODE1_ADDRESS);
         node1.setPort(NODE1_PORT);
-        node1.setCondition(org.openstack.atlas.service.domain.entity.NodeCondition.valueOf(NODE1_CONDITION));
-        node1.setStatus(org.openstack.atlas.service.domain.entity.NodeStatus.valueOf(NODE1_STATUS));
+        node1.setEnabled(NODE1_ENABLED);
+        node1.setStatus(NODE1_STATUS);
         loadBalancer.getNodes().add(node1);
 
         Node node2 = new Node();
         node2.setId(NODE2_ID);
         node2.setAddress(NODE2_ADDRESS);
         node2.setPort(NODE2_PORT);
-        node2.setCondition(org.openstack.atlas.service.domain.entity.NodeCondition.valueOf(NODE2_CONDITION));
-        node2.setStatus(org.openstack.atlas.service.domain.entity.NodeStatus.valueOf(NODE2_STATUS));
+        node2.setEnabled(NODE2_ENABLED);
+        node2.setStatus(NODE2_STATUS);
         loadBalancer.getNodes().add(node2);
 
         VirtualIp virtualIp1 = new VirtualIp();

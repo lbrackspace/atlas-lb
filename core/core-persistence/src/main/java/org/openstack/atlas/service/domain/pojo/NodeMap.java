@@ -1,7 +1,6 @@
 package org.openstack.atlas.service.domain.pojo;
 
 import org.openstack.atlas.service.domain.entity.Node;
-import org.openstack.atlas.service.domain.entity.NodeCondition;
 
 import java.util.*;
 
@@ -56,12 +55,12 @@ public class NodeMap {
 
     }
 
-    public Set<Integer> nodesInConditionAfterDelete(NodeCondition condition,Set<Integer> doomedIds){
+    public Set<Integer> nodesInConditionAfterDelete(boolean isEnabled,Set<Integer> doomedIds){
         Set<Integer> out = new HashSet<Integer>();
         Set<Integer> nodesThatWillSurvive = getIds();
         nodesThatWillSurvive.removeAll(doomedIds);
         for(Integer id: nodesThatWillSurvive){
-            if(nodeHashMap.get(id).getCondition().equals(condition)) {
+            if(nodeHashMap.get(id).isEnabled() == isEnabled) {
                 out.add(id);
             }
         }

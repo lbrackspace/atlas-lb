@@ -8,7 +8,6 @@ import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.NodeValidator;
 import org.openstack.atlas.api.validation.validator.builder.NodeValidatorBuilder;
 import org.openstack.atlas.core.api.v1.Node;
-import org.openstack.atlas.datamodel.CoreNodeCondition;
 import org.openstack.atlas.datamodel.CoreNodeStatus;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
@@ -26,7 +25,7 @@ public class NodeValidatorTest {
 
         @Before
         public void standUp() {
-            validator = new NodeValidator(new NodeValidatorBuilder(new CoreNodeCondition()));
+            validator = new NodeValidator(new NodeValidatorBuilder());
             node = StubFactory.createMinimalDataModelNodeForPost();
         }
 
@@ -114,20 +113,16 @@ public class NodeValidatorTest {
         }
 
         @Test
-        public void shouldAcceptCoreConditions() {
-            for (String nodeCondition : CoreNodeCondition.values()) {
-                node.setCondition(nodeCondition);
-                ValidatorResult result = validator.validate(node, POST);
-                assertTrue(result.passedValidation());
-            }
+        public void shouldAcceptEnabledAndDisabled() {
+            node.setEnabled(true);
+            ValidatorResult result = validator.validate(node, POST);
+            assertTrue(result.passedValidation());
+
+            node.setEnabled(false);
+            result = validator.validate(node, POST);
+            assertTrue(result.passedValidation());
         }
 
-        @Test
-        public void shouldRejectInvalidNodeCondition() {
-            node.setCondition("SOME_BOGUS_CONDITION");
-            ValidatorResult result = validator.validate(node, POST);
-            assertFalse(result.passedValidation());
-        }
 
         @Test
         public void shouldRejectZeroWeight() {
@@ -181,10 +176,10 @@ public class NodeValidatorTest {
 
         @Before
         public void setUp() {
-            validator = new NodeValidator(new NodeValidatorBuilder(new CoreNodeCondition()));
+            validator = new NodeValidator(new NodeValidatorBuilder());
 
             node = new Node();
-            node.setCondition(CoreNodeCondition.ENABLED);
+            node.setEnabled(true);
             node.setWeight(1);
         }
 
@@ -203,7 +198,7 @@ public class NodeValidatorTest {
 
         @Test
         public void shouldAcceptWhenOnlyWeightIsSet() {
-            node.setCondition(null);
+            node.setEnabled(null);
             ValidatorResult result = validator.validate(node, PUT);
             assertTrue(result.passedValidation());
         }

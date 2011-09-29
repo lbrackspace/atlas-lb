@@ -26,8 +26,8 @@ public class StubFactory {
     protected static final Integer NODE2_ID = 2;
     protected static final Integer NODE1_PORT = 80;
     protected static final Integer NODE2_PORT = 81;
-    protected static final String NODE1_CONDITION = "ENABLED";
-    protected static final String NODE2_CONDITION = "DISABLED";
+    protected static final Boolean NODE1_ENABLED = true;
+    protected static final Boolean NODE2_ENABLED = false;
     protected static final String NODE1_STATUS = "ONLINE";
     protected static final String NODE2_STATUS = "OFFLINE";
     protected static final String NODE1_ADDRESS = "10.1.1.1";
@@ -79,17 +79,17 @@ public class StubFactory {
     }
 
     public static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost() {
-        return createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, null, null);
+        return createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, true, null);
     }
 
-    protected static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost(Integer id, String address, Integer port, Integer weight, String condition, String status) {
+    protected static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost(Integer id, String address, Integer port, Integer weight, boolean enabled, String status) {
         org.openstack.atlas.core.api.v1.Node node = new org.openstack.atlas.core.api.v1.Node();
 
         node.setId(id);
         node.setAddress(address);
         node.setPort(port);
         node.setWeight(weight);
-        node.setCondition(condition);
+        node.setEnabled(enabled);
         node.setStatus(status);
 
         return node;
@@ -100,7 +100,7 @@ public class StubFactory {
 
         loadBalancer.setName(LOAD_BALANCER_NAME);
 
-        org.openstack.atlas.core.api.v1.Node node1 = createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, null, null);
+        org.openstack.atlas.core.api.v1.Node node1 = createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, true, null);
         final org.openstack.atlas.core.api.v1.Nodes nodes = new org.openstack.atlas.core.api.v1.Nodes();
         nodes.getNodes().add(node1);
         loadBalancer.getNodes().addAll(nodes.getNodes());
@@ -115,7 +115,7 @@ public class StubFactory {
         loadBalancer.setProtocol(LOAD_BALANCER_PROTOCOL);
         loadBalancer.setAlgorithm(LOAD_BALANCER_ALGORITHM);
 
-        loadBalancer.getNodes().get(0).setCondition(NODE1_CONDITION);
+        loadBalancer.getNodes().get(0).setEnabled(NODE1_ENABLED);
 
         org.openstack.atlas.core.api.v1.VirtualIp virtualIp1 = new org.openstack.atlas.core.api.v1.VirtualIp();
         virtualIp1.setType(org.openstack.atlas.core.api.v1.VipType.fromValue(VIP1_TYPE));
@@ -159,8 +159,8 @@ public class StubFactory {
         loadBalancer.setAlgorithm(LOAD_BALANCER_ALGORITHM);
         loadBalancer.setStatus(LOAD_BALANCER_STATUS);
 
-        org.openstack.atlas.core.api.v1.Node node1 = createMinimalDataModelNodeForPost(NODE1_ID, NODE1_ADDRESS, NODE1_PORT, NODE1_WEIGHT, NODE1_CONDITION, NODE1_STATUS);
-        org.openstack.atlas.core.api.v1.Node node2 = createMinimalDataModelNodeForPost(NODE2_ID, NODE2_ADDRESS, NODE2_PORT, NODE2_WEIGHT, NODE2_CONDITION, NODE2_STATUS);
+        org.openstack.atlas.core.api.v1.Node node1 = createMinimalDataModelNodeForPost(NODE1_ID, NODE1_ADDRESS, NODE1_PORT, NODE1_WEIGHT, NODE1_ENABLED, NODE1_STATUS);
+        org.openstack.atlas.core.api.v1.Node node2 = createMinimalDataModelNodeForPost(NODE2_ID, NODE2_ADDRESS, NODE2_PORT, NODE2_WEIGHT, NODE2_ENABLED, NODE2_STATUS);
         final org.openstack.atlas.core.api.v1.Nodes nodes = new org.openstack.atlas.core.api.v1.Nodes();
         nodes.getNodes().add(node1);
         nodes.getNodes().add(node2);
@@ -210,16 +210,16 @@ public class StubFactory {
         node1.setId(NODE1_ID);
         node1.setAddress(NODE1_ADDRESS);
         node1.setPort(NODE1_PORT);
-        node1.setCondition(org.openstack.atlas.service.domain.entity.NodeCondition.valueOf(NODE1_CONDITION));
-        node1.setStatus(org.openstack.atlas.service.domain.entity.NodeStatus.valueOf(NODE1_STATUS));
+        node1.setEnabled(NODE1_ENABLED);
+        node1.setStatus(NODE1_STATUS);
         loadBalancer.getNodes().add(node1);
 
         Node node2 = new Node();
         node2.setId(NODE2_ID);
         node2.setAddress(NODE2_ADDRESS);
         node2.setPort(NODE2_PORT);
-        node2.setCondition(org.openstack.atlas.service.domain.entity.NodeCondition.valueOf(NODE2_CONDITION));
-        node2.setStatus(org.openstack.atlas.service.domain.entity.NodeStatus.valueOf(NODE2_STATUS));
+        node2.setEnabled(NODE2_ENABLED);
+        node2.setStatus(NODE2_STATUS);
         loadBalancer.getNodes().add(node2);
 
         VirtualIp virtualIp1 = new VirtualIp();
@@ -255,7 +255,7 @@ public class StubFactory {
     public static Nodes createMinimalDataModelNodesForPost() {
         Nodes nodes = new Nodes();
 
-        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, null, null));
+        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, true, null));
 
         return nodes;
     }
@@ -263,8 +263,8 @@ public class StubFactory {
     public static Nodes createHydratedDataModelNodesForPost() {
         Nodes nodes = new Nodes();
 
-        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, NODE1_WEIGHT, NODE1_CONDITION, null));
-        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE2_ADDRESS, NODE2_PORT, NODE2_WEIGHT, NODE2_CONDITION, null));
+        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, NODE1_WEIGHT, NODE1_ENABLED, null));
+        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE2_ADDRESS, NODE2_PORT, NODE2_WEIGHT, NODE2_ENABLED, null));
 
         return nodes;
     }

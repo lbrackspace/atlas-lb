@@ -5,16 +5,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.openstack.atlas.api.v1.extensions.rax.NetworkItemType;
 import org.openstack.atlas.core.api.v1.ConnectionThrottle;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
 import org.openstack.atlas.core.api.v1.VipType;
-import org.openstack.atlas.datamodel.CoreNodeCondition;
+import org.openstack.atlas.datamodel.CoreNodeStatus;
 import org.openstack.atlas.rax.api.mapper.dozer.converter.ExtensionObjectMapper;
 import org.openstack.atlas.rax.domain.entity.AccessList;
 import org.openstack.atlas.rax.domain.stub.RaxStubFactory;
-import org.openstack.atlas.service.domain.entity.*;
+import org.openstack.atlas.service.domain.entity.HealthMonitor;
+import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
+import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.VirtualIpType;
 
 import javax.xml.namespace.QName;
 import java.util.List;
@@ -70,14 +72,12 @@ public class LoadBalancerMappingTest {
                     Assert.fail("Did not map the port of the node correctly");
                 if (!(node.getAddress().equals("10.1.1.1") || node.getAddress().equals("10.1.1.2")))
                     Assert.fail("Did not map the ipAddress of the node correctly");
-                if (!(node.getCondition().equals(NodeCondition.ENABLED) ||
-                        node.getCondition().equals(NodeCondition.DISABLED)))
+                if (node.isEnabled() == null)
                     Assert.fail("Did not map the NodeCondition of the node correctly");
-
                 if (node.getStatus() == null)
                     continue;
-                if (!(node.getStatus().equals(NodeStatus.ONLINE) ||
-                        node.getStatus().equals(NodeStatus.OFFLINE)))
+                if (!(node.getStatus().equals(CoreNodeStatus.ONLINE) ||
+                        node.getStatus().equals(CoreNodeStatus.OFFLINE)))
                     Assert.fail("Did not map the NodeStatus of the node correctly");
             }
         }
@@ -184,12 +184,11 @@ public class LoadBalancerMappingTest {
                 if (!(node.getAddress().equals("10.1.1.1") || node.getAddress().equals("10.1.1.2"))) {
                     Assert.fail();
                 }
-                if (!(node.getCondition().equals(CoreNodeCondition.DISABLED)
-                        || node.getCondition().equals(CoreNodeCondition.ENABLED))) {
+                if (node.isEnabled() == null) {
                     Assert.fail();
                 }
-                if (!(node.getStatus().equals(NodeStatus.OFFLINE.name())
-                        || node.getStatus().equals(NodeStatus.ONLINE.name()))) {
+                if (!(node.getStatus().equals(CoreNodeStatus.OFFLINE)
+                        || node.getStatus().equals(CoreNodeStatus.ONLINE))) {
                     Assert.fail();
                 }
             }

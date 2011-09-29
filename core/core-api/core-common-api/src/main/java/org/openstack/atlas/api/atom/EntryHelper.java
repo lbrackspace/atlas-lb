@@ -17,7 +17,7 @@ public final class EntryHelper {
         atomSummary.append("Node successfully created with ");
         atomSummary.append("address: '").append(node.getAddress()).append("', ");
         atomSummary.append("port: '").append(node.getPort()).append("', ");
-        atomSummary.append("condition: '").append(node.getCondition()).append("', ");
+        atomSummary.append("enabled: '").append(node.isEnabled()).append("', ");
         atomSummary.append("weight: '").append(node.getWeight()).append("'");
         return atomSummary.toString();
     }
