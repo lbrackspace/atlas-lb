@@ -802,7 +802,14 @@
     <xsd:complexType name="allAbsoluteLimits">
         <xsd:sequence>
             <xsd:element name="customLimits" type="tns:CustomLimits" minOccurs="0" />
-            <xsd:element name="limits" type="papi:limits" minOccurs="0" />
+            <xsd:element name="defaultLimits" type="tns:DefaultLimits" minOccurs="0" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="DefaultLimits" type="tns:DefaultLimits" />
+    <xsd:complexType name="DefaultLimits">
+        <xsd:sequence>
+            <xsd:element name="limit" type="papi:limit" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 

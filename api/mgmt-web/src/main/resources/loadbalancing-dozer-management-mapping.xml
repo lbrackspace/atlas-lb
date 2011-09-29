@@ -779,11 +779,11 @@
     <mapping map-null="false">
         <class-a>org.openstack.atlas.service.domain.pojos.AllAbsoluteLimits</class-a>
         <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.AllAbsoluteLimits</class-b>
-        <field> <!-- map-id="allAbsoluteLimitsDefault">-->
+        <field map-id="allAbsoluteLimitsDefault">
             <a>defaultLimits</a>
-            <b>limits</b>
+            <b>defaultLimits</b>
             <a-hint>org.openstack.atlas.service.domain.entities.LimitType</a-hint>
-            <b-hint>org.openstack.atlas.docs.loadbalancers.api.management.v1.Limits</b-hint>
+            <b-hint>org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit</b-hint>
         </field>
         <field map-id="allAbsoluteLimitsCustom">
             <a>customLimits</a>
@@ -793,20 +793,18 @@
         </field>
     </mapping>
 
-    <!--<mapping map-null="false" map-id="allAbsoluteLimitsDefault">-->
-        <!--<class-a>org.openstack.atlas.service.domain.entities.LimitType</class-a>-->
-        <!--<class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.Limits</class-b>-->
-    <!--</mapping>-->
+    <mapping map-null="false" map-id="allAbsoluteLimitsDefault">
+        <class-a>org.openstack.atlas.service.domain.entities.LimitType</class-a>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit</class-b>
+        <field>
+            <a>defaultValue</a>
+            <b>value</b>
+        </field>
+    </mapping>
 
     <mapping map-null="false" map-id="allAbsoluteLimitsCustom">
         <class-a>org.openstack.atlas.service.domain.entities.AccountLimit</class-a>
         <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit</class-b>
-        <!--<field>-->
-            <!--<a>id</a>-->
-            <!--<b>id</b>-->
-            <!--<a-hint>java.lang.Integer</a-hint>-->
-            <!--<b-hint>org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit</b-hint>-->
-        <!--</field>-->
         <field>
             <a>limit</a>
             <b>value</b>

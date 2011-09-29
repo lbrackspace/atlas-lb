@@ -14,7 +14,7 @@ public class LimitType implements Serializable {
     private AccountLimitType name;
 
     @Column(name = "default_value", nullable = false)
-    private int defaultValue;
+    private Integer defaultValue;
 
     @Column(name = "description", nullable = false)
     private String description;
@@ -27,11 +27,11 @@ public class LimitType implements Serializable {
         this.name = name;
     }
 
-    public int getDefaultValue() {
+    public Integer getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(int defaultValue) {
+    public void setDefaultValue(Integer defaultValue) {
         this.defaultValue = defaultValue;
     }
 

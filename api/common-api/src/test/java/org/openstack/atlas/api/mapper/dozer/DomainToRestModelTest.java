@@ -1,19 +1,18 @@
 package org.openstack.atlas.api.mapper.dozer;
 
 
+import org.dozer.DozerBeanMapper;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.openstack.atlas.api.mapper.DomainToRestModel;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LimitTypes;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Limits;
 import org.openstack.atlas.service.domain.entities.AccountLimitType;
 import org.openstack.atlas.service.domain.entities.LimitType;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.dozer.DozerBeanMapper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
 
 public class DomainToRestModelTest {
 
@@ -68,7 +67,7 @@ public class DomainToRestModelTest {
             org.openstack.atlas.docs.loadbalancers.api.v1.LimitType rlt = rlts.getLimitTypes().get(i);
             LimitType dlt = dLimitList.get(i);
             Assert.assertEquals(dlt.getName().name(),rlt.getName());
-            Assert.assertEquals(dlt.getDefaultValue(), (int)rlt.getDefaultValue());
+            Assert.assertEquals(dlt.getDefaultValue(), (Integer)rlt.getDefaultValue());
             Assert.assertEquals(dlt.getDescription(), rlt.getDescription());
         }
 
