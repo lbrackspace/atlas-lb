@@ -3,6 +3,8 @@ package org.openstack.atlas.api.mgmt.resources;
 import java.util.ArrayList;
 import java.util.HashSet;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
+import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
+import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
 import org.openstack.atlas.service.domain.entities.AccountLimit;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
@@ -119,8 +121,16 @@ public class ClusterResource extends ManagementDependencyProvider {
         if (!isUserInRole("cp,ops")) {
             return ResponseFactory.accessDenied();
         }
+        if(vBlocks == null){
+            String error = "VirtualIpBlocks must not be null";
+            return getValidationFaultResponse(error);
+        }
         try {
             IPv4Cidrs ipv4Cidrs = getIpv4SubnetCidrs(id);
+            List<String> errors = getIpsNotContainedInASubnet(vBlocks, ipv4Cidrs);
+            if(!errors.isEmpty()){
+                return getValidationFaultResponse(errors);
+            }
             clusterService.addVirtualIpBlocks(getDozerMapper().map(vBlocks, org.openstack.atlas.service.domain.pojos.VirtualIpBlocks.class), id);
             return Response.status(200).entity(vBlocks).build();
         } catch (Exception ex) {
@@ -299,11 +309,27 @@ public class ClusterResource extends ManagementDependencyProvider {
         this.errorpageResource = errorpageResource;
     }
 
-    private List<String> getIpsNotContainedInASubnet(VirtualIpBlocks vBlocks, IPv4Cidrs ipv4Cidrs) {
+    private List<String> getIpsNotContainedInASubnet(VirtualIpBlocks vBlocks, IPv4Cidrs ipv4Cidrs) throws IPStringConversionException, IPOctetOutOfRangeException {
         List<String> errors = new ArrayList<String>();
         for(VirtualIpBlock vBlock : vBlocks.getVirtualIpBlocks()){
             String first = vBlock.getFirstIp();
             String last = vBlock.getLastIp();
+            long lo = IPv4ToolSet.ip2long(first);
+            long hi = IPv4ToolSet.ip2long(last);
+            if(lo>hi){
+                String msg = String.format("LastIP=%s and FirstIP=%s must have been switched will not proceed",last,first);
+                errors.add(msg);
+                continue;
+            }
+            for(long i=lo;i<=hi;i++){
+                String ipStr = IPv4ToolSet.long2ip(i);
+                List<String> containingCidrs = ipv4Cidrs.getCidrsContainingIp(ipStr);
+                if(containingCidrs.isEmpty()){
+                    String msg = String.format("ip=%s not found in any Cidrs",ipStr);
+                    errors.add(msg);
+                }
+            }
+
         }
         return errors;
     }
