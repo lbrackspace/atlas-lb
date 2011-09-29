@@ -12,14 +12,6 @@
             org.openstack.atlas.rax.domain.entity.RaxLoadBalancer
         </class-b>
         <field>
-            <a>algorithm</a>
-            <b>algorithm</b>
-        </field>
-        <field>
-            <a>protocol</a>
-            <b>protocol</b>
-        </field>
-        <field>
             <a>nodes</a>
             <b>nodes</b>
             <a-hint>org.openstack.atlas.core.api.v1.Node</a-hint>
@@ -50,18 +42,6 @@
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">
             <a>connectionLogging</a>
             <b>connectionLogging</b>
-        </field>
-        <field>
-            <a>created</a>
-            <b>created</b>
-        </field>
-        <field>
-            <a>updated</a>
-            <b>updated</b>
-        </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumConverter">
-            <a>status</a>
-            <b>status</b>
         </field>
         <field custom-converter="org.openstack.atlas.rax.api.mapper.dozer.converter.CrazyNameConverter">
             <a>otherAttributes</a>

@@ -22,8 +22,29 @@ import java.util.Set;
 public class LoadBalancer extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
+    @Column(name = "account_id", nullable = false, length = 32)
+    private Integer accountId;
+
     @Column(name = "name", length = 128)
     private String name;
+
+    @Column(name = "algorithm", nullable = false)
+    private String algorithm = CoreAlgorithmType.ROUND_ROBIN;
+
+    @JoinColumn(name = "protocol", nullable = false)
+    private String protocol = CoreProtocolType.HTTP;
+
+    @Column(name = "port", nullable = false)
+    private Integer port = 80;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Calendar created;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Calendar updated;
+
+    @JoinColumn(name = "status", nullable = false)
+    private String status;
 
     @OneToMany(mappedBy = "loadBalancer", fetch = FetchType.EAGER)
     private Set<LoadBalancerJoinVip> loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
@@ -43,15 +64,6 @@ public class LoadBalancer extends Entity implements Serializable {
     @JoinColumn(name = "host_id", nullable = true)
     private Host host;
 
-    @Column(name = "algorithm", nullable = false)
-    private String algorithm = CoreAlgorithmType.ROUND_ROBIN;
-
-    @Column(name = "port", nullable = false)
-    private Integer port = 80;
-
-    @Column(name = "account_id", nullable = false, length = 32)
-    private Integer accountId;
-
     @JoinColumn(name = "sessionPersistence", nullable = false)
     @Enumerated(EnumType.STRING)
     private SessionPersistence sessionPersistence;
@@ -59,24 +71,11 @@ public class LoadBalancer extends Entity implements Serializable {
     @Column(name = "connection_logging", nullable = false)
     private Boolean connectionLogging = false;
 
-    @JoinColumn(name = "protocol", nullable = false)
-    private String protocol = CoreProtocolType.HTTP;
-
-    @JoinColumn(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LoadBalancerStatus status;
-
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadBalancer")
     private ConnectionThrottle connectionThrottle;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadBalancer")
     private HealthMonitor healthMonitor;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Calendar created;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Calendar updated;
 
     @Transient
     private VirtualIpDozerWrapper virtualIpDozerWrapper;
@@ -191,11 +190,12 @@ public class LoadBalancer extends Entity implements Serializable {
         this.port = port;
     }
 
-    public LoadBalancerStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(LoadBalancerStatus status) {
+    public void setStatus(String status) {
+        if (!AtlasTypeHelper.isValidLoadBalancerStatus(status)) throw new RuntimeException("Load balancer status not supported.");
         this.status = status;
     }
 

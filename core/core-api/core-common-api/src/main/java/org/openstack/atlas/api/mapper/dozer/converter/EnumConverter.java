@@ -13,16 +13,6 @@ public class EnumConverter implements CustomConverter {
             return null;
         }
 
-        // LoadBalancerStatus -> String
-        if (sourceFieldValue instanceof LoadBalancerStatus && destinationClass == String.class) {
-            return ((LoadBalancerStatus)sourceFieldValue).toString();
-        }
-
-        // String -> LoadBalancerStatus
-        if(sourceFieldValue instanceof String && destinationClass == LoadBalancerStatus.class) {
-            return LoadBalancerStatus.valueOf((String)sourceFieldValue);
-        }
-
         if (sourceFieldValue instanceof VirtualIp) {
             return IpVersion.IPV4;
         }

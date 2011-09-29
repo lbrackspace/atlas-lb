@@ -5,6 +5,7 @@ import org.junit.BeforeClass;
 import org.openstack.atlas.api.mapper.dozer.MapperBuilder;
 import org.openstack.atlas.datamodel.AtlasTypeHelper;
 import org.openstack.atlas.datamodel.CoreAlgorithmType;
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.datamodel.CoreProtocolType;
 
 import java.util.ArrayList;
@@ -35,5 +36,6 @@ public class MappingBase {
         AtlasTypeHelper atlasTypeHelper = new AtlasTypeHelper();
         atlasTypeHelper.setAlgorithmType(new CoreAlgorithmType());
         atlasTypeHelper.setProtocolType(new CoreProtocolType());
+        atlasTypeHelper.setLoadBalancerStatus(new CoreLoadBalancerStatus());
     }
 }

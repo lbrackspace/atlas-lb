@@ -4,6 +4,7 @@ import org.junit.*;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.datamodel.AtlasTypeHelper;
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.BadRequestException;
@@ -81,7 +82,7 @@ public class LoadBalancerServiceImplIntegrationTest {
         @Test
         public void shouldPutInBuildStatusWhenCreateSucceeds() throws Exception {
             LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
-            Assert.assertEquals(dbLoadBalancer.getStatus(), LoadBalancerStatus.BUILD);
+            Assert.assertEquals(dbLoadBalancer.getStatus(), CoreLoadBalancerStatus.BUILD);
         }
 
         @Test
@@ -148,27 +149,27 @@ public class LoadBalancerServiceImplIntegrationTest {
         @Test
         public void shouldPutInPendingDeleteStatusWhenPreDeleteSucceeds() throws Exception {
             LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
-            dbLoadBalancer = loadBalancerRepository.changeStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+            dbLoadBalancer = loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ACTIVE);
 
             loadBalancerService.preDelete(loadBalancer.getAccountId(), dbLoadBalancer.getId());
             dbLoadBalancer = loadBalancerRepository.getById(dbLoadBalancer.getId());
-            Assert.assertEquals(dbLoadBalancer.getStatus(), LoadBalancerStatus.PENDING_DELETE);
+            Assert.assertEquals(dbLoadBalancer.getStatus(), CoreLoadBalancerStatus.PENDING_DELETE);
         }
 
         @Test
         public void shouldPutInDeletedStatusWhenDeleteSucceeds() throws Exception {
             LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
-            dbLoadBalancer = loadBalancerRepository.changeStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+            dbLoadBalancer = loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ACTIVE);
 
             loadBalancerService.delete(dbLoadBalancer);
             dbLoadBalancer = loadBalancerRepository.getById(dbLoadBalancer.getId());
-            Assert.assertEquals(dbLoadBalancer.getStatus(), LoadBalancerStatus.DELETED);
+            Assert.assertEquals(dbLoadBalancer.getStatus(), CoreLoadBalancerStatus.DELETED);
         }
 
         @Test(expected = BadRequestException.class)
         public void shouldThrowExceptionWhenDeletingImmutableLoadBalancer() throws Exception {
             LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
-            dbLoadBalancer = loadBalancerRepository.changeStatus(dbLoadBalancer, LoadBalancerStatus.PENDING_UPDATE);
+            dbLoadBalancer = loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.PENDING_UPDATE);
 
             loadBalancerService.preDelete(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId());
         }

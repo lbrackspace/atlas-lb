@@ -26,7 +26,6 @@
         <class>org.openstack.atlas.service.domain.entity.BlacklistType</class>
         <class>org.openstack.atlas.service.domain.entity.HealthMonitorType</class>
         <class>org.openstack.atlas.service.domain.entity.IpVersion</class>
-        <class>org.openstack.atlas.service.domain.entity.LoadBalancerStatus</class>
         <class>org.openstack.atlas.service.domain.entity.NodeCondition</class>
         <class>org.openstack.atlas.service.domain.entity.NodeStatus</class>
         <class>org.openstack.atlas.service.domain.entity.VirtualIpType</class>

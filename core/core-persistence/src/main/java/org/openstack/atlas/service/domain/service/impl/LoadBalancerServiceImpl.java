@@ -2,9 +2,9 @@ package org.openstack.atlas.service.domain.service.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.common.*;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exception.BadRequestException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.LimitReachedException;
@@ -52,7 +52,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     public LoadBalancer update(final LoadBalancer loadBalancer) throws PersistenceServiceException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
 
-        loadBalancerRepository.changeStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        loadBalancerRepository.changeStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), CoreLoadBalancerStatus.PENDING_UPDATE);
 
         setPropertiesForUpdate(loadBalancer, dbLoadBalancer);
 
@@ -75,7 +75,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     public void preDelete(final Integer accountId, final List<Integer> loadBalancerIds) throws PersistenceServiceException {
         validateDelete(accountId, loadBalancerIds);
         for (int lbId : loadBalancerIds) {
-            loadBalancerRepository.changeStatus(accountId, lbId, LoadBalancerStatus.PENDING_DELETE);
+            loadBalancerRepository.changeStatus(accountId, lbId, CoreLoadBalancerStatus.PENDING_DELETE);
         }
     }
 
@@ -83,7 +83,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     @Transactional
     public void delete(final LoadBalancer lb) throws PersistenceServiceException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
-        dbLoadBalancer.setStatus(LoadBalancerStatus.DELETED);
+        dbLoadBalancer.setStatus(CoreLoadBalancerStatus.DELETED);
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         virtualIpService.removeAllVipsFromLoadBalancer(dbLoadBalancer);
     }
@@ -112,7 +112,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         for (int loadBalancerId : loadBalancerIds) {
             try {
                 LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
-                if (!dbLoadBalancer.getStatus().equals(LoadBalancerStatus.ACTIVE)) {
+                if (!dbLoadBalancer.getStatus().equals(CoreLoadBalancerStatus.ACTIVE)) {
                     LOG.warn(StringHelper.immutableLoadBalancer(dbLoadBalancer));
                     badLbStatusIds.add(loadBalancerId);
                 }

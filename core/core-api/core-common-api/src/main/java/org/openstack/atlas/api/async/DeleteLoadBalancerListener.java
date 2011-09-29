@@ -2,8 +2,8 @@ package org.openstack.atlas.api.async;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.event.UsageEvent;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -12,14 +12,14 @@ import org.openstack.atlas.service.domain.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.jms.Message;
+
 import static org.openstack.atlas.service.domain.common.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.common.AlertType.LBDEVICE_FAILURE;
+import static org.openstack.atlas.service.domain.event.entity.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.event.entity.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.event.entity.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.event.entity.EventType.DELETE_LOADBALANCER;
-import static org.openstack.atlas.service.domain.event.entity.CategoryType.DELETE;
-
-import javax.jms.Message;
 
 @Component
 public class DeleteLoadBalancerListener extends BaseListener {
@@ -55,7 +55,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
             reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId());
             LOG.debug(String.format("Successfully deleted load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
         } catch (Exception e) {
-            loadBalancerRepository.changeStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+            loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ERROR);
             LOG.error(String.format("LoadBalancer status before error was: '%s'", dbLoadBalancer.getStatus()));
             String alertDescription = String.format("Error deleting loadbalancer '%d' in LB Device.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);

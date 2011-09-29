@@ -53,6 +53,7 @@
     <bean id="atlasTypeHelper" class="org.openstack.atlas.datamodel.AtlasTypeHelper" />
     <bean id="algorithmType" class="org.openstack.atlas.datamodel.CoreAlgorithmType" />
     <bean id="protocolType" class="org.openstack.atlas.datamodel.CoreProtocolType" />
+    <bean id="loadBalancerStatus" class="org.openstack.atlas.datamodel.CoreLoadBalancerStatus" />
 
 
 </beans>

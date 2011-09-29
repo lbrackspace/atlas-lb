@@ -1,6 +1,7 @@
 package org.openstack.atlas.service.domain.common;
 
 import org.openstack.atlas.datamodel.CoreAlgorithmType;
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.common.Constants;
 import org.openstack.atlas.service.domain.common.NodesHelper;
@@ -12,7 +13,7 @@ public class LoadBalancerDefaultBuilder {
     }
 
     public static LoadBalancer addDefaultValues(final LoadBalancer loadBalancer) {
-        loadBalancer.setStatus(LoadBalancerStatus.BUILD);
+        loadBalancer.setStatus(CoreLoadBalancerStatus.BUILD);
         NodesHelper.setNodesToStatus(loadBalancer, NodeStatus.ONLINE);
         if (loadBalancer.getAlgorithm() == null) {
             loadBalancer.setAlgorithm(CoreAlgorithmType.ROUND_ROBIN);

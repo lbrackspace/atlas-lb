@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.helper.NodesHelper;
 
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 
 import org.openstack.atlas.service.domain.entity.*;
@@ -22,8 +23,8 @@ import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import javax.jms.Message;
 
 import static org.openstack.atlas.api.atom.EntryHelper.*;
-import static org.openstack.atlas.service.domain.entity.LoadBalancerStatus.ACTIVE;
-import static org.openstack.atlas.service.domain.entity.LoadBalancerStatus.ERROR;
+import static org.openstack.atlas.datamodel.CoreLoadBalancerStatus.ACTIVE;
+import static org.openstack.atlas.datamodel.CoreLoadBalancerStatus.ERROR;
 import static org.openstack.atlas.service.domain.entity.NodeStatus.OFFLINE;
 import static org.openstack.atlas.service.domain.entity.NodeStatus.ONLINE;
 import static org.openstack.atlas.service.domain.event.UsageEvent.SSL_ON;

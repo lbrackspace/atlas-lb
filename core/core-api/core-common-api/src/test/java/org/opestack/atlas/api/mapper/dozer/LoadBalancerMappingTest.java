@@ -52,7 +52,7 @@ public class LoadBalancerMappingTest {
         public void should_map_enumerations_on_the_loadbalancer() {
             Assert.assertEquals(dataModelLoadBalancer.getProtocol(), domainLoadBalancer.getProtocol());
             Assert.assertEquals(dataModelLoadBalancer.getAlgorithm(), domainLoadBalancer.getAlgorithm());
-            Assert.assertEquals(dataModelLoadBalancer.getStatus(), domainLoadBalancer.getStatus().name());
+            Assert.assertEquals(dataModelLoadBalancer.getStatus(), domainLoadBalancer.getStatus());
         }
 
         @Test
@@ -140,7 +140,7 @@ public class LoadBalancerMappingTest {
 
         @Test
         public void should_map_all_loadbalancer_enumerations() {
-            Assert.assertTrue(dataModelLoadBalancer.getStatus().equals(domainLoadBalancer.getStatus().name()));
+            Assert.assertTrue(dataModelLoadBalancer.getStatus().equals(domainLoadBalancer.getStatus()));
             Assert.assertTrue(dataModelLoadBalancer.getProtocol().equals(domainLoadBalancer.getProtocol()));
             Assert.assertTrue(dataModelLoadBalancer.getAlgorithm().equals(domainLoadBalancer.getAlgorithm()));
         }
@@ -232,7 +232,7 @@ public class LoadBalancerMappingTest {
         public void shouldMapCorrectlyWhenGivenAFullyHydratedLoadbalancer() {
             Assert.assertEquals(loadBalancer.getId(), dataModelLb.getId());
             Assert.assertEquals(loadBalancer.getName(), dataModelLb.getName());
-            Assert.assertEquals(loadBalancer.getStatus().name(), dataModelLb.getStatus());
+            Assert.assertEquals(loadBalancer.getStatus(), dataModelLb.getStatus());
             Assert.assertEquals(loadBalancer.getAlgorithm(), dataModelLb.getAlgorithm());
             Assert.assertEquals(loadBalancer.getProtocol(), dataModelLb.getProtocol());
             Assert.assertEquals(loadBalancer.getPort(), dataModelLb.getPort());

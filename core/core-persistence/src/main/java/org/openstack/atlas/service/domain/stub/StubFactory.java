@@ -204,7 +204,7 @@ public class StubFactory {
         loadBalancer.setPort(LOAD_BALANCER_PORT);
         loadBalancer.setProtocol(LOAD_BALANCER_PROTOCOL);
         loadBalancer.setAlgorithm(LOAD_BALANCER_ALGORITHM);
-        loadBalancer.setStatus(org.openstack.atlas.service.domain.entity.LoadBalancerStatus.valueOf(LOAD_BALANCER_STATUS));
+        loadBalancer.setStatus(LOAD_BALANCER_STATUS);
 
         Node node1 = new Node();
         node1.setId(NODE1_ID);

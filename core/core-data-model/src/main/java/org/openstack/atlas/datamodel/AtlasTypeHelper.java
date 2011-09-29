@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 public final class AtlasTypeHelper {
     private static AlgorithmType algorithmType;
     private static ProtocolType protocolType;
+    private static LoadBalancerStatus loadBalancerStatus;
 
     @Autowired(required = true)
     public void setAlgorithmType(AlgorithmType algorithmType) {
@@ -18,12 +19,21 @@ public final class AtlasTypeHelper {
         AtlasTypeHelper.protocolType = protocolType;
     }
 
+    @Autowired(required = true)
+    public void setLoadBalancerStatus(LoadBalancerStatus loadBalancerStatus) {
+        AtlasTypeHelper.loadBalancerStatus = loadBalancerStatus;
+    }
+
     public static boolean isValidAlgorithm(String algorithm) {
         return isValidAtlasType(algorithm, algorithmType);
     }
 
     public static boolean isValidProtocol(String protocol) {
         return isValidAtlasType(protocol, protocolType);
+    }
+
+    public static boolean isValidLoadBalancerStatus(String status) {
+        return isValidAtlasType(status, loadBalancerStatus);
     }
 
     private static boolean isValidAtlasType(String string, AtlasType atlasType) {
