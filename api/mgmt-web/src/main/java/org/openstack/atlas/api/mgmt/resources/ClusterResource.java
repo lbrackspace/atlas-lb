@@ -299,7 +299,7 @@ public class ClusterResource extends ManagementDependencyProvider {
         this.errorpageResource = errorpageResource;
     }
 
-    private List<String> getIpsThatNotContainedInASubnet(VirtualIpBlocks vBlocks, IPv4Cidrs ipv4Cidrs) {
+    private List<String> getIpsNotContainedInASubnet(VirtualIpBlocks vBlocks, IPv4Cidrs ipv4Cidrs) {
         List<String> errors = new ArrayList<String>();
         for(VirtualIpBlock vBlock : vBlocks.getVirtualIpBlocks()){
             String first = vBlock.getFirstIp();
