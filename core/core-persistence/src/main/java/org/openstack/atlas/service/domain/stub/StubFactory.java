@@ -79,10 +79,14 @@ public class StubFactory {
     }
 
     public static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost() {
-        return createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, true, null);
+        return createDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, true, null);
     }
 
-    protected static org.openstack.atlas.core.api.v1.Node createMinimalDataModelNodeForPost(Integer id, String address, Integer port, Integer weight, boolean enabled, String status) {
+    public static org.openstack.atlas.core.api.v1.Node createHydratedDataModelNode() {
+        return createDataModelNodeForPost(NODE1_ID, NODE1_ADDRESS, NODE1_PORT, NODE1_WEIGHT, NODE1_ENABLED, NODE1_STATUS);
+    }
+
+    protected static org.openstack.atlas.core.api.v1.Node createDataModelNodeForPost(Integer id, String address, Integer port, Integer weight, boolean enabled, String status) {
         org.openstack.atlas.core.api.v1.Node node = new org.openstack.atlas.core.api.v1.Node();
 
         node.setId(id);
@@ -100,7 +104,7 @@ public class StubFactory {
 
         loadBalancer.setName(LOAD_BALANCER_NAME);
 
-        org.openstack.atlas.core.api.v1.Node node1 = createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, true, null);
+        org.openstack.atlas.core.api.v1.Node node1 = createDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, true, null);
         final org.openstack.atlas.core.api.v1.Nodes nodes = new org.openstack.atlas.core.api.v1.Nodes();
         nodes.getNodes().add(node1);
         loadBalancer.getNodes().addAll(nodes.getNodes());
@@ -159,8 +163,8 @@ public class StubFactory {
         loadBalancer.setAlgorithm(LOAD_BALANCER_ALGORITHM);
         loadBalancer.setStatus(LOAD_BALANCER_STATUS);
 
-        org.openstack.atlas.core.api.v1.Node node1 = createMinimalDataModelNodeForPost(NODE1_ID, NODE1_ADDRESS, NODE1_PORT, NODE1_WEIGHT, NODE1_ENABLED, NODE1_STATUS);
-        org.openstack.atlas.core.api.v1.Node node2 = createMinimalDataModelNodeForPost(NODE2_ID, NODE2_ADDRESS, NODE2_PORT, NODE2_WEIGHT, NODE2_ENABLED, NODE2_STATUS);
+        org.openstack.atlas.core.api.v1.Node node1 = createDataModelNodeForPost(NODE1_ID, NODE1_ADDRESS, NODE1_PORT, NODE1_WEIGHT, NODE1_ENABLED, NODE1_STATUS);
+        org.openstack.atlas.core.api.v1.Node node2 = createDataModelNodeForPost(NODE2_ID, NODE2_ADDRESS, NODE2_PORT, NODE2_WEIGHT, NODE2_ENABLED, NODE2_STATUS);
         final org.openstack.atlas.core.api.v1.Nodes nodes = new org.openstack.atlas.core.api.v1.Nodes();
         nodes.getNodes().add(node1);
         nodes.getNodes().add(node2);
@@ -255,7 +259,7 @@ public class StubFactory {
     public static Nodes createMinimalDataModelNodesForPost() {
         Nodes nodes = new Nodes();
 
-        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, true, null));
+        nodes.getNodes().add(createDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, null, true, null));
 
         return nodes;
     }
@@ -263,8 +267,8 @@ public class StubFactory {
     public static Nodes createHydratedDataModelNodesForPost() {
         Nodes nodes = new Nodes();
 
-        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, NODE1_WEIGHT, NODE1_ENABLED, null));
-        nodes.getNodes().add(createMinimalDataModelNodeForPost(null, NODE2_ADDRESS, NODE2_PORT, NODE2_WEIGHT, NODE2_ENABLED, null));
+        nodes.getNodes().add(createDataModelNodeForPost(null, NODE1_ADDRESS, NODE1_PORT, NODE1_WEIGHT, NODE1_ENABLED, null));
+        nodes.getNodes().add(createDataModelNodeForPost(null, NODE2_ADDRESS, NODE2_PORT, NODE2_WEIGHT, NODE2_ENABLED, null));
 
         return nodes;
     }
@@ -302,5 +306,18 @@ public class StubFactory {
         org.openstack.atlas.core.api.v1.SessionPersistence sessionPersistence = new org.openstack.atlas.core.api.v1.SessionPersistence();
         sessionPersistence.setPersistenceType(SESSION_PERSISTENCE_TYPE);
         return sessionPersistence;
+    }
+
+    public static Node createHydratedDomainNode() {
+        Node node = new Node();
+
+        node.setId(NODE1_ID);
+        node.setAddress(NODE1_ADDRESS);
+        node.setPort(NODE1_PORT);
+        node.setWeight(NODE1_WEIGHT);
+        node.setEnabled(NODE1_ENABLED);
+        node.setStatus(NODE1_STATUS);
+
+        return node;
     }
 }

@@ -18,45 +18,45 @@ import java.util.List;
 @RunWith(Enclosed.class)
 public class LoadBalancerMappingTest {
 
-    public static class WhenMappingALoadBalancerFromDataModelToDomain extends MappingBase {
-        private org.openstack.atlas.core.api.v1.LoadBalancer dataModelLoadBalancer;
+    public static class WhenMappingALoadBalancerFromApiToDomain extends MappingBase {
+        private org.openstack.atlas.core.api.v1.LoadBalancer apiLoadBalancer;
         private org.openstack.atlas.service.domain.entity.LoadBalancer domainLoadBalancer;
 
         @Before
         public void setUp() throws Exception {
-            dataModelLoadBalancer = StubFactory.createHydratedDataModelLoadBalancer();
-            domainLoadBalancer = mapper.map(dataModelLoadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
+            apiLoadBalancer = StubFactory.createHydratedDataModelLoadBalancer();
+            domainLoadBalancer = mapper.map(apiLoadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
         }
 
         @Test
         public void should_not_fail_when_data_model_loadBalancer_is_empty() {
-            dataModelLoadBalancer = new LoadBalancer();
+            apiLoadBalancer = new LoadBalancer();
             try {
-                domainLoadBalancer = mapper.map(dataModelLoadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
+                domainLoadBalancer = mapper.map(apiLoadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
             } catch (Exception e) {
-                Assert.fail("Empty domain load balancer caused this exception");
+                Assert.fail("Empty API load balancer caused this exception");
             }
         }
 
         @Test
-        public void should_map_name_and_other_simple_types() {
-            Assert.assertEquals(dataModelLoadBalancer.getId(), domainLoadBalancer.getId());
-            Assert.assertEquals(dataModelLoadBalancer.getName(), domainLoadBalancer.getName());
-            Assert.assertEquals(dataModelLoadBalancer.getPort(), domainLoadBalancer.getPort());
-            Assert.assertEquals(dataModelLoadBalancer.getCreated(), domainLoadBalancer.getCreated());
-            Assert.assertEquals(dataModelLoadBalancer.getUpdated(), domainLoadBalancer.getUpdated());
+        public void shouldMapAllAttributes() {
+            Assert.assertEquals(apiLoadBalancer.getId(), domainLoadBalancer.getId());
+            Assert.assertEquals(apiLoadBalancer.getName(), domainLoadBalancer.getName());
+            Assert.assertEquals(apiLoadBalancer.getPort(), domainLoadBalancer.getPort());
+            Assert.assertEquals(apiLoadBalancer.getCreated(), domainLoadBalancer.getCreated());
+            Assert.assertEquals(apiLoadBalancer.getUpdated(), domainLoadBalancer.getUpdated());
         }
 
         @Test
         public void should_map_enumerations_on_the_loadbalancer() {
-            Assert.assertEquals(dataModelLoadBalancer.getProtocol(), domainLoadBalancer.getProtocol());
-            Assert.assertEquals(dataModelLoadBalancer.getAlgorithm(), domainLoadBalancer.getAlgorithm());
-            Assert.assertEquals(dataModelLoadBalancer.getStatus(), domainLoadBalancer.getStatus());
+            Assert.assertEquals(apiLoadBalancer.getProtocol(), domainLoadBalancer.getProtocol());
+            Assert.assertEquals(apiLoadBalancer.getAlgorithm(), domainLoadBalancer.getAlgorithm());
+            Assert.assertEquals(apiLoadBalancer.getStatus(), domainLoadBalancer.getStatus());
         }
 
         @Test
         public void should_map_the_node_list_across_the_two_load_balancers_and_the_properties_of_individual_nodes() {
-            Assert.assertEquals(dataModelLoadBalancer.getNodes().size(), domainLoadBalancer.getNodes().size());
+            Assert.assertEquals(apiLoadBalancer.getNodes().size(), domainLoadBalancer.getNodes().size());
 
             for (Node node : domainLoadBalancer.getNodes()) {
                 if (!(node.getId() == 1 || node.getId() == 2))
@@ -77,7 +77,7 @@ public class LoadBalancerMappingTest {
 
         @Test
         public void should_map_the_virtual_ips_across_the_two_load_balancers_and_the_properties_of_individual_nodes() {
-            Assert.assertEquals(dataModelLoadBalancer.getVirtualIps().size(), domainLoadBalancer.getLoadBalancerJoinVipSet().size());
+            Assert.assertEquals(apiLoadBalancer.getVirtualIps().size(), domainLoadBalancer.getLoadBalancerJoinVipSet().size());
 
             for (LoadBalancerJoinVip loadBalancerJoinVip : domainLoadBalancer.getLoadBalancerJoinVipSet()) {
                 Assert.assertEquals(new Integer(1), loadBalancerJoinVip.getVirtualIp().getId());
@@ -88,63 +88,63 @@ public class LoadBalancerMappingTest {
 
         @Test
         public void should_map_the_connection_limits_across_the_two_load_balancers() {
-            Assert.assertEquals(dataModelLoadBalancer.getConnectionThrottle().getMaxRequestRate(), domainLoadBalancer.getConnectionThrottle().getMaxRequestRate());
-            Assert.assertEquals(dataModelLoadBalancer.getConnectionThrottle().getRateInterval(), domainLoadBalancer.getConnectionThrottle().getRateInterval());
+            Assert.assertEquals(apiLoadBalancer.getConnectionThrottle().getMaxRequestRate(), domainLoadBalancer.getConnectionThrottle().getMaxRequestRate());
+            Assert.assertEquals(apiLoadBalancer.getConnectionThrottle().getRateInterval(), domainLoadBalancer.getConnectionThrottle().getRateInterval());
         }
 
         @Test
         public void should_map_health_monitor_and_its_properties() {
             HealthMonitor healthMonitor = domainLoadBalancer.getHealthMonitor();
             Assert.assertEquals(null, healthMonitor.getId());
-            Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getAttemptsBeforeDeactivation(), healthMonitor.getAttemptsBeforeDeactivation());
-            Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getDelay(), healthMonitor.getDelay());
-            Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getTimeout(), healthMonitor.getTimeout());
-            Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getPath(), healthMonitor.getPath());
-            Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getType(), healthMonitor.getType().name());
+            Assert.assertEquals(apiLoadBalancer.getHealthMonitor().getAttemptsBeforeDeactivation(), healthMonitor.getAttemptsBeforeDeactivation());
+            Assert.assertEquals(apiLoadBalancer.getHealthMonitor().getDelay(), healthMonitor.getDelay());
+            Assert.assertEquals(apiLoadBalancer.getHealthMonitor().getTimeout(), healthMonitor.getTimeout());
+            Assert.assertEquals(apiLoadBalancer.getHealthMonitor().getPath(), healthMonitor.getPath());
+            Assert.assertEquals(apiLoadBalancer.getHealthMonitor().getType(), healthMonitor.getType().name());
         }
     }
 
-    public static class WhenMappingALoadBalancerFromDomainToDataModel extends MappingBase {
+    public static class WhenMappingALoadBalancerFromDomainToApi extends MappingBase {
 
         private org.openstack.atlas.service.domain.entity.LoadBalancer domainLoadBalancer;
-        private org.openstack.atlas.core.api.v1.LoadBalancer dataModelLoadBalancer;
+        private org.openstack.atlas.core.api.v1.LoadBalancer apiLoadBalancer;
 
         @Before
         public void setUp() {
             domainLoadBalancer = StubFactory.createHydratedDomainLoadBalancer();
-            dataModelLoadBalancer = mapper.map(domainLoadBalancer, org.openstack.atlas.core.api.v1.LoadBalancer.class);
+            apiLoadBalancer = mapper.map(domainLoadBalancer, org.openstack.atlas.core.api.v1.LoadBalancer.class);
         }
 
         @Test
         public void should_not_fail_when_domain_loadBalancer_is_empty() {
             domainLoadBalancer = new org.openstack.atlas.service.domain.entity.LoadBalancer();
             try {
-                dataModelLoadBalancer = mapper.map(domainLoadBalancer, org.openstack.atlas.core.api.v1.LoadBalancer.class);
+                apiLoadBalancer = mapper.map(domainLoadBalancer, org.openstack.atlas.core.api.v1.LoadBalancer.class);
             } catch (Exception e) {
                 Assert.fail("Empty domain load balancer caused this exception");
             }
         }
 
         @Test
-        public void should_map_name_and_other_simple_types() {
-            Assert.assertEquals(domainLoadBalancer.getId(), dataModelLoadBalancer.getId());
-            Assert.assertEquals(domainLoadBalancer.getName(), dataModelLoadBalancer.getName());
-            Assert.assertEquals(domainLoadBalancer.getPort(), dataModelLoadBalancer.getPort());
-            Assert.assertEquals(domainLoadBalancer.getCreated(), dataModelLoadBalancer.getCreated());
-            Assert.assertEquals(domainLoadBalancer.getUpdated(), dataModelLoadBalancer.getUpdated());
-            Assert.assertEquals(domainLoadBalancer.getConnectionLogging(), dataModelLoadBalancer.getConnectionLogging().isEnabled());
+        public void shouldMapAllAttributes() {
+            Assert.assertEquals(domainLoadBalancer.getId(), apiLoadBalancer.getId());
+            Assert.assertEquals(domainLoadBalancer.getName(), apiLoadBalancer.getName());
+            Assert.assertEquals(domainLoadBalancer.getPort(), apiLoadBalancer.getPort());
+            Assert.assertEquals(domainLoadBalancer.getCreated(), apiLoadBalancer.getCreated());
+            Assert.assertEquals(domainLoadBalancer.getUpdated(), apiLoadBalancer.getUpdated());
+            Assert.assertEquals(domainLoadBalancer.getConnectionLogging(), apiLoadBalancer.getConnectionLogging().isEnabled());
         }
 
         @Test
         public void should_map_all_loadbalancer_enumerations() {
-            Assert.assertTrue(dataModelLoadBalancer.getStatus().equals(domainLoadBalancer.getStatus()));
-            Assert.assertTrue(dataModelLoadBalancer.getProtocol().equals(domainLoadBalancer.getProtocol()));
-            Assert.assertTrue(dataModelLoadBalancer.getAlgorithm().equals(domainLoadBalancer.getAlgorithm()));
+            Assert.assertTrue(apiLoadBalancer.getStatus().equals(domainLoadBalancer.getStatus()));
+            Assert.assertTrue(apiLoadBalancer.getProtocol().equals(domainLoadBalancer.getProtocol()));
+            Assert.assertTrue(apiLoadBalancer.getAlgorithm().equals(domainLoadBalancer.getAlgorithm()));
         }
 
         @Test
         public void should_map_nodes_and_its_properties() {
-            final List<org.openstack.atlas.core.api.v1.Node> list = dataModelLoadBalancer.getNodes();
+            final List<org.openstack.atlas.core.api.v1.Node> list = apiLoadBalancer.getNodes();
             Assert.assertEquals(domainLoadBalancer.getNodes().size(), list.size());
 
             for (org.openstack.atlas.core.api.v1.Node node : list) {
@@ -169,7 +169,7 @@ public class LoadBalancerMappingTest {
 
         @Test
         public void should_map_virtual_ips_across_two_loadbalancers() {
-            final List<org.openstack.atlas.core.api.v1.VirtualIp> list = dataModelLoadBalancer.getVirtualIps();
+            final List<org.openstack.atlas.core.api.v1.VirtualIp> list = apiLoadBalancer.getVirtualIps();
             Assert.assertEquals(domainLoadBalancer.getLoadBalancerJoinVipSet().size(), list.size());
 
             for (org.openstack.atlas.core.api.v1.VirtualIp virtualIp : list) {
@@ -184,27 +184,27 @@ public class LoadBalancerMappingTest {
 
         @Test
         public void should_map_connection_limits_across_the_two_loadbalancers() {
-            ConnectionThrottle throttle = dataModelLoadBalancer.getConnectionThrottle();
+            ConnectionThrottle throttle = apiLoadBalancer.getConnectionThrottle();
             Assert.assertEquals(domainLoadBalancer.getConnectionThrottle().getMaxRequestRate(), throttle.getMaxRequestRate());
             Assert.assertEquals(domainLoadBalancer.getConnectionThrottle().getRateInterval(), throttle.getRateInterval());
         }
 
         @Test
         public void should_map_session_persistence() {
-            final SessionPersistence sessionPersistence = dataModelLoadBalancer.getSessionPersistence();
+            final SessionPersistence sessionPersistence = apiLoadBalancer.getSessionPersistence();
             Assert.assertEquals(domainLoadBalancer.getSessionPersistence().name(), sessionPersistence.getPersistenceType());
         }
 
         @Test
         public void should_map_session_persistence_to_null_when_data_model_session_persistence_is_set_to_none() {
             domainLoadBalancer.setSessionPersistence(org.openstack.atlas.service.domain.entity.SessionPersistence.NONE);
-            dataModelLoadBalancer = mapper.map(domainLoadBalancer, org.openstack.atlas.core.api.v1.LoadBalancer.class);
-            Assert.assertNull(dataModelLoadBalancer.getSessionPersistence());
+            apiLoadBalancer = mapper.map(domainLoadBalancer, org.openstack.atlas.core.api.v1.LoadBalancer.class);
+            Assert.assertNull(apiLoadBalancer.getSessionPersistence());
         }
 
         @Test
         public void should_map_health_monitor_and_its_properties() {
-            org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = dataModelLoadBalancer.getHealthMonitor();
+            org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = apiLoadBalancer.getHealthMonitor();
             Assert.assertEquals(domainLoadBalancer.getHealthMonitor().getAttemptsBeforeDeactivation(), healthMonitor.getAttemptsBeforeDeactivation());
             Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getDelay()), healthMonitor.getDelay());
             Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getTimeout()), healthMonitor.getTimeout());
