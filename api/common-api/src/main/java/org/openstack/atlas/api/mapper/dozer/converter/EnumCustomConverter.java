@@ -71,7 +71,10 @@ public class EnumCustomConverter implements CustomConverter {
 
         if(sourceFieldValue instanceof String && destinationClass == AccountLimitType.class) {
             return AccountLimitType.valueOf((String) sourceFieldValue);
+        }
 
+        if (sourceFieldValue instanceof AccountLimitType && destinationClass == java.lang.String.class) {
+            return ((AccountLimitType)sourceFieldValue).toString();
         }
 
         throw new NoMappableConstantException("Cannot map source type: " + sourceClass.getName());

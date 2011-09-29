@@ -32,7 +32,7 @@ public class AllAbsoluteListTest {
 
             AccountLimit customLimit = new AccountLimit();
             customLimit.setAccountId(1234);
-            customLimit.setId(1);
+            customLimit.setId((Integer)1);
             customLimit.setLimit(30);
             customLimit.setUserName("testUser");
 
@@ -64,8 +64,9 @@ public class AllAbsoluteListTest {
             try {
                 org.openstack.atlas.docs.loadbalancers.api.management.v1.AllAbsoluteLimits mapLimits = mapper.map(limits,
                     org.openstack.atlas.docs.loadbalancers.api.management.v1.AllAbsoluteLimits.class);
+                Assert.assertTrue("AllAbsoluteLimits classes mapped successfully.", true);
             } catch (Exception e) {
-                Assert.fail("List didn't map properly to the other list according to the mapping file.");
+                Assert.fail(e.getMessage());
             }
         }
     }
