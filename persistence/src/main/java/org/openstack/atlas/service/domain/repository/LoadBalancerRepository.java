@@ -64,7 +64,7 @@ public class LoadBalancerRepository {
         List<Defaults> defaultsList = new ArrayList<Defaults>();
         Defaults up;
         String qStr = "FROM Defaults d WHERE d.name = :globalError";
-        Query q = entityManager.createQuery(qStr).setParameter("globalError", "global_error.html");
+        Query q = entityManager.createQuery(qStr).setParameter("globalError", Constants.DEFAULT_ERRORFILE);
         defaultsList = q.setMaxResults(1).getResultList();
         if (defaultsList.size() <= 0) {
             up = null;
