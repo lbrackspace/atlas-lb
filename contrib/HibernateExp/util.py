@@ -164,8 +164,7 @@ class ZxtmStubs(object):
                "p" :"getPoolBinding",
                "pc":"getProtectionBinding",
                "tg":"getTrafficIpGroupBinding",
-               "vs":"getVirtualServerBinding"
-}
+               "vs":"getVirtualServerBinding"}
 
     def __init__(self,endpoints,user,passwd):
         self.user = user
