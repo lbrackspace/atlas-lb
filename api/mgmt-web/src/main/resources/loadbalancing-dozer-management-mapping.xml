@@ -810,14 +810,10 @@
         <field>
             <a>limit</a>
             <b>value</b>
-            <a-hint>org.openstack.atlas.service.domain.entities.AccountLimit</a-hint>
-            <b-hint>org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit</b-hint>
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
             <a>limitType.name</a>
             <b>name</b>
-            <a-hint>org.openstack.atlas.service.domain.entities.AccountLimit</a-hint>
-            <b-hint>org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit</b-hint>
         </field>
     </mapping>
 
