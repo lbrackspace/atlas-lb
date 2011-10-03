@@ -21,6 +21,7 @@ public class MappingBase {
     public static void setupMapper() {
         List<String> mappingFiles = new ArrayList<String>();
         mappingFiles.add(configDozerConfigFile);
+        mappingFiles.add(connectionThrottleDozerConfigFile);
         mappingFiles.add(healthMonitorDozerConfigFile);
         mappingFiles.add(loadBalancerDozerConfigFile);
         mappingFiles.add(nodeDozerConfigFile);
