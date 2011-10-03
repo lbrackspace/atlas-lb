@@ -14,23 +14,44 @@
     </mapping>
 
     <mapping map-null="false" wildcard="false">
-        <class-a>org.openstack.atlas.core.api.v1.VirtualIp</class-a>
-        <class-b>org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip</class-b>
+        <class-a>org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip</class-a>
+        <class-b>org.openstack.atlas.core.api.v1.VirtualIp</class-b>
         <field>
-            <a>address</a>
-            <b>virtualIp.address</b>
+            <a>virtualIp.address</a>
+            <b>address</b>
         </field>
         <field>
-            <a>type</a>
-            <b>virtualIp.vipType</b>
+            <a>virtualIp.vipType</a>
+            <b>type</b>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumConverter">
-            <a>ipVersion</a>
-            <b>virtualIp</b>
+        <field type="one-way" custom-converter="org.openstack.atlas.api.mapper.dozer.converter.Vip4Converter">
+            <a>virtualIp</a>
+            <b>ipVersion</b>
         </field>
         <field>
-            <a>id</a>
-            <b>virtualIp.id</b>
+            <a>virtualIp.id</a>
+            <b>id</b>
+        </field>
+    </mapping>
+
+    <mapping map-null="false" wildcard="false" type="one-way">
+        <class-a>org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip6</class-a>
+        <class-b>org.openstack.atlas.core.api.v1.VirtualIp</class-b>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.Vip6Converter">
+            <a>virtualIp</a>
+            <b>address</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.Vip6Converter">
+            <a>virtualIp</a>
+            <b>type</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.Vip6Converter">
+            <a>virtualIp</a>
+            <b>ipVersion</b>
+        </field>
+        <field>
+            <a>virtualIp.id</a>
+            <b>id</b>
         </field>
     </mapping>
     

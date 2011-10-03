@@ -13,11 +13,7 @@ public class EnumConverter implements CustomConverter {
             return null;
         }
 
-        if (sourceFieldValue instanceof VirtualIp) {
-            return IpVersion.IPV4;
-        }
-
-        if (sourceFieldValue instanceof IpVersion) {
+        if (sourceFieldValue instanceof IpVersion && destinationClass == org.openstack.atlas.service.domain.entity.IpVersion.class) {
             return org.openstack.atlas.service.domain.entity.IpVersion.fromDataType((IpVersion) sourceFieldValue);
         }
 
