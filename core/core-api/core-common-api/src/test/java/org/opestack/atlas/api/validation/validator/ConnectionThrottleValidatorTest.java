@@ -23,7 +23,7 @@ public class ConnectionThrottleValidatorTest {
         @Before
         public void standUp() {
             validator = new ConnectionThrottleValidator(new ConnectionThrottleValidatorBuilder());
-            connectionThrottle = StubFactory.createHydratedDataModelConnectionThrottleForPut();
+            connectionThrottle = StubFactory.createHydratedDataModelConnectionThrottle();
         }
 
         @Test

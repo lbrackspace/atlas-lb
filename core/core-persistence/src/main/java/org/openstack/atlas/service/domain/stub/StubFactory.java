@@ -3,11 +3,10 @@ package org.openstack.atlas.service.domain.stub;
 import org.openstack.atlas.core.api.v1.*;
 import org.openstack.atlas.core.api.v1.IpVersion;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
-import org.openstack.atlas.datamodel.*;
+import org.openstack.atlas.datamodel.CoreHealthMonitorType;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
 import org.openstack.atlas.service.domain.entity.HealthMonitor;
-import org.openstack.atlas.service.domain.entity.HealthMonitorType;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.entity.VirtualIp;
@@ -132,9 +131,7 @@ public class StubFactory {
         org.openstack.atlas.core.api.v1.VirtualIp virtualIp2 = new org.openstack.atlas.core.api.v1.VirtualIp();
         virtualIp2.setId(VIP2_ID);
 
-        org.openstack.atlas.core.api.v1.ConnectionThrottle throttle = new org.openstack.atlas.core.api.v1.ConnectionThrottle();
-        throttle.setMaxRequestRate(CONNECTION_THROTTLE_MAX_REQUEST_RATE);
-        throttle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
+        org.openstack.atlas.core.api.v1.ConnectionThrottle throttle = createHydratedDataModelConnectionThrottle();
         loadBalancer.setConnectionThrottle(throttle);
 
         org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = createHydratedDataModelHealthMonitor();
@@ -176,9 +173,7 @@ public class StubFactory {
         virtualIp1.setIpVersion(org.openstack.atlas.core.api.v1.IpVersion.fromValue(VIP1_VERSION));
         loadBalancer.getVirtualIps().add(virtualIp1);
 
-        org.openstack.atlas.core.api.v1.ConnectionThrottle throttle = new org.openstack.atlas.core.api.v1.ConnectionThrottle();
-        throttle.setMaxRequestRate(CONNECTION_THROTTLE_MAX_REQUEST_RATE);
-        throttle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
+        org.openstack.atlas.core.api.v1.ConnectionThrottle throttle = createHydratedDataModelConnectionThrottle();
         loadBalancer.setConnectionThrottle(throttle);
 
         org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = createHydratedDataModelHealthMonitor();
@@ -230,9 +225,7 @@ public class StubFactory {
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip(LOAD_BALANCER_PORT, loadBalancer, virtualIp1);
         loadBalancer.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);
 
-        ConnectionThrottle throttle = new ConnectionThrottle();
-        throttle.setMaxRequestRate(CONNECTION_THROTTLE_MAX_REQUEST_RATE);
-        throttle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
+        ConnectionThrottle throttle = createHydratedDomainConnectionThrottle();
         loadBalancer.setConnectionThrottle(throttle);
 
         HealthMonitor healthMonitor = createHydratedDomainHealthMonitor();
@@ -283,13 +276,22 @@ public class StubFactory {
         return monitor;
     }
 
-    public static org.openstack.atlas.core.api.v1.ConnectionThrottle createHydratedDataModelConnectionThrottleForPut() {
+    public static org.openstack.atlas.core.api.v1.ConnectionThrottle createHydratedDataModelConnectionThrottle() {
         org.openstack.atlas.core.api.v1.ConnectionThrottle throttle = new org.openstack.atlas.core.api.v1.ConnectionThrottle();
 
         throttle.setMaxRequestRate(CONNECTION_THROTTLE_MAX_REQUEST_RATE);
         throttle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
-        
+
         return throttle;
+    }
+
+    public static ConnectionThrottle createHydratedDomainConnectionThrottle() {
+        ConnectionThrottle connectionThrottle = new ConnectionThrottle();
+
+        connectionThrottle.setMaxRequestRate(CONNECTION_THROTTLE_MAX_REQUEST_RATE);
+        connectionThrottle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
+
+        return connectionThrottle;
     }
 
     public static SessionPersistence createHydratedDataModelSessionPersistence() {
@@ -367,7 +369,7 @@ public class StubFactory {
         healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
         healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
         healthMonitor.setPath(HEALTH_MONITOR_PATH);
-        
+
         return healthMonitor;
     }
 
