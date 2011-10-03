@@ -10,6 +10,7 @@ import java.util.List;
 
 public class MappingBase {
     protected static final String configDozerConfigFile = "dozer-config-map.xml";
+    protected static final String connectionThrottleDozerConfigFile = "dozer-connection-throttle-map.xml";
     protected static final String healthMonitorDozerConfigFile = "dozer-health-monitor-map.xml";
     protected static final String loadBalancerDozerConfigFile = "dozer-load-balancer-map.xml";
     protected static final String nodeDozerConfigFile = "dozer-node-map.xml";
