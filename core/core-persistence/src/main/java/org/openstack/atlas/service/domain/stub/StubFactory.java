@@ -7,6 +7,7 @@ import org.openstack.atlas.datamodel.*;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
 import org.openstack.atlas.service.domain.entity.HealthMonitor;
+import org.openstack.atlas.service.domain.entity.HealthMonitorType;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.entity.VirtualIp;
@@ -50,7 +51,7 @@ public class StubFactory {
     protected static final Integer HEALTH_MONITOR_DELAY = 5;
     protected static final Integer HEALTH_MONITOR_TIMEOUT = 10;
     protected static final String HEALTH_MONITOR_PATH = "/";
-    protected static final String HEALTH_MONITOR_TYPE = "CONNECT";
+    protected static final String HEALTH_MONITOR_TYPE = "HTTP";
     protected static final String SESSION_PERSISTENCE_TYPE = "HTTP_COOKIE";
 
     public static org.openstack.atlas.core.api.v1.VirtualIp createSharedDataModelVipForPost() {
@@ -136,11 +137,7 @@ public class StubFactory {
         throttle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
         loadBalancer.setConnectionThrottle(throttle);
 
-        org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = new org.openstack.atlas.core.api.v1.HealthMonitor();
-        healthMonitor.setDelay(HEALTH_MONITOR_DELAY);
-        healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
-        healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
-        healthMonitor.setType(HEALTH_MONITOR_TYPE);
+        org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = createHydratedDataModelHealthMonitor();
         loadBalancer.setHealthMonitor(healthMonitor);
 
         org.openstack.atlas.core.api.v1.SessionPersistence sessionPersistence = new org.openstack.atlas.core.api.v1.SessionPersistence();
@@ -184,11 +181,7 @@ public class StubFactory {
         throttle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
         loadBalancer.setConnectionThrottle(throttle);
 
-        org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = new org.openstack.atlas.core.api.v1.HealthMonitor();
-        healthMonitor.setDelay(HEALTH_MONITOR_DELAY);
-        healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
-        healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
-        healthMonitor.setType(HEALTH_MONITOR_TYPE);
+        org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = createHydratedDataModelHealthMonitor();
         loadBalancer.setHealthMonitor(healthMonitor);
 
         org.openstack.atlas.core.api.v1.SessionPersistence sessionPersistence = new org.openstack.atlas.core.api.v1.SessionPersistence();
@@ -242,12 +235,7 @@ public class StubFactory {
         throttle.setRateInterval(CONNECTION_THROTTLE_RATE_INTERVAL);
         loadBalancer.setConnectionThrottle(throttle);
 
-        HealthMonitor healthMonitor = new HealthMonitor();
-        healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
-        healthMonitor.setDelay(HEALTH_MONITOR_DELAY);
-        healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
-        healthMonitor.setPath(HEALTH_MONITOR_PATH);
-        healthMonitor.setType(org.openstack.atlas.service.domain.entity.HealthMonitorType.valueOf(HEALTH_MONITOR_TYPE));
+        HealthMonitor healthMonitor = createHydratedDomainHealthMonitor();
         loadBalancer.setHealthMonitor(healthMonitor);
 
         loadBalancer.setSessionPersistence(org.openstack.atlas.service.domain.entity.SessionPersistence.valueOf(SESSION_PERSISTENCE_TYPE));
@@ -369,5 +357,29 @@ public class StubFactory {
         virtualIp.setCluster(createdHydratedCluster());
         virtualIp.setVipType(VirtualIpType.valueOf(VIP1_TYPE));
         return virtualIp;
+    }
+
+    public static org.openstack.atlas.core.api.v1.HealthMonitor createHydratedDataModelHealthMonitor() {
+        org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = new org.openstack.atlas.core.api.v1.HealthMonitor();
+
+        healthMonitor.setType(HEALTH_MONITOR_TYPE);
+        healthMonitor.setDelay(HEALTH_MONITOR_DELAY);
+        healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
+        healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
+        healthMonitor.setPath(HEALTH_MONITOR_PATH);
+        
+        return healthMonitor;
+    }
+
+    public static HealthMonitor createHydratedDomainHealthMonitor() {
+        HealthMonitor healthMonitor = new HealthMonitor();
+
+        healthMonitor.setType(HealthMonitorType.valueOf(HEALTH_MONITOR_TYPE));
+        healthMonitor.setDelay(HEALTH_MONITOR_DELAY);
+        healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
+        healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);
+        healthMonitor.setPath(HEALTH_MONITOR_PATH);
+
+        return healthMonitor;
     }
 }
