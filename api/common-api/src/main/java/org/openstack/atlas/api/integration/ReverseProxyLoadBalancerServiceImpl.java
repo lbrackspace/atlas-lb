@@ -524,29 +524,23 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), soapEndpointHost, failoverHosts, logFileLocation);
     }
 
+    // Send request to proper SOAPEndpoint(Calculated by the database) for host's traffic manager
     @Override
     public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException {
         Cluster cluster = host.getCluster();
         Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
-
-
         return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
-
-
     }
 
+    // Send SOAP request directly to the hosts traffic manager.
     @Override
     public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException {
         Cluster cluster = host.getCluster();
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
-
-
         return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
-
-
     }
 
     private LoadBalancerEndpointConfiguration getConfigbyLoadBalancerId(Integer lbId) throws EntityNotFoundException, DecryptException, MalformedURLException {
@@ -556,53 +550,34 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
-
-
         return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
-
-
     }
 
     public void setReverseProxyLoadBalancerAdapter(ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter) {
         this.reverseProxyLoadBalancerAdapter = reverseProxyLoadBalancerAdapter;
-
-
     }
 
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
-
-
     }
 
     private boolean isConnectionExcept(AxisFault af) {
         String faultString = af.getFaultString();
-
-
         if (faultString == null) {
             return false;
-
-
         }
         if (faultString.split(":")[0].equals("java.net.ConnectException")) {
             return true;
-
-
         }
         return false;
-
-
     }
 
     private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, AxisFault af) throws AxisFault {
         Host badHost = config.getTrafficManagerHost();
-
-
         if (isConnectionExcept(af)) {
             LOG.error(String.format("SOAP endpoint %s went bad marking host[%d] as bad.", badHost.getEndpoint(), badHost.getId()));
             badHost.setSoapEndpointActive(Boolean.FALSE);
             hostService.update(badHost);
-
         }
     }
 }

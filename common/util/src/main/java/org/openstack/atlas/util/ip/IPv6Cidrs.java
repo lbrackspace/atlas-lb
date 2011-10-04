@@ -1,10 +1,15 @@
 package org.openstack.atlas.util.ip;
 
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openstack.atlas.util.ip.exception.IPException;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class IPv6Cidrs {
     private List<IPv6Cidr> cidrs;
@@ -31,5 +36,23 @@ public class IPv6Cidrs {
 
         }
         return false;
+
     }
+
+        public List<String> getCidrsContainingIp(String ip) {
+        List<String> cidrStrings = new ArrayList<String>();
+        for(IPv6Cidr cidr : cidrs){
+            try {
+                if (cidr.contains(ip)) {
+                    cidrStrings.add(cidr.getCidr());
+                }
+            } catch (IPStringConversionException ex) {
+                continue;
+            } catch (IpTypeMissMatchException ex) {
+                continue;
+            }
+        }
+        return cidrStrings;
+    }
+
 }
