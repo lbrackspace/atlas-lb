@@ -2,6 +2,9 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
+import org.openstack.atlas.service.domain.entity.SessionPersistence;
+import org.openstack.atlas.service.domain.exception.BadRequestException;
+import org.openstack.atlas.service.domain.exception.DeletedStatusException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
 
@@ -31,4 +34,5 @@ public interface LoadBalancerRepository {
 
     LoadBalancer changeStatus(LoadBalancer loadBalancer, String status) throws EntityNotFoundException;
 
+    SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId, Integer lbId) throws EntityNotFoundException, DeletedStatusException, BadRequestException;
 }

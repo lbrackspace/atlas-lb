@@ -3,8 +3,11 @@ package org.openstack.atlas.service.domain.repository.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
+import org.openstack.atlas.datamodel.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.*;
+import org.openstack.atlas.service.domain.exception.BadRequestException;
+import org.openstack.atlas.service.domain.exception.DeletedStatusException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -225,5 +228,17 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         loadBalancer.setStatus(status);
         entityManager.persist(loadBalancer);
         return loadBalancer;
+    }
+
+    public SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId, Integer loadbalancerId)
+            throws EntityNotFoundException, DeletedStatusException, BadRequestException {
+        LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
+        if (lb.getStatus().equals(CoreLoadBalancerStatus.DELETED)) {
+            throw new DeletedStatusException("The loadbalancer is marked as deleted.");
+        }
+        if (lb.getSessionPersistence() == null) {
+            throw new EntityNotFoundException("No session persistence exists");
+        }
+        return lb.getSessionPersistence();
     }
 }

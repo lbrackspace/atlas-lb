@@ -26,7 +26,6 @@
         <property name="mappingFiles">
             <list>
                 <value>dozer-config-map.xml</value>
-                <value>dozer-config-map.xml</value>
                 <value>dozer-connection-throttle-map.xml</value>
                 <value>dozer-health-monitor-map.xml</value>
                 <value>dozer-load-balancer-map.xml</value>

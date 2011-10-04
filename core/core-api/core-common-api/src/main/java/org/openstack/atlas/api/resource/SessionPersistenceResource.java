@@ -1,11 +1,13 @@
 package org.openstack.atlas.api.resource;
 
 import org.apache.log4j.Logger;
+import org.openstack.atlas.api.resource.provider.CommonDependencyProvider;
 import org.openstack.atlas.api.response.ResponseFactory;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.SessionPersistenceValidator;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
+import org.openstack.atlas.service.domain.service.SessionPersistenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -17,20 +19,23 @@ import static javax.ws.rs.core.MediaType.*;
 
 @Controller
 @Scope("request")
-public class SessionPersistenceResource {
+public class SessionPersistenceResource extends CommonDependencyProvider {
     private final Logger LOG = Logger.getLogger(SessionPersistenceResource.class);
     private Integer accountId;
     private Integer loadBalancerId;
 
     @Autowired
     protected SessionPersistenceValidator validator;
+    @Autowired
+    protected SessionPersistenceService service;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveSessionPersistence() {
         try {
-            // TODO: Implement
-            return Response.status(Response.Status.OK).entity("Return something useful!").build();
+            SessionPersistence sessionPersistence = dozerMapper.map(service.get(accountId, loadBalancerId), SessionPersistence.class);
+            if(sessionPersistence == null) return Response.status(Response.Status.NOT_FOUND).build();
+            else return Response.status(Response.Status.OK).entity(sessionPersistence).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }
