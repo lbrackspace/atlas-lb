@@ -1,19 +1,11 @@
 package org.openstack.atlas.service.domain.services;
 
-import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.NodeCondition;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.pojos.VirtualIpDozerWrapper;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -22,13 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.junit.Ignore;
 
 @RunWith(Enclosed.class)
 @Ignore
@@ -106,6 +95,12 @@ public class LoadBalancerServiceImplIntegrationTest {
             LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
             List<LoadBalancer> dbLoadBalancers1 = loadBalancerService.getLoadbalancersGeneric(loadBalancer.getAccountId(), "BUILD", null, null, null, null, null);
             Assert.assertEquals(dbLoadBalancers.size(), dbLoadBalancers1.size() - 1);
+        }
+
+        @Test
+        public void shouldGetFullLoadBalancerListFromNodeAddress() {
+            //TODO: Add integration testing for accountid/loadbalancers?nodeaddress=10.1.1.1 when core refactoring
+            Assert.assertTrue(true);
         }
 
             //TODO:Move..
