@@ -9,5 +9,5 @@ public interface SessionPersistenceService {
 
     public SessionPersistence get(Integer loadBalancerId) throws EntityNotFoundException;
 
-    public void delete(Integer loadBalancerId) throws Exception;
+    public void delete(Integer loadBalancerId) throws EntityNotFoundException;
 }

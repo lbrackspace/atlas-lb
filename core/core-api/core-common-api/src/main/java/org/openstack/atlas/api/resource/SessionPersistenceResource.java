@@ -60,8 +60,8 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
     @DELETE
     public Response deleteSessionPersistence() {
         try {
-            // TODO: Implement
-            return Response.status(Response.Status.ACCEPTED).entity("Return something useful!").build();
+            service.delete(loadBalancerId);
+            return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }

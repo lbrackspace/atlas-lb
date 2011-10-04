@@ -2,9 +2,7 @@ package org.openstack.atlas.service.domain.repository.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.SessionPersistence;
-import org.openstack.atlas.service.domain.entity.SessionPersistence_;
+import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.SessionPersistenceRepository;
@@ -48,5 +46,12 @@ public class SessionPersistenceRepositoryImpl implements SessionPersistenceRepos
             LOG.error(e);
             throw new EntityNotFoundException("No session persistence found");
         }
+    }
+
+    @Override
+    public void delete(SessionPersistence sessionPersistence) throws EntityNotFoundException {
+        if (sessionPersistence == null) throw new EntityNotFoundException("No session persistence found");
+        sessionPersistence = entityManager.merge(sessionPersistence); // Re-attach hibernate instance
+        entityManager.remove(sessionPersistence);
     }
 }
