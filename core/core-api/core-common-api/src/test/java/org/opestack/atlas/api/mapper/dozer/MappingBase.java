@@ -14,6 +14,7 @@ public class MappingBase {
     protected static final String healthMonitorDozerConfigFile = "dozer-health-monitor-map.xml";
     protected static final String loadBalancerDozerConfigFile = "dozer-load-balancer-map.xml";
     protected static final String nodeDozerConfigFile = "dozer-node-map.xml";
+    protected static final String sessionPersistenceDozerConfigFile = "dozer-session-persistence-map.xml";
     protected static final String virtualIpDozerConfigFile = "dozer-virtual-ip-map.xml";
     protected static DozerBeanMapper mapper;
 
@@ -25,6 +26,7 @@ public class MappingBase {
         mappingFiles.add(healthMonitorDozerConfigFile);
         mappingFiles.add(loadBalancerDozerConfigFile);
         mappingFiles.add(nodeDozerConfigFile);
+        mappingFiles.add(sessionPersistenceDozerConfigFile);
         mappingFiles.add(virtualIpDozerConfigFile);
         mapper = MapperBuilder.getConfiguredMapper(mappingFiles);
     }
@@ -37,5 +39,6 @@ public class MappingBase {
         atlasTypeHelper.setProtocolType(new CoreProtocolType());
         atlasTypeHelper.setLoadBalancerStatus(new CoreLoadBalancerStatus());
         atlasTypeHelper.setNodeStatus(new CoreNodeStatus());
+        atlasTypeHelper.setPersistenceType(new CorePersistenceType());
     }
 }

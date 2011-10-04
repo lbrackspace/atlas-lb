@@ -33,6 +33,4 @@ public interface LoadBalancerRepository {
     boolean canUpdateToNewPort(Integer newPort, Set<LoadBalancerJoinVip> setToCheckAgainst);
 
     LoadBalancer changeStatus(LoadBalancer loadBalancer, String status) throws EntityNotFoundException;
-
-    SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId, Integer lbId) throws EntityNotFoundException, DeletedStatusException, BadRequestException;
 }

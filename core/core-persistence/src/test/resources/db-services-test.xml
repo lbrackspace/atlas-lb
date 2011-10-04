@@ -55,6 +55,7 @@
     <bean id="protocolType" class="org.openstack.atlas.datamodel.CoreProtocolType" />
     <bean id="loadBalancerStatus" class="org.openstack.atlas.datamodel.CoreLoadBalancerStatus" />
     <bean id="nodeStatus" class="org.openstack.atlas.datamodel.CoreNodeStatus" />
+    <bean id="persistenceType" class="org.openstack.atlas.datamodel.CorePersistenceType" />
 
 </beans>
 

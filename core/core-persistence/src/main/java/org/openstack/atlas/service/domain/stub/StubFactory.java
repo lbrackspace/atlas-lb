@@ -131,15 +131,9 @@ public class StubFactory {
         org.openstack.atlas.core.api.v1.VirtualIp virtualIp2 = new org.openstack.atlas.core.api.v1.VirtualIp();
         virtualIp2.setId(VIP2_ID);
 
-        org.openstack.atlas.core.api.v1.ConnectionThrottle throttle = createHydratedDataModelConnectionThrottle();
-        loadBalancer.setConnectionThrottle(throttle);
-
-        org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = createHydratedDataModelHealthMonitor();
-        loadBalancer.setHealthMonitor(healthMonitor);
-
-        org.openstack.atlas.core.api.v1.SessionPersistence sessionPersistence = new org.openstack.atlas.core.api.v1.SessionPersistence();
-        sessionPersistence.setPersistenceType(SESSION_PERSISTENCE_TYPE);
-        loadBalancer.setSessionPersistence(sessionPersistence);
+        loadBalancer.setConnectionThrottle(createHydratedDataModelConnectionThrottle());
+        loadBalancer.setHealthMonitor(createHydratedDataModelHealthMonitor());
+        loadBalancer.setSessionPersistence(createHydratedDataModelSessionPersistence());
 
         org.openstack.atlas.core.api.v1.ConnectionLogging connectionLogging = new ConnectionLogging();
         connectionLogging.setEnabled(true);
@@ -173,16 +167,9 @@ public class StubFactory {
         virtualIp1.setIpVersion(org.openstack.atlas.core.api.v1.IpVersion.fromValue(VIP1_VERSION));
         loadBalancer.getVirtualIps().add(virtualIp1);
 
-        org.openstack.atlas.core.api.v1.ConnectionThrottle throttle = createHydratedDataModelConnectionThrottle();
-        loadBalancer.setConnectionThrottle(throttle);
-
-        org.openstack.atlas.core.api.v1.HealthMonitor healthMonitor = createHydratedDataModelHealthMonitor();
-        loadBalancer.setHealthMonitor(healthMonitor);
-
-        org.openstack.atlas.core.api.v1.SessionPersistence sessionPersistence = new org.openstack.atlas.core.api.v1.SessionPersistence();
-        sessionPersistence.setPersistenceType(SESSION_PERSISTENCE_TYPE);
-        loadBalancer.setSessionPersistence(sessionPersistence);
-
+        loadBalancer.setConnectionThrottle(createHydratedDataModelConnectionThrottle());
+        loadBalancer.setHealthMonitor(createHydratedDataModelHealthMonitor());
+        loadBalancer.setSessionPersistence(createHydratedDataModelSessionPersistence());
         loadBalancer.setCreated(Calendar.getInstance());
         loadBalancer.setUpdated(Calendar.getInstance());
 
@@ -225,14 +212,9 @@ public class StubFactory {
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip(LOAD_BALANCER_PORT, loadBalancer, virtualIp1);
         loadBalancer.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);
 
-        ConnectionThrottle throttle = createHydratedDomainConnectionThrottle();
-        loadBalancer.setConnectionThrottle(throttle);
-
-        HealthMonitor healthMonitor = createHydratedDomainHealthMonitor();
-        loadBalancer.setHealthMonitor(healthMonitor);
-
-        loadBalancer.setSessionPersistence(org.openstack.atlas.service.domain.entity.SessionPersistence.valueOf(SESSION_PERSISTENCE_TYPE));
-
+        loadBalancer.setConnectionThrottle(createHydratedDomainConnectionThrottle());
+        loadBalancer.setHealthMonitor(createHydratedDomainHealthMonitor());
+        loadBalancer.setSessionPersistence(createHydratedDomainSessionPersistence());
         loadBalancer.setCreated(Calendar.getInstance());
         loadBalancer.setUpdated(Calendar.getInstance());
 
@@ -297,6 +279,14 @@ public class StubFactory {
     public static SessionPersistence createHydratedDataModelSessionPersistence() {
         org.openstack.atlas.core.api.v1.SessionPersistence sessionPersistence = new org.openstack.atlas.core.api.v1.SessionPersistence();
         sessionPersistence.setPersistenceType(SESSION_PERSISTENCE_TYPE);
+        return sessionPersistence;
+    }
+
+    public static org.openstack.atlas.service.domain.entity.SessionPersistence createHydratedDomainSessionPersistence() {
+        org.openstack.atlas.service.domain.entity.SessionPersistence sessionPersistence = new org.openstack.atlas.service.domain.entity.SessionPersistence();
+
+        sessionPersistence.setPersistenceType(SESSION_PERSISTENCE_TYPE);
+
         return sessionPersistence;
     }
 
@@ -384,4 +374,5 @@ public class StubFactory {
 
         return healthMonitor;
     }
+
 }
