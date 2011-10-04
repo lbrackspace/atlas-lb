@@ -22,7 +22,7 @@ public class HealthMonitorMappingTest {
         }
 
         @Test
-        public void shouldNotFailWhenApiNodeIsEmpty() {
+        public void shouldNotFailWhenApiMonitorIsEmpty() {
             apiHealthMonitor = new org.openstack.atlas.core.api.v1.HealthMonitor();
             try {
                 domainHealthMonitor = mapper.map(apiHealthMonitor, org.openstack.atlas.service.domain.entity.HealthMonitor.class);
@@ -65,7 +65,7 @@ public class HealthMonitorMappingTest {
         }
 
         @Test
-        public void shouldNotFailWhenApiNodeIsNull() {
+        public void shouldNotFailWhenDomainMonitorIsEmpty() {
             domainHealthMonitor = new org.openstack.atlas.service.domain.entity.HealthMonitor();
             try {
                 apiHealthMonitor = mapper.map(domainHealthMonitor, org.openstack.atlas.core.api.v1.HealthMonitor.class);
