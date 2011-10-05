@@ -12,7 +12,7 @@ import java.io.Serializable;
 )
 @DiscriminatorValue("CORE")
 @Table(name = "connection_throttle")
-public class ConnectionThrottle extends org.openstack.atlas.service.domain.entity.Entity implements Serializable {
+public class ConnectionThrottle extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
 	@OneToOne

@@ -29,15 +29,14 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
     @Autowired
     protected SessionPersistenceValidator validator;
     @Autowired
-    protected SessionPersistenceService service;
+    protected SessionPersistenceService sessionPersistenceservice;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveSessionPersistence() {
         try {
-            SessionPersistence sessionPersistence = dozerMapper.map(service.get(accountId, loadBalancerId), SessionPersistence.class);
-            if(sessionPersistence == null) return Response.status(Response.Status.NOT_FOUND).build();
-            else return Response.status(Response.Status.OK).entity(sessionPersistence).build();
+            SessionPersistence sessionPersistence = dozerMapper.map(sessionPersistenceservice.get(loadBalancerId), SessionPersistence.class);
+            return Response.status(Response.Status.OK).entity(sessionPersistence).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }
@@ -68,7 +67,7 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
             loadBalancer.setId(loadBalancerId);
             loadBalancer.setAccountId(accountId);
 
-            service.delete(loadBalancer);
+            sessionPersistenceservice.delete(loadBalancerId);
 
             MessageDataContainer data = new MessageDataContainer();
             data.setLoadBalancer(loadBalancer);

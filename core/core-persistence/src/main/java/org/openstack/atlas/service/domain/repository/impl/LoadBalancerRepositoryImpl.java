@@ -3,11 +3,8 @@ package org.openstack.atlas.service.domain.repository.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
-import org.openstack.atlas.datamodel.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.*;
-import org.openstack.atlas.service.domain.exception.BadRequestException;
-import org.openstack.atlas.service.domain.exception.DeletedStatusException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -125,6 +122,9 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         if (loadBalancer.getHealthMonitor() != null) {
             loadBalancer.getHealthMonitor().setLoadBalancer(loadBalancer);
         }
+        if (loadBalancer.getSessionPersistence() != null) {
+            loadBalancer.getSessionPersistence().setLoadBalancer(loadBalancer);
+        }
     }
 
     @Override
@@ -136,7 +136,7 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         loadBalancer = entityManager.merge(loadBalancer);
 
         // Now attach loadbalancer to vips
-   /*     for (LoadBalancerJoinVip lbJoinVipToLink : lbJoinVipsToLink) {
+        /*     for (LoadBalancerJoinVip lbJoinVipToLink : lbJoinVipsToLink) {
             VirtualIp virtualIp = entityManager.find(VirtualIp.class, lbJoinVipToLink.getVirtualIp().getId());
             LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip(loadBalancer.getPort(), loadBalancer, virtualIp);
             entityManager.merge(loadBalancerJoinVip);
@@ -177,7 +177,7 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         final boolean isActive = lb.getStatus().equals(CoreLoadBalancerStatus.ACTIVE);
         final boolean isPendingOrActive = lb.getStatus().equals(CoreLoadBalancerStatus.PENDING_UPDATE) || isActive;
 
-        if(allowConcurrentModifications ? isPendingOrActive : isActive) {
+        if (allowConcurrentModifications ? isPendingOrActive : isActive) {
             lb.setStatus(newStatus);
             lb.setUpdated(Calendar.getInstance());
             entityManager.merge(lb);
@@ -213,7 +213,7 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         return true;
     }
 
-    public LoadBalancer changeStatus(LoadBalancer loadBalancer,String status) throws EntityNotFoundException{
+    public LoadBalancer changeStatus(LoadBalancer loadBalancer, String status) throws EntityNotFoundException {
         String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
         List<LoadBalancer> lbList;
         Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
@@ -228,17 +228,5 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         loadBalancer.setStatus(status);
         entityManager.persist(loadBalancer);
         return loadBalancer;
-    }
-
-    public SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId, Integer loadbalancerId)
-            throws EntityNotFoundException, DeletedStatusException, BadRequestException {
-        LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
-        if (lb.getStatus().equals(CoreLoadBalancerStatus.DELETED)) {
-            throw new DeletedStatusException("The loadbalancer is marked as deleted.");
-        }
-        if (lb.getSessionPersistence() == null) {
-            throw new EntityNotFoundException("No session persistence exists");
-        }
-        return lb.getSessionPersistence();
     }
 }
