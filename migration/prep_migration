@@ -106,14 +106,22 @@ def getmigrationLs(dirname):
     files_out.insert(0,total)
     return string.join(files_out,"\n")
 
+def getmigrations(path_in):
+    migrations = {}
+    db_dirs = [  os.path.join(path_in,d) for d in os.listdir(path_in) 
+                 if os.path.isdir(os.path.join(path_in,d))  ]
+    for db_dir in db_dirs:
+        txt_file = "%s_migrations.txt"%(os.path.basename(db_dir))
+        txt_path = os.path.join(path_in,txt_file)
+        migrations[txt_path]=db_dir
+    return migrations
+
 
 if __name__ == "__main__":
     lfp = open(fullpath("~/populate.log"),"a")
     printf("prebuild started in dir %s\n",os.getcwd())
-    cnf = load_json("~/populate.json")
-    atlasdir = os.environ["PWD"]
-    for(migration_file,migration_dir) in cnf["migrations"].items():
-        full_dir = os.path.join(atlasdir,migration_dir)
+    migrations = getmigrations("schema")
+    for(migration_file,migration_dir) in migrations.items():
         printf("Writing migrations for %s into %s\n",migration_dir,migration_file)
         lfp.flush()
         fp = open(migration_file,"w")
