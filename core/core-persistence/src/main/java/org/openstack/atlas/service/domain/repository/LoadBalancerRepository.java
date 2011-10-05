@@ -3,10 +3,7 @@ package org.openstack.atlas.service.domain.repository;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
 import org.openstack.atlas.service.domain.entity.SessionPersistence;
-import org.openstack.atlas.service.domain.exception.BadRequestException;
-import org.openstack.atlas.service.domain.exception.DeletedStatusException;
-import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.exception.*;
 
 import java.util.List;
 import java.util.Set;
@@ -24,9 +21,9 @@ public interface LoadBalancerRepository {
 
     Integer getNumNonDeletedLoadBalancersForAccount(Integer accountId);
 
-    void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException;
+    void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException;
 
-    void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus) throws EntityNotFoundException, UnprocessableEntityException;
+    void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException;
 
     void updatePortInJoinTable(LoadBalancer lb);
 

@@ -21,14 +21,12 @@ import javax.persistence.criteria.Root;
 @Transactional
 public class SessionPersistenceRepositoryImpl implements SessionPersistenceRepository {
     final Log LOG = LogFactory.getLog(SessionPersistenceRepositoryImpl.class);
+    private static final String entityNotFound = "No session persistence found";
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
 
-    @Autowired
-    private LoadBalancerRepository loadBalancerRepository;
-
     @Override
-    public SessionPersistence getSessionPersistenceByLoadBalancerId(Integer loadBalancerId) throws EntityNotFoundException {
+    public SessionPersistence getByLoadBalancerId(Integer loadBalancerId) throws EntityNotFoundException {
         LoadBalancer loadBalancer = new LoadBalancer();
         loadBalancer.setId(loadBalancerId);
 
@@ -44,13 +42,13 @@ public class SessionPersistenceRepositoryImpl implements SessionPersistenceRepos
             return entityManager.createQuery(criteria).setMaxResults(1).getSingleResult();
         } catch (Exception e) {
             LOG.error(e);
-            throw new EntityNotFoundException("No session persistence found");
+            throw new EntityNotFoundException(entityNotFound);
         }
     }
 
     @Override
     public void delete(SessionPersistence sessionPersistence) throws EntityNotFoundException {
-        if (sessionPersistence == null) throw new EntityNotFoundException("No session persistence found");
+        if (sessionPersistence == null) throw new EntityNotFoundException(entityNotFound);
         sessionPersistence = entityManager.merge(sessionPersistence); // Re-attach hibernate instance
         entityManager.remove(sessionPersistence);
     }

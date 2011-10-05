@@ -1,7 +1,13 @@
 package org.openstack.atlas.service.domain.service.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
+import org.openstack.atlas.datamodel.CorePersistenceType;
+import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.SessionPersistence;
+import org.openstack.atlas.service.domain.exception.BadRequestException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
@@ -10,29 +16,47 @@ import org.openstack.atlas.service.domain.repository.SessionPersistenceRepositor
 import org.openstack.atlas.service.domain.service.SessionPersistenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SessionPersistenceServiceImpl implements SessionPersistenceService {
+    private final Log LOG = LogFactory.getLog(SessionPersistenceServiceImpl.class);
 
-    @Autowired
-    protected SessionPersistenceRepository sessionPersistenceRepository;
     @Autowired
     protected LoadBalancerRepository loadBalancerRepository;
-
+    @Autowired
+    protected SessionPersistenceRepository sessionPersistenceRepository;
 
     @Override
-    public void update(Integer loadBalancerId, SessionPersistence sessionPersistence) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    @Transactional(rollbackFor = {EntityNotFoundException.class, ImmutableEntityException.class, UnprocessableEntityException.class})
+    public SessionPersistence update(Integer loadBalancerId, SessionPersistence sessionPersistence) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
+        SessionPersistence dbSessionPersistence = dbLoadBalancer.getSessionPersistence();
+        SessionPersistence sessionPersistenceToUpdate = dbSessionPersistence == null ? sessionPersistence : dbSessionPersistence;
+        sessionPersistenceToUpdate.setLoadBalancer(dbLoadBalancer); // Needs to be set for hibernate
+
+        if (!(dbLoadBalancer.getProtocol().equals(CoreProtocolType.HTTP) || dbLoadBalancer.getProtocol().equals(CoreProtocolType.HTTPS))
+            && sessionPersistence.getPersistenceType().equals(CorePersistenceType.HTTP_COOKIE)) {
+            throw new UnprocessableEntityException("HTTP_COOKIE session persistence can only be enabled with the HTTP/HTTPS protocol");
+        }
+
+        loadBalancerRepository.changeStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), CoreLoadBalancerStatus.PENDING_UPDATE, false);
+        setProperties(sessionPersistence, dbLoadBalancer.getSessionPersistence(), sessionPersistenceToUpdate);
+        dbLoadBalancer.setSessionPersistence(sessionPersistenceToUpdate);
+        dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
+        return dbLoadBalancer.getSessionPersistence();
     }
 
     @Override
-    public SessionPersistence get(Integer loadBalancerId) throws EntityNotFoundException {
-        return sessionPersistenceRepository.getSessionPersistenceByLoadBalancerId(loadBalancerId);
-    }
-
-    @Override
+    @Transactional(rollbackFor = {EntityNotFoundException.class})
     public void delete(Integer loadBalancerId) throws EntityNotFoundException {
-        LoadBalancer loadBalancer = loadBalancerRepository.getById(loadBalancerId);
-        sessionPersistenceRepository.delete(loadBalancer.getSessionPersistence());
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
+        sessionPersistenceRepository.delete(dbLoadBalancer.getSessionPersistence());
+    }
+
+    protected void setProperties(SessionPersistence requestPersistence, SessionPersistence dbPersistence, SessionPersistence persistenceToUpdate) throws BadRequestException {
+        if (requestPersistence.getPersistenceType() != null) persistenceToUpdate.setPersistenceType(requestPersistence.getPersistenceType());
+        else if (dbPersistence != null) persistenceToUpdate.setPersistenceType(dbPersistence.getPersistenceType());
+        else throw new BadRequestException("Must provide a persistence type for the request");
     }
 }

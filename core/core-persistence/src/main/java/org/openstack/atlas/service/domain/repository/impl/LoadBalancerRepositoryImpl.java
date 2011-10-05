@@ -6,6 +6,7 @@ import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exception.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.springframework.stereotype.Repository;
@@ -155,11 +156,13 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         return ((BigInteger) query.getSingleResult()).intValue();
     }
 
-    public void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus) throws EntityNotFoundException, UnprocessableEntityException {
+    public void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
         changeStatus(accountId, loadbalancerId, newStatus, false);
     }
 
-    public void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
+    public void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
+        // TODO: Hook up AOP logging here
+
         String queryString = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
         Query q = entityManager.createQuery(queryString).setLockMode(LockModeType.PESSIMISTIC_WRITE).
                 setParameter("aid", accountId).
@@ -181,7 +184,10 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
             lb.setStatus(newStatus);
             lb.setUpdated(Calendar.getInstance());
             entityManager.merge(lb);
+            return;
         }
+
+        throw new ImmutableEntityException("Load Balancer can not be updated as it is currently being updated.");
     }
 
     public void updatePortInJoinTable(LoadBalancer lb) {

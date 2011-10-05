@@ -5,9 +5,7 @@ import org.openstack.atlas.service.domain.exception.*;
 
 public interface SessionPersistenceService {
 
-    public void update(Integer loadBalancerId, SessionPersistence sessionPersistence) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException;
-
-    public SessionPersistence get(Integer loadBalancerId) throws EntityNotFoundException;
+    public SessionPersistence update(Integer loadBalancerId, SessionPersistence sessionPersistence) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
 
     public void delete(Integer loadBalancerId) throws EntityNotFoundException;
 }
