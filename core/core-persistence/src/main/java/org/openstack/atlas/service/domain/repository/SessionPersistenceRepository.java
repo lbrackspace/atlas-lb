@@ -4,7 +4,7 @@ import org.openstack.atlas.service.domain.entity.SessionPersistence;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 
 public interface SessionPersistenceRepository {
-    SessionPersistence getSessionPersistenceByLoadBalancerId(Integer loadBalancerId) throws EntityNotFoundException;
+    SessionPersistence getByLoadBalancerId(Integer loadBalancerId) throws EntityNotFoundException;
 
     void delete(SessionPersistence sessionPersistence) throws EntityNotFoundException;
 }

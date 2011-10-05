@@ -7,6 +7,7 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.SessionPersistenceValidator;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
+import org.openstack.atlas.service.domain.repository.SessionPersistenceRepository;
 import org.openstack.atlas.service.domain.service.SessionPersistenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -28,12 +29,14 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
     protected SessionPersistenceValidator validator;
     @Autowired
     protected SessionPersistenceService service;
+    @Autowired
+    protected SessionPersistenceRepository repository;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveSessionPersistence() {
         try {
-            SessionPersistence sessionPersistence = dozerMapper.map(service.get(loadBalancerId), SessionPersistence.class);
+            SessionPersistence sessionPersistence = dozerMapper.map(repository.getByLoadBalancerId(loadBalancerId), SessionPersistence.class);
             return Response.status(Response.Status.OK).entity(sessionPersistence).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
@@ -50,8 +53,12 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
         }
 
         try {
-            // TODO: Implement
-            return Response.status(Response.Status.ACCEPTED).entity("Return something useful!").build();
+            org.openstack.atlas.service.domain.entity.SessionPersistence sessionPersistence = dozerMapper.map(_sessionPersistence, org.openstack.atlas.service.domain.entity.SessionPersistence.class);
+            sessionPersistence = service.update(loadBalancerId, sessionPersistence);
+            // TODO: Add asynchronous method call here
+            
+            _sessionPersistence = dozerMapper.map(sessionPersistence, SessionPersistence.class);
+            return Response.status(Response.Status.ACCEPTED).entity(_sessionPersistence).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }
@@ -61,6 +68,7 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
     public Response deleteSessionPersistence() {
         try {
             service.delete(loadBalancerId);
+            // TODO: Add asynchronous method call here
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
