@@ -75,4 +75,9 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
         LOG.info("deleteHealthMonitor");// NOP
     }
 
+    @Override
+    public void deleteSessionPersistence(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
+        LOG.info("deleteSessionPersistence");// NOP
+    }
+
 }

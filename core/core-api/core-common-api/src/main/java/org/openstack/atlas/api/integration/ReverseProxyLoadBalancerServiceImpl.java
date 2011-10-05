@@ -14,18 +14,10 @@ import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl;
-
-import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.Node;
-import org.openstack.atlas.service.domain.entity.HealthMonitor;
-import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Qualifier;
 import java.net.MalformedURLException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -167,6 +159,17 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
           LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             loadBalancerAdapter.deleteHealthMonitor(config, accountId, lbId);
+        } catch (ConnectionException exc) {
+            checkAndSetIfEndPointBad(config, exc);
+            throw exc;
+        }
+    }
+
+     @Override
+    public void deleteSessionPersistence(Integer accountId, Integer lbId) throws AdapterException, DecryptException, MalformedURLException, Exception {
+          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        try {
+            loadBalancerAdapter.deleteSessionPersistence(config, accountId, lbId);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;

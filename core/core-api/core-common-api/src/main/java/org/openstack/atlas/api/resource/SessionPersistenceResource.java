@@ -7,6 +7,8 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.SessionPersistenceValidator;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
+import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.service.SessionPersistenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -61,8 +63,19 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
     @DELETE
     public Response deleteSessionPersistence() {
         try {
-            // TODO: Implement
-            return Response.status(Response.Status.ACCEPTED).entity("Return something useful!").build();
+
+            org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer = new org.openstack.atlas.service.domain.entity.LoadBalancer();
+            loadBalancer.setId(loadBalancerId);
+            loadBalancer.setAccountId(accountId);
+
+            service.delete(loadBalancer);
+
+            MessageDataContainer data = new MessageDataContainer();
+            data.setLoadBalancer(loadBalancer);
+
+            asyncService.callAsyncLoadBalancingOperation(Operation.DISABLE_SESSION_PERSISTENCE, data);
+            return Response.status(Response.Status.ACCEPTED).build();
+
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }
