@@ -16,12 +16,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.*;
 
-@Repository
-@Transactional
-public class NodeRepository {
-
-    private final Log LOG = LogFactory.getLog(NodeRepository.class);
-    @PersistenceContext(unitName = "loadbalancing")
-    private EntityManager entityManager;
-
+public interface NodeRepository {
+    Set<Node> addNodes(LoadBalancer loadBalancer, Collection<Node> nodes);
 }
