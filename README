@@ -1,7 +1,7 @@
 Requirements
 ------------
   Java >= 1.5
-  Apache Maven == 2.2.1 (Use settings from settings.xml file located in config/maven)
+  Apache Maven == 2.2.1 (Use settings from settings.xml file located in contrib/maven)
   Apache ActiveMQ == 5.5.0
   Glassfish >= 3.1
   MySql
@@ -11,8 +11,8 @@ Getting Started
   mvn clean install
      - creates public-war-packager/target/atlas-public-rest-service-x.y.z-SNAPSHOT.war
 
-  Create a database called 'loadbalancing' using the schema under config/db/loadbalancing_schema.sql
-  Create a database called 'loadbalancing_usage' using the schema under config/db/loadbalancing_usage_schema.sql
+  Create a database called 'loadbalancing' using the schema under contrib/db/loadbalancing_schema.sql
+  Create a database called 'loadbalancing_usage' using the schema under contrib/db/loadbalancing_usage_schema.sql
 
   Seed the 'loadbalancing' database with sample data, using the file under config/db/loadbalancing_seed.sql
 
@@ -23,7 +23,7 @@ Getting Started
        2. For the first data source pointing to database loadbalancing, in the step 17 of that article, name the jndi name as jdbc/loadBalancerDB.
        3. For the second  data source pointing to database loadbalancing_usage, in the step 17 of that article, name the jndi name as jdbc/loadBalancerUsageDB.
 
-  Copy files under config/etc/openstack/atlas and put them under your /etc/openstack/atlas directory.
+  Copy files under contrib/etc/openstack/atlas and put them under your /etc/openstack/atlas directory.
 
   Start ActiveMQ on default port.
 
