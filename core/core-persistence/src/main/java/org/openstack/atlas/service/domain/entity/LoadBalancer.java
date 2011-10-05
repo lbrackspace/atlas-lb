@@ -31,7 +31,7 @@ public class LoadBalancer extends Entity implements Serializable {
     @Column(name = "algorithm", nullable = false)
     private String algorithm = CoreAlgorithmType.ROUND_ROBIN;
 
-    @JoinColumn(name = "protocol", nullable = false)
+    @Column(name = "protocol", nullable = false)
     private String protocol = CoreProtocolType.HTTP;
 
     @Column(name = "port", nullable = false)
@@ -43,7 +43,7 @@ public class LoadBalancer extends Entity implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar updated;
 
-    @JoinColumn(name = "status", nullable = false)
+    @Column(name = "status", nullable = false)
     private String status;
 
     @OneToMany(mappedBy = "loadBalancer", fetch = FetchType.EAGER)
@@ -64,18 +64,17 @@ public class LoadBalancer extends Entity implements Serializable {
     @JoinColumn(name = "host_id", nullable = true)
     private Host host;
 
-    @JoinColumn(name = "sessionPersistence", nullable = false)
-    @Enumerated(EnumType.STRING)
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadBalancer")
     private SessionPersistence sessionPersistence;
-
-    @Column(name = "connection_logging", nullable = false)
-    private Boolean connectionLogging = false;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadBalancer")
     private ConnectionThrottle connectionThrottle;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadBalancer")
     private HealthMonitor healthMonitor;
+
+    @Column(name = "connection_logging", nullable = false)
+    private Boolean connectionLogging = false;
 
     @Transient
     private VirtualIpDozerWrapper virtualIpDozerWrapper;

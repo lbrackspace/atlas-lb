@@ -9,6 +9,7 @@ public final class AtlasTypeHelper {
     private static ProtocolType protocolType;
     private static LoadBalancerStatus loadBalancerStatus;
     private static NodeStatus nodeStatus;
+    private static PersistenceType persistenceType;
 
     @Autowired(required = true)
     public void setAlgorithmType(AlgorithmType algorithmType) {
@@ -30,6 +31,11 @@ public final class AtlasTypeHelper {
         AtlasTypeHelper.nodeStatus = nodeStatus;
     }
 
+    @Autowired(required = true)
+    public void setPersistenceType(PersistenceType persistenceType) {
+        AtlasTypeHelper.persistenceType = persistenceType;
+    }
+
     public static boolean isValidAlgorithm(String algorithm) {
         return isValidAtlasType(algorithm, algorithmType);
     }
@@ -44,6 +50,10 @@ public final class AtlasTypeHelper {
 
     public static boolean isValidNodeStatus(String status) {
         return isValidAtlasType(status, nodeStatus);
+    }
+
+    public static boolean isValidPersistenceType(String type) {
+        return isValidAtlasType(type, persistenceType);
     }
 
     private static boolean isValidAtlasType(String string, AtlasType atlasType) {

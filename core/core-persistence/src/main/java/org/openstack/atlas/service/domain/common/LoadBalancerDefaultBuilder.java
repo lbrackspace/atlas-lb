@@ -39,10 +39,6 @@ public class LoadBalancerDefaultBuilder {
             }
         }
 
-        if (loadBalancer.getSessionPersistence() == null) {
-            loadBalancer.setSessionPersistence(SessionPersistence.NONE);
-        }
-
         for (Node node : loadBalancer.getNodes()) {
             if (node.getWeight() == null) {
                 node.setWeight(Constants.DEFAULT_NODE_WEIGHT);

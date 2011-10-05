@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
+import org.openstack.atlas.datamodel.CorePersistenceType;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
 @RunWith(Enclosed.class)
@@ -22,28 +23,26 @@ public class SessionPersistenceMappingTest {
         }
 
         @Test
-        public void shouldNotFailWhenApiPersistenceIsSetToNone() {
+        public void shouldNotFailWhenApiPersistenceIsEmpty() {
             apiSessionPersistence = new org.openstack.atlas.core.api.v1.SessionPersistence();
-            apiSessionPersistence.setPersistenceType("NONE");
             try {
                 domainSessionPersistence = mapper.map(apiSessionPersistence, org.openstack.atlas.service.domain.entity.SessionPersistence.class);
             } catch (Exception e) {
-                Assert.fail("Empty API node caused this exception");
+                Assert.fail("Empty API session persistence caused this exception");
             }
         }
 
         @Test
         public void shouldMapAllAttributes() {
-            Assert.assertEquals(apiSessionPersistence.getPersistenceType(), domainSessionPersistence.name());
+            Assert.assertEquals(apiSessionPersistence.getPersistenceType(), domainSessionPersistence.getPersistenceType());
         }
 
         @Test
-        public void shouldMapAttributesToNullWhenApiPersistenceIsSetToNone() {
+        public void shouldMapAttributesToNullWhenApiPersistenceIsEmpty() {
             apiSessionPersistence = new SessionPersistence();
-            apiSessionPersistence.setPersistenceType("NONE");
             domainSessionPersistence = mapper.map(apiSessionPersistence, org.openstack.atlas.service.domain.entity.SessionPersistence.class);
 
-            Assert.assertEquals(domainSessionPersistence.name(), apiSessionPersistence.getPersistenceType());
+            Assert.assertNull(apiSessionPersistence.getPersistenceType());
         }
     }
 
@@ -53,31 +52,31 @@ public class SessionPersistenceMappingTest {
 
         @Before
         public void setUp() throws Exception {
-            domainSessionPersistence = org.openstack.atlas.service.domain.entity.SessionPersistence.HTTP_COOKIE;
+            domainSessionPersistence = StubFactory.createHydratedDomainSessionPersistence();
             apiSessionPersistence = mapper.map(domainSessionPersistence, org.openstack.atlas.core.api.v1.SessionPersistence.class);
         }
 
         @Test
-        public void shouldNotFailWhenDomainPersistenceIsNull() {
-            domainSessionPersistence = org.openstack.atlas.service.domain.entity.SessionPersistence.NONE;
+        public void shouldNotFailWhenDomainPersistenceIsEmpty() {
+            domainSessionPersistence = new org.openstack.atlas.service.domain.entity.SessionPersistence();
             try {
                 apiSessionPersistence = mapper.map(domainSessionPersistence, org.openstack.atlas.core.api.v1.SessionPersistence.class);
             } catch (Exception e) {
-                Assert.fail("Empty API node caused this exception");
+                Assert.fail("Empty domain session persistence caused this exception");
             }
         }
 
         @Test
         public void shouldMapAllAttributes() {
-            Assert.assertEquals(domainSessionPersistence.name(), apiSessionPersistence.getPersistenceType());
+            Assert.assertEquals(domainSessionPersistence.getPersistenceType(), apiSessionPersistence.getPersistenceType());
         }
 
         @Test
-        public void shouldMapAttributesToNullWhenNoAttributesSet() {
-            domainSessionPersistence = org.openstack.atlas.service.domain.entity.SessionPersistence.NONE;
+        public void shouldMapAttributesToDefaultsWhenNoAttributesSet() {
+            domainSessionPersistence = new org.openstack.atlas.service.domain.entity.SessionPersistence();
             apiSessionPersistence = mapper.map(domainSessionPersistence, org.openstack.atlas.core.api.v1.SessionPersistence.class);
 
-            Assert.assertNull(apiSessionPersistence);
+            Assert.assertEquals(CorePersistenceType.HTTP_COOKIE, apiSessionPersistence.getPersistenceType());
         }
     }
 }

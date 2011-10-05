@@ -10,12 +10,6 @@
         <date-format>MM-dd-yyyy HH:mm:ss</date-format>
         <!-- default wildcard policy that will apply to all class maps unless the class mapping explicitly overrides it -->
         <wildcard>true</wildcard>
-        <custom-converters> <!-- these are always bi-directional -->
-            <converter type="org.openstack.atlas.api.mapper.dozer.converter.PersistenceConverter">
-                <class-a>org.openstack.atlas.core.api.v1.SessionPersistence</class-a>
-                <class-b>org.openstack.atlas.service.domain.entity.SessionPersistence</class-b>
-            </converter>
-        </custom-converters>
     </configuration>
 
 </mappings>

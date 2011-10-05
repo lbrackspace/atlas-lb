@@ -192,12 +192,12 @@ public class LoadBalancerMappingTest {
         @Test
         public void should_map_session_persistence() {
             final SessionPersistence sessionPersistence = apiLoadBalancer.getSessionPersistence();
-            Assert.assertEquals(domainLoadBalancer.getSessionPersistence().name(), sessionPersistence.getPersistenceType());
+            Assert.assertEquals(domainLoadBalancer.getSessionPersistence().getPersistenceType(), sessionPersistence.getPersistenceType());
         }
 
         @Test
-        public void should_map_session_persistence_to_null_when_data_model_session_persistence_is_set_to_none() {
-            domainLoadBalancer.setSessionPersistence(org.openstack.atlas.service.domain.entity.SessionPersistence.NONE);
+        public void should_map_session_persistence_to_null_when_data_model_session_persistence_is_set_to_null() {
+            domainLoadBalancer.setSessionPersistence(null);
             apiLoadBalancer = mapper.map(domainLoadBalancer, org.openstack.atlas.core.api.v1.LoadBalancer.class);
             Assert.assertNull(apiLoadBalancer.getSessionPersistence());
         }

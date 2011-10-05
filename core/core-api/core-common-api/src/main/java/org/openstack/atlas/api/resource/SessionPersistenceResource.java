@@ -33,9 +33,8 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveSessionPersistence() {
         try {
-            SessionPersistence sessionPersistence = dozerMapper.map(service.get(accountId, loadBalancerId), SessionPersistence.class);
-            if(sessionPersistence == null) return Response.status(Response.Status.NOT_FOUND).build();
-            else return Response.status(Response.Status.OK).entity(sessionPersistence).build();
+            SessionPersistence sessionPersistence = dozerMapper.map(service.get(loadBalancerId), SessionPersistence.class);
+            return Response.status(Response.Status.OK).entity(sessionPersistence).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }
@@ -61,8 +60,8 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
     @DELETE
     public Response deleteSessionPersistence() {
         try {
-            // TODO: Implement
-            return Response.status(Response.Status.ACCEPTED).entity("Return something useful!").build();
+            service.delete(loadBalancerId);
+            return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }
