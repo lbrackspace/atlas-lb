@@ -23,7 +23,7 @@ Running migrations:
 
     3. Change into your ./atlas-lb/migration directory
 
-    4. Execute the file  ./loadbalancing_usage_migration
+    4. Execute the file  ./prep_migration
        This will modify the the txt files in the schema directory which the 
        jdeb script will use to build the migration package.
 
