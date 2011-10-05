@@ -21,7 +21,7 @@ import javax.persistence.criteria.Root;
 @Transactional
 public class SessionPersistenceRepositoryImpl implements SessionPersistenceRepository {
     final Log LOG = LogFactory.getLog(SessionPersistenceRepositoryImpl.class);
-    private static final String entityNotFound = "No session persistence found";
+    private static final String entityNotFound = "Session persistence not found";
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
 

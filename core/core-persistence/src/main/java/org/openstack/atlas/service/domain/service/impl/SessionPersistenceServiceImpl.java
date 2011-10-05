@@ -49,6 +49,13 @@ public class SessionPersistenceServiceImpl implements SessionPersistenceService 
 
     @Override
     @Transactional(rollbackFor = {EntityNotFoundException.class})
+    public void preDelete(Integer loadBalancerId) throws EntityNotFoundException {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
+        if (dbLoadBalancer.getSessionPersistence() == null) throw new EntityNotFoundException("Session persistence not found");
+    }
+
+    @Override
+    @Transactional(rollbackFor = {EntityNotFoundException.class})
     public void delete(Integer loadBalancerId) throws EntityNotFoundException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
         sessionPersistenceRepository.delete(dbLoadBalancer.getSessionPersistence());
