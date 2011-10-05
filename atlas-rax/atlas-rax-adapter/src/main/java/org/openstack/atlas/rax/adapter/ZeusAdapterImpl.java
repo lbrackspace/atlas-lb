@@ -5,10 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerAdapter;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exception.AdapterException;
-import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
-import org.openstack.atlas.service.domain.entity.HealthMonitor;
-import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.*;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +46,6 @@ public class ZeusAdapterImpl implements LoadBalancerAdapter {
 
     @Override
     public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Boolean enabled) throws AdapterException {
-
     }
 
     @Override
@@ -66,5 +62,13 @@ public class ZeusAdapterImpl implements LoadBalancerAdapter {
 
     @Override
     public void deleteHealthMonitor(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
+    }
+
+    @Override
+    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, SessionPersistence sessionPersistence) throws AdapterException {
+    }
+
+    @Override
+    public void deleteSessionPersistence(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
     }
 }

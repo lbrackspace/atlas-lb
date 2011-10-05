@@ -6,7 +6,6 @@ import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.NotificationService;
 import org.openstack.atlas.service.domain.service.SessionPersistenceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +25,11 @@ public class DeleteSessionPersistenceListener extends BaseListener {
     private final Log LOG = LogFactory.getLog(DeleteSessionPersistenceListener.class);
 
     @Autowired
-    private SessionPersistenceService sessionPersistenceService;
-    @Autowired
-    private LoadBalancerService loadBalancerService;
+    private LoadBalancerRepository loadBalancerRepository;
     @Autowired
     private NotificationService notificationService;
     @Autowired
-    private LoadBalancerRepository loadBalancerRepository;
+    private SessionPersistenceService sessionPersistenceService;
 
     @Override
     public void doOnMessage(final Message message) throws Exception {

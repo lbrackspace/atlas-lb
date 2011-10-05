@@ -3,10 +3,7 @@ package org.openstack.atlas.adapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.exception.AdapterException;
-import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
-import org.openstack.atlas.service.domain.entity.HealthMonitor;
-import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.*;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -73,6 +70,11 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
     @Override
     public void deleteHealthMonitor(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
         LOG.info("deleteHealthMonitor");// NOP
+    }
+
+    @Override
+    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, SessionPersistence sessionPersistence) throws AdapterException {
+        LOG.info("setSessionPersistence");// NOP
     }
 
     @Override

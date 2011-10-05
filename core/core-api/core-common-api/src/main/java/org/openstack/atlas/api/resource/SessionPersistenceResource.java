@@ -7,6 +7,7 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.SessionPersistenceValidator;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.operation.Operation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.SessionPersistenceRepository;
@@ -47,7 +48,7 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
 
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
-    public Response updateSessionPersistence(SessionPersistence _sessionPersistence) {
+    public Response createOrUpdateSessionPersistence(SessionPersistence _sessionPersistence) {
         ValidatorResult result = validator.validate(_sessionPersistence, HttpRequestType.PUT);
 
         if (!result.passedValidation()) {
@@ -55,9 +56,15 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
         }
 
         try {
+            MessageDataContainer data = new MessageDataContainer();
+            LoadBalancer loadBalancer = new LoadBalancer();
+            loadBalancer.setAccountId(accountId);
+            loadBalancer.setId(loadBalancerId);
+            data.setLoadBalancer(loadBalancer);
+
             org.openstack.atlas.service.domain.entity.SessionPersistence sessionPersistence = dozerMapper.map(_sessionPersistence, org.openstack.atlas.service.domain.entity.SessionPersistence.class);
             sessionPersistence = service.update(loadBalancerId, sessionPersistence);
-            // TODO: Add asynchronous method call here
+            asyncService.callAsyncLoadBalancingOperation(Operation.SET_SESSION_PERSISTENCE, data);
             _sessionPersistence = dozerMapper.map(sessionPersistence, SessionPersistence.class);
             return Response.status(Response.Status.ACCEPTED).entity(_sessionPersistence).build();
         } catch (Exception e) {
@@ -68,15 +75,14 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
     @DELETE
     public Response deleteSessionPersistence() {
         try {
-            org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer = new org.openstack.atlas.service.domain.entity.LoadBalancer();
-            loadBalancer.setId(loadBalancerId);
-            loadBalancer.setAccountId(accountId);
-
             MessageDataContainer data = new MessageDataContainer();
+            LoadBalancer loadBalancer = new LoadBalancer();
+            loadBalancer.setAccountId(accountId);
+            loadBalancer.setId(loadBalancerId);
             data.setLoadBalancer(loadBalancer);
-
+            
             service.preDelete(loadBalancerId);
-            asyncService.callAsyncLoadBalancingOperation(Operation.DISABLE_SESSION_PERSISTENCE, data);
+            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_SESSION_PERSISTENCE, data);
             return Response.status(Response.Status.ACCEPTED).build();
 
         } catch (Exception e) {
