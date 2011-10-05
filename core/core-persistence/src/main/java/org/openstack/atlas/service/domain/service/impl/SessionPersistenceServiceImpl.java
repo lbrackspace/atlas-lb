@@ -41,7 +41,7 @@ public class SessionPersistenceServiceImpl implements SessionPersistenceService 
         }
 
         loadBalancerRepository.changeStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), CoreLoadBalancerStatus.PENDING_UPDATE, false);
-        setProperties(sessionPersistence, dbLoadBalancer.getSessionPersistence(), sessionPersistenceToUpdate);
+        setPropertiesForUpdate(sessionPersistence, dbLoadBalancer.getSessionPersistence(), sessionPersistenceToUpdate);
         dbLoadBalancer.setSessionPersistence(sessionPersistenceToUpdate);
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         return dbLoadBalancer.getSessionPersistence();
@@ -61,7 +61,7 @@ public class SessionPersistenceServiceImpl implements SessionPersistenceService 
         sessionPersistenceRepository.delete(dbLoadBalancer.getSessionPersistence());
     }
 
-    protected void setProperties(SessionPersistence requestPersistence, SessionPersistence dbPersistence, SessionPersistence persistenceToUpdate) throws BadRequestException {
+    protected void setPropertiesForUpdate(final SessionPersistence requestPersistence, final SessionPersistence dbPersistence, SessionPersistence persistenceToUpdate) throws BadRequestException {
         if (requestPersistence.getPersistenceType() != null) persistenceToUpdate.setPersistenceType(requestPersistence.getPersistenceType());
         else if (dbPersistence != null) persistenceToUpdate.setPersistenceType(dbPersistence.getPersistenceType());
         else throw new BadRequestException("Must provide a persistence type for the request");
