@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.exception.BadRequestException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
@@ -26,10 +27,10 @@ public class NodeServiceImpl implements NodeService {
     @Autowired
     protected LoadBalancerRepository loadBalancerRepository;
 
-//    @Override
-//    @Transactional
-//    public Set<Node> createNodes(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
-//        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
+    @Override
+    @Transactional
+    public Set<Node> createNodes(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
 //        isLbActive(dbLoadBalancer);
 //
 //        Integer potentialTotalNumNodes = dbLoadBalancer.getNodes().size() + loadBalancer.getNodes().size();
@@ -75,8 +76,8 @@ public class NodeServiceImpl implements NodeService {
 //                newNode.setWeight(1);
 //            }
 //        }
-//
-//        return nodeRepository.addNodes(dbLoadBalancer, loadBalancer.getNodes());
-//    }
+
+        return nodeRepository.addNodes(dbLoadBalancer, loadBalancer.getNodes());
+    }
 
 }
