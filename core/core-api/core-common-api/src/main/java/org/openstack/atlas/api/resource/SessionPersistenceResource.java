@@ -75,7 +75,7 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
             MessageDataContainer data = new MessageDataContainer();
             data.setLoadBalancer(loadBalancer);
 
-            service.delete(loadBalancerId);
+            service.preDelete(loadBalancerId);
             asyncService.callAsyncLoadBalancingOperation(Operation.DISABLE_SESSION_PERSISTENCE, data);
             return Response.status(Response.Status.ACCEPTED).build();
 

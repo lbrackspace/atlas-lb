@@ -27,7 +27,7 @@ public class DeleteSessionPersistenceListener extends BaseListener {
 
     @Autowired
     private SessionPersistenceService sessionPersistenceService;
-     @Autowired
+    @Autowired
     private LoadBalancerService loadBalancerService;
     @Autowired
     private NotificationService notificationService;
@@ -53,30 +53,38 @@ public class DeleteSessionPersistenceListener extends BaseListener {
         }
 
         try {
-                    LOG.debug(String.format("Removing session persistence for load balancer '%d' in LB Device...", queueLb.getId()));
-                    reverseProxyLoadBalancerService.deleteSessionPersistence(queueLb.getAccountId(), queueLb.getId());
-                    LOG.debug(String.format("Successfully removed session persistence for load balancer '%d' in LB Device.", queueLb.getId()));
-                } catch (Exception e) {
-                    loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ERROR);
-                    String alertDescription = String.format("Error removing session persistence in LB Device for loadbalancer '%d'.", queueLb.getId());
-                    LOG.error(alertDescription, e);
-                    notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
-                    sendErrorToEventResource(queueLb);
-                    return;
-                }
-
-                 loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ACTIVE);
-                // Add atom entry
-                String atomTitle = "Session Persistence Successfully Deleted";
-                String atomSummary = "Session persistence successfully deleted";
-                notificationService.saveSessionPersistenceEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_SESSION_PERSISTENCE, DELETE, INFO);
-
-                LOG.info(String.format("Delete session persistence operation complete for load balancer '%d'.", queueLb.getId()));
-            }
-
-            private void sendErrorToEventResource(LoadBalancer lb) {
-                String title = "Error Deleting Session Persistence";
-                String desc = "Could not delete the session persistence settings at this time.";
-                notificationService.saveSessionPersistenceEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, DELETE_SESSION_PERSISTENCE, DELETE, CRITICAL);
-            }
+            LOG.debug(String.format("Removing session persistence for load balancer '%d' in LB Device...", dbLoadBalancer.getId()));
+            reverseProxyLoadBalancerService.deleteSessionPersistence(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId());
+            LOG.debug(String.format("Successfully removed session persistence for load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
+        } catch (Exception e) {
+            loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ERROR);
+            String alertDescription = String.format("Error removing session persistence in LB Device for loadbalancer '%d'.", dbLoadBalancer.getId());
+            LOG.error(alertDescription, e);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
+            sendErrorToEventResource(queueLb);
+            return;
         }
+
+        try {
+            LOG.debug(String.format("Removing session persistence for load balancer '%d' in database...", dbLoadBalancer.getId()));
+            sessionPersistenceService.delete(dbLoadBalancer.getId());
+            LOG.debug(String.format("Successfully removed session persistence for load balancer '%d' in database.", dbLoadBalancer.getId()));
+        } catch (EntityNotFoundException e) {
+            LOG.debug(String.format("Session persistence for load balancer #%d already deleted in database. Ignoring...", dbLoadBalancer.getId()));
+        }
+
+        loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ACTIVE);
+        // Add atom entry
+        String atomTitle = "Session Persistence Successfully Deleted";
+        String atomSummary = "Session persistence successfully deleted";
+        notificationService.saveSessionPersistenceEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_SESSION_PERSISTENCE, DELETE, INFO);
+
+        LOG.info(String.format("Delete session persistence operation complete for load balancer '%d'.", queueLb.getId()));
+    }
+
+    private void sendErrorToEventResource(LoadBalancer lb) {
+        String title = "Error Deleting Session Persistence";
+        String desc = "Could not delete the session persistence settings at this time.";
+        notificationService.saveSessionPersistenceEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, DELETE_SESSION_PERSISTENCE, DELETE, CRITICAL);
+    }
+}
