@@ -47,18 +47,18 @@ public class NodesResource extends CommonDependencyProvider {
         }
 
         try {
-             org.openstack.atlas.service.domain.entity.LoadBalancer apiLb = new org.openstack.atlas.service.domain.entity.LoadBalancer();
-            apiLb.getNodes().addAll(_nodes.getNodes());
-            LoadBalancer domainLb = dozerMapper.map(apiLb, LoadBalancer.class);
-            domainLb.setId(loadBalancerId);
-            domainLb.setAccountId(accountId);
-
-            Nodes returnNodes = new Nodes();
-            Set<Node> dbnodes = nodeService.createNodes(domainLb);
-            for (Node node : dbnodes) {
-                returnNodes.getNodes().add(dozerMapper.map(node, org.openstack.atlas.docs.loadbalancers.api.v1.Node.class));
-            }
-            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_NODES, domainLb);
+//             org.openstack.atlas.service.domain.entity.LoadBalancer apiLb = new org.openstack.atlas.service.domain.entity.LoadBalancer();
+//            apiLb.getNodes().addAll(_nodes.getNodes());
+//            LoadBalancer domainLb = dozerMapper.map(apiLb, LoadBalancer.class);
+//            domainLb.setId(loadBalancerId);
+//            domainLb.setAccountId(accountId);
+//
+//            Nodes returnNodes = new Nodes();
+//            Set<Node> dbnodes = nodeService.createNodes(domainLb);
+//            for (Node node : dbnodes) {
+//                returnNodes.getNodes().add(dozerMapper.map(node, org.openstack.atlas.docs.loadbalancers.api.v1.Node.class));
+//            }
+//            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_NODES, domainLb);
             // TODO: Implement
             return Response.status(Response.Status.ACCEPTED).entity("Return something useful!").build();
         } catch (Exception e) {
