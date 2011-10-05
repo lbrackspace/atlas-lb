@@ -60,7 +60,7 @@ public class NodesResource extends CommonDependencyProvider {
             domainLb.setId(loadBalancerId);
             domainLb.setAccountId(accountId);
 
-            //TODO: reimpliment headers
+            //TODO: headers
 //            domainLb.setUserName(getUserName(requestHeaders));
 
             Nodes returnNodes = new Nodes();

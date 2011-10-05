@@ -10,5 +10,10 @@ import org.openstack.atlas.service.domain.exception.UnprocessableEntityException
 import java.util.Set;
 
 public interface NodeService {
+
     Set<Node> createNodes(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
+
+    boolean detectDuplicateNodes(LoadBalancer dbLoadBalancer, LoadBalancer queueLb);
+
+    boolean areAddressesValidForUse(Set<Node> nodes, LoadBalancer dbLb);
 }
