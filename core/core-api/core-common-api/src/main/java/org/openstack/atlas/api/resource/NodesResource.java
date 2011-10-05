@@ -29,7 +29,7 @@ public class NodesResource extends CommonDependencyProvider {
     private final Logger LOG = Logger.getLogger(NodesResource.class);
     protected Integer accountId;
     protected Integer loadBalancerId;
-//    private HttpHeaders requestHeaders;
+    private HttpHeaders requestHeaders;
 
 
     @Autowired
@@ -61,7 +61,7 @@ public class NodesResource extends CommonDependencyProvider {
             domainLb.setAccountId(accountId);
 
             //TODO: headers
-//            domainLb.setUserName(getUserName(requestHeaders));
+            domainLb.setUserName(getUserName(requestHeaders));
 
             Nodes returnNodes = new Nodes();
             Set<Node> dbnodes = nodeService.createNodes(domainLb);
