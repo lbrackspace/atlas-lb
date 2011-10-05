@@ -104,7 +104,7 @@ public class RaxStubFactory extends StubFactory {
         healthMonitor.setType(org.openstack.atlas.service.domain.entity.HealthMonitorType.valueOf(HEALTH_MONITOR_TYPE));
         loadBalancer.setHealthMonitor(healthMonitor);
 
-        loadBalancer.setSessionPersistence(org.openstack.atlas.service.domain.entity.SessionPersistence.valueOf(SESSION_PERSISTENCE_TYPE));
+        loadBalancer.setSessionPersistence(createHydratedDomainSessionPersistence());
 
         loadBalancer.setCreated(Calendar.getInstance());
         loadBalancer.setUpdated(Calendar.getInstance());
