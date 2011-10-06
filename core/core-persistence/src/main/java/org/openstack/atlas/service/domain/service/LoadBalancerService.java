@@ -1,6 +1,7 @@
 package org.openstack.atlas.service.domain.service;
 
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.PersistenceServiceException;
 
 import java.util.List;
@@ -15,5 +16,9 @@ public interface LoadBalancerService {
     void preDelete(Integer accountId, Integer loadBalancerId) throws PersistenceServiceException;
 
     void delete(LoadBalancer lb) throws PersistenceServiceException;
+
+    public LoadBalancer get(Integer id) throws EntityNotFoundException;
+
+    public LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException;
 
 }
