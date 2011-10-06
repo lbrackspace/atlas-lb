@@ -27,6 +27,14 @@ public class ResponseFactory {
         return Response.status(status).entity(lbaasFault).build();
     }
 
+     public static Response getResponseWithStatus(Response.Status status, String message,String details) {
+        LbaasFault lbaasFault = new GeneralFault();
+        lbaasFault.setCode(status.getStatusCode());
+        lbaasFault.setMessage(message);
+        lbaasFault.setDetails(details);
+        return Response.status(status).entity(lbaasFault).build();
+    }
+
     public static String getInternalServerErrorMessage() {
         return "Oopsie! Something happened and we are fanatically trying to resolve it.";
     }

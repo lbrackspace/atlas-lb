@@ -14,12 +14,15 @@ import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.mgmt.validation.contexts.HostContext;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.service.domain.operations.OperationResponse.ErrorReason;
+import javax.ws.rs.core.Response.Status;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
 public class HostResource extends ManagementDependencyProvider {
 
@@ -178,11 +181,13 @@ public class HostResource extends ManagementDependencyProvider {
         req.setHostssubnet(dHostssubnet);
 
         try {
-            getManagementAsyncService().callAsyncLoadBalancingOperation(Operation.SET_HOST_SUBNET_MAPPINGS, req);
+            syncSetHostSubnet(req);
             return ResponseFactory.getSuccessResponse("Successfully put subnetmappings", 200);
 
         } catch (Exception ex) {
-            return ResponseFactory.getErrorResponse(ex, null, null);
+            String exName = ex.getClass().getName();
+            String stackTrace = getExtendedStackTrace(ex);
+            return ResponseFactory.getResponseWithStatus(Response.Status.INTERNAL_SERVER_ERROR, exName, stackTrace);
         }
     }
 
@@ -355,7 +360,6 @@ public class HostResource extends ManagementDependencyProvider {
 
     public Integer getTotalConcurrentConnections(Integer hostId) {
         int connection = 0;
-
         List<org.openstack.atlas.service.domain.entities.Host> hosts = new ArrayList();
         org.openstack.atlas.service.domain.entities.Host host = new org.openstack.atlas.service.domain.entities.Host();
         host.setId(hostId);
@@ -365,10 +369,23 @@ public class HostResource extends ManagementDependencyProvider {
             connection = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(host);
 
         } catch (Exception e) {
-            //log
         }
-
-
         return connection;
+    }
+
+    // Mimics org.openstack.atlas.api.mgmt.async.MgmtSetHostSubnetMappingListener
+    // But skips activeMQ so we can get a syncronouse response incase of an Error.
+    private void syncSetHostSubnet(EsbRequest req) throws Exception{
+        org.openstack.atlas.service.domain.entities.Host rHost = req.getHost();
+        org.openstack.atlas.service.domain.entities.Host dHost = null;
+        org.openstack.atlas.service.domain.pojos.Hostssubnet hostssubnet;
+        try {
+            dHost = hostService.getById(rHost.getId());
+        } catch (EntityNotFoundException enfe) {
+            return;
+        }
+        hostssubnet = req.getHostssubnet();
+        hostssubnet.getHostsubnets().get(0).setName(dHost.getTrafficManagerName());
+        reverseProxyLoadBalancerService.setSubnetMappings(dHost, hostssubnet);
     }
 }
