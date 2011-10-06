@@ -35,13 +35,10 @@ public class SessionPersistenceServiceImpl implements SessionPersistenceService 
         SessionPersistence sessionPersistenceToUpdate = dbSessionPersistence == null ? sessionPersistence : dbSessionPersistence;
         sessionPersistenceToUpdate.setLoadBalancer(dbLoadBalancer); // Needs to be set for hibernate
 
-        if (!(dbLoadBalancer.getProtocol().equals(CoreProtocolType.HTTP) || dbLoadBalancer.getProtocol().equals(CoreProtocolType.HTTPS))
-            && sessionPersistence.getPersistenceType().equals(CorePersistenceType.HTTP_COOKIE)) {
-            throw new UnprocessableEntityException("HTTP_COOKIE session persistence can only be enabled with the HTTP/HTTPS protocol");
-        }
+        verifyProtocol(sessionPersistence, dbLoadBalancer);
+        setPropertiesForUpdate(sessionPersistence, dbLoadBalancer.getSessionPersistence(), sessionPersistenceToUpdate);
 
         loadBalancerRepository.changeStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), CoreLoadBalancerStatus.PENDING_UPDATE, false);
-        setPropertiesForUpdate(sessionPersistence, dbLoadBalancer.getSessionPersistence(), sessionPersistenceToUpdate);
         dbLoadBalancer.setSessionPersistence(sessionPersistenceToUpdate);
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         return dbLoadBalancer.getSessionPersistence();
@@ -59,6 +56,13 @@ public class SessionPersistenceServiceImpl implements SessionPersistenceService 
     public void delete(Integer loadBalancerId) throws EntityNotFoundException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
         sessionPersistenceRepository.delete(dbLoadBalancer.getSessionPersistence());
+    }
+
+    protected void verifyProtocol(final SessionPersistence sessionPersistence, final LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
+        if (!(dbLoadBalancer.getProtocol().equals(CoreProtocolType.HTTP) || dbLoadBalancer.getProtocol().equals(CoreProtocolType.HTTPS))
+                && sessionPersistence.getPersistenceType().equals(CorePersistenceType.HTTP_COOKIE)) {
+            throw new UnprocessableEntityException("HTTP_COOKIE session persistence can only be enabled with the HTTP/HTTPS protocol");
+        }
     }
 
     protected void setPropertiesForUpdate(final SessionPersistence requestPersistence, final SessionPersistence dbPersistence, SessionPersistence persistenceToUpdate) throws BadRequestException {

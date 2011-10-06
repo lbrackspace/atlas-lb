@@ -366,7 +366,7 @@ public class StubFactory {
     public static HealthMonitor createHydratedDomainHealthMonitor() {
         HealthMonitor healthMonitor = new HealthMonitor();
 
-        healthMonitor.setType(HealthMonitorType.valueOf(HEALTH_MONITOR_TYPE));
+        healthMonitor.setType(HEALTH_MONITOR_TYPE);
         healthMonitor.setDelay(HEALTH_MONITOR_DELAY);
         healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
         healthMonitor.setAttemptsBeforeDeactivation(HEALTH_MONITOR_ATTEMPTS_BEFORE_DEACTIVATION);

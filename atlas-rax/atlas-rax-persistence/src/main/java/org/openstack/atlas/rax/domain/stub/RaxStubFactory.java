@@ -101,7 +101,7 @@ public class RaxStubFactory extends StubFactory {
         healthMonitor.setDelay(HEALTH_MONITOR_DELAY);
         healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
         healthMonitor.setPath(HEALTH_MONITOR_PATH);
-        healthMonitor.setType(org.openstack.atlas.service.domain.entity.HealthMonitorType.valueOf(HEALTH_MONITOR_TYPE));
+        healthMonitor.setType(HEALTH_MONITOR_TYPE);
         loadBalancer.setHealthMonitor(healthMonitor);
 
         loadBalancer.setSessionPersistence(createHydratedDomainSessionPersistence());

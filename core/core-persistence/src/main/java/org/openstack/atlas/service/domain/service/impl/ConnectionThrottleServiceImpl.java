@@ -9,10 +9,7 @@ import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.SessionPersistence;
-import org.openstack.atlas.service.domain.exception.BadRequestException;
-import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exception.PersistenceServiceException;
-import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.exception.*;
 import org.openstack.atlas.service.domain.repository.ConnectionThrottleRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.ConnectionThrottleService;
@@ -30,15 +27,16 @@ public class ConnectionThrottleServiceImpl implements ConnectionThrottleService 
     protected ConnectionThrottleRepository connectionThrottleRepository;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = {EntityNotFoundException.class, ImmutableEntityException.class, UnprocessableEntityException.class})
     public ConnectionThrottle update(Integer loadBalancerId, ConnectionThrottle connectionThrottle) throws PersistenceServiceException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
         ConnectionThrottle dbConnectionThrottle = dbLoadBalancer.getConnectionThrottle();
         ConnectionThrottle connectionThrottleToUpdate = dbConnectionThrottle == null ? connectionThrottle : dbConnectionThrottle;
         connectionThrottleToUpdate.setLoadBalancer(dbLoadBalancer); // Needs to be set for hibernate
 
-        loadBalancerRepository.changeStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), CoreLoadBalancerStatus.PENDING_UPDATE, false);
         setPropertiesForUpdate(connectionThrottle, dbLoadBalancer.getConnectionThrottle(), connectionThrottleToUpdate);
+        
+        loadBalancerRepository.changeStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), CoreLoadBalancerStatus.PENDING_UPDATE, false);
         dbLoadBalancer.setConnectionThrottle(connectionThrottleToUpdate);
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         return dbLoadBalancer.getConnectionThrottle();
