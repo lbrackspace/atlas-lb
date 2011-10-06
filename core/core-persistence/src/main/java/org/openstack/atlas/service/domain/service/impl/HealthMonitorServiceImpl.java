@@ -113,7 +113,5 @@ public class HealthMonitorServiceImpl implements HealthMonitorService {
         else if (dbMonitor != null)
             monitorToUpdate.setAttemptsBeforeDeactivation(dbMonitor.getAttemptsBeforeDeactivation());
         else throw new BadRequestException("Must provide attemptsBeforeActivation for the request");
-
-        monitorToUpdate.setPath(null);
     }
 }
