@@ -126,4 +126,30 @@
         <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
         <property name="sessionTransacted" value="true"/>
     </bean>
+
+    <bean id="setConnectionThrottleListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="setConnectionThrottleListener"/>
+        <property name="destinationName" value="SET_CONNECTION_THROTTLE"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+    <bean id="deleteConnectionThrottleListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="deleteConnectionThrottleListener"/>
+        <property name="destinationName" value="DELETE_CONNECTION_THROTTLE"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
 </beans>
