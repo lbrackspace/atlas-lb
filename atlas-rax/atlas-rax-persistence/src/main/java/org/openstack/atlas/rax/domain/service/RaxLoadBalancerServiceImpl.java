@@ -52,7 +52,7 @@ public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
                     LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
                     dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                 } else {
-                    dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
+                    dbLoadBalancer.setSessionPersistence(null);
                     dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                 }
             } else {

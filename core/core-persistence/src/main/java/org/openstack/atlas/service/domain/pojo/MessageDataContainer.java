@@ -15,7 +15,15 @@ public class MessageDataContainer implements Serializable {
     private Integer loadBalancerId;
     private Integer resourceId;
     private List<Integer> resourceIds;
-    private Object resource; 
+    private Object resource;
+
+    public MessageDataContainer() {
+    }
+
+    public MessageDataContainer(Integer accountId, Integer loadBalancerId) {
+        this.accountId = accountId;
+        this.loadBalancerId = loadBalancerId;
+    }
 
     public List<Integer> getIds() {
         if(resourceIds == null){

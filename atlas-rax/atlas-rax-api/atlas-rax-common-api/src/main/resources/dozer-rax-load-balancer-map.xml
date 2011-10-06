@@ -35,7 +35,7 @@
             <a-hint>org.openstack.atlas.core.api.v1.HealthMonitor</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entity.HealthMonitor</b-hint>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.PersistenceConverter">
+        <field>
             <a>sessionPersistence</a>
             <b>sessionPersistence</b>
         </field>

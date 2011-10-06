@@ -52,7 +52,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
 
-        MessageDataContainer dataContainer = (MessageDataContainer) getDataContainerFromMessage(message);
+        MessageDataContainer dataContainer = getDataContainerFromMessage(message);
 
         LoadBalancer queueLb = dataContainer.getLoadBalancer();
 
@@ -105,7 +105,7 @@ public class CreateLoadBalancerListener extends BaseListener {
 
     private void addAtomEntryForConnectionThrottle(LoadBalancer queueLb, org.openstack.atlas.service.domain.entity.LoadBalancer dbLoadBalancer) {
         if (dbLoadBalancer.getConnectionThrottle() != null) {
-            notificationService.saveConnectionLimitEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getConnectionThrottle().getId(), UPDATE_THROTTLE_TITLE, EntryHelper.createConnectionThrottleSummary(dbLoadBalancer), UPDATE_CONNECTION_THROTTLE, UPDATE, INFO);
+            notificationService.saveConnectionThrottleEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getConnectionThrottle().getId(), UPDATE_THROTTLE_TITLE, EntryHelper.createConnectionThrottleSummary(dbLoadBalancer), SET_CONNECTION_THROTTLE, UPDATE, INFO);
         }
     }
 

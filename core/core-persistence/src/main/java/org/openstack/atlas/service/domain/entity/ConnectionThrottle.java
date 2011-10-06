@@ -20,10 +20,10 @@ public class ConnectionThrottle extends Entity implements Serializable {
 	private LoadBalancer loadBalancer;
 
 	@Column(name = "max_request_rate", nullable = false)
-	private Integer maxRequestRate;
+	private Integer maxRequestRate = 100000;
 
 	@Column(name = "rate_interval", nullable = false)
-	private Integer rateInterval;
+	private Integer rateInterval = 3600;
 
 	public LoadBalancer getLoadBalancer() {
 		return loadBalancer;

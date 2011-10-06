@@ -1,9 +1,6 @@
 package org.openstack.atlas.api.integration;
 
-import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
-import org.openstack.atlas.service.domain.entity.HealthMonitor;
-import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.*;
 
 import java.util.Set;
 
@@ -25,13 +22,15 @@ public interface ReverseProxyLoadBalancerService {
 
     void updateConnectionLogging(Integer accountId, Integer lbId, Boolean enabled) throws Exception;
 
-    void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle conThrottle) throws Exception;
+    void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle connectionThrottle) throws Exception;
 
     void deleteConnectionThrottle(Integer accountId, Integer lbId) throws Exception;
 
     void updateHealthMonitor(Integer accountId, Integer lbId, HealthMonitor monitor) throws Exception;
 
     void deleteHealthMonitor(Integer accountId, Integer lbId) throws Exception;
+
+    void setSessionPersistence(Integer lbId, Integer accountId, SessionPersistence sessionPersistence) throws Exception;
 
     void deleteSessionPersistence(Integer accountId, Integer lbId) throws Exception;
 }

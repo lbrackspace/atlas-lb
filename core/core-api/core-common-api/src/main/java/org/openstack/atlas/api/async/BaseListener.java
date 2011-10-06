@@ -23,13 +23,6 @@ public abstract class BaseListener implements MessageListener {
     @Autowired
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
 
-/*
-    @Required
-    public void setJmsTemplate(JmsTemplate jmsTemplate) {
-        this.jmsTemplate = jmsTemplate;
-    }
-*/
-
     public final void onMessage(Message message) {
         try {
             doOnMessage(message);
