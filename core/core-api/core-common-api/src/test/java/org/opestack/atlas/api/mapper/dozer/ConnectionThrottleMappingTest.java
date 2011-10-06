@@ -37,13 +37,13 @@ public class ConnectionThrottleMappingTest {
         }
 
         @Test
-        public void shouldMapAttributesToNullWhenNoAttributesSet() {
+        public void shouldMapAttributesToNullOrDefaultWhenNoAttributesSet() {
             apiConnectionThrottle = new org.openstack.atlas.core.api.v1.ConnectionThrottle();
             domainConnectionThrottle = mapper.map(apiConnectionThrottle, org.openstack.atlas.service.domain.entity.ConnectionThrottle.class);
 
             Assert.assertNull(domainConnectionThrottle.getId());
-            Assert.assertNull(domainConnectionThrottle.getMaxRequestRate());
-            Assert.assertNull(domainConnectionThrottle.getRateInterval());
+            Assert.assertEquals(100000, domainConnectionThrottle.getMaxRequestRate().intValue());
+            Assert.assertEquals(3600, domainConnectionThrottle.getRateInterval().intValue());
         }
     }
 
@@ -74,12 +74,12 @@ public class ConnectionThrottleMappingTest {
         }
 
         @Test
-        public void shouldMapAttributesToNullWhenNoAttributesSet() {
+        public void shouldMapAttributesToNullOrDefaultWhenNoAttributesSet() {
             domainConnectionThrottle = new org.openstack.atlas.service.domain.entity.ConnectionThrottle();
             apiConnectionThrottle = mapper.map(domainConnectionThrottle, org.openstack.atlas.core.api.v1.ConnectionThrottle.class);
 
-            Assert.assertNull(apiConnectionThrottle.getMaxRequestRate());
-            Assert.assertNull(apiConnectionThrottle.getRateInterval());
+            Assert.assertEquals(100000, apiConnectionThrottle.getMaxRequestRate().intValue());
+            Assert.assertEquals(3600, apiConnectionThrottle.getRateInterval().intValue());
         }
     }
 }

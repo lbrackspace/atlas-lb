@@ -105,7 +105,7 @@ public class CreateLoadBalancerListener extends BaseListener {
 
     private void addAtomEntryForConnectionThrottle(LoadBalancer queueLb, org.openstack.atlas.service.domain.entity.LoadBalancer dbLoadBalancer) {
         if (dbLoadBalancer.getConnectionThrottle() != null) {
-            notificationService.saveConnectionThrottleEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getConnectionThrottle().getId(), UPDATE_THROTTLE_TITLE, EntryHelper.createConnectionThrottleSummary(dbLoadBalancer), UPDATE_CONNECTION_THROTTLE, UPDATE, INFO);
+            notificationService.saveConnectionThrottleEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getConnectionThrottle().getId(), UPDATE_THROTTLE_TITLE, EntryHelper.createConnectionThrottleSummary(dbLoadBalancer), SET_CONNECTION_THROTTLE, UPDATE, INFO);
         }
     }
 

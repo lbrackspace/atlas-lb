@@ -70,7 +70,7 @@ public final class EntryHelper {
     public static String createConnectionThrottleSummary(LoadBalancer lb) {
         StringBuffer atomSummary = new StringBuffer();
         atomSummary.append("Connection throttle successfully updated with ");
-        atomSummary.append("maxConnectionRate: '").append(lb.getConnectionThrottle().getMaxRequestRate()).append("', ");
+        atomSummary.append("maxRequestRate: '").append(lb.getConnectionThrottle().getMaxRequestRate()).append("', ");
         atomSummary.append("rateInterval: '").append(lb.getConnectionThrottle().getRateInterval()).append("'");
         return atomSummary.toString();
     }

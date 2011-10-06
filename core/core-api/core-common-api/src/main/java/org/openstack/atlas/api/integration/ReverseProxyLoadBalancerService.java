@@ -22,7 +22,7 @@ public interface ReverseProxyLoadBalancerService {
 
     void updateConnectionLogging(Integer accountId, Integer lbId, Boolean enabled) throws Exception;
 
-    void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle conThrottle) throws Exception;
+    void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle connectionThrottle) throws Exception;
 
     void deleteConnectionThrottle(Integer accountId, Integer lbId) throws Exception;
 

@@ -122,10 +122,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle conThrottle) throws AdapterException, DecryptException, MalformedURLException, Exception {
+    public void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle connectionThrottle) throws AdapterException, DecryptException, MalformedURLException, Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.updateConnectionThrottle(config, accountId, lbId, conThrottle);
+            loadBalancerAdapter.updateConnectionThrottle(config, accountId, lbId, connectionThrottle);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;

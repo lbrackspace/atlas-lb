@@ -11,7 +11,7 @@ public interface NotificationService {
 
     void saveAccessListEvent(String userName, Integer accountId, Integer loadbalancerId, Integer accessListId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity);
 
-    void saveConnectionThrottleEvent(String userName, Integer accountId, Integer loadbalancerId, Integer connectionLimitId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity);
+    void saveConnectionThrottleEvent(String userName, Integer accountId, Integer loadbalancerId, Integer connectionThrottleId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity);
 
     void saveHealthMonitorEvent(String userName, Integer accountId, Integer loadbalancerId, Integer hmId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity);
 

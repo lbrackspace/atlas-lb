@@ -53,7 +53,7 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
     }
 
     @Override
-    public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, ConnectionThrottle conThrottle) throws AdapterException {
+    public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, ConnectionThrottle connectionThrottle) throws AdapterException {
         LOG.info("updateConnectionThrottle");// NOP
     }
 

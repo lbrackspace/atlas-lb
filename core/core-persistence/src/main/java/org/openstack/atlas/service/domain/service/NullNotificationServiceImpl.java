@@ -19,7 +19,7 @@ public class NullNotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void saveConnectionThrottleEvent(String userName, Integer accountId, Integer loadbalancerId, Integer connectionLimitId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity) {
+    public void saveConnectionThrottleEvent(String userName, Integer accountId, Integer loadbalancerId, Integer connectionThrottleId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
