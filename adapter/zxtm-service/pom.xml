@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.6.14-SNAPSHOT</version>
+        <version>1.6.14</version>
     </parent>
 
     <artifactId>atlas-zxtm-service</artifactId>
