@@ -105,7 +105,7 @@
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
         <property name="messageListener" ref="createNodeListener"/>
-        <property name="destinationName" value="CREATE_LOADBALANCER"/>
+        <property name="destinationName" value="CREATE_NODE"/>
         <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
         <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
         <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>

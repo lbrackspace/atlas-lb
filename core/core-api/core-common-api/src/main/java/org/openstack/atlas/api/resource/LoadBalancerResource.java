@@ -26,6 +26,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     protected final Logger LOG = Logger.getLogger(LoadBalancerResource.class);
     protected Integer id;
     protected Integer accountId;
+
     @Autowired
     protected LoadBalancerRepository loadBalancerRepository;
     @Autowired
@@ -42,6 +43,8 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     protected ConnectionThrottleResource connectionThrottleResource;
     @Autowired
     protected SessionPersistenceResource sessionPersistenceResource;
+    @Autowired
+    protected  UsageResource usageResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
@@ -133,6 +136,13 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         sessionPersistenceResource.setLoadBalancerId(id);
         sessionPersistenceResource.setAccountId(accountId);
         return sessionPersistenceResource;
+    }
+
+    @Path("usage")
+    public UsageResource retrieveUsageResource() {
+        usageResource.setLoadBalancerId(id);
+        usageResource.setAccountId(accountId);
+        return usageResource;
     }
 
     public void setId(int id) {
