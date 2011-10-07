@@ -153,7 +153,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             ipAddressesAndPorts.add(dbNode.getAddress() + ":" + dbNode.getPort());
         }
         for (Node queueNode : queueLb.getNodes()) {
-            if (!ipAddressesAndPorts.add(queueNode.getAddress() + ":" + queueNode.getPort())) return true;
+            if   (!ipAddressesAndPorts.add(queueNode.getAddress() + ":" + queueNode.getPort())) return true;
         }
         return false;
     }
