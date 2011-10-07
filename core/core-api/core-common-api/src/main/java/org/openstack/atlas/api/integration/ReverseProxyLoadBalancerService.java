@@ -16,7 +16,7 @@ public interface ReverseProxyLoadBalancerService {
 
     void deleteNodes(Integer accountId, Integer lbId, Set<Integer> nodeIds) throws Exception;
 
-    void updateNode(Integer accountId, Integer lbId, Node node) throws Exception;
+    void updateNode(Integer accountId, Integer lbId, Set<Node> node) throws Exception;
  
     void deleteNode(Integer accountId, Integer lbId, Integer nodeId) throws Exception;
 

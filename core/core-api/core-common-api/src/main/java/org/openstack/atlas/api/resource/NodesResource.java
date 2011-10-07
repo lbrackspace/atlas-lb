@@ -11,6 +11,7 @@ import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.operation.Operation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.NodeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,8 @@ public class NodesResource extends CommonDependencyProvider {
     @Autowired
     protected NodeService nodeService;
     @Autowired
+    protected LoadBalancerRepository loadBalancerRepository;
+    @Autowired
     protected LoadBalancerService loadBalancerService;
 
     @POST
@@ -53,7 +56,7 @@ public class NodesResource extends CommonDependencyProvider {
         }
 
         try {
-            loadBalancerService.get(loadBalancerId, accountId);
+            loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
 
             org.openstack.atlas.core.api.v1.LoadBalancer apiLb = new org.openstack.atlas.core.api.v1.LoadBalancer();
             apiLb.getNodes().addAll(_nodes.getNodes());
@@ -105,6 +108,7 @@ public class NodesResource extends CommonDependencyProvider {
     public NodeResource retrieveNodeResource(@PathParam("id") int id) {
         nodeResource.setId(id);
         nodeResource.setAccountId(accountId);
+        nodeResource.setLbId(loadBalancerId);
         return nodeResource;
     }
 

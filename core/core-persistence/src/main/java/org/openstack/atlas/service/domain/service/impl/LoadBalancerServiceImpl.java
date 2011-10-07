@@ -39,18 +39,6 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
 
     @Override
     @Transactional
-    public LoadBalancer get(Integer id) throws EntityNotFoundException {
-        return loadBalancerRepository.getById(id);
-    }
-
-    @Override
-    @Transactional
-    public LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException {
-        return loadBalancerRepository.getByIdAndAccountId(id, accountId);
-    }
-
-    @Override
-    @Transactional
     public final LoadBalancer create(final LoadBalancer loadBalancer) throws PersistenceServiceException {
         validateCreate(loadBalancer);
         addDefaultValuesForCreate(loadBalancer);

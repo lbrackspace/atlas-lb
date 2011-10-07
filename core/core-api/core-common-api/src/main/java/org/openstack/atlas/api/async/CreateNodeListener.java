@@ -31,9 +31,6 @@ public class CreateNodeListener extends BaseListener {
     private final Log LOG = LogFactory.getLog(CreateNodeListener.class);
 
     @Autowired
-    private LoadBalancerService loadBalancerService;
-
-    @Autowired
     private NotificationService notificationService;
 
     @Autowired
@@ -50,7 +47,7 @@ public class CreateNodeListener extends BaseListener {
         LoadBalancer queueLb = dataContainer.getLoadBalancer();
 
         try {
-            dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
+            dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(queueLb.getId(), queueLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
             LOG.error(alertDescription, enfe);
@@ -62,11 +59,6 @@ public class CreateNodeListener extends BaseListener {
         try {
             LOG.debug("Setting nodes in LBDevice...");
             reverseProxyLoadBalancerService.createNodes(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getNodes());
-
-            //TODO:TEMPORARY, REMOVE AFTER ADAPTER COMPLETION!
-            dbLoadBalancer.setStatus(ACTIVE);
-            loadBalancerRepository.update(dbLoadBalancer);
-
             LOG.debug("Nodes successfully set.");
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);
@@ -82,7 +74,7 @@ public class CreateNodeListener extends BaseListener {
         // Update load balancer in DB
         dbLoadBalancer.setStatus(ACTIVE);
         NodesHelper.setNodesToStatus(queueLb, dbLoadBalancer, ONLINE);
-        loadBalancerService.update(dbLoadBalancer);
+        loadBalancerRepository.update(dbLoadBalancer);
 
         // Add atom entries for new nodes only
         for (Node dbNode : dbLoadBalancer.getNodes()) {

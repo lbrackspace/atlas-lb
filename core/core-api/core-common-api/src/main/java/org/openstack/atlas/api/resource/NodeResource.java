@@ -95,4 +95,8 @@ public class NodeResource extends CommonDependencyProvider {
     public void setAccountId(Integer accountId) {
         this.accountId = accountId;
     }
+
+    public void setLbId(Integer loadBalancerId) {
+        this.loadBalancerId = loadBalancerId;
+    }
 }
