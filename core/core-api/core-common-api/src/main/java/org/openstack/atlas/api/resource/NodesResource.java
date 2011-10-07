@@ -9,6 +9,8 @@ import org.openstack.atlas.api.validation.validator.NodesValidator;
 import org.openstack.atlas.core.api.v1.Nodes;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.NodeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +53,7 @@ public class NodesResource extends CommonDependencyProvider {
         }
 
         try {
-            //TODO: add lb service methods
-//            loadBalancerService.get(loadBalancerId, accountId);
+            loadBalancerService.get(loadBalancerId, accountId);
 
             org.openstack.atlas.core.api.v1.LoadBalancer apiLb = new org.openstack.atlas.core.api.v1.LoadBalancer();
             apiLb.getNodes().addAll(_nodes.getNodes());
@@ -60,7 +61,6 @@ public class NodesResource extends CommonDependencyProvider {
             domainLb.setId(loadBalancerId);
             domainLb.setAccountId(accountId);
 
-            //TODO: headers
             domainLb.setUserName(getUserName(requestHeaders));
 
             Nodes returnNodes = new Nodes();
@@ -68,7 +68,11 @@ public class NodesResource extends CommonDependencyProvider {
             for (Node node : dbnodes) {
                 returnNodes.getNodes().add(dozerMapper.map(node, org.openstack.atlas.core.api.v1.Node.class));
             }
-//            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_NODES, domainLb);
+
+            MessageDataContainer dataContainer = new MessageDataContainer();
+            dataContainer.setLoadBalancer(domainLb);
+
+            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_NODES, dataContainer);
             return Response.status(Response.Status.ACCEPTED).entity(returnNodes).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);

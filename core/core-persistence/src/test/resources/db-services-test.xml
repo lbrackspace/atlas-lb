@@ -36,12 +36,14 @@
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
     <bean id="loadBalancerService" class="org.openstack.atlas.service.domain.service.impl.LoadBalancerServiceImpl" />
+    <bean id="nodeService" class="org.openstack.atlas.service.domain.service.impl.NodeServiceImpl" />
     <bean id="blacklistService" class="org.openstack.atlas.service.domain.service.impl.BlacklistServiceImpl" />
     <bean id="hostService" class="org.openstack.atlas.service.domain.service.impl.HostServiceImpl" />
     <bean id="virtualIpService" class="org.openstack.atlas.service.domain.service.impl.VirtualIpServiceImpl" />
 
     <bean id="accountLimitService" class="org.openstack.atlas.service.domain.service.impl.AccountLimitServiceImpl" />
     <bean id="loadBalancerRepository" class="org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl" />
+    <bean id="nodeRepository" class="org.openstack.atlas.service.domain.repository.impl.NodeRepositoryImpl" />
     <bean id="accountLimitRepository" class="org.openstack.atlas.service.domain.repository.AccountLimitRepository" />
     <bean id="blacklistRepository" class="org.openstack.atlas.service.domain.repository.BlacklistRepository" />
     <bean id="hostRepository" class="org.openstack.atlas.service.domain.repository.HostRepository" />
