@@ -21,7 +21,7 @@ public class ConnectionThrottleMappingTest {
         }
 
         @Test
-        public void shouldNotFailWhenApiNodeIsEmpty() {
+        public void shouldNotFailWhenApiThrottleIsEmpty() {
             apiConnectionThrottle = new org.openstack.atlas.core.api.v1.ConnectionThrottle();
             try {
                 domainConnectionThrottle = mapper.map(apiConnectionThrottle, org.openstack.atlas.service.domain.entity.ConnectionThrottle.class);
@@ -58,12 +58,12 @@ public class ConnectionThrottleMappingTest {
         }
 
         @Test
-        public void shouldNotFailWhenApiNodeIsEmpty() {
+        public void shouldNotFailWhenDomainThrottleIsEmpty() {
             domainConnectionThrottle = new org.openstack.atlas.service.domain.entity.ConnectionThrottle();
             try {
                 apiConnectionThrottle = mapper.map(domainConnectionThrottle, org.openstack.atlas.core.api.v1.ConnectionThrottle.class);
             } catch (Exception e) {
-                Assert.fail("Empty API connection throttle caused this exception");
+                Assert.fail("Empty domain connection throttle caused this exception");
             }
         }
 
@@ -80,6 +80,11 @@ public class ConnectionThrottleMappingTest {
 
             Assert.assertEquals(100000, apiConnectionThrottle.getMaxRequestRate().intValue());
             Assert.assertEquals(3600, apiConnectionThrottle.getRateInterval().intValue());
+        }
+
+        @Test
+        public void shouldNotMapExtensionAttributes() {
+            Assert.assertTrue(apiConnectionThrottle.getOtherAttributes().isEmpty());
         }
     }
 }

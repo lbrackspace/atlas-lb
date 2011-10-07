@@ -375,4 +375,15 @@ public class StubFactory {
         return healthMonitor;
     }
 
+    public static UsageRecord createHydratedDomainUsageRecord() {
+        UsageRecord usageRecord = new UsageRecord();
+
+        usageRecord.setId(1);
+        usageRecord.setTransferBytesIn(1024l);
+        usageRecord.setTransferBytesOut(1024l);
+        usageRecord.setStartTime(Calendar.getInstance());
+        usageRecord.setEndTime(Calendar.getInstance());
+
+        return usageRecord;
+    }
 }

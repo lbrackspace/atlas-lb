@@ -8,6 +8,8 @@ import org.openstack.atlas.service.domain.repository.ConnectionThrottleRepositor
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -36,8 +38,10 @@ public class ConnectionThrottleRepositoryImpl implements ConnectionThrottleRepos
 
         try {
             return entityManager.createQuery(criteria).setMaxResults(1).getSingleResult();
-        } catch (Exception e) {
-            LOG.error(e);
+        } catch (NoResultException e) {
+            throw new EntityNotFoundException(entityNotFound);
+        } catch (NonUniqueResultException e) {
+            LOG.error("More than one connection throttle detected!", e);
             throw new EntityNotFoundException(entityNotFound);
         }
     }

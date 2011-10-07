@@ -28,7 +28,7 @@ public class HealthMonitorMappingTest {
             try {
                 domainHealthMonitor = mapper.map(apiHealthMonitor, org.openstack.atlas.service.domain.entity.HealthMonitor.class);
             } catch (Exception e) {
-                Assert.fail("Empty API node caused this exception");
+                Assert.fail("Empty API health monitor caused this exception");
             }
         }
 
@@ -70,7 +70,7 @@ public class HealthMonitorMappingTest {
             try {
                 apiHealthMonitor = mapper.map(domainHealthMonitor, org.openstack.atlas.core.api.v1.HealthMonitor.class);
             } catch (Exception e) {
-                Assert.fail("Empty API node caused this exception");
+                Assert.fail("Empty domain health monitor caused this exception");
             }
         }
 
@@ -93,6 +93,11 @@ public class HealthMonitorMappingTest {
             Assert.assertEquals(300, apiHealthMonitor.getTimeout().intValue());
             Assert.assertEquals(10, apiHealthMonitor.getAttemptsBeforeDeactivation().intValue());
             Assert.assertNull(apiHealthMonitor.getPath());
+        }
+
+        @Test
+        public void shouldNotMapExtensionAttributes() {
+            Assert.assertTrue(apiHealthMonitor.getOtherAttributes().isEmpty());
         }
     }
 }

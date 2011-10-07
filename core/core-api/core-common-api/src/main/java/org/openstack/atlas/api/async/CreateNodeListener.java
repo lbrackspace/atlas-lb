@@ -4,8 +4,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.helper.NodesHelper;
-import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
-import org.openstack.atlas.datamodel.CoreNodeStatus;
 
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
@@ -15,20 +13,22 @@ import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import javax.jms.Message;
 
 import static org.openstack.atlas.api.atom.EntryHelper.CREATE_NODE_TITLE;
 import static org.openstack.atlas.datamodel.CoreLoadBalancerStatus.*;
 import static org.openstack.atlas.datamodel.CoreNodeStatus.*;
-import static org.openstack.atlas.service.domain.service.helpers.AlertHelper.*;
 import static org.openstack.atlas.service.domain.service.helpers.AlertType.*;
 import static org.openstack.atlas.service.domain.event.entity.EventType.*;
 import static org.openstack.atlas.service.domain.event.entity.CategoryType.*;
 import static org.openstack.atlas.service.domain.event.entity.EventSeverity.*;
 
-public class CreateNodesListener extends BaseListener {
+@Component
+public class CreateNodeListener extends BaseListener {
 
-    private final Log LOG = LogFactory.getLog(CreateNodesListener.class);
+    private final Log LOG = LogFactory.getLog(CreateNodeListener.class);
 
     @Autowired
     private LoadBalancerService loadBalancerService;

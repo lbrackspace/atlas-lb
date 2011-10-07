@@ -78,6 +78,11 @@ public class SessionPersistenceMappingTest {
 
             Assert.assertEquals(CorePersistenceType.HTTP_COOKIE, apiSessionPersistence.getPersistenceType());
         }
+
+        @Test
+        public void shouldNotMapExtensionAttributes() {
+            Assert.assertTrue(apiSessionPersistence.getOtherAttributes().isEmpty());
+        }
     }
 }
 
