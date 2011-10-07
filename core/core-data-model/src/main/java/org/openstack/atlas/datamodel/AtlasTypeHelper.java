@@ -10,6 +10,7 @@ public final class AtlasTypeHelper {
     private static LoadBalancerStatus loadBalancerStatus;
     private static NodeStatus nodeStatus;
     private static PersistenceType persistenceType;
+    private static HealthMonitorType healthMonitorType;
 
     @Autowired(required = true)
     public void setAlgorithmType(AlgorithmType algorithmType) {
@@ -36,6 +37,11 @@ public final class AtlasTypeHelper {
         AtlasTypeHelper.persistenceType = persistenceType;
     }
 
+    @Autowired(required = true)
+    public void setHealthMonitorType(HealthMonitorType healthMonitorType) {
+        AtlasTypeHelper.healthMonitorType = healthMonitorType;
+    }
+
     public static boolean isValidAlgorithm(String algorithm) {
         return isValidAtlasType(algorithm, algorithmType);
     }
@@ -54,6 +60,10 @@ public final class AtlasTypeHelper {
 
     public static boolean isValidPersistenceType(String type) {
         return isValidAtlasType(type, persistenceType);
+    }
+
+    public static boolean isValidHealthMonitorType(String type) {
+        return isValidAtlasType(type, healthMonitorType);
     }
 
     private static boolean isValidAtlasType(String string, AtlasType atlasType) {

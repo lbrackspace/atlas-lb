@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.core.api.v1.HealthMonitor;
+import org.openstack.atlas.datamodel.CoreHealthMonitorType;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
 @RunWith(Enclosed.class)
@@ -33,7 +34,7 @@ public class HealthMonitorMappingTest {
 
         @Test
         public void shouldMapAllAttributes() {
-            Assert.assertEquals(apiHealthMonitor.getType(), domainHealthMonitor.getType().name());
+            Assert.assertEquals(apiHealthMonitor.getType(), domainHealthMonitor.getType());
             Assert.assertEquals(apiHealthMonitor.getDelay(), domainHealthMonitor.getDelay());
             Assert.assertEquals(apiHealthMonitor.getTimeout(), domainHealthMonitor.getTimeout());
             Assert.assertEquals(apiHealthMonitor.getAttemptsBeforeDeactivation(), domainHealthMonitor.getAttemptsBeforeDeactivation());
@@ -41,15 +42,14 @@ public class HealthMonitorMappingTest {
         }
 
         @Test
-        public void shouldMapAttributesToNullWhenNoAttributesSet() {
+        public void shouldMapAttributesToNullOrDefaultWhenNoAttributesSet() {
             apiHealthMonitor = new HealthMonitor();
             domainHealthMonitor = mapper.map(apiHealthMonitor, org.openstack.atlas.service.domain.entity.HealthMonitor.class);
 
-            Assert.assertNull(domainHealthMonitor.getId());
-            Assert.assertNull(domainHealthMonitor.getType());
-            Assert.assertNull(domainHealthMonitor.getDelay());
-            Assert.assertNull(domainHealthMonitor.getTimeout());
-            Assert.assertNull(domainHealthMonitor.getAttemptsBeforeDeactivation());
+            Assert.assertEquals(CoreHealthMonitorType.CONNECT, domainHealthMonitor.getType());;
+            Assert.assertEquals(3600, domainHealthMonitor.getDelay().intValue());
+            Assert.assertEquals(300, domainHealthMonitor.getTimeout().intValue());
+            Assert.assertEquals(10, domainHealthMonitor.getAttemptsBeforeDeactivation().intValue());
             Assert.assertNull(domainHealthMonitor.getPath());
         }
     }
@@ -76,7 +76,7 @@ public class HealthMonitorMappingTest {
 
         @Test
         public void shouldMapAllAttributes() {
-            Assert.assertEquals(domainHealthMonitor.getType().name(), apiHealthMonitor.getType());
+            Assert.assertEquals(domainHealthMonitor.getType(), apiHealthMonitor.getType());
             Assert.assertEquals(domainHealthMonitor.getDelay(), apiHealthMonitor.getDelay());
             Assert.assertEquals(domainHealthMonitor.getTimeout(), apiHealthMonitor.getTimeout());
             Assert.assertEquals(domainHealthMonitor.getAttemptsBeforeDeactivation(), apiHealthMonitor.getAttemptsBeforeDeactivation());
@@ -84,14 +84,14 @@ public class HealthMonitorMappingTest {
         }
 
         @Test
-        public void shouldMapAttributesToNullWhenNoAttributesSet() {
+        public void shouldMapAttributesToNullOrDefaultWhenNoAttributesSet() {
             domainHealthMonitor = new org.openstack.atlas.service.domain.entity.HealthMonitor();
             apiHealthMonitor = mapper.map(domainHealthMonitor, org.openstack.atlas.core.api.v1.HealthMonitor.class);
 
-            Assert.assertNull(apiHealthMonitor.getType());
-            Assert.assertNull(apiHealthMonitor.getDelay());
-            Assert.assertNull(apiHealthMonitor.getTimeout());
-            Assert.assertNull(apiHealthMonitor.getAttemptsBeforeDeactivation());
+            Assert.assertEquals(CoreHealthMonitorType.CONNECT, apiHealthMonitor.getType());
+            Assert.assertEquals(3600, apiHealthMonitor.getDelay().intValue());
+            Assert.assertEquals(300, apiHealthMonitor.getTimeout().intValue());
+            Assert.assertEquals(10, apiHealthMonitor.getAttemptsBeforeDeactivation().intValue());
             Assert.assertNull(apiHealthMonitor.getPath());
         }
     }

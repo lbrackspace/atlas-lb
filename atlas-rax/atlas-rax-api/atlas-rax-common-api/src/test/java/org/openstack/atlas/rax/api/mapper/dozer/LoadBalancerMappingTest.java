@@ -107,7 +107,7 @@ public class LoadBalancerMappingTest {
             Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getDelay(), healthMonitor.getDelay());
             Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getTimeout(), healthMonitor.getTimeout());
             Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getPath(), healthMonitor.getPath());
-            Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getType(), healthMonitor.getType().name());
+            Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getType(), healthMonitor.getType());
         }
 
         @Test
@@ -236,7 +236,7 @@ public class LoadBalancerMappingTest {
             Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getDelay()), healthMonitor.getDelay());
             Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getTimeout()), healthMonitor.getTimeout());
             Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getPath()), healthMonitor.getPath());
-            Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getType().name()), healthMonitor.getType());
+            Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getType()), healthMonitor.getType());
         }
 
         @Test

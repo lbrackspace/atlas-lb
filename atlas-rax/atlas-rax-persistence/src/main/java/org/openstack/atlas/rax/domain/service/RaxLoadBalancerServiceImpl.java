@@ -30,12 +30,12 @@ public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
             //check for health monitor type and allow update only if protocol matches health monitory type for HTTP and HTTPS
             if (dbLoadBalancer.getHealthMonitor() != null) {
                 if (dbLoadBalancer.getHealthMonitor().getType() != null) {
-                    if (dbLoadBalancer.getHealthMonitor().getType().name().equals(CoreProtocolType.HTTP)) {
+                    if (dbLoadBalancer.getHealthMonitor().getType().equals(CoreProtocolType.HTTP)) {
                         //incoming port not HTTP
                         if (!(loadBalancer.getProtocol().equals(CoreProtocolType.HTTP))) {
                             portHMTypecheck = false;
                         }
-                    } else if (dbLoadBalancer.getHealthMonitor().getType().name().equals(CoreProtocolType.HTTPS)) {
+                    } else if (dbLoadBalancer.getHealthMonitor().getType().equals(CoreProtocolType.HTTPS)) {
                         //incoming port not HTTP
                         if (!(loadBalancer.getProtocol().equals(CoreProtocolType.HTTPS))) {
                             portHMTypecheck = false;

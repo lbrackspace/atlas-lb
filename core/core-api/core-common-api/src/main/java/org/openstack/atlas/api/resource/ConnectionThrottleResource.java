@@ -84,7 +84,6 @@ public class ConnectionThrottleResource extends CommonDependencyProvider {
             service.preDelete(loadBalancerId);
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_CONNECTION_THROTTLE, data);
             return Response.status(Response.Status.ACCEPTED).build();
-
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }

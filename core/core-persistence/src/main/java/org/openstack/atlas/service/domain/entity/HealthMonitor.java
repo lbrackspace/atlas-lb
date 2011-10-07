@@ -1,5 +1,8 @@
 package org.openstack.atlas.service.domain.entity;
 
+import org.openstack.atlas.datamodel.AtlasTypeHelper;
+import org.openstack.atlas.datamodel.CoreHealthMonitorType;
+
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -19,20 +22,19 @@ public class HealthMonitor extends org.openstack.atlas.service.domain.entity.Ent
     private LoadBalancer loadBalancer;
 
     @JoinColumn(name = "type", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private HealthMonitorType type;
+    private String type = CoreHealthMonitorType.CONNECT;
 
     @Column(name = "delay", nullable = false)
-    private Integer delay;
+    private Integer delay = 3600;
 
     @Column(name = "timeout", nullable = false)
-    private Integer timeout;
+    private Integer timeout = 300;
 
     @Column(name = "attempts_before_deactivation", nullable = false)
-    private Integer attemptsBeforeDeactivation;
+    private Integer attemptsBeforeDeactivation = 10;
 
     @Column(name = "path", length = 128, nullable = true)
-    private String path;
+    private String path = "/";
 
     public LoadBalancer getLoadBalancer() {
         return loadBalancer;
@@ -42,11 +44,12 @@ public class HealthMonitor extends org.openstack.atlas.service.domain.entity.Ent
         this.loadBalancer = loadBalancer;
     }
 
-    public HealthMonitorType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(HealthMonitorType type) {
+    public void setType(String type) {
+        if (!AtlasTypeHelper.isValidHealthMonitorType(type)) throw new RuntimeException("Health monitor type not supported.");
         this.type = type;
     }
 
@@ -75,6 +78,7 @@ public class HealthMonitor extends org.openstack.atlas.service.domain.entity.Ent
     }
 
     public String getPath() {
+        if (CoreHealthMonitorType.CONNECT.equals(type)) return null;
         return path;
     }
 

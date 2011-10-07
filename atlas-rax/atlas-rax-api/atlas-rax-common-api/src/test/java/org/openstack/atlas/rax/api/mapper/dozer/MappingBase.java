@@ -40,5 +40,6 @@ public class MappingBase {
         atlasTypeHelper.setLoadBalancerStatus(new CoreLoadBalancerStatus());
         atlasTypeHelper.setNodeStatus(new CoreNodeStatus());
         atlasTypeHelper.setPersistenceType(new CorePersistenceType());
+        atlasTypeHelper.setHealthMonitorType(new CoreHealthMonitorType());
     }
 }
