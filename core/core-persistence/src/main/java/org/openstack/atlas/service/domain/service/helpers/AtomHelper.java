@@ -149,7 +149,7 @@ public class AtomHelper {
             urI.append("/accesslist/");
         } else if (eventType.equals(EventType.SET_CONNECTION_THROTTLE) || eventType.equals(EventType.DELETE_CONNECTION_THROTTLE)) {
             urI.append("/connectionthrottle/");
-        } else if (eventType.equals(EventType.CREATE_HEALTH_MONITOR) || eventType.equals(EventType.UPDATE_HEALTH_MONITOR) || eventType.equals(EventType.DELETE_HEALTH_MONITOR)) {
+        } else if (eventType.equals(EventType.SET_HEALTH_MONITOR) || eventType.equals(EventType.DELETE_HEALTH_MONITOR)) {
             urI.append("/healthmonitor/");
         } else if (eventType.equals(EventType.CREATE_NODE) || eventType.equals(EventType.UPDATE_NODE) || eventType.equals(EventType.DELETE_NODE)) {
             urI.append("/nodes/").append(additionalId);

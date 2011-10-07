@@ -35,7 +35,7 @@ public class NodeServiceImplIntegrationTest {
     @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
     @Transactional
     @Service
-    public static class WhenCreatingLoadBalancer {
+    public static class WhenCreatingNodes {
 
         @Autowired
         private LoadBalancerService loadBalancerService;
