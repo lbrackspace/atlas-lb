@@ -13,6 +13,8 @@ public interface NodeService {
 
     Set<Node> createNodes(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
 
+    LoadBalancer updateNode(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException;
+
     boolean detectDuplicateNodes(LoadBalancer dbLoadBalancer, LoadBalancer queueLb);
 
     boolean areAddressesValidForUse(Set<Node> nodes, LoadBalancer dbLb);

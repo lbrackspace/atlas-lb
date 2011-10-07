@@ -119,4 +119,7 @@ public class Node extends org.openstack.atlas.service.domain.entity.Entity imple
                 ", isNew=" + isNew +
                 '}';
     }
+
+    public void isEnabled(Object enabled) {
+    }
 }

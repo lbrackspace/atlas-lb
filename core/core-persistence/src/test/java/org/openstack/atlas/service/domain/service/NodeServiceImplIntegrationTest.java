@@ -14,6 +14,7 @@ import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.exception.BadRequestException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.NodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +70,7 @@ public class NodeServiceImplIntegrationTest {
 
             Set<Node> nodes = new HashSet<Node>();
             Node node = new Node();
-            node.setAddress("2.2.2.2");
+            node.setAddress("1.2.2.1");
             node.setPort(80);
             node.setEnabled(true);
             nodes.add(node);
@@ -90,6 +91,45 @@ public class NodeServiceImplIntegrationTest {
             nodeService.createNodes(dbLoadBalancer);
         }
 
+        @Test
+        public void shouldAssignIdNodeWhenCreateSucceeds() throws Exception {
+            LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
+            dbLoadBalancer.setStatus("ACTIVE");
+            node = new Node();
+            node.setAddress("2.2.4.4");
+            node.setPort(80);
+            node.setEnabled(true);
+
+            LoadBalancer pLb = new LoadBalancer();
+            pLb.setAccountId(dbLoadBalancer.getAccountId());
+            pLb.setId(dbLoadBalancer.getId());
+            pLb.getNodes().add(node);
+
+            Set<Node> rNodes = nodeService.createNodes(pLb);
+            for (Node node : rNodes) {
+                Assert.assertNotNull(node.getId());
+            }
+        }
+
+        @Test(expected = UnprocessableEntityException.class)
+        public void shouldRejectDuplicateNodes() throws Exception {
+            LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
+            dbLoadBalancer.setStatus("ACTIVE");
+            node = new Node();
+            node.setAddress("1.2.2.1");
+            node.setPort(80);
+            node.setEnabled(true);
+
+            LoadBalancer pLb = new LoadBalancer();
+            pLb.setAccountId(dbLoadBalancer.getAccountId());
+            pLb.setId(dbLoadBalancer.getId());
+            pLb.getNodes().add(node);
+
+            Set<Node> rNodes = nodeService.createNodes(pLb);
+            for (Node node : rNodes) {
+                Assert.assertNotNull(node.getId());
+            }
+        }
         //TODO: more tests...
     }
 }

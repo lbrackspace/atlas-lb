@@ -18,4 +18,6 @@ import java.util.*;
 
 public interface NodeRepository {
     Set<Node> addNodes(LoadBalancer loadBalancer, Collection<Node> nodes);
+
+    LoadBalancer update(LoadBalancer loadBalancer);
 }

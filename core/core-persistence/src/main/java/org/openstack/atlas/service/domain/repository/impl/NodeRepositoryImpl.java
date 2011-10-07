@@ -41,4 +41,24 @@ public class NodeRepositoryImpl implements NodeRepository {
         entityManager.flush();
         return newNodes;
     }
+
+    @Override
+    public LoadBalancer update(LoadBalancer loadBalancer) {
+        final Set<LoadBalancerJoinVip> lbJoinVipsToLink = loadBalancer.getLoadBalancerJoinVipSet();
+        loadBalancer.setLoadBalancerJoinVipSet(null);
+
+        loadBalancer.setUpdated(Calendar.getInstance());
+        loadBalancer = entityManager.merge(loadBalancer);
+
+        // Now attach loadbalancer to vips
+        for (LoadBalancerJoinVip lbJoinVipToLink : lbJoinVipsToLink) {
+            VirtualIp virtualIp = entityManager.find(VirtualIp.class, lbJoinVipToLink.getVirtualIp().getId());
+            LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip(loadBalancer.getPort(), loadBalancer, virtualIp);
+            entityManager.merge(loadBalancerJoinVip);
+            entityManager.merge(lbJoinVipToLink.getVirtualIp());
+        }
+
+        entityManager.flush();
+        return loadBalancer;
+    }
 }

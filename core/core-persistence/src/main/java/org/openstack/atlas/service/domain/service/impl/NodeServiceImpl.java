@@ -23,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -93,6 +95,58 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     }
 
     @Override
+    @Transactional
+    public LoadBalancer updateNode(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
+
+        Node nodeToUpdate = loadBalancer.getNodes().iterator().next();
+        if (!loadBalancerContainsNode(dbLoadBalancer, nodeToUpdate)) {
+            LOG.warn("Node to update not found. Sending response to client...");
+            throw new EntityNotFoundException(String.format("Node with id #%d not found for loadbalancer #%d", nodeToUpdate.getId(),
+                            loadBalancer.getId()));
+        }
+
+        isLbActive(dbLoadBalancer);
+
+        Node nodeBeingUpdated = loadBalancer.getNodes().iterator().next();
+        LOG.debug("Verifying that we have an at least one active node...");
+        if (!activeNodeCheck(dbLoadBalancer, nodeBeingUpdated)) {
+            LOG.warn("No active nodes found! Sending failure response back to client...");
+            throw new UnprocessableEntityException("One or more nodes must remain ENABLED.");
+        }
+
+        LOG.debug("Nodes on dbLoadbalancer: " + dbLoadBalancer.getNodes().size());
+        for (Node n : dbLoadBalancer.getNodes()) {
+            if (n.getId().equals(nodeToUpdate.getId())) {
+                LOG.info("Node to be updated found: " + n.getId());
+                if (nodeToUpdate.isEnabled() != null) {
+                    n.isEnabled(nodeToUpdate.isEnabled());
+                }
+                if (nodeToUpdate.getAddress() != null) {
+                    n.setAddress(nodeToUpdate.getAddress());
+                }
+                if (nodeToUpdate.getPort() != null) {
+                    n.setPort(nodeToUpdate.getPort());
+                }
+                if (nodeToUpdate.getStatus() != null) {
+                    n.setStatus(nodeToUpdate.getStatus());
+                }
+                if (nodeToUpdate.getWeight() != null) {
+                    n.setWeight(nodeToUpdate.getWeight());
+                }
+                n.setToBeUpdated(true);
+                break;
+            }
+        }
+        LOG.debug("Updating the lb status to pending_update");
+        dbLoadBalancer.setStatus(CoreLoadBalancerStatus.PENDING_UPDATE);
+        dbLoadBalancer.setUserName(loadBalancer.getUserName());
+
+        nodeRepository.update(dbLoadBalancer);
+        return dbLoadBalancer;
+    }
+
+    @Override
     public boolean detectDuplicateNodes(LoadBalancer dbLoadBalancer, LoadBalancer queueLb) {
         Set<String> ipAddressesAndPorts = new HashSet<String>();
         for (Node dbNode : dbLoadBalancer.getNodes()) {
@@ -114,5 +168,34 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             }
         }
         return true;
+    }
+
+    private static boolean activeNodeCheck(LoadBalancer dbLb, Node n) {
+        List<Node> nodeList = new ArrayList<Node>();
+        Node updateNode = new Node();
+        for (Node node : dbLb.getNodes()) {
+            if (node.isEnabled()) {
+                nodeList.add(node);
+                if (node.getId().equals(n.getId())) {
+                    updateNode.setEnabled(node.isEnabled());
+                }
+            }
+        }
+        if (nodeList.size() <= 1) {
+            if (updateNode.isEnabled() != null) {
+                if (!n.isEnabled())
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean loadBalancerContainsNode(LoadBalancer lb, Node node) {
+        for (Node n : lb.getNodes()) {
+            if (n.getId().equals(node.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
