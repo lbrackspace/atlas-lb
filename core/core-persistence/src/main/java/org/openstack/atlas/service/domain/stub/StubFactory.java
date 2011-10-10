@@ -17,7 +17,7 @@ import java.util.Calendar;
     Used for testing purposes.
  */
 public class StubFactory {
-    protected static final Integer ACCOUNT_ID = 1234;
+    protected static final Integer ACCOUNT_ID = 99999999;
     protected static final Integer LOAD_BALANCER_ID = 1;
     protected static final String LOAD_BALANCER_NAME = "My first load balancer";
     protected static final Integer LOAD_BALANCER_PORT = 80;
@@ -217,6 +217,20 @@ public class StubFactory {
         loadBalancer.setSessionPersistence(createHydratedDomainSessionPersistence());
         loadBalancer.setCreated(Calendar.getInstance());
         loadBalancer.setUpdated(Calendar.getInstance());
+
+        return loadBalancer;
+    }
+
+    public static LoadBalancer createMinimalDomainLoadBalancer() {
+        LoadBalancer loadBalancer = new LoadBalancer();
+
+        loadBalancer.setAccountId(ACCOUNT_ID);
+        loadBalancer.setName(LOAD_BALANCER_NAME);
+
+        Node node1 = new Node();
+        node1.setAddress(NODE1_ADDRESS);
+        node1.setPort(NODE1_PORT);
+        loadBalancer.getNodes().add(node1);
 
         return loadBalancer;
     }
