@@ -120,7 +120,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             if (n.getId().equals(nodeToUpdate.getId())) {
                 LOG.info("Node to be updated found: " + n.getId());
                 if (nodeToUpdate.isEnabled() != null) {
-                    n.isEnabled(nodeToUpdate.isEnabled());
+                    n.setEnabled(nodeToUpdate.isEnabled());
                 }
                 if (nodeToUpdate.getAddress() != null) {
                     n.setAddress(nodeToUpdate.getAddress());

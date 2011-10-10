@@ -58,7 +58,7 @@ public class CreateNodeListener extends BaseListener {
 
         try {
             LOG.debug("Setting nodes in LBDevice...");
-            reverseProxyLoadBalancerService.createNodes(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getNodes());
+            reverseProxyLoadBalancerService.createNodes(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getNodes());
             LOG.debug("Nodes successfully set.");
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);

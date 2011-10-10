@@ -58,7 +58,7 @@ public class UpdateNodeListener extends BaseListener {
 
         try {
             LOG.info(String.format("Updating nodes for load balancer '%d' in LB Device...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.updateNode(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getNodes());
+            reverseProxyLoadBalancerService.updateNode(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getNodes());
             LOG.info(String.format("Successfully updated nodes for load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);
