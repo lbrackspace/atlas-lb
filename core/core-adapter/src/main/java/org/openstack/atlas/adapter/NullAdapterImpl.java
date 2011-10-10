@@ -38,7 +38,7 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
     }
 
     @Override
-    public void updateNode(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Set<Node> nodes) throws AdapterException {
+    public void updateNode(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Node node) throws AdapterException {
         LOG.info("updateNodes");// NOP
     }
 
