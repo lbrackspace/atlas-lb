@@ -35,7 +35,7 @@ public class VirtualIpServiceImpl implements VirtualIpService {
 
     @Override
     @Transactional
-    public LoadBalancer assignVIpsToLoadBalancer(LoadBalancer loadBalancer) throws PersistenceServiceException {
+    public LoadBalancer assignVipsToLoadBalancer(LoadBalancer loadBalancer) throws PersistenceServiceException {
         if (!loadBalancer.getLoadBalancerJoinVipSet().isEmpty()) {
             Set<LoadBalancerJoinVip> newVipConfig = new HashSet<LoadBalancerJoinVip>();
             List<VirtualIp> vipsOnAccount = virtualIpRepository.getVipsByAccountId(loadBalancer.getAccountId());
