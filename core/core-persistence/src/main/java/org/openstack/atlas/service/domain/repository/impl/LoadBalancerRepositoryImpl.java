@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.repository.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
+import org.openstack.atlas.service.domain.common.Constants;
 import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
@@ -217,6 +218,32 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         }
 
         return true;
+    }
+
+     public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, String statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
+        String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
+        List<LoadBalancer> lbList;
+        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
+                setParameter("aid", accountId).
+                setParameter("lid", loadbalancerId);
+        lbList = q.getResultList();
+        if (lbList.size() < 1) {
+            throw new EntityNotFoundException("");
+        }
+
+        LoadBalancer lb = lbList.get(0);
+        if (lb.getStatus().equals(CoreLoadBalancerStatus.DELETED)) throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);
+        final boolean isActive = lb.getStatus().equals(CoreLoadBalancerStatus.ACTIVE);
+        final boolean isPendingOrActive = lb.getStatus().equals(CoreLoadBalancerStatus.PENDING_UPDATE) || isActive;
+
+        if(allowConcurrentModifications ? isPendingOrActive : isActive) {
+            lb.setStatus(statusToChangeTo);
+            lb.setUpdated(Calendar.getInstance());
+            entityManager.merge(lb);
+            return true;
+        }
+
+        return false;
     }
 
     public LoadBalancer changeStatus(LoadBalancer loadBalancer, String status) throws EntityNotFoundException {

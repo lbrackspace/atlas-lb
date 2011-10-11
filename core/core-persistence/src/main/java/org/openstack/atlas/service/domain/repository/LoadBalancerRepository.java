@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.repository;
 
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
 import org.openstack.atlas.service.domain.entity.SessionPersistence;
@@ -28,6 +29,8 @@ public interface LoadBalancerRepository {
     void updatePortInJoinTable(LoadBalancer lb);
 
     boolean canUpdateToNewPort(Integer newPort, Set<LoadBalancerJoinVip> setToCheckAgainst);
+
+    boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, String statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException;
 
     LoadBalancer changeStatus(LoadBalancer loadBalancer, String status) throws EntityNotFoundException;
 }

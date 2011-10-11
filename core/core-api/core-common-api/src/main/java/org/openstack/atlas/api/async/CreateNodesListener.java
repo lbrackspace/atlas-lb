@@ -10,7 +10,6 @@ import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,9 +25,9 @@ import static org.openstack.atlas.service.domain.event.entity.CategoryType.*;
 import static org.openstack.atlas.service.domain.event.entity.EventSeverity.*;
 
 @Component
-public class CreateNodeListener extends BaseListener {
+public class CreateNodesListener extends BaseListener {
 
-    private final Log LOG = LogFactory.getLog(CreateNodeListener.class);
+    private final Log LOG = LogFactory.getLog(CreateNodesListener.class);
 
     @Autowired
     private NotificationService notificationService;

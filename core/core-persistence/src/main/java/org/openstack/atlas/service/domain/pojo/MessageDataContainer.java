@@ -16,6 +16,7 @@ public class MessageDataContainer implements Serializable {
     private Integer resourceId;
     private List<Integer> resourceIds;
     private Object resource;
+    private String userName;
 
     public MessageDataContainer() {
     }
@@ -42,6 +43,14 @@ public class MessageDataContainer implements Serializable {
 
     public void setAccountId(Integer accountId) {
         this.accountId = accountId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public Integer getLoadBalancerId() {
