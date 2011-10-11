@@ -22,9 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class SessionPersistenceServiceITest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenAddingSessionPersistence extends Base {
         @Autowired
         private SessionPersistenceService sessionPersistenceService;
@@ -93,10 +90,8 @@ public class SessionPersistenceServiceITest {
         }
     }
 
+
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenPreDeletingSessionPersistence extends Base {
         @Autowired
         private SessionPersistenceService sessionPersistenceService;
@@ -129,10 +124,8 @@ public class SessionPersistenceServiceITest {
         }
     }
 
+
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenDeletingSessionPersistence extends Base {
         @Autowired
         private SessionPersistenceService sessionPersistenceService;

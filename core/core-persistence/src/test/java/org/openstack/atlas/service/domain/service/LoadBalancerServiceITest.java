@@ -24,9 +24,6 @@ import javax.persistence.PersistenceException;
 public class LoadBalancerServiceITest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenCreatingALoadBalancer extends Base {
 
         @Test(expected = PersistenceException.class)
@@ -64,9 +61,6 @@ public class LoadBalancerServiceITest {
 
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenDeletingLoadBalancer extends Base {
 
         @Test(expected = BadRequestException.class)

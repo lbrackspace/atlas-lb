@@ -35,6 +35,7 @@
     <tx:annotation-driven/>
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
+    <bean id="accountLimitService" class="org.openstack.atlas.service.domain.service.impl.AccountLimitServiceImpl" />
     <bean id="loadBalancerService" class="org.openstack.atlas.service.domain.service.impl.LoadBalancerServiceImpl" />
     <bean id="nodeService" class="org.openstack.atlas.service.domain.service.impl.NodeServiceImpl" />
     <bean id="virtualIpService" class="org.openstack.atlas.service.domain.service.impl.VirtualIpServiceImpl" />
@@ -44,10 +45,9 @@
     <bean id="sessionPersistenceService" class="org.openstack.atlas.service.domain.service.impl.SessionPersistenceServiceImpl" />
     <bean id="connectionThrottleService" class="org.openstack.atlas.service.domain.service.impl.ConnectionThrottleServiceImpl" />
 
-    <bean id="accountLimitService" class="org.openstack.atlas.service.domain.service.impl.AccountLimitServiceImpl" />
+    <bean id="accountLimitRepository" class="org.openstack.atlas.service.domain.repository.impl.AccountLimitRepositoryImpl" />
     <bean id="loadBalancerRepository" class="org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl" />
     <bean id="nodeRepository" class="org.openstack.atlas.service.domain.repository.impl.NodeRepositoryImpl" />
-    <bean id="accountLimitRepository" class="org.openstack.atlas.service.domain.repository.AccountLimitRepository" />
     <bean id="blacklistRepository" class="org.openstack.atlas.service.domain.repository.BlacklistRepository" />
     <bean id="hostRepository" class="org.openstack.atlas.service.domain.repository.HostRepository" />
     <bean id="virtualIpv6Repository" class="org.openstack.atlas.service.domain.repository.VirtualIpv6Repository" />

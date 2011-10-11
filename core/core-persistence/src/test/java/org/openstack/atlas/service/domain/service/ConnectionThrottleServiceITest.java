@@ -22,9 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ConnectionThrottleServiceITest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenAddingSessionPersistence extends Base {
         @Autowired
         private ConnectionThrottleService connectionThrottleService;
@@ -95,10 +92,8 @@ public class ConnectionThrottleServiceITest {
         }
     }
 
+
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenPreDeletingAConnectionThrottle extends Base {
         @Autowired
         private ConnectionThrottleService connectionThrottleService;
@@ -131,10 +126,8 @@ public class ConnectionThrottleServiceITest {
         }
     }
 
+
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenDeletingAConnectionThrottle extends Base {
         @Autowired
         private ConnectionThrottleService connectionThrottleService;

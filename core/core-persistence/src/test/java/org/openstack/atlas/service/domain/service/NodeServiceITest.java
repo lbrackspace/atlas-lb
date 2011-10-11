@@ -22,9 +22,6 @@ import java.util.Set;
 public class NodeServiceITest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenCreatingNodes extends Base {
 
         @Autowired
