@@ -45,15 +45,13 @@ public class HealthMonitorServiceImpl implements HealthMonitorService {
     @Override
     @Transactional(rollbackFor = {EntityNotFoundException.class})
     public void preDelete(Integer loadBalancerId) throws PersistenceServiceException {
-        LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
-        if (dbLoadBalancer.getHealthMonitor() == null) throw new EntityNotFoundException("Health monitor not found");
+        if (healthMonitorRepository.getByLoadBalancerId(loadBalancerId) == null) throw new EntityNotFoundException("Health monitor not found");
     }
 
     @Override
     @Transactional(rollbackFor = {EntityNotFoundException.class})
     public void delete(Integer loadBalancerId) throws PersistenceServiceException {
-        LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
-        healthMonitorRepository.delete(dbLoadBalancer.getHealthMonitor());
+        healthMonitorRepository.delete(healthMonitorRepository.getByLoadBalancerId(loadBalancerId));
     }
 
     protected void verifyProtocol(final HealthMonitor requestMonitor, final LoadBalancer dbLoadBalancer) throws BadRequestException {

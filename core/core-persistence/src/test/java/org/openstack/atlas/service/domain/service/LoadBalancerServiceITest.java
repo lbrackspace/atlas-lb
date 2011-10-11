@@ -1,71 +1,33 @@
 package org.openstack.atlas.service.domain.service;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.openstack.atlas.datamodel.AtlasTypeHelper;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
-import org.openstack.atlas.datamodel.CoreProtocolType;
-import org.openstack.atlas.service.domain.entity.*;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.exception.BadRequestException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojo.VirtualIpDozerWrapper;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.stub.StubFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
-import java.util.HashSet;
-import java.util.Set;
 
 @RunWith(Enclosed.class)
-public class LoadBalancerServiceImplIntegrationTest {
+public class LoadBalancerServiceITest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
+    @ContextConfiguration(locations = {Base.contextConfig})
     @Transactional
     @Service
-    public static class WhenCreatingLoadBalancer {
-
-        @Autowired
-        private LoadBalancerService loadBalancerService;
-
-        @Autowired
-        private LoadBalancerRepository loadBalancerRepository;
-
-        @Autowired
-        private AtlasTypeHelper atlasTypeHelper;
-
-        @PersistenceContext(unitName = "loadbalancing")
-        private EntityManager entityManager;
-
-        private LoadBalancer loadBalancer;
-
-        @Before
-        public void setUp() {
-            loadBalancer = new LoadBalancer();
-            loadBalancer.setAccountId(1000);
-            loadBalancer.setName("integration testing");
-            loadBalancer.setPort(80);
-            loadBalancer.setProtocol(CoreProtocolType.HTTP);
-
-            Set<Node> nodes = new HashSet<Node>();
-            Node node = new Node();
-            node.setAddress("2.2.2.2");
-            node.setPort(80);
-            node.setEnabled(true);
-            nodes.add(node);
-            loadBalancer.setNodes(nodes);
-        }
-
-        @After
-        public void tearDown() {
-
-        }
+    public static class WhenCreatingALoadBalancer extends Base {
 
         @Test(expected = PersistenceException.class)
         public void shouldThrowExceptionWhenLoadBalancerIsNull() throws Exception {
@@ -93,7 +55,7 @@ public class LoadBalancerServiceImplIntegrationTest {
         }
 
         @Test(expected = EntityNotFoundException.class)
-        public void shouldThrowExceptionWhenRetrieveingLoadBalancerByWrongAccountId() throws Exception {
+        public void shouldThrowExceptionWhenRetrievingLoadBalancerByWrongAccountId() throws Exception {
             LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
             loadBalancerRepository.getByIdAndAccountId(dbLoadBalancer.getId(), -99999);
         }
@@ -102,43 +64,10 @@ public class LoadBalancerServiceImplIntegrationTest {
 
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
+    @ContextConfiguration(locations = {Base.contextConfig})
     @Transactional
     @Service
-    public static class WhenDeletingLoadBalancer {
-
-        @Autowired
-        private LoadBalancerService loadBalancerService;
-
-        @Autowired
-        private LoadBalancerRepository loadBalancerRepository;
-
-        @PersistenceContext(unitName = "loadbalancing")
-        private EntityManager entityManager;
-
-        private LoadBalancer loadBalancer;
-
-        @Before
-        public void setUp() {
-            loadBalancer = new LoadBalancer();
-            loadBalancer.setAccountId(1000);
-            loadBalancer.setName("integration testing");
-            loadBalancer.setPort(80);
-            loadBalancer.setProtocol(CoreProtocolType.HTTP);
-
-            Set<Node> nodes = new HashSet<Node>();
-            Node node = new Node();
-            node.setAddress("2.2.2.2");
-            node.setPort(80);
-            node.setEnabled(true);
-            nodes.add(node);
-            loadBalancer.setNodes(nodes);
-        }
-
-        @After
-        public void tearDown() {
-
-        }
+    public static class WhenDeletingLoadBalancer extends Base {
 
         @Test(expected = BadRequestException.class)
         public void shouldThrowExceptionWhenLoadBalancerDoesntExist() throws Exception {
@@ -173,7 +102,6 @@ public class LoadBalancerServiceImplIntegrationTest {
 
             loadBalancerService.preDelete(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId());
         }
-
     }
 }
 

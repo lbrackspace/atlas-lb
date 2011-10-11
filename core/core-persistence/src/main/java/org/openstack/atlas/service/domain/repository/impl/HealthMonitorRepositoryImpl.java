@@ -2,7 +2,9 @@ package org.openstack.atlas.service.domain.repository.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entity.*;
+import org.openstack.atlas.service.domain.entity.HealthMonitor;
+import org.openstack.atlas.service.domain.entity.HealthMonitor_;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.HealthMonitorRepository;
 import org.springframework.stereotype.Repository;
@@ -49,7 +51,13 @@ public class HealthMonitorRepositoryImpl implements HealthMonitorRepository {
     @Override
     public void delete(HealthMonitor healthMonitor) throws EntityNotFoundException {
         if (healthMonitor == null) throw new EntityNotFoundException(entityNotFound);
-        healthMonitor = entityManager.merge(healthMonitor); // Re-attach hibernate instance
-        entityManager.remove(healthMonitor);
+            healthMonitor = entityManager.merge(healthMonitor); // Re-attach hibernate instance
+            entityManager.remove(healthMonitor);
+//        try {
+//            healthMonitor = entityManager.merge(healthMonitor); // Re-attach hibernate instance
+//            entityManager.remove(healthMonitor);
+//        } catch (IllegalArgumentException e) {
+//            throw new EntityNotFoundException(entityNotFound);
+//        }
     }
 }
