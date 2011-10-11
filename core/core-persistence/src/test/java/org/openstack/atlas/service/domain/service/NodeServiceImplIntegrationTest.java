@@ -132,66 +132,121 @@ public class NodeServiceImplIntegrationTest {
         }
     }
 
-//    @RunWith(SpringJUnit4ClassRunner.class)
-//    @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
-//    @Transactional
-//    @Service
-//    public static class WhenUpdatingNodes {
-//
-//        @Autowired
-//        private LoadBalancerService loadBalancerService;
-//
-//        @Autowired
-//        private NodeService nodeService;
-//
-//        @Autowired
-//        private LoadBalancerRepository loadBalancerRepository;
-//
-//        @Autowired
-//        private NodeRepository nodeRepository;
-//
-//        @Autowired
-//        private AtlasTypeHelper atlasTypeHelper;
-//
-//        @PersistenceContext(unitName = "loadbalancing")
-//        private EntityManager entityManager;
-//
-//        private LoadBalancer loadBalancer;
-//        private Node node;
-//        private Nodes nodes;
-//
-//        @Before
-//        public void setUp() {
-//            loadBalancer = new LoadBalancer();
-//            loadBalancer.setAccountId(1000);
-//            loadBalancer.setName("integration testing");
-//            loadBalancer.setPort(80);
-//            loadBalancer.setProtocol(CoreProtocolType.HTTP);
-//
-//            Set<Node> nodes = new HashSet<Node>();
-//            Node node = new Node();
-//            node.setAddress("1.2.2.1");
-//            node.setPort(80);
-//            node.setEnabled(true);
-//            nodes.add(node);
-//            loadBalancer.setNodes(nodes);
-//        }
-//
-//        @After
-//        public void tearDown() {
-//
-//        }
-//
-//        @Test
-//        public void shouldThrowExceptionWhenNodeIsNull() throws Exception {
-//            loadBalancer.setStatus("ACTIVE");
-//            for (Node node1 : loadBalancer.getNodes()) {
-//                node1.setEnabled(false);
-//            }
-//
-//            nodeService.updateNode(loadBalancer);
-//        }
-//        //TODO: more tests...
-//    }
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
+    @Transactional
+    @Service
+    public static class WhenUpdatingNodes {
+
+        @Autowired
+        private LoadBalancerService loadBalancerService;
+
+        @Autowired
+        private NodeService nodeService;
+
+        @Autowired
+        private LoadBalancerRepository loadBalancerRepository;
+
+        @Autowired
+        private NodeRepository nodeRepository;
+
+        @Autowired
+        private AtlasTypeHelper atlasTypeHelper;
+
+        @PersistenceContext(unitName = "loadbalancing")
+        private EntityManager entityManager;
+
+        private LoadBalancer loadBalancer;
+        private Node node;
+        private Nodes nodes;
+
+        @Before
+        public void setUp() {
+            loadBalancer = new LoadBalancer();
+            loadBalancer.setAccountId(1000);
+            loadBalancer.setName("integration testing");
+            loadBalancer.setPort(80);
+            loadBalancer.setProtocol(CoreProtocolType.HTTP);
+
+            Set<Node> nodes = new HashSet<Node>();
+            Node node = new Node();
+            node.setAddress("1.2.2.1");
+            node.setPort(80);
+            node.setEnabled(true);
+            nodes.add(node);
+            loadBalancer.setNodes(nodes);
+        }
+
+        @After
+        public void tearDown() {
+
+        }
+
+        @Test(expected = UnprocessableEntityException.class)
+        public void shouldThrowExceptionWhenDisablingLastNode() throws Exception {
+            LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
+            dbLoadBalancer.setStatus("ACTIVE");
+            for (Node node1 : dbLoadBalancer.getNodes()) {
+                node1.setEnabled(false);
+            }
+            nodeService.updateNode(dbLoadBalancer);
+        }
+
+        @Test
+        public void shouldAssignIdNodeWhenCreateSucceeds() throws Exception {
+            LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
+            dbLoadBalancer.setStatus("ACTIVE");
+            node = new Node();
+            node.setAddress("2.2.4.4");
+            node.setPort(80);
+            node.setEnabled(true);
+
+            LoadBalancer pLb = new LoadBalancer();
+            pLb.setAccountId(dbLoadBalancer.getAccountId());
+            pLb.setId(dbLoadBalancer.getId());
+            pLb.getNodes().add(node);
+
+            Set<Node> nodes1 = nodeService.createNodes(pLb);
+
+            LoadBalancer updatedLb = loadBalancerRepository.getByIdAndAccountId(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+
+            for (Node node : updatedLb.getNodes()) {
+                Assert.assertNotNull(node.getId());
+            }
+        }
+
+        @Test
+        public void shouldSuccessfullyUpdateNode() throws Exception {
+            LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
+            dbLoadBalancer.setStatus("ACTIVE");
+
+            node = new Node();
+            node.setAddress("2.2.4.4");
+            node.setPort(80);
+            node.setEnabled(true);
+
+            LoadBalancer pLb = new LoadBalancer();
+            pLb.setAccountId(dbLoadBalancer.getAccountId());
+            pLb.setId(dbLoadBalancer.getId());
+            pLb.getNodes().add(node);
+
+            nodeService.createNodes(pLb);
+            dbLoadBalancer.setStatus("ACTIVE");
+
+            LoadBalancer updatedLb = loadBalancerRepository.getByIdAndAccountId(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+
+            for (Node node1 : updatedLb.getNodes()) {
+                node1.setEnabled(false);
+                break;
+            }
+            nodeService.updateNode(updatedLb);
+
+             LoadBalancer updatedLb1 = loadBalancerRepository.getByIdAndAccountId(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+            for (Node node : updatedLb.getNodes()) {
+                Assert.assertEquals(false, node.isEnabled());
+            }
+        }
+        //TODO: more tests...
+    }
 }
 
