@@ -12,6 +12,7 @@ import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.operation.Operation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.NodeRepository;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.openstack.atlas.service.domain.service.NodeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Controller;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,6 +43,8 @@ public class NodesResource extends CommonDependencyProvider {
     private NodeResource nodeResource;
     @Autowired
     protected NodeService nodeService;
+    @Autowired
+    protected NodeRepository nodeRepository;
     @Autowired
     protected LoadBalancerRepository loadBalancerRepository;
     @Autowired
@@ -86,8 +90,11 @@ public class NodesResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveNodes() {
         try {
-            // TODO: Implement
-            return Response.status(Response.Status.OK).entity("Return something useful!").build();
+            Nodes returnNodes = new Nodes();
+            for (Node node : nodeRepository.getNodesByAccountIdLoadBalancerId(loadBalancerId, accountId)) {
+                returnNodes.getNodes().add(dozerMapper.map(node, org.openstack.atlas.core.api.v1.Node.class));
+            }
+            return Response.status(Response.Status.OK).entity(returnNodes).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }

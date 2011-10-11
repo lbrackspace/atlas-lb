@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.*;
+import org.openstack.atlas.service.domain.exception.DeletedStatusException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -12,10 +13,11 @@ import org.openstack.atlas.service.domain.repository.NodeRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -60,5 +62,27 @@ public class NodeRepositoryImpl implements NodeRepository {
 
         entityManager.flush();
         return loadBalancer;
+    }
+
+    public Set<Node> getNodesByAccountIdLoadBalancerId(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException {
+
+        LoadBalancer loadBalancer = new LoadBalancer();
+        loadBalancer.setAccountId(accountId);
+        loadBalancer.setId(loadBalancerId);
+
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Node> criteria = builder.createQuery(Node.class);
+        Root<Node> nodeRoot = criteria.from(Node.class);
+        Predicate belongsToLoadBalancer = builder.equal(nodeRoot.get(Node_.loadBalancer), loadBalancer);
+
+        criteria.select(nodeRoot);
+        criteria.where(belongsToLoadBalancer);
+
+        try {
+            return new HashSet<Node>(entityManager.createQuery(criteria).getResultList());
+        } catch (Exception e) {
+            LOG.error("More than one health monitor detected!", e);
+            throw new EntityNotFoundException(e);
+        }
     }
 }

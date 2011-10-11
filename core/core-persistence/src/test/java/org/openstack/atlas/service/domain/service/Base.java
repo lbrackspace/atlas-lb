@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.openstack.atlas.datamodel.AtlasTypeHelper;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.NodeRepository;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,7 +24,13 @@ public class Base {
     protected LoadBalancerService loadBalancerService;
 
     @Autowired
+    protected NodeService nodeService;
+
+    @Autowired
     protected LoadBalancerRepository loadBalancerRepository;
+
+    @Autowired
+    protected NodeRepository nodeRepository;
 
     protected LoadBalancer loadBalancer;
 

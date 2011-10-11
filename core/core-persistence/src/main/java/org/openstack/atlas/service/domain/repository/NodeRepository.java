@@ -20,4 +20,6 @@ public interface NodeRepository {
     Set<Node> addNodes(LoadBalancer loadBalancer, Collection<Node> nodes);
 
     LoadBalancer update(LoadBalancer loadBalancer);
+
+    Set<Node> getNodesByAccountIdLoadBalancerId(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException;
 }
