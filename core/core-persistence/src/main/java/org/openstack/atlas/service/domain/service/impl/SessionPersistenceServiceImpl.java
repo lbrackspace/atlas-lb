@@ -54,8 +54,7 @@ public class SessionPersistenceServiceImpl implements SessionPersistenceService 
     @Override
     @Transactional(rollbackFor = {EntityNotFoundException.class})
     public void delete(Integer loadBalancerId) throws EntityNotFoundException {
-        LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
-        sessionPersistenceRepository.delete(dbLoadBalancer.getSessionPersistence());
+        sessionPersistenceRepository.delete(sessionPersistenceRepository.getByLoadBalancerId(loadBalancerId));
     }
 
     protected void verifyProtocol(final SessionPersistence sessionPersistence, final LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {

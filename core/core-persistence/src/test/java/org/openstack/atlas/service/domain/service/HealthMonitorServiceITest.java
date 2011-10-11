@@ -22,9 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class HealthMonitorServiceITest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenCreatingAHealthMonitor extends Base {
         @Autowired
         private HealthMonitorService healthMonitorService;
@@ -102,17 +99,11 @@ public class HealthMonitorServiceITest {
         }
     }
 
-    
+
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenPreDeletingAHealthMonitor extends Base {
         @Autowired
         private HealthMonitorService healthMonitorService;
-
-        @Autowired
-        private HealthMonitorRepository healthMonitorRepository;
 
         private HealthMonitor healthMonitor;
 
@@ -142,10 +133,8 @@ public class HealthMonitorServiceITest {
         }
     }
 
+
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {Base.contextConfig})
-    @Transactional
-    @Service
     public static class WhenDeletingAHealthMonitor extends Base {
         @Autowired
         private HealthMonitorService healthMonitorService;
