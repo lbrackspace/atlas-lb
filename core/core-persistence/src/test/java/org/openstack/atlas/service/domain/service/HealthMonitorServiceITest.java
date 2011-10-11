@@ -111,9 +111,6 @@ public class HealthMonitorServiceITest {
         @Autowired
         private HealthMonitorService healthMonitorService;
 
-        @Autowired
-        private HealthMonitorRepository healthMonitorRepository;
-
         private HealthMonitor healthMonitor;
 
         @Before

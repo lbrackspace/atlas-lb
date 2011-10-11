@@ -52,8 +52,7 @@ public class ConnectionThrottleServiceImpl implements ConnectionThrottleService 
     @Override
     @Transactional(rollbackFor = {EntityNotFoundException.class})
     public void delete(Integer loadBalancerId) throws EntityNotFoundException {
-        LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
-        connectionThrottleRepository.delete(dbLoadBalancer.getConnectionThrottle());
+        connectionThrottleRepository.delete(connectionThrottleRepository.getByLoadBalancerId(loadBalancerId));
     }
 
     protected void setPropertiesForUpdate(final ConnectionThrottle requestThrottle, final ConnectionThrottle dbThrottle, ConnectionThrottle throttleToUpdate) throws BadRequestException {

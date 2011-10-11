@@ -41,6 +41,8 @@
     <bean id="blacklistService" class="org.openstack.atlas.service.domain.service.impl.BlacklistServiceImpl" />
     <bean id="hostService" class="org.openstack.atlas.service.domain.service.impl.HostServiceImpl" />
     <bean id="healthMonitorService" class="org.openstack.atlas.service.domain.service.impl.HealthMonitorServiceImpl" />
+    <bean id="sessionPersistenceService" class="org.openstack.atlas.service.domain.service.impl.SessionPersistenceServiceImpl" />
+    <bean id="connectionThrottleService" class="org.openstack.atlas.service.domain.service.impl.ConnectionThrottleServiceImpl" />
 
     <bean id="accountLimitService" class="org.openstack.atlas.service.domain.service.impl.AccountLimitServiceImpl" />
     <bean id="loadBalancerRepository" class="org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl" />
@@ -50,6 +52,8 @@
     <bean id="hostRepository" class="org.openstack.atlas.service.domain.repository.HostRepository" />
     <bean id="virtualIpv6Repository" class="org.openstack.atlas.service.domain.repository.VirtualIpv6Repository" />
     <bean id="healthMonitorRepository" class="org.openstack.atlas.service.domain.repository.impl.HealthMonitorRepositoryImpl" />
+    <bean id="sessionPersistenceRepository" class="org.openstack.atlas.service.domain.repository.impl.SessionPersistenceRepositoryImpl" />
+    <bean id="connectionThrottleRepository" class="org.openstack.atlas.service.domain.repository.impl.ConnectionThrottleRepositoryImpl" />
 
     <bean id="virtualIpRepository" class="org.openstack.atlas.service.domain.repository.VirtualIpRepository" />
     <bean id="clusterRepository" class="org.openstack.atlas.service.domain.repository.ClusterRepository" />
