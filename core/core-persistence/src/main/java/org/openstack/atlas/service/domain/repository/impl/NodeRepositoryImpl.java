@@ -2,12 +2,14 @@ package org.openstack.atlas.service.domain.repository.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.common.converters.StringConverter;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.DeletedStatusException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.pojo.NodeMap;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.NodeRepository;
 import org.springframework.stereotype.Repository;
@@ -64,6 +66,32 @@ public class NodeRepositoryImpl implements NodeRepository {
         return loadBalancer;
     }
 
+    public LoadBalancer deleteNodes(LoadBalancer lb, Set<Integer> nodeIds) {
+        NodeMap nodeMap = new NodeMap(getNodesByIds(nodeIds));
+        Set<Node> lbNodes = new HashSet<Node>(lb.getNodes());
+        for(Node node : lbNodes){
+            Integer nodeId = node.getId();
+            if(nodeMap.containsKey(nodeId)){
+                lb.getNodes().remove(node);
+            }
+        }
+        lb.setUpdated(Calendar.getInstance());
+        lb = entityManager.merge(lb);
+        entityManager.flush();
+        return lb;
+    }
+
+    public List<Node> getNodesByIds(Collection<Integer> ids) {
+        List<Node> doomedNodes = new ArrayList<Node>();
+        String nodeIdsStr = StringConverter.integersAsString(ids);
+        String qStr = String.format("from Node n where n.id in (%s)", nodeIdsStr);
+        if (ids == null || ids.size() < 1) {
+            return doomedNodes;
+        }
+        doomedNodes = entityManager.createQuery(qStr).getResultList();
+        return doomedNodes;
+    }
+
     public Set<Node> getNodesByAccountIdLoadBalancerId(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException {
 
         LoadBalancer loadBalancer = new LoadBalancer();
@@ -84,5 +112,13 @@ public class NodeRepositoryImpl implements NodeRepository {
             LOG.error("More than one health monitor detected!", e);
             throw new EntityNotFoundException(e);
         }
+    }
+
+    public NodeMap getNodeMap(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException {
+        NodeMap nodeMap = new NodeMap();
+        for (Node node : getNodesByAccountIdLoadBalancerId(loadbalancerId, accountId)) {
+            nodeMap.addNode(node);
+        }
+        return nodeMap;
     }
 }

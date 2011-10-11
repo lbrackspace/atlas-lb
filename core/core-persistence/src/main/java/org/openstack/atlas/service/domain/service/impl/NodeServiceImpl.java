@@ -2,6 +2,7 @@ package org.openstack.atlas.service.domain.service.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.common.converters.StringConverter;
 import org.openstack.atlas.common.ip.exception.IPStringConversionException1;
 import org.openstack.atlas.common.ip.exception.IpTypeMissMatchException;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
@@ -15,6 +16,7 @@ import org.openstack.atlas.service.domain.exception.BadRequestException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.pojo.NodeMap;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.NodeRepository;
 import org.openstack.atlas.service.domain.service.AccountLimitService;
@@ -22,6 +24,8 @@ import org.openstack.atlas.service.domain.service.NodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.openstack.atlas.datamodel.CoreLoadBalancerStatus.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -145,6 +149,43 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         nodeRepository.update(dbLoadBalancer);
         return dbLoadBalancer;
     }
+
+    public List<String> prepareForNodesDeletion(Integer accountId,Integer loadBalancerId,List<Integer> ids) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
+            List<String> validationErrors = new ArrayList<String>();
+            String format;
+            String errMsg;
+
+            NodeMap nodeMap = getNodeMap(accountId, loadBalancerId);
+            Set<Integer> idSet = NodeMap.listToSet(ids);
+            Set<Integer> invalidIds = nodeMap.idsThatAreNotInThisMap(idSet); // Either some one else's ids or non existent ids
+            Set<Integer> remainingNodes = nodeMap.nodesInConditionAfterDelete(true, idSet);
+            List<Node> nodesToDelete = nodeMap.getNodesList(idSet);
+            int nodesToDeleteCount = nodesToDelete.size();
+            int batch_delete_limit = accountLimitService.getLimit(accountId, AccountLimitType.BATCH_DELETE_LIMIT);
+            if (nodesToDeleteCount > batch_delete_limit) {
+                format = "Request to delete %d nodes exceeds the account limit"
+                        + " BATCH_DELETE_LIMIT of %d please attempt to delete fewer then %d nodes";
+                errMsg = String.format(format, nodesToDeleteCount, batch_delete_limit, batch_delete_limit);
+                validationErrors.add(errMsg);
+            }
+            if (invalidIds.size() > 0) {
+                // Don't even take this request seriously any
+                // ID does not belong to this account
+                format = "Node ids %s are not apart of your loadbalancer";
+                errMsg = String.format(format, StringConverter.integersAsString(invalidIds));
+                validationErrors.add(errMsg);
+            }
+            if (remainingNodes.size() < 1) {
+                errMsg = "delete node operation would result in no Enabled nodes available. You must leave at least one node enabled";
+                validationErrors.add(errMsg);
+            }
+            return validationErrors;
+    }
+
+    public NodeMap getNodeMap(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException {
+        return nodeRepository.getNodeMap(accountId, loadbalancerId);
+    }
+
 
     @Override
     public boolean detectDuplicateNodes(LoadBalancer dbLoadBalancer, LoadBalancer queueLb) {

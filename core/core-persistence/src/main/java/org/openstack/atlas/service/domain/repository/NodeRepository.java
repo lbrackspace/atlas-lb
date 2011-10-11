@@ -21,5 +21,11 @@ public interface NodeRepository {
 
     LoadBalancer update(LoadBalancer loadBalancer);
 
+    LoadBalancer deleteNodes(LoadBalancer lb, Set<Integer> nodeIds);
+
+    List<Node> getNodesByIds(Collection<Integer> ids);
+
     Set<Node> getNodesByAccountIdLoadBalancerId(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException;
+
+    NodeMap getNodeMap(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException;
 }
