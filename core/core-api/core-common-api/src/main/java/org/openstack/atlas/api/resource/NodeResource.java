@@ -21,7 +21,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static javax.ws.rs.core.MediaType.*;
@@ -95,18 +97,15 @@ public class NodeResource extends CommonDependencyProvider {
     @DELETE
     public Response deleteNode() {
         try {
-//            LoadBalancer domainLb = new LoadBalancer();
-//            Set<org.openstack.atlas.service.domain.entities.Node> nodes = new HashSet<org.openstack.atlas.service.domain.entities.Node>();
-//            org.openstack.atlas.service.domain.entities.Node node = new org.openstack.atlas.service.domain.entities.Node();
-//            node.setId(id);
-//            nodes.add(node);
-//            domainLb.setNodes(nodes);
-//            domainLb.setId(loadBalancerId);
-//            domainLb.setAccountId(accountId);
-//            if(requestHeaders != null) domainLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
-//
-//            LoadBalancer loadBalancer = nodeService.deleteNode(domainLb);
-//            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_NODE, loadBalancer);
+            MessageDataContainer dataContainer = new MessageDataContainer();
+            dataContainer.setAccountId(accountId);
+            dataContainer.setLoadBalancerId(loadBalancerId);
+
+            List<Integer> ids = new ArrayList<Integer>();
+            ids.add(id);
+            dataContainer.setIds(ids);
+
+            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_NODES, dataContainer);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
