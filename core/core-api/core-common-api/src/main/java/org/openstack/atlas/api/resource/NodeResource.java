@@ -6,10 +6,12 @@ import org.openstack.atlas.api.response.ResponseFactory;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.NodeValidator;
-import org.openstack.atlas.core.api.v1.Node;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.operation.Operation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.NodeRepository;
 import org.openstack.atlas.service.domain.service.NodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -18,6 +20,9 @@ import org.springframework.stereotype.Controller;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static javax.ws.rs.core.MediaType.*;
 
@@ -36,9 +41,15 @@ public class NodeResource extends CommonDependencyProvider {
     @Autowired
     protected NodeService nodeService;
 
+    @Autowired
+    protected NodeRepository nodeRepository;
+
+    @Autowired
+    protected LoadBalancerRepository loadBalancerRepository;
+
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
-    public Response updateNode(Node _node) {
+    public Response updateNode(org.openstack.atlas.core.api.v1.Node _node) {
         ValidatorResult result = validator.validate(_node, HttpRequestType.PUT);
 
         if (!result.passedValidation()) {
@@ -70,9 +81,12 @@ public class NodeResource extends CommonDependencyProvider {
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveNode() {
+        Node dnode;
+        org.openstack.atlas.core.api.v1.Node rnode;
         try {
-            // TODO: Implement
-            return Response.status(Response.Status.OK).entity("Return something useful!").build();
+            dnode = nodeRepository.getNodeByAccountIdLoadBalancerIdNodeId(loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId),  id);
+            rnode = dozerMapper.map(dnode, org.openstack.atlas.core.api.v1.Node.class);
+            return Response.status(200).entity(rnode).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }
@@ -81,8 +95,19 @@ public class NodeResource extends CommonDependencyProvider {
     @DELETE
     public Response deleteNode() {
         try {
-            // TODO: Implement
-            return Response.status(Response.Status.ACCEPTED).entity("Return something useful!").build();
+//            LoadBalancer domainLb = new LoadBalancer();
+//            Set<org.openstack.atlas.service.domain.entities.Node> nodes = new HashSet<org.openstack.atlas.service.domain.entities.Node>();
+//            org.openstack.atlas.service.domain.entities.Node node = new org.openstack.atlas.service.domain.entities.Node();
+//            node.setId(id);
+//            nodes.add(node);
+//            domainLb.setNodes(nodes);
+//            domainLb.setId(loadBalancerId);
+//            domainLb.setAccountId(accountId);
+//            if(requestHeaders != null) domainLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
+//
+//            LoadBalancer loadBalancer = nodeService.deleteNode(domainLb);
+//            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_NODE, loadBalancer);
+            return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }

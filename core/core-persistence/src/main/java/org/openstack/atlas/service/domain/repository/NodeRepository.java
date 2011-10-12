@@ -23,6 +23,8 @@ public interface NodeRepository {
 
     LoadBalancer deleteNodes(LoadBalancer lb, Set<Integer> nodeIds);
 
+    Node getNodeByAccountIdLoadBalancerIdNodeId(LoadBalancer loadBalancer, Integer nid) throws EntityNotFoundException, DeletedStatusException;
+
     List<Node> getNodesByIds(Collection<Integer> ids);
 
     Set<Node> getNodesByAccountIdLoadBalancerId(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException;

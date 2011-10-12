@@ -81,6 +81,21 @@ public class NodeRepositoryImpl implements NodeRepository {
         return lb;
     }
 
+    public Node getNodeByAccountIdLoadBalancerIdNodeId(LoadBalancer loadBalancer,
+            Integer nid) throws EntityNotFoundException, DeletedStatusException {
+        if (loadBalancer.getStatus().equals(CoreLoadBalancerStatus.DELETED)) {
+            throw new DeletedStatusException("The loadbalancer is marked as deleted.");
+        }
+
+        for (Node node : loadBalancer.getNodes()) {
+            if (!node.getId().equals(nid)) {
+            } else {
+                return node;
+            }
+        }
+        throw new EntityNotFoundException("Node not found");
+    }
+
     public List<Node> getNodesByIds(Collection<Integer> ids) {
         List<Node> doomedNodes = new ArrayList<Node>();
         String nodeIdsStr = StringConverter.integersAsString(ids);
