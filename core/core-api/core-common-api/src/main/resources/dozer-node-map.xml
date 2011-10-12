@@ -12,5 +12,4 @@
             <b get-method="isEnabled">enabled</b>
         </field>
     </mapping>
-    
 </mappings>
