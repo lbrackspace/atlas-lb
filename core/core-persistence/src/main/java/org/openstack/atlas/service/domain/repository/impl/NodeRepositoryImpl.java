@@ -81,8 +81,7 @@ public class NodeRepositoryImpl implements NodeRepository {
         return lb;
     }
 
-    public Node getNodeByAccountIdLoadBalancerIdNodeId(LoadBalancer loadBalancer,
-            Integer nid) throws EntityNotFoundException, DeletedStatusException {
+    public Node getNodesByLoadBalancer(LoadBalancer loadBalancer, Integer nid) throws EntityNotFoundException, DeletedStatusException {
         if (loadBalancer.getStatus().equals(CoreLoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
         }
@@ -124,7 +123,31 @@ public class NodeRepositoryImpl implements NodeRepository {
         try {
             return new HashSet<Node>(entityManager.createQuery(criteria).getResultList());
         } catch (Exception e) {
-            LOG.error("More than one health monitor detected!", e);
+            LOG.error("Error executing query detected!", e);
+            throw new EntityNotFoundException(e);
+        }
+    }
+
+    public Node getNodeById(Integer loadBalancerId, Integer accountId, Integer nodeId) throws EntityNotFoundException {
+
+        LoadBalancer loadBalancer = new LoadBalancer();
+        loadBalancer.setAccountId(accountId);
+        loadBalancer.setId(loadBalancerId);
+
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Node> criteria = builder.createQuery(Node.class);
+        Root<Node> nodeRoot = criteria.from(Node.class);
+        Predicate belongsToLoadBalancer = builder.equal(nodeRoot.get(Node_.loadBalancer), loadBalancer);
+        Predicate idEquals = builder.equal(nodeRoot.get(Node_.id), nodeId);
+
+        criteria.select(nodeRoot);
+        criteria.where(belongsToLoadBalancer);
+        criteria.where(idEquals);
+
+        try {
+            return entityManager.createQuery(criteria).getSingleResult();
+        } catch (Exception e) {
+            LOG.error("Error executing query detected!", e);
             throw new EntityNotFoundException(e);
         }
     }

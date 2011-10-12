@@ -55,6 +55,20 @@ public class NodesResource extends CommonDependencyProvider {
     @Autowired
     protected LoadBalancerService loadBalancerService;
 
+    @GET
+    @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
+    public Response retrieveNodes() {
+        try {
+            Nodes returnNodes = new Nodes();
+            for (Node node : nodeRepository.getNodesByAccountIdLoadBalancerId(loadBalancerId, accountId)) {
+                returnNodes.getNodes().add(dozerMapper.map(node, org.openstack.atlas.core.api.v1.Node.class));
+            }
+            return Response.status(Response.Status.OK).entity(returnNodes).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e);
+        }
+    }
+
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createNodes(Nodes _nodes) {
@@ -86,20 +100,6 @@ public class NodesResource extends CommonDependencyProvider {
 
             asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_NODES, dataContainer);
             return Response.status(Response.Status.ACCEPTED).entity(returnNodes).build();
-        } catch (Exception e) {
-            return ResponseFactory.getErrorResponse(e);
-        }
-    }
-
-    @GET
-    @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
-    public Response retrieveNodes() {
-        try {
-            Nodes returnNodes = new Nodes();
-            for (Node node : nodeRepository.getNodesByAccountIdLoadBalancerId(loadBalancerId, accountId)) {
-                returnNodes.getNodes().add(dozerMapper.map(node, org.openstack.atlas.core.api.v1.Node.class));
-            }
-            return Response.status(Response.Status.OK).entity(returnNodes).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }

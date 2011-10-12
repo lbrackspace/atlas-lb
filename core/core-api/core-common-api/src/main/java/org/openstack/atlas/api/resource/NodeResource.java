@@ -22,9 +22,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static javax.ws.rs.core.MediaType.*;
 
@@ -48,6 +46,20 @@ public class NodeResource extends CommonDependencyProvider {
 
     @Autowired
     protected LoadBalancerRepository loadBalancerRepository;
+
+    @GET
+    @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
+    public Response retrieveNode() {
+        Node dnode;
+        org.openstack.atlas.core.api.v1.Node rnode;
+        try {
+            dnode = nodeRepository.getNodesByLoadBalancer(loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId), id);
+            rnode = dozerMapper.map(dnode, org.openstack.atlas.core.api.v1.Node.class);
+            return Response.status(200).entity(rnode).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e);
+        }
+    }
 
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
@@ -75,20 +87,6 @@ public class NodeResource extends CommonDependencyProvider {
 
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_NODE, dataContainer);
             return Response.status(Response.Status.ACCEPTED).build();
-        } catch (Exception e) {
-            return ResponseFactory.getErrorResponse(e);
-        }
-    }
-
-    @GET
-    @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
-    public Response retrieveNode() {
-        Node dnode;
-        org.openstack.atlas.core.api.v1.Node rnode;
-        try {
-            dnode = nodeRepository.getNodeByAccountIdLoadBalancerIdNodeId(loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId),  id);
-            rnode = dozerMapper.map(dnode, org.openstack.atlas.core.api.v1.Node.class);
-            return Response.status(200).entity(rnode).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }
