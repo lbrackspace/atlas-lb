@@ -37,9 +37,6 @@ public class Node extends org.openstack.atlas.service.domain.entity.Entity imple
     private String status;
 
     @Transient
-    private boolean isNew;
-
-    @Transient
     private boolean isToBeUpdated;
 
     public LoadBalancer getLoadBalancer() {
@@ -91,14 +88,6 @@ public class Node extends org.openstack.atlas.service.domain.entity.Entity imple
         this.status = status;
     }
 
-    public boolean isNew() {
-        return isNew;
-    }
-
-    public void setNew(boolean aNew) {
-        isNew = aNew;
-    }
-
     public boolean isToBeUpdated() {
         return isToBeUpdated;
     }
@@ -116,10 +105,6 @@ public class Node extends org.openstack.atlas.service.domain.entity.Entity imple
                 ", weight=" + weight +
                 ", enabled=" + enabled +
                 ", status='" + status + '\'' +
-                ", isNew=" + isNew +
                 '}';
-    }
-
-    public void isEnabled(Object enabled) {
     }
 }
