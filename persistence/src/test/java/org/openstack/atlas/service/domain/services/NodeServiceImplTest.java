@@ -89,7 +89,7 @@ public class NodeServiceImplTest {
             node2.setIpAddress("192.1.1.1");
             node2.setPort(12);
             lb2.getNodes().add(node2);
-            Assert.assertTrue(nodeService.detectDuplicateNodes(lb, lb2));
+            Assert.assertFalse(nodeService.detectDuplicateNodes(lb, lb2));
         }
 
         @Test
