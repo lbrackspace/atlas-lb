@@ -75,8 +75,8 @@ public class NodeValidatorBuilder extends ValidatorBuilder<Node> {
         must().adhereTo(new Verifier<Node>() {
             @Override
             public VerifierResult verify(Node node) {
-                return new VerifierResult(node.getCondition() != null || node.getWeight() != null);
+                return new VerifierResult(node.isEnabled() != null || node.getWeight() != null);
             }
-        }).forContext(PUT).withMessage("The node must have at least one of the following to update: condition, weight.");
+        }).forContext(PUT).withMessage("The node must have at least one of the following to update: enabled, weight.");
     }
 }

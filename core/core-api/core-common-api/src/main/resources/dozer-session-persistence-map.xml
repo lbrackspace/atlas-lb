@@ -4,9 +4,9 @@
           xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
 
-    <mapping map-null="false" type="one-way">
-        <class-a>org.openstack.atlas.service.domain.entity.UsageRecord</class-a>
-        <class-b>org.openstack.atlas.core.api.v1.LoadBalancerUsageRecord</class-b>
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.core.api.v1.SessionPersistence</class-a>
+        <class-b>org.openstack.atlas.service.domain.entity.SessionPersistence</class-b>
     </mapping>
 
 </mappings>
