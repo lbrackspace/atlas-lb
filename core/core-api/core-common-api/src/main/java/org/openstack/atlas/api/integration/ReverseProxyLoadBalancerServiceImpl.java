@@ -14,18 +14,10 @@ import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl;
-
-import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.Node;
-import org.openstack.atlas.service.domain.entity.HealthMonitor;
-import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Qualifier;
 import java.net.MalformedURLException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -55,7 +47,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void updateLoadBalancer(Integer accountId, LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
-          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
             loadBalancerAdapter.updateLoadBalancer(config, accountId, lb);
         } catch (ConnectionException exc) {
@@ -76,7 +68,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void createNodes(Integer accountId, Integer lbId, Set<Node> nodes) throws AdapterException, DecryptException, MalformedURLException, Exception {
-          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             loadBalancerAdapter.createNodes(config, accountId, lbId, nodes);
         } catch (ConnectionException exc) {
@@ -87,7 +79,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void deleteNodes(Integer accountId, Integer lbId, Set<Integer> nodeIds) throws AdapterException, DecryptException, MalformedURLException, Exception {
-          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             loadBalancerAdapter.deleteNodes(config, accountId, lbId, nodeIds);
         } catch (ConnectionException exc) {
@@ -98,7 +90,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void updateNode(Integer accountId, Integer lbId, Node node) throws AdapterException, DecryptException, MalformedURLException, Exception {
-          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             loadBalancerAdapter.updateNode(config, accountId, lbId, node);
         } catch (ConnectionException exc) {
@@ -107,9 +99,9 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         }
     }
 
-    @Override 
+    @Override
     public void deleteNode(Integer accountId, Integer lbId, Integer nodeId) throws AdapterException, DecryptException, MalformedURLException, Exception {
-          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             loadBalancerAdapter.deleteNode(config, accountId, lbId, nodeId);
         } catch (ConnectionException exc) {
@@ -120,7 +112,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void updateConnectionLogging(Integer accountId, Integer lbId, Boolean enabled) throws AdapterException, DecryptException, MalformedURLException, Exception {
-          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             loadBalancerAdapter.updateConnectionLogging(config, accountId, lbId, enabled);
         } catch (ConnectionException exc) {
@@ -130,10 +122,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle conThrottle) throws AdapterException, DecryptException, MalformedURLException, Exception {
-          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle connectionThrottle) throws AdapterException, DecryptException, MalformedURLException, Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.updateConnectionThrottle(config, accountId, lbId, conThrottle);
+            loadBalancerAdapter.updateConnectionThrottle(config, accountId, lbId, connectionThrottle);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -142,7 +134,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void deleteConnectionThrottle(Integer accountId, Integer lbId) throws AdapterException, DecryptException, MalformedURLException, Exception {
-          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             loadBalancerAdapter.deleteConnectionThrottle(config, accountId, lbId);
         } catch (ConnectionException exc) {
@@ -153,7 +145,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void updateHealthMonitor(Integer accountId, Integer lbId, HealthMonitor monitor) throws AdapterException, DecryptException, MalformedURLException, Exception {
-          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             loadBalancerAdapter.updateHealthMonitor(config, accountId, lbId, monitor);
         } catch (ConnectionException exc) {
@@ -164,9 +156,31 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void deleteHealthMonitor(Integer accountId, Integer lbId) throws AdapterException, DecryptException, MalformedURLException, Exception {
-          LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             loadBalancerAdapter.deleteHealthMonitor(config, accountId, lbId);
+        } catch (ConnectionException exc) {
+            checkAndSetIfEndPointBad(config, exc);
+            throw exc;
+        }
+    }
+
+    @Override
+    public void setSessionPersistence(Integer lbId, Integer accountId, SessionPersistence sessionPersistence) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        try {
+            loadBalancerAdapter.setSessionPersistence(config, accountId, lbId, sessionPersistence);
+        } catch (ConnectionException exc) {
+            checkAndSetIfEndPointBad(config, exc);
+            throw exc;
+        }
+    }
+
+    @Override
+    public void deleteSessionPersistence(Integer accountId, Integer lbId) throws AdapterException, DecryptException, MalformedURLException, Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        try {
+            loadBalancerAdapter.deleteSessionPersistence(config, accountId, lbId);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;

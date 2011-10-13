@@ -11,7 +11,6 @@ import org.openstack.atlas.core.api.v1.*;
 import org.openstack.atlas.datamodel.*;
 import org.openstack.atlas.rax.api.validation.validator.builder.RaxLoadBalancerValidatorBuilder;
 import org.openstack.atlas.rax.datamodel.RaxAlgorithmType;
-import org.openstack.atlas.rax.datamodel.RaxNodeCondition;
 import org.openstack.atlas.rax.datamodel.RaxProtocolType;
 import org.openstack.atlas.service.domain.stub.StubFactory;
 
@@ -37,8 +36,7 @@ public class RaxLoadBalancerValidatorTest {
                     new RaxLoadBalancerValidatorBuilder(
                             new RaxAlgorithmType(),
                             new RaxProtocolType(),
-                            new NodeValidatorBuilder(
-                                    new RaxNodeCondition()),
+                            new NodeValidatorBuilder(),
                             new VirtualIpValidatorBuilder(),
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),
@@ -228,26 +226,15 @@ public class RaxLoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldRejectCluster() {
-            loadBalancer.setCluster(new Cluster());
-            ValidatorResult result = validator.validate(loadBalancer, POST);
-            assertFalse(result.passedValidation());
-        }
-
-        @Test
         public void shouldRejectCreated() {
-            Created created = new Created();
-            created.setTime(new GregorianCalendar());
-            loadBalancer.setCreated(created);
+            loadBalancer.setCreated(new GregorianCalendar());
             ValidatorResult result = validator.validate(loadBalancer, POST);
             assertFalse(result.passedValidation());
         }
 
         @Test
         public void shouldRejectUpdated() {
-            Updated updated = new Updated();
-            updated.setTime(new GregorianCalendar());
-            loadBalancer.setUpdated(updated);
+            loadBalancer.setUpdated(new GregorianCalendar());
             ValidatorResult result = validator.validate(loadBalancer, POST);
             assertFalse(result.passedValidation());
         }
@@ -288,7 +275,7 @@ public class RaxLoadBalancerValidatorTest {
             Node node = new Node();
             node.setAddress("10.1.1.1");
             node.setPort(80);
-            node.setCondition(CoreNodeCondition.ENABLED);
+            node.setEnabled(true);
             loadBalancer.getNodes().add(node);
 
             ValidatorResult result = validator.validate(loadBalancer, POST);
@@ -340,8 +327,7 @@ public class RaxLoadBalancerValidatorTest {
                     new RaxLoadBalancerValidatorBuilder(
                             new RaxAlgorithmType(),
                             new RaxProtocolType(),
-                            new NodeValidatorBuilder(
-                                    new RaxNodeCondition()),
+                            new NodeValidatorBuilder(),
                             new VirtualIpValidatorBuilder(),
                             new HealthMonitorValidatorBuilder(
                                     new ConnectMonitorValidatorBuilder(),
@@ -399,26 +385,15 @@ public class RaxLoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldRejectCluster() {
-            loadBalancer.setCluster(new Cluster());
-            ValidatorResult result = validator.validate(loadBalancer, PUT);
-            assertFalse(result.passedValidation());
-        }
-
-        @Test
         public void shouldRejectCreated() {
-            Created created = new Created();
-            created.setTime(new GregorianCalendar());
-            loadBalancer.setCreated(created);
+            loadBalancer.setCreated(new GregorianCalendar());
             ValidatorResult result = validator.validate(loadBalancer, PUT);
             assertFalse(result.passedValidation());
         }
 
         @Test
         public void shouldRejectUpdated() {
-            Updated updated = new Updated();
-            updated.setTime(new GregorianCalendar());
-            loadBalancer.setUpdated(updated);
+            loadBalancer.setUpdated(new GregorianCalendar());
             ValidatorResult result = validator.validate(loadBalancer, PUT);
             assertFalse(result.passedValidation());
         }

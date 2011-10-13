@@ -1,5 +1,8 @@
 package org.openstack.atlas.service.domain.entity;
 
+import org.openstack.atlas.datamodel.AtlasTypeHelper;
+import org.openstack.atlas.datamodel.CoreAlgorithmType;
+import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.pojo.VirtualIpDozerWrapper;
 
 import javax.persistence.*;
@@ -19,8 +22,29 @@ import java.util.Set;
 public class LoadBalancer extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
+    @Column(name = "account_id", nullable = false, length = 32)
+    private Integer accountId;
+
     @Column(name = "name", length = 128)
     private String name;
+
+    @Column(name = "algorithm", nullable = false)
+    private String algorithm = CoreAlgorithmType.ROUND_ROBIN;
+
+    @Column(name = "protocol", nullable = false)
+    private String protocol = CoreProtocolType.HTTP;
+
+    @Column(name = "port", nullable = false)
+    private Integer port = 80;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Calendar created;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Calendar updated;
+
+    @Column(name = "status", nullable = false)
+    private String status;
 
     @OneToMany(mappedBy = "loadBalancer", fetch = FetchType.EAGER)
     private Set<LoadBalancerJoinVip> loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
@@ -40,30 +64,8 @@ public class LoadBalancer extends Entity implements Serializable {
     @JoinColumn(name = "host_id", nullable = true)
     private Host host;
 
-    @Column(name = "algorithm", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LoadBalancerAlgorithm algorithm = LoadBalancerAlgorithm.ROUND_ROBIN;
-
-    @Column(name = "port", nullable = false)
-    private Integer port = 80;
-
-    @Column(name = "account_id", nullable = false, length = 32)
-    private Integer accountId;
-
-    @JoinColumn(name = "sessionPersistence", nullable = false)
-    @Enumerated(EnumType.STRING)
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadBalancer")
     private SessionPersistence sessionPersistence;
-
-    @Column(name = "connection_logging", nullable = false)
-    private Boolean connectionLogging = false;
-
-    @JoinColumn(name = "protocol", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LoadBalancerProtocol protocol = LoadBalancerProtocol.HTTP;
-
-    @JoinColumn(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LoadBalancerStatus status;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadBalancer")
     private ConnectionThrottle connectionThrottle;
@@ -71,15 +73,11 @@ public class LoadBalancer extends Entity implements Serializable {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadBalancer")
     private HealthMonitor healthMonitor;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Calendar created;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Calendar updated;
+    @Column(name = "connection_logging", nullable = false)
+    private Boolean connectionLogging = false;
 
     @Transient
     private VirtualIpDozerWrapper virtualIpDozerWrapper;
-
 
     public LoadBalancer() {
     }
@@ -165,19 +163,21 @@ public class LoadBalancer extends Entity implements Serializable {
         this.updated = updated;
     }
 
-    public LoadBalancerAlgorithm getAlgorithm() {
+    public String getAlgorithm() {
         return algorithm;
     }
 
-    public void setAlgorithm(LoadBalancerAlgorithm algorithm) {
+    public void setAlgorithm(String algorithm) {
+        if (!AtlasTypeHelper.isValidAlgorithm(algorithm)) throw new RuntimeException("Algorithm not supported.");
         this.algorithm = algorithm;
     }
 
-    public LoadBalancerProtocol getProtocol() {
+    public String getProtocol() {
         return protocol;
     }
 
-    public void setProtocol(LoadBalancerProtocol protocol) {
+    public void setProtocol(String protocol) {
+        if (!AtlasTypeHelper.isValidProtocol(protocol)) throw new RuntimeException("Protocol not supported.");
         this.protocol = protocol;
     }
 
@@ -189,11 +189,12 @@ public class LoadBalancer extends Entity implements Serializable {
         this.port = port;
     }
 
-    public LoadBalancerStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(LoadBalancerStatus status) {
+    public void setStatus(String status) {
+        if (!AtlasTypeHelper.isValidLoadBalancerStatus(status)) throw new RuntimeException("Load balancer status not supported.");
         this.status = status;
     }
 
@@ -202,10 +203,7 @@ public class LoadBalancer extends Entity implements Serializable {
     }
 
     public boolean isUsingSsl() {
-        return (protocol.equals(LoadBalancerProtocol.HTTPS) ||
-                protocol.equals(LoadBalancerProtocol.IMAPS) ||
-                protocol.equals(LoadBalancerProtocol.LDAPS) ||
-                protocol.equals(LoadBalancerProtocol.POP3S));
+        return (protocol.equals(CoreProtocolType.HTTPS));
     }
 
     public void getIpv6Servicenet(String throwaway) {

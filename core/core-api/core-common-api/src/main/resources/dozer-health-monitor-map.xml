@@ -7,14 +7,6 @@
     <mapping map-null="false">
         <class-a>org.openstack.atlas.core.api.v1.HealthMonitor</class-a>
         <class-b>org.openstack.atlas.service.domain.entity.HealthMonitor</class-b>
-        <field-exclude>
-            <a>id</a>
-            <b>id</b>
-        </field-exclude>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumConverter">
-            <a>type</a>
-            <b>type</b>
-        </field>
     </mapping>
 
 </mappings>

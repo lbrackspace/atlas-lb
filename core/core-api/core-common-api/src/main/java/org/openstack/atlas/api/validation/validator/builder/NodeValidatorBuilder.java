@@ -5,8 +5,6 @@ import org.openstack.atlas.api.validation.verifier.*;
 import org.openstack.atlas.common.ip.IPv4ToolSet;
 import org.openstack.atlas.common.ip.exception.IPStringException;
 import org.openstack.atlas.core.api.v1.Node;
-import org.openstack.atlas.datamodel.NodeCondition;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -20,17 +18,13 @@ public class NodeValidatorBuilder extends ValidatorBuilder<Node> {
     protected final int MAX_PORT = 65535;
     protected final int MIN_WEIGHT = 1;
     protected final int MAX_WEIGHT = 100;
-    protected NodeCondition nodeCondition;
 
-    @Autowired
-    public NodeValidatorBuilder(NodeCondition nodeCondition) {
+    public NodeValidatorBuilder() {
         super(Node.class);
-        this.nodeCondition = nodeCondition;
 
         // SHARED EXPECTATIONS
         result(validationTarget().getAddress()).if_().exist().then().must().adhereTo(new IpAddressVerifier()).withMessage("Node ip is invalid. Please specify a valid ip.");
         result(validationTarget().getPort()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MIN_PORT, MAX_PORT)).withMessage("Node port is invalid. Please specify a valid port.");
-        result(validationTarget().getCondition()).if_().exist().then().must().adhereTo(new MustBeInArray(nodeCondition.toList())).withMessage("Node condition is invalid. Please specify a valid condition.");
         result(validationTarget().getWeight()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MIN_WEIGHT, MAX_WEIGHT)).withMessage("Node weight is invalid. Range is 1-100. Please specify a valid weight.");
         result(validationTarget().getStatus()).must().not().exist().withMessage("Node status field cannot be modified.");
         result(validationTarget().getId()).must().not().exist().withMessage("Node id field cannot be modified.");

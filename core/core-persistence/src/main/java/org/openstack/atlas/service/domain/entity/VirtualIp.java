@@ -42,17 +42,6 @@ public class VirtualIp extends org.openstack.atlas.service.domain.entity.Entity 
     @Column(name = "is_allocated", nullable = false)
     private Boolean isAllocated = false;
 
-    @Transient
-    private IpVersion ipVersion;
-
-    public IpVersion getIpVersion() {
-        return ipVersion;
-    }
-
-    public void setIpVersion(IpVersion ipVersion) {
-        this.ipVersion = ipVersion;
-    }
-
     public Set<LoadBalancerJoinVip> getLoadBalancerJoinVipSet() {
         if(loadBalancerJoinVipSet == null) loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
         return loadBalancerJoinVipSet;
@@ -120,7 +109,6 @@ public class VirtualIp extends org.openstack.atlas.service.domain.entity.Entity 
                 ", lastDeallocation=" + lastDeallocation +
                 ", lastAllocation=" + lastAllocation +
                 ", isAllocated=" + isAllocated +
-                ", ipVersion=" + ipVersion +
                 '}';
     }
 }

@@ -2,9 +2,12 @@ package org.openstack.atlas.service.domain.repository.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
+import org.openstack.atlas.service.domain.common.Constants;
 import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exception.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.springframework.stereotype.Repository;
@@ -121,6 +124,9 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         if (loadBalancer.getHealthMonitor() != null) {
             loadBalancer.getHealthMonitor().setLoadBalancer(loadBalancer);
         }
+        if (loadBalancer.getSessionPersistence() != null) {
+            loadBalancer.getSessionPersistence().setLoadBalancer(loadBalancer);
+        }
     }
 
     @Override
@@ -132,7 +138,7 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         loadBalancer = entityManager.merge(loadBalancer);
 
         // Now attach loadbalancer to vips
-   /*     for (LoadBalancerJoinVip lbJoinVipToLink : lbJoinVipsToLink) {
+        /*     for (LoadBalancerJoinVip lbJoinVipToLink : lbJoinVipsToLink) {
             VirtualIp virtualIp = entityManager.find(VirtualIp.class, lbJoinVipToLink.getVirtualIp().getId());
             LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip(loadBalancer.getPort(), loadBalancer, virtualIp);
             entityManager.merge(loadBalancerJoinVip);
@@ -151,11 +157,13 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         return ((BigInteger) query.getSingleResult()).intValue();
     }
 
-    public void changeStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus newStatus) throws EntityNotFoundException, UnprocessableEntityException {
+    public void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
         changeStatus(accountId, loadbalancerId, newStatus, false);
     }
 
-    public void changeStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus newStatus, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
+    public void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
+        // TODO: Hook up AOP logging here
+
         String queryString = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
         Query q = entityManager.createQuery(queryString).setLockMode(LockModeType.PESSIMISTIC_WRITE).
                 setParameter("aid", accountId).
@@ -167,17 +175,20 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         }
 
         LoadBalancer lb = lbList.get(0);
-        if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
+        if (lb.getStatus().equals(CoreLoadBalancerStatus.DELETED)) {
             throw new UnprocessableEntityException(ErrorMessages.LB_DELETED);
         }
-        final boolean isActive = lb.getStatus().equals(LoadBalancerStatus.ACTIVE);
-        final boolean isPendingOrActive = lb.getStatus().equals(LoadBalancerStatus.PENDING_UPDATE) || isActive;
+        final boolean isActive = lb.getStatus().equals(CoreLoadBalancerStatus.ACTIVE);
+        final boolean isPendingOrActive = lb.getStatus().equals(CoreLoadBalancerStatus.PENDING_UPDATE) || isActive;
 
-        if(allowConcurrentModifications ? isPendingOrActive : isActive) {
+        if (allowConcurrentModifications ? isPendingOrActive : isActive) {
             lb.setStatus(newStatus);
             lb.setUpdated(Calendar.getInstance());
             entityManager.merge(lb);
+            return;
         }
+
+        throw new ImmutableEntityException("Load Balancer can not be updated as it is currently being updated.");
     }
 
     public void updatePortInJoinTable(LoadBalancer lb) {
@@ -209,7 +220,33 @@ public class LoadBalancerRepositoryImpl implements LoadBalancerRepository {
         return true;
     }
 
-    public LoadBalancer changeStatus(LoadBalancer loadBalancer,LoadBalancerStatus status) throws EntityNotFoundException{
+     public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, String statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
+        String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
+        List<LoadBalancer> lbList;
+        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
+                setParameter("aid", accountId).
+                setParameter("lid", loadbalancerId);
+        lbList = q.getResultList();
+        if (lbList.size() < 1) {
+            throw new EntityNotFoundException("");
+        }
+
+        LoadBalancer lb = lbList.get(0);
+        if (lb.getStatus().equals(CoreLoadBalancerStatus.DELETED)) throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);
+        final boolean isActive = lb.getStatus().equals(CoreLoadBalancerStatus.ACTIVE);
+        final boolean isPendingOrActive = lb.getStatus().equals(CoreLoadBalancerStatus.PENDING_UPDATE) || isActive;
+
+        if(allowConcurrentModifications ? isPendingOrActive : isActive) {
+            lb.setStatus(statusToChangeTo);
+            lb.setUpdated(Calendar.getInstance());
+            entityManager.merge(lb);
+            return true;
+        }
+
+        return false;
+    }
+
+    public LoadBalancer changeStatus(LoadBalancer loadBalancer, String status) throws EntityNotFoundException {
         String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
         List<LoadBalancer> lbList;
         Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).

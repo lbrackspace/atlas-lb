@@ -16,12 +16,18 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.*;
 
-@Repository
-@Transactional
-public class NodeRepository {
+public interface NodeRepository {
+    Set<Node> addNodes(LoadBalancer loadBalancer, Collection<Node> nodes);
 
-    private final Log LOG = LogFactory.getLog(NodeRepository.class);
-    @PersistenceContext(unitName = "loadbalancing")
-    private EntityManager entityManager;
+    LoadBalancer update(LoadBalancer loadBalancer);
 
+    LoadBalancer deleteNodes(LoadBalancer lb, Set<Integer> nodeIds);
+
+    Node getNodeByAccountIdLoadBalancerIdNodeId(LoadBalancer loadBalancer, Integer nid) throws EntityNotFoundException, DeletedStatusException;
+
+    List<Node> getNodesByIds(Collection<Integer> ids);
+
+    Set<Node> getNodesByAccountIdLoadBalancerId(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException;
+
+    NodeMap getNodeMap(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException;
 }

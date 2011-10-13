@@ -5,16 +5,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.openstack.atlas.api.v1.extensions.rax.NetworkItemType;
 import org.openstack.atlas.core.api.v1.ConnectionThrottle;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
 import org.openstack.atlas.core.api.v1.VipType;
-import org.openstack.atlas.datamodel.CoreNodeCondition;
+import org.openstack.atlas.datamodel.CoreNodeStatus;
 import org.openstack.atlas.rax.api.mapper.dozer.converter.ExtensionObjectMapper;
 import org.openstack.atlas.rax.domain.entity.AccessList;
 import org.openstack.atlas.rax.domain.stub.RaxStubFactory;
-import org.openstack.atlas.service.domain.entity.*;
+import org.openstack.atlas.service.domain.entity.HealthMonitor;
+import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
+import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.VirtualIpType;
 
 import javax.xml.namespace.QName;
 import java.util.List;
@@ -48,15 +50,15 @@ public class LoadBalancerMappingTest {
             Assert.assertEquals(dataModelLoadBalancer.getId(), domainLoadBalancer.getId());
             Assert.assertEquals(dataModelLoadBalancer.getName(), domainLoadBalancer.getName());
             Assert.assertEquals(dataModelLoadBalancer.getPort(), domainLoadBalancer.getPort());
-            Assert.assertEquals(dataModelLoadBalancer.getCreated().getTime(), domainLoadBalancer.getCreated());
-            Assert.assertEquals(dataModelLoadBalancer.getUpdated().getTime(), domainLoadBalancer.getUpdated());
+            Assert.assertEquals(dataModelLoadBalancer.getCreated(), domainLoadBalancer.getCreated());
+            Assert.assertEquals(dataModelLoadBalancer.getUpdated(), domainLoadBalancer.getUpdated());
         }
 
         @Test
         public void should_map_enumerations_on_the_loadbalancer() {
-            Assert.assertEquals(dataModelLoadBalancer.getProtocol(), domainLoadBalancer.getProtocol().name());
-            Assert.assertEquals(dataModelLoadBalancer.getAlgorithm(), domainLoadBalancer.getAlgorithm().name());
-            Assert.assertEquals(dataModelLoadBalancer.getStatus(), domainLoadBalancer.getStatus().name());
+            Assert.assertEquals(dataModelLoadBalancer.getProtocol(), domainLoadBalancer.getProtocol());
+            Assert.assertEquals(dataModelLoadBalancer.getAlgorithm(), domainLoadBalancer.getAlgorithm());
+            Assert.assertEquals(dataModelLoadBalancer.getStatus(), domainLoadBalancer.getStatus());
         }
 
         @Test
@@ -70,14 +72,12 @@ public class LoadBalancerMappingTest {
                     Assert.fail("Did not map the port of the node correctly");
                 if (!(node.getAddress().equals("10.1.1.1") || node.getAddress().equals("10.1.1.2")))
                     Assert.fail("Did not map the ipAddress of the node correctly");
-                if (!(node.getCondition().equals(NodeCondition.ENABLED) ||
-                        node.getCondition().equals(NodeCondition.DISABLED)))
+                if (node.isEnabled() == null)
                     Assert.fail("Did not map the NodeCondition of the node correctly");
-
                 if (node.getStatus() == null)
                     continue;
-                if (!(node.getStatus().equals(NodeStatus.ONLINE) ||
-                        node.getStatus().equals(NodeStatus.OFFLINE)))
+                if (!(node.getStatus().equals(CoreNodeStatus.ONLINE) ||
+                        node.getStatus().equals(CoreNodeStatus.OFFLINE)))
                     Assert.fail("Did not map the NodeStatus of the node correctly");
             }
         }
@@ -107,7 +107,7 @@ public class LoadBalancerMappingTest {
             Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getDelay(), healthMonitor.getDelay());
             Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getTimeout(), healthMonitor.getTimeout());
             Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getPath(), healthMonitor.getPath());
-            Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getType(), healthMonitor.getType().name());
+            Assert.assertEquals(dataModelLoadBalancer.getHealthMonitor().getType(), healthMonitor.getType());
         }
 
         @Test
@@ -157,16 +157,16 @@ public class LoadBalancerMappingTest {
             Assert.assertEquals(domainLoadBalancer.getId(), dataModelLoadBalancer.getId());
             Assert.assertEquals(domainLoadBalancer.getName(), dataModelLoadBalancer.getName());
             Assert.assertEquals(domainLoadBalancer.getPort(), dataModelLoadBalancer.getPort());
-            Assert.assertEquals(domainLoadBalancer.getCreated(), dataModelLoadBalancer.getCreated().getTime());
-            Assert.assertEquals(domainLoadBalancer.getUpdated(), dataModelLoadBalancer.getUpdated().getTime());
+            Assert.assertEquals(domainLoadBalancer.getCreated(), dataModelLoadBalancer.getCreated());
+            Assert.assertEquals(domainLoadBalancer.getUpdated(), dataModelLoadBalancer.getUpdated());
             Assert.assertEquals(domainLoadBalancer.getConnectionLogging(), dataModelLoadBalancer.getConnectionLogging().isEnabled());
         }
 
         @Test
         public void should_map_all_loadbalancer_enumerations() {
-            Assert.assertTrue(dataModelLoadBalancer.getStatus().equals(domainLoadBalancer.getStatus().name()));
-            Assert.assertTrue(dataModelLoadBalancer.getProtocol().equals(domainLoadBalancer.getProtocol().name()));
-            Assert.assertTrue(dataModelLoadBalancer.getAlgorithm().equals(domainLoadBalancer.getAlgorithm().name()));
+            Assert.assertTrue(dataModelLoadBalancer.getStatus().equals(domainLoadBalancer.getStatus()));
+            Assert.assertTrue(dataModelLoadBalancer.getProtocol().equals(domainLoadBalancer.getProtocol()));
+            Assert.assertTrue(dataModelLoadBalancer.getAlgorithm().equals(domainLoadBalancer.getAlgorithm()));
         }
 
         @Test
@@ -184,12 +184,11 @@ public class LoadBalancerMappingTest {
                 if (!(node.getAddress().equals("10.1.1.1") || node.getAddress().equals("10.1.1.2"))) {
                     Assert.fail();
                 }
-                if (!(node.getCondition().equals(CoreNodeCondition.DISABLED)
-                        || node.getCondition().equals(CoreNodeCondition.ENABLED))) {
+                if (node.isEnabled() == null) {
                     Assert.fail();
                 }
-                if (!(node.getStatus().equals(NodeStatus.OFFLINE.name())
-                        || node.getStatus().equals(NodeStatus.ONLINE.name()))) {
+                if (!(node.getStatus().equals(CoreNodeStatus.OFFLINE)
+                        || node.getStatus().equals(CoreNodeStatus.ONLINE))) {
                     Assert.fail();
                 }
             }
@@ -220,12 +219,12 @@ public class LoadBalancerMappingTest {
         @Test
         public void should_map_session_persistence() {
             final SessionPersistence sessionPersistence = dataModelLoadBalancer.getSessionPersistence();
-            Assert.assertEquals(domainLoadBalancer.getSessionPersistence().name(), sessionPersistence.getPersistenceType());
+            Assert.assertEquals(domainLoadBalancer.getSessionPersistence().getPersistenceType(), sessionPersistence.getPersistenceType());
         }
 
         @Test
-        public void should_map_session_persistence_to_null_when_data_model_session_persistence_is_set_to_none() {
-            domainLoadBalancer.setSessionPersistence(org.openstack.atlas.service.domain.entity.SessionPersistence.NONE);
+        public void should_map_session_persistence_to_null_when_data_model_session_persistence_is_set_to_null() {
+            domainLoadBalancer.setSessionPersistence(null);
             dataModelLoadBalancer = mapper.map(domainLoadBalancer, LoadBalancer.class);
             Assert.assertNull(dataModelLoadBalancer.getSessionPersistence());
         }
@@ -237,7 +236,7 @@ public class LoadBalancerMappingTest {
             Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getDelay()), healthMonitor.getDelay());
             Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getTimeout()), healthMonitor.getTimeout());
             Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getPath()), healthMonitor.getPath());
-            Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getType().name()), healthMonitor.getType());
+            Assert.assertEquals((domainLoadBalancer.getHealthMonitor().getType()), healthMonitor.getType());
         }
 
         @Test

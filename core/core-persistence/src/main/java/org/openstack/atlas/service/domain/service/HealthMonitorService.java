@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.service;
 
-public interface HealthMonitorService {
+import org.openstack.atlas.service.domain.entity.HealthMonitor;
 
+public interface HealthMonitorService extends ExtraFeatureService<HealthMonitor> {
 }

@@ -1,8 +1,5 @@
 package org.openstack.atlas.rax.domain.stub;
 
-import org.openstack.atlas.api.v1.extensions.rax.AccessList;
-import org.openstack.atlas.api.v1.extensions.rax.NetworkItem;
-import org.openstack.atlas.api.v1.extensions.rax.NetworkItemType;
 import org.openstack.atlas.rax.datamodel.XmlHelper;
 import org.openstack.atlas.rax.domain.entity.AccessListType;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
@@ -66,31 +63,30 @@ public class RaxStubFactory extends StubFactory {
         loadBalancer.setId(LOAD_BALANCER_ID);
         loadBalancer.setName(LOAD_BALANCER_NAME);
         loadBalancer.setPort(LOAD_BALANCER_PORT);
-        loadBalancer.setProtocol(org.openstack.atlas.service.domain.entity.LoadBalancerProtocol.valueOf(LOAD_BALANCER_PROTOCOL));
-        loadBalancer.setAlgorithm(org.openstack.atlas.service.domain.entity.LoadBalancerAlgorithm.valueOf(LOAD_BALANCER_ALGORITHM));
-        loadBalancer.setStatus(org.openstack.atlas.service.domain.entity.LoadBalancerStatus.valueOf(LOAD_BALANCER_STATUS));
+        loadBalancer.setProtocol(LOAD_BALANCER_PROTOCOL);
+        loadBalancer.setAlgorithm(LOAD_BALANCER_ALGORITHM);
+        loadBalancer.setStatus(LOAD_BALANCER_STATUS);
 
         Node node1 = new Node();
         node1.setId(NODE1_ID);
         node1.setAddress(NODE1_ADDRESS);
         node1.setPort(NODE1_PORT);
-        node1.setCondition(org.openstack.atlas.service.domain.entity.NodeCondition.valueOf(NODE1_CONDITION));
-        node1.setStatus(org.openstack.atlas.service.domain.entity.NodeStatus.valueOf(NODE1_STATUS));
+        node1.setEnabled(NODE1_ENABLED);
+        node1.setStatus(NODE1_STATUS);
         loadBalancer.getNodes().add(node1);
 
         Node node2 = new Node();
         node2.setId(NODE2_ID);
         node2.setAddress(NODE2_ADDRESS);
         node2.setPort(NODE2_PORT);
-        node2.setCondition(org.openstack.atlas.service.domain.entity.NodeCondition.valueOf(NODE2_CONDITION));
-        node2.setStatus(org.openstack.atlas.service.domain.entity.NodeStatus.valueOf(NODE2_STATUS));
+        node2.setEnabled(NODE2_ENABLED);
+        node2.setStatus(NODE2_STATUS);
         loadBalancer.getNodes().add(node2);
 
         VirtualIp virtualIp1 = new VirtualIp();
         virtualIp1.setId(VIP1_ID);
         virtualIp1.setAddress(VIP1_ADDRESS);
         virtualIp1.setVipType(org.openstack.atlas.service.domain.entity.VirtualIpType.valueOf(VIP1_TYPE));
-        virtualIp1.setIpVersion(org.openstack.atlas.service.domain.entity.IpVersion.valueOf(VIP1_VERSION));
 
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip(LOAD_BALANCER_PORT, loadBalancer, virtualIp1);
         loadBalancer.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);
@@ -105,10 +101,10 @@ public class RaxStubFactory extends StubFactory {
         healthMonitor.setDelay(HEALTH_MONITOR_DELAY);
         healthMonitor.setTimeout(HEALTH_MONITOR_TIMEOUT);
         healthMonitor.setPath(HEALTH_MONITOR_PATH);
-        healthMonitor.setType(org.openstack.atlas.service.domain.entity.HealthMonitorType.valueOf(HEALTH_MONITOR_TYPE));
+        healthMonitor.setType(HEALTH_MONITOR_TYPE);
         loadBalancer.setHealthMonitor(healthMonitor);
 
-        loadBalancer.setSessionPersistence(org.openstack.atlas.service.domain.entity.SessionPersistence.valueOf(SESSION_PERSISTENCE_TYPE));
+        loadBalancer.setSessionPersistence(createHydratedDomainSessionPersistence());
 
         loadBalancer.setCreated(Calendar.getInstance());
         loadBalancer.setUpdated(Calendar.getInstance());

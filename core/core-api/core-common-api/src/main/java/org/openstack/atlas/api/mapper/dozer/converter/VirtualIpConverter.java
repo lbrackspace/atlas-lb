@@ -181,14 +181,14 @@ public class VirtualIpConverter implements CustomConverter {
                 break;
         }
 
-        switch (vip.getIpVersion()) {
+/*        switch (vip.getIpVersion()) {
             case IPV4:
                 domainVip.setIpVersion(org.openstack.atlas.service.domain.entity.IpVersion.IPV4);
                 break;
             case IPV6:
                 domainVip.setIpVersion(org.openstack.atlas.service.domain.entity.IpVersion.IPV6);
                 break;
-        }
+        }*/
 
         loadBalancerJoinVip.setVirtualIp(domainVip);
         loadBalancerJoinVipSet.add(loadBalancerJoinVip);

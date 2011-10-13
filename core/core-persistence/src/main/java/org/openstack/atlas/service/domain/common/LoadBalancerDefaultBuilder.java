@@ -1,5 +1,9 @@
 package org.openstack.atlas.service.domain.common;
 
+import org.openstack.atlas.datamodel.CoreAlgorithmType;
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
+import org.openstack.atlas.datamodel.CoreNodeStatus;
+import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.common.Constants;
 import org.openstack.atlas.service.domain.common.NodesHelper;
 import org.openstack.atlas.service.domain.entity.*;
@@ -10,10 +14,10 @@ public class LoadBalancerDefaultBuilder {
     }
 
     public static LoadBalancer addDefaultValues(final LoadBalancer loadBalancer) {
-        loadBalancer.setStatus(LoadBalancerStatus.BUILD);
-        NodesHelper.setNodesToStatus(loadBalancer, NodeStatus.ONLINE);
+        loadBalancer.setStatus(CoreLoadBalancerStatus.BUILD);
+        NodesHelper.setNodesToStatus(loadBalancer, CoreNodeStatus.ONLINE);
         if (loadBalancer.getAlgorithm() == null) {
-            loadBalancer.setAlgorithm(LoadBalancerAlgorithm.RANDOM);
+            loadBalancer.setAlgorithm(CoreAlgorithmType.ROUND_ROBIN);
         }
         if (loadBalancer.getConnectionLogging() == null) {
             loadBalancer.setConnectionLogging(false);
@@ -28,15 +32,11 @@ public class LoadBalancerDefaultBuilder {
                 loadBalancer.setPort(defaultProtocol.getPort());
             }*/
             if(loadBalancer.getProtocol() == null) {
-                loadBalancer.setProtocol(LoadBalancerProtocol.HTTP);
+                loadBalancer.setProtocol(CoreProtocolType.HTTP);
             }
             if(loadBalancer.getPort() == null) {
                 loadBalancer.setPort(8080);
             }
-        }
-
-        if (loadBalancer.getSessionPersistence() == null) {
-            loadBalancer.setSessionPersistence(SessionPersistence.NONE);
         }
 
         for (Node node : loadBalancer.getNodes()) {

@@ -3,9 +3,8 @@ package org.openstack.atlas.api.async;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.common.converters.StringConverter;
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.LoadBalancerAlgorithm;
-import org.openstack.atlas.service.domain.entity.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
@@ -60,7 +59,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
             reverseProxyLoadBalancerService.updateLoadBalancer(dbLoadBalancer.getAccountId(), dbLoadBalancer);
             LOG.debug(String.format("Successfully updated load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
         } catch (Exception e) {
-            loadBalancerRepository.changeStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+            loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error updating loadbalancer '%d' in LB Device.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, LBDEVICE_FAILURE.name(), alertDescription);
@@ -140,7 +139,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
         }
 
         // Update load balancer status in DB
-        loadBalancerRepository.changeStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+        loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ACTIVE);
 
         // Add atom entry
         String atomTitle = "Load Balancer Successfully Updated";

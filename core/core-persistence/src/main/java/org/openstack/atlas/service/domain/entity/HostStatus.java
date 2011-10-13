@@ -5,7 +5,7 @@ import java.io.Serializable;
 public enum HostStatus implements Serializable {
     ACTIVE_TARGET,
     ACTIVE,
-    FAILOVER,
+    FAIL_OVER,
     OFFLINE,
     BURN_IN;
     

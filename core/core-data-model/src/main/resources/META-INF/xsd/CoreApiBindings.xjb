@@ -31,17 +31,11 @@
         <bindings scd="~tns:algorithms">
             <class ref="org.openstack.atlas.core.api.v1.Algorithms"/>
         </bindings>
-        <bindings scd="~tns:cluster">
-            <class ref="org.openstack.atlas.core.api.v1.Cluster"/>
-        </bindings>
         <bindings scd="~tns:connectionLogging">
             <class ref="org.openstack.atlas.core.api.v1.ConnectionLogging"/>
         </bindings>
         <bindings scd="~tns:connectionThrottle">
             <class ref="org.openstack.atlas.core.api.v1.ConnectionThrottle"/>
-        </bindings>
-        <bindings scd="~tns:created">
-            <class ref="org.openstack.atlas.core.api.v1.Created"/>
         </bindings>
         <bindings scd="~tns:healthMonitor">
             <class ref="org.openstack.atlas.core.api.v1.HealthMonitor"/>
@@ -90,9 +84,6 @@
         </bindings>
         <bindings scd="tns:sessionPersistence">
             <class ref="org.openstack.atlas.core.api.v1.SessionPersistence"/>
-        </bindings>
-        <bindings scd="tns:updated">
-            <class ref="org.openstack.atlas.core.api.v1.Updated"/>
         </bindings>
         <bindings scd="~tns:virtualIp">
             <class ref="org.openstack.atlas.core.api.v1.VirtualIp"/>

@@ -1,7 +1,8 @@
 package org.openstack.atlas.api.atom;
 
-import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.common.ip.exception.IPStringConversionException1;
+import org.openstack.atlas.datamodel.CoreHealthMonitorType;
+import org.openstack.atlas.service.domain.entity.*;
 
 public final class EntryHelper {
     public static final String CREATE_NODE_TITLE = "Node Successfully Created";
@@ -17,7 +18,7 @@ public final class EntryHelper {
         atomSummary.append("Node successfully created with ");
         atomSummary.append("address: '").append(node.getAddress()).append("', ");
         atomSummary.append("port: '").append(node.getPort()).append("', ");
-        atomSummary.append("condition: '").append(node.getCondition()).append("', ");
+        atomSummary.append("enabled: '").append(node.isEnabled()).append("', ");
         atomSummary.append("weight: '").append(node.getWeight()).append("'");
         return atomSummary.toString();
     }
@@ -40,7 +41,7 @@ public final class EntryHelper {
 
         StringBuffer atomSummary = new StringBuffer();
         atomSummary.append("Virtual ip successfully added with ");
-        if(ipv6AsString != null) atomSummary.append("address: '").append(ipv6AsString).append("', ");
+        if (ipv6AsString != null) atomSummary.append("address: '").append(ipv6AsString).append("', ");
         atomSummary.append("type: '").append(VirtualIpType.PUBLIC.name()).append("'");
         return atomSummary.toString();
     }
@@ -52,12 +53,12 @@ public final class EntryHelper {
     public static String createHealthMonitorSummary(LoadBalancer lb) {
         StringBuffer atomSummary = new StringBuffer();
         atomSummary.append("Health monitor successfully updated with ");
-        atomSummary.append("type: '").append(lb.getHealthMonitor().getType().name()).append("', ");
+        atomSummary.append("type: '").append(lb.getHealthMonitor().getType()).append("', ");
         atomSummary.append("delay: '").append(lb.getHealthMonitor().getDelay()).append("', ");
         atomSummary.append("timeout: '").append(lb.getHealthMonitor().getTimeout()).append("', ");
         atomSummary.append("attemptsBeforeDeactivation: '").append(lb.getHealthMonitor().getAttemptsBeforeDeactivation());
 
-        if (lb.getHealthMonitor().getType().equals(HealthMonitorType.CONNECT)) {
+        if (lb.getHealthMonitor().getType().equals(CoreHealthMonitorType.CONNECT)) {
             atomSummary.append("'");
         } else {
             atomSummary.append("', ");
@@ -70,7 +71,7 @@ public final class EntryHelper {
     public static String createConnectionThrottleSummary(LoadBalancer lb) {
         StringBuffer atomSummary = new StringBuffer();
         atomSummary.append("Connection throttle successfully updated with ");
-        atomSummary.append("maxConnectionRate: '").append(lb.getConnectionThrottle().getMaxRequestRate()).append("', ");
+        atomSummary.append("maxRequestRate: '").append(lb.getConnectionThrottle().getMaxRequestRate()).append("', ");
         atomSummary.append("rateInterval: '").append(lb.getConnectionThrottle().getRateInterval()).append("'");
         return atomSummary.toString();
     }

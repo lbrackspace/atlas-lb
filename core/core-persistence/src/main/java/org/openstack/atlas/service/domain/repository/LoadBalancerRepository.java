@@ -1,10 +1,10 @@
 package org.openstack.atlas.service.domain.repository;
 
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
-import org.openstack.atlas.service.domain.entity.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.entity.SessionPersistence;
+import org.openstack.atlas.service.domain.exception.*;
 
 import java.util.List;
 import java.util.Set;
@@ -22,14 +22,15 @@ public interface LoadBalancerRepository {
 
     Integer getNumNonDeletedLoadBalancersForAccount(Integer accountId);
 
-    void changeStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus newStatus, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException;
+    void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException;
 
-    void changeStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus newStatus) throws EntityNotFoundException, UnprocessableEntityException;
+    void changeStatus(Integer accountId, Integer loadbalancerId, String newStatus) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException;
 
     void updatePortInJoinTable(LoadBalancer lb);
 
     boolean canUpdateToNewPort(Integer newPort, Set<LoadBalancerJoinVip> setToCheckAgainst);
 
-    LoadBalancer changeStatus(LoadBalancer loadBalancer, LoadBalancerStatus status) throws EntityNotFoundException;
+    boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, String statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException;
 
+    LoadBalancer changeStatus(LoadBalancer loadBalancer, String status) throws EntityNotFoundException;
 }

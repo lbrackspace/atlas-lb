@@ -1,9 +1,6 @@
 package org.openstack.atlas.api.resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -19,12 +16,26 @@ public class RootResource {
 
     @Autowired
     private LoadBalancersResource loadBalancersResource;
+    @Autowired
+    protected AlgorithmsResource algorithmsResource;
+    @Autowired
+    protected ProtocolsResource protocolsResource;
 
     @Path("loadbalancers")
     public LoadBalancersResource retrieveLoadBalancersResource() {
         loadBalancersResource.setRequestHeaders(requestHeaders);
         loadBalancersResource.setAccountId(accountId);
         return loadBalancersResource;
+    }
+
+    @Path("protocols")
+    public ProtocolsResource retrieveProtocolsResource() {
+        return protocolsResource;
+    }
+
+    @Path("algorithms")
+    public AlgorithmsResource retrieveAlgorithmsResource() {
+        return algorithmsResource;
     }
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {

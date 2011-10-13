@@ -19,13 +19,8 @@ public class CoreNodeStatus implements NodeStatus {
         nodeStatuses.add(OFFLINE);
     }
 
-    public CoreNodeStatus() {
-    }
-
     public boolean contains(String str) {
-        boolean out;
-        out = nodeStatuses.contains(str);
-        return out;
+        return nodeStatuses.contains(str);
     }
 
     public static String[] values() {
