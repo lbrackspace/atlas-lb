@@ -25,21 +25,37 @@ public class JobStateRepository {
         return jobState;
     }
 
-    public List<JobState> getAll(Integer... p) {
+    public List<JobState> getAll(Integer offset, Integer limit, Integer marker) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<JobState> criteria = builder.createQuery(JobState.class);
         Root<JobState> jobStateRoot = criteria.from(JobState.class);
+        int markerToOffset = 0;
+
+        if (marker != null) {
+            CriteriaQuery<Integer> criteriaQuery = builder.createQuery(Integer.class);
+            jobStateRoot = criteriaQuery.from(JobState.class);
+            criteriaQuery.select(jobStateRoot.get(JobState_.id));
+            List<Integer> ids = entityManager.createQuery(criteriaQuery).getResultList();
+            for (Integer id : ids) {
+                if (id.equals(marker)) {
+                    break;
+                }
+                markerToOffset++;
+            }
+            offset = markerToOffset;
+        }
+
+        if (offset == null) {
+            offset = 0;
+        }
+
+        if (limit == null || limit > 100 || limit == 0) {
+            limit = 100;
+        }
 
         criteria.select(jobStateRoot);
         TypedQuery<JobState> query = entityManager.createQuery(criteria);
-
-        if (p.length >= 2) {
-            Integer offset = p[0];
-            Integer limit = p[1];
-            if (offset == null) offset = 0;
-            if (limit == null || limit > 100) limit = 100;
-            query = query.setFirstResult(offset).setMaxResults(limit);
-        }
+        query = query.setFirstResult(offset).setMaxResults(limit);
 
         return query.getResultList();
     }
