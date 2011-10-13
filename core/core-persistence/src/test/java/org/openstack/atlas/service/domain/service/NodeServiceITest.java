@@ -6,8 +6,10 @@ import org.junit.runner.RunWith;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.exception.BadRequestException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.PersistenceServiceException;
+import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.persistence.PersistenceException;
@@ -165,6 +167,59 @@ public class NodeServiceITest {
             }
         }
 
+        @Test(expected = UnprocessableEntityException.class)
+        public void shouldThrowExceptionWhenDuplicatesAreDetected() throws Exception {
+            Set<Node> nodes = new HashSet<Node>();
+            Node node = new Node();
+            node.setAddress("10.1.1.1");
+            node.setPort(80);
+            nodes.add(node);
+
+            LoadBalancer lb = new LoadBalancer();
+            lb.setAccountId(loadBalancer.getAccountId());
+            lb.setId(loadBalancer.getId());
+            lb.setNodes(nodes);
+
+            nodeService.createNodes(lb);
+        }
+
+
+        //TODO: Use when vips are populated...
+        @Ignore
+        @Test(expected = BadRequestException.class)
+        public void shouldThrowExceptionWhenAddressForIPV6InvalidForUse() throws Exception {
+            Set<Node> nodes = new HashSet<Node>();
+            Node node = new Node();
+            node.setAddress(loadBalancer.getVirtualIpDozerWrapper().getLoadBalancerJoinVip6Set().iterator().next().getVirtualIp().getDerivedIpString());
+            node.setPort(80);
+            nodes.add(node);
+
+            LoadBalancer lb = new LoadBalancer();
+            lb.setAccountId(loadBalancer.getAccountId());
+            lb.setId(loadBalancer.getId());
+            lb.setNodes(nodes);
+
+            nodeService.createNodes(lb);
+        }
+
+        //TODO: Use when vips are populated...
+        @Ignore
+        @Test(expected = BadRequestException.class)
+        public void shouldThrowExceptionWhenAddressForIPV4InvalidForUse() throws Exception {
+            Set<Node> nodes = new HashSet<Node>();
+            Node node = new Node();
+            node.setAddress(loadBalancer.getVirtualIpDozerWrapper().getLoadBalancerJoinVipSet().iterator().next().getVirtualIp().getAddress());
+            node.setPort(80);
+            nodes.add(node);
+
+            LoadBalancer lb = new LoadBalancer();
+            lb.setAccountId(loadBalancer.getAccountId());
+            lb.setId(loadBalancer.getId());
+            lb.setNodes(nodes);
+
+            nodeService.createNodes(lb);
+        }
+
         @Test(expected = EntityNotFoundException.class)
         public void shouldThrowExceptionWhenRetrievingByInvalidloadbalancer() throws Exception {
             LoadBalancer lb = new LoadBalancer();
@@ -176,6 +231,33 @@ public class NodeServiceITest {
         @Test(expected = IllegalArgumentException.class)
         public void shouldThrowExceptionWhenUpdatingWithNullValues() throws PersistenceServiceException {
             nodeService.createNodes(new LoadBalancer());
+        }
+        //TODO: more tests...
+    }
+
+    @RunWith(SpringJUnit4ClassRunner.class)
+    public static class WhenUpdatingNodes extends Base {
+
+        @Before
+        public void setUp() throws PersistenceServiceException {
+            loadBalancer = loadBalancerService.create(loadBalancer);
+            loadBalancerRepository.changeStatus(loadBalancer, CoreLoadBalancerStatus.ACTIVE);
+        }
+
+        @Test(expected = UnprocessableEntityException.class)
+        public void shouldThrowExceptionWhenUpdatingLastNodeToDisabled() throws Exception {
+            Set<Node> nodes = new HashSet<Node>();
+            Node node = new Node();
+            node.setId(loadBalancer.getNodes().iterator().next().getId());
+            node.setEnabled(false);
+            nodes.add(node);
+
+            LoadBalancer lb = new LoadBalancer();
+            lb.setAccountId(loadBalancer.getAccountId());
+            lb.setId(loadBalancer.getId());
+            lb.setNodes(nodes);
+
+            nodeService.updateNode(lb);
         }
         //TODO: more tests...
     }
