@@ -18,7 +18,7 @@
         <module>core-data-model</module>
         <module>core-persistence</module>
         <module>core-api</module>
-        <module>core-adapter</module>
+        <module>core-adapters</module>
     </modules>
 
 </project>

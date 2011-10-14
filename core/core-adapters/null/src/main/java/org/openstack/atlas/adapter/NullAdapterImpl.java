@@ -3,13 +3,12 @@ package org.openstack.atlas.adapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.openstack.atlas.service.domain.entity.LoadBalancerProtocol;
-import org.openstack.atlas.service.domain.entity.LoadBalancerAlgorithm;
 
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
 import org.openstack.atlas.service.domain.entity.HealthMonitor;
+import org.openstack.atlas.service.domain.entity.SessionPersistence;
 
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,6 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
     public static Log LOG = LogFactory.getLog(NullAdapterImpl.class.getName());
     private static String SOURCE_IP = "SOURCE_IP";
     private static String HTTP_COOKIE = "HTTP_COOKIE";
-    private static LoadBalancerAlgorithm DEFAULT_ALGORITHM = LoadBalancerAlgorithm.ROUND_ROBIN;
     
     @Override
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, Integer accountId, LoadBalancer lb) throws AdapterException {
@@ -88,5 +86,16 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
     public void deleteHealthMonitor(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
         LOG.info("deleteHealthMonitor");// NOP
     }
+
+    @Override
+    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, SessionPersistence sessionPersistence) throws AdapterException {
+        LOG.info("setSessionPersistence");// NOP
+    }
+
+    @Override
+    public void deleteSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId) throws AdapterException {
+        LOG.info("deleteSessionPersistence");// NOP
+    }
+
 
 }

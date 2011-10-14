@@ -5,7 +5,7 @@ import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
 import org.openstack.atlas.service.domain.entity.HealthMonitor;
-
+import org.openstack.atlas.service.domain.entity.SessionPersistence;
 
 import java.util.Collection;
 import java.util.Set;
@@ -36,4 +36,9 @@ public interface LoadBalancerAdapter {
     void updateHealthMonitor(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, HealthMonitor monitor) throws AdapterException;
 
     void deleteHealthMonitor(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException;
+
+    void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, SessionPersistence sessionPersistence) throws AdapterException;
+
+    void deleteSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId) throws AdapterException;
+
 }
