@@ -25,46 +25,55 @@
         <property name="dataSource" ref="loadbalancingDataSource"/>
     </bean>
 
+    <!-- Database connection settings -->
+    <!-- H2 DB -->
     <bean id="loadbalancingDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="${integration.test.database.url}"/>
-        <property name="username" value="${integration.test.database.username}"/>
-        <property name="password" value="${integration.test.database.password}"/>
+        <property name="driverClassName" value="org.h2.Driver"/>
+        <property name="url" value="jdbc:h2:core/core-persistence/target/atlasITest"/>
+        <property name="username" value="sa"/>
+        <property name="password" value=""/>
     </bean>
 
     <tx:annotation-driven/>
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
-    <bean id="accountLimitService" class="org.openstack.atlas.service.domain.service.impl.AccountLimitServiceImpl" />
-    <bean id="loadBalancerService" class="org.openstack.atlas.service.domain.service.impl.LoadBalancerServiceImpl" />
-    <bean id="nodeService" class="org.openstack.atlas.service.domain.service.impl.NodeServiceImpl" />
-    <bean id="virtualIpService" class="org.openstack.atlas.service.domain.service.impl.VirtualIpServiceImpl" />
-    <bean id="blacklistService" class="org.openstack.atlas.service.domain.service.impl.BlacklistServiceImpl" />
-    <bean id="hostService" class="org.openstack.atlas.service.domain.service.impl.HostServiceImpl" />
-    <bean id="healthMonitorService" class="org.openstack.atlas.service.domain.service.impl.HealthMonitorServiceImpl" />
-    <bean id="sessionPersistenceService" class="org.openstack.atlas.service.domain.service.impl.SessionPersistenceServiceImpl" />
-    <bean id="connectionThrottleService" class="org.openstack.atlas.service.domain.service.impl.ConnectionThrottleServiceImpl" />
+    <bean id="accountLimitService" class="org.openstack.atlas.service.domain.service.impl.AccountLimitServiceImpl"/>
+    <bean id="loadBalancerService" class="org.openstack.atlas.service.domain.service.impl.LoadBalancerServiceImpl"/>
+    <bean id="nodeService" class="org.openstack.atlas.service.domain.service.impl.NodeServiceImpl"/>
+    <bean id="virtualIpService" class="org.openstack.atlas.service.domain.service.impl.VirtualIpServiceImpl"/>
+    <bean id="blacklistService" class="org.openstack.atlas.service.domain.service.impl.BlacklistServiceImpl"/>
+    <bean id="hostService" class="org.openstack.atlas.service.domain.service.impl.HostServiceImpl"/>
+    <bean id="healthMonitorService" class="org.openstack.atlas.service.domain.service.impl.HealthMonitorServiceImpl"/>
+    <bean id="sessionPersistenceService"
+          class="org.openstack.atlas.service.domain.service.impl.SessionPersistenceServiceImpl"/>
+    <bean id="connectionThrottleService"
+          class="org.openstack.atlas.service.domain.service.impl.ConnectionThrottleServiceImpl"/>
 
-    <bean id="accountLimitRepository" class="org.openstack.atlas.service.domain.repository.impl.AccountLimitRepositoryImpl" />
-    <bean id="loadBalancerRepository" class="org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl" />
-    <bean id="nodeRepository" class="org.openstack.atlas.service.domain.repository.impl.NodeRepositoryImpl" />
-    <bean id="blacklistRepository" class="org.openstack.atlas.service.domain.repository.BlacklistRepository" />
-    <bean id="hostRepository" class="org.openstack.atlas.service.domain.repository.HostRepository" />
-    <bean id="virtualIpv6Repository" class="org.openstack.atlas.service.domain.repository.VirtualIpv6Repository" />
-    <bean id="healthMonitorRepository" class="org.openstack.atlas.service.domain.repository.impl.HealthMonitorRepositoryImpl" />
-    <bean id="sessionPersistenceRepository" class="org.openstack.atlas.service.domain.repository.impl.SessionPersistenceRepositoryImpl" />
-    <bean id="connectionThrottleRepository" class="org.openstack.atlas.service.domain.repository.impl.ConnectionThrottleRepositoryImpl" />
+    <bean id="accountLimitRepository"
+          class="org.openstack.atlas.service.domain.repository.impl.AccountLimitRepositoryImpl"/>
+    <bean id="loadBalancerRepository"
+          class="org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl"/>
+    <bean id="nodeRepository" class="org.openstack.atlas.service.domain.repository.impl.NodeRepositoryImpl"/>
+    <bean id="blacklistRepository" class="org.openstack.atlas.service.domain.repository.BlacklistRepository"/>
+    <bean id="hostRepository" class="org.openstack.atlas.service.domain.repository.HostRepository"/>
+    <bean id="virtualIpv6Repository" class="org.openstack.atlas.service.domain.repository.VirtualIpv6Repository"/>
+    <bean id="healthMonitorRepository"
+          class="org.openstack.atlas.service.domain.repository.impl.HealthMonitorRepositoryImpl"/>
+    <bean id="sessionPersistenceRepository"
+          class="org.openstack.atlas.service.domain.repository.impl.SessionPersistenceRepositoryImpl"/>
+    <bean id="connectionThrottleRepository"
+          class="org.openstack.atlas.service.domain.repository.impl.ConnectionThrottleRepositoryImpl"/>
 
-    <bean id="virtualIpRepository" class="org.openstack.atlas.service.domain.repository.VirtualIpRepository" />
-    <bean id="clusterRepository" class="org.openstack.atlas.service.domain.repository.ClusterRepository" />
+    <bean id="virtualIpRepository" class="org.openstack.atlas.service.domain.repository.VirtualIpRepository"/>
+    <bean id="clusterRepository" class="org.openstack.atlas.service.domain.repository.ClusterRepository"/>
 
-    <bean id="atlasTypeHelper" class="org.openstack.atlas.datamodel.AtlasTypeHelper" />
-    <bean id="algorithmType" class="org.openstack.atlas.datamodel.CoreAlgorithmType" />
-    <bean id="protocolType" class="org.openstack.atlas.datamodel.CoreProtocolType" />
-    <bean id="loadBalancerStatus" class="org.openstack.atlas.datamodel.CoreLoadBalancerStatus" />
-    <bean id="nodeStatus" class="org.openstack.atlas.datamodel.CoreNodeStatus" />
-    <bean id="persistenceType" class="org.openstack.atlas.datamodel.CorePersistenceType" />
-    <bean id="healthMonitorType" class="org.openstack.atlas.datamodel.CoreHealthMonitorType" />
+    <bean id="atlasTypeHelper" class="org.openstack.atlas.datamodel.AtlasTypeHelper"/>
+    <bean id="algorithmType" class="org.openstack.atlas.datamodel.CoreAlgorithmType"/>
+    <bean id="protocolType" class="org.openstack.atlas.datamodel.CoreProtocolType"/>
+    <bean id="loadBalancerStatus" class="org.openstack.atlas.datamodel.CoreLoadBalancerStatus"/>
+    <bean id="nodeStatus" class="org.openstack.atlas.datamodel.CoreNodeStatus"/>
+    <bean id="persistenceType" class="org.openstack.atlas.datamodel.CorePersistenceType"/>
+    <bean id="healthMonitorType" class="org.openstack.atlas.datamodel.CoreHealthMonitorType"/>
 
 </beans>
 
