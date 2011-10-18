@@ -6,6 +6,7 @@ import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.ConnectionThrottleRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -17,6 +18,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 @Repository
+@Transactional
 public class ConnectionThrottleRepositoryImpl implements ConnectionThrottleRepository {
     final Log LOG = LogFactory.getLog(ConnectionThrottleRepositoryImpl.class);
     private static final String entityNotFound = "Connection throttle not found";

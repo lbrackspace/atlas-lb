@@ -9,8 +9,8 @@ import org.openstack.atlas.service.domain.exception.EntityExistsException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exception.LimitReachedException;
 import org.openstack.atlas.service.domain.exception.PersistenceServiceException;
+import org.openstack.atlas.service.domain.repository.AccountLimitRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.repository.impl.AccountLimitRepositoryImpl;
 import org.openstack.atlas.service.domain.service.AccountLimitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,17 +23,18 @@ public class AccountLimitServiceImpl implements AccountLimitService {
     private final Log LOG = LogFactory.getLog(AccountLimitServiceImpl.class);
 
     @Autowired
-    private AccountLimitRepositoryImpl accountLimitRepository;
+    private AccountLimitRepository accountLimitRepository;
 
     @Autowired
     private LoadBalancerRepository loadBalancerRepository;
 
     @Override
+    @Transactional(rollbackFor = {EntityExistsException.class})
     public AccountLimit create(Integer accountId, AccountLimit accountLimit) throws PersistenceServiceException {
         List<AccountLimit> allAccountLimits = accountLimitRepository.getAccountLimits(accountId);
 
         for (AccountLimit limit : allAccountLimits) {
-            if (limit.getLimitType().equals(accountLimit.getLimitType())) {
+            if (limit.getLimitType().getName().equals(accountLimit.getLimitType().getName())) {
                 throw new EntityExistsException("Account limit already exists.");
             }
         }

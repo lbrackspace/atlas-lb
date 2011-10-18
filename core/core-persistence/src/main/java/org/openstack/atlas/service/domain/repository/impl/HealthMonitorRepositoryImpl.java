@@ -6,6 +6,7 @@ import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.HealthMonitorRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -17,6 +18,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 @Repository
+@Transactional
 public class HealthMonitorRepositoryImpl implements HealthMonitorRepository {
     final Log LOG = LogFactory.getLog(HealthMonitorRepositoryImpl.class);
     private static final String entityNotFound = "Health monitor not found";

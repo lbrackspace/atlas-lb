@@ -6,6 +6,7 @@ import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.AccountLimitRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -18,6 +19,7 @@ import javax.persistence.criteria.Root;
 import java.util.List;
 
 @Repository
+@Transactional
 public class AccountLimitRepositoryImpl implements AccountLimitRepository {
     final Log LOG = LogFactory.getLog(AccountLimitRepositoryImpl.class);
     private static final String entityNotFound = "Account limit not found";
