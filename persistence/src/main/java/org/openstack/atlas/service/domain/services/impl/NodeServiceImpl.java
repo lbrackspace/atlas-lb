@@ -8,6 +8,7 @@ import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.NodeService;
 import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
 import org.openstack.atlas.util.converters.StringConverter;
+import org.openstack.atlas.util.ip.IPv6;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.apache.commons.logging.Log;
@@ -15,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.openstack.atlas.util.ip.IPUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -222,13 +224,32 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     @Override
     public boolean detectDuplicateNodes(LoadBalancer dbLoadBalancer, LoadBalancer queueLb) {
         Set<String> ipAddressesAndPorts = new HashSet<String>();
+        Boolean retVal = false;
+        String string;
+        IPv6 ip;
         for (Node dbNode : dbLoadBalancer.getNodes()) {
-            ipAddressesAndPorts.add(dbNode.getIpAddress() + ":" + dbNode.getPort());
+            ip = new IPv6(dbNode.getIpAddress());
+            try {
+                IPUtils.isValidIpv6String(ip.expand());
+                string = ip.expand() + ":" + dbNode.getPort();
+            } catch (IPStringConversionException ex) {
+                string = dbNode.getIpAddress() + ":" + dbNode.getPort();
+            }
+            ipAddressesAndPorts.add(string);
         }
         for (Node queueNode : queueLb.getNodes()) {
-            if (!ipAddressesAndPorts.add(queueNode.getIpAddress() + ":" + queueNode.getPort())) return true;
+            ip = new IPv6(queueNode.getIpAddress());
+            try {
+                IPUtils.isValidIpv6String(ip.expand());
+                string = (ip.expand() + ":" + queueNode.getPort());
+            } catch (IPStringConversionException ex) {
+                string = queueNode.getIpAddress() + ":" + queueNode.getPort();
+            }
+            if (!ipAddressesAndPorts.add(string)) {
+                retVal = true;
+            }
         }
-        return false;
+        return retVal;
     }
 
     @Override
