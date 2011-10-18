@@ -27,7 +27,6 @@
         <module>jobs</module>
         <module>core</module>
         <module>atlas-rax</module>
-        <module>atlas-rax-adapter</module>
     </modules>
 
     <build>
@@ -226,6 +225,13 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>1.3.160</version>
                 <scope>test</scope>
             </dependency>
 
