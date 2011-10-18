@@ -29,7 +29,7 @@
     <!-- H2 DB -->
     <bean id="loadbalancingDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.h2.Driver"/>
-        <property name="url" value="jdbc:h2:core/core-persistence/target/atlasITest"/>
+        <property name="url" value="jdbc:h2:target/atlasITest"/>
         <property name="username" value="sa"/>
         <property name="password" value=""/>
     </bean>
