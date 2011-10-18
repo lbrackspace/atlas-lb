@@ -224,12 +224,13 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     @Override
     public boolean detectDuplicateNodes(LoadBalancer dbLoadBalancer, LoadBalancer queueLb) {
         Set<String> ipAddressesAndPorts = new HashSet<String>();
+        Boolean retVal = false;
         String string;
         IPv6 ip;
         for (Node dbNode : dbLoadBalancer.getNodes()) {
-            try {
-                ip = new IPv6(dbNode.getIpAddress());
+            ip = new IPv6(dbNode.getIpAddress());
 
+            try {
                 if (IPUtils.isValidIpv6String(ip.expand())) {
                     string = ip.expand() + ":" + dbNode.getPort();
                 } else {
@@ -237,26 +238,26 @@ public class NodeServiceImpl extends BaseService implements NodeService {
                 }
                 ipAddressesAndPorts.add(string);
             } catch (IPStringConversionException ex) {
-                return false;
+                retVal = true;
             }
         }
         for (Node queueNode : queueLb.getNodes()) {
-            try {
-                ip = new IPv6(queueNode.getIpAddress());
+            ip = new IPv6(queueNode.getIpAddress());
 
+            try {
                 if (IPUtils.isValidIpv6String(ip.expand())) {
                     string = (ip.expand() + ":" + queueNode.getPort());
                 } else {
                     string = queueNode.getIpAddress() + ":" + queueNode.getPort();
                 }
                 if (!ipAddressesAndPorts.add(string)) {
-                    return true;
+                    retVal = true;
                 }
             } catch (IPStringConversionException ex) {
-                return false;
+                retVal = true;
             }
         }
-        return false;
+        return retVal;
     }
 
     @Override
