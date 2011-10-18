@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.openstack.atlas</groupId>
-        <artifactId>atlas-parent-adapter</artifactId>
+        <artifactId>core-adapters</artifactId>
         <version>1.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Openstack :: Atlas :: Adapters :: Common</name>
+    <name>Openstack :: Atlas :: Core :: Adapters :: Common</name>
     <artifactId>core-adapter-common</artifactId>
     <packaging>jar</packaging>
 
