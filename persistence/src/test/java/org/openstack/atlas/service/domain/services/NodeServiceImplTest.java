@@ -80,12 +80,12 @@ public class NodeServiceImplTest {
         }
 
         @Test
-        public void shouldReturnTrueWhenDuplicateNodesDetected() throws EntityNotFoundException {
-            Assert.assertTrue(nodeService.detectDuplicateNodes(lb, lb2));
+        public void shouldReturnFalseWhenNoDuplicateNodesDetected() throws EntityNotFoundException {
+            Assert.assertFalse(nodeService.detectDuplicateNodes(lb, lb2));
         }
 
         @Test
-        public void shouldReturnFalseWhenNoDuplicateNodesDetected() throws EntityNotFoundException {
+        public void shouldReturnTrueWhenDuplicateNodesDetected() throws EntityNotFoundException {
             node2.setIpAddress("192.1.1.1");
             node2.setPort(12);
             lb2.getNodes().add(node2);

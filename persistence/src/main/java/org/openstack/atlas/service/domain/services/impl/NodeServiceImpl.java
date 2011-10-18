@@ -229,31 +229,23 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         IPv6 ip;
         for (Node dbNode : dbLoadBalancer.getNodes()) {
             ip = new IPv6(dbNode.getIpAddress());
-
             try {
-                if (IPUtils.isValidIpv6String(ip.expand())) {
-                    string = ip.expand() + ":" + dbNode.getPort();
-                } else {
-                    string = dbNode.getIpAddress() + ":" + dbNode.getPort();
-                }
-                ipAddressesAndPorts.add(string);
+                IPUtils.isValidIpv6String(ip.expand());
+                string = ip.expand() + ":" + dbNode.getPort();
             } catch (IPStringConversionException ex) {
-                retVal = true;
+                string = dbNode.getIpAddress() + ":" + dbNode.getPort();
             }
+            ipAddressesAndPorts.add(string);
         }
         for (Node queueNode : queueLb.getNodes()) {
             ip = new IPv6(queueNode.getIpAddress());
-
             try {
-                if (IPUtils.isValidIpv6String(ip.expand())) {
-                    string = (ip.expand() + ":" + queueNode.getPort());
-                } else {
-                    string = queueNode.getIpAddress() + ":" + queueNode.getPort();
-                }
-                if (!ipAddressesAndPorts.add(string)) {
-                    retVal = true;
-                }
+                IPUtils.isValidIpv6String(ip.expand());
+                string = (ip.expand() + ":" + queueNode.getPort());
             } catch (IPStringConversionException ex) {
+                string = queueNode.getIpAddress() + ":" + queueNode.getPort();
+            }
+            if (!ipAddressesAndPorts.add(string)) {
                 retVal = true;
             }
         }
