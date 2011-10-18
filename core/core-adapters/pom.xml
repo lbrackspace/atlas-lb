@@ -16,6 +16,7 @@
     <modules>
         <module>core-adapter-common</module>
         <module>core-null-adapter</module>
+        <module>zeus</module>
     </modules>
 
     <build>
