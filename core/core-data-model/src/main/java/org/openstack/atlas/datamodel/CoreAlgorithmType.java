@@ -11,7 +11,7 @@ import java.util.Set;
 public class CoreAlgorithmType implements AlgorithmType {
     public static final String LEAST_CONNECTIONS = "LEAST_CONNECTIONS";
     public static final String ROUND_ROBIN = "ROUND_ROBIN";
-    protected static final Set<String> algorithmTypes;
+    private static final Set<String> algorithmTypes;
 
     static {
         algorithmTypes = new HashSet<String>();
@@ -32,5 +32,9 @@ public class CoreAlgorithmType implements AlgorithmType {
     @Override
     public String[] toList() {
         return algorithmTypes.toArray(new String[algorithmTypes.size()]);
+    }
+
+    protected static void add(String algorithm) {
+        algorithmTypes.add(algorithm);
     }
 }

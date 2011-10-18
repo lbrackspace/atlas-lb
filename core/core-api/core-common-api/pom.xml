@@ -27,7 +27,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>core-adapter</artifactId>
+            <artifactId>core-adapter-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 

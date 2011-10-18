@@ -21,16 +21,16 @@ public class RaxProtocolType extends CoreProtocolType {
     public static final String SMTP = "SMTP";
 
     static {
-        protocolPortMap.put(FTP, 21);
-        protocolPortMap.put(IMAPv2, 143);
-        protocolPortMap.put(IMAPv3, 220);
-        protocolPortMap.put(IMAPv4, 143);
-        protocolPortMap.put(IMAPS, 993);
-        protocolPortMap.put(LDAP, 389);
-        protocolPortMap.put(LDAPS, 636);
-        protocolPortMap.put(POP3, 110);
-        protocolPortMap.put(POP3S, 995);
-        protocolPortMap.put(SMTP, 25);
+        add(FTP, 21);
+        add(IMAPv2, 143);
+        add(IMAPv3, 220);
+        add(IMAPv4, 143);
+        add(IMAPS, 993);
+        add(LDAP, 389);
+        add(LDAPS, 636);
+        add(POP3, 110);
+        add(POP3S, 995);
+        add(SMTP, 25);
     }
 
 }

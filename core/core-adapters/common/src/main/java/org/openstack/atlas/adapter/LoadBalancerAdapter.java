@@ -1,8 +1,11 @@
 package org.openstack.atlas.adapter;
 
 import org.openstack.atlas.adapter.exception.AdapterException;
-import org.openstack.atlas.service.domain.entity.*;
-
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.Node;
+import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
+import org.openstack.atlas.service.domain.entity.HealthMonitor;
+import org.openstack.atlas.service.domain.entity.SessionPersistence;
 
 import java.util.Collection;
 import java.util.Set;
@@ -21,7 +24,7 @@ public interface LoadBalancerAdapter {
     void deleteNodes(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Set<Integer> nodeIds) throws AdapterException;
 
     void updateNode(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Node node) throws AdapterException;
- 
+
     void deleteNode(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Integer nodeId) throws AdapterException;
 
     void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Boolean enabled) throws AdapterException;

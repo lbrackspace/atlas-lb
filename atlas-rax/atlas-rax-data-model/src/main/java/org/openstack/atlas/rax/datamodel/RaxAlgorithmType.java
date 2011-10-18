@@ -14,8 +14,8 @@ public class RaxAlgorithmType extends CoreAlgorithmType {
     public static final String WEIGHTED_ROUND_ROBIN = "WEIGHTED_ROUND_ROBIN";
 
     static {
-        algorithmTypes.add(RANDOM);
-        algorithmTypes.add(WEIGHTED_LEAST_CONNECTIONS);
-        algorithmTypes.add(WEIGHTED_ROUND_ROBIN);
+        add(RANDOM);
+        add(WEIGHTED_LEAST_CONNECTIONS);
+        add(WEIGHTED_ROUND_ROBIN);
     }
 }
