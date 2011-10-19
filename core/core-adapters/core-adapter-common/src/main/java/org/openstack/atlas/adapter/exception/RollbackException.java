@@ -10,4 +10,8 @@ public class RollbackException extends AdapterException {
     public RollbackException(String message) {
         super(message);
     }
+
+    public RollbackException(Throwable throwable) {
+        super(throwable);
+    }
 }

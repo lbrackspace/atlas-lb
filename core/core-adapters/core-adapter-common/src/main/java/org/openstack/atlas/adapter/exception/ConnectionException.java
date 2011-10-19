@@ -10,4 +10,8 @@ public class ConnectionException extends AdapterException {
     public ConnectionException(String message) {
         super(message);
     }
+
+    public ConnectionException(Throwable throwable) {
+        super(throwable);
+    }
 }
