@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
-//@Service
+@Service
 public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
     public static Log LOG = LogFactory.getLog(ZxtmAdapterImpl.class.getName());

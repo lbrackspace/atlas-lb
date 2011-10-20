@@ -1,12 +1,12 @@
 package org.openstack.atlas.rax.api.validation.validator;
 
-import org.openstack.atlas.api.v1.extensions.rax.AccessList;
 import org.openstack.atlas.api.validation.Validator;
 import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.ResourceValidator;
 import org.openstack.atlas.api.validation.validator.ValidatorUtilities;
 import org.openstack.atlas.api.validation.verifier.IsInstanceOf;
+import org.openstack.atlas.rax.domain.entity.AccessList;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

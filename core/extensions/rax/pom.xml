@@ -14,9 +14,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>api</module>
-        <module>persistence</module>
         <module>data-model</module>
+        <module>persistence</module>
+        <module>api</module>
     </modules>
     <dependencies>
 

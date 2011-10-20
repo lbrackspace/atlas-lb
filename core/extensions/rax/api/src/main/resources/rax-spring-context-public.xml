@@ -1,3 +1,4 @@
+<!--
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -17,7 +18,7 @@
 
     <context:annotation-config />
 
-    <!--DOZER SETTINGS-->
+    &lt;!&ndash;DOZER SETTINGS&ndash;&gt;
     <bean id="dozerBeanMapper" class="org.dozer.DozerBeanMapper">
         <property name="mappingFiles">
             <list>
@@ -35,14 +36,14 @@
         </property>
     </bean>
 
-    <!--STANDALONE SPRING SETTINGS-->
+    &lt;!&ndash;STANDALONE SPRING SETTINGS&ndash;&gt;
     <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="location" value="file:/etc/openstack/atlas/public-api.conf"/>
     </bean>
 
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 
-    <!--RESOURCE BEANS-->
+    &lt;!&ndash;RESOURCE BEANS&ndash;&gt;
     <bean id="loadBalancingPublicImpl" class="org.openstack.atlas.rax.api.resource.RootResource" scope="request" />
 
     <bean id="entityManagerFactory1" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
@@ -56,4 +57,4 @@
 
     <tx:annotation-driven/>
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
-</beans>
+</beans>-->

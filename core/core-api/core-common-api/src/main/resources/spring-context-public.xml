@@ -50,7 +50,7 @@
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 
     <!--RESOURCE BEANS-->
-    <bean id="loadBalancingPublicImpl" class="org.openstack.atlas.api.resource.RootResource" scope="request"/>
+    <bean id="loadBalancingPublicImpl" class="${root_resource}" scope="request"/>
 
     <bean id="entityManagerFactory1" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="persistenceXmlLocation" value="classpath:META-INF/lb-persistence.xml"/>

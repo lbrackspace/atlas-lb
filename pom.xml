@@ -27,8 +27,6 @@
         <module>jobs</module>
         <module>core</module>
         <module>atlas-rax</module>
-        <module>extensions</module>
-        <module>rax</module>
     </modules>
 
     <build>
