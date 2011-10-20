@@ -43,11 +43,6 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
     }
 
     @Override
-    public void deleteNode(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Integer nodeId) throws AdapterException {
-        LOG.info("deleteNode");// NOP
-    }
-
-    @Override
     public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Boolean enabled) throws AdapterException {
         LOG.info("updateConnectionLogging");// NOP
     }

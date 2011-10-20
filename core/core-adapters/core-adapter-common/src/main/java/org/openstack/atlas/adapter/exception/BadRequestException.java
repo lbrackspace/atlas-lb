@@ -10,4 +10,8 @@ public class BadRequestException extends AdapterException {
     public BadRequestException(String message) {
         super(message);
     }
+
+    public BadRequestException(Throwable throwable) {
+        super(throwable);
+    }
 }

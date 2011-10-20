@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -103,7 +105,9 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public void deleteNode(Integer accountId, Integer lbId, Integer nodeId) throws AdapterException, DecryptException, MalformedURLException, Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.deleteNode(config, accountId, lbId, nodeId);
+            Set<Integer> nodeIds = new HashSet<Integer>();
+            nodeIds.add(nodeId);
+            loadBalancerAdapter.deleteNodes(config, accountId, lbId, nodeIds);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
