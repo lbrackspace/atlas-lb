@@ -19,6 +19,11 @@
             <artifactId>core-common-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+       <!-- <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId></artifactId>
+            <version>${project.version}</version>
+        </dependency>-->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>core-null-adapter</artifactId>

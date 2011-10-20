@@ -17,8 +17,9 @@
         <module>core-common</module>
         <module>core-data-model</module>
         <module>core-persistence</module>
-        <module>core-api</module>
         <module>core-adapters</module>
+        <module>extensions</module>
+        <module>core-api</module>
     </modules>
 
 </project>
