@@ -9,8 +9,6 @@ import org.openstack.atlas.adapter.exception.BadRequestException;
 import org.openstack.atlas.adapter.zxtm.helper.IpHelper;
 import org.openstack.atlas.adapter.zxtm.helper.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.zxtm.service.ZxtmServiceStubs;
-import org.openstack.atlas.datamodel.CoreAlgorithmType;
-import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.entity.*;
 
 import java.net.MalformedURLException;
@@ -20,14 +18,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ZeusTestBase {
+public class ITestBase {
     public static final Integer SLEEP_TIME_BETWEEN_TESTS = 500;
 
     // TODO: get this from external config...
     public static final String ZXTM_USERNAME = "username";
     public static final String ZXTM_PASSWORD = "password";
-    public static final String ZXTM_ENDPOINT_URI = "https://localhost:9090/soap";
-    public static final String TARGET_HOST = "ztm-n01.teset.com";
+    public static final String ZXTM_ENDPOINT_URI = "https://1.2.3.4:1234/soap";
+    public static final String TARGET_HOST = "ztm-n01.test.com";
     public static final String FAILOVER_HOST_1 = "ztm-n03.test.com";
     public static final String FAILOVER_HOST_2 = "ztm-n04.test.com";
     public static final String DEFAULT_LOG_FILE_LOCATION = "/opt/zeus/zxtm/log/access_log";
@@ -101,7 +99,7 @@ public class ZeusTestBase {
         lb.setNodes(nodeList);
         lb.setLoadBalancerJoinVipSet(vipList);
 
-        ZeusTestBase.lb = lb;
+        ITestBase.lb = lb;
     }
 
     protected static ZxtmServiceStubs getServiceStubs() throws AxisFault {

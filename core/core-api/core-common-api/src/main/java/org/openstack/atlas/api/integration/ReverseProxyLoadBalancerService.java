@@ -14,12 +14,12 @@ public interface ReverseProxyLoadBalancerService {
 
     void createNodes(Integer accountId, Integer lbId, Set<Node> nodes) throws Exception;
 
-    void deleteNodes(Integer accountId, Integer lbId, Set<Integer> nodeIds) throws Exception;
+    void deleteNodes(Integer accountId, Integer lbId, Set<Node> nodes) throws Exception;
 
     void updateNode(Integer accountId, Integer lbId, Node node) throws Exception;
- 
-    void deleteNode(Integer accountId, Integer lbId, Integer nodeId) throws Exception;
 
+    void deleteNode(Integer accountId, Integer lbId, Node node) throws Exception;
+ 
     void updateConnectionLogging(Integer accountId, Integer lbId, Boolean enabled) throws Exception;
 
     void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle connectionThrottle) throws Exception;

@@ -3,27 +3,22 @@ package org.openstack.atlas.adapter.zxtm;
 import com.zxtm.service.client.*;
 import org.apache.axis.types.UnsignedInt;
 import org.junit.*;
-import org.openstack.atlas.adapter.exception.AdapterException;
-import org.openstack.atlas.adapter.exception.BadRequestException;
-import org.openstack.atlas.adapter.exception.RollbackException;
 import org.openstack.atlas.adapter.zxtm.helper.IpHelper;
-import org.openstack.atlas.datamodel.CoreAlgorithmType;
 import org.openstack.atlas.datamodel.CoreHealthMonitorType;
 import org.openstack.atlas.datamodel.CorePersistenceType;
-import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
 import org.openstack.atlas.service.domain.entity.HealthMonitor;
 import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.entity.SessionPersistence;
 
-import java.rmi.RemoteException;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
  * IMPORTANT! PLEASE READ!
  * Order matters when running this test so please be careful.
  */
-@Ignore // Run manually
-public class SimpleIntegrationTest extends ZeusTestBase {
+public class SimpleITest extends ITestBase {
 
     @BeforeClass
     public static void setupClass() throws InterruptedException {
@@ -86,19 +81,19 @@ public class SimpleIntegrationTest extends ZeusTestBase {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
-    }
+    }*/
 
     @Test
     public void testNodeOperations() throws Exception {
-        setNodes();
-        updateNodeConditionsToEnabled();
-        shouldRollbackWhenUpdatingAllNodeConditionsToDisabled();
-        shouldRollbackWhenSettingUnsupportedNodeWeights();
-        updateNodeWeights();
+        createNodes();
+//        updateNodeConditionsToEnabled();
+//        shouldRollbackWhenUpdatingAllNodeConditionsToDisabled();
+//        shouldRollbackWhenSettingUnsupportedNodeWeights();
+//        updateNodeWeights();
         removeNode();
     }
 
-    private void setNodes() throws Exception {
+    private void createNodes() throws Exception {
         final int defaultNodeWeight = 1;
         Node node3 = new Node();
         Node node4 = new Node();
@@ -111,10 +106,11 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         node3.setWeight(15);
         node4.setWeight(20);
 
+        lb.getNodes().clear();
         lb.getNodes().add(node3);
         lb.getNodes().add(node4);
 
-        zxtmAdapter.setNodes(config, lb.getId(), lb.getAccountId(), lb.getNodes());
+        zxtmAdapter.createNodes(config, lb.getId(), lb.getAccountId(), lb.getNodes());
 
         String node1ZeusString = IpHelper.createZeusIpString(node1.getAddress(), node1.getPort());
         String node2ZeusString = IpHelper.createZeusIpString(node2.getAddress(), node2.getPort());
@@ -150,12 +146,15 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         }
 
         // Remove so later tests aren't affected
+        Set<Node> nodesToDelete = new HashSet<Node>();
+        nodesToDelete.add(node3);
+        nodesToDelete.add(node4);
+        zxtmAdapter.deleteNodes(config, lb.getAccountId(), lb.getId(), nodesToDelete);
         lb.getNodes().remove(node3);
         lb.getNodes().remove(node4);
-        zxtmAdapter.setNodes(config, lb.getId(), lb.getAccountId(), lb.getNodes());
     }
 
-    private void updateNodeConditionsToEnabled() throws Exception {
+/*    private void updateNodeConditionsToEnabled() throws Exception {
         for (Node node : lb.getNodes()) {
             node.setEnabled(true);
         }
@@ -250,10 +249,12 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         Assert.assertEquals(2, drainingNodeWeights[0].length);
         Assert.assertTrue((drainingNodeWeights[0][0].getWeighting() == node1.getWeight()) || (drainingNodeWeights[0][0].getWeighting() == node2.getWeight()));
         Assert.assertTrue((drainingNodeWeights[0][1].getWeighting() == node1.getWeight()) || (drainingNodeWeights[0][1].getWeighting() == node2.getWeight()));
-    }
+    } */
 
     private void removeNode() throws Exception {
-        zxtmAdapter.removeNode(config, lb.getId(), lb.getAccountId(), node2.getAddress(), node2.getPort());
+        Set<Node> nodesToDelete = new HashSet<Node>();
+        nodesToDelete.add(node2);
+        zxtmAdapter.deleteNodes(config, lb.getAccountId(), lb.getId(), nodesToDelete);
 
         final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
         Assert.assertEquals(1, enabledNodes.length);
@@ -265,7 +266,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
         final String[][] drainingNodes = getServiceStubs().getPoolBinding().getDrainingNodes(new String[]{poolName()});
         Assert.assertEquals(1, drainingNodes.length);
-    }*/
+    }
 
     @Test
     public void testAllSessionPersistenceOperations() throws Exception {

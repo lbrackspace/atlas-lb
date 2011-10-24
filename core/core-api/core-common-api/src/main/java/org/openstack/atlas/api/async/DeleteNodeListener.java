@@ -57,7 +57,8 @@ public class DeleteNodeListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in Adapter...", nodesToDeleteIdString, msg.getLoadBalancerId()));
-            reverseProxyLoadBalancerService.deleteNodes(msg.getAccountId(), msg.getLoadBalancerId(), new HashSet<Integer>(msg.getIds()));
+            // TODO: Pass in nodes to delete
+            //reverseProxyLoadBalancerService.deleteNodes(msg.getAccountId(), msg.getLoadBalancerId(), new HashSet<Integer>(msg.getIds()));
             LOG.debug(String.format("Successfully removed nodes '[%s]' from load balancer '%d' in Adapter.", nodesToDeleteIdString, msg.getLoadBalancerId()));
         } catch (Exception e) {
             dbLoadBalancer.setStatus(CoreLoadBalancerStatus.ERROR);

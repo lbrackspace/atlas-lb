@@ -33,7 +33,7 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
     }
 
     @Override
-    public void deleteNodes(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Set<Integer> nodeIds) throws AdapterException {
+    public void deleteNodes(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Set<Node> nodes) throws AdapterException {
         LOG.info("deleteNodes");// NOP
     }
 
