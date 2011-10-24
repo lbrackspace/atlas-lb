@@ -18,6 +18,7 @@ import org.openstack.atlas.datamodel.CoreHealthMonitorType;
 import org.openstack.atlas.datamodel.CorePersistenceType;
 import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.entity.*;
+import org.springframework.stereotype.Service;
 
 import java.rmi.RemoteException;
 import java.util.*;
