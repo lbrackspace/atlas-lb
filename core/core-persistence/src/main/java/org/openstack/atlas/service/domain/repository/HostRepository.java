@@ -67,8 +67,8 @@ public class HostRepository {
         return results;
     }
 
-    public List<Host> getHostsMinimumMaxConnections() {
-        String sql = "SELECT h from Host h where h.maxConcurrentConnections =  ( select min(i.maxConcurrentConnections) from Host i)";
+    public List<Host> getHosts() {
+        String sql = "SELECT h from Host h";
 
         Query query = entityManager.createQuery(sql);
         List<Host> hosts = query.getResultList();

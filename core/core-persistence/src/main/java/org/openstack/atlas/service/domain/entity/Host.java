@@ -18,23 +18,29 @@ public class Host extends org.openstack.atlas.service.domain.entity.Entity imple
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "ipv6_service_net", nullable = true)
-    private String ipv6ServiceNet;
+    @Column(name = "endpoint", nullable = false)
+    private String endpoint;
 
-    @Column(name = "ipv6_public", nullable = true)
-    private String ipv6Public;
+    @Column(name = "endpoint_active", nullable = false)
+    private Boolean endpointActive;
 
-    @Column(name = "ipv4_service_net", nullable = true)
-    private String ipv4ServiceNet;
+    @Column(name = "username", nullable = false)
+    private String username;
+
+    @Column(name = "password", nullable = false)
+    private String password;
 
     @Column(name = "ipv4_public", nullable = true)
     private String ipv4Public;
 
-    @Column(name = "core_device_id", nullable = false)
-    private String coreDeviceId;
+    @Column(name = "ipv4_service_net", nullable = true)
+    private String ipv4ServiceNet;
 
-    @Column(name = "max_concurrent_connections", nullable = false)
-    private Integer maxConcurrentConnections;
+    @Column(name = "ipv6_public", nullable = true)
+    private String ipv6Public;
+
+    @Column(name = "ipv6_service_net", nullable = true)
+    private String ipv6ServiceNet;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "host_status", length = 32, nullable = false)
@@ -44,18 +50,10 @@ public class Host extends org.openstack.atlas.service.domain.entity.Entity imple
     @JoinColumn(name = "cluster_id", nullable = false)
     private Cluster cluster;
 
-    @Column(name = "management_ip", nullable = false)
-    private String managementIp;
-
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "host_id")
     private List<LoadBalancer> loadbalancers;
 
-    @Column(name = "endpoint", nullable = false)
-    private String endpoint;
-
-    @Column(name = "endpoint_active")
-    private Boolean endpointActive;
 
     public String getName() {
         return name;
@@ -65,20 +63,28 @@ public class Host extends org.openstack.atlas.service.domain.entity.Entity imple
         this.name = name;
     }
 
-    public String getCoreDeviceId() {
-        return coreDeviceId;
+    public String getUsername() {
+        return username;
     }
 
-    public void setCoreDeviceId(String coreDeviceId) {
-        this.coreDeviceId = coreDeviceId;
+    public Boolean isEndpointActive() {
+        return endpointActive;
     }
 
-    public Integer getMaxConcurrentConnections() {
-        return maxConcurrentConnections;
+    public void setEndpointActive(Boolean endpointActive) {
+        this.endpointActive = endpointActive;
     }
 
-    public void setMaxConcurrentConnections(Integer maxConcurrentConnections) {
-        this.maxConcurrentConnections = maxConcurrentConnections;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Cluster getCluster() {
@@ -87,14 +93,6 @@ public class Host extends org.openstack.atlas.service.domain.entity.Entity imple
 
     public void setCluster(Cluster cluster) {
         this.cluster = cluster;
-    }
-
-    public String getManagementIp() {
-        return managementIp;
-    }
-
-    public void setManagementIp(String managementIp) {
-        this.managementIp = managementIp;
     }
 
     private static String vorn(Object obj) {
@@ -109,25 +107,13 @@ public class Host extends org.openstack.atlas.service.domain.entity.Entity imple
         this.endpoint = endpoint;
     }
 
-    public Boolean isEndpointActive() {
-        return endpointActive;
-    }
-
-    public void setEndpointActive(Boolean endpointActive) {
-        this.endpointActive = endpointActive;
-    }
-
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("{");
         sb.append(String.format("id=%s, ", vorn(this.getId())));
         sb.append(String.format("name= \"%s\",", vorn(this.getName())));
         sb.append(String.format("clusterid = %s, ", this.getCluster() == null ? "" : this.getCluster().getId()));
-        sb.append(String.format("managementip = \"%s\", ", vorn(this.getManagementIp())));
-        sb.append(String.format("maxconnections= %s, ", vorn(this.getMaxConcurrentConnections())));
-        sb.append(String.format("coreid= %s,", vorn(this.getCoreDeviceId())));
         sb.append(String.format("endpoint=\"%s\",", vorn(this.getEndpoint())));
-        sb.append(String.format("endpointActive=\"%s\"", vorn(this.isEndpointActive())));
         sb.append("}");
 
         return sb.toString();

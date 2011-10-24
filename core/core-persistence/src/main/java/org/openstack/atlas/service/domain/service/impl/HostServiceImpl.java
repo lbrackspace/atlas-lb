@@ -21,7 +21,7 @@ public class HostServiceImpl implements HostService {
 
     @Override
     public Host getDefaultActiveHost() throws PersistenceServiceException {
-        List<Host> hosts = hostRepository.getHostsMinimumMaxConnections();
+        List<Host> hosts = hostRepository.getHosts();
         if (hosts == null || hosts.size() <= 0) {
             throw new EntityNotFoundException("ACTIVE_TARGET host not found");
         }

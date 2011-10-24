@@ -115,6 +115,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
             final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
             final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String[][] trafficIpGroups = serviceStubs.getVirtualServerBinding().getListenTrafficIPGroups(new String[]{virtualServerName});
 
             LOG.debug(String.format("Deleting load balancer '%s'...", virtualServerName));
 
@@ -122,7 +123,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
             deleteVirtualServer(serviceStubs, virtualServerName);
             deleteNodePool(serviceStubs, poolName);
             deleteProtectionCatalog(serviceStubs, poolName);
-            deleteTrafficIpGroups(serviceStubs, virtualServerName);
+            deleteTrafficIpGroups(serviceStubs, trafficIpGroups[0]);
 
             LOG.info(String.format("Successfully deleted load balancer '%s'.", virtualServerName));
         } catch (RemoteException e) {
@@ -501,10 +502,8 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private void deleteTrafficIpGroups(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException, BadRequestException {
-        final String[][] trafficIpGroups = serviceStubs.getVirtualServerBinding().getListenTrafficIPGroups(new String[]{virtualServerName});
-
-        for (String trafficIpGroupName : trafficIpGroups[0]) {
+    private void deleteTrafficIpGroups(ZxtmServiceStubs serviceStubs, String[] trafficIpGroups) throws RemoteException, BadRequestException {
+        for (String trafficIpGroupName : trafficIpGroups) {
             deleteTrafficIpGroup(serviceStubs, trafficIpGroupName);
         }
     }

@@ -12,7 +12,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `host` WRITE;
 /*!40000 ALTER TABLE `host` DISABLE KEYS */;
-INSERT INTO `host` (`vendor`, `id`, `core_device_id`, `host_status`, `management_ip`, `max_concurrent_connections`, `name`, `endpoint`, `cluster_id`, `endpoint_active`, `ipv6_service_net`, `ipv4_service_net`, `ipv4_public`, `ipv6_public`) VALUES ('CORE', 1,'100', 'ACTIVE_TARGET', '10.2.4.4', '1500', 'host1_cluster1','https://127.0.0.1:1234', '1', TRUE, '4FDE:0000:0000:0002:0022:F376:FF3B:AB3F', '10.2.2.6', '172.1.1.1', '4FDE:0000:0000:0002:0022:F376:FF3B:AB3F');
+INSERT INTO `host` (`vendor`, `id`, `name`, `host_status`, `endpoint`, `endpoint_active`, `username`, `password`, `cluster_id`, `ipv6_service_net`, `ipv4_service_net`, `ipv4_public`, `ipv6_public`) VALUES ('CORE', 1, 'AtlasHost1', 'ACTIVE_TARGET', 'https://127.0.0.1:1234', TRUE, 'username', 'somehashedpassword', '1', '4FDE:0000:0000:0002:0022:F376:FF3B:AB3F', '10.2.2.6', '172.1.1.1', '4FDE:0000:0000:0002:0022:F376:FF3B:AB3F');
 /*!40000 ALTER TABLE `host` ENABLE KEYS */;
 UNLOCK TABLES;
 
