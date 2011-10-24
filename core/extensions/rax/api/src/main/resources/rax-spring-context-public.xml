@@ -1,37 +1,31 @@
+<!--
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
-       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd
-       http://www.springframework.org/schema/tx 
-       http://www.springframework.org/schema/tx/spring-tx-2.5.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
 
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
     <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
-    <!--<import resource="db-services.xml" />-->
-    <!--<import resource="db-usage-services.xml" />-->
     <import resource="jms-queues.xml" />
 
-    <context:annotation-config/>
-    <aop:aspectj-autoproxy />
+    <context:annotation-config />
 
-    <!--DOZER SETTINGS-->
+    &lt;!&ndash;DOZER SETTINGS&ndash;&gt;
     <bean id="dozerBeanMapper" class="org.dozer.DozerBeanMapper">
         <property name="mappingFiles">
             <list>
                 <value>dozer-config-map.xml</value>
-                <value>dozer-connection-throttle-map.xml</value>
                 <value>dozer-health-monitor-map.xml</value>
-                <value>dozer-load-balancer-map.xml</value>
+                <value>dozer-rax-load-balancer-map.xml</value>
                 <value>dozer-node-map.xml</value>
-                <value>dozer-session-persistence-map.xml</value>
-                <value>dozer-usage-map.xml</value>
                 <value>dozer-virtual-ip-map.xml</value>
             </list>
         </property>
@@ -42,15 +36,15 @@
         </property>
     </bean>
 
-    <!--STANDALONE SPRING SETTINGS-->
+    &lt;!&ndash;STANDALONE SPRING SETTINGS&ndash;&gt;
     <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="location" value="file:/etc/openstack/atlas/public-api.conf"/>
     </bean>
 
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 
-    <!--RESOURCE BEANS-->
-    <bean id="loadBalancingPublicImpl" class="${root_resource}" scope="request"/>
+    &lt;!&ndash;RESOURCE BEANS&ndash;&gt;
+    <bean id="loadBalancingPublicImpl" class="org.openstack.atlas.rax.api.resource.RootResource" scope="request" />
 
     <bean id="entityManagerFactory1" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="persistenceXmlLocation" value="classpath:META-INF/lb-persistence.xml"/>
@@ -63,6 +57,4 @@
 
     <tx:annotation-driven/>
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
-
-    <bean id="loadBalancerAdapter" class="${adapter_class}" />
-</beans>
+</beans>-->
