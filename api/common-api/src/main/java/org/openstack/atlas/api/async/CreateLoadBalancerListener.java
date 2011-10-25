@@ -1,17 +1,18 @@
 package org.openstack.atlas.api.async;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.api.atom.EntryHelper;
+import org.openstack.atlas.api.helpers.NodesHelper;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.api.atom.EntryHelper;
-import org.openstack.atlas.api.helpers.NodesHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import javax.jms.Message;
 
+import static org.openstack.atlas.api.atom.EntryHelper.*;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ACTIVE;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ERROR;
 import static org.openstack.atlas.service.domain.entities.NodeStatus.OFFLINE;
@@ -24,7 +25,6 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.I
 import static org.openstack.atlas.service.domain.events.entities.EventType.*;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
-import static org.openstack.atlas.api.atom.EntryHelper.*;
 
 public class CreateLoadBalancerListener extends BaseListener {
 
@@ -60,6 +60,9 @@ public class CreateLoadBalancerListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
+            // Notify usage processor
+            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+            if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
             return;
         }
 

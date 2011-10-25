@@ -1,11 +1,11 @@
 package org.openstack.atlas.api.async;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import javax.jms.Message;
 
@@ -49,6 +49,8 @@ public class DeleteLoadBalancerListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
+            // Notify usage processor with a usage event
+            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
             return;
         }
 
