@@ -187,13 +187,11 @@
     <!--FILTER SETTINGS-->
     <bean id="authServiceImpl" class="org.openstack.atlas.api.auth.AuthServiceImpl"
           scope="singleton">
-          <constructor-arg index="0" ref="xmlRpcClientFactory" />
-          <constructor-arg index="1" ref="configuration"/>
+          <constructor-arg index="0" ref="configuration"/>
     </bean>
 
     <bean id="accountServiceImpl" class="org.openstack.atlas.api.auth.AccountServiceImpl" scope="singleton">
-          <constructor-arg index="0" ref="xmlRpcClientFactory"/>
-          <constructor-arg index="1" ref="configuration"/>
+          <constructor-arg index="0" ref="configuration"/>
     </bean>
 
     <bean id="requestSanitationFilter"

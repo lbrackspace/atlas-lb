@@ -58,7 +58,7 @@ public class AuthServiceIntegrator {
 
             AuthServiceImpl authService = new AuthServiceImpl(clientFactory, configuration);
 
-            Assert.assertTrue(authService.authenticate(authToken));
+            Assert.assertTrue(authService.authenticate(passedAccountId, authToken));
         }
 
         @Test

@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
+import org.openstack.keystone.auth.client.AdminAuthClient;
 
 import java.net.MalformedURLException;
 import java.util.Arrays;
@@ -15,15 +16,20 @@ import java.util.List;
 public class AccountServiceImpl implements AccountService {
 
     private static final Log LOG = LogFactory.getLog(AccountServiceImpl.class);
-    private XmlRpcClient xmlRpcClient;
+    private final AdminAuthClient adminAuthClient;
+    private final String basicAuthUsername;
+    private final String basicAuthPassword;
+    private final String authUrl;
 
-    public AccountServiceImpl(XmlRpcClientFactory xmlRpcClientFactory, Configuration cfg) throws MalformedURLException {
-        if (cfg.hasKeys(PublicApiServiceConfigurationKeys.auth_management_uri)) {
-            final String authUrl = cfg.getString(PublicApiServiceConfigurationKeys.auth_management_uri);
+    public AccountServiceImpl(Configuration cfg) throws MalformedURLException {
+        if (cfg.hasKeys(PublicApiServiceConfigurationKeys.auth_callback_uri, PublicApiServiceConfigurationKeys.auth_username, PublicApiServiceConfigurationKeys.auth_password)) {
+            basicAuthUsername = cfg.getString(PublicApiServiceConfigurationKeys.auth_username);
+            basicAuthPassword = cfg.getString(PublicApiServiceConfigurationKeys.auth_password);
 
-            LOG.info("Management URI from LOCAL CONF: " + authUrl);
+            authUrl = cfg.getString(PublicApiServiceConfigurationKeys.auth_callback_uri);
+            LOG.info("AUTH URI from LOCAL CONF: " + authUrl);
 
-            this.xmlRpcClient = xmlRpcClientFactory.get(authUrl);
+            adminAuthClient = new AdminAuthClient(authUrl, basicAuthUsername, basicAuthPassword);
         } else {
             LOG.error(StringUtilities.AUTH_INIT_FAIL);
             throw new MalformedURLException(StringUtilities.AUTH_INIT_FAIL);
@@ -37,20 +43,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Integer getAccountIdByToken(String authToken) throws XmlRpcException {
-        List<String> xmlRpcParameters = Arrays.asList(authToken);
-
-        Object[] xmlRpcReturn = (Object[]) xmlRpcClient.execute("getUserByToken", xmlRpcParameters);
-
-        return Integer.parseInt((String) ((Object[]) xmlRpcReturn[1])[0]);
-    }
-
-    @Override
-    public String getUserNameByToken(String authToken) throws XmlRpcException {
-        List<String> xmlRpcParameters = Arrays.asList(authToken);
-
-        Object[] xmlRpcReturn = (Object[]) xmlRpcClient.execute("getUserByToken", xmlRpcParameters);
-
-        return (String) ((Object[]) xmlRpcReturn[1])[3];
+    public String getUsernameByToken(String authToken) throws Exception {
+        return adminAuthClient.getToken(authToken).getUserId();
     }
 }

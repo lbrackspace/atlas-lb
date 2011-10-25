@@ -2,9 +2,6 @@ package org.openstack.atlas.api.auth;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.xmlrpc.XmlRpcException;
-
-import java.net.MalformedURLException;
 
 public class AuthTokenValidator {
     private AuthService authService;
@@ -12,18 +9,17 @@ public class AuthTokenValidator {
     private static final Log LOG = LogFactory.getLog(AuthTokenValidator.class);
 
     public AuthTokenValidator(AuthService authService, AccountService accountService) {
-
         this.authService = authService;
         this.accountService = accountService;
     }
 
-    public Boolean validate(Integer passedAccountId, String authToken) throws MalformedURLException, XmlRpcException {
-        LOG.info("Within validate ... about to call AuthService authenticate and AccountService validate");
-        return authService.authenticate(authToken) && accountService.getAccountIdByToken(authToken).equals(passedAccountId);
+    public Boolean validate(String passedAccountId, String authToken) throws Exception {
+        LOG.info("Within validate ... about to call AuthService authenticate");
+        return authService.authenticate(passedAccountId,authToken);
     }
 
-    public String getUserName(Integer passedAccountId, String authToken) throws MalformedURLException, XmlRpcException {
-        LOG.info("Within validate ... about to call AuthService authenticate and AccountService validate");
-        return accountService.getUserNameByToken(authToken);
+    public String getUserName(Integer passedAccountId, String authToken) throws Exception{
+        LOG.info("Within validate ... about to call AccountService retrieve username");
+        return accountService.getUsernameByToken(authToken);
     }
 }

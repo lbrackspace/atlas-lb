@@ -44,7 +44,7 @@ public class AuthServiceTest {
             )
                     .thenReturn(new Object[]{SampleTTlInSecs, SompleExpirationInSecs});
 
-            boolean authenticated = new AuthServiceImpl(xmlRpcClientFactory, cfg).authenticate(authToken);
+            boolean authenticated = new AuthServiceImpl(xmlRpcClientFactory, cfg).authenticate(passedAccountId, authToken);
 
             verify(xmlRpcClient).execute(eq("validateToken"), argThat(new IsListOfSomeNumberOfElements(3)));
             Assert.assertTrue(authenticated);
@@ -59,7 +59,7 @@ public class AuthServiceTest {
                     .thenReturn(1);
 
             try {
-                new AuthServiceImpl(xmlRpcClientFactory, cfg).authenticate(authToken);
+                new AuthServiceImpl(xmlRpcClientFactory, cfg).authenticate(passedAccountId, authToken);
                 Assert.fail("Should have gotten a run time exception, stubbed a bad return");
             }
             catch(RuntimeException exception) {
@@ -77,7 +77,7 @@ public class AuthServiceTest {
                     .thenReturn(2);
 
             try {
-                new AuthServiceImpl(xmlRpcClientFactory, cfg).authenticate(authToken);
+                new AuthServiceImpl(xmlRpcClientFactory, cfg).authenticate(passedAccountId, authToken);
                 Assert.fail("Should have gotten a run time exception, stubbed a bad return");
             }
             catch(RuntimeException exception) {
