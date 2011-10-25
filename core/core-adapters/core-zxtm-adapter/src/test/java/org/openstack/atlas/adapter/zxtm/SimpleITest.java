@@ -1,9 +1,17 @@
 package org.openstack.atlas.adapter.zxtm;
 
-import com.zxtm.service.client.*;
+import com.zxtm.service.client.CatalogMonitorType;
+import com.zxtm.service.client.PoolLoadBalancingAlgorithm;
+import com.zxtm.service.client.PoolWeightingsDefinition;
 import org.apache.axis.types.UnsignedInt;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.openstack.atlas.adapter.exception.BadRequestException;
+import org.openstack.atlas.adapter.exception.RollbackException;
 import org.openstack.atlas.adapter.zxtm.helper.IpHelper;
+import org.openstack.atlas.datamodel.CoreAlgorithmType;
 import org.openstack.atlas.datamodel.CoreHealthMonitorType;
 import org.openstack.atlas.datamodel.CorePersistenceType;
 import org.openstack.atlas.service.domain.entity.ConnectionThrottle;
@@ -11,12 +19,13 @@ import org.openstack.atlas.service.domain.entity.HealthMonitor;
 import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.entity.SessionPersistence;
 
+import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
 
 /*
  * IMPORTANT! PLEASE READ!
- * Order matters when running this test so please be careful.
+ * Order matters when running these tests so please be careful.
  */
 public class SimpleITest extends ITestBase {
 
@@ -32,64 +41,28 @@ public class SimpleITest extends ITestBase {
         removeSimpleLoadBalancer();
     }
 
-/*    @Test
-    public void updateProtocol() {
-        try {
-            zxtmAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(), CoreProtocolType.HTTPS);
-
-            final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
-            Assert.assertEquals(1, virtualServerBasicInfos.length);
-            Assert.assertEquals(VirtualServerProtocol.https, virtualServerBasicInfos[0].getProtocol());
-
-            final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
-            Assert.assertEquals(1, virtualServerRules.length);
-
-            for (VirtualServerRule virtualServerRule : virtualServerRules[0]) {
-                if (virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedFor))
-                    Assert.fail("XFF rule should not be enabled!");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail(e.getMessage());
-        }
-    }
-
     @Test
-    public void updatePort() throws Exception {
+    public void updateLoadBalancer() throws Exception {
         try {
-            zxtmAdapter.updatePort(config, lb.getId(), lb.getAccountId(), 8080);
-
-            final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
-            Assert.assertEquals(1, virtualServerBasicInfos.length);
-            Assert.assertEquals(8080, virtualServerBasicInfos[0].getPort());
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void updateAlgorithm() throws Exception {
-        try {
-            zxtmAdapter.setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), CoreAlgorithmType.ROUND_ROBIN);
+            lb.setAlgorithm(CoreAlgorithmType.LEAST_CONNECTIONS);
+            zxtmAdapter.updateLoadBalancer(config, lb);
 
             final PoolLoadBalancingAlgorithm[] algorithms = getServiceStubs().getPoolBinding().getLoadBalancingAlgorithm(new String[]{poolName()});
             Assert.assertEquals(1, algorithms.length);
-            Assert.assertEquals(PoolLoadBalancingAlgorithm.random.toString(), algorithms[0].getValue());
+            Assert.assertEquals(PoolLoadBalancingAlgorithm.connections.toString(), algorithms[0].getValue());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
-    }*/
+    }
 
     @Test
     public void testNodeOperations() throws Exception {
         createNodes();
-//        updateNodeConditionsToEnabled();
-//        shouldRollbackWhenUpdatingAllNodeConditionsToDisabled();
-//        shouldRollbackWhenSettingUnsupportedNodeWeights();
-//        updateNodeWeights();
+        updateNodeConditionsToEnabled();
+        shouldRollbackWhenUpdatingAllNodeConditionsToDisabled();
+        shouldRollbackWhenSettingUnsupportedNodeWeight();
+        updateNodeWeights();
         removeNode();
     }
 
@@ -152,14 +125,16 @@ public class SimpleITest extends ITestBase {
         zxtmAdapter.deleteNodes(config, lb.getAccountId(), lb.getId(), nodesToDelete);
         lb.getNodes().remove(node3);
         lb.getNodes().remove(node4);
+        // Re-add the original nodes
+        lb.getNodes().add(node1);
+        lb.getNodes().add(node2);
     }
 
-/*    private void updateNodeConditionsToEnabled() throws Exception {
+    private void updateNodeConditionsToEnabled() throws Exception {
         for (Node node : lb.getNodes()) {
             node.setEnabled(true);
+            zxtmAdapter.updateNode(config, lb.getAccountId(), lb.getId(), node);
         }
-
-        zxtmAdapter.setNodes(config, lb.getId(), lb.getAccountId(), lb.getNodes());
 
         assertThatAllNodesAreEnabled();
     }
@@ -178,25 +153,23 @@ public class SimpleITest extends ITestBase {
     }
 
     private void shouldRollbackWhenUpdatingAllNodeConditionsToDisabled() throws Exception {
-        for (Node node : lb.getNodes()) {
-            node.setEnabled(false);
-        }
-
         try {
             assertThatAllNodesAreEnabled();
-            zxtmAdapter.setNodes(config, lb.getId(), lb.getAccountId(), lb.getNodes());
+            for (Node node : lb.getNodes()) {
+                node.setEnabled(false);
+                zxtmAdapter.updateNode(config, lb.getAccountId(), lb.getId(), node);
+            }
         } catch (Exception e) {
-            if (e instanceof RollbackException) assertThatAllNodesAreEnabled();
+            if (e instanceof RollbackException) updateNodeConditionsToEnabled();
             else Assert.fail("Expected a RollbackException.");
         }
     }
 
-    private void shouldRollbackWhenSettingUnsupportedNodeWeights() throws Exception {
+    private void shouldRollbackWhenSettingUnsupportedNodeWeight() throws Exception {
         node1.setWeight(0);
-        node2.setWeight(101);
 
         try {
-            zxtmAdapter.setNodeWeights(config, lb.getId(), lb.getAccountId(), lb.getNodes());
+            zxtmAdapter.updateNode(config, lb.getAccountId(), lb.getId(), node1);
         } catch (Exception e) {
             if (e instanceof RollbackException) {
                 final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
@@ -215,9 +188,7 @@ public class SimpleITest extends ITestBase {
 
                 final PoolWeightingsDefinition[][] drainingNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, drainingNodes);
                 Assert.assertEquals(1, drainingNodeWeights.length);
-                Assert.assertEquals(2, drainingNodeWeights[0].length);
-                Assert.assertEquals(1, drainingNodeWeights[0][0].getWeighting());
-                Assert.assertEquals(1, drainingNodeWeights[0][1].getWeighting());
+                Assert.assertEquals(0, drainingNodeWeights[0].length);
             } else {
                 Assert.fail("RollbackException expected.");
             }
@@ -228,7 +199,8 @@ public class SimpleITest extends ITestBase {
         node1.setWeight(50);
         node2.setWeight(100);
 
-        zxtmAdapter.setNodeWeights(config, lb.getId(), lb.getAccountId(), lb.getNodes());
+        zxtmAdapter.updateNode(config, lb.getAccountId(), lb.getId(), node1);
+        zxtmAdapter.updateNode(config, lb.getAccountId(), lb.getId(), node2);
 
         final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
         final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
@@ -246,10 +218,8 @@ public class SimpleITest extends ITestBase {
 
         final PoolWeightingsDefinition[][] drainingNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, drainingNodes);
         Assert.assertEquals(1, drainingNodeWeights.length);
-        Assert.assertEquals(2, drainingNodeWeights[0].length);
-        Assert.assertTrue((drainingNodeWeights[0][0].getWeighting() == node1.getWeight()) || (drainingNodeWeights[0][0].getWeighting() == node2.getWeight()));
-        Assert.assertTrue((drainingNodeWeights[0][1].getWeighting() == node1.getWeight()) || (drainingNodeWeights[0][1].getWeighting() == node2.getWeight()));
-    } */
+        Assert.assertEquals(0, drainingNodeWeights[0].length);
+    }
 
     private void removeNode() throws Exception {
         Set<Node> nodesToDelete = new HashSet<Node>();
@@ -272,7 +242,6 @@ public class SimpleITest extends ITestBase {
     public void testAllSessionPersistenceOperations() throws Exception {
         updateSessionPersistence();
         deleteSessionPersistence();
-//        shouldDisableSessionPersistenceWhenUpdatingToNonHttpProtocol();
     }
 
     private void updateSessionPersistence() throws Exception {
@@ -323,19 +292,6 @@ public class SimpleITest extends ITestBase {
 
         Assert.assertTrue(doesPersistenceClassExist);
     }
-
-/*    private void shouldDisableSessionPersistenceWhenUpdatingToNonHttpProtocol() throws AdapterException, RemoteException {
-        SessionPersistence persistence = new SessionPersistence();
-        zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), persistence);
-        String[] persistenceCatalogList = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
-        Assert.assertEquals(1, persistenceCatalogList.length);
-        Assert.assertEquals(CorePersistenceType.HTTP_COOKIE, persistenceCatalogList[0]);
-
-        zxtmAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(), CoreProtocolType.HTTPS);
-        persistenceCatalogList = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
-        Assert.assertEquals(1, persistenceCatalogList.length);
-        Assert.assertEquals("", persistenceCatalogList[0]);
-    }*/
 
     @Test
     public void updateConnectionThrottle() throws Exception {

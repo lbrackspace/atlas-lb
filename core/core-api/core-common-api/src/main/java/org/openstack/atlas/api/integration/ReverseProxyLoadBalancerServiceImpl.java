@@ -40,7 +40,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public void createLoadBalancer(Integer accountId, LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            loadBalancerAdapter.createLoadBalancer(config, accountId, lb);
+            loadBalancerAdapter.createLoadBalancer(config, lb);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -51,17 +51,17 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public void updateLoadBalancer(Integer accountId, LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            loadBalancerAdapter.updateLoadBalancer(config, accountId, lb);
+            loadBalancerAdapter.updateLoadBalancer(config, lb);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
     }
 
-    public void deleteLoadBalancer(Integer accountId, Integer lbId) throws AdapterException, DecryptException, MalformedURLException, Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void deleteLoadBalancer(LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            loadBalancerAdapter.deleteLoadBalancer(config, accountId, lbId);
+            loadBalancerAdapter.deleteLoadBalancer(config, lb);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;

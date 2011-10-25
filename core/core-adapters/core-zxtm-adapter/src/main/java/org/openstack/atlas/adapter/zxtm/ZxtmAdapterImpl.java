@@ -39,7 +39,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
 
     @Override
-    public void createLoadBalancer(LoadBalancerEndpointConfiguration config, Integer accountId, LoadBalancer lb) throws AdapterException {
+    public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
             final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
@@ -96,7 +96,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
                     attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
                 }
             } catch (Exception e) {
-                deleteLoadBalancer(config, accountId, lb.getId());
+                deleteLoadBalancer(config, lb);
                 throw new RollbackException(rollBackMessage, e);
             }
 
@@ -107,20 +107,27 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     }
 
     @Override
-    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, Integer accountId, LoadBalancer lb) throws AdapterException {
+    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
+        try {
+            ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+            // Core spec only allows modification of algorithm attribute for now
+            setLoadBalancingAlgorithm(serviceStubs, lb.getAccountId(), lb.getId(), lb.getAlgorithm());
+        } catch (RemoteException e) {
+            throw new AdapterException(e);
+        }
     }
 
     @Override
-    public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
+    public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
-            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
+            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
             final String[][] trafficIpGroups = serviceStubs.getVirtualServerBinding().getListenTrafficIPGroups(new String[]{virtualServerName});
 
             LOG.debug(String.format("Deleting load balancer '%s'...", virtualServerName));
 
-            deleteHealthMonitor(config, lbId, accountId);
+            deleteHealthMonitor(config, lb.getId(), lb.getAccountId());
             deleteVirtualServer(serviceStubs, virtualServerName);
             deleteNodePool(serviceStubs, poolName);
             deleteProtectionCatalog(serviceStubs, poolName);
@@ -150,8 +157,10 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
                 LOG.debug(String.format("Backup for existing pool '%s' created.", poolName));
 
                 LOG.debug(String.format("Setting nodes for existing pool '%s'", poolName));
-                String[][] mergedNodes = NodeHelper.getMergedIpAddresses(nodes, enabledNodesBackup[0], disabledNodesBackup[0], drainingNodesBackup[0]);
-                serviceStubs.getPoolBinding().setNodes(new String[]{poolName}, mergedNodes);
+                List<String> mergedNodes = NodeHelper.getMergedIpAddresses(nodes, enabledNodesBackup[0], disabledNodesBackup[0], drainingNodesBackup[0]);
+                String[][] zeusMergedNodes = new String[1][];
+                zeusMergedNodes[0] = mergedNodes.toArray(new String[mergedNodes.size()]);
+                serviceStubs.getPoolBinding().setNodes(new String[]{poolName}, zeusMergedNodes);
             } catch (RemoteException e) {
                 if (e instanceof ObjectDoesNotExist) {
                     LOG.error(String.format("Cannot set nodes for pool '%s' as it does not exist.", poolName), e);
@@ -160,7 +169,8 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
             }
 
             try {
-                setDisabledNodes(config, poolName, disabledNodesBackup[0], getNodesWithCondition(nodes, false));
+                final List<String> mergedIpAddresses = NodeHelper.getMergedIpAddresses(getNodesWithCondition(nodes, false), new String[0], disabledNodesBackup[0], new String[0]);
+                setDisabledNodes(config, poolName, mergedIpAddresses);
 //                setDrainingNodes(config, poolName, getNodesWithCondition(nodes, NodeCondition.DRAINING));
                 setNodeWeights(config, lbId, accountId, nodes);
             } catch (RemoteException e) {
@@ -189,8 +199,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
             final String rollBackMessage = "Remove node request canceled.";
 
             try {
-                String[][] ipAndPorts = NodeHelper.getIpAddressesFromNodes(nodes);
-                serviceStubs.getPoolBinding().removeNodes(new String[]{poolName}, ipAndPorts);
+                serviceStubs.getPoolBinding().removeNodes(new String[]{poolName}, ListUtil.wrap(ListUtil.convert(NodeHelper.getIpAddressesFromNodes(nodes))));
             } catch (ObjectDoesNotExist odne) {
                 LOG.warn(String.format("Node pool '%s' for nodes %s does not exist.", poolName, NodeHelper.getNodeIdsStr(nodes)));
                 LOG.warn(StringConverter.getExtendedStackTrace(odne));
@@ -204,7 +213,88 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
     @Override
     public void updateNode(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Node node) throws AdapterException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        try {
+            ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String rollBackMessage = "Update node request canceled.";
+            final String[][] enabledNodesBackup;
+            final String[][] disabledNodesBackup;
+            final String[][] drainingNodesBackup;
+            final List<String> newEnabledNodes = new ArrayList<String>();
+            final List<String> newDisabledNodes = new ArrayList<String>();
+            final List<String> newDrainingNodes = new ArrayList<String>();
+            final String[] newEnabledNodesArray;
+            final String[] newDisabledNodesArray;
+            final String[] newDrainingNodesArray;
+
+            Set<Node> nodes = new HashSet<Node>();
+            nodes.add(node);
+            final String nodeAsString = IpHelper.createZeusIpString(node.getAddress(), node.getPort());
+
+            try {
+                LOG.debug(String.format("Backing up nodes for existing pool '%s'", poolName));
+                enabledNodesBackup = serviceStubs.getPoolBinding().getNodes(new String[]{poolName});
+                disabledNodesBackup = serviceStubs.getPoolBinding().getDisabledNodes(new String[]{poolName});
+                drainingNodesBackup = serviceStubs.getPoolBinding().getDrainingNodes(new String[]{poolName});
+                LOG.debug(String.format("Backup for existing pool '%s' created.", poolName));
+
+                for (String currentEnabledNode : enabledNodesBackup[0]) {
+                    if (currentEnabledNode.equals(nodeAsString) && !node.isEnabled()) {
+                        newDisabledNodes.add(nodeAsString); // TODO: Should we drain it or disable it?
+                    } else {
+                        newEnabledNodes.add(currentEnabledNode);
+                    }
+                }
+
+                for (String currentDisabledNode : disabledNodesBackup[0]) {
+                    if (currentDisabledNode.equals(nodeAsString) && node.isEnabled()) {
+                        newEnabledNodes.add(nodeAsString);
+                    } else {
+                        newDisabledNodes.add(currentDisabledNode);
+                    }
+                }
+
+                for (String currentDrainingNode : drainingNodesBackup[0]) {
+                    newDrainingNodes.add(currentDrainingNode);
+                }
+
+                newEnabledNodesArray = newEnabledNodes.toArray(new String[newEnabledNodes.size()]);
+                newDisabledNodesArray = newDisabledNodes.toArray(new String[newDisabledNodes.size()]);
+                newDrainingNodesArray = newDrainingNodes.toArray(new String[newDrainingNodes.size()]);
+
+                LOG.debug(String.format("Setting nodes for existing pool '%s'", poolName));
+                String[] mergedNodes = NodeHelper.getMergedIpAddresses(newEnabledNodesArray, newDisabledNodesArray, newDrainingNodesArray);
+                serviceStubs.getPoolBinding().setNodes(new String[]{poolName}, ListUtil.wrap(mergedNodes));
+            } catch (RemoteException e) {
+                if (e instanceof ObjectDoesNotExist) {
+                    LOG.error(String.format("Cannot set nodes for pool '%s' as it does not exist.", poolName), e);
+                }
+                throw new RollbackException(rollBackMessage, e);
+            }
+
+            try {
+                setDisabledNodes(config, poolName, newDisabledNodes);
+//                setDrainingNodes(config, poolName, getNodesWithCondition(nodes, NodeCondition.DRAINING));
+                final PoolWeightingsDefinition[][] nodesWeightings = serviceStubs.getPoolBinding().getNodesWeightings(new String[]{poolName}, ListUtil.wrap(ListUtil.wrap(nodeAsString)));
+                if (nodesWeightings[0][0].getWeighting() != node.getWeight()) {
+                    setNodeWeights(config, lbId, accountId, nodes);
+                }
+            } catch (RemoteException e) {
+                if (e instanceof InvalidInput) {
+                    LOG.error(String.format("Error setting node conditions for pool '%s'. All nodes cannot be disabled.", poolName), e);
+                }
+
+                LOG.debug(String.format("Restoring pool '%s' with backup...", poolName));
+                serviceStubs.getPoolBinding().setNodes(new String[]{poolName}, ListUtil.wrap(NodeHelper.getMergedIpAddresses(enabledNodesBackup[0], disabledNodesBackup[0], drainingNodesBackup[0])));
+                serviceStubs.getPoolBinding().setDisabledNodes(new String[]{poolName}, disabledNodesBackup);
+                serviceStubs.getPoolBinding().setDrainingNodes(new String[]{poolName}, drainingNodesBackup);
+                LOG.debug(String.format("Backup successfully restored for pool '%s'.", poolName));
+
+                throw new RollbackException(rollBackMessage, e);
+            }
+        } catch (RemoteException e) {
+            throw new AdapterException(e);
+        }
     }
 
     @Override
@@ -587,16 +677,20 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private void createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> allNodes) throws RemoteException, AdapterException {
+    private void createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> nodes) throws RemoteException, AdapterException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancerId, accountId);
 
         LOG.debug(String.format("Creating pool '%s' and setting nodes...", poolName));
-        serviceStubs.getPoolBinding().addPool(new String[]{poolName}, NodeHelper.getIpAddressesFromNodes(allNodes));
+        String[][] ipAddresses = new String[1][];
+        ipAddresses[0] = ListUtil.convert(NodeHelper.getIpAddressesFromNodes(nodes));
+        serviceStubs.getPoolBinding().addPool(new String[]{poolName}, ipAddresses);
 
-        setDisabledNodes(config, poolName, new String[0], getNodesWithCondition(allNodes, false));
+        final List<Node> nodeToDisable = getNodesWithCondition(nodes, false);
+        final List<String> nodesAsZeusString = NodeHelper.getIpAddressesFromNodes(nodeToDisable);
+        setDisabledNodes(config, poolName, nodesAsZeusString);
 //        setDrainingNodes(config, poolName, getNodesWithCondition(allNodes, NodeCondition.DRAINING));
-        setNodeWeights(config, loadBalancerId, accountId, allNodes);
+        setNodeWeights(config, loadBalancerId, accountId, nodes);
     }
 
     private List<Node> getNodesWithCondition(Collection<Node> nodes, Boolean enabled) {
@@ -609,22 +703,25 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         return nodesWithCondition;
     }
 
-    private void setDisabledNodes(LoadBalancerEndpointConfiguration config, String poolName, String[] currentDisabledNodes, List<Node> nodesToDisable) throws RemoteException, BadRequestException {
+    private void setDisabledNodes(LoadBalancerEndpointConfiguration config, String poolName, List<String> nodesToDisable) throws RemoteException, BadRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         LOG.debug(String.format("Setting disabled nodes for pool '%s'", poolName));
-        final String[][] mergedIpAddresses = NodeHelper.getMergedIpAddresses(nodesToDisable, new String[0], currentDisabledNodes, new String[0]);
-        serviceStubs.getPoolBinding().setDisabledNodes(new String[]{poolName}, mergedIpAddresses);
+        serviceStubs.getPoolBinding().setDisabledNodes(new String[]{poolName}, ListUtil.wrap(ListUtil.convert(nodesToDisable)));
     }
 
     private void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes) throws RemoteException, AdapterException {
+        setNodeWeights(config, lbId, accountId, buildPoolWeightingsDefinition(nodes));
+    }
+
+    private void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, PoolWeightingsDefinition[] definitions) throws RemoteException, AdapterException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
         final String rollBackMessage = "Update node weights request canceled.";
 
         try {
             LOG.debug(String.format("Setting node weights for pool '%s'...", poolName));
-            serviceStubs.getPoolBinding().setNodesWeightings(new String[]{poolName}, buildPoolWeightingsDefinition(nodes));
+            serviceStubs.getPoolBinding().setNodesWeightings(new String[]{poolName}, ListUtil.wrap(definitions));
             LOG.info(String.format("Node weights successfully set for pool '%s'.", poolName));
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
@@ -637,14 +734,14 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private PoolWeightingsDefinition[][] buildPoolWeightingsDefinition(Collection<Node> nodes) {
-        final PoolWeightingsDefinition[][] poolWeightings = new PoolWeightingsDefinition[1][nodes.size()];
+    private PoolWeightingsDefinition[] buildPoolWeightingsDefinition(Collection<Node> nodes) throws BadRequestException {
+        final PoolWeightingsDefinition[] poolWeightings = new PoolWeightingsDefinition[nodes.size()];
         final Integer DEFAULT_NODE_WEIGHT = 1;
 
         int i = 0;
         for (Node node : nodes) {
             Integer nodeWeight = node.getWeight() == null ? DEFAULT_NODE_WEIGHT : node.getWeight();
-            poolWeightings[0][i] = new PoolWeightingsDefinition(IpHelper.createZeusIpString(node.getAddress(), node.getPort()), nodeWeight);
+            poolWeightings[i] = new PoolWeightingsDefinition(IpHelper.createZeusIpString(node.getAddress(), node.getPort()), nodeWeight);
             i++;
         }
 

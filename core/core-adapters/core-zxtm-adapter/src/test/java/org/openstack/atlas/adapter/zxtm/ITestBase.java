@@ -155,7 +155,7 @@ public class ITestBase {
 
     private static void createSimpleLoadBalancer() {
         try {
-            zxtmAdapter.createLoadBalancer(config, lb.getAccountId(), lb);
+            zxtmAdapter.createLoadBalancer(config, lb);
 
             final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
             Assert.assertEquals(1, virtualServerBasicInfos.length);
@@ -220,7 +220,7 @@ public class ITestBase {
 
     protected static void removeLoadBalancer() {
         try {
-            zxtmAdapter.deleteLoadBalancer(config, lb.getAccountId(), lb.getId());
+            zxtmAdapter.deleteLoadBalancer(config, lb);
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
             } else {

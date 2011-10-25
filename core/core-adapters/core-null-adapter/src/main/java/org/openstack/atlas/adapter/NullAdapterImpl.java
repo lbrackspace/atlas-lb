@@ -13,17 +13,17 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
     public static Log LOG = LogFactory.getLog(NullAdapterImpl.class.getName());
 
     @Override
-    public void createLoadBalancer(LoadBalancerEndpointConfiguration config, Integer accountId, LoadBalancer lb) throws AdapterException {
+    public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
         LOG.info("createLoadBalancer"); // NOP
     }
 
     @Override
-    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, Integer accountId, LoadBalancer lb) throws AdapterException {
+    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
         LOG.info("updateLoadBalancer");// NOP
     }
 
     @Override
-    public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
+    public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
         LOG.info("deleteLoadBalancer");// NOP
     }
 

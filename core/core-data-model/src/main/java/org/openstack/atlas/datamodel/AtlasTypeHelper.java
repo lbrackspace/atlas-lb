@@ -5,12 +5,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public final class AtlasTypeHelper {
-    private static AlgorithmType algorithmType;
-    private static ProtocolType protocolType;
-    private static LoadBalancerStatus loadBalancerStatus;
-    private static NodeStatus nodeStatus;
-    private static PersistenceType persistenceType;
-    private static HealthMonitorType healthMonitorType;
+    private static AlgorithmType algorithmType = new CoreAlgorithmType();
+    private static ProtocolType protocolType = new CoreProtocolType();
+    private static LoadBalancerStatus loadBalancerStatus = new CoreLoadBalancerStatus();
+    private static NodeStatus nodeStatus = new CoreNodeStatus();
+    private static PersistenceType persistenceType = new CorePersistenceType();
+    private static HealthMonitorType healthMonitorType = new CoreHealthMonitorType();
 
     @Autowired(required = true)
     public void setAlgorithmType(AlgorithmType algorithmType) {
