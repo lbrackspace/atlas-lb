@@ -8,8 +8,6 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.auth.AuthData;
 import org.openstack.keystone.auth.client.AuthClient;
@@ -110,7 +108,7 @@ public class AuthServiceIntegrator {
         @Test
         public void shouldGrabTheUsernameByProvidingAToken() throws Exception {
             AccountService accountService = new AccountServiceImpl(configuration);
-            Assert.assertEquals(auth_username, accountService.getUsernameByToken(authToken));
+            Assert.assertEquals(TEST_USER_NAME, accountService.getUsernameByToken(authToken));
         }
 
         @Test(expected = Exception.class)

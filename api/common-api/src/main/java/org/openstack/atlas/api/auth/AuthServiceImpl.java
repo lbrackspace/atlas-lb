@@ -13,10 +13,10 @@ import org.openstack.user.User;
 
 public class AuthServiceImpl implements AuthService {
     private static final Log LOG = LogFactory.getLog(AuthServiceImpl.class);
-    private AdminAuthClient adminAuthClient = null;
-    private String basicAuthUsername = null;
-    private String basicAuthPassword = null;
-    private String authUrl = null;
+    public AdminAuthClient adminAuthClient;
+    private String basicAuthUsername;
+    private String basicAuthPassword;
+    private String authUrl;
 
     public AuthServiceImpl(Configuration cfg) throws MalformedURLException {
         if (cfg.hasKeys(PublicApiServiceConfigurationKeys.auth_callback_uri, PublicApiServiceConfigurationKeys.auth_username, PublicApiServiceConfigurationKeys.auth_password)) {
