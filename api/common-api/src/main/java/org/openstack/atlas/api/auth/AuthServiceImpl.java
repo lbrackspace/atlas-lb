@@ -14,37 +14,37 @@ import org.openstack.user.User;
 public class AuthServiceImpl implements AuthService {
     private static final Log LOG = LogFactory.getLog(AuthServiceImpl.class);
     public AdminAuthClient adminAuthClient;
-    private String basicAuthUsername;
-    private String basicAuthPassword;
-    private String authUrl;
 
     public AuthServiceImpl(Configuration cfg) throws MalformedURLException {
         if (cfg.hasKeys(PublicApiServiceConfigurationKeys.auth_callback_uri, PublicApiServiceConfigurationKeys.auth_username, PublicApiServiceConfigurationKeys.auth_password)) {
-            basicAuthUsername = cfg.getString(PublicApiServiceConfigurationKeys.auth_username);
-            basicAuthPassword = cfg.getString(PublicApiServiceConfigurationKeys.auth_password);
+            String basicAuthUsername = cfg.getString(PublicApiServiceConfigurationKeys.auth_username);
+            String basicAuthPassword = cfg.getString(PublicApiServiceConfigurationKeys.auth_password);
+            String authUrl = cfg.getString(PublicApiServiceConfigurationKeys.auth_callback_uri);
 
-            authUrl = cfg.getString(PublicApiServiceConfigurationKeys.auth_callback_uri);
             LOG.info("AUTH URI from LOCAL CONF: " + authUrl);
-
             adminAuthClient = new AdminAuthClient(authUrl, basicAuthUsername, basicAuthPassword);
         } else {
             LOG.error(StringUtilities.AUTH_INIT_FAIL);
             throw new MalformedURLException(StringUtilities.AUTH_INIT_FAIL);
         }
 
-        if (HttpsCertIgnore.getInitException() != null) {
-            Exception ex = HttpsCertIgnore.getInitException();
-            throw new MalformedURLException(StringUtilities.getHttpsInitExceptionString(ex));
-        }
+//        if (HttpsCertIgnore.getInitException() != null) {
+//            Exception ex = HttpsCertIgnore.getInitException();
+//            throw new MalformedURLException(StringUtilities.getHttpsInitExceptionString(ex));
+//        }
     }
 
     @Override
     public User authenticate(Integer passedAccountId, String authToken) throws Exception {
         try {
-            User mossoUser = adminAuthClient.listUserByMossoId(String.valueOf(passedAccountId));
+            User mossoUser = getUserByAccountId(passedAccountId);
             return adminAuthClient.validateToken(mossoUser.getId(), authToken) != null ? mossoUser : null;
         } catch (Exception e) {
             throw new Exception("There was an error communicating with the auth service: " + e.getMessage());
         }
+    }
+
+    private User getUserByAccountId(Integer passedAccountId) throws Exception {
+        return adminAuthClient.listUserByMossoId(String.valueOf(passedAccountId));
     }
 }

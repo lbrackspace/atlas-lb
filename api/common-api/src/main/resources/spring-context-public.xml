@@ -203,7 +203,6 @@
         <constructor-arg index="0">
             <bean class="org.openstack.atlas.api.auth.AuthTokenValidator">
                 <constructor-arg index="0" ref="authServiceImpl" />
-                <constructor-arg index="1" ref="accountServiceImpl" />
             </bean>
         </constructor-arg>
         <constructor-arg index="1">

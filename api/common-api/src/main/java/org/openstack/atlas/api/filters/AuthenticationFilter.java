@@ -32,14 +32,15 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 public class AuthenticationFilter implements Filter {
-
     private final Log LOG = LogFactory.getLog(AuthenticationFilter.class);
-    private FilterConfig filterConfig = null;
+
+    private final String X_AUTH_USER_NAME = "X-PP-User";
+    private String X_AUTH_WADL = "wadl";
+
     private AuthTokenValidator authTokenValidator;
     private UrlAccountIdExtractor urlAccountIdExtractor;
     private SimpleCache<AuthInfo> userCache;
-    private final String X_AUTH_USER_NAME = "X-PP-User";
-    private String X_AUTH_WADL = "wadl";
+    private FilterConfig filterConfig = null;
 
     public AuthenticationFilter(AuthTokenValidator authTokenValidator, UrlAccountIdExtractor urlAccountIdExtractor) {
         this.authTokenValidator = authTokenValidator;
@@ -48,25 +49,23 @@ public class AuthenticationFilter implements Filter {
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         int purged;
+
         if (servletRequest instanceof HttpServletRequest) {
             HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-            Integer accountId;
-            String userName = null;
+
             String MISSING_TOKEN_MESSAGE = "Missing authentication token.";
             String INVALID_TOKEN_MESSAGE = "Invalid authentication token. Please renew";
             String authToken = httpServletRequest.getHeader("X-AUTH-TOKEN");
+            Integer accountId;
+            String userName;
+
             purged = userCache.cleanExpiredByCount(); // Prevent unchecked entries from Living forever
             if (purged > 0) {
                 LOG.debug(String.format("cleaning auth userCache: purged %d stale entries", purged));
             }
 
             handleWadlRequest(httpServletRequest, httpServletResponse);
-
-            String[] splitUrl = httpServletRequest.getRequestURL().toString().split(httpServletRequest.getContextPath());
-            if (httpServletRequest.getRequestURL().toString().equals(splitUrl[0] + httpServletRequest.getContextPath() + "/application.wadl")) {
-                return;
-            }
 
             if (StringUtils.isBlank(authToken)) {
                 sendUnauthorizedResponse(httpServletRequest, httpServletResponse, MISSING_TOKEN_MESSAGE);

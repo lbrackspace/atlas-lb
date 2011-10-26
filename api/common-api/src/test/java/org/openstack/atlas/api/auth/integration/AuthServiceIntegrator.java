@@ -107,14 +107,8 @@ public class AuthServiceIntegrator {
 
         @Test
         public void shouldGrabTheUsernameByProvidingAToken() throws Exception {
-            AccountService accountService = new AccountServiceImpl(configuration);
-            Assert.assertEquals(TEST_USER_NAME, accountService.getUsernameByToken(authToken));
-        }
-
-        @Test(expected = Exception.class)
-        public void shouldFailToGetUserNameByTokenWhenInvalidToken() throws Exception {
-            AccountService accountService = new AccountServiceImpl(configuration);
-            accountService.getUsernameByToken("fake");
+            AuthServiceImpl authService = new AuthServiceImpl(configuration);
+            Assert.assertEquals(TEST_USER_NAME, authService.authenticate(accountId, authToken).getId());
         }
 
         @AfterClass
