@@ -10,10 +10,6 @@
     <context:annotation-config/>
 
     <!--STANDALONE SPRING SETTINGS-->
-    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="location" value="file:/etc/openstack/atlas/integration-test.conf"/>
-    </bean>
-
     <bean id="entityManagerFactory1" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="persistenceXmlLocation" value="lb-persistence.xml"/>
         <property name="persistenceUnitName" value="loadbalancing"/>
