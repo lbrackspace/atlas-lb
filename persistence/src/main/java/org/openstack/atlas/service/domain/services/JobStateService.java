@@ -11,7 +11,7 @@ public interface JobStateService {
 
     public JobState getById(Integer id) throws EntityNotFoundException;
 
-    public List<JobState> getAll(Integer... p);
+    public List<JobState> getAll(Integer offset, Integer limit, Integer marker);
 
     public List<JobState> getByState(String state, Integer... p);
 

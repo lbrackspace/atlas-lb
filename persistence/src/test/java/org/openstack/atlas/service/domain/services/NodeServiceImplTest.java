@@ -80,7 +80,7 @@ public class NodeServiceImplTest {
         }
 
         @Test
-        public void shouldReturnFalseWhenDuplicateNodesDetected() throws EntityNotFoundException {
+        public void shouldReturnFalseWhenNoDuplicateNodesDetected() throws EntityNotFoundException {
             Assert.assertFalse(nodeService.detectDuplicateNodes(lb, lb2));
         }
 

@@ -19,8 +19,8 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
     }
 
     @Override
-    public List<JobState> getAll(Integer... p) {
-        return jobStateRepository.getAll(p);
+    public List<JobState> getAll(Integer offset, Integer limit, Integer marker) {
+        return jobStateRepository.getAll(offset, limit, marker);
     }
 
     @Override
