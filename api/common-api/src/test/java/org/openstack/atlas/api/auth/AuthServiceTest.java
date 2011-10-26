@@ -1,114 +1,62 @@
 package org.openstack.atlas.api.auth;
 
-import org.openstack.atlas.cfg.Configuration;
-import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
+import org.mockito.Matchers;
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.Configuration;
+import org.junit.Assert;
+import org.junit.experimental.runners.Enclosed;
+import org.openstack.keystone.auth.client.AdminAuthClient;
+import org.openstack.token.FullToken;
+import org.openstack.user.User;
 
 import java.net.MalformedURLException;
-import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-// This looks more like an integration test
+
 @Ignore
 @RunWith(Enclosed.class)
 public class AuthServiceTest {
-    public static class WhenAuthenticatingAgainstTheXmlRpcService {
-        private final Integer SampleTTlInSecs = 100;
-        private final Integer SompleExpirationInSecs = 100;
+    public static class WhenAuthenticatingAgainstAuthService {
         private String authToken = "Some Auth Token";
-        private XmlRpcClientFactory xmlRpcClientFactory;
-        private XmlRpcClient xmlRpcClient;
-        private Configuration cfg;
+        private Integer accountId = 111111;
+        private String auth_callback_uri = "https://auth.staging.us.ccp.rackspace.net/v1.1/";
+        private String auth_username = "someUser";
+        private String auth_password = "somePass";
+
+        private AdminAuthClient adminAuthClient;
+        private Configuration configuration;
+        FullToken fullToken;
+        User user;
 
         @Before
-        public void Setup() throws MalformedURLException {
-            cfg = mock(Configuration.class);
-            xmlRpcClient = mock(XmlRpcClient.class);
-            xmlRpcClientFactory = mock(XmlRpcClientFactory.class);
-            when(xmlRpcClientFactory.get(anyString())).thenReturn(xmlRpcClient);
+        public void Setup() throws Exception {
+            configuration = mock(Configuration.class);
+            doReturn(true).when(configuration).hasKeys(PublicApiServiceConfigurationKeys.auth_callback_uri, PublicApiServiceConfigurationKeys.auth_username, PublicApiServiceConfigurationKeys.auth_password);
+
+            when(configuration.getString(PublicApiServiceConfigurationKeys.auth_callback_uri)).thenReturn(auth_callback_uri);
+            when(configuration.getString(PublicApiServiceConfigurationKeys.auth_username)).thenReturn(auth_username);
+            when(configuration.getString(PublicApiServiceConfigurationKeys.auth_password)).thenReturn(auth_password);
+
+            fullToken = new FullToken();
+            fullToken.setUserId("aName");
+            user = new User();
+            user.setId("aUser");
+            user.setMossoId(accountId);
+            user.setKey("1234567890abcdefghij");
+
+            adminAuthClient = mock(AdminAuthClient.class);
+            doReturn(fullToken).when(adminAuthClient).validateToken(Matchers.<String>any(), Matchers.<String>any());
+            doReturn(user).when(adminAuthClient).listUserByMossoId(Matchers.<String>any());
         }
 
         @Test
-        public void should_authenticate_token_successfully() throws XmlRpcException, MalformedURLException {
-            when(xmlRpcClient.execute(
-                    eq("validateToken"),
-                    argThat(new IsListOfSomeNumberOfElements(3)))
-            )
-                    .thenReturn(new Object[]{SampleTTlInSecs, SompleExpirationInSecs});
-
-            boolean authenticated = new AuthServiceImpl(xmlRpcClientFactory, cfg).authenticate(passedAccountId, authToken);
-
-            verify(xmlRpcClient).execute(eq("validateToken"), argThat(new IsListOfSomeNumberOfElements(3)));
-            Assert.assertTrue(authenticated);
-        }
-
-        @Test
-        public void should_throw_an_authentication_exception_when_authenticating() throws XmlRpcException, MalformedURLException {
-            when(xmlRpcClient.execute(
-                    eq("validateToken"),
-                    argThat(new IsListOfSomeNumberOfElements(3)))
-            )
-                    .thenReturn(1);
-
-            try {
-                new AuthServiceImpl(xmlRpcClientFactory, cfg).authenticate(passedAccountId, authToken);
-                Assert.fail("Should have gotten a run time exception, stubbed a bad return");
-            }
-            catch(RuntimeException exception) {
-                //Expected - Intentional
-            }
-        }
-
-        @Ignore
-        @Test
-        public void should_throw_a_token_validation_exception_when_authenticating() throws XmlRpcException, MalformedURLException {
-            when(xmlRpcClient.execute(
-                    eq("validateToken"),
-                    argThat(new IsListOfSomeNumberOfElements(3)))
-            )
-                    .thenReturn(2);
-
-            try {
-                new AuthServiceImpl(xmlRpcClientFactory, cfg).authenticate(passedAccountId, authToken);
-                Assert.fail("Should have gotten a run time exception, stubbed a bad return");
-            }
-            catch(RuntimeException exception) {
-                //Expected - Intentional
-            }
-        }
-
-        @Test
-        public void should_get_accountid_successfully_when_provided_the_auth_token() throws XmlRpcException, MalformedURLException {
-            when(xmlRpcClient.execute(
-                    eq("getUserByToken"),
-                    argThat(new IsListOfSomeNumberOfElements(1)))
-            )
-                    .thenReturn(new Object[] {null, new Object[] {"1000"}});
-
-            Integer idByToken = new AccountServiceImpl(xmlRpcClientFactory, cfg).getAccountIdByToken(authToken);
-
-            verify(xmlRpcClient).execute(eq("getUserByToken"), argThat(new IsListOfSomeNumberOfElements(1)));
-            Assert.assertNotNull(idByToken);
-        }
-
-        class IsListOfSomeNumberOfElements extends ArgumentMatcher<List> {
-            private Integer size;
-
-            IsListOfSomeNumberOfElements(Integer size) {
-                this.size = size;
-            }
-
-            public boolean matches(Object list) {
-                return ((List) list).size() == size;
-            }
+        public void should_authenticate_token_successfully() throws Exception, MalformedURLException {
+            Assert.assertNotNull(new AuthServiceImpl(configuration).authenticate(accountId, authToken));
         }
     }
 }

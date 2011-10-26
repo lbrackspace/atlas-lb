@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.auth;
 
+import com.sun.imageio.plugins.common.I18N;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.filters.helpers.StringUtilities;
@@ -17,11 +18,13 @@ public class AccountServiceImpl implements AccountService {
 
     private static final Log LOG = LogFactory.getLog(AccountServiceImpl.class);
     private final AdminAuthClient adminAuthClient;
+    private Configuration configuration;
     private final String basicAuthUsername;
     private final String basicAuthPassword;
     private final String authUrl;
 
     public AccountServiceImpl(Configuration cfg) throws MalformedURLException {
+        this.configuration = cfg;
         if (cfg.hasKeys(PublicApiServiceConfigurationKeys.auth_callback_uri, PublicApiServiceConfigurationKeys.auth_username, PublicApiServiceConfigurationKeys.auth_password)) {
             basicAuthUsername = cfg.getString(PublicApiServiceConfigurationKeys.auth_username);
             basicAuthPassword = cfg.getString(PublicApiServiceConfigurationKeys.auth_password);

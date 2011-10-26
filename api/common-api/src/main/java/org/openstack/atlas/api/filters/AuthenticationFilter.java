@@ -25,6 +25,7 @@ import javax.xml.bind.Marshaller;
 import java.io.IOException;
 
 import org.openstack.atlas.util.simplecache.SimpleCache;
+import org.openstack.user.User;
 
 import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtendedStackTrace;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -94,12 +95,13 @@ public class AuthenticationFilter implements Filter {
                 }
 
                 if (authInfo == null || !authInfo.getAuthToken().equals(authToken)) {
-                    if (!authTokenValidator.validate(String.valueOf(accountId), authToken)) {
+                    User user = authTokenValidator.validate(accountId, authToken);
+                    if (user == null) {
                         sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                         return;
                     }
 
-                    userName = authTokenValidator.getUserName(accountId, authToken);
+                    userName = user.getId();
                     authInfo = new AuthInfo(userName, authToken);
 
                     LOG.debug(String.format("insert %s into userCache", accountStr));

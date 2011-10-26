@@ -1,7 +1,9 @@
 package org.openstack.atlas.api.auth;
 
+import org.openstack.user.User;
+
 import java.net.MalformedURLException;
 
 public interface AuthService {
-    boolean authenticate(String passedAccountId, String authToken) throws Exception;
+    User authenticate(Integer passedAccountId, String authToken) throws Exception;
 }

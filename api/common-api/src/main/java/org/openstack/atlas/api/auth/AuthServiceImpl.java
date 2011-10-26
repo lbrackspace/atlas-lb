@@ -9,15 +9,14 @@ import java.net.MalformedURLException;
 
 import org.openstack.atlas.api.filters.helpers.StringUtilities;
 import org.openstack.keystone.auth.client.AdminAuthClient;
-import org.openstack.token.FullToken;
 import org.openstack.user.User;
 
 public class AuthServiceImpl implements AuthService {
     private static final Log LOG = LogFactory.getLog(AuthServiceImpl.class);
-    private final AdminAuthClient adminAuthClient;
-    private final String basicAuthUsername;
-    private final String basicAuthPassword;
-    private final String authUrl;
+    private AdminAuthClient adminAuthClient = null;
+    private String basicAuthUsername = null;
+    private String basicAuthPassword = null;
+    private String authUrl = null;
 
     public AuthServiceImpl(Configuration cfg) throws MalformedURLException {
         if (cfg.hasKeys(PublicApiServiceConfigurationKeys.auth_callback_uri, PublicApiServiceConfigurationKeys.auth_username, PublicApiServiceConfigurationKeys.auth_password)) {
@@ -40,11 +39,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public boolean authenticate(String passedAccountId, String authToken) throws Exception {
+    public User authenticate(Integer passedAccountId, String authToken) throws Exception {
         try {
-            return adminAuthClient.validateToken(adminAuthClient.listUserByMossoId(passedAccountId).getId(), authToken) != null;
+            User mossoUser = adminAuthClient.listUserByMossoId(String.valueOf(passedAccountId));
+            return adminAuthClient.validateToken(mossoUser.getId(), authToken) != null ? mossoUser : null;
         } catch (Exception e) {
-            throw new Exception("There was an error communicating with the auth service" + e.getMessage());
+            throw new Exception("There was an error communicating with the auth service: " + e.getMessage());
         }
     }
 }
