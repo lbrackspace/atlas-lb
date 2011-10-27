@@ -11,6 +11,7 @@ import org.openstack.atlas.rax.domain.pojo.RaxMessageDataContainer;
 import org.openstack.atlas.service.domain.operation.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
@@ -18,6 +19,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
+@Primary
 @Controller("RAX-LoadBalancersResource")
 @Scope("request")
 public class LoadBalancersResource extends org.openstack.atlas.api.resource.LoadBalancersResource {

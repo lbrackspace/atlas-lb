@@ -12,44 +12,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 
-@Path("{id: [-+]?[0-9][0-9]*}")
-public class RootResource {
+@Path("{accountId: [-+]?[0-9][0-9]*}")
+public class RootResource extends org.openstack.atlas.api.resource.RootResource {
 
-    @Context
-    HttpHeaders requestHeaders;
-
-    @PathParam("id")
-    private Integer accountId;
-    @Autowired
-    @Qualifier("RAX-LoadBalancersResource")
-    private LoadBalancersResource loadBalancersResource;
-    @Autowired
-    protected AlgorithmsResource algorithmsResource;
-    @Autowired
-    protected ProtocolsResource protocolsResource;
-
-    @Path("loadbalancers")
-    public LoadBalancersResource retrieveLoadBalancersResource() {
-        loadBalancersResource.setRequestHeaders(requestHeaders);
-        loadBalancersResource.setAccountId(accountId);
-        return loadBalancersResource;
-    }
-
-    @Path("protocols")
-    public ProtocolsResource retrieveProtocolsResource() {
-        return protocolsResource;
-    }
-
-    @Path("algorithms")
-    public AlgorithmsResource retrieveAlgorithmsResource() {
-        return algorithmsResource;
-    }
-
-    public void setRequestHeaders(HttpHeaders requestHeaders) {
-        this.requestHeaders = requestHeaders;
-    }
-
-    public void setAccountId(Integer accountId) {
-        this.accountId = accountId;
-    }
 }

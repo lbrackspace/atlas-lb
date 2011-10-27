@@ -20,10 +20,12 @@ import org.openstack.atlas.datamodel.CorePersistenceType;
 import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.service.domain.entity.*;
 import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Primary;
 
 import java.rmi.RemoteException;
 import java.util.*;
 
+@Primary
 @Service
 public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
