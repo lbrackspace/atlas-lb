@@ -28,9 +28,9 @@ import java.util.Set;
 @RunWith(Enclosed.class)
 public class NodeServiceITest {
 
-    @RunWith(SpringJUnit4ClassRunner.class)
-    public static class WhenCreatingNodes extends Base {
-
+//    @RunWith(SpringJUnit4ClassRunner.class)
+//    public static class WhenCreatingNodes extends Base {
+//
 //        @Test
 //        public void shouldAssignIdNodeWhenCreateSucceeds() throws Exception {
 //            LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
@@ -54,7 +54,7 @@ public class NodeServiceITest {
 //            Assert.assertEquals(2, updatedLb.getNodes().size());
 //
 //        }
-        //TODO: more tests...
-    }
+//TODO: more tests...
+//    }
 }
 
