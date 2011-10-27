@@ -17,6 +17,10 @@
     <!--<import resource="db-services.xml" />-->
     <!--<import resource="db-usage-services.xml" />-->
     <import resource="jms-queues.xml" />
+    <context:component-scan base-package="org.openstack.atlas.api"/>
+    <context:component-scan base-package="org.openstack.atlas.common"/>
+    <context:component-scan base-package="org.openstack.atlas.datamodel"/>
+    <context:component-scan base-package="org.openstack.atlas.service.domain"/>
 
     <context:annotation-config/>
     <aop:aspectj-autoproxy />
@@ -50,7 +54,7 @@
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 
     <!--RESOURCE BEANS-->
-    <bean id="loadBalancingPublicImpl" class="${root_resource}" scope="request"/>
+    <!--<bean id="loadBalancingPublicImpl" class="org.openstack.atlas.api.resource.RootResource" scope="request"/>-->
 
     <bean id="entityManagerFactory1" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="persistenceXmlLocation" value="classpath:META-INF/lb-persistence.xml"/>
@@ -64,5 +68,4 @@
     <tx:annotation-driven/>
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
-    <bean id="loadBalancerAdapter" class="${adapter_class}" />
 </beans>
