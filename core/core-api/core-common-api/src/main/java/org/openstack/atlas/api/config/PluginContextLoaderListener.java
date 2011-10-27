@@ -5,6 +5,7 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoaderListener;
 
 import javax.servlet.ServletContext;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +24,10 @@ public class PluginContextLoaderListener extends ContextLoaderListener {
 
         List<String> pluginsTurnedOn = getPluginsFromConfiguration();
         for (String pluginName : pluginsTurnedOn) {
-            configLocations.add(locationPrefix + pluginName + locationSiffix);
+            String location = locationPrefix + pluginName + locationSiffix;
+            if(new File(location).exists()) {
+                configLocations.add(location);
+            }
         }
 
         wac.setConfigLocations(configLocations.toArray(new String[configLocations.size()]));
@@ -37,8 +41,6 @@ public class PluginContextLoaderListener extends ContextLoaderListener {
         List<String> pluginsTurnedOn = new ArrayList<String>();
         if (adapter != null) {
             pluginsTurnedOn.add(adapter + "-adapter");
-        } else {
-            adapter = "null-adapter";
         }
         if (extensions != null) {
             pluginsTurnedOn.add(extensions + "-persistence");
