@@ -7,7 +7,7 @@ import org.openstack.atlas.adapter.LoadBalancerAdapter;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exception.BadRequestException;
 import org.openstack.atlas.adapter.zxtm.helper.IpHelper;
-import org.openstack.atlas.adapter.zxtm.helper.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.zxtm.helper.ZxtmNameHelper;
 import org.openstack.atlas.adapter.zxtm.service.ZxtmServiceStubs;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
@@ -148,31 +148,31 @@ public class ITestBase {
     }
 
     protected static String loadBalancerName(LoadBalancer lb) throws BadRequestException {
-        return ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
+        return ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lb);
     }
 
     protected static String poolName(LoadBalancer lb) throws BadRequestException {
-        return ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
+        return ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lb);
     }
 
     protected static String protectionClassName(LoadBalancer lb) throws BadRequestException {
-        return ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
+        return ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lb);
     }
 
     protected static String trafficIpGroupName(VirtualIp vip) throws BadRequestException {
-        return ZxtmNameBuilder.generateTrafficIpGroupName(lb_1, vip);
+        return ZxtmNameHelper.generateTrafficIpGroupName(lb_1, vip);
     }
 
     protected static String trafficIpGroupName(VirtualIpv6 ipv6Vip) throws BadRequestException {
-        return ZxtmNameBuilder.generateTrafficIpGroupName(lb_1, ipv6Vip);
+        return ZxtmNameHelper.generateTrafficIpGroupName(lb_1, ipv6Vip);
     }
 
     protected static String rateLimitName(LoadBalancer lb) throws BadRequestException {
-        return ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
+        return ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lb);
     }
 
     protected static String monitorName(LoadBalancer lb) throws BadRequestException {
-        return ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
+        return ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lb);
     }
 
     protected static void setupSimpleLoadBalancer() {

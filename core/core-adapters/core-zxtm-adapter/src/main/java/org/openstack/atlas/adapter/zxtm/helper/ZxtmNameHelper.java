@@ -8,7 +8,7 @@ import org.openstack.atlas.service.domain.entity.VirtualIpv6;
 import java.util.HashSet;
 import java.util.Set;
 
-public final class ZxtmNameBuilder {
+public final class ZxtmNameHelper {
 
     public static String generateNameWithAccountIdAndLoadBalancerId(Integer lbId, Integer accountId) throws BadRequestException {
         if (lbId == null) {
@@ -55,5 +55,13 @@ public final class ZxtmNameBuilder {
         if (vip.getId() == null)
             throw new BadRequestException("Missing id for virtual ip.");
         return lb.getAccountId() + "_" + vip.getId();
+    }
+
+    public static Integer stripAccountIdFromName(String name) throws NumberFormatException, ArrayIndexOutOfBoundsException {
+        return Integer.valueOf(name.split("_")[0]);
+    }
+
+    public static Integer stripLbIdFromName(String name) throws NumberFormatException, ArrayIndexOutOfBoundsException {
+        return Integer.valueOf(name.split("_")[1]);
     }
 }

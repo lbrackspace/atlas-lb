@@ -42,7 +42,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
+            final String virtualServerName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lb);
             final String poolName = virtualServerName;
             String algorithm = lb.getAlgorithm() == null ? DEFAULT_ALGORITHM : lb.getAlgorithm();
             final String rollBackMessage = "Create load balancer request canceled.";
@@ -121,8 +121,8 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
-            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
+            final String virtualServerName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
+            final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
             final String[][] trafficIpGroups = serviceStubs.getVirtualServerBinding().getListenTrafficIPGroups(new String[]{virtualServerName});
 
             LOG.debug(String.format("Deleting load balancer '%s'...", virtualServerName));
@@ -143,7 +143,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public void createNodes(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Set<Node> nodes) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
             final String rollBackMessage = "Set nodes request canceled.";
             final String[][] enabledNodesBackup;
             final String[][] disabledNodesBackup;
@@ -195,7 +195,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public void deleteNodes(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Set<Node> nodes) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
             final String rollBackMessage = "Remove node request canceled.";
 
             try {
@@ -215,7 +215,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public void updateNode(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Node node) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
             final String rollBackMessage = "Update node request canceled.";
             final String[][] enabledNodesBackup;
             final String[][] disabledNodesBackup;
@@ -301,7 +301,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Boolean enabled) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String virtualServerName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
             final String rollBackMessage = "Update connection logging request canceled.";
             final String nonHttpLogFormat = "%v %t %h %A:%p %n %B %b %T";
             final String httpLogFormat = "%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\"";
@@ -335,7 +335,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, ConnectionThrottle connectionThrottle) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String virtualServerName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
             final String protectionClassName = virtualServerName;
             final String rollBackMessage = "Update connection throttle request canceled.";
 
@@ -375,7 +375,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     @Override
     public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
         try {
-            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
             final String protectionClassName = poolName;
             final String rollBackMessage = "Delete connection throttle request canceled.";
 
@@ -397,7 +397,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, HealthMonitor healthMonitor) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
             final String monitorName = poolName;
 
             LOG.debug(String.format("Updating health monitor for node pool '%s'.", poolName));
@@ -436,7 +436,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public void deleteHealthMonitor(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
             final String monitorName = poolName;
 
             String[][] monitors = new String[1][1];
@@ -462,7 +462,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, SessionPersistence sessionPersistence) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
             boolean httpCookieClassConfigured = false;
             boolean sourceIpClassConfigured = false;
             final String rollBackMessage = "Update session persistence request canceled.";
@@ -519,7 +519,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     public void deleteSessionPersistence(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
         try {
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
             final String rollBackMessage = "Remove session persistence request canceled.";
 
             try {
@@ -548,7 +548,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     }
 
     private void setLoadBalancingAlgorithm(ZxtmServiceStubs serviceStubs, Integer accountId, Integer lbId, String algorithm) throws AdapterException {
-        final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+        final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
 
         try {
             LOG.debug(String.format("Setting load balancing algorithm for node pool '%s'...", poolName));
@@ -564,7 +564,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
     private void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, AdapterException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
+        final String virtualServerName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
         String[] failoverTrafficManagers = config.getFailoverHostNames().toArray(new String[config.getFailoverHostNames().size()]);
         final String rollBackMessage = "Add virtual ips request canceled.";
         String[][] currentTrafficIpGroups;
@@ -590,7 +590,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
         // Add new traffic ip groups for IPv4 vips
         for (LoadBalancerJoinVip loadBalancerJoinVipToAdd : lb.getLoadBalancerJoinVipSet()) {
-            String newTrafficIpGroup = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVipToAdd.getVirtualIp());
+            String newTrafficIpGroup = ZxtmNameHelper.generateTrafficIpGroupName(lb, loadBalancerJoinVipToAdd.getVirtualIp());
             newTrafficIpGroups.add(newTrafficIpGroup);
             updatedTrafficIpGroups.add(newTrafficIpGroup);
             createTrafficIpGroup(config, serviceStubs, loadBalancerJoinVipToAdd.getVirtualIp().getAddress(), newTrafficIpGroup);
@@ -598,7 +598,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
         // Add new traffic ip groups for IPv6 vips
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6ToAdd : lb.getLoadBalancerJoinVip6Set()) {
-            String newTrafficIpGroup = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip6ToAdd.getVirtualIp());
+            String newTrafficIpGroup = ZxtmNameHelper.generateTrafficIpGroupName(lb, loadBalancerJoinVip6ToAdd.getVirtualIp());
             newTrafficIpGroups.add(newTrafficIpGroup);
             updatedTrafficIpGroups.add(newTrafficIpGroup);
             try {
@@ -679,7 +679,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
     private void createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> nodes) throws RemoteException, AdapterException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancerId, accountId);
+        final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(loadBalancerId, accountId);
 
         LOG.debug(String.format("Creating pool '%s' and setting nodes...", poolName));
         String[][] ipAddresses = new String[1][];
@@ -716,7 +716,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
     private void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, PoolWeightingsDefinition[] definitions) throws RemoteException, AdapterException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+        final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
         final String rollBackMessage = "Update node weights request canceled.";
 
         try {
@@ -834,7 +834,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     }
 
     private void zeroOutConnectionThrottleConfig(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId) throws RemoteException, AdapterException {
-        final String protectionClassName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancerId, accountId);
+        final String protectionClassName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(loadBalancerId, accountId);
 
         LOG.debug(String.format("Zeroing out connection throttle settings for protection class '%s'.", protectionClassName));
 

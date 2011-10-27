@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <import resource="lb-jpa-persistence.xml"/>
+    <import resource="usage-jpa-persistence.xml"/>
+
+    <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
+
+    <!--ENABLED TRIGGERS-->
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="lbUsagePollerTrigger"/>
+                <ref bean="accountUsagePollerTrigger"/>
+                <ref bean="hostUsagePollerTrigger"/>
+                <ref bean="lbUsageRollupJobTrigger"/>
+                <ref bean="rateLimitDeletionJobTrigger"/>
+                <ref bean="lbDeletionJobTrigger"/>
+                <ref bean="dailyDeletionJobTrigger"/>
+                <ref bean="eventsDeletionJobTrigger"/>
+                <ref bean="atomAlertDeletionJobTrigger"/>
+            </list>
+        </property>
+    </bean>
+
+    <!--LOADBALANCER USAGE POLLER CONFIG-->
+    <bean name="lbUsagePoller" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"
+                  value="org.openstack.atlas.usage.jobs.LoadBalancerUsagePoller"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
+                <entry key="hostRepository" value-ref="hostRepository"/>
+                <entry key="usageRepository" value-ref="usageRepository"/>
+                <entry key="usageEventRepository" value-ref="usageEventRepository"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="lbUsagePollerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        <property name="jobDetail" ref="lbUsagePoller"/>
+        <property name="repeatInterval" value="300000"/>
+        <!-- run every 5 mins relative to deployment time -->
+        <property name="startDelay" value="10000"/>
+    </bean>
+
+    <!--ACCOUNT USAGE POLLER CONFIG-->
+    <bean name="accountUsagePoller" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"
+                  value="org.openstack.atlas.usage.jobs.AccountUsagePoller"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
+                <entry key="accountUsageRepository" value-ref="accountUsageRepository"/>
+                <entry key="virtualIpRepository" value-ref="virtualIpRepository"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="accountUsagePollerTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="accountUsagePoller"/>
+        <property name="cronExpression" value="0 0 0 * * ?"/>
+        <!-- run every night at midnight -->
+    </bean>
+
+    <!--HOST USAGE POLLER CONFIG-->
+    <bean name="hostUsagePoller" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"
+                  value="org.openstack.atlas.usage.jobs.HostUsagePoller"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
+                <entry key="hostRepository" value-ref="hostRepository"/>
+                <entry key="hostUsageRepository" value-ref="hostUsageRepository"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="hostUsagePollerTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="hostUsagePoller"/>
+        <property name="cronExpression" value="0 */5 * * * ?"/>
+        <!-- run every 5 mins -->
+    </bean>
+
+    <!--USAGE ROLLUP JOB CONFIG-->
+    <bean name="lbUsageRollupJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"
+                  value="org.openstack.atlas.usage.jobs.LoadBalancerUsageRollupJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="pollingUsageRepository" value-ref="usageRepository"/>
+                <entry key="rollUpUsageRepository" value-ref="rollupUsageRepository"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="lbUsageRollupJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="lbUsageRollupJob"/>
+        <property name="cronExpression" value="0 0 * * * ?"/>
+        <!-- run every hour -->
+    </bean>
+
+
+    <!--USAGE DELETION JOB CONFIG-->
+    <bean name="dailyDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"
+        value="org.openstack.atlas.usage.jobs.DailyDeletionJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="usageRepository" value-ref="usageRepository"/>
+                <entry key="hostUsageRepository" value-ref="hostUsageRepository"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="dailyDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="dailyDeletionJob"/>
+        <property name="cronExpression" value="0 0 0 * * ?"/>
+        <!-- run every night at midnight -->
+    </bean>
+
+    <!--RATE LIMIT DELETION JOB CONFIG-->
+    <bean name="rateLimitDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"
+                  value="org.openstack.atlas.jobs.RateLimitDeletionJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
+                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
+                <entry key="hostRepository" value-ref="hostRepository"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="rateLimitDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="rateLimitDeletionJob"/>
+        <property name="cronExpression" value="0 */15 * * * ?"/>
+        <!-- run every 15 mins -->
+    </bean>
+
+    <!--ALERT DELETION JOB CONFIG-->
+    <bean name="atomAlertDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"
+                  value="org.openstack.atlas.jobs.AtomAlertDeletionJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="alertRepository" value-ref="alertRepository"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="atomAlertDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="atomAlertDeletionJob"/>
+        <property name="cronExpression" value="0 */30 * * * ?"/>
+        <!-- run every 30 mins -->
+    </bean>
+
+    <!--EVENTS DELETION JOB CONFIG-->
+    <bean name="eventsDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"
+                  value="org.openstack.atlas.jobs.EventsDeletionJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="loadBalancerEventRepository" value-ref="loadBalancerEventRepository"/>
+                <entry key="alertRepository" value-ref="alertRepository"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="eventsDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="eventsDeletionJob"/>
+        <property name="cronExpression" value="0 */30 * * * ?"/>
+        <!-- run every 30 mins -->
+    </bean>
+
+    <!--LB DELETION JOB CONFIG-->
+    <bean name="lbDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"
+                  value="org.openstack.atlas.jobs.LoadBalancerDeletionJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
+                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
+                <entry key="hostRepository" value-ref="hostRepository"/>
+                <entry key="alertRepository" value-ref="alertRepository"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="lbDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="lbDeletionJob"/>
+        <property name="cronExpression" value="0 */15 * * * ?"/>
+        <!-- run every 15 mins -->
+    </bean>
+</beans>
