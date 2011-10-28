@@ -1,31 +1,28 @@
-package org.openstack.atlas.jobs.logic;
+package org.openstack.atlas.jobs.usage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.jobs.batch.BatchAction;
+import org.openstack.atlas.jobs.logic.UsageCalculator;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.UsageRecord;
+import org.openstack.atlas.service.domain.repository.UsageRepository;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class UsagesFromPoll {
-    private final Log LOG = LogFactory.getLog(UsagesFromPoll.class);
-    private List<LoadBalancer> loadBalancers;
+public class UsageProcessor implements BatchAction<LoadBalancer> {
+    private final Log LOG = LogFactory.getLog(UsageProcessor.class);
+    private UsageRepository usageRepository;
     private Map<Integer, Long> bytesInMap;
     private Map<Integer, Long> bytesOutMap;
     private Calendar pollTime;
-    private Map<Integer, UsageRecord> usagesAsMap;
     private List<UsageRecord> recordsToInsert;
     private List<UsageRecord> recordsToUpdate;
 
-    public UsagesFromPoll(List<LoadBalancer> loadBalancers, Map<Integer, Long> bytesInMap, Map<Integer, Long> bytesOutMap, Calendar pollTime, Map<Integer, UsageRecord> usagesAsMap) {
-        this.loadBalancers = loadBalancers;
+    public UsageProcessor(UsageRepository usageRepository, Map<Integer, Long> bytesInMap, Map<Integer, Long> bytesOutMap) {
+        this.usageRepository = usageRepository;
         this.bytesInMap = bytesInMap;
         this.bytesOutMap = bytesOutMap;
-        this.pollTime = pollTime;
-        this.usagesAsMap = usagesAsMap;
     }
 
     public List<UsageRecord> getRecordsToInsert() {
@@ -36,7 +33,11 @@ public class UsagesFromPoll {
         return recordsToUpdate;
     }
 
-    public UsagesFromPoll invoke() {
+    public void execute(List<LoadBalancer> loadBalancers) {
+        pollTime = Calendar.getInstance();
+        Map<Integer, Integer> lbIdAccountIdMap = generateLbIdAccountIdMap(loadBalancers);
+        List<UsageRecord> usages = usageRepository.getMostRecentUsageForLoadBalancers(lbIdAccountIdMap.keySet());
+        Map<Integer, UsageRecord> usagesAsMap = convertUsagesToMap(usages);
         recordsToInsert = new ArrayList<UsageRecord>();
         recordsToUpdate = new ArrayList<UsageRecord>();
 
@@ -68,7 +69,6 @@ public class UsagesFromPoll {
                 LOG.warn(String.format("Invalid load balancer name '%s'. Ignoring usage record...", loadBalancer));
             }
         }
-        return this;
     }
 
     public void updateMostRecentRecord(LoadBalancer loadBalancer, UsageRecord mostRecentRecord) {
@@ -111,5 +111,21 @@ public class UsagesFromPoll {
 
     private Long calculateCumBandwidthBytesOut(UsageRecord currentRecord, Long currentSnapshotValue) {
         return UsageCalculator.calculateCumulativeBytes(currentRecord.getTransferBytesOut(), currentRecord.getLastBytesOutCount(), currentSnapshotValue);
+    }
+
+    private Map<Integer, Integer> generateLbIdAccountIdMap(List<LoadBalancer> loadBalancers) {
+        Map<Integer, Integer> lbIdAccountIdMap = new HashMap<Integer, Integer>();
+        for (LoadBalancer loadBalancer : loadBalancers) {
+            lbIdAccountIdMap.put(loadBalancer.getId(), loadBalancer.getAccountId());
+        }
+        return lbIdAccountIdMap;
+    }
+
+    private Map<Integer, UsageRecord> convertUsagesToMap(List<UsageRecord> usages) {
+        Map<Integer, UsageRecord> usagesAsMap = new HashMap<Integer, UsageRecord>();
+        for (UsageRecord usage : usages) {
+            usagesAsMap.put(usage.getLoadBalancer().getId(), usage);
+        }
+        return usagesAsMap;
     }
 }

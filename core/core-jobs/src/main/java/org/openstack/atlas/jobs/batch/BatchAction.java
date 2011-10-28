@@ -1,4 +1,4 @@
-package org.openstack.atlas.jobs;
+package org.openstack.atlas.jobs.batch;
 
 import java.util.List;
 

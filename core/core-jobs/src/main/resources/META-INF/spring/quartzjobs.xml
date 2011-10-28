@@ -31,8 +31,8 @@
     </bean>
     <bean id="lbUsagePollerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
         <property name="jobDetail" ref="lbUsagePoller"/>
-        <property name="repeatInterval" value="300000"/>
         <!-- run every 5 mins relative to deployment time -->
+        <property name="repeatInterval" value="300000"/>
         <property name="startDelay" value="10000"/>
     </bean>
 

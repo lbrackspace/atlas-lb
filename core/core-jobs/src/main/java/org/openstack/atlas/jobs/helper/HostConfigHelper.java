@@ -1,4 +1,4 @@
-package org.openstack.atlas.jobs;
+package org.openstack.atlas.jobs.helper;
 
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.common.crypto.CryptoUtil;

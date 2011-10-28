@@ -2,8 +2,8 @@
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
-    <display-name>Load Balancing Scheduled Jobs</display-name>
-    <description>This war is responsible for running all the LBaaS scheduled jobs.</description>
+    <display-name>Atlas Scheduled Jobs</display-name>
+    <description>This war is responsible for running all the Atlas scheduled jobs.</description>
 
     <context-param>
         <param-name>contextConfigLocation</param-name>

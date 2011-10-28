@@ -1,9 +1,9 @@
-package org.openstack.atlas.jobs;
+package org.openstack.atlas.jobs.batch;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class ExecutionUtilities {
+public class BatchExecutor {
 
     public <T> void executeInBatchesInstance(Collection<T> objects, int batchSize, BatchAction<T> batchAction) throws Exception {
         executeInBatches(objects, batchSize, batchAction);
