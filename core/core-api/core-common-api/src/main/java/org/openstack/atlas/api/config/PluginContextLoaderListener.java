@@ -25,9 +25,9 @@ public class PluginContextLoaderListener extends ContextLoaderListener {
         List<String> pluginsTurnedOn = getPluginsFromConfiguration();
         for (String pluginName : pluginsTurnedOn) {
             String location = locationPrefix + pluginName + locationSiffix;
-            if(new File(location).exists()) {
+            //if(new File(location).exists()) {
                 configLocations.add(location);
-            }
+            //}
         }
 
         wac.setConfigLocations(configLocations.toArray(new String[configLocations.size()]));
