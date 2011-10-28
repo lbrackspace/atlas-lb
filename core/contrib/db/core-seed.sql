@@ -12,32 +12,32 @@ UNLOCK TABLES;
 
 LOCK TABLES `host` WRITE;
 /*!40000 ALTER TABLE `host` DISABLE KEYS */;
-INSERT INTO `host` (`vendor`, `id`, `core_device_id`, `host_status`, `management_ip`, `max_concurrent_connections`, `name`, `endpoint`, `cluster_id`, `endpoint_active`, `ipv6_service_net`, `ipv4_service_net`, `ipv4_public`, `ipv6_public`) VALUES ('CORE', 1,'100', 'ACTIVE_TARGET', '10.2.4.4', '1500', 'host1_cluster1','https://127.0.0.1:1234', '1', TRUE, '4FDE:0000:0000:0002:0022:F376:FF3B:AB3F', '10.2.2.6', '172.1.1.1', '4FDE:0000:0000:0002:0022:F376:FF3B:AB3F');
+INSERT INTO `host` (`vendor`, `id`, `name`, `host_status`, `endpoint`, `endpoint_active`, `username`, `password`, `cluster_id`, `ipv6_service_net`, `ipv4_service_net`, `ipv4_public`, `ipv6_public`) VALUES ('CORE', 1, 'AtlasHost1', 'ACTIVE_TARGET', 'https://127.0.0.1:1234', TRUE, 'username', 'somehashedpassword', '1', '4FDE:0000:0000:0002:0022:F376:FF3B:AB3F', '10.2.2.6', '172.1.1.1', '4FDE:0000:0000:0002:0022:F376:FF3B:AB3F');
 /*!40000 ALTER TABLE `host` ENABLE KEYS */;
 UNLOCK TABLES;
 
 LOCK TABLES `virtual_ipv4` WRITE;
 /*!40000 ALTER TABLE `virtual_ipv4` DISABLE KEYS */;
-INSERT INTO `virtual_ipv4` VALUES ('CORE', 1,'10.0.0.1', FALSE, NULL, NULL ,'PUBLIC',1)
-                                  ,('CORE', 2,'10.0.0.2', FALSE, NULL, NULL ,'PUBLIC',1)
-                                  ,('CORE', 3,'10.0.0.3', FALSE, NULL, NULL ,'PUBLIC',1)
-                                  ,('CORE', 4,'10.0.0.4', FALSE, NULL, NULL ,'PUBLIC',1)
-                                  ,('CORE', 5,'10.0.0.5', FALSE, NULL, NULL ,'PUBLIC',1)
-                                  ,('CORE', 6,'10.0.0.6', FALSE, NULL, NULL ,'PUBLIC',1)
-                                  ,('CORE', 7,'10.0.0.7', FALSE, NULL, NULL ,'PUBLIC',1)
-                                  ,('CORE', 8,'10.0.0.8', FALSE, NULL, NULL ,'PUBLIC',1)
-                                  ,('CORE', 9,'10.0.0.9', FALSE, NULL, NULL ,'PUBLIC',1)
-                                  ,('CORE', 10,'10.0.0.10', FALSE, NULL, NULL ,'PUBLIC',1)
-                                  ,('CORE', 11,'10.0.0.11', FALSE, NULL, NULL ,'PRIVATE',1)
-                                  ,('CORE', 12,'10.0.0.12', FALSE, NULL, NULL ,'PRIVATE',1)
-                                  ,('CORE', 13,'10.0.0.13', FALSE, NULL, NULL ,'PRIVATE',1)
-                                  ,('CORE', 14,'10.0.0.14', FALSE, NULL, NULL ,'PRIVATE',1)
-                                  ,('CORE', 15,'10.0.0.15', FALSE, NULL, NULL ,'PRIVATE',1)
-                                  ,('CORE', 16,'10.0.0.16', FALSE, NULL, NULL ,'PRIVATE',1)
-                                  ,('CORE', 17,'10.0.0.17', FALSE, NULL, NULL ,'PRIVATE',1)
-                                  ,('CORE', 18,'10.0.0.18', FALSE, NULL, NULL ,'PRIVATE',1)
-                                  ,('CORE', 19,'10.0.0.19', FALSE, NULL, NULL ,'PRIVATE',1)
-                                  ,('CORE', 20,'10.0.0.20', FALSE, NULL, NULL ,'PRIVATE',1);
+INSERT INTO `virtual_ipv4` VALUES ('CORE', 21,'10.0.0.21', FALSE, NULL, NULL ,'PUBLIC',1)
+                                  ,('CORE', 22,'10.0.0.22', FALSE, NULL, NULL ,'PUBLIC',1)
+                                  ,('CORE', 23,'10.0.0.23', FALSE, NULL, NULL ,'PUBLIC',1)
+                                  ,('CORE', 24,'10.0.0.24', FALSE, NULL, NULL ,'PUBLIC',1)
+                                  ,('CORE', 25,'10.0.0.25', FALSE, NULL, NULL ,'PUBLIC',1)
+                                  ,('CORE', 26,'10.0.0.26', FALSE, NULL, NULL ,'PUBLIC',1)
+                                  ,('CORE', 27,'10.0.0.27', FALSE, NULL, NULL ,'PUBLIC',1)
+                                  ,('CORE', 28,'10.0.0.28', FALSE, NULL, NULL ,'PUBLIC',1)
+                                  ,('CORE', 29,'10.0.0.29', FALSE, NULL, NULL ,'PUBLIC',1)
+                                  ,('CORE', 30,'10.0.0.110', FALSE, NULL, NULL ,'PUBLIC',1)
+                                  ,('CORE', 31,'10.0.0.111', FALSE, NULL, NULL ,'PRIVATE',1)
+                                  ,('CORE', 32,'10.0.0.112', FALSE, NULL, NULL ,'PRIVATE',1)
+                                  ,('CORE', 33,'10.0.0.113', FALSE, NULL, NULL ,'PRIVATE',1)
+                                  ,('CORE', 34,'10.0.0.114', FALSE, NULL, NULL ,'PRIVATE',1)
+                                  ,('CORE', 35,'10.0.0.115', FALSE, NULL, NULL ,'PRIVATE',1)
+                                  ,('CORE', 36,'10.0.0.116', FALSE, NULL, NULL ,'PRIVATE',1)
+                                  ,('CORE', 37,'10.0.0.117', FALSE, NULL, NULL ,'PRIVATE',1)
+                                  ,('CORE', 38,'10.0.0.118', FALSE, NULL, NULL ,'PRIVATE',1)
+                                  ,('CORE', 39,'10.0.0.119', FALSE, NULL, NULL ,'PRIVATE',1)
+                                  ,('CORE', 40,'10.0.0.200', FALSE, NULL, NULL ,'PRIVATE',1);
 /*!40000 ALTER TABLE `virtual_ipv4` ENABLE KEYS */;
 UNLOCK TABLES;
 

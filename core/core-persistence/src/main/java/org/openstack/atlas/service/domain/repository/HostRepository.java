@@ -3,6 +3,8 @@ package org.openstack.atlas.service.domain.repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entity.Host;
+import org.openstack.atlas.service.domain.entity.HostStatus;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -67,8 +70,8 @@ public class HostRepository {
         return results;
     }
 
-    public List<Host> getHostsMinimumMaxConnections() {
-        String sql = "SELECT h from Host h where h.maxConcurrentConnections =  ( select min(i.maxConcurrentConnections) from Host i)";
+    public List<Host> getHosts() {
+        String sql = "SELECT h from Host h";
 
         Query query = entityManager.createQuery(sql);
         List<Host> hosts = query.getResultList();
@@ -107,4 +110,38 @@ public class HostRepository {
         return hostWithMinimumLoadBalancers;
     }
 
+    /* Returns only attributes needed for performance reasons */
+    public List<LoadBalancer> getUsageLoadBalancersWithStatus(Integer hostId, String status) {
+        List<Object> loadBalancerTuples;
+        List<LoadBalancer> loadBalancers = new ArrayList<LoadBalancer>();
+
+        loadBalancerTuples = entityManager.createNativeQuery("SELECT lb.id, lb.account_id, lb.name FROM loadbalancer lb where lb.host_id = :hostId and lb.status = :status")
+                .setParameter("hostId", hostId)
+                .setParameter("status", status)
+                .getResultList();
+
+        for (Object loadBalancerTuple : loadBalancerTuples) {
+            Object[] row = (Object[]) loadBalancerTuple;
+            LoadBalancer lb = new LoadBalancer();
+            lb.setId((Integer) row[0]);
+            lb.setAccountId((Integer) row[1]);
+            lb.setName((String) row[2]);
+            loadBalancers.add(lb);
+        }
+
+        return loadBalancers;
+    }
+
+    public List<Host> getActiveHosts() {
+        List<Host> allHosts = getHosts();
+        List<Host> activeHosts = new ArrayList<Host>();
+
+        for (Host host : allHosts) {
+            if (host.getHostStatus().equals(HostStatus.ACTIVE) || host.getHostStatus().equals(HostStatus.ACTIVE_TARGET)) {
+                activeHosts.add(host);
+            }
+        }
+
+        return activeHosts;
+    }
 }

@@ -10,7 +10,7 @@ import java.util.Set;
 @Scope("request")
 public class CorePersistenceType implements PersistenceType {
     public static final String HTTP_COOKIE = "HTTP_COOKIE";
-    protected static final Set<String> persistenceTypes;
+    private static final Set<String> persistenceTypes;
 
     static {
         persistenceTypes = new HashSet<String>();
@@ -33,5 +33,10 @@ public class CorePersistenceType implements PersistenceType {
     @Override
     public String[] toList() {
         return persistenceTypes.toArray(new String[persistenceTypes.size()]);
+    }
+
+
+    protected static void add(String persistenceType) {
+        persistenceTypes.add(persistenceType);
     }
 }

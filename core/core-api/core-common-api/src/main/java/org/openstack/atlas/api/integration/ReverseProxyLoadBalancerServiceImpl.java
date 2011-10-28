@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,7 +40,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public void createLoadBalancer(Integer accountId, LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            loadBalancerAdapter.createLoadBalancer(config, accountId, lb);
+            loadBalancerAdapter.createLoadBalancer(config, lb);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -49,17 +51,17 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public void updateLoadBalancer(Integer accountId, LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            loadBalancerAdapter.updateLoadBalancer(config, accountId, lb);
+            loadBalancerAdapter.updateLoadBalancer(config, lb);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
         }
     }
 
-    public void deleteLoadBalancer(Integer accountId, Integer lbId) throws AdapterException, DecryptException, MalformedURLException, Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void deleteLoadBalancer(LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            loadBalancerAdapter.deleteLoadBalancer(config, accountId, lbId);
+            loadBalancerAdapter.deleteLoadBalancer(config, lb);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -78,10 +80,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void deleteNodes(Integer accountId, Integer lbId, Set<Integer> nodeIds) throws AdapterException, DecryptException, MalformedURLException, Exception {
+    public void deleteNodes(Integer accountId, Integer lbId, Set<Node> nodes) throws AdapterException, DecryptException, MalformedURLException, Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.deleteNodes(config, accountId, lbId, nodeIds);
+            loadBalancerAdapter.deleteNodes(config, accountId, lbId, nodes);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
@@ -100,10 +102,12 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void deleteNode(Integer accountId, Integer lbId, Integer nodeId) throws AdapterException, DecryptException, MalformedURLException, Exception {
+    public void deleteNode(Integer accountId, Integer lbId, Node node) throws AdapterException, DecryptException, MalformedURLException, Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            loadBalancerAdapter.deleteNode(config, accountId, lbId, nodeId);
+            Set<Node> nodes = new HashSet<Node>();
+            nodes.add(node);
+            loadBalancerAdapter.deleteNodes(config, accountId, lbId, nodes);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;

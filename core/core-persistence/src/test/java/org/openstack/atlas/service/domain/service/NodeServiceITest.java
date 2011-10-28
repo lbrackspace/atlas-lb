@@ -47,7 +47,7 @@ public class NodeServiceITest {
 
             Assert.assertEquals(2, updatedNodes.size());
             for (Node node1 : updatedNodes) {
-                  Assert.assertNotNull(node1.getId());
+                Assert.assertNotNull(node1.getId());
             }
         }
 
@@ -84,11 +84,10 @@ public class NodeServiceITest {
 
             for (Node node1 : updatedNodes) {
                 if (node1.getAddress().equals(node.getAddress())) {
-                   Assert.assertNotNull(node1.getId());
-                   Assert.assertEquals("10.2.2.2", node1.getAddress());
-                   Assert.assertEquals(loadBalancer, node1.getLoadBalancer());
-                   Assert.assertEquals(true, node1.isEnabled());
-                   Assert.assertEquals((Object) 1, node1.getWeight());
+                    Assert.assertNotNull(node1.getId());
+                    Assert.assertEquals("10.2.2.2", node1.getAddress());
+                    Assert.assertEquals(true, node1.isEnabled());
+                    Assert.assertEquals((Object) 1, node1.getWeight());
                 }
             }
         }
@@ -114,11 +113,10 @@ public class NodeServiceITest {
 
             for (Node node1 : updatedNodes) {
                 if (!(node1.getAddress().equals(loadBalancer.getNodes().iterator().next().getAddress()))) {
-                   Assert.assertNotNull(node1.getId());
-                   Assert.assertEquals(node.getAddress(), node1.getAddress());
-                   Assert.assertEquals(loadBalancer, node1.getLoadBalancer());
-                   Assert.assertEquals(node.isEnabled(), node1.isEnabled());
-                   Assert.assertEquals(node.getWeight(), node1.getWeight());
+                    Assert.assertNotNull(node1.getId());
+                    Assert.assertEquals(node.getAddress(), node1.getAddress());
+                    Assert.assertEquals(node.isEnabled(), node1.isEnabled());
+                    Assert.assertEquals(node.getWeight(), node1.getWeight());
                 }
             }
         }
@@ -232,7 +230,6 @@ public class NodeServiceITest {
         public void shouldThrowExceptionWhenUpdatingWithNullValues() throws PersistenceServiceException {
             nodeService.createNodes(new LoadBalancer());
         }
-        //TODO: more tests...
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)

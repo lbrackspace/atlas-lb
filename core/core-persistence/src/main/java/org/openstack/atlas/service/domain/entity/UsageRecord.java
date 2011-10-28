@@ -25,6 +25,12 @@ public class UsageRecord extends org.openstack.atlas.service.domain.entity.Entit
     @Column(name = "transfer_bytes_out", nullable = false)
     private Long transferBytesOut;
 
+    @Column(name = "last_bytes_in_count", nullable = false)
+    private Long lastBytesInCount;
+
+    @Column(name = "last_bytes_out_count", nullable = false)
+    private Long lastBytesOutCount;
+
     @Column(name = "start_time")
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar startTime;
@@ -55,6 +61,22 @@ public class UsageRecord extends org.openstack.atlas.service.domain.entity.Entit
 
     public void setTransferBytesOut(Long transferBytesOut) {
         this.transferBytesOut = transferBytesOut;
+    }
+
+    public Long getLastBytesInCount() {
+        return lastBytesInCount;
+    }
+
+    public void setLastBytesInCount(Long lastBytesInCount) {
+        this.lastBytesInCount = lastBytesInCount;
+    }
+
+    public Long getLastBytesOutCount() {
+        return lastBytesOutCount;
+    }
+
+    public void setLastBytesOutCount(Long lastBytesOutCount) {
+        this.lastBytesOutCount = lastBytesOutCount;
     }
 
     public Calendar getStartTime() {

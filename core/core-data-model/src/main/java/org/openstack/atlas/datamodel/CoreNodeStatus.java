@@ -11,7 +11,7 @@ import java.util.Set;
 public class CoreNodeStatus implements NodeStatus {
     public static final String ONLINE = "ONLINE";
     public static final String OFFLINE = "OFFLINE";
-    protected static final Set<String> nodeStatuses;
+    private static final Set<String> nodeStatuses;
 
     static {
         nodeStatuses = new HashSet<String>();
@@ -31,4 +31,9 @@ public class CoreNodeStatus implements NodeStatus {
     public String[] toList() {
         return nodeStatuses.toArray(new String[nodeStatuses.size()]);
     }
+
+    protected static void add(String nodeStatus) {
+        nodeStatuses.add(nodeStatus);
+    }
+
 }

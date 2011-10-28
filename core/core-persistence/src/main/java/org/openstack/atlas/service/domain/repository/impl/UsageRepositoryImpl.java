@@ -10,16 +10,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 @Transactional
 public class UsageRepositoryImpl implements UsageRepository {
-final Log LOG = LogFactory.getLog(UsageRepositoryImpl.class);
+    final Log LOG = LogFactory.getLog(UsageRepositoryImpl.class);
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
 
@@ -37,5 +40,31 @@ final Log LOG = LogFactory.getLog(UsageRepositoryImpl.class);
         criteria.where(belongsToLoadBalancer);
 
         return entityManager.createQuery(criteria).getResultList();
+    }
+
+    @Override
+    public List<UsageRecord> getMostRecentUsageForLoadBalancers(Set<Integer> lbIds) {
+        if (lbIds == null || lbIds.isEmpty()) return new ArrayList<UsageRecord>();
+
+        Query query = entityManager.createNativeQuery("SELECT a.* " +
+                "FROM load_balancer_usage a, " +
+                "(SELECT load_balancer_id, max(end_time) as end_time FROM load_balancer_usage WHERE load_balancer_id in (:lbIds) GROUP BY load_balancer_id) b " +
+                "WHERE a.load_balancer_id in (:lbIds) and a.load_balancer_id = b.load_balancer_id and a.end_time = b.end_time;", UsageRecord.class)
+                .setParameter("lbIds", lbIds);
+
+        List<UsageRecord> usage = (List<UsageRecord>) query.getResultList();
+        if (usage == null) return new ArrayList<UsageRecord>();
+
+        return usage;
+    }
+
+    @Override
+    public void batchCreate(List<UsageRecord> recordsToInsert) {
+        // TODO: Implement
+    }
+
+    @Override
+    public void batchUpdate(List<UsageRecord> recordsToUpdate) {
+        // TODO: Implement
     }
 }

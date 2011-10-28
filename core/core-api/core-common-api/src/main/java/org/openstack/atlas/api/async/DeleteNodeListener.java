@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.common.converters.StringConverter;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import javax.jms.Message;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.openstack.atlas.service.domain.common.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.common.AlertType.LBDEVICE_FAILURE;
@@ -54,10 +56,14 @@ public class DeleteNodeListener extends BaseListener {
         }
 
         String nodesToDeleteIdString = StringConverter.integersAsString(msg.getIds());
+        Set<Node> nodesToDelete = new HashSet<Node>();
+        for (Node node : dbLoadBalancer.getNodes()) {
+            if (msg.getIds().contains(node.getId())) nodesToDelete.add(node);
+        }
 
         try {
             LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in Adapter...", nodesToDeleteIdString, msg.getLoadBalancerId()));
-            reverseProxyLoadBalancerService.deleteNodes(msg.getAccountId(), msg.getLoadBalancerId(), new HashSet<Integer>(msg.getIds()));
+            reverseProxyLoadBalancerService.deleteNodes(msg.getAccountId(), msg.getLoadBalancerId(), nodesToDelete);
             LOG.debug(String.format("Successfully removed nodes '[%s]' from load balancer '%d' in Adapter.", nodesToDeleteIdString, msg.getLoadBalancerId()));
         } catch (Exception e) {
             dbLoadBalancer.setStatus(CoreLoadBalancerStatus.ERROR);
@@ -70,10 +76,10 @@ public class DeleteNodeListener extends BaseListener {
         }
 
         try {
-        // Removes node from load balancer in DB
-         LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in LB Device...", nodesToDeleteIdString, msg.getLoadBalancerId()));
-         nodeRepository.deleteNodes(dbLoadBalancer, new HashSet<Integer>(msg.getIds()));
-         LOG.debug(String.format("Succesfully removed nodes '[%s]' from load balancer '%d' in LB Device...", nodesToDeleteIdString, msg.getLoadBalancerId()));
+            // Removes node from load balancer in DB
+            LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in LB Device...", nodesToDeleteIdString, msg.getLoadBalancerId()));
+            nodeRepository.deleteNodes(dbLoadBalancer, new HashSet<Integer>(msg.getIds()));
+            LOG.debug(String.format("Succesfully removed nodes '[%s]' from load balancer '%d' in LB Device...", nodesToDeleteIdString, msg.getLoadBalancerId()));
         } catch (Exception ex) {
             LOG.debug(String.format("Error removing nodes '[%s]' from load balancer '%d' in LB Device...", nodesToDeleteIdString, msg.getLoadBalancerId()));
         }

@@ -3,6 +3,7 @@
 *.iml
 *.iws
 *.ipr
+*.ids
 .maven
 .settings
 .project

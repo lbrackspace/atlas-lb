@@ -9,6 +9,7 @@ import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.exception.BadRequestException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exception.PersistenceServiceException;
 import org.openstack.atlas.service.domain.pojo.VirtualIpDozerWrapper;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.stub.StubFactory;
@@ -39,9 +40,15 @@ public class LoadBalancerServiceITest {
         }
 
         @Test
-        public void shouldPutInBuildStatusWhenCreateSucceeds() throws Exception {
+        public void shouldPutInQueuedStatusWhenCreateSucceeds() throws Exception {
             LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
-            Assert.assertEquals(dbLoadBalancer.getStatus(), CoreLoadBalancerStatus.BUILD);
+            Assert.assertEquals(dbLoadBalancer.getStatus(), CoreLoadBalancerStatus.QUEUED);
+        }
+
+        @Test
+        public void shouldAllocateVirtualIpsWhenCreateSucceeds() throws PersistenceServiceException {
+            LoadBalancer dbLoadBalancer = loadBalancerService.create(loadBalancer);
+            Assert.assertTrue(!dbLoadBalancer.getLoadBalancerJoinVipSet().isEmpty() || !dbLoadBalancer.getLoadBalancerJoinVip6Set().isEmpty());
         }
 
         @Test
