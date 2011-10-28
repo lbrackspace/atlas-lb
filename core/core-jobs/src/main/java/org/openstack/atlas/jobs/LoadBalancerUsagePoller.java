@@ -4,33 +4,40 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.UsageAdapter;
 import org.openstack.atlas.service.domain.entity.Host;
-import org.openstack.atlas.service.domain.entity.HostStatus;
 import org.openstack.atlas.service.domain.repository.HostRepository;
-import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-@Component
 public class LoadBalancerUsagePoller extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsagePoller.class);
-    private final int BATCH_SIZE = 100;
 
-    @Autowired
     private UsageAdapter usageAdapter;
-    @Autowired
-    private LoadBalancerRepository loadBalancerRepository;
-    @Autowired
     private HostRepository hostRepository;
-    @Autowired
     private UsageRepository usageRepository;
+
+    @Required
+    public void setUsageAdapter(UsageAdapter usageAdapter) {
+        this.usageAdapter = usageAdapter;
+    }
+
+    @Required
+    public void setHostRepository(HostRepository hostRepository) {
+        this.hostRepository = hostRepository;
+    }
+
+    @Required
+    public void setUsageRepository(UsageRepository usageRepository) {
+        this.usageRepository = usageRepository;
+    }
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
@@ -52,7 +59,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
         }
 
         for (final Host host : hosts) {
-            LoadBalancerUsagePollerThread thread = new LoadBalancerUsagePollerThread(loadBalancerRepository, host.getName() + "-poller-thread", host, usageAdapter, hostRepository, usageRepository);
+            LoadBalancerUsagePollerThread thread = new LoadBalancerUsagePollerThread(host.getName() + "-poller-thread", host, usageAdapter, hostRepository, usageRepository);
             threads.add(thread);
             thread.start();
         }

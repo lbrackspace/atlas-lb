@@ -12,7 +12,6 @@ import org.openstack.atlas.service.domain.entity.Host;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.UsageRecord;
 import org.openstack.atlas.service.domain.repository.HostRepository;
-import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 
 import java.util.Calendar;
@@ -26,13 +25,11 @@ public class LoadBalancerUsagePollerThread extends Thread {
 
     private UsageAdapter usageAdapter;
     private UsageRepository usageRepository;
-    private LoadBalancerRepository loadBalancerRepository;
     private HostRepository hostRepository;
     private Host host;
 
-    public LoadBalancerUsagePollerThread(LoadBalancerRepository loadBalancerRepository, String threadName, Host host, UsageAdapter usageAdapter, HostRepository hostRepository, UsageRepository usageRepository) {
+    public LoadBalancerUsagePollerThread(String threadName, Host host, UsageAdapter usageAdapter, HostRepository hostRepository, UsageRepository usageRepository) {
         super(threadName);
-        this.loadBalancerRepository = loadBalancerRepository;
         this.host = host;
         this.usageAdapter = usageAdapter;
         this.usageRepository = usageRepository;

@@ -395,6 +395,8 @@ public class StubFactory {
         usageRecord.setId(1);
         usageRecord.setTransferBytesIn(1024l);
         usageRecord.setTransferBytesOut(1024l);
+        usageRecord.setLastBytesInCount(1024l);
+        usageRecord.setLastBytesOutCount(1024l);
         usageRecord.setStartTime(Calendar.getInstance());
         usageRecord.setEndTime(Calendar.getInstance());
 

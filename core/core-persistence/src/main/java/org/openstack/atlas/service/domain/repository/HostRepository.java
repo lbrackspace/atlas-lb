@@ -115,7 +115,7 @@ public class HostRepository {
         List<Object> loadBalancerTuples;
         List<LoadBalancer> loadBalancers = new ArrayList<LoadBalancer>();
 
-        loadBalancerTuples = entityManager.createNativeQuery("SELECT lb.id, lb.account_id, lb.name FROM loadbalancer lb where lb.host_id = :hostId and lb.status = :status")
+        loadBalancerTuples = entityManager.createNativeQuery("SELECT lb.id, lb.account_id, lb.name FROM load_balancer lb where lb.host_id = :hostId and lb.status = :status")
                 .setParameter("hostId", hostId)
                 .setParameter("status", status)
                 .getResultList();

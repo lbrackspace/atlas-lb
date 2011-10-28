@@ -42,15 +42,12 @@ public class UsagesFromPoll {
 
         for (LoadBalancer loadBalancer : loadBalancers) {
             try {
-                Integer accountId = loadBalancer.getAccountId();
-                Integer lbId = loadBalancer.getId();
-
-                if (!usagesAsMap.containsKey(lbId)) {
-                    // Case 1: No record exists at all. Create one.
+                if (!usagesAsMap.containsKey(loadBalancer.getId()) && (bytesInMap.containsKey(loadBalancer.getId()) || bytesOutMap.containsKey(loadBalancer.getId()))) {
+                    // Case 1: No record exists at all and inbound or outbound bandwidth exists. Create one.
                     UsageRecord newRecord = createNewUsageRecord(loadBalancer);
                     recordsToInsert.add(newRecord);
-                } else {
-                    UsageRecord mostRecentRecord = usagesAsMap.get(lbId);
+                } else if (bytesInMap.containsKey(loadBalancer.getId()) || bytesOutMap.containsKey(loadBalancer.getId())) {
+                    UsageRecord mostRecentRecord = usagesAsMap.get(loadBalancer.getId());
                     if (mostRecentRecord.getEndTime().get(Calendar.HOUR_OF_DAY) != pollTime.get(Calendar.HOUR_OF_DAY) && pollTime.after(mostRecentRecord.getEndTime())) {
                         // Case 2: A record exists but need to create new one because current hour is later than endTime hour.
                         UsageRecord newRecord = createNewUsageRecord(loadBalancer);
@@ -76,36 +73,43 @@ public class UsagesFromPoll {
 
     public void updateMostRecentRecord(LoadBalancer loadBalancer, UsageRecord mostRecentRecord) {
         Long bytesInValue = bytesInMap.get(loadBalancer.getId());
+        Long bytesOutValue = bytesOutMap.get(loadBalancer.getId());
         mostRecentRecord.setEndTime(pollTime);
-        mostRecentRecord.setTransferBytesIn(calculateCumBandwidthBytesIn(mostRecentRecord, bytesInValue));
-        mostRecentRecord.setTransferBytesOut(calculateCumBandwidthBytesOut(mostRecentRecord, bytesInValue));
-        mostRecentRecord.setLastBytesInCount(bytesInValue);
-        mostRecentRecord.setLastBytesOutCount(bytesInValue);
+
+        if (bytesInValue != null) {
+            mostRecentRecord.setTransferBytesIn(calculateCumBandwidthBytesIn(mostRecentRecord, bytesInValue));
+            mostRecentRecord.setLastBytesInCount(bytesInValue);
+        }
+
+        if (bytesOutValue != null) {
+            mostRecentRecord.setTransferBytesOut(calculateCumBandwidthBytesOut(mostRecentRecord, bytesOutValue));
+            mostRecentRecord.setLastBytesOutCount(bytesOutValue);
+        }
     }
 
     private UsageRecord createNewUsageRecord(LoadBalancer loadBalancer) {
+        Long bytesInValue = bytesInMap.get(loadBalancer.getId());
+        Long bytesOutValue = bytesOutMap.get(loadBalancer.getId());
+
+        if (bytesInValue == null) bytesInValue = 0l;
+        if (bytesOutValue == null) bytesOutValue = 0l;
+
         UsageRecord newRecord = new UsageRecord();
         newRecord.setLoadBalancer(loadBalancer);
         newRecord.setTransferBytesIn(0l);
         newRecord.setTransferBytesOut(0l);
+        newRecord.setLastBytesInCount(bytesInValue);
+        newRecord.setLastBytesOutCount(bytesOutValue);
         newRecord.setStartTime(pollTime);
         newRecord.setEndTime(pollTime);
         return newRecord;
     }
 
-    public Long calculateCumBandwidthBytesIn(UsageRecord currentRecord, Long currentSnapshotValue) {
-        if (currentSnapshotValue >= currentRecord.getLastBytesInCount()) {
-            return currentRecord.getTransferBytesIn() + currentSnapshotValue - currentRecord.getLastBytesInCount();
-        } else {
-            return currentRecord.getTransferBytesIn() + currentSnapshotValue;
-        }
+    private Long calculateCumBandwidthBytesIn(UsageRecord currentRecord, Long currentSnapshotValue) {
+        return UsageCalculator.calculateCumulativeBytes(currentRecord.getTransferBytesIn(), currentRecord.getLastBytesInCount(), currentSnapshotValue);
     }
 
-    public Long calculateCumBandwidthBytesOut(UsageRecord currentRecord, Long currentSnapshotValue) {
-        if (currentSnapshotValue >= currentRecord.getLastBytesOutCount()) {
-            return currentRecord.getTransferBytesOut() + currentSnapshotValue - currentRecord.getLastBytesOutCount();
-        } else {
-            return currentRecord.getTransferBytesOut() + currentSnapshotValue;
-        }
+    private Long calculateCumBandwidthBytesOut(UsageRecord currentRecord, Long currentSnapshotValue) {
+        return UsageCalculator.calculateCumulativeBytes(currentRecord.getTransferBytesOut(), currentRecord.getLastBytesOutCount(), currentSnapshotValue);
     }
 }
