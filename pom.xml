@@ -26,7 +26,6 @@
         <module>logs</module>
         <module>jobs</module>
         <module>core</module>
-        <module>atlas-rax</module>
     </modules>
 
     <build>
