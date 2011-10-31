@@ -14,6 +14,6 @@
     <context:component-scan base-package="org.openstack.atlas.rax.api"/>
     <context:annotation-config />
 
-    <bean id="loadBalancingPublicImpl" class="org.openstack.atlas.rax.api.resource.RootResource" scope="request"/>
+    <bean id="loadBalancingPublicImpl" class="org.openstack.atlas.rax.api.resource.RaxRootResource" scope="request"/>
 
 </beans>

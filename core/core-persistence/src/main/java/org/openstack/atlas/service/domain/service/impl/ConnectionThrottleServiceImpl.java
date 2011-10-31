@@ -31,13 +31,16 @@ public class ConnectionThrottleServiceImpl implements ConnectionThrottleService 
     public ConnectionThrottle update(Integer loadBalancerId, ConnectionThrottle connectionThrottle) throws PersistenceServiceException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
         ConnectionThrottle dbConnectionThrottle = dbLoadBalancer.getConnectionThrottle();
-        ConnectionThrottle connectionThrottleToUpdate = dbConnectionThrottle == null ? connectionThrottle : dbConnectionThrottle;
-        connectionThrottleToUpdate.setLoadBalancer(dbLoadBalancer); // Needs to be set for hibernate
 
-        setPropertiesForUpdate(connectionThrottle, dbLoadBalancer.getConnectionThrottle(), connectionThrottleToUpdate);
-        
+        if(dbConnectionThrottle == null) {
+            dbConnectionThrottle = connectionThrottle;
+            dbConnectionThrottle.setLoadBalancer(dbLoadBalancer);
+        }
+
+        setPropertiesForUpdate(connectionThrottle, dbConnectionThrottle);
+
         loadBalancerRepository.changeStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), CoreLoadBalancerStatus.PENDING_UPDATE, false);
-        dbLoadBalancer.setConnectionThrottle(connectionThrottleToUpdate);
+        dbLoadBalancer.setConnectionThrottle(dbConnectionThrottle);
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         return dbLoadBalancer.getConnectionThrottle();
     }
@@ -46,7 +49,8 @@ public class ConnectionThrottleServiceImpl implements ConnectionThrottleService 
     @Transactional(rollbackFor = {EntityNotFoundException.class})
     public void preDelete(Integer loadBalancerId) throws EntityNotFoundException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(loadBalancerId);
-        if (dbLoadBalancer.getConnectionThrottle() == null) throw new EntityNotFoundException("Connection throttle not found");
+        if (dbLoadBalancer.getConnectionThrottle() == null)
+            throw new EntityNotFoundException("Connection throttle not found");
     }
 
     @Override
@@ -55,13 +59,13 @@ public class ConnectionThrottleServiceImpl implements ConnectionThrottleService 
         connectionThrottleRepository.delete(connectionThrottleRepository.getByLoadBalancerId(loadBalancerId));
     }
 
-    protected void setPropertiesForUpdate(final ConnectionThrottle requestThrottle, final ConnectionThrottle dbThrottle, ConnectionThrottle throttleToUpdate) throws BadRequestException {
-        if (requestThrottle.getMaxRequestRate() != null) throttleToUpdate.setMaxRequestRate(requestThrottle.getMaxRequestRate());
-        else if (dbThrottle != null) throttleToUpdate.setMaxRequestRate(dbThrottle.getMaxRequestRate());
+    protected void setPropertiesForUpdate(final ConnectionThrottle requestConnectionThrottle, final ConnectionThrottle dbConnectionThrottle) throws BadRequestException {
+        if (requestConnectionThrottle.getMaxRequestRate() != null)
+            dbConnectionThrottle.setMaxRequestRate(requestConnectionThrottle.getMaxRequestRate());
         else throw new BadRequestException("Must provide a max request rate for the request");
-        
-        if (requestThrottle.getRateInterval() != null) throttleToUpdate.setRateInterval(requestThrottle.getRateInterval());
-        else if (dbThrottle != null) throttleToUpdate.setRateInterval(dbThrottle.getRateInterval());
+
+        if (requestConnectionThrottle.getRateInterval() != null)
+            dbConnectionThrottle.setRateInterval(requestConnectionThrottle.getRateInterval());
         else throw new BadRequestException("Must provide a rate interval for the request");
     }
 }

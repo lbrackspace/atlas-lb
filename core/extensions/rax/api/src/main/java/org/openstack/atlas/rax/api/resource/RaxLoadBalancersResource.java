@@ -20,14 +20,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 @Primary
-@Controller("RAX-LoadBalancersResource")
+@Controller
 @Scope("request")
-public class LoadBalancersResource extends org.openstack.atlas.api.resource.LoadBalancersResource {
-    public static Log LOG = LogFactory.getLog(LoadBalancersResource.class.getName());
-
-    @Autowired
-    @Qualifier("RAX-LoadBalancerResource")
-    protected LoadBalancerResource loadBalancerResource;
+public class RaxLoadBalancersResource extends org.openstack.atlas.api.resource.LoadBalancersResource {
+    public static Log LOG = LogFactory.getLog(RaxLoadBalancersResource.class.getName());
 
     @Override
     public Response create(LoadBalancer _loadBalancer) {
@@ -52,12 +48,5 @@ public class LoadBalancersResource extends org.openstack.atlas.api.resource.Load
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
-    }
-
-    @Path("{id: [-+]?[0-9][0-9]*}")
-    public org.openstack.atlas.api.resource.LoadBalancerResource retrieveLoadBalancerResource(@PathParam("id") int id) {
-        loadBalancerResource.setId(id);
-        loadBalancerResource.setAccountId(accountId);
-        return loadBalancerResource;
     }
 }
