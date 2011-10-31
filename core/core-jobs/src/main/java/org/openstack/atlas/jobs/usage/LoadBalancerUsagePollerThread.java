@@ -1,4 +1,4 @@
-package org.openstack.atlas.jobs;
+package org.openstack.atlas.jobs.usage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -7,10 +7,6 @@ import org.openstack.atlas.adapter.UsageAdapter;
 import org.openstack.atlas.common.crypto.exception.DecryptException;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.jobs.helper.HostConfigHelper;
-import org.openstack.atlas.jobs.usage.DbInsert;
-import org.openstack.atlas.jobs.usage.DbUpdate;
-import org.openstack.atlas.jobs.usage.UsageCollector;
-import org.openstack.atlas.jobs.usage.UsageProcessor;
 import org.openstack.atlas.service.domain.entity.Host;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.repository.HostRepository;
@@ -52,11 +48,11 @@ public class LoadBalancerUsagePollerThread extends Thread {
             UsageProcessor usageProcessor = new UsageProcessor(usageRepository, usageCollector.getBytesInMap(), usageCollector.getBytesOutMap());
             executeInBatches(loadBalancersForHost, BATCH_SIZE, usageProcessor);
 
-            DbInsert dbInsert = new DbInsert(usageRepository);
-            executeInBatches(usageProcessor.getRecordsToInsert(), BATCH_SIZE, dbInsert);
+            UsageInsert usageInsert = new UsageInsert(usageRepository);
+            executeInBatches(usageProcessor.getRecordsToInsert(), BATCH_SIZE, usageInsert);
 
-            DbUpdate dbUpdate = new DbUpdate(usageRepository);
-            executeInBatches(usageProcessor.getRecordsToUpdate(), BATCH_SIZE, dbUpdate);
+            UsageUpdate usageUpdate = new UsageUpdate(usageRepository);
+            executeInBatches(usageProcessor.getRecordsToUpdate(), BATCH_SIZE, usageUpdate);
 
         } catch (DecryptException de) {
             LOG.error(String.format("Error decrypting configuration for '%s' (%s)", host.getName(), host.getEndpoint()), de);

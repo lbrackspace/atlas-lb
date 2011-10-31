@@ -20,7 +20,7 @@
     <!--LOADBALANCER USAGE POLLER CONFIG-->
     <bean name="lbUsagePoller" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass"
-                  value="org.openstack.atlas.jobs.LoadBalancerUsagePoller"/>
+                  value="org.openstack.atlas.jobs.usage.LoadBalancerUsagePoller"/>
         <property name="jobDataAsMap">
             <map>
                 <entry key="usageAdapter" value-ref="usageAdapter"/>

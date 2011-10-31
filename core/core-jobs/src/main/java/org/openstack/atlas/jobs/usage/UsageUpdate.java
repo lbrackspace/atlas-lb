@@ -6,10 +6,10 @@ import org.openstack.atlas.service.domain.repository.UsageRepository;
 
 import java.util.List;
 
-public class DbUpdate implements BatchAction<UsageRecord> {
+public class UsageUpdate implements BatchAction<UsageRecord> {
     private UsageRepository usageRepository;
 
-    public DbUpdate(UsageRepository usageRepository) {
+    public UsageUpdate(UsageRepository usageRepository) {
         this.usageRepository = usageRepository;
     }
 

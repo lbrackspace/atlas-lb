@@ -1,4 +1,4 @@
-package org.openstack.atlas.jobs.logic;
+package org.openstack.atlas.jobs.usage.logic;
 
 public class UsageCalculator {
     public static Double calculateNewAverage(Double oldAverage, Integer oldDivisor, Integer newDataPoint) {

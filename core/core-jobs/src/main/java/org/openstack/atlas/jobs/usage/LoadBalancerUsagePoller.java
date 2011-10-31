@@ -1,8 +1,9 @@
-package org.openstack.atlas.jobs;
+package org.openstack.atlas.jobs.usage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.UsageAdapter;
+import org.openstack.atlas.jobs.AtlasJob;
 import org.openstack.atlas.service.domain.entity.Host;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;

@@ -9,7 +9,7 @@ import java.util.Set;
 public interface UsageRepository {
     List<UsageRecord> getByLoadBalancerId(Integer loadBalancerId) throws EntityNotFoundException;
 
-    List<UsageRecord> getMostRecentUsageForLoadBalancers(Set<Integer> lbIds);
+    List<UsageRecord> getMostRecentUsageRecordsForLoadBalancers(Set<Integer> lbIds);
 
     void batchCreate(List<UsageRecord> recordsToInsert);
 
