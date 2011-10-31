@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import org.junit.Ignore;
 
-@Ignore
 @RunWith(Enclosed.class)
 public class AccessListServiceImplIntegrationTest {
 
@@ -59,6 +58,12 @@ public class AccessListServiceImplIntegrationTest {
             node.setCondition(NodeCondition.ENABLED);
             nodes.add(node);
             loadBalancer.setNodes(nodes);
+
+            UserPages userPages = new UserPages();
+            userPages.setErrorpage("blah Page");
+            userPages.setLoadbalancer(loadBalancer);
+            loadBalancer.setUserPages(userPages);
+
             loadBalancer = createLoadBalancerInActiveStatus(loadBalancer);
 
             accessList = new AccessList();

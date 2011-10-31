@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.repository;
 
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Customer;
@@ -579,6 +580,15 @@ public class ClusterRepository  {
         results = entityManager.createQuery(qStr).setParameter("oneday", oneday).getResultList();
         vm = new VipMap(results);
         return vm;
+    }
+
+    public Cluster getActiveCluster() {
+        List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl where cl.status = :status").setParameter("status", ClusterStatus.ACTIVE).getResultList();
+        if (cls != null && cls.size() > 0) {
+            return cls.get(0);
+        } else {
+            return null;
+        }
     }
 
     public class VipMap {

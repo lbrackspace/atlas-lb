@@ -63,9 +63,11 @@ public class LoadBalancer extends Entity implements Serializable {
     private Suspension suspension;
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private RateLimit rateLimit;
-    @OneToOne(mappedBy = "loadbalancer",fetch=FetchType.LAZY,optional=false)
+
+    @OneToOne(mappedBy = "loadbalancer",fetch=FetchType.LAZY,optional=false, cascade=CascadeType.ALL)
     @LazyToOne(LazyToOneOption.NO_PROXY)
     private UserPages userPages;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar created;
     @Temporal(TemporalType.TIMESTAMP)

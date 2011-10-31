@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 
 @RunWith(Enclosed.class)
-@Ignore
 public class VirtualIpServiceImplIntegrationTest {
 
     //When creating a loadBalancer test the vip configs
@@ -59,11 +58,21 @@ public class VirtualIpServiceImplIntegrationTest {
             nodes.add(node);
             loadBalancer.setNodes(nodes);
 
+            UserPages userPages = new UserPages();
+            userPages.setErrorpage("blah Page");
+            userPages.setLoadbalancer(loadBalancer);
+            loadBalancer.setUserPages(userPages);
+
             loadBalancer2 = new LoadBalancer();
             loadBalancer2.setAccountId(10002);
             loadBalancer2.setName("integration testing");
             loadBalancer2.setPort(80);
             loadBalancer2.setProtocol(LoadBalancerProtocol.POP3);
+
+            UserPages userPages2 = new UserPages();
+            userPages2.setErrorpage("blah Page");
+            userPages2.setLoadbalancer(loadBalancer2);
+            loadBalancer2.setUserPages(userPages2);
 
             Set<Node> nodes2 = new HashSet<Node>();
             Node node2 = new Node();

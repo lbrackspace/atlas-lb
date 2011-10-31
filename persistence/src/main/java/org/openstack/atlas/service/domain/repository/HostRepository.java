@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.repository;
 
+import com.sun.tools.corba.se.idl.constExpr.And;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Customer;
@@ -345,15 +346,20 @@ public class HostRepository {
         return lbs;
     }
 
-    public Host getDefaultActiveHost() throws EntityNotFoundException {
+    public Host getDefaultActiveHost(Integer clusterId) throws EntityNotFoundException {
         //get a host based on the following algorithm
         //status = ACTIVE_TARGET, fewest concurrent connections and fewest number of assigned loadbalanders.
-        String sql = "SELECT h from Host h where h.hostStatus = '"
-                + HostStatus.ACTIVE_TARGET + "'"
-                + " AND h.maxConcurrentConnections =  ( select min(i.maxConcurrentConnections) from Host i where i.hostStatus = '"
-                + HostStatus.ACTIVE_TARGET + "')";
+        String sql = "SELECT h from Host h where h.cluster.id = :clusterId AND h.hostStatus= :hostStatus " +
+                "AND h.maxConcurrentConnections = (select min(i.maxConcurrentConnections) " +
+                "from Host i where i.cluster.id = :clusterId AND i.hostStatus = :hostStatus)";
 
-        Query qry = entityManager.createQuery(sql);
+//        String sql = "SELECT h from Host h where h.cluster.id = :clusterId"
+//                + " AND h.hostStatus = '"
+//                + HostStatus.ACTIVE_TARGET + "'"
+//                + " AND h.maxConcurrentConnections =  ( select min(i.maxConcurrentConnections) from Host i where i.hostStatus = '"
+//                + HostStatus.ACTIVE_TARGET + "')";
+
+        Query qry = entityManager.createQuery(sql).setParameter("hostStatus", HostStatus.ACTIVE_TARGET).setParameter("clusterId", clusterId);
         List<Host> hosts = qry.getResultList();
 
         if (hosts != null && hosts.size() > 0) {

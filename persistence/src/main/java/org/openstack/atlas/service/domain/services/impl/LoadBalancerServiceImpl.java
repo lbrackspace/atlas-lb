@@ -81,7 +81,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         //check for blacklisted Nodes
-         try {
+        try {
             Node badNode = blackListedItemNode(lb.getNodes());
             if (badNode != null) {
                 throw new BadRequestException(String.format("Invalid node address. The address '%s' is currently not accepted for this request.", badNode.getIpAddress()));
@@ -140,13 +140,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     @Transactional
-    public void setStatus(Integer accoundId,Integer loadbalancerId,LoadBalancerStatus status) throws EntityNotFoundException{
+    public void setStatus(Integer accoundId, Integer loadbalancerId, LoadBalancerStatus status) throws EntityNotFoundException {
         loadBalancerRepository.setStatus(accoundId, loadbalancerId, status);
     }
 
     @Override
     @Transactional
-    public boolean testAndSetStatusPending(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException {
+    public boolean testAndSetStatusPending(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException {
         return loadBalancerRepository.testAndSetStatus(accountId, loadbalancerId, LoadBalancerStatus.PENDING_UPDATE, false);
     }
 
@@ -159,7 +159,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
 
         LOG.debug("Updating the lb status to pending_update");
-        if(!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
@@ -245,10 +245,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Transactional
-    public UserPages getUserPages(Integer id,Integer accountId) throws EntityNotFoundException{
-    LoadBalancer dLb = loadBalancerRepository.getByIdAndAccountId(id, accountId);
-    UserPages up = dLb.getUserPages();
-    return up;
+    public UserPages getUserPages(Integer id, Integer accountId) throws EntityNotFoundException {
+        LoadBalancer dLb = loadBalancerRepository.getByIdAndAccountId(id, accountId);
+        UserPages up = dLb.getUserPages();
+        return up;
     }
 
     @Override
@@ -259,12 +259,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     public List<org.openstack.atlas.service.domain.pojos.AccountLoadBalancer> getAccountLoadBalancers(Integer accountId) {
-       return loadBalancerRepository.getAccountLoadBalancers(accountId);
+        return loadBalancerRepository.getAccountLoadBalancers(accountId);
     }
 
     @Override
     @Transactional
-     public Suspension createSuspension(LoadBalancer loadBalancer, Suspension suspension) {
+    public Suspension createSuspension(LoadBalancer loadBalancer, Suspension suspension) {
         return loadBalancerRepository.createSuspension(loadBalancer, suspension);
     }
 
@@ -319,7 +319,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Override
     @Transactional
     public LoadBalancer prepareMgmtLoadBalancerDeletion(LoadBalancer loadBalancer, LoadBalancerStatus statusToCheck) throws EntityNotFoundException, UnprocessableEntityException {
-       LOG.debug("Entering " + getClass());
+        LOG.debug("Entering " + getClass());
         LoadBalancer dbLb = null;
 
         LOG.debug(String.format("%s del msgLB[%d]\n", loadBalancer.getId(), loadBalancer.getId()));
@@ -370,7 +370,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         for (int lbIdToDelete : loadBalancerIds) {
             try {
                 LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbIdToDelete, accountId);
-                if(!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE, false)) {
+                if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE, false)) {
                     LOG.warn(StringHelper.immutableLoadBalancer(dbLoadBalancer));
                     badLbStatusIds.add(lbIdToDelete);
                 }
@@ -379,8 +379,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 badLbIds.add(lbIdToDelete);
             }
         }
-        if (!badLbIds.isEmpty()) throw new BadRequestException(String.format("Must provide valid load balancers: %s  could not be found.", StringUtilities.DelimitString(badLbIds, ",")));
-        if (!badLbStatusIds.isEmpty()) throw new BadRequestException(String.format("Must provide valid load balancers: %s  are immutable and could not be processed.", StringUtilities.DelimitString(badLbStatusIds, ",")));
+        if (!badLbIds.isEmpty())
+            throw new BadRequestException(String.format("Must provide valid load balancers: %s  could not be found.", StringUtilities.DelimitString(badLbIds, ",")));
+        if (!badLbStatusIds.isEmpty())
+            throw new BadRequestException(String.format("Must provide valid load balancers: %s  are immutable and could not be processed.", StringUtilities.DelimitString(badLbStatusIds, ",")));
     }
 
     @Override
@@ -502,7 +504,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         if (queueLb.getProtocol() != null && (queueLb.getProtocol().equals(LoadBalancerProtocol.TCP))) {
             LOG.info("TCP Protocol detected. Port must exists");
             if (queueLb.getPort() == null) {
-                  throw new TCPProtocolUnknownPortException("Must Provide port for TCP Protocol.");
+                throw new TCPProtocolUnknownPortException("Must Provide port for TCP Protocol.");
             }
         }
     }
@@ -543,10 +545,14 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
         }
 
+        Host host = hostService.getDefaultActiveHostAndActiveCluster();
         if (isHost) {
+            if (!gLb.getHost().getCluster().getId().equals(host.getCluster().getId())) {
+                throw new UnprocessableEntityException("Shared virtual ips cannot be shared across clusters. please specify a new vip or one in the same cluster");
+            }
             loadBalancer.setHost(gLb.getHost());
         } else {
-            loadBalancer.setHost(hostService.getDefaultActiveHost());
+            loadBalancer.setHost(host);
         }
     }
 
@@ -597,7 +603,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         // Verify this is a valid virtual ip to share
         for (VirtualIp vipOnAccount : vipsOnAccount) {
             if (vipOnAccount.getId().equals(vipConfig.getId())) {
-                if(virtualIpService.isIpv4VipPortCombinationInUse(vipOnAccount, lbPort)) {
+                if (virtualIpService.isIpv4VipPortCombinationInUse(vipOnAccount, lbPort)) {
                     throw new UniqueLbPortViolationException("Another load balancer is currently using the requested port with the shared virtual ip.");
                 }
                 belongsToProperAccount = true;
@@ -620,7 +626,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         // Verify this is a valid virtual ip to share
         for (VirtualIpv6 vipOnAccount : vipsOnAccount) {
             if (vipOnAccount.getId().equals(vipConfig.getId())) {
-                if(virtualIpService.isIpv6VipPortCombinationInUse(vipOnAccount, lbPort)) {
+                if (virtualIpService.isIpv6VipPortCombinationInUse(vipOnAccount, lbPort)) {
                     throw new UniqueLbPortViolationException("Another load balancer is currently using the requested port with the shared virtual ip.");
                 }
                 belongsToProperAccount = true;
@@ -642,9 +648,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         lb.setLoadBalancerJoinVip6Set(null);
         Set<LoadBalancerJoinVip6> newLbVip6Setconfig = new HashSet<LoadBalancerJoinVip6>();
         lb.setLoadBalancerJoinVip6Set(newLbVip6Setconfig);
-        for (LoadBalancerJoinVip6 jv6: loadBalancerJoinVip6SetConfig) {
-        LoadBalancerJoinVip6 jv = new LoadBalancerJoinVip6(lb.getPort(), lb, jv6.getVirtualIp());
-        virtualIpRepository.persist(jv);
+        for (LoadBalancerJoinVip6 jv6 : loadBalancerJoinVip6SetConfig) {
+            LoadBalancerJoinVip6 jv = new LoadBalancerJoinVip6(lb.getPort(), lb, jv6.getVirtualIp());
+            virtualIpRepository.persist(jv);
         }
     }
 
@@ -693,7 +699,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         Integer hostId = null;
         Host specifiedHost;
 
-        if (lb.getHost() != null ) hostId = lb.getHost().getId();
+        if (lb.getHost() != null) hostId = lb.getHost().getId();
         if (!lb.isSticky()) {
             if (hostId != null) {
                 specifiedHost = hostService.getById(hostId);
@@ -703,26 +709,26 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 }
                 lb.setHost(specifiedHost);
             } else {
-                lb.setHost(hostService.getDefaultActiveHost());
+                lb.setHost(hostService.getDefaultActiveHostAndActiveCluster());
             }
         }
     }
 
     @Transactional
     @Override
-    public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException{
+    public boolean setErrorPage(Integer lid, Integer accountId, String content) throws EntityNotFoundException {
         return loadBalancerRepository.setErrorPage(lid, accountId, content);
     }
 
     @Transactional
     @Override
-    public boolean setDefaultErrorPage(String content) throws EntityNotFoundException{
+    public boolean setDefaultErrorPage(String content) throws EntityNotFoundException {
         return loadBalancerRepository.setDefaultErrorPage(content);
     }
 
     @Transactional
     @Override
-    public boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException{
+    public boolean removeErrorPage(Integer lid, Integer accountId) throws EntityNotFoundException {
         return loadBalancerRepository.removeErrorPage(lid, accountId);
     }
 

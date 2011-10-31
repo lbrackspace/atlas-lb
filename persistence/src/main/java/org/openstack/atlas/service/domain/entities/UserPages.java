@@ -2,6 +2,8 @@ package org.openstack.atlas.service.domain.entities;
 
 import javax.persistence.*;
 import java.io.Serializable;
+
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.LazyToOne;
 import org.hibernate.annotations.LazyToOneOption;
 
@@ -15,7 +17,7 @@ public class UserPages extends Entity implements Serializable {
         return serialVersionUID;
     }
 
-    @OneToOne(fetch=FetchType.LAZY,optional=false)
+    @OneToOne(fetch=FetchType.LAZY,optional=false, cascade=CascadeType.ALL)
     @LazyToOne(LazyToOneOption.NO_PROXY)
     @JoinColumn(name = "loadbalancer_id")
     private LoadBalancer loadbalancer;
