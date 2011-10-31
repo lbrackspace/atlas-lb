@@ -3,7 +3,7 @@ package org.openstack.atlas.jobs.usage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.jobs.batch.BatchAction;
-import org.openstack.atlas.jobs.logic.UsageCalculator;
+import org.openstack.atlas.jobs.usage.logic.UsageCalculator;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.UsageRecord;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
@@ -26,40 +26,43 @@ public class UsageProcessor implements BatchAction<LoadBalancer> {
     }
 
     public List<UsageRecord> getRecordsToInsert() {
+        if (recordsToInsert == null) throw new RuntimeException("Please call execute first before retrieving data.");
         return recordsToInsert;
     }
 
     public List<UsageRecord> getRecordsToUpdate() {
+        if (recordsToUpdate == null) throw new RuntimeException("Please call execute first before retrieving data.");
         return recordsToUpdate;
     }
 
     public void execute(List<LoadBalancer> loadBalancers) {
         pollTime = Calendar.getInstance();
+        recordsToInsert = recordsToInsert == null ? new ArrayList<UsageRecord>() : recordsToInsert;
+        recordsToUpdate = recordsToUpdate == null ? new ArrayList<UsageRecord>() : recordsToUpdate;
         Map<Integer, Integer> lbIdAccountIdMap = generateLbIdAccountIdMap(loadBalancers);
-        List<UsageRecord> usages = usageRepository.getMostRecentUsageForLoadBalancers(lbIdAccountIdMap.keySet());
+        List<UsageRecord> usages = usageRepository.getMostRecentUsageRecordsForLoadBalancers(lbIdAccountIdMap.keySet());
         Map<Integer, UsageRecord> usagesAsMap = convertUsagesToMap(usages);
-        recordsToInsert = new ArrayList<UsageRecord>();
-        recordsToUpdate = new ArrayList<UsageRecord>();
 
         for (LoadBalancer loadBalancer : loadBalancers) {
             try {
                 if (!usagesAsMap.containsKey(loadBalancer.getId()) && (bytesInMap.containsKey(loadBalancer.getId()) || bytesOutMap.containsKey(loadBalancer.getId()))) {
                     // Case 1: No record exists at all and inbound or outbound bandwidth exists. Create one.
-                    UsageRecord newRecord = createNewUsageRecord(loadBalancer);
-                    recordsToInsert.add(newRecord);
+                    recordsToInsert.add(createNewUsageRecord(loadBalancer));
                 } else if (bytesInMap.containsKey(loadBalancer.getId()) || bytesOutMap.containsKey(loadBalancer.getId())) {
+                    // Case 2: A record exists and inbound or outbound bandwidth exists.
                     UsageRecord mostRecentRecord = usagesAsMap.get(loadBalancer.getId());
-                    if (mostRecentRecord.getEndTime().get(Calendar.HOUR_OF_DAY) != pollTime.get(Calendar.HOUR_OF_DAY) && pollTime.after(mostRecentRecord.getEndTime())) {
-                        // Case 2: A record exists but need to create new one because current hour is later than endTime hour.
+
+                    if (mostRecentRecord.getEndTime().get(Calendar.DAY_OF_YEAR) != pollTime.get(Calendar.DAY_OF_YEAR) && pollTime.after(mostRecentRecord.getEndTime())) {
+                        // Case 2a: A record exists but need to create new one because current day is later than endTime day.
+                        // Also, Add bandwidth that occurred between mostRecentRecord endTime and newRecord startTime to
+                        // newRecord so that we don't lose it.
                         UsageRecord newRecord = createNewUsageRecord(loadBalancer);
+                        newRecord.setTransferBytesIn(calculateCumBandwidthBytesIn(mostRecentRecord, bytesInMap.get(loadBalancer.getId())));
+                        newRecord.setTransferBytesOut(calculateCumBandwidthBytesOut(mostRecentRecord, bytesOutMap.get(loadBalancer.getId())));
                         recordsToInsert.add(newRecord);
-                        // Add bandwidth that occurred between mostRecentRecord endTime and newRecord startTime to mostRecentRecord
-                        mostRecentRecord.setTransferBytesIn(calculateCumBandwidthBytesIn(mostRecentRecord, bytesInMap.get(loadBalancer.getId())));
-                        mostRecentRecord.setTransferBytesOut(calculateCumBandwidthBytesOut(mostRecentRecord, bytesOutMap.get(loadBalancer.getId())));
-                        recordsToUpdate.add(mostRecentRecord);
                     } else {
-                        // Case 3: A record exists and we need to update because current day is the same as endTime day.
-                        updateMostRecentRecord(loadBalancer, mostRecentRecord);
+                        // Case 2b: A record exists and we need to update because current day is the same as endTime day.
+                        updateMostRecentRecord(mostRecentRecord);
                         recordsToUpdate.add(mostRecentRecord);
                     }
                 }
@@ -71,9 +74,9 @@ public class UsageProcessor implements BatchAction<LoadBalancer> {
         }
     }
 
-    public void updateMostRecentRecord(LoadBalancer loadBalancer, UsageRecord mostRecentRecord) {
-        Long bytesInValue = bytesInMap.get(loadBalancer.getId());
-        Long bytesOutValue = bytesOutMap.get(loadBalancer.getId());
+    public void updateMostRecentRecord(UsageRecord mostRecentRecord) {
+        Long bytesInValue = bytesInMap.get(mostRecentRecord.getLoadBalancer().getId());
+        Long bytesOutValue = bytesOutMap.get(mostRecentRecord.getLoadBalancer().getId());
         mostRecentRecord.setEndTime(pollTime);
 
         if (bytesInValue != null) {

@@ -51,10 +51,12 @@ public class UsageCollector implements BatchAction<LoadBalancer> {
     }
 
     public Map<Integer, Long> getBytesInMap() {
+        if(bytesInMap == null) throw new RuntimeException("Please call execute first before retrieving data.");
         return bytesInMap;
     }
 
     public Map<Integer, Long> getBytesOutMap() {
+        if(bytesOutMap == null) throw new RuntimeException("Please call execute first before retrieving data.");
         return bytesOutMap;
     }
 }

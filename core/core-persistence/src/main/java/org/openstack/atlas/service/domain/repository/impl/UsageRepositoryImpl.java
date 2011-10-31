@@ -45,7 +45,7 @@ public class UsageRepositoryImpl implements UsageRepository {
     }
 
     @Override
-    public List<UsageRecord> getMostRecentUsageForLoadBalancers(Set<Integer> lbIds) {
+    public List<UsageRecord> getMostRecentUsageRecordsForLoadBalancers(Set<Integer> lbIds) {
         if (lbIds == null || lbIds.isEmpty()) return new ArrayList<UsageRecord>();
 
         Query query = entityManager.createNativeQuery("SELECT a.* " +
