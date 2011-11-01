@@ -1,6 +1,5 @@
 package org.openstack.atlas.service.domain.repository;
 
-import com.sun.tools.corba.se.idl.constExpr.And;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Customer;
