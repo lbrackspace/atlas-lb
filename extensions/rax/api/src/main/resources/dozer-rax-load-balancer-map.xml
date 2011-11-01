@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozer.sourceforge.net"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://dozer.sourceforge.net
+          http://dozer.sourceforge.net/schema/beanmapping.xsd">
+
+    <mapping map-null="false">
+        <class-a bean-factory="org.openstack.atlas.rax.api.mapper.dozer.factory.RaxLoadBalancerFactory">
+            org.openstack.atlas.core.api.v1.LoadBalancer
+        </class-a>
+        <class-b>
+            org.openstack.atlas.rax.domain.entity.RaxLoadBalancer
+        </class-b>
+        <field>
+            <a>nodes</a>
+            <b>nodes</b>
+            <a-hint>org.openstack.atlas.core.api.v1.Node</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entity.Node</b-hint>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VirtualIpConverter">
+            <a>virtualIps</a>
+            <b>virtualIpDozerWrapper</b>
+            <a-hint>org.openstack.atlas.core.api.v1.VirtualIp</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.pojos.VirtualIpDozerWrapper</b-hint>
+        </field>
+        <field>
+            <a>connectionThrottle</a>
+            <b>connectionThrottle</b>
+            <a-hint>org.openstack.atlas.core.api.v1.ConnectionThrottle</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entity.ConnectionThrottle</b-hint>
+        </field>
+        <field>
+            <a>healthMonitor</a>
+            <b>healthMonitor</b>
+            <a-hint>org.openstack.atlas.core.api.v1.HealthMonitor</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entity.HealthMonitor</b-hint>
+        </field>
+        <field>
+            <a>sessionPersistence</a>
+            <b>sessionPersistence</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">
+            <a>connectionLogging</a>
+            <b>connectionLogging</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.rax.api.mapper.dozer.converter.CrazyNameConverter">
+            <a>otherAttributes</a>
+            <b>crazyName</b>
+            <a-hint>java.util.Map</a-hint>
+            <b-hint>java.lang.String</b-hint>
+        </field>
+        <field custom-converter="org.openstack.atlas.rax.api.mapper.dozer.converter.AccessListConverter">
+            <a>anies</a>
+            <b>accessLists</b>
+            <a-hint>java.util.List</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.AccessList</b-hint>
+        </field>
+    </mapping>
+
+</mappings>

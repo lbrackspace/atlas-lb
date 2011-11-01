@@ -3,14 +3,17 @@
 *.iml
 *.iws
 *.ipr
+*.ids
 .maven
 .settings
 .project
 .classpath
+target/
 */target
 classes/
 */target/*
 */*/target
+*/*/*/target/*
 
 ## generic files to ignore
 *~

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <display-name>Load Balancing REST Service</display-name>
+    <description>This is the endpoint for the Load Balancing public API.</description>
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>/WEB-INF/spring-context.xml</param-value>
+    </context-param>
+    <context-param>
+        <param-name>powerapi-config-directory</param-name>
+        <param-value>/etc/openstack/atlas</param-value>
+    </context-param>
+    <context-param>
+        <param-name>log4jConfigLocation</param-name>
+        <param-value>file:/etc/openstack/atlas/log4j.public.properties</param-value>
+    </context-param>
+    <context-param>
+        <param-name>log4jExposeWebAppRoot</param-name>
+        <param-value>false</param-value>
+    </context-param>
+
+    <!--LISTENER CONFIGURATIONS-->
+    <!--<listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>-->
+    <listener>
+        <listener-class>org.openstack.atlas.api.config.PluginContextLoaderListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+    </listener>
+
+    <!--FILTER CONFIGURATIONS-->
+<!--    <filter>
+        <filter-name>requestSanitationFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+        <init-param>
+            <param-name>targetFilterLifecycle</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>-->
+    <!--<filter>
+        <filter-name>authenticationFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+        <init-param>
+            <param-name>targetFilterLifecycle</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter>
+        <filter-name>groupRateLimitFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+        <init-param>
+            <param-name>targetFilterLifecycle</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter>
+        <filter-name>rateLimitingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+        <init-param>
+            <param-name>targetFilterLifecycle</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>context-adapter-class</param-name>
+            <param-value>org.openstack.cloud.commons.util.servlet.context.impl.ServletSpringContext</param-value>
+        </init-param>
+    </filter> -->
+<!--    <filter>
+        <filter-name>jsonValidationFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter>
+        <filter-name>xmlValidationFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>-->
+
+    <!--FILTER MAPPINGS-->
+<!--    <filter-mapping>
+        <filter-name>requestSanitationFilter</filter-name>
+        <servlet-name>CXFServlet</servlet-name>
+    </filter-mapping>-->
+    <!--<filter-mapping>
+        <filter-name>authenticationFilter</filter-name>
+        <servlet-name>CXFServlet</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>groupRateLimitFilter</filter-name>
+        <servlet-name>CXFServlet</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>rateLimitingFilter</filter-name>
+        <servlet-name>CXFServlet</servlet-name>
+    </filter-mapping> -->
+<!--    <filter-mapping>
+        <filter-name>jsonValidationFilter</filter-name>
+        <servlet-name>CXFServlet</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>xmlValidationFilter</filter-name>
+        <servlet-name>CXFServlet</servlet-name>
+    </filter-mapping>-->
+
+    <!--SERVLET CONFIGURATION-->
+    <servlet>
+        <servlet-name>CXFServlet</servlet-name>
+        <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CXFServlet</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+</web-app>

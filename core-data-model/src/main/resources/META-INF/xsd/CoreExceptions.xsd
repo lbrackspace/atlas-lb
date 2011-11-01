@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema elementFormDefault="qualified"
+            targetNamespace="http://docs.openstack.org/atlas/api/v1.1"
+            xmlns:tns="http://docs.openstack.org/atlas/api/v1.1"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+            jaxb:version="2.1"
+            xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+            jaxb:extensionBindingPrefixes="xjc">
+
+    <xsd:import schemaLocation="CoreGlobal.xsd" namespace="http://docs.openstack.org/atlas/api/v1.1/global"/>
+
+    <xsd:element name="lbaasException" type="tns:lbaasException"/>
+    <xsd:complexType name="lbaasException">
+        <xsd:sequence>
+            <xsd:element name="message" minOccurs="0" maxOccurs="1" type="xsd:string"/>
+            <xsd:element name="details" minOccurs="0" maxOccurs="1" type="xsd:string"/>
+        </xsd:sequence>
+        <xsd:attribute name="code" type="xsd:int" />
+    </xsd:complexType>
+
+    <xsd:element name="loadBalancerException" type="tns:loadBalancerException"/>
+    <xsd:complexType name="loadBalancerException">
+        <xsd:complexContent>
+            <xsd:extension base="tns:lbaasException"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="generalException" type="tns:generalException"/>
+    <xsd:complexType name="generalException">
+        <xsd:complexContent>
+            <xsd:extension base="tns:lbaasException"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="validationErrors" type="tns:validationErrors"/>
+    <xsd:complexType name="validationErrors">
+        <xsd:sequence>
+            <xsd:element name="message" type="xsd:string" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="badRequest" type="tns:badRequest"/>
+    <xsd:complexType name="badRequest">
+        <xsd:complexContent>
+            <xsd:extension  base="tns:lbaasException">
+                <xsd:sequence>
+                    <xsd:element name="validationErrors" minOccurs="0" maxOccurs="1" type="tns:validationErrors"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="itemNotFound" type="tns:itemNotFound"/>
+    <xsd:complexType name="itemNotFound">
+        <xsd:complexContent>
+            <xsd:extension base="tns:lbaasException"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="overLimit" type="tns:overLimit"/>
+    <xsd:complexType name="overLimit">
+        <xsd:complexContent>
+            <xsd:extension base="tns:lbaasException"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="unauthorized" type="tns:unauthorized"/>
+    <xsd:complexType name="unauthorized">
+        <xsd:complexContent>
+            <xsd:extension base="tns:lbaasException"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="outOfVirtualIps" type="tns:outOfVirtualIps"/>
+    <xsd:complexType name="outOfVirtualIps">
+        <xsd:complexContent>
+            <xsd:extension base="tns:lbaasException"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="immutableEntity" type="tns:immutableEntity"/>
+    <xsd:complexType name="immutableEntity">
+        <xsd:complexContent>
+            <xsd:extension base="tns:lbaasException"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="serviceUnavailable" type="tns:serviceUnavailable"/>
+    <xsd:complexType name="serviceUnavailable">
+        <xsd:complexContent>
+            <xsd:extension base="tns:lbaasException"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="unProcessableEntity" type="tns:unProcessableEntity"/>
+    <xsd:complexType name="unProcessableEntity">
+        <xsd:complexContent>
+            <xsd:extension base="tns:lbaasException"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+</xsd:schema>
