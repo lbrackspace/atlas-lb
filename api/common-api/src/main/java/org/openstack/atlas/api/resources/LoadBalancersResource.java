@@ -57,7 +57,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             if (nodeAddress != null) {
                 domainLbs = loadBalancerService.getLoadBalancersWithNode(nodeAddress, accountId);
                 for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
-                    dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "LB_NAME_ID"));
+                    dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "LB_NAME_ID_STATUS"));
                 }
             } else {
 

@@ -761,6 +761,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             LoadBalancer lb = new LoadBalancer();
             lb.setName(loadbalancer.getName());
             lb.setId(loadbalancer.getId());
+            lb.setStatus(loadbalancer.getStatus());
             domainLbs.add(loadbalancer);
         }
         return domainLbs;
