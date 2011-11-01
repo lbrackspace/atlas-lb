@@ -1,11 +1,8 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.HostStatus;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.Suspension;
-import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
@@ -17,8 +14,6 @@ import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
-import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.*;
+import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.BUILD;
+import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DELETED;
 
 @Service
 public class LoadBalancerServiceImpl extends BaseService implements LoadBalancerService {
@@ -35,6 +31,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private AccountLimitService accountLimitService;
     private VirtualIpService virtualIpService;
     private HostService hostService;
+    private NodeService nodeService;
 
     @Required
     public void setNotificationService(NotificationService notificationService) {
@@ -54,6 +51,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Required
     public void setHostService(HostService hostService) {
         this.hostService = hostService;
+    }
+
+    @Required
+    public void setNodeService (NodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
     @Override
@@ -92,6 +94,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         } catch (IpTypeMissMatchException ipte) {
             LOG.warn("EntityNotFoundException thrown. Sending error response to client...");
             throw new BadRequestException("IP addresses type are mismatched, we are unable to process this request.");
+        }
+
+        if (nodeService.detectDuplicateNodes(new LoadBalancer(), lb)) {
+            throw new BadRequestException("Duplicate nodes detected. Please provide a list of unique node addresses.");
         }
 
         try {
@@ -465,7 +471,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         if (loadBalancer.getSessionPersistence() == null) {
             loadBalancer.setSessionPersistence(SessionPersistence.NONE);
         }
-
+        
         for (Node node : loadBalancer.getNodes()) {
             if (node.getWeight() == null) {
                 node.setWeight(Constants.DEFAULT_NODE_WEIGHT);
@@ -755,6 +761,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             LoadBalancer lb = new LoadBalancer();
             lb.setName(loadbalancer.getName());
             lb.setId(loadbalancer.getId());
+            lb.setStatus(loadbalancer.getStatus());
             domainLbs.add(loadbalancer);
         }
         return domainLbs;

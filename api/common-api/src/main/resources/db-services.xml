@@ -25,6 +25,7 @@
         <property name="virtualIpService" ref="virtualIpService"/>
         <property name="hostService" ref="hostService"/>
         <property name="accountLimitService" ref="accountLimitService"/>
+        <property name="nodeService" ref="nodeService" />
     </bean>
     <bean id="clusterService" class="org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl" parent="baseService" >
         <property name="virtualIpService" ref="virtualIpService"/>
