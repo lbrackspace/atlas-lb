@@ -67,7 +67,6 @@ public class LoadBalancer extends Entity implements Serializable {
 
     @OneToOne(mappedBy = "loadbalancer",fetch=FetchType.LAZY,optional=false)
     @LazyToOne(LazyToOneOption.NO_PROXY)
-    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private UserPages userPages;
 
     @Temporal(TemporalType.TIMESTAMP)

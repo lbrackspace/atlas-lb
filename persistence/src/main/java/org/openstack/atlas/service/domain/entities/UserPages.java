@@ -19,7 +19,6 @@ public class UserPages extends Entity implements Serializable {
     @OneToOne(fetch=FetchType.LAZY,optional=false)
     @LazyToOne(LazyToOneOption.NO_PROXY)
     @JoinColumn(name = "loadbalancer_id")
-    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private LoadBalancer loadbalancer;
 
     @Column(name = "errorpage", nullable = true, length = 32, columnDefinition = "mediumtext")

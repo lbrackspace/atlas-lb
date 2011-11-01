@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.junit.Ignore;
 
+@Ignore
 @RunWith(Enclosed.class)
 public class AccessListServiceImplIntegrationTest {
 
