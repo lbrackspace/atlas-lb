@@ -13,6 +13,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 
 @Path("{accountId: [-+]?[0-9][0-9]*}")
-public class RootResource extends org.openstack.atlas.api.resource.RootResource {
+public class RaxRootResource extends org.openstack.atlas.api.resource.RootResource {
 
 }

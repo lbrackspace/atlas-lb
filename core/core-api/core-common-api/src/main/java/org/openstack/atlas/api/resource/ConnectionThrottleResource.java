@@ -25,13 +25,13 @@ import static javax.ws.rs.core.MediaType.*;
 @Scope("request")
 public class ConnectionThrottleResource extends CommonDependencyProvider {
     private final Logger LOG = Logger.getLogger(ConnectionThrottleResource.class);
-    private Integer accountId;
-    private Integer loadBalancerId;
+    protected Integer accountId;
+    protected Integer loadBalancerId;
 
     @Autowired
     protected ConnectionThrottleValidator validator;
     @Autowired
-    protected ConnectionThrottleService service;
+    protected ConnectionThrottleService connectionThrottleService;
     @Autowired
     protected ConnectionThrottleRepository repository;
 
@@ -56,14 +56,17 @@ public class ConnectionThrottleResource extends CommonDependencyProvider {
         }
 
         try {
+
+            org.openstack.atlas.service.domain.entity.ConnectionThrottle connectionThrottle = dozerMapper.map(_connectionThrottle, org.openstack.atlas.service.domain.entity.ConnectionThrottle.class);
+            connectionThrottle = connectionThrottleService.update(loadBalancerId, connectionThrottle);
+
             MessageDataContainer data = new MessageDataContainer();
             LoadBalancer loadBalancer = new LoadBalancer();
             loadBalancer.setAccountId(accountId);
             loadBalancer.setId(loadBalancerId);
+            loadBalancer.setConnectionThrottle(connectionThrottle);
             data.setLoadBalancer(loadBalancer);
 
-            org.openstack.atlas.service.domain.entity.ConnectionThrottle connectionThrottle = dozerMapper.map(_connectionThrottle, org.openstack.atlas.service.domain.entity.ConnectionThrottle.class);
-            connectionThrottle = service.update(loadBalancerId, connectionThrottle);
             asyncService.callAsyncLoadBalancingOperation(Operation.SET_CONNECTION_THROTTLE, data);
             _connectionThrottle = dozerMapper.map(connectionThrottle, ConnectionThrottle.class);
             return Response.status(Response.Status.ACCEPTED).entity(_connectionThrottle).build();
@@ -81,7 +84,7 @@ public class ConnectionThrottleResource extends CommonDependencyProvider {
             loadBalancer.setId(loadBalancerId);
             data.setLoadBalancer(loadBalancer);
 
-            service.preDelete(loadBalancerId);
+            connectionThrottleService.preDelete(loadBalancerId);
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_CONNECTION_THROTTLE, data);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
