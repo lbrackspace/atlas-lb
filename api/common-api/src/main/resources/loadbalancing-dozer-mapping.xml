@@ -59,7 +59,7 @@
         </field>
     </mapping>
 
-    <mapping map-id="LB_NAME_ID" type="one-way" wildcard="false" map-null="false">
+    <mapping map-id="LB_NAME_ID_STATUS" type="one-way" wildcard="false" map-null="false">
         <class-a>org.openstack.atlas.service.domain.entities.LoadBalancer</class-a>
         <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.LoadBalancerFactory">
             org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer
@@ -71,6 +71,10 @@
         <field>
             <a>name</a>
             <b>name</b>
+        </field>
+        <field>
+            <a>status</a>
+            <b>status</b>
         </field>
     </mapping>
 
