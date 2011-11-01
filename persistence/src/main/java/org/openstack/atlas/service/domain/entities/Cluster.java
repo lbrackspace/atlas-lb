@@ -89,6 +89,14 @@ public class Cluster extends Entity implements Serializable {
         this.dataCenter = dataCenter;
     }
 
+    public ClusterStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ClusterStatus status) {
+        this.status = status;
+    }
+
     public String getClusterIpv6Cidr() {
         return clusterIpv6Cidr;
     }

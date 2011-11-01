@@ -1,16 +1,17 @@
 package org.openstack.atlas.service.domain.entities;
 
+import org.hibernate.annotations.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
 import org.openstack.atlas.service.domain.pojos.VirtualIpDozerWrapper;
-import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
-import org.hibernate.annotations.LazyToOne;
-import org.hibernate.annotations.LazyToOneOption;
 
 @javax.persistence.Entity
 @Table(name = "loadbalancer")
@@ -64,8 +65,9 @@ public class LoadBalancer extends Entity implements Serializable {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private RateLimit rateLimit;
 
-    @OneToOne(mappedBy = "loadbalancer",fetch=FetchType.LAZY,optional=false, cascade=CascadeType.ALL)
+    @OneToOne(mappedBy = "loadbalancer",fetch=FetchType.LAZY,optional=false)
     @LazyToOne(LazyToOneOption.NO_PROXY)
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private UserPages userPages;
 
     @Temporal(TemporalType.TIMESTAMP)

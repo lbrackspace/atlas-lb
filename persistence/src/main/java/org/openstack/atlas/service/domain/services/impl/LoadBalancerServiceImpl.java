@@ -118,7 +118,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             LOG.debug("Port must be supplied for TCP Protocol.");
             throw e;
         } catch (UnprocessableEntityException e) {
-            LOG.debug("There is an error regarding the hosts, with a shared vip the LB's must reside on the same Host.");
+            LOG.debug("There is an error regarding the virtual IP hosts, with a shared virtual IP the LoadBalancers must reside within the same cluster.");
             throw e;
         } catch (OutOfVipsException e) {
             LOG.error("Out of virtual ips! Sending error response to client...");
@@ -513,46 +513,60 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         boolean isHost = false;
         LoadBalancer gLb = new LoadBalancer();
 
-        //Check for and grab host if sharing ipv4
+//        //Check for and grab host if sharing ipv4
+//        for (LoadBalancerJoinVip loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVipSet()) {
+//            if (loadBalancerJoinVip.getVirtualIp().getId() != null) {
+//                List<LoadBalancer> lbs = virtualIpRepository.getLoadBalancersByVipId(loadBalancerJoinVip.getVirtualIp().getId());
+//                for (LoadBalancer lb : lbs) {
+//                    String hostName = lb.getHost().getName();
+//                    if (lb.getHost().getName().equals(hostName)) {
+//                        gLb = lb;
+//                        isHost = true;
+//                    } else {
+//                        throw new UnprocessableEntityException("There was a conflict between the hosts while trying to share a virtual IP.");
+//                    }
+//                }
+//            }
+//        }
+
+//        //Check for and grab host if sharing ipv6
+//        for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancer.getLoadBalancerJoinVip6Set()) {
+//            if (loadBalancerJoinVip6.getVirtualIp().getId() != null) {
+//                List<LoadBalancer> lbs = virtualIpv6Repository.getLoadBalancersByVipId(loadBalancerJoinVip6.getVirtualIp().getId());
+//                for (LoadBalancer lb : lbs) {
+//                    String hostName = lb.getHost().getName();
+//                    if (lb.getHost().getName().equals(hostName)) {
+//                        gLb = lb;
+//                        isHost = true;
+//                    } else {
+//                        throw new UnprocessableEntityException("There was a conflict between the hosts while trying to share a virtual IP.");
+//                    }
+//                }
+//            }
+//        }
+
         for (LoadBalancerJoinVip loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVipSet()) {
             if (loadBalancerJoinVip.getVirtualIp().getId() != null) {
-                List<LoadBalancer> lbs = virtualIpRepository.getLoadBalancersByVipId(loadBalancerJoinVip.getVirtualIp().getId());
-                for (LoadBalancer lb : lbs) {
-                    String hostName = lb.getHost().getName();
-                    if (lb.getHost().getName().equals(hostName)) {
-                        gLb = lb;
-                        isHost = true;
-                    } else {
-                        throw new UnprocessableEntityException("There was a conflict between the hosts while trying to share a virtual IP.");
-                    }
-                }
+                isHost = true;
+                gLb = virtualIpRepository.getLoadBalancersByVipId(loadBalancerJoinVip.getVirtualIp().getId()).iterator().next();
             }
         }
 
-        //Check for and grab host if sharing ipv6
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancer.getLoadBalancerJoinVip6Set()) {
             if (loadBalancerJoinVip6.getVirtualIp().getId() != null) {
-                List<LoadBalancer> lbs = virtualIpv6Repository.getLoadBalancersByVipId(loadBalancerJoinVip6.getVirtualIp().getId());
-                for (LoadBalancer lb : lbs) {
-                    String hostName = lb.getHost().getName();
-                    if (lb.getHost().getName().equals(hostName)) {
-                        gLb = lb;
-                        isHost = true;
-                    } else {
-                        throw new UnprocessableEntityException("There was a conflict between the hosts while trying to share a virtual IP.");
-                    }
-                }
+                isHost = true;
+                gLb = virtualIpv6Repository.getLoadBalancersByVipId(loadBalancerJoinVip6.getVirtualIp().getId()).iterator().next();
+
             }
         }
-
         Host host = hostService.getDefaultActiveHostAndActiveCluster();
-        if (isHost) {
-            if (!gLb.getHost().getCluster().getId().equals(host.getCluster().getId())) {
-                throw new UnprocessableEntityException("Shared virtual ips cannot be shared across clusters. please specify a new vip or one in the same cluster");
+        if (!isHost) {
+            loadBalancer.setHost(host);
+        } else {
+            if (gLb != null && !gLb.getHost().getCluster().getId().equals(host.getCluster().getId())) {
+                throw new UnprocessableEntityException("There is an error regarding the virtual IP hosts, with a shared virtual IP the LoadBalancers must reside within the same cluster.");
             }
             loadBalancer.setHost(gLb.getHost());
-        } else {
-            loadBalancer.setHost(host);
         }
     }
 

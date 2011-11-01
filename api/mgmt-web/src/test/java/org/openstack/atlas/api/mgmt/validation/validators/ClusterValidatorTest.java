@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.mgmt.validation.validators;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cluster;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.DataCenter;
 import org.openstack.atlas.api.mgmt.validation.validators.ClusterValidator;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
@@ -33,6 +34,7 @@ public class ClusterValidatorTest {
             cluster.setDataCenter(DataCenter.DFW);
             cluster.setUsername("username");
             cluster.setPassword("password");
+            cluster.setStatus(ClusterStatus.ACTIVE);
         }
 
         @Test

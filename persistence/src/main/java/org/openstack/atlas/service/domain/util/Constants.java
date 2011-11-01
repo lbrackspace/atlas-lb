@@ -14,5 +14,6 @@ public final class Constants {
     public static final String LoadBalancerDeleted = "The load balancer is deleted and considered immutable.";
     public static final String OutOfVips = "No available virtual ips. Please contact support.";
     public static final String DEFAULT_ERRORFILE = "global_error.html";
+    public static final String DEFAULT_ERROR_MESSAGE = "<html>No suitable nodes.</html>";
 
 }

@@ -1,11 +1,10 @@
 package org.openstack.atlas.service.domain.entities;
 
 import javax.persistence.*;
+import javax.persistence.Table;
 import java.io.Serializable;
 
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.LazyToOne;
-import org.hibernate.annotations.LazyToOneOption;
+import org.hibernate.annotations.*;
 
 @javax.persistence.Entity
 @Table(name = "user_pages")
@@ -17,9 +16,10 @@ public class UserPages extends Entity implements Serializable {
         return serialVersionUID;
     }
 
-    @OneToOne(fetch=FetchType.LAZY,optional=false, cascade=CascadeType.ALL)
+    @OneToOne(fetch=FetchType.LAZY,optional=false)
     @LazyToOne(LazyToOneOption.NO_PROXY)
     @JoinColumn(name = "loadbalancer_id")
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private LoadBalancer loadbalancer;
 
     @Column(name = "errorpage", nullable = true, length = 32, columnDefinition = "mediumtext")

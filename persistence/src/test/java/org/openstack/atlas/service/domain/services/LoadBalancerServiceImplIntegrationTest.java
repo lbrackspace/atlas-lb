@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Ignore
 @RunWith(Enclosed.class)
 public class LoadBalancerServiceImplIntegrationTest {
 
@@ -52,7 +53,7 @@ public class LoadBalancerServiceImplIntegrationTest {
             loadBalancer.setNodes(nodes);
 
             UserPages userPages = new UserPages();
-            userPages.setErrorpage("blah Page");
+            userPages.setErrorpage("aError");
             userPages.setLoadbalancer(loadBalancer);
             loadBalancer.setUserPages(userPages);
         }

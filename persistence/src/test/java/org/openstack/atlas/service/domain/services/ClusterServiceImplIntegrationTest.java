@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services;
 
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.DataCenter;
 import org.openstack.atlas.service.domain.repository.ClusterRepository;
@@ -60,6 +61,7 @@ public class ClusterServiceImplIntegrationTest {
             cluster.setName("my cluster name");
             cluster.setPassword("cluster password");
             cluster.setUsername("cluster username");
+            cluster.setStatus(ClusterStatus.ACTIVE);
             clusterRepository.save(cluster);
 
             Assert.assertEquals((clusters.size() + 1), clusterService.getAll().size());
