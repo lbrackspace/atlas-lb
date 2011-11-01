@@ -19,6 +19,7 @@ import javax.persistence.PersistenceContext;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.junit.Ignore;
 
 @Ignore
@@ -26,7 +27,7 @@ import org.junit.Ignore;
 public class AccessListServiceImplIntegrationTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations={"classpath:db-services-test.xml"})
+    @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
     @Transactional
     public static class WhenAddingAccessLists {
 
@@ -59,6 +60,12 @@ public class AccessListServiceImplIntegrationTest {
             node.setCondition(NodeCondition.ENABLED);
             nodes.add(node);
             loadBalancer.setNodes(nodes);
+
+            UserPages userPages = new UserPages();
+            userPages.setErrorpage("aError");
+            userPages.setLoadbalancer(loadBalancer);
+            loadBalancer.setUserPages(userPages);
+
             loadBalancer = createLoadBalancerInActiveStatus(loadBalancer);
 
             accessList = new AccessList();
@@ -85,7 +92,7 @@ public class AccessListServiceImplIntegrationTest {
 
             accessListService.updateAccessList(newLoadBalancer);
 
-            List<AccessList> accessListsAfter =  accessListService.getAccessListByAccountIdLoadBalancerId(loadBalancer.getAccountId(), loadBalancer.getId());
+            List<AccessList> accessListsAfter = accessListService.getAccessListByAccountIdLoadBalancerId(loadBalancer.getAccountId(), loadBalancer.getId());
             Assert.assertEquals(accessListsBefore.size() + 1, accessListsAfter.size());
         }
 
@@ -128,7 +135,7 @@ public class AccessListServiceImplIntegrationTest {
             newLoadBalancer.setAccountId(loadBalancer.getAccountId());
 
             accessList.setLoadbalancer(loadBalancer);
-            for(int i = 0; i < 101; i++) {
+            for (int i = 0; i < 101; i++) {
                 accessList = new AccessList();
                 accessList.setIpAddress("new ip " + i);
                 accessList.setIpVersion(IpVersion.IPV4);

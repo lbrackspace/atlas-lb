@@ -20,6 +20,8 @@ import java.util.List;
 public interface ClusterService {
     public Cluster get(Integer clusterId) throws EntityNotFoundException;
 
+    public Cluster getActiveCluster() throws EntityNotFoundException;
+
     public List<Cluster> getAll();
 
     public List<LoadBalancerCountByAccountIdClusterId> getAccountsInCluster(Integer clusterId);
