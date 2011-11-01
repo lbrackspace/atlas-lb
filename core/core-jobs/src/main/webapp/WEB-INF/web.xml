@@ -19,7 +19,7 @@
     </context-param>
 
     <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+        <listener-class>org.openstack.atlas.jobs.config.PluginContextLoaderListener</listener-class>
     </listener>
     <listener>
         <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>

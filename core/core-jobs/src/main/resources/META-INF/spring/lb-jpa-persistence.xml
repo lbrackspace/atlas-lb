@@ -38,10 +38,4 @@
         <property name="persistenceUnitName" value="loadbalancing"/>
     </bean>
 
-    <!-- Repo's go here, they MUST be prototype, they are not thread safe -->
-    <bean id="hostRepository" class="org.openstack.atlas.service.domain.repository.HostRepository"
-          scope="prototype"/>
-    <bean id="usageRepository" class="org.openstack.atlas.service.domain.repository.impl.UsageRepositoryImpl"
-          scope="prototype"/>
-
 </beans>

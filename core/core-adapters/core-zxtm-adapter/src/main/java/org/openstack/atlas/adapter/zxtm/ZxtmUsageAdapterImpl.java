@@ -10,11 +10,13 @@ import org.openstack.atlas.adapter.exception.BadRequestException;
 import org.openstack.atlas.adapter.zxtm.helper.ZxtmNameHelper;
 import org.openstack.atlas.adapter.zxtm.service.ZxtmServiceStubs;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.rmi.RemoteException;
 import java.util.*;
 
+@Primary
 @Service
 public class ZxtmUsageAdapterImpl implements UsageAdapter {
     private static Log LOG = LogFactory.getLog(ZxtmUsageAdapterImpl.class.getName());

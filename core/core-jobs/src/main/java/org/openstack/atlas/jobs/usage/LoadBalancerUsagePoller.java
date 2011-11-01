@@ -3,44 +3,44 @@ package org.openstack.atlas.jobs.usage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.UsageAdapter;
-import org.openstack.atlas.jobs.AtlasJob;
+import org.openstack.atlas.jobs.JobInterface;
 import org.openstack.atlas.service.domain.entity.Host;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.StatefulJob;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class LoadBalancerUsagePoller extends AtlasJob implements StatefulJob {
+@Component
+public class LoadBalancerUsagePoller implements JobInterface {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsagePoller.class);
 
-    private UsageAdapter usageAdapter;
-    private HostRepository hostRepository;
-    private UsageRepository usageRepository;
+    @Autowired
+    UsageAdapter usageAdapter;
+    @Autowired
+    HostRepository hostRepository;
+    @Autowired
+    UsageRepository usageRepository;
 
-    @Required
-    public void setUsageAdapter(UsageAdapter usageAdapter) {
-        this.usageAdapter = usageAdapter;
-    }
-
-    @Required
-    public void setHostRepository(HostRepository hostRepository) {
-        this.hostRepository = hostRepository;
-    }
-
-    @Required
-    public void setUsageRepository(UsageRepository usageRepository) {
-        this.usageRepository = usageRepository;
+    @Override
+    public void init(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        LOG.debug("INIT");
     }
 
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public void execute() throws JobExecutionException {
+        LOG.debug("EXECUTE");
         startUsagePoller();
+    }
+
+    @Override
+    public void destroy() {
+        LOG.debug("DESTROY");
     }
 
     private void startUsagePoller() {
