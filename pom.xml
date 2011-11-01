@@ -9,23 +9,14 @@
     <version>1.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <scm>
-        <url>scm:git:ssh://git@git.wc1.dfw1.stabletransit.com/loadbalancing-rest-api.git</url>
-        <developerConnection>
-            scm:git:ssh://git@git.wc1.dfw1.stabletransit.com/loadbalancing-rest-api.git
-        </developerConnection>
-        <connection>scm:git:ssh://git@git.wc1.dfw1.stabletransit.com/loadbalancing-rest-api.git</connection>
-    </scm>
-
     <modules>
-        <module>common</module>
-        <module>data-model</module>
-        <module>persistence</module>
-        <module>adapters</module>
-        <module>api</module>
-        <module>logs</module>
-        <module>jobs</module>
-        <module>core</module>
+        <module>core-common</module>
+        <module>core-data-model</module>
+        <module>core-persistence</module>
+        <module>core-adapters</module>
+        <module>core-api</module>
+        <module>core-jobs</module>
+        <module>extensions</module>
     </modules>
 
     <build>
