@@ -159,8 +159,8 @@ public class UsageProcessorTest {
 
         @Test
         public void shouldReturnOnlyNewRecordsWhenNewDayStarts() {
-            bytesInMap.put(lb1.getId(), 100l);
-            bytesOutMap.put(lb1.getId(), 1000l);
+            bytesInMap.put(lb1.getId(), 200l);
+            bytesOutMap.put(lb1.getId(), 0l);
             bytesInMap.put(lb2.getId(), 200l);
             bytesOutMap.put(lb2.getId(), 2000l);
 
@@ -168,7 +168,7 @@ public class UsageProcessorTest {
             nowYesterday.roll(Calendar.DAY_OF_YEAR, -1);
 
             List<UsageRecord> usageRecords = new ArrayList<UsageRecord>();
-            usageRecords.add(UsageRecordHelper.createUsageRecord(lb1.getId(), 0l, 0l, 0l, 0l, nowYesterday, nowYesterday));
+            usageRecords.add(UsageRecordHelper.createUsageRecord(lb1.getId(), 200l, 100l, 100l, 0l, nowYesterday, nowYesterday));
             usageRecords.add(UsageRecordHelper.createUsageRecord(lb2.getId(), 0l, 0l, 0l, 0l, nowYesterday, nowYesterday));
 
             when(usageRepository.getMostRecentUsageRecordsForLoadBalancers(anySetOf(Integer.class))).thenReturn(usageRecords);
@@ -180,9 +180,9 @@ public class UsageProcessorTest {
             for (UsageRecord usageRecord : usageProcessor.getRecordsToInsert()) {
                 if (usageRecord.getLoadBalancer().getId().equals(lb1.getId())) {
                     Assert.assertEquals(100l, usageRecord.getTransferBytesIn().longValue());
-                    Assert.assertEquals(1000l, usageRecord.getTransferBytesOut().longValue());
-                    Assert.assertEquals(100l, usageRecord.getLastBytesInCount().longValue());
-                    Assert.assertEquals(1000l, usageRecord.getLastBytesOutCount().longValue());
+                    Assert.assertEquals(0l, usageRecord.getTransferBytesOut().longValue());
+                    Assert.assertEquals(200l, usageRecord.getLastBytesInCount().longValue());
+                    Assert.assertEquals(0l, usageRecord.getLastBytesOutCount().longValue());
                 }
 
                 if (usageRecord.getLoadBalancer().getId().equals(lb2.getId())) {

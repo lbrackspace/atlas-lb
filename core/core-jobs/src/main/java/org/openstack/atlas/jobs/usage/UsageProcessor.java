@@ -57,8 +57,8 @@ public class UsageProcessor implements BatchAction<LoadBalancer> {
                         // Also, Add bandwidth that occurred between mostRecentRecord endTime and newRecord startTime to
                         // newRecord so that we don't lose it.
                         UsageRecord newRecord = createNewUsageRecord(loadBalancer);
-                        newRecord.setTransferBytesIn(calculateCumBandwidthBytesIn(mostRecentRecord, bytesInMap.get(loadBalancer.getId())));
-                        newRecord.setTransferBytesOut(calculateCumBandwidthBytesOut(mostRecentRecord, bytesOutMap.get(loadBalancer.getId())));
+                        newRecord.setTransferBytesIn(calcCumBandwidthBytesInForSingleRecord(mostRecentRecord, bytesInMap.get(loadBalancer.getId())) - mostRecentRecord.getTransferBytesIn());
+                        newRecord.setTransferBytesOut(calcCumBandwidthBytesOutForSingleRecord(mostRecentRecord, bytesOutMap.get(loadBalancer.getId()))  - mostRecentRecord.getTransferBytesOut());
                         recordsToInsert.add(newRecord);
                     } else {
                         // Case 2b: A record exists and we need to update because current day is the same as endTime day.
@@ -80,12 +80,12 @@ public class UsageProcessor implements BatchAction<LoadBalancer> {
         mostRecentRecord.setEndTime(pollTime);
 
         if (bytesInValue != null) {
-            mostRecentRecord.setTransferBytesIn(calculateCumBandwidthBytesIn(mostRecentRecord, bytesInValue));
+            mostRecentRecord.setTransferBytesIn(calcCumBandwidthBytesInForSingleRecord(mostRecentRecord, bytesInValue));
             mostRecentRecord.setLastBytesInCount(bytesInValue);
         }
 
         if (bytesOutValue != null) {
-            mostRecentRecord.setTransferBytesOut(calculateCumBandwidthBytesOut(mostRecentRecord, bytesOutValue));
+            mostRecentRecord.setTransferBytesOut(calcCumBandwidthBytesOutForSingleRecord(mostRecentRecord, bytesOutValue));
             mostRecentRecord.setLastBytesOutCount(bytesOutValue);
         }
     }
@@ -108,11 +108,11 @@ public class UsageProcessor implements BatchAction<LoadBalancer> {
         return newRecord;
     }
 
-    private Long calculateCumBandwidthBytesIn(UsageRecord currentRecord, Long currentSnapshotValue) {
+    private Long calcCumBandwidthBytesInForSingleRecord(UsageRecord currentRecord, Long currentSnapshotValue) {
         return UsageCalculator.calculateCumulativeBytes(currentRecord.getTransferBytesIn(), currentRecord.getLastBytesInCount(), currentSnapshotValue);
     }
 
-    private Long calculateCumBandwidthBytesOut(UsageRecord currentRecord, Long currentSnapshotValue) {
+    private Long calcCumBandwidthBytesOutForSingleRecord(UsageRecord currentRecord, Long currentSnapshotValue) {
         return UsageCalculator.calculateCumulativeBytes(currentRecord.getTransferBytesOut(), currentRecord.getLastBytesOutCount(), currentSnapshotValue);
     }
 
