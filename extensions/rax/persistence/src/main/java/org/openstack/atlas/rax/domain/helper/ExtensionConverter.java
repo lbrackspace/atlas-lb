@@ -13,7 +13,7 @@ public final class ExtensionConverter {
             NetworkItem networkItem = new NetworkItem();
             networkItem.setId(accessList.getId());
             networkItem.setAddress(accessList.getIpAddress());
-            networkItem.setIpVersion(org.openstack.atlas.api.v1.extensions.rax.IpVersion.fromValue(accessList.getIpVersion().name()));
+            //networkItem.setIpVersion(org.openstack.atlas.api.v1.extensions.rax.IpVersion.fromValue(accessList.getIpVersion().name()));
             networkItem.setType(NetworkItemType.fromValue(accessList.getType().name()));
             dataModelAccessList.getNetworkItems().add(networkItem);
         }

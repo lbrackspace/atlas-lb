@@ -22,6 +22,18 @@ import javax.ws.rs.core.Response;
 public class RaxLoadBalancerResource extends org.openstack.atlas.api.resource.LoadBalancerResource {
 
     @Override
+    public Response get() {
+        try {
+            org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer = loadBalancerRepository.getByIdAndAccountId(id, accountId);
+            LoadBalancer _loadBalancer = dozerMapper.map(loadBalancer, LoadBalancer.class);
+            return Response.status(Response.Status.OK).entity(_loadBalancer).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e);
+        }
+    }
+
+
+    @Override
     public Response update(LoadBalancer loadBalancer) {
         ValidatorResult result = validator.validate(loadBalancer, HttpRequestType.PUT);
 
@@ -30,7 +42,7 @@ public class RaxLoadBalancerResource extends org.openstack.atlas.api.resource.Lo
         }
 
         try {
-            RaxLoadBalancer raxLoadBalancer  = dozerMapper.map(loadBalancer, RaxLoadBalancer.class);
+            RaxLoadBalancer raxLoadBalancer = dozerMapper.map(loadBalancer, RaxLoadBalancer.class);
             raxLoadBalancer.setId(id);
             raxLoadBalancer.setAccountId(accountId);
 
