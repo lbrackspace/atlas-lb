@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozer.sourceforge.net"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://dozer.sourceforge.net
+          http://dozer.sourceforge.net/schema/beanmapping.xsd">
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.core.api.v1.ConnectionThrottle</class-a>
+        <class-b>org.openstack.atlas.rax.domain.entity.RaxConnectionThrottle</class-b>
+        <field custom-converter="org.openstack.atlas.rax.api.mapper.dozer.converter.MinimumConnectionsConverter">
+            <a>otherAttributes</a>
+            <b>minConnections</b>
+            <a-hint>java.util.Map</a-hint>
+            <b-hint>java.lang.Integer</b-hint>
+        </field>
+        <field custom-converter="org.openstack.atlas.rax.api.mapper.dozer.converter.MaximumConnectionsConverter">
+            <a>otherAttributes</a>
+            <b>maxConnections</b>
+            <a-hint>java.util.Map</a-hint>
+            <b-hint>java.lang.Integer</b-hint>
+        </field>
+    </mapping>
+
+</mappings>

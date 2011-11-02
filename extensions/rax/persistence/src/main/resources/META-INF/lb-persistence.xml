@@ -29,6 +29,7 @@
         <class>org.openstack.atlas.rax.domain.entity.AccessList</class>
         <class>org.openstack.atlas.rax.domain.entity.RaxHost</class>
         <class>org.openstack.atlas.rax.domain.entity.RaxLoadBalancer</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxConnectionThrottle</class>
 
         <!-- Hibernate Properties -->
         <properties>

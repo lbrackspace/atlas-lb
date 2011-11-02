@@ -53,7 +53,7 @@ public class AccessListConverter implements CustomConverter {
                 AccessList accessList = new AccessList();
                 accessList.setId(networkItem.getId());
                 accessList.setIpAddress(networkItem.getAddress());
-                accessList.setIpVersion(IpVersion.valueOf(networkItem.getIpVersion().name()));
+                //accessList.setIpVersion(IpVersion.valueOf(networkItem.getIpVersion().name()));
                 accessList.setType(AccessListType.valueOf(networkItem.getType().name()));
                 accessLists.add(accessList);
             }
