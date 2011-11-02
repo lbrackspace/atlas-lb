@@ -25,8 +25,8 @@ public class Cluster extends Entity implements Serializable {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length=11, nullable = false)
-    private ClusterStatus status;
+    @Column(name = "cluster_status", length=32, nullable = false)
+    private ClusterStatus clusterStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "data_center", length=32, nullable = false)
@@ -90,11 +90,11 @@ public class Cluster extends Entity implements Serializable {
     }
 
     public ClusterStatus getStatus() {
-        return status;
+        return clusterStatus;
     }
 
-    public void setStatus(ClusterStatus status) {
-        this.status = status;
+    public void setStatus(ClusterStatus clusterStatus) {
+        this.clusterStatus = clusterStatus;
     }
 
     public String getClusterIpv6Cidr() {
