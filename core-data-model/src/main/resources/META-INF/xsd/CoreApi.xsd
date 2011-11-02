@@ -26,7 +26,6 @@
             <xsd:element name="healthMonitor" type="tns:healthMonitor" minOccurs="0"/>
             <xsd:element name="sessionPersistence" type="tns:sessionPersistence" minOccurs="0"/>
             <xsd:element name="connectionThrottle" type="tns:connectionThrottle" minOccurs="0"/>
-            <xsd:element name="connectionLogging" type="tns:connectionLogging" minOccurs="0"/>
             <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="id" type="xsd:int"/>
@@ -101,12 +100,6 @@
     <xsd:complexType name="connectionThrottle">
         <xsd:attribute name="maxRequestRate" type="xsd:int"/>
         <xsd:attribute name="rateInterval" type="xsd:int" />
-        <xsd:anyAttribute namespace="##other" processContents="strict"/>
-    </xsd:complexType>
-
-    <xsd:element name="connectionLogging" type="tns:connectionLogging"/>
-    <xsd:complexType name="connectionLogging">
-        <xsd:attribute name="enabled" type="xsd:boolean"/>
         <xsd:anyAttribute namespace="##other" processContents="strict"/>
     </xsd:complexType>
 

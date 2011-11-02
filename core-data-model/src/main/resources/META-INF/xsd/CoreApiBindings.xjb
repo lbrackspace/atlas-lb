@@ -31,9 +31,6 @@
         <bindings scd="~tns:algorithms">
             <class ref="org.openstack.atlas.core.api.v1.Algorithms"/>
         </bindings>
-        <bindings scd="~tns:connectionLogging">
-            <class ref="org.openstack.atlas.core.api.v1.ConnectionLogging"/>
-        </bindings>
         <bindings scd="~tns:connectionThrottle">
             <class ref="org.openstack.atlas.core.api.v1.ConnectionThrottle"/>
         </bindings>

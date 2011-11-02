@@ -73,9 +73,6 @@ public class LoadBalancer extends Entity implements Serializable {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadBalancer")
     private HealthMonitor healthMonitor;
 
-    @Column(name = "connection_logging", nullable = false)
-    private Boolean connectionLogging = false;
-
     @Transient
     private VirtualIpDozerWrapper virtualIpDozerWrapper;
 
@@ -235,14 +232,6 @@ public class LoadBalancer extends Entity implements Serializable {
         this.virtualIpDozerWrapper = virtualIpDozerWrapper;
         this.setLoadBalancerJoinVipSet(this.virtualIpDozerWrapper.getLoadBalancerJoinVipSet());
         this.setLoadBalancerJoinVip6Set(this.virtualIpDozerWrapper.getLoadBalancerJoinVip6Set());
-    }
-
-    public Boolean getConnectionLogging() {
-        return connectionLogging;
-    }
-
-    public void setConnectionLogging(Boolean connectionLogging) {
-        this.connectionLogging = connectionLogging;
     }
 
     public SessionPersistence getSessionPersistence() {

@@ -132,7 +132,6 @@ public class LoadBalancerMappingTest {
             Assert.assertEquals(domainLoadBalancer.getPort(), apiLoadBalancer.getPort());
             Assert.assertEquals(domainLoadBalancer.getCreated(), apiLoadBalancer.getCreated());
             Assert.assertEquals(domainLoadBalancer.getUpdated(), apiLoadBalancer.getUpdated());
-            Assert.assertEquals(domainLoadBalancer.getConnectionLogging(), apiLoadBalancer.getConnectionLogging().isEnabled());
         }
 
         @Test

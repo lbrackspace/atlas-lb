@@ -19,7 +19,6 @@ public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
         super.setPropertiesForUpdate(loadBalancer, dbLoadBalancer);
         setPort(loadBalancer, dbLoadBalancer);
         setProtocol(loadBalancer, dbLoadBalancer);
-        setConnectionLogging(loadBalancer, dbLoadBalancer);
         setCrazyName(loadBalancer, dbLoadBalancer);
     }
 
@@ -87,21 +86,6 @@ public class RaxLoadBalancerServiceImpl extends LoadBalancerServiceImpl {
             }
         } else {
             LOG.error("Trying to set crazy name on a load balancer that is not a RaxLoadBalancer!");
-        }
-    }
-
-    private void setConnectionLogging(final LoadBalancer loadBalancer, final LoadBalancer dbLoadBalancer) {
-        if (loadBalancer.getConnectionLogging() != null && !loadBalancer.getConnectionLogging().equals(dbLoadBalancer.getConnectionLogging())) {
-            /*if (loadBalancer.getConnectionLogging()) {
-                if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
-                    LOG.error("Protocol must be HTTP for connection logging.");
-                    throw new UnprocessableEntityException(String.format("Protocol must be HTTP for connection logging."));
-                }
-                LOG.debug("Enabling connection logging on the loadbalancer...");
-            } else {
-                LOG.debug("Disabling connection logging on the loadbalancer...");
-            }*/
-            dbLoadBalancer.setConnectionLogging(loadBalancer.getConnectionLogging());
         }
     }
 }

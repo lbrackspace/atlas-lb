@@ -135,10 +135,6 @@ public class StubFactory {
         loadBalancer.setHealthMonitor(createHydratedDataModelHealthMonitor());
         loadBalancer.setSessionPersistence(createHydratedDataModelSessionPersistence());
 
-        org.openstack.atlas.core.api.v1.ConnectionLogging connectionLogging = new ConnectionLogging();
-        connectionLogging.setEnabled(true);
-        loadBalancer.setConnectionLogging(connectionLogging);
-
         return loadBalancer;
     }
 

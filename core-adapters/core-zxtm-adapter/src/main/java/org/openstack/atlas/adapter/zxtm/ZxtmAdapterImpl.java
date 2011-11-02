@@ -89,10 +89,6 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
                     updateConnectionThrottle(config, lb.getId(), lb.getAccountId(), lb.getConnectionThrottle());
                 }
 
-                if (lb.getConnectionLogging() != null && lb.getConnectionLogging()) {
-                    updateConnectionLogging(config, lb.getAccountId(), lb.getId(), lb.getConnectionLogging());
-                }
-
                 if (lb.getProtocol().equals(CoreProtocolType.HTTP)) {
                     TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
                     attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
@@ -294,40 +290,6 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
                 throw new RollbackException(rollBackMessage, e);
             }
-        } catch (RemoteException e) {
-            throw new AdapterException(e);
-        }
-    }
-
-    @Override
-    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Boolean enabled) throws AdapterException {
-        try {
-            ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-            final String virtualServerName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
-            final String rollBackMessage = "Update connection logging request canceled.";
-            final String nonHttpLogFormat = "%v %t %h %A:%p %n %B %b %T";
-            final String httpLogFormat = "%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\"";
-
-            if (enabled) LOG.debug(String.format("ENABLING logging for virtual server '%s'...", virtualServerName));
-            else LOG.debug(String.format("DISABLING logging for virtual server '%s'...", virtualServerName));
-
-            try {
-                final VirtualServerProtocol[] protocols = serviceStubs.getVirtualServerBinding().getProtocol(new String[]{virtualServerName});
-                if (protocols[0] != ZxtmConversionUtils.mapProtocol(CoreProtocolType.HTTP)) {
-                    serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{nonHttpLogFormat});
-                } else if (protocols[0] == ZxtmConversionUtils.mapProtocol(CoreProtocolType.HTTP)) {
-                    serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{httpLogFormat});
-                }
-                serviceStubs.getVirtualServerBinding().setLogFilename(new String[]{virtualServerName}, new String[]{config.getLogFileLocation()});
-                serviceStubs.getVirtualServerBinding().setLogEnabled(new String[]{virtualServerName}, new boolean[]{enabled});
-            } catch (Exception e) {
-                if (e instanceof ObjectDoesNotExist) {
-                    LOG.error(String.format("Virtual server '%s' does not exist. Cannot update connection logging.", virtualServerName));
-                }
-                throw new RollbackException(rollBackMessage, e);
-            }
-
-            LOG.info(String.format("Successfully updated connection logging for virtual server '%s'...", virtualServerName));
         } catch (RemoteException e) {
             throw new AdapterException(e);
         }

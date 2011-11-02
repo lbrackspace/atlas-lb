@@ -408,15 +408,6 @@ public class LoadBalancerValidatorTest {
         }
 
         @Test
-        public void shouldRejectConnectionLogging() {
-            ConnectionLogging connectionLogging = new ConnectionLogging();
-            connectionLogging.setEnabled(true);
-            loadBalancer.setConnectionLogging(connectionLogging);
-            ValidatorResult result = validator.validate(loadBalancer, PUT);
-            assertFalse(result.passedValidation());
-        }
-
-        @Test
         public void shouldAcceptOnlyName() {
             loadBalancer = new LoadBalancer();
             loadBalancer.setName("Biased load BALANCER. Ha!");

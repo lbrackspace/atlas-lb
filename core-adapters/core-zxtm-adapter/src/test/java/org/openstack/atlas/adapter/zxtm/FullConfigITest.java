@@ -46,7 +46,6 @@ public class FullConfigITest extends ITestBase {
         lb_1.setProtocol(CoreProtocolType.HTTP);
         lb_1.setPort(80);
         lb_1.setAlgorithm(CoreAlgorithmType.LEAST_CONNECTIONS);
-        lb_1.setConnectionLogging(true);
         lb_1.setSessionPersistence(sessionPersistence);
         lb_1.setHealthMonitor(healthMonitor);
         lb_1.setConnectionThrottle(limit);

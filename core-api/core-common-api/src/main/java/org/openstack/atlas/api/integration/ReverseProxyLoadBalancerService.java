@@ -20,8 +20,6 @@ public interface ReverseProxyLoadBalancerService {
 
     void deleteNode(Integer accountId, Integer lbId, Node node) throws Exception;
  
-    void updateConnectionLogging(Integer accountId, Integer lbId, Boolean enabled) throws Exception;
-
     void updateConnectionThrottle(Integer accountId, Integer lbId, ConnectionThrottle connectionThrottle) throws Exception;
 
     void deleteConnectionThrottle(Integer accountId, Integer lbId) throws Exception;
