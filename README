@@ -1,36 +1,42 @@
 Requirements
 ------------
   Java >= 1.5
-  Apache Maven == 2.2.1 (Use settings from settings.xml file located in contrib/maven)
+  Apache Maven == 2.2.1 (Use the 'settings.xml' file located in the contrib/maven directory)
   Apache ActiveMQ == 5.5.0
   Glassfish >= 3.1
-  MySql
+  MySql >= 5.x
+
 
 Getting Started
 ---------------
-  mvn clean install
-     - creates public-war-packager/target/atlas-public-rest-service-x.y.z-SNAPSHOT.war
+  1) Create a MySql database called 'loadbalancing'
 
-  Create a database called 'loadbalancing' using the schema under contrib/db/loadbalancing_schema.sql
-  Create a database called 'loadbalancing_usage' using the schema under contrib/db/loadbalancing_usage_schema.sql
+  2) Follow the steps in article below to create a mysql data-source in the Glassfish application server. This is the
+     data-source used by the application to connect to the database:
 
-  Seed the 'loadbalancing' database with sample data, using the file under config/db/loadbalancing_seed.sql
-
-  Follow the steps in article below to create 2 mysql datasources in glassfish application server. These are the datasources used by the application to connect to the databases:
        http://www.albeesonline.com/blog/2008/08/06/creating-and-configuring-a-mysql-datasource-in-glassfish-application-server/
 
-       1. For the step 1 of that article, download the latest version of Mysql JDBC driver ie. 5.0.8 version.
-       2. For the first data source pointing to database loadbalancing, in the step 17 of that article, name the jndi name as jdbc/loadBalancerDB.
-       3. For the second  data source pointing to database loadbalancing_usage, in the step 17 of that article, name the jndi name as jdbc/loadBalancerUsageDB.
+       i)  For step 1 of that article, download and apply the latest version of Mysql JDBC driver ie. 5.0.8 version
+       ii) For step 17 of that article, name the jndi name as 'jdbc/atlasCoreDB'
 
-  Copy files under contrib/etc/openstack/atlas and put them under your /etc/openstack/atlas directory.
+  3) Create a directory named '/etc/openstack/atlas' and copy over all of the files in the contrib/etc/openstack/atlas
+     directory.
 
-  Start ActiveMQ on default port.
+  4) Run 'mvn clean install' to build artifacts
 
-  Deploy the lb-public-rest-service-x.y.z-SNAPSHOT.war under the atlas directory public-war-packager/target to Glassfish, choosing
-  "/v1.0" as the Context Root
+  5) Start ActiveMQ on default port
+  
+  6) Deploy the core-public-web-x.y.z-SNAPSHOT.war located in the core-api/core-public-web/target directory to
+     Glassfish, choosing '/v1.1' as the context root
 
-  Now you can access the Atlas REST APIs on port http://<hostname>:8080/v1.0/<tenant_id>/<resource>
+  7) Seed the 'loadbalancing' database with fake data (cluster, hosts, virtual ips, etc.) provided in the file
+     'core-seed.sql' located in the contrib/db/ directory
 
-  For more info on the Atlas REST API, see the "RackSpace Cloud Load Balancers API 1.0" at http://docs.rackspacecloud.com/loadbalancers/api/v1.0/clb-devguide/content/Overview-d1e82.html.
-  For OpenStack project Atlas, see https://launchpad.net/atlas-lb for now!
+  8) Now you can access the Atlas REST API via http://<hostname>:8080/v1.1/<tenant_id>/<resource>
+
+
+  For more information please visit the following:
+
+    http://wiki.openstack.org/Atlas-LB (API Documentation)
+    https://launchpad.net/atlas-lb (Process Management)
+    http://openstack.org/ (Openstack)
