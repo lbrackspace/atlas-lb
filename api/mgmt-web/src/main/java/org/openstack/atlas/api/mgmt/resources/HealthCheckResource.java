@@ -36,7 +36,7 @@ public class HealthCheckResource extends ManagementDependencyProvider {
         try {
             Host host;
             try {
-                host = hostService.getDefaultActiveHost();
+                host = hostService.getDefaultActiveHostAndActiveCluster();
             } catch (Exception e) {
                 check.setStatus("UNKNOWN");
                 check.setMessage("Database inactive, unable to determine status of zeus.");

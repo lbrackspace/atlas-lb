@@ -39,7 +39,8 @@ public class ClusterValidator implements ResourceValidator<Cluster> {
                 result(validationTarget().getPassword()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a valid password.");
                 result(validationTarget().getId()).must().not().exist().forContext(POST,PUT).withMessage("Must not include ID for this request.");
                 result(validationTarget().getDescription()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a description.");
-                // PUT EXPECTATIONS              
+                result(validationTarget().getStatus()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a status.");
+                // PUT EXPECTATIONS
                 result(validationTarget().getDataCenter()).must().not().exist().forContext(PUT).withMessage("Data Center can not be updated in this request.");
 
             }

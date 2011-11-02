@@ -19,8 +19,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@RunWith(Enclosed.class)
 @Ignore
+@RunWith(Enclosed.class)
 public class LoadBalancerServiceImplIntegrationTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
@@ -51,6 +51,11 @@ public class LoadBalancerServiceImplIntegrationTest {
             node.setCondition(NodeCondition.ENABLED);
             nodes.add(node);
             loadBalancer.setNodes(nodes);
+
+            UserPages userPages = new UserPages();
+            userPages.setErrorpage("aError");
+            userPages.setLoadbalancer(loadBalancer);
+            loadBalancer.setUserPages(userPages);
         }
 
         @After

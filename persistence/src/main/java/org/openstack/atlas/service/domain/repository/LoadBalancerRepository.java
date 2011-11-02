@@ -1260,7 +1260,7 @@ public class LoadBalancerRepository {
     }
 
     public List<LoadBalancer> getAllWithNode(String nodeAddress, Integer accountId) {
-        List<Object> retLoadbalancers = entityManager.createQuery("SELECT l FROM LoadBalancer l, Node n WHERE l.id = n.loadbalancer.id AND l.accountId = :accountId AND n.ipAddress = :address").setParameter("accountId", accountId).setParameter("address", nodeAddress).getResultList();
+        List<Object> retLoadbalancers = entityManager.createQuery("SELECT l FROM LoadBalancer l, Node n WHERE l.id = n.loadbalancer.id AND l.accountId = :accountId AND n.ipAddress = :address AND l.status <> 'DELETED' AND l.status <> 'PENDING_DELETE'").setParameter("accountId", accountId).setParameter("address", nodeAddress).getResultList();
         List<LoadBalancer> loadbalancers = new ArrayList<LoadBalancer>();
         for (Object o : retLoadbalancers) {
             loadbalancers.add((LoadBalancer)o);

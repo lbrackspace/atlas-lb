@@ -1,6 +1,10 @@
 package org.openstack.atlas.adapter.zxtm;
 
 import com.zxtm.service.client.*;
+import org.apache.axis.AxisFault;
+import org.apache.axis.types.UnsignedInt;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.VirtualServerListeningOnAllAddressesException;
@@ -8,6 +12,7 @@ import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.helpers.NodeHelper;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Cidr;
@@ -15,14 +20,8 @@ import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Hostsubnet;
 import org.openstack.atlas.service.domain.pojos.NetInterface;
 import org.openstack.atlas.service.domain.util.Constants;
-import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.converters.StringConverter;
-import org.apache.axis.AxisFault;
-import org.apache.axis.types.UnsignedInt;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import sun.nio.cs.ext.ISO_8859_11;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -1324,6 +1323,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         setDisabledNodes(config, poolName, getNodesWithCondition(allNodes, NodeCondition.DISABLED));
         setDrainingNodes(config, poolName, getNodesWithCondition(allNodes, NodeCondition.DRAINING));
         setNodeWeights(config, loadBalancerId, accountId, allNodes);
+        serviceStubs.getPoolBinding().setPassiveMonitoring(new String[]{poolName}, new boolean[]{false});
     }
 
     private List<Node> getNodesWithCondition(Collection<Node> nodes, NodeCondition nodeCondition) {

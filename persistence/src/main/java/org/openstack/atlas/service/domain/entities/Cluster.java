@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.entities;
 
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -12,6 +14,7 @@ public class Cluster extends Entity implements Serializable {
 
     @Column(name = "name", unique = true, nullable = false)
     private String name;
+
     @Column(name = "description", nullable = false)
     private String description;
 
@@ -20,6 +23,10 @@ public class Cluster extends Entity implements Serializable {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length=11, nullable = false)
+    private ClusterStatus status;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "data_center", length=32, nullable = false)
@@ -80,6 +87,14 @@ public class Cluster extends Entity implements Serializable {
 
     public void setDataCenter(DataCenter dataCenter) {
         this.dataCenter = dataCenter;
+    }
+
+    public ClusterStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ClusterStatus status) {
+        this.status = status;
     }
 
     public String getClusterIpv6Cidr() {

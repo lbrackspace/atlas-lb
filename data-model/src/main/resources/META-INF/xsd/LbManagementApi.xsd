@@ -142,6 +142,13 @@
         <xsd:attribute name="serviceNetdaysavailable" type="xsd:long"/>
     </xsd:complexType>
 
+    <xsd:simpleType name="clusterStatus">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ACTIVE"/>
+            <xsd:enumeration value="INACTIVE"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
     <xsd:element name="clusters" type="tns:clusters"/>
     <xsd:complexType name="clusters">
         <xsd:sequence>
@@ -162,6 +169,7 @@
         <xsd:attribute name="numberOfHostMachines" type="xsd:int"/>
         <xsd:attribute name="utilization" type="xsd:string"/>
         <xsd:attribute name="clusterIpv6Cidr" type="xsd:string"/>
+        <xsd:attribute name="status" type="tns:clusterStatus"/>
     </xsd:complexType>
 
     <xsd:element name="hosts" type="tns:hosts"/>
