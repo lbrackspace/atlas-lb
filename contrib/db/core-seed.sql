@@ -47,10 +47,9 @@ UNLOCK TABLES;
 
 LOCK TABLES `limit_type` WRITE;
 /*!40000 ALTER TABLE `limit_type` DISABLE KEYS */;
-INSERT INTO `limit_type` VALUES ('CORE', 'ACCESS_LIST_LIMIT',100,'Max number of items for an access list');
-INSERT INTO `limit_type` VALUES ('CORE', 'BATCH_DELETE_LIMIT',10,'Max number of items that can be deleted for batch delete operations');
-INSERT INTO `limit_type` VALUES ('CORE', 'IPV6_LIMIT',25,'Max number of IPv6 addresses for a load balancer');
 INSERT INTO `limit_type` VALUES ('CORE', 'LOADBALANCER_LIMIT',25,'Max number of load balancers for an account');
 INSERT INTO `limit_type` VALUES ('CORE', 'NODE_LIMIT',25,'Max number of nodes for a load balancer');
+INSERT INTO `limit_type` VALUES ('CORE', 'IPV6_LIMIT',25,'Max number of IPv6 addresses for a load balancer');
+INSERT INTO `limit_type` VALUES ('CORE', 'BATCH_DELETE_LIMIT',10,'Max number of items that can be deleted for batch delete operations');
 /*!40000 ALTER TABLE `limit_type` ENABLE KEYS */;
 UNLOCK TABLES;

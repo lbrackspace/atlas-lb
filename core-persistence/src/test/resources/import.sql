@@ -9,8 +9,7 @@ INSERT INTO `host` (`vendor`, `id`, `name`, `host_status`, `endpoint`, `endpoint
 
 INSERT INTO `virtual_ipv4` VALUES ('CORE', 1,'10.0.0.1', FALSE, NULL, NULL ,'PUBLIC',1) ,('CORE', 2,'10.0.0.2', FALSE, NULL, NULL ,'PUBLIC',1) ,('CORE', 3,'10.0.0.3', FALSE, NULL, NULL ,'PUBLIC',1) ,('CORE', 4,'10.0.0.4', FALSE, NULL, NULL ,'PUBLIC',1) ,('CORE', 5,'10.0.0.5', FALSE, NULL, NULL ,'PUBLIC',1) ,('CORE', 6,'10.0.0.6', FALSE, NULL, NULL ,'PUBLIC',1) ,('CORE', 7,'10.0.0.7', FALSE, NULL, NULL ,'PUBLIC',1) ,('CORE', 8,'10.0.0.8', FALSE, NULL, NULL ,'PUBLIC',1) ,('CORE', 9,'10.0.0.9', FALSE, NULL, NULL ,'PUBLIC',1) ,('CORE', 10,'10.0.0.10', FALSE, NULL, NULL ,'PUBLIC',1) ,('CORE', 11,'10.0.0.11', FALSE, NULL, NULL ,'PRIVATE',1) ,('CORE', 12,'10.0.0.12', FALSE, NULL, NULL ,'PRIVATE',1) ,('CORE', 13,'10.0.0.13', FALSE, NULL, NULL ,'PRIVATE',1) ,('CORE', 14,'10.0.0.14', FALSE, NULL, NULL ,'PRIVATE',1) ,('CORE', 15,'10.0.0.15', FALSE, NULL, NULL ,'PRIVATE',1) ,('CORE', 16,'10.0.0.16', FALSE, NULL, NULL ,'PRIVATE',1) ,('CORE', 17,'10.0.0.17', FALSE, NULL, NULL ,'PRIVATE',1) ,('CORE', 18,'10.0.0.18', FALSE, NULL, NULL ,'PRIVATE',1) ,('CORE', 19,'10.0.0.19', FALSE, NULL, NULL ,'PRIVATE',1) ,('CORE', 20,'10.0.0.20', FALSE, NULL, NULL ,'PRIVATE',1);
 
-INSERT INTO `limit_type` VALUES ('CORE', 'ACCESS_LIST_LIMIT',100,'Max number of items for an access list');
-INSERT INTO `limit_type` VALUES ('CORE', 'BATCH_DELETE_LIMIT',10,'Max number of items that can be deleted for batch delete operations');
-INSERT INTO `limit_type` VALUES ('CORE', 'IPV6_LIMIT',25,'Max number of IPv6 addresses for a load balancer');
 INSERT INTO `limit_type` VALUES ('CORE', 'LOADBALANCER_LIMIT',25,'Max number of load balancers for an account');
 INSERT INTO `limit_type` VALUES ('CORE', 'NODE_LIMIT',25,'Max number of nodes for a load balancer');
+INSERT INTO `limit_type` VALUES ('CORE', 'IPV6_LIMIT',25,'Max number of IPv6 addresses for a load balancer');
+INSERT INTO `limit_type` VALUES ('CORE', 'BATCH_DELETE_LIMIT',10,'Max number of items that can be deleted for batch delete operations');
