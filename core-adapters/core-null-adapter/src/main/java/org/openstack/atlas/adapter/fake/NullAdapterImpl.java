@@ -47,11 +47,6 @@ public class NullAdapterImpl implements LoadBalancerAdapter {
     }
 
     @Override
-    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Boolean enabled) throws AdapterException {
-        LOG.info("updateConnectionLogging");// NOP
-    }
-
-    @Override
     public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, ConnectionThrottle connectionThrottle) throws AdapterException {
         LOG.info("updateConnectionThrottle");// NOP
     }

@@ -2,10 +2,7 @@ package org.openstack.atlas.service.domain.common;
 
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.datamodel.CoreNodeStatus;
-import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip;
-import org.openstack.atlas.service.domain.entity.VirtualIp;
-import org.openstack.atlas.service.domain.entity.VirtualIpType;
+import org.openstack.atlas.service.domain.entity.*;
 
 public class LoadBalancerDefaultBuilder {
 
@@ -16,12 +13,11 @@ public class LoadBalancerDefaultBuilder {
         loadBalancer.setStatus(CoreLoadBalancerStatus.QUEUED);
         NodesHelper.setNodesToStatus(loadBalancer, CoreNodeStatus.ONLINE);
 
-        // Add an IPv4 virtual ip as default
+        // Add an IPv6 virtual ip as default
         if (loadBalancer.getLoadBalancerJoinVipSet().isEmpty() && loadBalancer.getLoadBalancerJoinVip6Set().isEmpty()) {
-            VirtualIp virtualIp = new VirtualIp();
-            virtualIp.setVipType(VirtualIpType.PUBLIC);
-            LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip(loadBalancer.getPort(), loadBalancer, virtualIp);
-            loadBalancer.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);
+            VirtualIpv6 virtualIpv6 = new VirtualIpv6();
+            LoadBalancerJoinVip6 loadBalancerJoinVip = new LoadBalancerJoinVip6(loadBalancer.getPort(), loadBalancer, virtualIpv6);
+            loadBalancer.getLoadBalancerJoinVip6Set().add(loadBalancerJoinVip);
         }
 
         return loadBalancer;
