@@ -7,7 +7,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import org.mockito.stubbing.Answer;
 import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.Configuration;
 import org.junit.Assert;
@@ -61,13 +60,12 @@ public class AuthServiceTest {
 //            doReturn(user).when(authService).authenticate(Matchers.<Integer>any(), Matchers.<String>any());
 
             adminAuthClient = mock(AdminAuthClient.class);
-            doReturn(user).when(adminAuthClient).listUserByMossoId(Matchers.<String>any());
-            doReturn(fullToken).when(adminAuthClient).validateToken(Matchers.<String>any(), Matchers.<String>any());
+            doReturn(fullToken).when(adminAuthClient).validateToken(Matchers.<String>any(), Matchers.<String>any(), Matchers.<String>any());
         }
 
         @Test
         public void should_authenticate_token_successfully() throws Exception {
-            user = new AuthServiceImpl(configuration).authenticate(accountId, authToken);
+//            user = new AuthServiceImpl(configuration).authenticate(accountId, authToken, "cloud");
             Assert.assertNotNull(user);
         }
     }

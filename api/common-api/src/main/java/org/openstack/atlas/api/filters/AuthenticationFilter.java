@@ -1,11 +1,9 @@
 package org.openstack.atlas.api.filters;
 
-import org.apache.xmlrpc.XmlRpcException;
 import org.openstack.atlas.util.simplecache.CacheEntry;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.LoadBalancerFault;
 import org.openstack.atlas.api.auth.AuthInfo;
 import org.openstack.atlas.api.auth.AuthTokenValidator;
-import org.openstack.atlas.api.caching.CacheRepository;
 import org.openstack.atlas.api.exceptions.MalformedUrlException;
 import org.openstack.atlas.api.filters.wrappers.HeadersRequestWrapper;
 import org.openstack.atlas.api.helpers.UrlAccountIdExtractor;
@@ -25,7 +23,7 @@ import javax.xml.bind.Marshaller;
 import java.io.IOException;
 
 import org.openstack.atlas.util.simplecache.SimpleCache;
-import org.openstack.user.User;
+import org.openstack.keystone.auth.pojo.exceptions.AuthException;
 
 import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtendedStackTrace;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -58,7 +56,7 @@ public class AuthenticationFilter implements Filter {
             String INVALID_TOKEN_MESSAGE = "Invalid authentication token. Please renew";
             String authToken = httpServletRequest.getHeader("X-AUTH-TOKEN");
             Integer accountId;
-            String userName;
+            String username = null;
 
             purged = userCache.cleanExpiredByCount(); // Prevent unchecked entries from Living forever
             if (purged > 0) {
@@ -94,32 +92,37 @@ public class AuthenticationFilter implements Filter {
                 }
 
                 if (authInfo == null || !authInfo.getAuthToken().equals(authToken)) {
-                    User user = authTokenValidator.validate(accountId, authToken);
-                    if (user == null) {
+                    username = authTokenValidator.validate(accountId, authToken);
+                    if (username == null) {
                         sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                         return;
                     }
 
-                    userName = user.getId();
-                    authInfo = new AuthInfo(userName, authToken);
+                    authInfo = new AuthInfo(username, authToken);
 
                     LOG.debug(String.format("insert %s into userCache", accountStr));
                     userCache.put(accountStr, authInfo);
 
                 } else {
-                    userName = authInfo.getUserName();
+                    username = authInfo.getUserName();
                 }
 
             } catch (Exception e) {
-                String exceptMsg = getExtendedStackTrace(e);
-                LOG.error(String.format("Error while authenticating user:%s\n", exceptMsg));
-                sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
-                return;
+                if (e instanceof AuthException) {
+                    String exceptMsg = getExtendedStackTrace(e);
+                    LOG.error(String.format("Error while authenticating user:%s\n", exceptMsg));
+                    sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
+                    return;
+                } else {
+                    httpServletResponse.sendError(500, e.getMessage());
+
+                }
+
             }
 
             HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
             enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
-            enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, userName);
+            enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, username);
 
             try {
                 LOG.info("Request successfully authenticated, passing control to the servlet. Account: " + accountId);

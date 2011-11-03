@@ -6,9 +6,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 
 import org.openstack.atlas.api.filters.helpers.StringUtilities;
 import org.openstack.keystone.auth.client.AdminAuthClient;
+import org.openstack.keystone.auth.pojo.exceptions.AuthException;
 import org.openstack.user.User;
 
 public class AuthServiceImpl implements AuthService {
@@ -27,24 +29,20 @@ public class AuthServiceImpl implements AuthService {
             LOG.error(StringUtilities.AUTH_INIT_FAIL);
             throw new MalformedURLException(StringUtilities.AUTH_INIT_FAIL);
         }
-
-//        if (HttpsCertIgnore.getInitException() != null) {
-//            Exception ex = HttpsCertIgnore.getInitException();
-//            throw new MalformedURLException(StringUtilities.getHttpsInitExceptionString(ex));
-//        }
     }
 
     @Override
-    public User authenticate(Integer passedAccountId, String authToken) throws Exception {
-        try {
-            User mossoUser = getUserByAccountId(passedAccountId);
-            return adminAuthClient.validateToken(mossoUser.getId(), authToken) != null ? mossoUser : null;
-        } catch (Exception e) {
-            throw new Exception("There was an error communicating with the auth service: " + e.getMessage());
-        }
+    public String authenticate(Integer passedAccountId, String authToken, String type) throws AuthException, URISyntaxException {
+        return adminAuthClient.validateToken(passedAccountId, authToken, type).getUserId();
     }
 
-    private User getUserByAccountId(Integer passedAccountId) throws Exception {
-        return adminAuthClient.listUserByMossoId(String.valueOf(passedAccountId));
+    @Override
+    public User getUser(String userId) throws AuthException, URISyntaxException {
+        return adminAuthClient.listUser(userId);
+    }
+
+    @Override
+    public User getUserByAlternateId(String userId, String type) throws AuthException, URISyntaxException {
+        return adminAuthClient.listUserByAlternateId(userId, type);
     }
 }
