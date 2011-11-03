@@ -1,0 +1,111 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.openstack.atlas</groupId>
+        <artifactId>core-parent-adapter</artifactId>
+        <version>1.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>core-netscaler-adapter</artifactId>
+    <name>Openstack :: Atlas :: Core :: Adapter :: NetScaler </name>
+
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>core-adapter-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>core-persistence</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+	<dependency>
+    	    <groupId>com.sun.jersey</groupId>
+    	    <artifactId>jersey-client</artifactId>
+    	    <version>1.8</version>
+	</dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+             <plugin>
+                 <inherited>true</inherited>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-compiler-plugin</artifactId>
+                 <configuration>
+                     <source>1.6</source>
+                     <target>1.6</target>
+                     <!--<optimize>true</optimize> -->
+                     <debug>true</debug>
+                 </configuration>
+             </plugin>
+
+             <plugin>
+                 <artifactId>maven-release-plugin</artifactId>
+                 <version>2.1</version>
+                 <configuration>
+                    <preparationGoals>clean install</preparationGoals>
+                 </configuration>
+             </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>1.3</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jvnet.jaxb2-commons</groupId>
+                        <artifactId>collection-setter-injector</artifactId>
+                        <version>1.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>xew</groupId>
+                        <artifactId>xew-openstack</artifactId>
+                        <version>1.0.0</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>generate-ns-cloud-loadbalancer</id>
+                        <configuration>
+                            <staleFile>target/lb.staleFile</staleFile>
+                            <extension>true</extension>
+                            <schemaDirectory>
+                                ${basedir}/src/main/resources/META-INF/xsd
+                            </schemaDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <schemaFiles>NSCloudLoadBalancerApi.xsd</schemaFiles>
+                            <packageName>com.citrix.cloud.netscaler.atlas.docs.loadbalancers.api.v1</packageName>
+                            <!--<arguments>-Xcollection-setter-injector</arguments>-->
+                            <arguments>-Xxew -setters</arguments>
+                        </configuration>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
