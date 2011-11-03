@@ -31,6 +31,7 @@ import static org.openstack.atlas.service.domain.entities.AccessListType.DENY;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.ROUND_ROBIN;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.DISABLED;
+import static org.openstack.atlas.service.domain.entities.NodeCondition.DRAINING;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
 
@@ -89,6 +90,7 @@ public class ZxtmAdapterImplTest {
             when(serviceStubs.getZxtmRuleCatalogService()).thenReturn(ruleStub);
             when(serviceStubs.getZxtmRateCatalogService()).thenReturn(rateStub);
 
+            when(serviceStubs.getPoolBinding().getLoadBalancingAlgorithm(Matchers.<String[]>any())).thenReturn(new PoolLoadBalancingAlgorithm[]{PoolLoadBalancingAlgorithm.wroundrobin});
             when(serviceStubs.getVirtualServerBinding().getRules(Matchers.<String[]>any())).thenReturn(new VirtualServerRule[][]{{}});
             when(serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(Matchers.<String[]>any())).thenReturn(new boolean[]{false});
             when(serviceStubs.getVirtualServerBinding().getProtocol(Matchers.<String[]>any())).thenReturn(new VirtualServerProtocol[]{VirtualServerProtocol.fromValue(VirtualServerProtocol._http)});
@@ -112,7 +114,7 @@ public class ZxtmAdapterImplTest {
             node2.setIpAddress("127.0.0.2");
             node1.setPort(80);
             node2.setPort(80);
-            node1.setCondition(ENABLED);
+            node1.setCondition(DRAINING);
             node2.setCondition(DISABLED);
             node1.setWeight(5);
             node2.setWeight(10);
@@ -135,13 +137,13 @@ public class ZxtmAdapterImplTest {
             InOrder inOrder = inOrder(poolStub, vsStub, trafficIpGroupStub, ruleStub, rateStub);
             adapterSpy.createLoadBalancer(dummyConfig, lb);
             inOrder.verify(poolStub).addPool(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
+            inOrder.verify(poolStub).setLoadBalancingAlgorithm(Matchers.<String[]>anyObject(), Matchers.<PoolLoadBalancingAlgorithm[]>anyObject());
             inOrder.verify(poolStub).setDisabledNodes(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
             inOrder.verify(poolStub).setDrainingNodes(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
             inOrder.verify(poolStub).setNodesWeightings(Matchers.<String[]>anyObject(), Matchers.<PoolWeightingsDefinition[][]>anyObject());
             inOrder.verify(vsStub).addVirtualServer(Matchers.<String[]>anyObject(), Matchers.<VirtualServerBasicInfo[]>anyObject());
             inOrder.verify(trafficIpGroupStub).addTrafficIPGroup(Matchers.<String[]>anyObject(), Matchers.<TrafficIPGroupsDetails[]>anyObject());
             inOrder.verify(vsStub).setListenTrafficIPGroups(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(poolStub).setLoadBalancingAlgorithm(Matchers.<String[]>anyObject(), Matchers.<PoolLoadBalancingAlgorithm[]>anyObject());
 //            inOrder.verify(ruleStub).getRuleNames();
 //            inOrder.verify(vsStub).getProtocol(Matchers.<String[]>any());
         }
@@ -182,13 +184,13 @@ public class ZxtmAdapterImplTest {
             InOrder inOrder = inOrder(poolStub, vsStub, trafficIpGroupStub, monitorStub, protectionStub);
             adapterSpy.createLoadBalancer(dummyConfig, lb);
             inOrder.verify(poolStub).addPool(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
+            inOrder.verify(poolStub).setLoadBalancingAlgorithm(Matchers.<String[]>anyObject(), Matchers.<PoolLoadBalancingAlgorithm[]>anyObject());
             inOrder.verify(poolStub).setDisabledNodes(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
             inOrder.verify(poolStub).setDrainingNodes(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
             inOrder.verify(poolStub).setNodesWeightings(Matchers.<String[]>anyObject(), Matchers.<PoolWeightingsDefinition[][]>anyObject());
             inOrder.verify(vsStub).addVirtualServer(Matchers.<String[]>anyObject(), Matchers.<VirtualServerBasicInfo[]>anyObject());
             inOrder.verify(trafficIpGroupStub).addTrafficIPGroup(Matchers.<String[]>anyObject(), Matchers.<TrafficIPGroupsDetails[]>anyObject());
             inOrder.verify(vsStub).setListenTrafficIPGroups(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(poolStub).setLoadBalancingAlgorithm(Matchers.<String[]>anyObject(), Matchers.<PoolLoadBalancingAlgorithm[]>anyObject());
             inOrder.verify(poolStub).setPersistence(Matchers.<String[]>anyObject(), Matchers.<String[]>anyObject());
             inOrder.verify(monitorStub).setType(Matchers.<String[]>anyObject(), Matchers.<CatalogMonitorType[]>anyObject());
             inOrder.verify(vsStub).setProtection(Matchers.<String[]>anyObject(), Matchers.<String[]>anyObject());

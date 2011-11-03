@@ -63,7 +63,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug(String.format("Creating load balancer '%s'...", virtualServerName));
 
         try {
-            createNodePool(config, lb.getId(), lb.getAccountId(), lb.getNodes());
+            createNodePool(config, lb.getId(), lb.getAccountId(), lb.getNodes(), algorithm);
         } catch (Exception e) {
             deleteNodePool(serviceStubs, poolName);
             throw new ZxtmRollBackException(rollBackMessage, e);
@@ -87,8 +87,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
             /* UPDATE REST OF LOADBALANCER CONFIG */
-
-            setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), algorithm);
 
             if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE)) {
                 setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
@@ -268,7 +266,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 removeRateLimitRulesFromVirtualServer(serviceStubs, virtualServerName);
             }
 
-            LOG.debug(String.format("Updating protocol for virtual server '%s'...", virtualServerName));
+            LOG.debug(String.format("Updating protocol to '%s' for virtual server '%s'...", protocol.name(), virtualServerName));
             serviceStubs.getVirtualServerBinding().setProtocol(new String[]{virtualServerName}, new VirtualServerProtocol[]{ZxtmConversionUtils.mapProtocol(protocol)});
             LOG.info(String.format("Successfully updated protocol for virtual server '%s'.", virtualServerName));
 
@@ -300,7 +298,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
 
         try {
-            LOG.debug(String.format("Updating port for virtual server '%s'...", virtualServerName));
+            LOG.debug(String.format("Updating port to '%d' for virtual server '%s'...", port, virtualServerName));
             serviceStubs.getVirtualServerBinding().setPort(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(port)});
             LOG.info(String.format("Successfully updated port for virtual server '%s'.", virtualServerName));
         } catch (Exception e) {
@@ -318,7 +316,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
 
         try {
-            LOG.debug(String.format("Setting load balancing algorithm for node pool '%s'...", poolName));
+            LOG.debug(String.format("Setting load balancing algorithm to '%s' for node pool '%s'...", algorithm.name(), poolName));
             serviceStubs.getPoolBinding().setLoadBalancingAlgorithm(new String[]{poolName}, new PoolLoadBalancingAlgorithm[]{ZxtmConversionUtils.mapAlgorithm(algorithm)});
             LOG.info(String.format("Load balancing algorithm successfully set for node pool '%s'...", poolName));
         } catch (Exception e) {
@@ -555,6 +553,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
+    private void attachXFFRuleToVirtualServerForced(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
+        LOG.debug(String.format("Attaching the XFF rule and enabling it on load balancer '%s'...", virtualServerName));
+        serviceStubs.getVirtualServerBinding().addRules(new String[]{virtualServerName}, new VirtualServerRule[][]{{ZxtmAdapterImpl.ruleXForwardedFor}});
+        LOG.debug(String.format("XFF rule successfully enabled on load balancer '%s'.", virtualServerName));
+    }
+
     private void removeXFFRuleFromVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
         LOG.debug(String.format("Removing the XFF rule from load balancer '%s'...", virtualServerName));
         VirtualServerRule[][] virtualServerRules = serviceStubs.getVirtualServerBinding().getRules(new String[]{virtualServerName});
@@ -758,6 +762,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     private void setDisabledNodes(LoadBalancerEndpointConfiguration config, String poolName, List<Node> nodesToDisable) throws RemoteException {
+        if (nodesToDisable == null || nodesToDisable.isEmpty()) return;
+
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         LOG.debug(String.format("Setting disabled nodes for pool '%s'", poolName));
@@ -765,6 +771,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     private void setDrainingNodes(LoadBalancerEndpointConfiguration config, String poolName, List<Node> nodesToDrain) throws RemoteException {
+        if (nodesToDrain == null || nodesToDrain.isEmpty()) return;
+
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         LOG.debug(String.format("Setting draining nodes for pool '%s'", poolName));
@@ -816,9 +824,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         final String rollBackMessage = "Update node weights request canceled.";
 
         try {
-            LOG.debug(String.format("Setting node weights for pool '%s'...", poolName));
-            serviceStubs.getPoolBinding().setNodesWeightings(new String[]{poolName}, buildPoolWeightingsDefinition(nodes));
-            LOG.info(String.format("Node weights successfully set for pool '%s'.", poolName));
+            final PoolLoadBalancingAlgorithm[] loadBalancingAlgorithm = serviceStubs.getPoolBinding().getLoadBalancingAlgorithm(new String[]{poolName});
+            if (loadBalancingAlgorithm[0].equals(PoolLoadBalancingAlgorithm.wroundrobin) || loadBalancingAlgorithm[0].equals(PoolLoadBalancingAlgorithm.wconnections)) {
+                LOG.debug(String.format("Setting node weights for pool '%s'...", poolName));
+                serviceStubs.getPoolBinding().setNodesWeightings(new String[]{poolName}, buildPoolWeightingsDefinition(nodes));
+                LOG.info(String.format("Node weights successfully set for pool '%s'.", poolName));
+            }
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.error(String.format("Node pool '%s' does not exist. Cannot update node weights", poolName), e);
@@ -1313,12 +1324,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         return array;
     }
 
-    private void createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> allNodes) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    private void createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> allNodes, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancerId, accountId);
 
         LOG.debug(String.format("Creating pool '%s' and setting nodes...", poolName));
         serviceStubs.getPoolBinding().addPool(new String[]{poolName}, NodeHelper.getIpAddressesFromNodes(allNodes));
+
+        setLoadBalancingAlgorithm(config, loadBalancerId, accountId, algorithm);
 
         setDisabledNodes(config, poolName, getNodesWithCondition(allNodes, NodeCondition.DISABLED));
         setDrainingNodes(config, poolName, getNodesWithCondition(allNodes, NodeCondition.DRAINING));
