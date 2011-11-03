@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema elementFormDefault="qualified"
+            targetNamespace="http://docs.citrix.com/cloud/netscaler/loadbalancers/global/api/v1.0"
+            xmlns:tns="http://docs.citrix.com/cloud/netscaler/loadbalancers/global/api/v1.0"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+            jaxb:version="2.1"
+            xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+            jaxb:extensionBindingPrefixes="xjc">
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <jaxb:globalBindings>
+                <!--this is an experimental mode and it is subject to change-->
+                <!--http://weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html-->
+                <xjc:simple/>
+                <xjc:serializable uid="5425127198"/>
+                <jaxb:javaType name="java.util.Calendar" xmlType="xsd:date"
+                               parseMethod="javax.xml.bind.DatatypeConverter.parseDate"
+                               printMethod="javax.xml.bind.DatatypeConverter.printDate"/>
+
+            </jaxb:globalBindings>
+        </xsd:appinfo>
+    </xsd:annotation>
+    
+</xsd:schema>
