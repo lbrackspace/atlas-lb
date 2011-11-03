@@ -17,6 +17,8 @@
         <module>core-adapter-common</module>
         <module>core-null-adapter</module>
         <module>core-zxtm-adapter</module>
+        <module>core-netscaler-adapter</module>
+
     </modules>
 
     <build>
