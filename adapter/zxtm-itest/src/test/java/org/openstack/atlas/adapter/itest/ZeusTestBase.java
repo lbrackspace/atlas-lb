@@ -28,12 +28,12 @@ public class ZeusTestBase {
     public static final Integer SLEEP_TIME_BETWEEN_TESTS = 500;
 
     // TODO: get this from external config...
-    public static final String ZXTM_USERNAME = "user_name";
-    public static final String ZXTM_PASSWORD = "user_password";
-    public static final String ZXTM_ENDPOINT_URI = "https://zeus-endpoint:9090/soap";
-    public static final String TARGET_HOST = "ztm-n01.test.com";
-    public static final String FAILOVER_HOST_1 = "ztm-n03.test.com";
-    public static final String FAILOVER_HOST_2 = "ztm-n04.test.com";
+    public static final String ZXTM_USERNAME = "lbaas_dev";
+    public static final String ZXTM_PASSWORD = "9pdJF2scMUmXfs";
+    public static final String ZXTM_ENDPOINT_URI = "https://ztm-n01:9090/soap";
+    public static final String TARGET_HOST = "ztm-n01.dev.lbaas.rackspace.com";
+    public static final String FAILOVER_HOST_1 = "ztm-n03.dev.lbaas.rackspace.com";
+    public static final String FAILOVER_HOST_2 = "ztm-n04.dev.lbaas.rackspace.com";
     public static final String DEFAULT_LOG_FILE_LOCATION = "/opt/zeus/zxtm/log/access_log";
     public static final Integer TEST_ACCOUNT_ID = 999999;
     public static final Integer TEST_LOADBALANCER_ID = 999999;

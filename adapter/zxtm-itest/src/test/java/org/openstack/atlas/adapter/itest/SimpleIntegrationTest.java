@@ -22,6 +22,7 @@ import java.util.Map;
 import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
 import static org.openstack.atlas.service.domain.entities.AccessListType.DENY;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.RANDOM;
+import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.*;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
@@ -97,6 +98,9 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
     @Test
     public void testNodeOperations() throws Exception {
+        // Update algorithm so we can test that node weights get set properly
+        zxtmAdapter.setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), WEIGHTED_LEAST_CONNECTIONS);
+
         setNodes();
         updateNodeConditionsToEnabled();
         shouldRollbackWhenUpdatingAllNodeConditionsToDisabled();
