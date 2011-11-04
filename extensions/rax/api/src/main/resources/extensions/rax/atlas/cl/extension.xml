@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension xmlns="http://docs.openstack.org/common/api/v1.0"
+            xmlns:atom="http://www.w3.org/2005/Atom"
+            name="Rackspace Atlas Connection Logging" namespace="http://docs.rackspace.com/identity/api/ext/RAX-ATLASCL/v1.0"
+            alias="RAX-ATLASCL"
+            updated="2011-08-14T13:25:27-06:00">
+            <description>
+                        Rackspace extensions to Atlas v1.1 API
+                        enabling connection logging for load
+                        balancers.
+            </description>
+            <atom:link rel="describedby" type="application/pdf"
+                        href="https://github.com/openstack/atlas/master/extensions/rax/contrib/RAX-ATLASCL-service-devguide.pdf"/>
+</extension>
