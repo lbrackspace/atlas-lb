@@ -19,12 +19,8 @@ public class AuthServiceImpl implements AuthService {
 
     public AuthServiceImpl(Configuration cfg) throws MalformedURLException {
         if (cfg.hasKeys(PublicApiServiceConfigurationKeys.auth_callback_uri, PublicApiServiceConfigurationKeys.auth_username, PublicApiServiceConfigurationKeys.auth_password)) {
-            String basicAuthUsername = cfg.getString(PublicApiServiceConfigurationKeys.auth_username);
-            String basicAuthPassword = cfg.getString(PublicApiServiceConfigurationKeys.auth_password);
-            String authUrl = cfg.getString(PublicApiServiceConfigurationKeys.auth_callback_uri);
-
-            LOG.info("AUTH URI from LOCAL CONF: " + authUrl);
-            adminAuthClient = new AdminAuthClient(authUrl, basicAuthUsername, basicAuthPassword);
+            LOG.info("AUTH URI from LOCAL CONF: " + cfg.getString(PublicApiServiceConfigurationKeys.auth_callback_uri));
+            adminAuthClient = new AdminAuthClient(cfg.getString(PublicApiServiceConfigurationKeys.auth_callback_uri), cfg.getString(PublicApiServiceConfigurationKeys.auth_username), cfg.getString(PublicApiServiceConfigurationKeys.auth_password));
         } else {
             LOG.error(StringUtilities.AUTH_INIT_FAIL);
             throw new MalformedURLException(StringUtilities.AUTH_INIT_FAIL);
