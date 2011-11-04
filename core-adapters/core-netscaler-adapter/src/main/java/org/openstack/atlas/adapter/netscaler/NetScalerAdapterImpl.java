@@ -123,15 +123,8 @@ public class NetScalerAdapterImpl implements LoadBalancerAdapter {
     {
         LOG.info("updateNodes");// NOP
     }
- 
-     
+
     
-    @Override
-    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Boolean enabled) throws AdapterException {
-        throw new AdapterException("Not implemented by this adapter.", new Error());
-    }
-
-
     @Override
     public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, ConnectionThrottle conThrottle) 
         throws AdapterException 
