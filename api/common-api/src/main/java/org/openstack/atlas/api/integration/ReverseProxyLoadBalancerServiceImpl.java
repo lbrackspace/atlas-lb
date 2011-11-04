@@ -8,6 +8,7 @@ import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
+import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
@@ -22,10 +23,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBalancerService {
 
@@ -379,6 +377,19 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             throw af;
         }
         return conn;
+    }
+
+    @Override
+    public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
+        Stats lbStats;
+        try {
+            lbStats = reverseProxyLoadBalancerAdapter.getLoadBalancerStats(config, loadbalancerId, accountId);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+        return lbStats;
     }
 
     @Override

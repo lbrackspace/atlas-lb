@@ -48,6 +48,7 @@
         <property name="usageService" ref="usageService" />
         <property name="accountLimitService" ref="accountLimitService" />
         <property name="requestStateContainer" ref="requestStateContainer"/>
+        <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
     </bean>
 
     <!--DOZER SETTINGS-->

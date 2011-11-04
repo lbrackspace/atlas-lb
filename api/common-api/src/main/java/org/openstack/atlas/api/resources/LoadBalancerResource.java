@@ -14,6 +14,7 @@ import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.apache.abdera.model.Feed;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.pojos.Stats;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
@@ -109,6 +110,18 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entities.LoadBalancer dbLb = loadBalancerService.get(domainLb.getId(), domainLb.getAccountId());
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_LOADBALANCER, dbLb);
             return Response.status(Response.Status.ACCEPTED).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @GET
+    @Path("stats")
+    @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
+    public Response retrieveLoadBalancerStats() {
+        try {
+            Stats stats = reverseProxyLoadBalancerService.getLoadBalancerStats(id, accountId);
+            return Response.status(Response.Status.OK).entity(stats).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

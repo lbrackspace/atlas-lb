@@ -1,6 +1,8 @@
 package org.openstack.atlas.api.resources.providers;
 
 import java.util.ArrayList;
+
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.*;
@@ -40,6 +42,15 @@ public class CommonDependencyProvider {
     protected AlgorithmsService algorithmsService;
     protected UsageService usageService;
     protected ProtocolsService protocolsService;
+    protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+
+    public ReverseProxyLoadBalancerService getReverseProxyLoadBalancerService() {
+        return reverseProxyLoadBalancerService;
+    }
+
+    public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
+        this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
+    }
 
     public void setProtocolsService(ProtocolsService protocolsService) {
         this.protocolsService = protocolsService;

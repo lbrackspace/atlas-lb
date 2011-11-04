@@ -8,12 +8,14 @@ import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
+import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface ReverseProxyLoadBalancerService {
@@ -75,6 +77,8 @@ public interface ReverseProxyLoadBalancerService {
     void setErrorFile(Integer lid,Integer aid,String content) throws Exception,DecryptException, MalformedURLException;
 
     int getTotalCurrentConnectionsForHost(Host host) throws Exception;
+
+    public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception;
 
     Hostssubnet getSubnetMappings(Host host) throws Exception;
 

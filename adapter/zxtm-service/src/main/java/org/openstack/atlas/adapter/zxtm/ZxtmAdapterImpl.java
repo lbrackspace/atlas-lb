@@ -15,10 +15,7 @@ import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.pojos.Cidr;
-import org.openstack.atlas.service.domain.pojos.Hostssubnet;
-import org.openstack.atlas.service.domain.pojos.Hostsubnet;
-import org.openstack.atlas.service.domain.pojos.NetInterface;
+import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.converters.StringConverter;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
@@ -1257,6 +1254,23 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config) throws RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         return serviceStubs.getSystemStatsBinding().getTotalCurrentConn();
+    }
+
+    @Override
+    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws RemoteException, InsufficientRequestException {
+        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountId);
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        Stats stats = new Stats();
+        stats.setBytesIn(serviceStubs.getSystemStatsBinding().getVirtualserverBytesIn(new String[]{virtualServerName}));
+        stats.setBytesOut(serviceStubs.getSystemStatsBinding().getVirtualserverBytesOut(new String[]{virtualServerName}));
+        stats.setConnectTimeOut(serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{virtualServerName}));
+        stats.setConnectError(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{virtualServerName}));
+        stats.setConnectFailure(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{virtualServerName}));
+        stats.setCurrentConn(serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{virtualServerName}));
+        stats.setDataTimedOut(serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{virtualServerName}));
+        stats.setKeepAliveTimedOut(serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut((new String[]{virtualServerName})));
+        stats.setMaxConn(serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{virtualServerName}));
+        return stats;
     }
 
     @Override

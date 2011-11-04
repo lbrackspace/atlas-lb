@@ -7,6 +7,7 @@ import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.apache.axis.AxisFault;
+import org.openstack.atlas.service.domain.pojos.Stats;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
@@ -116,6 +117,9 @@ public interface ReverseProxyLoadBalancerAdapter {
 
     public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config)
             throws RemoteException;
+
+    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId)
+            throws RemoteException, InsufficientRequestException;
 
     public Map<String, Long> getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, List<String> names)
             throws RemoteException;
