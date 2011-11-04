@@ -15,6 +15,8 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 public class ConnectionThrottleValidatorBuilder extends ValidatorBuilder<ConnectionThrottle> {
     public final int[] MAX_REQUEST_RATE = new int[]{0, 100000};
     public final int[] RATE_INTERVAL = new int[]{1, 3600};
+    private final int[] MIN_CONNECTIONS = new int[]{0, 1000};
+    private final int[] MAX_CONNECTIONS = new int[]{1, 100000};
 
     public ConnectionThrottleValidatorBuilder() {
         super(ConnectionThrottle.class);

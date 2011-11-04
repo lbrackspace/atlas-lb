@@ -42,10 +42,6 @@
             <a-hint>org.openstack.atlas.core.api.v1.SessionPersistence</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entity.SessionPersistence</b-hint>
         </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">
-            <a>connectionLogging</a>
-            <b>connectionLogging</b>
-        </field>
     </mapping>
 
     <!--Mapping for GET /loadbalancers-->

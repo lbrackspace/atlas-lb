@@ -16,4 +16,25 @@
 
     <bean id="loadBalancingPublicImpl" class="org.openstack.atlas.rax.api.resource.RaxRootResource" scope="request"/>
 
+    <!--DOZER SETTINGS-->
+    <bean id="dozerBeanMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>dozer-rax-load-balancer-map.xml</value>
+                <value>dozer-rax-access-list-map.xml</value>
+                <value>dozer-config-map.xml</value>
+                <value>dozer-rax-connection-throttle-map.xml</value>
+                <value>dozer-health-monitor-map.xml</value>
+                <value>dozer-node-map.xml</value>
+                <value>dozer-session-persistence-map.xml</value>
+                <value>dozer-usage-map.xml</value>
+                <value>dozer-virtual-ip-map.xml</value>
+            </list>
+        </property>
+        <property name="eventListeners">
+            <list>
+                <bean class="org.openstack.atlas.api.mapper.dozer.EventListener"/>
+            </list>
+        </property>
+    </bean>
 </beans>

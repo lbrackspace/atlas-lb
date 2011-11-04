@@ -16,7 +16,7 @@ public class RaxConnectionThrottle extends ConnectionThrottle implements Seriali
     @Column(name = "min_connections", nullable = false)
 	private Integer minConnections;
 
-	@Column(name = "max_connection", nullable = false)
+	@Column(name = "max_connections", nullable = false)
 	private Integer maxConnections;
 
     public Integer getMinConnections() {

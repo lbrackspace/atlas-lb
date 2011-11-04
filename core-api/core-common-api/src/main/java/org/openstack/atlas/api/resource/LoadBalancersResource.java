@@ -54,7 +54,6 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         try {
             org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer = dozerMapper.map(_loadBalancer, org.openstack.atlas.service.domain.entity.LoadBalancer.class);
             loadBalancer.setAccountId(accountId);
-            virtualIpService.addAccountRecord(accountId);
 
             loadBalancer = loadbalancerService.create(loadBalancer);
 

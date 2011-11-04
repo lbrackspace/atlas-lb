@@ -36,8 +36,8 @@
     </xsd:simpleType>
 
     <!--CONNECTION THROTTLE EXTENSIONS-->
-    <xsd:attribute name="minConnections" type="xsd:int"/>
-    <xsd:attribute name="maxConnections" type="xsd:int"/>
+    <xsd:attribute name="minRequests" type="xsd:int"/>
+    <xsd:attribute name="maxRequests" type="xsd:int"/>
 
     <!--HEALTH MONITOR EXTENSIONS-->
     <xsd:attribute name="statusRegex" type="xsd:string"/>
