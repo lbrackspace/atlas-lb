@@ -217,13 +217,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
         }
 
-        try {
-            //Verify the TIG was in fact deleted...
-            String[][] tig = serviceStubs.getTrafficIpGroupBinding().getTrafficManager(new String[]{trafficIpGroupName});
-            if (tig != null) throw new ObjectInUse();
-        } catch (ObjectDoesNotExist odne) {
-            LOG.debug(String.format(String.format("Traffic ip group '%s' successfully deleted.", trafficIpGroupName)));
-        }
+        //(VERSION 1) D-01942 failed when trying to verify tig, code not needed...
+//        try {
+//            //Verify the TIG was in fact deleted...
+//            String[][] tig = serviceStubs.getTrafficIpGroupBinding().getTrafficManager(new String[]{trafficIpGroupName});
+//            if (tig != null) throw new ObjectInUse();
+//        } catch (ObjectDoesNotExist odne) {
+//            LOG.debug(String.format(String.format("Traffic ip group '%s' successfully deleted.", trafficIpGroupName)));
+//        }
     }
 
     @Override
@@ -647,7 +648,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadbalancerId, accountid);
         LOG.debug(String.format("Attempting to set the default error file for: %s_%s", accountid, loadbalancerId));
-        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{Constants.DEFAULT_ERRORFILE});
+        //TODO: uncomment when zeus performance issues are resolved... (VERSION 1) TK-12805
+//        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{Constants.DEFAULT_ERRORFILE});
         LOG.info(String.format("Successfully set the default error file for: %s_%s", accountid, loadbalancerId));
 
     }
