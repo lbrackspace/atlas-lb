@@ -51,6 +51,18 @@
         <xsd:attribute name="ipv6Public" type="xsd:string"/>
     </xsd:complexType>
 
+    <xsd:element name="stats" type="tns:stats"/>
+    <xsd:complexType name="stats">
+        <xsd:attribute name="bytesIn" type="xsd:long"/>
+        <xsd:attribute name="bytesOut" type="xsd:long"/>
+        <xsd:attribute name="connectTimeOut" type="xsd:int"/>
+        <xsd:attribute name="connectError" type="xsd:int"/>
+        <xsd:attribute name="connectFailure" type="xsd:int"/>
+        <xsd:attribute name="currentConn" type="xsd:int"/>
+        <xsd:attribute name="keepAliveTimedOut" type="xsd:int"/>
+        <xsd:attribute name="maxConn" type="xsd:int"/>
+    </xsd:complexType>
+
     <xsd:element name="connectionLogging" type="tns:connectionLogging"/>
     <xsd:complexType name="connectionLogging">
         <xsd:attribute name="enabled" type="xsd:boolean"/>

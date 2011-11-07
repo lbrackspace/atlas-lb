@@ -120,7 +120,8 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveLoadBalancerStats() {
         try {
-            Stats stats = reverseProxyLoadBalancerService.getLoadBalancerStats(id, accountId);
+            org.openstack.atlas.docs.loadbalancers.api.v1.Stats stats = dozerMapper.map(reverseProxyLoadBalancerService
+                    .getLoadBalancerStats(id, accountId), org.openstack.atlas.docs.loadbalancers.api.v1.Stats.class);
             return Response.status(Response.Status.OK).entity(stats).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);

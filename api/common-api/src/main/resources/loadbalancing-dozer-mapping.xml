@@ -32,6 +32,15 @@
         </field-exclude>
     </mapping>
 
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.service.domain.pojos.Stats</class-a>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.Stats</class-b>
+        <field-exclude>
+            <a>id</a>
+            <b>id</b>
+        </field-exclude>
+    </mapping>
+
     <mapping map-id="DELETED_LB" type="one-way" wildcard="false" map-null="false">
         <class-a>org.openstack.atlas.service.domain.entities.LoadBalancer</class-a>
         <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.LoadBalancerFactory">
