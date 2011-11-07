@@ -20,6 +20,8 @@ public class RootResource {
     protected AlgorithmsResource algorithmsResource;
     @Autowired
     protected ProtocolsResource protocolsResource;
+    @Autowired
+    private ExtensionsResource extensionsResource;
 
     @Path("loadbalancers")
     public LoadBalancersResource retrieveLoadBalancersResource() {
@@ -36,6 +38,11 @@ public class RootResource {
     @Path("algorithms")
     public AlgorithmsResource retrieveAlgorithmsResource() {
         return algorithmsResource;
+    }
+
+    @Path("extensions")
+    public ExtensionsResource retrieveExtensionsResource() {
+        return extensionsResource;
     }
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {
