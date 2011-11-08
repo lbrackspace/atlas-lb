@@ -19,7 +19,13 @@ public class ExtensionsResourceTest {
 
     @Test
     public void shouldReadXmlFromExtensionsXmlFile() {
-        final Response response = extensionsResource.retrieveExtensions();
+        final Response response = extensionsResource.retrieveExtensionsAsXml();
+        Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void shouldReadJsonFromExtensionsJsonFile() {
+        final Response response = extensionsResource.retrieveExtensionsAsJson();
         Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
 }
