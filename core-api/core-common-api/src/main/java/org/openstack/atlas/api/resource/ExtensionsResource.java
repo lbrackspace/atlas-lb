@@ -30,6 +30,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -69,9 +70,9 @@ public class ExtensionsResource {
         }
     }
 
-    private ExtensionsWrapper addExtensions(ExtensionsWrapper extensionsWrapper) {
+    private Set<String> getExtensionFiles(String format) {
         List<String> enabledExtensions = ConfigHelper.getExtensionPrefixesFromConfiguration();
-        if (enabledExtensions.isEmpty()) return extensionsWrapper;
+        if (enabledExtensions.isEmpty()) return new HashSet<String>();
 
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
 
@@ -80,7 +81,11 @@ public class ExtensionsResource {
         }
 
         Reflections reflections = new Reflections(configBuilder.setScanners(new ResourcesScanner(), new TypeAnnotationsScanner(), new SubTypesScanner()));
-        Set<String> jsonFiles = reflections.getResources(Pattern.compile("extension.json"));
+        return reflections.getResources(Pattern.compile("extension." + format.toLowerCase()));
+    }
+
+    private ExtensionsWrapper addExtensions(ExtensionsWrapper extensionsWrapper) {
+        Set<String> jsonFiles = getExtensionFiles("json");
 
         for (String jsonFile : jsonFiles) {
             ExtensionWrapper extensionWrapper = getExtensionWrapper(jsonFile);
@@ -102,18 +107,8 @@ public class ExtensionsResource {
     }
 
     private Document addExtensions(Document root) {
-        List<String> enabledExtensions = ConfigHelper.getExtensionPrefixesFromConfiguration();
-        if (enabledExtensions.isEmpty()) return root;
-
         List<Document> extensions = new ArrayList<Document>();
-        ConfigurationBuilder configBuilder = new ConfigurationBuilder();
-
-        for (String enabledExtension : enabledExtensions) {
-            configBuilder.addUrls(ClasspathHelper.forPackage("org.openstack.atlas." + enabledExtension + ".extensions"));
-        }
-
-        Reflections reflections = new Reflections(configBuilder.setScanners(new ResourcesScanner(), new TypeAnnotationsScanner(), new SubTypesScanner()));
-        Set<String> xmlFiles = reflections.getResources(Pattern.compile("extension.xml"));
+        Set<String> xmlFiles = getExtensionFiles("xml");
 
         for (String xmlFile : xmlFiles) {
             extensions.add(readFileToXmlDom(xmlFile));
