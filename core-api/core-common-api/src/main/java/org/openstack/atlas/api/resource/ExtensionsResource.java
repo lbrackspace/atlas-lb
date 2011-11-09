@@ -47,7 +47,7 @@ public class ExtensionsResource {
     public Response retrieveExtensionsAsXml() {
         try {
             Document root = readFileToXmlDom("extensions.xml");
-            root = addExtensions(root);
+            root = addXmlExtensions(root);
             String xmlString = documentToString(root);
             return Response.status(Response.Status.OK).entity(xmlString).build();
         } catch (Exception e) {
@@ -62,7 +62,7 @@ public class ExtensionsResource {
         try {
             Gson gson = new Gson();
             ExtensionsWrapper extensionsWrapper = getExtensionsWrapper();
-            extensionsWrapper = addExtensions(extensionsWrapper);
+            extensionsWrapper = addJsonExtensions(extensionsWrapper);
             return Response.status(Response.Status.OK).entity(gson.toJson(extensionsWrapper.getExtensions())).build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -84,7 +84,7 @@ public class ExtensionsResource {
         return reflections.getResources(Pattern.compile("extension." + format.toLowerCase()));
     }
 
-    private ExtensionsWrapper addExtensions(ExtensionsWrapper extensionsWrapper) {
+    private ExtensionsWrapper addJsonExtensions(ExtensionsWrapper extensionsWrapper) {
         Set<String> jsonFiles = getExtensionFiles("json");
 
         for (String jsonFile : jsonFiles) {
@@ -106,7 +106,7 @@ public class ExtensionsResource {
         return new Gson().fromJson(reader, ExtensionWrapper.class);
     }
 
-    private Document addExtensions(Document root) {
+    private Document addXmlExtensions(Document root) {
         List<Document> extensions = new ArrayList<Document>();
         Set<String> xmlFiles = getExtensionFiles("xml");
 
@@ -135,24 +135,15 @@ public class ExtensionsResource {
 
     public Document readFileToXmlDom(String file) {
         try {
-            final InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(file);
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(inputStream);
+            Document doc = dBuilder.parse(this.getClass().getClassLoader().getResourceAsStream(file));
             doc.getDocumentElement().normalize();
-
-            System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
 
             return doc;
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    private static String getTagValue(String sTag, Element eElement) {
-        NodeList nlList = eElement.getElementsByTagName(sTag).item(0).getChildNodes();
-        Node nValue = nlList.item(0);
-        return nValue.getNodeValue();
     }
 }

@@ -56,7 +56,7 @@ public class VirtualIpServiceImpl implements VirtualIpService {
 
         if (!loadBalancer.getLoadBalancerJoinVip6Set().isEmpty()) {
             Set<LoadBalancerJoinVip6> newVip6Config = new HashSet<LoadBalancerJoinVip6>();
-            List<VirtualIpv6> vips6OnAccount = virtualIpv6Repository.getVips6ByAccountId(loadBalancer.getAccountId());
+            List<VirtualIpv6> vips6OnAccount = virtualIpv6Repository.getVipsByAccountId(loadBalancer.getAccountId());
             Set<LoadBalancerJoinVip6> loadBalancerJoinVip6SetConfig = loadBalancer.getLoadBalancerJoinVip6Set();
             loadBalancer.setLoadBalancerJoinVip6Set(null);
             for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancerJoinVip6SetConfig) {
