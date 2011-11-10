@@ -11,9 +11,9 @@ import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.Configuration;
 import org.junit.Assert;
 import org.junit.experimental.runners.Enclosed;
-import org.openstack.keystone.auth.client.AdminAuthClient;
-import org.openstack.token.FullToken;
-import org.openstack.user.User;
+import org.openstack.client.keystone.KeyStoneAdminClient;
+import org.openstack.client.keystone.token.FullToken;
+import org.openstack.client.keystone.user.User;
 
 import static org.mockito.Mockito.*;
 
@@ -27,7 +27,7 @@ public class AuthServiceTest {
         private String auth_username = "someUser";
         private String auth_password = "somePass";
 
-        private AdminAuthClient adminAuthClient;
+        private KeyStoneAdminClient keyStoneAdminClient;
         private AuthServiceImpl authService;
         private Configuration configuration;
         private FullToken fullToken;
@@ -39,11 +39,11 @@ public class AuthServiceTest {
         @Before
         public void Setup() throws Exception {
             configuration = mock(Configuration.class);
-            doReturn(true).when(configuration).hasKeys(PublicApiServiceConfigurationKeys.auth_callback_uri, PublicApiServiceConfigurationKeys.auth_username, PublicApiServiceConfigurationKeys.auth_password);
+            doReturn(true).when(configuration).hasKeys(PublicApiServiceConfigurationKeys.auth_callback_uri, PublicApiServiceConfigurationKeys.basic_auth_user, PublicApiServiceConfigurationKeys.basic_auth_key);
 
             when(configuration.getString(PublicApiServiceConfigurationKeys.auth_callback_uri)).thenReturn(auth_callback_uri);
-            when(configuration.getString(PublicApiServiceConfigurationKeys.auth_username)).thenReturn(auth_username);
-            when(configuration.getString(PublicApiServiceConfigurationKeys.auth_password)).thenReturn(auth_password);
+            when(configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_user)).thenReturn(auth_username);
+            when(configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_key)).thenReturn(auth_password);
 
             fullToken = new FullToken();
             fullToken.setUserId("aName");
@@ -59,8 +59,8 @@ public class AuthServiceTest {
 //            authService = mock(AuthServiceImpl.class);
 //            doReturn(user).when(authService).authenticate(Matchers.<Integer>any(), Matchers.<String>any());
 
-            adminAuthClient = mock(AdminAuthClient.class);
-            doReturn(fullToken).when(adminAuthClient).validateToken(Matchers.<String>any(), Matchers.<String>any(), Matchers.<String>any());
+            keyStoneAdminClient = mock(KeyStoneAdminClient.class);
+            doReturn(fullToken).when(keyStoneAdminClient).validateToken(Matchers.<String>any(), Matchers.<String>any(), Matchers.<String>any());
         }
 
         @Test

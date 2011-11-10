@@ -8,7 +8,7 @@ import java.util.Collection;
 public class StringUtilities {
 
     public static final String HTTPS_INIT_FAIL = "Error initializing HttpsCertIgnoreClass";
-    public static final String AUTH_INIT_FAIL  = "Auth has not been configured correctly. Please verify that the following are set in /etc/openstack/atlas/public-api.conf: auth_management_uri, auth_callback_uri, auth_username or auth_password";
+    public static final String AUTH_INIT_FAIL  = "Auth has not been configured correctly. Please verify that the following are set in /etc/openstack/atlas/public-api.conf: auth_management_uri, basic_auth_user or basic_auth_key";
     public static <T> String DelimitString(Collection<T> objects, String delim) {
         String newString = "";
         for (Object string : objects) {

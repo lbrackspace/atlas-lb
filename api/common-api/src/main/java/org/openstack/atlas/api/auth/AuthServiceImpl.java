@@ -9,18 +9,19 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
 import org.openstack.atlas.api.filters.helpers.StringUtilities;
-import org.openstack.keystone.auth.client.AdminAuthClient;
-import org.openstack.keystone.auth.pojo.exceptions.AuthException;
-import org.openstack.user.User;
+import org.openstack.client.keystone.KeyStoneAdminClient;
+import org.openstack.client.keystone.KeyStoneException;
 
 public class AuthServiceImpl implements AuthService {
     private static final Log LOG = LogFactory.getLog(AuthServiceImpl.class);
-    public AdminAuthClient adminAuthClient;
+    public KeyStoneAdminClient keyStoneAdminClient;
+    private Configuration configuration;
 
-    public AuthServiceImpl(Configuration cfg) throws MalformedURLException {
-        if (cfg.hasKeys(PublicApiServiceConfigurationKeys.auth_callback_uri, PublicApiServiceConfigurationKeys.auth_username, PublicApiServiceConfigurationKeys.auth_password)) {
-            LOG.info("AUTH URI from LOCAL CONF: " + cfg.getString(PublicApiServiceConfigurationKeys.auth_callback_uri));
-            adminAuthClient = new AdminAuthClient(cfg.getString(PublicApiServiceConfigurationKeys.auth_callback_uri), cfg.getString(PublicApiServiceConfigurationKeys.auth_username), cfg.getString(PublicApiServiceConfigurationKeys.auth_password));
+    public AuthServiceImpl(Configuration cfg) throws MalformedURLException, URISyntaxException {
+        this.configuration = cfg;
+        if (cfg.hasKeys(PublicApiServiceConfigurationKeys.auth_management_uri, PublicApiServiceConfigurationKeys.basic_auth_user, PublicApiServiceConfigurationKeys.basic_auth_key)) {
+            LOG.info("AUTH URI from LOCAL CONF: " + configuration.getString(PublicApiServiceConfigurationKeys.auth_management_uri));
+            keyStoneAdminClient = new KeyStoneAdminClient(configuration.getString(PublicApiServiceConfigurationKeys.auth_management_uri), cfg.getString(PublicApiServiceConfigurationKeys.basic_auth_key),cfg.getString(PublicApiServiceConfigurationKeys.basic_auth_user));
         } else {
             LOG.error(StringUtilities.AUTH_INIT_FAIL);
             throw new MalformedURLException(StringUtilities.AUTH_INIT_FAIL);
@@ -28,17 +29,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String authenticate(Integer passedAccountId, String authToken, String type) throws AuthException, URISyntaxException {
-        return adminAuthClient.validateToken(passedAccountId, authToken, type).getUserId();
-    }
-
-    @Override
-    public User getUser(String userId) throws AuthException, URISyntaxException {
-        return adminAuthClient.listUser(userId);
-    }
-
-    @Override
-    public User getUserByAlternateId(String userId, String type) throws AuthException, URISyntaxException {
-        return adminAuthClient.listUserByAlternateId(userId, type);
+    public String authenticate(Integer passedAccountId, String authToken, String type) throws KeyStoneException, URISyntaxException {
+        return keyStoneAdminClient.validateToken(String.valueOf(passedAccountId), authToken, type).getUserId();
     }
 }

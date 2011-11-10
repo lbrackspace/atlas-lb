@@ -5,8 +5,8 @@ import org.openstack.atlas.cfg.ConfigurationKey;
 public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     auth_callback_uri,
     auth_management_uri,
-    auth_username,
-    auth_password,
+    basic_auth_user,
+    basic_auth_key,
     base_uri,
     esb_queue_name,
     service_bus_endpoint_uri,

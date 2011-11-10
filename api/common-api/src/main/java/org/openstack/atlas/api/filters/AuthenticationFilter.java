@@ -23,7 +23,7 @@ import javax.xml.bind.Marshaller;
 import java.io.IOException;
 
 import org.openstack.atlas.util.simplecache.SimpleCache;
-import org.openstack.keystone.auth.pojo.exceptions.AuthException;
+import org.openstack.client.keystone.KeyStoneException;
 
 import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtendedStackTrace;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -108,7 +108,7 @@ public class AuthenticationFilter implements Filter {
                 }
 
             } catch (Exception e) {
-                if (e instanceof AuthException) {
+                if (e instanceof KeyStoneException) {
                     String exceptMsg = getExtendedStackTrace(e);
                     LOG.error(String.format("Error while authenticating user:%s\n", exceptMsg));
                     sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
@@ -169,7 +169,7 @@ public class AuthenticationFilter implements Filter {
     }
 
     private void handleWadlRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException, ServletException {
-        //TODO: FIX ME!!!
+        //TODO: FIX ME!!!  need way to reti
         String wadlToken = httpServletRequest.getHeader("X-AUTH-WADL");
         String[] splitUrl = httpServletRequest.getRequestURL().toString().split(httpServletRequest.getContextPath());
         if (httpServletRequest.getRequestURL().toString().equals(splitUrl[0] + httpServletRequest.getContextPath() + "/application.wadl")) {

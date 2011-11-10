@@ -12,7 +12,7 @@ import java.util.Properties;
  *  Cloud Files utilities 
  */
 public class FileUtil {
-    private static Log LOG = LogFactory.getLog(org.openstack.keystone.auth.util.FileUtil.class);
+    private static Log LOG = LogFactory.getLog(FileUtil.class);
 	/**
 	 *  The name of the properties file we're looking for 
 	 */
@@ -30,7 +30,7 @@ public class FileUtil {
 	 */
 	private static synchronized void loadPropertiesFromClasspath() throws IOException {
         props = new Properties();
-        InputStream inputStream = org.openstack.keystone.auth.util.FileUtil.class.getClassLoader()
+        InputStream inputStream = FileUtil.class.getClassLoader()
             .getResourceAsStream(file);
 
         if (inputStream == null) {

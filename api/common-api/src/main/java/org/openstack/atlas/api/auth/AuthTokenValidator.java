@@ -2,7 +2,7 @@ package org.openstack.atlas.api.auth;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.keystone.auth.pojo.exceptions.AuthException;
+import org.openstack.client.keystone.KeyStoneException;
 
 import java.net.URISyntaxException;
 
@@ -14,8 +14,8 @@ public class AuthTokenValidator {
         this.authService = authService;
     }
 
-    public String validate(Integer passedAccountId, String authToken) throws AuthException, URISyntaxException {
+    public String validate(Integer passedAccountId, String authToken) throws KeyStoneException, URISyntaxException {
         LOG.info("Within validate ... about to call AuthService authenticate...");
-        return authService.authenticate(passedAccountId, authToken, "cloud");
+        return authService.authenticate(passedAccountId, authToken, "mosso");
     }
 }
