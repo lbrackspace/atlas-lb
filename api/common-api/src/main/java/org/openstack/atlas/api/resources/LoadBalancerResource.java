@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.resources;
 
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
@@ -120,6 +121,11 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveLoadBalancerStats() {
         try {
+            if(restApiConfiguration.hasKeys(PublicApiServiceConfigurationKeys.stats)) {
+                if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.stats).equals("false")) {
+                    return Response.status(Response.Status.BAD_REQUEST).build();
+                }
+            }
             org.openstack.atlas.docs.loadbalancers.api.v1.Stats stats = dozerMapper.map(reverseProxyLoadBalancerService
                     .getLoadBalancerStats(id, accountId), org.openstack.atlas.docs.loadbalancers.api.v1.Stats.class);
             return Response.status(Response.Status.OK).entity(stats).build();

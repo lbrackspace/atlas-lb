@@ -9,31 +9,12 @@ public class Stats implements Serializable {
         return serialVersionUID;
     }
 
-    protected long[] bytesIn;
-    protected long[] bytesOut;
     protected int[] connectTimeOut;
     protected int[] connectError;
     protected int[] connectFailure;
-    protected int[] currentConn;
     protected int[] dataTimedOut;
     protected int[] keepAliveTimedOut;
     protected int[] maxConn;
-
-    public long[] getBytesIn() {
-        return bytesIn;
-    }
-
-    public void setBytesIn(long[] bytesIn) {
-        this.bytesIn = bytesIn;
-    }
-
-    public long[] getBytesOut() {
-        return bytesOut;
-    }
-
-    public void setBytesOut(long[] bytesOut) {
-        this.bytesOut = bytesOut;
-    }
 
     public int[] getConnectTimeOut() {
         return connectTimeOut;
@@ -57,14 +38,6 @@ public class Stats implements Serializable {
 
     public void setConnectFailure(int[] connectFailure) {
         this.connectFailure = connectFailure;
-    }
-
-    public int[] getCurrentConn() {
-        return currentConn;
-    }
-
-    public void setCurrentConn(int[] currentConn) {
-        this.currentConn = currentConn;
     }
 
     public int[] getDataTimedOut() {
