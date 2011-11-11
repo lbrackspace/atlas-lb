@@ -62,7 +62,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
                 return;
             }
 
-            if (queueLb.getAlgorithm().equals(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN)) {
+            if (queueLb.getAlgorithm().equals(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN) || queueLb.getAlgorithm().equals(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS)) {
                 try {
                     LOG.debug(String.format("Updating node weights for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
                     reverseProxyLoadBalancerService.setNodeWeights(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getNodes());

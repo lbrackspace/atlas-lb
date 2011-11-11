@@ -583,7 +583,7 @@ public class ClusterRepository  {
     }
 
     public Cluster getActiveCluster() {
-        List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl where cl.status = :status").setParameter("status", ClusterStatus.ACTIVE).getResultList();
+        List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl where cl.clusterStatus = :status").setParameter("status", ClusterStatus.ACTIVE).getResultList();
         if (cls != null && cls.size() > 0) {
             return cls.get(0);
         } else {
