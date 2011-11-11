@@ -25,13 +25,11 @@ public class VirtualIpServiceImpl implements VirtualIpService {
     private final Log LOG = LogFactory.getLog(VirtualIpServiceImpl.class);
 
     @Autowired
-    private VirtualIpRepository virtualIpRepository;
-
+    protected VirtualIpRepository virtualIpRepository;
     @Autowired
-    private VirtualIpv6Repository virtualIpv6Repository;
-
+    protected VirtualIpv6Repository virtualIpv6Repository;
     @Autowired
-    private ClusterRepository clusterRepository;
+    protected ClusterRepository clusterRepository;
 
     @Override
     @Transactional
