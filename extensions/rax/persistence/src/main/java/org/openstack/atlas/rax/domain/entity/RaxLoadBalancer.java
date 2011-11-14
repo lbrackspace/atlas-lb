@@ -9,7 +9,7 @@ import java.util.Set;
 
 @javax.persistence.Entity
 @DiscriminatorValue("RAX")
-public class RaxLoadBalancer extends LoadBalancer  implements Serializable {
+public class RaxLoadBalancer extends LoadBalancer implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @OrderBy("id")
@@ -18,6 +18,9 @@ public class RaxLoadBalancer extends LoadBalancer  implements Serializable {
 
     @Column(name = "crazy_name", length = 128)
     private String crazyName = "WeeWooWoo!";
+
+    @Column(name = "connection_logging", nullable = false)
+    private Boolean connectionLogging;
 
     public Set<AccessList> getAccessLists() {
         return accessLists;
@@ -38,6 +41,14 @@ public class RaxLoadBalancer extends LoadBalancer  implements Serializable {
 
     public void setCrazyName(String crazyName) {
         this.crazyName = crazyName;
+    }
+
+    public Boolean getConnectionLogging() {
+        return connectionLogging;
+    }
+
+    public void setConnectionLogging(Boolean connectionLogging) {
+        this.connectionLogging = connectionLogging;
     }
 
     @Override

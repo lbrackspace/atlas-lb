@@ -8,16 +8,21 @@ import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.service.domain.operation.Operation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 @Primary
 @Controller
 @Scope("request")
 public class RaxLoadBalancerResource extends LoadBalancerResource {
+
+    @Autowired
+    protected RaxConnectionLoggingResource connectionLoggingResource;
 
     @Override
     public Response get() {
@@ -54,5 +59,12 @@ public class RaxLoadBalancerResource extends LoadBalancerResource {
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
+    }
+
+    @Path("connectionlogging")
+    public RaxConnectionLoggingResource retrieveConnectionLoggingResource() {
+        connectionLoggingResource.setAccountId(accountId);
+        connectionLoggingResource.setLoadBalancerId(id);
+        return connectionLoggingResource;
     }
 }

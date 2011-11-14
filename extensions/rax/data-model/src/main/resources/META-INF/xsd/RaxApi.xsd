@@ -51,4 +51,9 @@
     <!--TODO: DELETE AFTER PROOF OF CONCEPT COMPLETED-->
     <xsd:attribute name="crazyName" type="xsd:string"/>
 
+    <xsd:element name="connectionLogging" type="tns:connectionLogging"/>
+    <xsd:complexType name="connectionLogging">
+        <xsd:attribute name="enabled" type="xsd:boolean"/>
+    </xsd:complexType>
+
 </xsd:schema>
