@@ -36,6 +36,10 @@ public class RaxVirtualIpsResource extends VirtualIpsResource {
     @Autowired
     protected RaxVirtualIpService virtualIpService;
 
+    public RaxVirtualIpsResource() {
+
+    }
+
     @POST
     @Path("/ext/RAX-ATLAS-VIP")
     @Consumes({APPLICATION_XML, APPLICATION_JSON})

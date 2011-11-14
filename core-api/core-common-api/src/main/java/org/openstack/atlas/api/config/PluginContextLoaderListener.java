@@ -30,4 +30,5 @@ public class PluginContextLoaderListener extends ContextLoaderListener {
 
         wac.setConfigLocations(configLocations.toArray(new String[configLocations.size()]));
     }
+
 }
