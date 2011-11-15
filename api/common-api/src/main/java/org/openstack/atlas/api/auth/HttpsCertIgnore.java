@@ -19,7 +19,7 @@ public class HttpsCertIgnore {
     private static final TrustManager[] trustAllCerts;
     private static final SSLContext sc;
     private static final HostnameVerifier hv;
-    private static final Log LOG = LogFactory.getLog(AuthServiceImpl.class);
+    private static final Log LOG = LogFactory.getLog(HttpsCertIgnore.class);
     private static final Exception initException;
 
     static {

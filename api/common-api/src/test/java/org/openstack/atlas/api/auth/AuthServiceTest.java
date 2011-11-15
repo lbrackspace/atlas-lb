@@ -28,7 +28,7 @@ public class AuthServiceTest {
         private String auth_password = "somePass";
 
         private KeyStoneAdminClient keyStoneAdminClient;
-        private AuthServiceImpl authService;
+        private AuthTokenValidator authTokenValidator;
         private Configuration configuration;
         private FullToken fullToken;
         private User user;
@@ -56,8 +56,8 @@ public class AuthServiceTest {
 //            clientResponse = mock(ClientResponse.class);
 //            when(webResource.get(ClientResponse.class)).thenReturn(clientResponse);
 //
-//            authService = mock(AuthServiceImpl.class);
-//            doReturn(user).when(authService).authenticate(Matchers.<Integer>any(), Matchers.<String>any());
+//            authTokenValidator = mock(AuthServiceImpl.class);
+//            doReturn(user).when(authTokenValidator).authenticate(Matchers.<Integer>any(), Matchers.<String>any());
 
             keyStoneAdminClient = mock(KeyStoneAdminClient.class);
             doReturn(fullToken).when(keyStoneAdminClient).validateToken(Matchers.<String>any(), Matchers.<String>any(), Matchers.<String>any());

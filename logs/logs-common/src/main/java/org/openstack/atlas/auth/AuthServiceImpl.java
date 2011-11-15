@@ -1,6 +1,7 @@
 package org.openstack.atlas.auth;
 
 import org.openstack.atlas.cfg.Configuration;
+import org.openstack.atlas.config.LbLogsConfiguration;
 import org.openstack.atlas.config.LbLogsConfigurationKeys;
 import org.openstack.atlas.data.AuthUser;
 import org.apache.log4j.Logger;
@@ -22,7 +23,9 @@ public class AuthServiceImpl implements AuthService {
 
     public AuthServiceImpl(Configuration cfg) throws MalformedURLException, AuthException, URISyntaxException, KeyStoneException {
         this.configuration = cfg;
-        keyStoneAdminAuthClient = new KeyStoneAdminClient();
+        keyStoneAdminAuthClient = new KeyStoneAdminClient(configuration.getString(LbLogsConfigurationKeys.auth_management_uri),
+                    configuration.getString(LbLogsConfigurationKeys.basic_auth_key),
+                    configuration.getString(LbLogsConfigurationKeys.basic_auth_user));
     }
 
     public AuthUser getUser(String accountId) throws KeyStoneException, URISyntaxException, AuthException {
