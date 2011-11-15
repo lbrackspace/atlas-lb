@@ -34,16 +34,16 @@ public class AuthServiceIntegrator {
         private final String TEST_API_KEY = FileUtil.getProperty("key");
         private Integer accountId = FileUtil.getIntProperty("mossoId");
 
-        private String auth_callback_uri = FileUtil.getProperty("auth_url");
+        private String auth_callback_uri = FileUtil.getProperty("auth_management_uri");
         private String auth_username = FileUtil.getProperty("basic_auth_user");
         private String auth_password = FileUtil.getProperty("basic_auth_key");
 
-        AuthServiceImpl authService;
+        AuthTokenValidator authService;
 
         private Configuration configuration;
 
         @Before
-        public void Setup() throws IOException, URISyntaxException {
+        public void Setup() throws IOException, URISyntaxException, KeyStoneException {
 
             configuration = mock(Configuration.class);
             doReturn(true).when(configuration).hasKeys(PublicApiServiceConfigurationKeys.auth_management_uri, PublicApiServiceConfigurationKeys.basic_auth_user, PublicApiServiceConfigurationKeys.basic_auth_key);
@@ -54,10 +54,10 @@ public class AuthServiceIntegrator {
 
 
             if (!authToken.equals(NOT_SET)) return;
-            KeyStoneClient authClient = new KeyStoneClient();
+            KeyStoneClient authClient = new KeyStoneClient(auth_callback_uri);
 
             try {
-                AuthData authData = authClient.authenticateUser(auth_callback_uri, TEST_USER_NAME, TEST_API_KEY);
+                AuthData authData = authClient.authenticateUser(TEST_USER_NAME, TEST_API_KEY);
                 if (authData != null) authToken = authData.getToken().getId();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -66,8 +66,8 @@ public class AuthServiceIntegrator {
 
         @Test
         public void shouldAuthenticateSauccessfully() throws URISyntaxException, MalformedURLException, KeyStoneException {
-             authService = new AuthServiceImpl(configuration);
-            Assert.assertNotNull(authService.authenticate(accountId, authToken, MOSSO));
+             authService = new AuthTokenValidator(configuration);
+            Assert.assertNotNull(authService.validate(accountId, authToken));
         }
 
 //        @Test

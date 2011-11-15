@@ -92,7 +92,7 @@ public class AuthenticationFilter implements Filter {
                 }
 
                 if (authInfo == null || !authInfo.getAuthToken().equals(authToken)) {
-                    username = authTokenValidator.validate(accountId, authToken);
+                    username = authTokenValidator.validate(accountId, authToken).getUserId();
                     if (username == null) {
                         sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                         return;

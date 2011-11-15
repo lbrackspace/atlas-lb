@@ -185,9 +185,11 @@
           scope="request"/>
 
     <!--FILTER SETTINGS-->
-    <bean id="authServiceImpl" class="org.openstack.atlas.api.auth.AuthServiceImpl"
+    <bean id="authTokenValidator" class="org.openstack.atlas.api.auth.AuthTokenValidator"
           scope="singleton">
-          <constructor-arg index="0" ref="configuration"/>
+        <!--<constructor-arg index="0" ref="configuration"/>-->
+        <property name="configuration" ref="configuration"/>
+
     </bean>
 
     <bean id="requestSanitationFilter"
@@ -198,7 +200,7 @@
           scope="request" init-method="startConfig">
         <constructor-arg index="0">
             <bean class="org.openstack.atlas.api.auth.AuthTokenValidator">
-                <constructor-arg index="0" ref="authServiceImpl" />
+                <constructor-arg index="0" ref="authTokenValidator" />
             </bean>
         </constructor-arg>
         <constructor-arg index="1">

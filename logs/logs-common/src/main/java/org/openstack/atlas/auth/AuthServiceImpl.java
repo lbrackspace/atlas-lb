@@ -20,7 +20,7 @@ public class AuthServiceImpl implements AuthService {
     private final KeyStoneAdminClient keyStoneAdminAuthClient;
     private Configuration configuration;
 
-    public AuthServiceImpl(Configuration cfg) throws MalformedURLException, AuthException, URISyntaxException {
+    public AuthServiceImpl(Configuration cfg) throws MalformedURLException, AuthException, URISyntaxException, KeyStoneException {
         this.configuration = cfg;
         keyStoneAdminAuthClient = new KeyStoneAdminClient();
     }
