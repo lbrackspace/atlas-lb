@@ -12,9 +12,11 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
 import org.openstack.atlas.cfg.Configuration;
+import org.openstack.client.keystone.KeyStoneAdminClient;
 import org.openstack.client.keystone.KeyStoneClient;
 import org.openstack.client.keystone.KeyStoneException;
 import org.openstack.client.keystone.auth.AuthData;
+import org.openstack.client.keystone.user.User;
 
 import static org.mockito.Mockito.*;
 
@@ -27,20 +29,33 @@ public class AuthServiceIntegrator {
         private final static String NOT_SET = "";
         private static String authToken = NOT_SET;
         private final static String CLOUD = "cloud";
-        private final static String MOSSO = "mosso";
-        private final static String NAST = "nast";
 
-        private final String TEST_USER_NAME = FileUtil.getProperty("username");
-        private final String TEST_API_KEY = FileUtil.getProperty("key");
-        private Integer accountId = FileUtil.getIntProperty("mossoId");
+        private static final String TEST_USER_NAME = "bobTester";
+        private static final String TEST_API_KEY = "1234567891011121313";
+        private static String TEST_NAST_ID;
+        private static Integer accountId = 123456;
 
-        private String auth_callback_uri = FileUtil.getProperty("auth_management_uri");
-        private String auth_username = FileUtil.getProperty("basic_auth_user");
-        private String auth_password = FileUtil.getProperty("basic_auth_key");
+        private static String auth_callback_uri = FileUtil.getProperty("auth_stag_url");
+        private String auth_management_uri = FileUtil.getProperty("auth_management_uri");
+        private static String auth_username = FileUtil.getProperty("basic_auth_user");
+        private static String auth_password = FileUtil.getProperty("basic_auth_key");
 
-        AuthTokenValidator authService;
+        AuthTokenValidator authTokenValidator;
 
         private Configuration configuration;
+        private static KeyStoneAdminClient keyStoneAdminClient;
+
+        @BeforeClass
+        public static void SetupTestUser() throws IOException, URISyntaxException, KeyStoneException {
+            try {
+                keyStoneAdminClient = new KeyStoneAdminClient(auth_callback_uri, auth_password, auth_username);
+                User user = keyStoneAdminClient.createUser(TEST_USER_NAME, TEST_API_KEY, accountId, "14bb72c1-237c-42aa-9307-893045b596e0", true);
+                TEST_NAST_ID = user.getNastId();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
 
         @Before
         public void Setup() throws IOException, URISyntaxException, KeyStoneException {
@@ -55,7 +70,6 @@ public class AuthServiceIntegrator {
 
             if (!authToken.equals(NOT_SET)) return;
             KeyStoneClient authClient = new KeyStoneClient(auth_callback_uri);
-
             try {
                 AuthData authData = authClient.authenticateUser(TEST_USER_NAME, TEST_API_KEY);
                 if (authData != null) authToken = authData.getToken().getId();
@@ -65,111 +79,91 @@ public class AuthServiceIntegrator {
         }
 
         @Test
-        public void shouldAuthenticateSauccessfully() throws URISyntaxException, MalformedURLException, KeyStoneException {
-             authService = new AuthTokenValidator(configuration);
-            Assert.assertNotNull(authService.validate(accountId, authToken));
+        public void shouldAuthenticateSuccessfully() throws URISyntaxException, MalformedURLException, KeyStoneException {
+            authTokenValidator = new AuthTokenValidator(configuration);
+            Assert.assertNotNull(authTokenValidator.validate(accountId, authToken));
         }
 
-//        @Test
-//        public void shouldReturnValidUserWhenAuthenticatedSuccessfully() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            Assert.assertNotNull(authService.authenticate(accountId, authToken, CLOUD));
-//        }
-//
-//        @Test
-//        public void shouldReturnValidAccountIdWhenAuthenticatedSuccessfully() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            String user = authService.authenticate(accountId, authToken, CLOUD);
-//            Assert.assertNotNull(user);
-//            Assert.assertEquals(accountId, authService.getUser(user).getMossoId());
-//        }
-//
-//        @Test
-//        public void shouldReturnValidKeyWhenAuthenticatedSuccessfully() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            String user = authService.authenticate(accountId, authToken, CLOUD);
-//            Assert.assertNotNull(user);
-//            Assert.assertEquals(TEST_API_KEY, authService.getUser(user).getKey());
-//        }
-//
-//        @Test
-//        public void shouldReturnValidEnabledUserWhenAuthenticatedSuccessfully() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            String user = authService.authenticate(accountId, authToken, CLOUD);
-//            Assert.assertNotNull(user);
-//            Assert.assertTrue(authService.getUser(user).isEnabled());
-//        }
-//
-//        @Test(expected = KeyStoreException.class)
-//        public void shouldFailWhenInvalidToken() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            authService.authenticate(accountId, "fake", CLOUD);
-//        }
-//
-//        @Test(expected = KeyStoreException.class)
-//        public void shouldFailWhenInvalidAccountId() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            authService.authenticate(12345, authToken, CLOUD);
-//        }
-//
-//        @Test
-//        public void shouldGrabTheUsernameByProvidingAToken() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            Assert.assertEquals(TEST_USER_NAME, authService.authenticate(accountId, authToken, CLOUD));
-//        }
-//
-//        @Test
-//        public void shouldGrabTheUserByUserName() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            Assert.assertEquals(TEST_USER_NAME, authService.getUser(TEST_USER_NAME).getId());
-//        }
-//
-//        @Test
-//        public void shouldGrabKeyForUserByUserName() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            Assert.assertEquals(TEST_API_KEY, authService.getUser(TEST_USER_NAME).getKey());
-//        }
-//
-//        @Test
-//        public void shouldGrabAccountIdForUserByUserName() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            Assert.assertEquals(accountId, authService.getUser(TEST_USER_NAME).getMossoId());
-//        }
-//
-//        @Test(expected = KeyStoreException.class)
-//        public void shouldThrowExceptionIfUserNotFound() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            authService.getUser("aTest");
-//        }
-//
-//        @Test
-//        public void shouldGrabTheUserByAlternateId() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            Assert.assertEquals(TEST_USER_NAME, authService.getUserByAlternateId(String.valueOf(accountId), MOSSO).getId());
-//        }
-//
-//        @Test
-//        public void shouldGrabAccountIdForUserByAlternateId() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            Assert.assertEquals(TEST_USER_NAME, authService.getUserByAlternateId(String.valueOf(accountId), MOSSO).getId());
-//            Assert.assertEquals(accountId, authService.getUserByAlternateId(String.valueOf(accountId), MOSSO).getMossoId());
-//        }
-//
-//        @Test
-//        public void shouldGrabKeyForUserByAlternateId() throws KeyStoreException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            Assert.assertEquals(TEST_USER_NAME, authService.getUserByAlternateId(String.valueOf(accountId), MOSSO).getId());
-//            Assert.assertEquals(TEST_API_KEY, authService.getUserByAlternateId(String.valueOf(accountId), MOSSO).getKey());
-//        }
-//
-//        @Test(expected = KeyStoreException.class)
-//        public void shouldThrowExceptionIfUserByAlternateIdNotFound() throws AuthException, URISyntaxException, MalformedURLException {
-//             authService = new AuthServiceImpl(configuration);
-//            authService.getUserByAlternateId("aTest", MOSSO);
-//        }
+        @Test
+        public void shouldReturnValidUserWhenAuthenticatedSuccessfully() throws KeyStoneException, URISyntaxException, MalformedURLException {
+            authTokenValidator = new AuthTokenValidator(configuration);
+            Assert.assertNotNull(authTokenValidator.validate(accountId, authToken));
+        }
+
+        @Test
+        public void shouldReturnValidAccountIdWhenAuthenticatedSuccessfully() throws KeyStoneException, URISyntaxException, MalformedURLException {
+            authTokenValidator = new AuthTokenValidator(configuration);
+            String user = authTokenValidator.validate(accountId, authToken).getUserId();
+            Assert.assertNotNull(user);
+            keyStoneAdminClient = new KeyStoneAdminClient(auth_callback_uri, auth_password, auth_username);
+            Assert.assertEquals(accountId, keyStoneAdminClient.listUser(user).getMossoId());
+        }
+
+        @Test
+        public void shouldReturnValidKeyWhenAuthenticatedSuccessfully() throws KeyStoneException, URISyntaxException, MalformedURLException {
+            authTokenValidator = new AuthTokenValidator(configuration);
+            String user = authTokenValidator.validate(accountId, authToken).getUserId();
+            Assert.assertNotNull(user);
+            keyStoneAdminClient = new KeyStoneAdminClient(auth_callback_uri, auth_password, auth_username);
+            Assert.assertEquals(TEST_API_KEY, keyStoneAdminClient.listUser(user).getKey());
+        }
+
+        @Test
+        public void shouldReturnValidEnabledUserWhenAuthenticatedSuccessfully() throws KeyStoneException, URISyntaxException, MalformedURLException {
+            authTokenValidator = new AuthTokenValidator(configuration);
+            String user = authTokenValidator.validate(accountId, authToken).getUserId();
+            Assert.assertNotNull(user);
+            keyStoneAdminClient = new KeyStoneAdminClient(auth_callback_uri, auth_password,auth_username);
+            Assert.assertTrue(keyStoneAdminClient.listUser(user).isEnabled());
+        }
+
+        @Test(expected = KeyStoneException.class)
+        public void shouldFailWhenInvalidToken() throws KeyStoneException, URISyntaxException, MalformedURLException {
+            authTokenValidator = new AuthTokenValidator(configuration);
+            authTokenValidator.validate(accountId, "fake");
+        }
+
+        @Test(expected = KeyStoneException.class)
+        public void shouldFailWhenInvalidAccountId() throws KeyStoneException, URISyntaxException, MalformedURLException {
+            authTokenValidator = new AuthTokenValidator(configuration);
+            authTokenValidator.validate(12345, authToken);
+        }
+
+        @Test
+        public void shouldGrabTheUsernameByProvidingAToken() throws KeyStoneException, URISyntaxException, MalformedURLException {
+            authTokenValidator = new AuthTokenValidator(configuration);
+            Assert.assertEquals(TEST_USER_NAME, authTokenValidator.validate(accountId, authToken).getUserId());
+        }
+
+        @Test
+        public void shouldGrabTheUserByUserName() throws KeyStoneException, URISyntaxException, MalformedURLException {
+            keyStoneAdminClient = new KeyStoneAdminClient(auth_callback_uri, auth_password,auth_username);
+            Assert.assertEquals(TEST_USER_NAME, keyStoneAdminClient.listUser(TEST_USER_NAME).getId());
+        }
+
+        @Test
+        public void shouldGrabKeyForUserByUserName() throws KeyStoneException, URISyntaxException, MalformedURLException {
+            keyStoneAdminClient = new KeyStoneAdminClient(auth_callback_uri, auth_password,auth_username);
+            Assert.assertEquals(TEST_API_KEY, keyStoneAdminClient.listUser(TEST_USER_NAME).getKey());
+        }
+
+        @Test
+        public void shouldGrabAccountIdForUserByUserName() throws KeyStoneException, URISyntaxException, MalformedURLException {
+            keyStoneAdminClient = new KeyStoneAdminClient(auth_callback_uri, auth_password,auth_username);
+            Assert.assertEquals(accountId, keyStoneAdminClient.listUser(TEST_USER_NAME).getMossoId());
+        }
+
+        @Test(expected = KeyStoneException.class)
+        public void shouldThrowExceptionIfUserNotFound() throws KeyStoneException, URISyntaxException, MalformedURLException {
+            keyStoneAdminClient = new KeyStoneAdminClient(auth_callback_uri, auth_password,auth_username);
+            keyStoneAdminClient.listUser("aTest");
+        }
+
 
         @AfterClass
-        public static void Teardown() {
+        public static void Teardown() throws KeyStoneException, URISyntaxException {
+            keyStoneAdminClient = new KeyStoneAdminClient(auth_callback_uri, auth_password,auth_username);
+            keyStoneAdminClient.deleteUser(TEST_USER_NAME);
             authToken = NOT_SET;
         }
     }

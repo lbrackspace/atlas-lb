@@ -16,15 +16,8 @@ import java.net.URISyntaxException;
 public class AuthTokenValidator {
     private static final Log LOG = LogFactory.getLog(AuthTokenValidator.class);
 
-    //Were using the mosso style id
-    private final String TYPE = "mosso";
     public KeyStoneAdminClient keyStoneAdminClient;
     private Configuration configuration;
-
-    public AuthTokenValidator() throws MalformedURLException, URISyntaxException, KeyStoneException {
-        this.configuration=getConfiguration();
-        new AuthTokenValidator(configuration);
-    }
 
     public AuthTokenValidator(Configuration cfg) throws MalformedURLException, URISyntaxException, KeyStoneException {
         this.configuration = cfg;
@@ -32,7 +25,7 @@ public class AuthTokenValidator {
                 PublicApiServiceConfigurationKeys.basic_auth_user,
                 PublicApiServiceConfigurationKeys.basic_auth_key)) {
 
-            LOG.info("AUTH URI from LOCAL CONF: " + configuration.getString(PublicApiServiceConfigurationKeys.auth_management_uri));
+            LOG.info("Auth URI from local conf: " + configuration.getString(PublicApiServiceConfigurationKeys.auth_management_uri));
             keyStoneAdminClient = new KeyStoneAdminClient(configuration.getString(PublicApiServiceConfigurationKeys.auth_management_uri),
                     configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_key),
                     configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_user));
@@ -43,8 +36,9 @@ public class AuthTokenValidator {
     }
 
     public FullToken validate(Integer passedAccountId, String authToken) throws KeyStoneException, URISyntaxException {
-        LOG.info("Within validate ... about to call AuthService authenticate...");
-        return keyStoneAdminClient.validateToken(String.valueOf(passedAccountId), authToken, TYPE);
+        LOG.info("Within validate ... about to call client authenticate...");
+        //Validating mosso style user...
+        return keyStoneAdminClient.validateToken(String.valueOf(passedAccountId), authToken, "mosso");
     }
 
     public Configuration getConfiguration() {
