@@ -5,7 +5,9 @@ import org.openstack.atlas.api.response.ResponseFactory;
 import org.openstack.atlas.api.v1.extensions.rax.ConnectionLogging;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
+import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.rax.api.validation.validator.RaxConnectionLoggingValidator;
+import org.openstack.atlas.rax.domain.entity.RaxConnectionThrottle;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.rax.domain.service.RaxConnectionLoggingService;
 import org.openstack.atlas.service.domain.operation.Operation;
@@ -45,9 +47,10 @@ public class RaxConnectionLoggingResource extends CommonDependencyProvider {
     public Response get() {
         try {
             RaxLoadBalancer loadBalancer = (RaxLoadBalancer) loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
-            ConnectionLogging connectionLogging = new ConnectionLogging();
-            connectionLogging.setEnabled(loadBalancer.getConnectionLogging());
-            return Response.status(200).entity(connectionLogging).build();
+            ConnectionLogging _connectionLogging = new ConnectionLogging();
+            _connectionLogging.setEnabled(loadBalancer.getConnectionLogging());
+
+            return Response.status(200).entity(_connectionLogging).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
