@@ -25,11 +25,10 @@ import org.springframework.context.annotation.Primary;
 import java.rmi.RemoteException;
 import java.util.*;
 
-@Primary
 @Service
 public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
-    public static Log LOG = LogFactory.getLog(ZxtmAdapterImpl.class.getName());
+    private static Log LOG = LogFactory.getLog(ZxtmAdapterImpl.class.getName());
     public static final String DEFAULT_ALGORITHM = CoreAlgorithmType.ROUND_ROBIN;
     public static final String SOURCE_IP = "SOURCE_IP";
     public static final String HTTP_COOKIE = "HTTP_COOKIE";

@@ -2,7 +2,6 @@ package org.openstack.atlas.api.integration;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.operation.Operation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
@@ -21,9 +20,9 @@ public class AsyncServiceImpl implements AsyncService {
     private JmsTemplate jmsTemplate;
 
     @Override
-    public void callAsyncLoadBalancingOperation(Operation operation, final MessageDataContainer dataContainer) throws JMSException {
-        LOG.debug(String.format("Sending message to '%s' queue...", operation.name()));
-        jmsTemplate.send(operation.name(), new MessageCreator() {
+    public void callAsyncLoadBalancingOperation(String operation, final MessageDataContainer dataContainer) throws JMSException {
+        LOG.debug(String.format("Sending message to '%s' queue...", operation));
+        jmsTemplate.send(operation, new MessageCreator() {
             public Message createMessage(Session session) throws JMSException {
                 return session.createObjectMessage(dataContainer);
             }

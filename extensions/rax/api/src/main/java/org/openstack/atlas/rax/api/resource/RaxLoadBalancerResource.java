@@ -6,7 +6,7 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
-import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.operation.CoreOperation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -54,7 +54,7 @@ public class RaxLoadBalancerResource extends LoadBalancerResource {
             MessageDataContainer msg = new MessageDataContainer();
             msg.setLoadBalancer(raxLoadBalancer);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_LOADBALANCER, msg);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.UPDATE_LOADBALANCER, msg);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);

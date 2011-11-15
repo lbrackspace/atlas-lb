@@ -10,8 +10,7 @@ import java.util.List;
 
 public class PluginContextLoaderListener extends ContextLoaderListener {
     @Override
-    protected void customizeContext(ServletContext servletContext,
-                                    ConfigurableWebApplicationContext wac) {
+    protected void customizeContext(ServletContext servletContext, ConfigurableWebApplicationContext wac) {
         System.out.println("Init Plugin");
         String locationPrefix = "classpath:";
         String locationSuffix = "-spring-context-public.xml";

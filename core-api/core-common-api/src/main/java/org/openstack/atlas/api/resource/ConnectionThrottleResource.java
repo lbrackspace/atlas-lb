@@ -8,7 +8,7 @@ import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.ConnectionThrottleValidator;
 import org.openstack.atlas.core.api.v1.ConnectionThrottle;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.operation.CoreOperation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.ConnectionThrottleRepository;
 import org.openstack.atlas.service.domain.service.ConnectionThrottleService;
@@ -67,7 +67,7 @@ public class ConnectionThrottleResource extends CommonDependencyProvider {
             loadBalancer.setConnectionThrottle(connectionThrottle);
             data.setLoadBalancer(loadBalancer);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.SET_CONNECTION_THROTTLE, data);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.UPDATE_CONNECTION_THROTTLE, data);
             _connectionThrottle = dozerMapper.map(connectionThrottle, ConnectionThrottle.class);
             return Response.status(Response.Status.ACCEPTED).entity(_connectionThrottle).build();
         } catch (Exception e) {
@@ -85,7 +85,7 @@ public class ConnectionThrottleResource extends CommonDependencyProvider {
             data.setLoadBalancer(loadBalancer);
 
             connectionThrottleService.preDelete(loadBalancerId);
-            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_CONNECTION_THROTTLE, data);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.DELETE_CONNECTION_THROTTLE, data);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);

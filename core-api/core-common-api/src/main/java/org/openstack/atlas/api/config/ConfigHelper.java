@@ -21,6 +21,11 @@ public class ConfigHelper {
                 enabledPlugins.add(enabledExtension + "-persistence");
                 enabledPlugins.add(enabledExtension + "-api");
                 enabledPlugins.add(enabledExtension + "-datamodel");
+
+                if (enabledAdapter != null) {
+                    enabledPlugins.add(enabledExtension + "-" + enabledAdapter + "-adapter");
+                }
+
             }
         } else {
             enabledPlugins.add("core-root");

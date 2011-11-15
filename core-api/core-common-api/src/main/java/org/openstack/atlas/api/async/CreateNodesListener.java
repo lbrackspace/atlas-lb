@@ -26,7 +26,6 @@ import static org.openstack.atlas.service.domain.event.entity.EventSeverity.*;
 
 @Component
 public class CreateNodesListener extends BaseListener {
-
     private final Log LOG = LogFactory.getLog(CreateNodesListener.class);
 
     @Autowired

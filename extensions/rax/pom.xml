@@ -17,6 +17,7 @@
         <module>data-model</module>
         <module>persistence</module>
         <module>api</module>
+        <module>rax-zxtm-adapter</module>
     </modules>
     <dependencies>
 

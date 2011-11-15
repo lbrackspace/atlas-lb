@@ -8,10 +8,10 @@ import org.openstack.atlas.core.api.v1.IpVersion;
 import org.openstack.atlas.core.api.v1.VipType;
 import org.openstack.atlas.core.api.v1.VirtualIp;
 import org.openstack.atlas.rax.api.validation.context.VirtualIpContext;
+import org.openstack.atlas.rax.domain.operation.RaxOperation;
 import org.openstack.atlas.rax.domain.service.RaxVirtualIpService;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.VirtualIpv6;
-import org.openstack.atlas.service.domain.operation.Operation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -35,10 +35,6 @@ public class RaxVirtualIpsResource extends VirtualIpsResource {
     protected VirtualIpValidator validator;
     @Autowired
     protected RaxVirtualIpService virtualIpService;
-
-    public RaxVirtualIpsResource() {
-
-    }
 
     @POST
     @Path("/ext/RAX-ATLAS-VIP")
@@ -66,7 +62,7 @@ public class RaxVirtualIpsResource extends VirtualIpsResource {
             dataContainer.getNewVipIds().add(newlyAddedIpv6Vip.getId());
 //            if (requestHeaders != null) dataContainer.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.ADD_VIRTUAL_IP, dataContainer);
+            asyncService.callAsyncLoadBalancingOperation(RaxOperation.RAX_ADD_VIRTUAL_IP, dataContainer);
 
             VirtualIp returnVip = new VirtualIp();
             returnVip.setId(newlyAddedIpv6Vip.getId());

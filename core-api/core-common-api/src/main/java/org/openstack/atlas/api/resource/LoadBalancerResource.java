@@ -9,7 +9,7 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.LoadBalancerValidator;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
-import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.operation.CoreOperation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
@@ -18,7 +18,6 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
@@ -86,7 +85,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             MessageDataContainer msg = new MessageDataContainer();
             msg.setLoadBalancer(loadBalancer);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_LOADBALANCER, msg);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.UPDATE_LOADBALANCER, msg);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
@@ -105,7 +104,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             MessageDataContainer data = new MessageDataContainer();
             data.setLoadBalancer(loadBalancer);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_LOADBALANCER, data);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.DELETE_LOADBALANCER, data);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);

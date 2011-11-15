@@ -8,7 +8,7 @@ import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.SessionPersistenceValidator;
 import org.openstack.atlas.core.api.v1.SessionPersistence;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.operation.CoreOperation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.SessionPersistenceRepository;
 import org.openstack.atlas.service.domain.service.SessionPersistenceService;
@@ -64,7 +64,7 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
 
             org.openstack.atlas.service.domain.entity.SessionPersistence sessionPersistence = dozerMapper.map(_sessionPersistence, org.openstack.atlas.service.domain.entity.SessionPersistence.class);
             sessionPersistence = service.update(loadBalancerId, sessionPersistence);
-            asyncService.callAsyncLoadBalancingOperation(Operation.SET_SESSION_PERSISTENCE, data);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.UPDATE_SESSION_PERSISTENCE, data);
             _sessionPersistence = dozerMapper.map(sessionPersistence, SessionPersistence.class);
             return Response.status(Response.Status.ACCEPTED).entity(_sessionPersistence).build();
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class SessionPersistenceResource extends CommonDependencyProvider {
             data.setLoadBalancer(loadBalancer);
             
             service.preDelete(loadBalancerId);
-            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_SESSION_PERSISTENCE, data);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.DELETE_SESSION_PERSISTENCE, data);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);

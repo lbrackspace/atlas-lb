@@ -9,7 +9,7 @@ public enum EventType implements Serializable {
     CREATE_NODE,
     UPDATE_NODE,
     DELETE_NODE,
-    CREATE_VIRTUAL_IP,
+    ADD_VIRTUAL_IP,
     DELETE_VIRTUAL_IP,
     DELETE_NETWORK_ITEM,
     CREATE_ACCESS_LIST,

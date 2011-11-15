@@ -7,11 +7,11 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.rax.api.validation.validator.RaxConnectionLoggingValidator;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
+import org.openstack.atlas.rax.domain.operation.RaxOperation;
 import org.openstack.atlas.rax.domain.service.RaxConnectionLoggingService;
-import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.operation.CoreOperation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.service.LoadBalancerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
@@ -71,7 +71,7 @@ public class RaxConnectionLoggingResource extends CommonDependencyProvider {
             data.setLoadBalancer(loadBalancer);
 
             raxConnectionLoggingService.update(loadBalancer);
-            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_CONNECTION_LOGGING, data);
+            asyncService.callAsyncLoadBalancingOperation(RaxOperation.UPDATE_CONNECTION_LOGGING, data);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);

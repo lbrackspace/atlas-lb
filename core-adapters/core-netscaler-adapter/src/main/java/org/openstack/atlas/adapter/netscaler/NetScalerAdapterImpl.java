@@ -20,8 +20,6 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 
-
-@Primary
 @Service
 public class NetScalerAdapterImpl implements LoadBalancerAdapter {
     public static Log LOG = LogFactory.getLog(NetScalerAdapterImpl.class.getName());

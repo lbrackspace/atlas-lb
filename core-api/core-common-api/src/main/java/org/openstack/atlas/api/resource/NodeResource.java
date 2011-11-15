@@ -8,7 +8,7 @@ import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.NodeValidator;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
-import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.operation.CoreOperation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.NodeRepository;
@@ -85,7 +85,7 @@ public class NodeResource extends CommonDependencyProvider {
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setLoadBalancer(dbLb);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_NODE, dataContainer);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.UPDATE_NODE, dataContainer);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
@@ -103,7 +103,7 @@ public class NodeResource extends CommonDependencyProvider {
             ids.add(id);
             dataContainer.setIds(ids);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_NODES, dataContainer);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.DELETE_NODES, dataContainer);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);

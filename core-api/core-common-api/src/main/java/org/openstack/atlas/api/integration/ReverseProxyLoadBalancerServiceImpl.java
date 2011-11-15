@@ -28,13 +28,13 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     private final Log LOG = LogFactory.getLog(ReverseProxyLoadBalancerServiceImpl.class);
 
     @Autowired
-    private Configuration configuration;
+    protected Configuration configuration;
     @Autowired
-    private LoadBalancerAdapter loadBalancerAdapter;
+    protected LoadBalancerAdapter loadBalancerAdapter;
     @Autowired
-    private LoadBalancerRepository loadBalancerRepository;
+    protected LoadBalancerRepository loadBalancerRepository;
     @Autowired
-    private HostRepository hostRepository;
+    protected HostRepository hostRepository;
 
     @Override
     public void createLoadBalancer(Integer accountId, LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
@@ -181,7 +181,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
 
-    private LoadBalancerEndpointConfiguration getConfigbyLoadBalancerId(Integer lbId) throws EntityNotFoundException, DecryptException, MalformedURLException {
+    protected LoadBalancerEndpointConfiguration getConfigbyLoadBalancerId(Integer lbId) throws EntityNotFoundException, DecryptException, MalformedURLException {
         org.openstack.atlas.service.domain.entity.LoadBalancer loadBalancer = loadBalancerRepository.getById(lbId);
         Host host = loadBalancer.getHost();
         Cluster cluster = host.getCluster();
@@ -202,7 +202,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         return false;
     }
 
-    private void checkAndSetIfEndPointBad(LoadBalancerEndpointConfiguration config, Exception exc) throws AdapterException, Exception {
+    protected void checkAndSetIfEndPointBad(LoadBalancerEndpointConfiguration config, Exception exc) throws AdapterException, Exception {
         Host badHost = config.getHost();
         if (isConnectionExcept(exc)) {
             LOG.error(String.format("Endpoint %s went bad marking host[%d] as bad.", badHost.getEndpoint(), badHost.getId()));

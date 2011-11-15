@@ -118,12 +118,12 @@ public class CreateLoadBalancerListener extends BaseListener {
     private void addAtomEntriesForVips(LoadBalancer queueLb, org.openstack.atlas.service.domain.entity.LoadBalancer dbLoadBalancer) {
         for (LoadBalancerJoinVip loadBalancerJoinVip : dbLoadBalancer.getLoadBalancerJoinVipSet()) {
             VirtualIp vip = loadBalancerJoinVip.getVirtualIp();
-            notificationService.saveVirtualIpEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), vip.getId(), CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(vip), EventType.CREATE_VIRTUAL_IP, CREATE, INFO);
+            notificationService.saveVirtualIpEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), vip.getId(), CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(vip), EventType.ADD_VIRTUAL_IP, CREATE, INFO);
         }
 
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : dbLoadBalancer.getLoadBalancerJoinVip6Set()) {
             VirtualIpv6 vip = loadBalancerJoinVip6.getVirtualIp();
-            notificationService.saveVirtualIpEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), vip.getId(), CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(vip), EventType.CREATE_VIRTUAL_IP, CREATE, INFO);
+            notificationService.saveVirtualIpEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), vip.getId(), CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(vip), EventType.ADD_VIRTUAL_IP, CREATE, INFO);
         }
     }
 
