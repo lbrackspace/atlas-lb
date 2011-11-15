@@ -31,7 +31,22 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!--External Dependencies-->
+        <!--Used for extensions-->
+<!--        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-rax-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>-->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>1.7.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.5</version>
+        </dependency>
 
         <!--External Dependencies From Parent-->
         <dependency>

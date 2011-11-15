@@ -1,4 +1,4 @@
-package org.openstack.atlas.rax.domain.service;
+package org.openstack.atlas.rax.domain.service.impl;
 
 import org.openstack.atlas.rax.domain.entity.RaxConnectionThrottle;
 import org.openstack.atlas.service.domain.entity.ConnectionThrottle;

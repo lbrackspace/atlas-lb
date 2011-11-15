@@ -1,4 +1,4 @@
-package org.openstack.atlas.rax.domain.service;
+package org.openstack.atlas.rax.domain.service.impl;
 
 import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;

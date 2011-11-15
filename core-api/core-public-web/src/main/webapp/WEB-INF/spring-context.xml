@@ -13,7 +13,7 @@
     <!--<import resource="classpath:spring-context-public.xml"/>-->
     <!--<context:component-scan base-package="org.openstack.atlas"/>-->
 
-    <jaxrs:server id="loadBalancingPublic" address="/" staticSubresourceResolution="true">
+    <jaxrs:server id="loadBalancingPublic" address="/" staticSubresourceResolution="false">
         <jaxrs:serviceFactories>
             <ref bean="loadBalancingPublicImplFactory"/>
         </jaxrs:serviceFactories>

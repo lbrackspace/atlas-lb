@@ -4,6 +4,48 @@
           xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
 
+    <!--Mapping for GET /loadbalancers-->
+    <mapping map-id="SIMPLE_LB" type="one-way" wildcard="false" map-null="false">
+        <class-a>
+            org.openstack.atlas.service.domain.entity.LoadBalancer
+        </class-a>
+        <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.CoreLoadBalancerFactory">
+            org.openstack.atlas.core.api.v1.LoadBalancer
+        </class-b>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>name</a>
+            <b>name</b>
+        </field>
+        <field>
+            <a>protocol</a>
+            <b>protocol</b>
+        </field>
+        <field>
+            <a>port</a>
+            <b>port</b>
+        </field>
+        <field>
+            <a>algorithm</a>
+            <b>algorithm</b>
+        </field>
+        <field>
+            <a>status</a>
+            <b>status</b>
+        </field>
+        <field>
+            <a>created</a>
+            <b>created</b>
+        </field>
+        <field>
+            <a>updated</a>
+            <b>updated</b>
+        </field>
+    </mapping>
+
     <mapping map-null="false">
         <class-a bean-factory="org.openstack.atlas.rax.api.mapper.dozer.factory.RaxLoadBalancerFactory">
             org.openstack.atlas.core.api.v1.LoadBalancer
