@@ -248,7 +248,7 @@ public class HostResource extends ManagementDependencyProvider {
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("endpoint/enable")
     public Response enableEndPoint() {
-        if (!isUserInRole("cp,op")) {
+        if (!isUserInRole("cp,ops")) {
             return ResponseFactory.accessDenied();
         }
         try {

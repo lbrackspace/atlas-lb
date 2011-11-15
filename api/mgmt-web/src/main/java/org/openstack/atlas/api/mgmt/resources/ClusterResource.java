@@ -142,7 +142,7 @@ public class ClusterResource extends ManagementDependencyProvider {
     @GET
     @Path("activeratelimits")
     public Response getActiveRateLimitsInCluster() {
-        if (!isUserInRole("cp, ops, support")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
         Integer clusterId = id;
@@ -160,7 +160,7 @@ public class ClusterResource extends ManagementDependencyProvider {
     @GET
     @Path("apiratelimit")
     public Response getApiRateLimitsForCluster() {
-        if (!isUserInRole("cp, ops, support")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
         List<org.openstack.atlas.service.domain.entities.AccountGroup> domainAccountGroups;
@@ -181,7 +181,7 @@ public class ClusterResource extends ManagementDependencyProvider {
     @GET
     @Path("customlimitaccounts")
     public Response getAbsoluteRateLimitsInCluster() {
-        if (!isUserInRole("cp, ops, support")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
         Map<Integer, List<AccountLimit>> clusterLimitAccounts = accountLimitService.getAccountLimitsForCluster(id);
