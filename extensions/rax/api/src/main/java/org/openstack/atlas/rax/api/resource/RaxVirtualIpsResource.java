@@ -37,7 +37,7 @@ public class RaxVirtualIpsResource extends VirtualIpsResource {
     protected RaxVirtualIpService virtualIpService;
 
     @POST
-    @Path("/ext/RAX-ATLAS-VIP")
+    @Path("/ext/RAX-ATLAS-AV")
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response addIpv6VirtualIpToLoadBalancer(VirtualIp _virtualIp) {
         ValidatorResult result = validator.validate(_virtualIp, VirtualIpContext.POST_IPV6);

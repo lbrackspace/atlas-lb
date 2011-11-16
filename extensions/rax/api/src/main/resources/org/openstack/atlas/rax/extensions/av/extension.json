@@ -1,0 +1,14 @@
+{
+  "extension":{
+    "name": "Rackspace Atlas Add Virtual Ip",
+    "namespace": "http://docs.rackspace.com/identity/api/ext/RAX-ATLAS-AV/v1.0",
+    "alias": "RAX-ATLAS-AV",
+    "updated": "2011-11-16T16:44:00-06:00",
+    "description": "Rackspace extension to Atlas v1.1 API allowing addition of multiple virtual ips.",
+    "links": [{
+        "rel": "describedby",
+        "type": "application/pdf",
+        "href": "https://github.com/openstack/atlas/master/extensions/rax/contrib/RAX-ATLAS-AV-service-devguide.pdf"
+    }]
+   }
+}

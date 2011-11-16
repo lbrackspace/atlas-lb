@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension xmlns="http://docs.openstack.org/common/api/v1.0"
+            xmlns:atom="http://www.w3.org/2005/Atom"
+            name="Rackspace Atlas Add Virtual Ip" namespace="http://docs.rackspace.com/identity/api/ext/RAX-ATLAS-AV/v1.0"
+            alias="RAX-ATLAS-AV"
+            updated="2011-11-16T16:44:00-06:00">
+            <description>
+                        Rackspace extension to Atlas v1.1 API
+                        allowing addition of multiple virtual
+                        ips.
+            </description>
+            <atom:link rel="describedby" type="application/pdf"
+                        href="https://github.com/openstack/atlas/master/extensions/rax/contrib/RAX-ATLAS-AV-service-devguide.pdf"/>
+</extension>
