@@ -20,7 +20,7 @@ public class RaxLoadBalancer extends LoadBalancer implements Serializable {
     private String crazyName = "WeeWooWoo!";
 
     @Column(name = "connection_logging", nullable = false)
-    private Boolean connectionLogging;
+    private Boolean connectionLogging = false;
 
     public Set<AccessList> getAccessLists() {
         return accessLists;

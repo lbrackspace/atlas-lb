@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.pojo;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.entity.VirtualIp;
+import org.openstack.atlas.service.domain.entity.VirtualIpv6;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -121,6 +122,14 @@ public class MessageDataContainer implements Serializable {
 
     public VirtualIp getVirtualIp() {
         return (VirtualIp) resource;
+    }
+
+    public void setVirtualIpv6(VirtualIpv6 virtualIp) {
+        this.resource = virtualIp;
+    }
+
+    public VirtualIpv6 getVirtualIpv6() {
+        return (VirtualIpv6) resource;
     }
 
     public void setLoadBalancers(List<LoadBalancer> loadBalancers) {

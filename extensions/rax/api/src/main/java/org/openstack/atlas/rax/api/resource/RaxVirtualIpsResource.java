@@ -59,7 +59,7 @@ public class RaxVirtualIpsResource extends VirtualIpsResource {
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setAccountId(accountId);
             dataContainer.setLoadBalancerId(loadBalancerId);
-            dataContainer.getNewVipIds().add(newlyAddedIpv6Vip.getId());
+            dataContainer.setVirtualIpv6(newlyAddedIpv6Vip);
 //            if (requestHeaders != null) dataContainer.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
 
             asyncService.callAsyncLoadBalancingOperation(RaxOperation.RAX_ADD_VIRTUAL_IP, dataContainer);

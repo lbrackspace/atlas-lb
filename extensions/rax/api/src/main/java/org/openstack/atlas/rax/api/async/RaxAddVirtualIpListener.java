@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import javax.jms.Message;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import static org.openstack.atlas.api.atom.EntryHelper.CREATE_VIP_TITLE;
 import static org.openstack.atlas.service.domain.service.helpers.AlertType.*;
@@ -54,8 +55,9 @@ public class RaxAddVirtualIpListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Adding virtual ips to load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            // TODO: Figure out how to get only new vips
-            ((RaxProxyService)reverseProxyLoadBalancerService).addVirtualIps(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), new HashSet<VirtualIp>(), new HashSet<VirtualIpv6>());
+            Set<VirtualIpv6> newIpv6Vips = new HashSet<VirtualIpv6>();
+            newIpv6Vips.add(dataContainer.getVirtualIpv6());
+            ((RaxProxyService)reverseProxyLoadBalancerService).addVirtualIps(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), new HashSet<VirtualIp>(), newIpv6Vips);
             LOG.debug("Successfully added virtual ips in Zeus.");
         } catch (Exception e) {
             loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ERROR);
