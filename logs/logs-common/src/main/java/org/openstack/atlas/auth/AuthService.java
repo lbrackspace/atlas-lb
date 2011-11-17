@@ -2,9 +2,9 @@ package org.openstack.atlas.auth;
 
 import org.openstack.atlas.data.AuthUser;
 import org.openstack.atlas.exception.AuthException;
-
-import java.net.MalformedURLException;
+import org.openstack.client.keystone.KeyStoneException;
+import java.net.URISyntaxException;
 
 public interface AuthService {
-    public AuthUser getUser(String accountId) throws AuthException;
+    public AuthUser getUser(String accountId) throws KeyStoneException, URISyntaxException, AuthException;
 }

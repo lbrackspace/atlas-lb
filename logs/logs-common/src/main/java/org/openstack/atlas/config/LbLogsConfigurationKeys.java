@@ -4,6 +4,8 @@ import org.openstack.atlas.cfg.ConfigurationKey;
 
 public enum LbLogsConfigurationKeys implements ConfigurationKey {
     auth_management_uri,
+    basic_auth_key,
+    basic_auth_user,
     auth_username,
     auth_password,
 

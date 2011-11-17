@@ -186,16 +186,10 @@
           scope="request"/>
 
     <!--FILTER SETTINGS-->
-    <bean id="authServiceImpl" class="org.openstack.atlas.api.auth.AuthServiceImpl"
-          scope="singleton">
-          <constructor-arg index="0" ref="xmlRpcClientFactory" />
-          <constructor-arg index="1" ref="configuration"/>
-    </bean>
-
-    <bean id="accountServiceImpl" class="org.openstack.atlas.api.auth.AccountServiceImpl" scope="singleton">
-          <constructor-arg index="0" ref="xmlRpcClientFactory"/>
-          <constructor-arg index="1" ref="configuration"/>
-    </bean>
+    <!--<bean id="authTokenValidator" class="org.openstack.atlas.api.auth.AuthTokenValidator"-->
+          <!--scope="singleton">-->
+          <!--<constructor-arg index="0" ref="configuration"/>-->
+    <!--</bean>-->
 
     <bean id="requestSanitationFilter"
           class="org.openstack.atlas.api.filters.RequestSanitationFilter"
@@ -205,8 +199,7 @@
           scope="request" init-method="startConfig">
         <constructor-arg index="0">
             <bean class="org.openstack.atlas.api.auth.AuthTokenValidator">
-                <constructor-arg index="0" ref="authServiceImpl" />
-                <constructor-arg index="1" ref="accountServiceImpl" />
+                <constructor-arg index="0" ref="configuration" />
             </bean>
         </constructor-arg>
         <constructor-arg index="1">
@@ -243,17 +236,6 @@
           init-method="startConfig"
           scope="request"
           parent="validationFilter"/>
-
-    <bean id="xmlRpcClientFactory"
-          class="org.openstack.atlas.api.auth.XmlRpcClientFactory">
-        <constructor-arg>
-            <bean class="org.openstack.atlas.api.auth.XmlRpcClientConfigFactory">
-                <constructor-arg>
-                    <bean class="org.apache.xmlrpc.client.XmlRpcClientConfigImpl"/>
-                </constructor-arg>
-            </bean>
-        </constructor-arg>
-    </bean>
 
     <!--ATOM BEANS-->
     <bean id="atomProvider" class="org.openstack.atlas.api.atom.AbderaSupport"/>

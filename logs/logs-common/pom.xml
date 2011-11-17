@@ -93,7 +93,11 @@
             <groupId>org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-common</artifactId>
         </dependency>
-
+            <dependency>
+                <groupId>org.openstack.client.keystone</groupId>
+                <artifactId>java-keystone</artifactId>
+                <version>1.0</version>
+            </dependency>
     </dependencies>
 
     <build>
