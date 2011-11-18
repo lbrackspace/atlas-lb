@@ -32,7 +32,7 @@ public class RaxProxyServiceImpl extends ReverseProxyLoadBalancerServiceImpl imp
     public void deleteVirtualIps(LoadBalancer dbLoadBalancer, List<Integer> vipIdsToDelete) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(dbLoadBalancer.getId());
         try {
-            ((RaxZxtmAdapter) loadBalancerAdapter).deleteVirtualIps(config, dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), vipIdsToDelete);
+            ((RaxZxtmAdapter) loadBalancerAdapter).deleteVirtualIps(config, dbLoadBalancer, vipIdsToDelete);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
