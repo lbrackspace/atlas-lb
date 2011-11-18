@@ -21,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -35,6 +36,8 @@ public class RaxVirtualIpsResource extends VirtualIpsResource {
     protected VirtualIpValidator validator;
     @Autowired
     protected RaxVirtualIpService virtualIpService;
+    @Autowired
+    protected RaxVirtualIpResource raxVirtualIpResource;
 
     @POST
     @Path("/ext/RAX-ATLAS-AV")
@@ -74,5 +77,13 @@ public class RaxVirtualIpsResource extends VirtualIpsResource {
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
         }
+    }
+    
+    @Path("{id: [-+]?[0-9][0-9]*}")
+    public RaxVirtualIpResource retrieveRaxVirtualIpResource(@PathParam("id") int virtualIpId) {
+        raxVirtualIpResource.setLoadBalancerId(loadBalancerId);
+        raxVirtualIpResource.setId(virtualIpId);
+        raxVirtualIpResource.setAccountId(accountId);
+        return raxVirtualIpResource;
     }
 }

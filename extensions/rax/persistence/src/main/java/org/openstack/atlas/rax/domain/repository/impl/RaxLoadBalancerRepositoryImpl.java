@@ -1,4 +1,4 @@
-package org.openstack.atlas.rax.domain.repository;
+package org.openstack.atlas.rax.domain.repository.impl;
 
 import org.openstack.atlas.rax.domain.entity.AccessList;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;

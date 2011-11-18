@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Set;
 
 @Primary
@@ -39,5 +40,10 @@ public class RaxZxtmAdapterImpl extends ZxtmAdapterImpl implements RaxZxtmAdapte
         } catch (RemoteException e) {
             throw new AdapterException(e);
         }
+    }
+
+    @Override
+    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, List<Integer> vipIdsToDelete) throws AdapterException {
+        LOG.info("I MADE TO THE ADAPTER!");
     }
 }

@@ -4,11 +4,13 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exception.ConnectionException;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl;
 import org.openstack.atlas.rax.adapter.zxtm.RaxZxtmAdapter;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.VirtualIp;
 import org.openstack.atlas.service.domain.entity.VirtualIpv6;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 @Primary
@@ -20,6 +22,17 @@ public class RaxProxyServiceImpl extends ReverseProxyLoadBalancerServiceImpl imp
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             ((RaxZxtmAdapter) loadBalancerAdapter).addVirtualIps(config, accountId, lbId, ipv4Vips, ipv6Vips);
+        } catch (ConnectionException exc) {
+            checkAndSetIfEndPointBad(config, exc);
+            throw exc;
+        }
+    }
+
+    @Override
+    public void deleteVirtualIps(LoadBalancer dbLoadBalancer, List<Integer> vipIdsToDelete) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(dbLoadBalancer.getId());
+        try {
+            ((RaxZxtmAdapter) loadBalancerAdapter).deleteVirtualIps(config, dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), vipIdsToDelete);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
