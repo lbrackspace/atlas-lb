@@ -17,27 +17,27 @@ public class UsageRecord extends org.openstack.atlas.service.domain.entity.Entit
 
     @ManyToOne
     @JoinColumn(name="load_balancer_id", nullable = false)
-    private LoadBalancer loadBalancer;
+    protected LoadBalancer loadBalancer;
 
     @Column(name = "transfer_bytes_in", nullable = false)
-    private Long transferBytesIn;
+    protected Long transferBytesIn;
 
     @Column(name = "transfer_bytes_out", nullable = false)
-    private Long transferBytesOut;
+    protected Long transferBytesOut;
 
     @Column(name = "last_bytes_in_count", nullable = false)
-    private Long lastBytesInCount;
+    protected Long lastBytesInCount;
 
     @Column(name = "last_bytes_out_count", nullable = false)
-    private Long lastBytesOutCount;
+    protected Long lastBytesOutCount;
 
     @Column(name = "start_time")
     @Temporal(TemporalType.TIMESTAMP)
-    private Calendar startTime;
+    protected Calendar startTime;
 
     @Column(name = "end_time")
     @Temporal(TemporalType.TIMESTAMP)
-    private Calendar endTime;
+    protected Calendar endTime;
 
     public LoadBalancer getLoadBalancer() {
         return loadBalancer;

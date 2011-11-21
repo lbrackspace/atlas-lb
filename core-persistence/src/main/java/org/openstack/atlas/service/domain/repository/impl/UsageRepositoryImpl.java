@@ -26,7 +26,7 @@ import java.util.Set;
 public class UsageRepositoryImpl implements UsageRepository {
     final Log LOG = LogFactory.getLog(UsageRepositoryImpl.class);
     @PersistenceContext(unitName = "loadbalancing")
-    private EntityManager entityManager;
+    protected EntityManager entityManager;
 
     @Override
     public List<UsageRecord> getByLoadBalancerId(Integer loadBalancerId) throws EntityNotFoundException {
@@ -74,21 +74,21 @@ public class UsageRepositoryImpl implements UsageRepository {
         entityManager.createNativeQuery(query).executeUpdate();
     }
 
-    private String generateBatchInsertQuery(List<UsageRecord> usages) {
+    protected String generateBatchInsertQuery(List<UsageRecord> usages) {
         final StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO load_balancer_usage(vendor, load_balancer_id, transfer_bytes_in, transfer_bytes_out, last_bytes_in_count, last_bytes_out_count, start_time, end_time) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
 
-    private String generateBatchUpdateQuery(List<UsageRecord> usages) {
+    protected String generateBatchUpdateQuery(List<UsageRecord> usages) {
         final StringBuilder sb = new StringBuilder();
         sb.append("REPLACE INTO load_balancer_usage(vendor, id, load_balancer_id, transfer_bytes_in, transfer_bytes_out, last_bytes_in_count, last_bytes_out_count, start_time, end_time) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
 
-    private String generateFormattedValues(List<UsageRecord> usages) {
+    protected String generateFormattedValues(List<UsageRecord> usages) {
         StringBuilder sb = new StringBuilder();
 
         for (UsageRecord usage : usages) {
