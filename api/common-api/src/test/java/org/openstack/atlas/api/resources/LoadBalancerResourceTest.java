@@ -1,8 +1,16 @@
 package org.openstack.atlas.api.resources;
 
+import com.sun.org.apache.xalan.internal.xsltc.util.IntegerArray;
+import net.spy.memcached.MemcachedClient;
+import org.dozer.DozerBeanMapper;
+import org.junit.Ignore;
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.api.config.RestApiConfiguration;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.junit.Assert;
@@ -88,6 +96,7 @@ public class LoadBalancerResourceTest {
 
     public static class WhenDeletingALoadBalancer {
         private LoadBalancerService loadBalancerService;
+        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private AsyncService asyncService;
         private LoadBalancerResource loadBalancerResource;
         private Response response;
@@ -95,6 +104,7 @@ public class LoadBalancerResourceTest {
         @Before
         public void standUp() {
             loadBalancerService = mock(LoadBalancerService.class);
+            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             asyncService = mock(AsyncService.class);
             loadBalancerResource = new LoadBalancerResource();
             loadBalancerResource.setId(1);
@@ -135,6 +145,56 @@ public class LoadBalancerResourceTest {
             doThrow(new JMSException("Exception")).when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.DELETE_LOADBALANCER), Matchers.<LoadBalancer>any());
             response = loadBalancerResource.deleteLoadBalancer();
             Assert.assertEquals(500, response.getStatus());
+        }
+    }
+
+    public static class WhenTestingStats {
+        private LoadBalancerService loadBalancerService;
+        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+        private AsyncService asyncService;
+        private LoadBalancerResource loadBalancerResource;
+        private RestApiConfiguration restApiConfiguration;
+        private MemcachedClient memcachedClient;
+        private DozerBeanMapper dozerBeanMapper;
+
+        private Response response;
+
+        @Before
+        public void standUp() {
+            loadBalancerService = mock(LoadBalancerService.class);
+            restApiConfiguration = mock(RestApiConfiguration.class);
+            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
+            asyncService = mock(AsyncService.class);
+            memcachedClient = mock(MemcachedClient.class);
+            dozerBeanMapper = mock(DozerBeanMapper.class);
+            loadBalancerResource = new LoadBalancerResource();
+            loadBalancerResource.setId(1);
+            loadBalancerResource.setAccountId(1234);
+            loadBalancerResource.setLoadBalancerService(loadBalancerService);
+            loadBalancerResource.setAsyncService(asyncService);
+            loadBalancerResource.setRestApiConfiguration(restApiConfiguration);
+            loadBalancerResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
+            loadBalancerResource.setMemchachedClient(memcachedClient);
+            loadBalancerResource.setDozerMapper(dozerBeanMapper);
+        }
+
+        @Test
+        public void shouldReturnOkWhenRetrievingStats() throws Exception {
+            Stats stats = new Stats();
+            stats.setConnectError(new int[]{90});
+            stats.setConnectFailure(new int[]{30});
+            stats.setConnectTimeOut(new int[]{40});
+            stats.setDataTimedOut(new int[]{500});
+            stats.setKeepAliveTimedOut(new int[]{40});
+            stats.setMaxConn(new int[]{20});
+
+            doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
+            doReturn("true").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
+
+            when(loadBalancerService.get(anyInt())).thenReturn(null);
+            doReturn(stats).when(reverseProxyLoadBalancerService).getLoadBalancerStats(Matchers.anyInt(), Matchers.anyInt());
+            response = loadBalancerResource.retrieveLoadBalancerStats();
+            Assert.assertEquals(200, response.getStatus());
         }
     }
 }

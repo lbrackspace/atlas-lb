@@ -1,8 +1,5 @@
 package org.openstack.atlas.service.domain.entities;
 
-import org.hibernate.annotations.LazyToOne;
-import org.hibernate.annotations.LazyToOneOption;
-
 import javax.persistence.*;
 import java.io.Serializable;
 

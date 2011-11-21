@@ -12,11 +12,11 @@
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
     <import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml"/>
     <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
-    <import resource="db-services.xml" />
-    <import resource="db-usage-services.xml" />
-    <import resource="jms-queues-public.xml" />
+    <import resource="db-services.xml"/>
+    <import resource="db-usage-services.xml"/>
+    <import resource="jms-queues-public.xml"/>
 
-    <context:annotation-config />
+    <context:annotation-config/>
 
     <!--STANDALONE SPRING SETTINGS-->
     <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -35,20 +35,22 @@
         <property name="lbRepository" ref="loadBalancerRepository"/>
         <property name="dozerMapper" ref="dozerBeanMapper"/>
         <property name="atomFeedAdapter" ref="atomFeedAdapter"/>
-        <property name="loadBalancerService" ref="loadBalancerService" />
-        <property name="healthMonitorService" ref="healthMonitorService" />
+        <property name="loadBalancerService" ref="loadBalancerService"/>
+        <property name="healthMonitorService" ref="healthMonitorService"/>
         <property name="connectionLoggingService" ref="connectionLoggingService"/>
         <property name="connectionThrottleService" ref="connectionThrottleService"/>
         <property name="sessionPersistenceService" ref="sessionPersistenceService"/>
         <property name="algorithmsService" ref="algorithmService"/>
         <property name="protocolsService" ref="protocolsService"/>
-        <property name="virtualIpService" ref="virtualIpService" />
-        <property name="nodeService" ref="nodeService" />
-        <property name="accessListService" ref="accessListService" />
-        <property name="usageService" ref="usageService" />
-        <property name="accountLimitService" ref="accountLimitService" />
+        <property name="virtualIpService" ref="virtualIpService"/>
+        <property name="nodeService" ref="nodeService"/>
+        <property name="accessListService" ref="accessListService"/>
+        <property name="usageService" ref="usageService"/>
+        <property name="accountLimitService" ref="accountLimitService"/>
         <property name="requestStateContainer" ref="requestStateContainer"/>
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
+        <property name="memchachedClient" ref="memcachedClient"/>
+        <property name="restApiConfiguration" ref="configuration"/>
     </bean>
 
     <!--DOZER SETTINGS-->
@@ -66,6 +68,23 @@
     </bean>
     <bean id="dozerEventListener"
           class="org.openstack.atlas.api.mapper.dozer.converter.EventListener"/>
+
+    <!--MEMCACHED-->
+    <bean id="memcachedClient" class="net.spy.memcached.spring.MemcachedClientFactoryBean">
+        <property name="servers" value="${m1}"/>
+        <property name="protocol" value="BINARY"/>
+        <property name="transcoder">
+            <bean class="net.spy.memcached.transcoders.SerializingTranscoder">
+                <property name="compressionThreshold" value="${compression_threshold}"/>
+            </bean>
+        </property>
+        <property name="opTimeout" value="${op_timeout}"/>
+        <property name="timeoutExceptionThreshold" value="${timeout_ex_threshold}"/>
+        <property name="hashAlg" value="KETAMA_HASH"/>
+        <property name="locatorType" value="CONSISTENT"/>
+        <property name="failureMode" value="${failure_mode}"/>
+        <property name="useNagleAlgorithm" value="false"/>
+    </bean>
 
     <!--RESOURCE BEANS-->
     <bean id="loadBalancingPublicImpl"
@@ -117,7 +136,7 @@
           class="org.openstack.atlas.api.resources.ErrorpageResource"
           parent="commonDependencyProvider"
           scope="request"
-          >
+            >
     </bean>
 
     <bean id="stubResource"
@@ -187,8 +206,8 @@
 
     <!--FILTER SETTINGS-->
     <!--<bean id="authTokenValidator" class="org.openstack.atlas.api.auth.AuthTokenValidator"-->
-          <!--scope="singleton">-->
-          <!--<constructor-arg index="0" ref="configuration"/>-->
+    <!--scope="singleton">-->
+    <!--<constructor-arg index="0" ref="configuration"/>-->
     <!--</bean>-->
 
     <bean id="requestSanitationFilter"
@@ -199,7 +218,7 @@
           scope="request" init-method="startConfig">
         <constructor-arg index="0">
             <bean class="org.openstack.atlas.api.auth.AuthTokenValidator">
-                <constructor-arg index="0" ref="configuration" />
+                <constructor-arg index="0" ref="configuration"/>
             </bean>
         </constructor-arg>
         <constructor-arg index="1">

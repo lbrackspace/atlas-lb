@@ -1,6 +1,8 @@
 package org.openstack.atlas.api.resources;
 
+import net.spy.memcached.MemcachedClient;
 import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.api.helpers.CacheKeyNameGenerator;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
@@ -20,6 +22,7 @@ import org.openstack.atlas.service.domain.pojos.Stats;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -121,14 +124,24 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveLoadBalancerStats() {
         try {
-            if(restApiConfiguration.hasKeys(PublicApiServiceConfigurationKeys.stats)) {
-                if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.stats).equals("false")) {
-                    return Response.status(Response.Status.BAD_REQUEST).build();
-                }
-            }
-            org.openstack.atlas.docs.loadbalancers.api.v1.Stats stats = dozerMapper.map(reverseProxyLoadBalancerService
+
+            //Verify this request is allowed...
+            if(restApiConfiguration.hasKeys(PublicApiServiceConfigurationKeys.stats)
+                    && restApiConfiguration.getString(PublicApiServiceConfigurationKeys.stats).equals("false")) return Response.status(Response.Status.BAD_REQUEST).build();
+
+            LOG.debug("Checking if content is cached for this account...");
+            if (memchachedClient.get(CacheKeyNameGenerator.generateKeyName(accountId, id)) == null) {
+                LOG.debug("Content was not cached... retrieving content and placing in cache");
+                org.openstack.atlas.docs.loadbalancers.api.v1.Stats stats = dozerMapper.map(reverseProxyLoadBalancerService
                     .getLoadBalancerStats(id, accountId), org.openstack.atlas.docs.loadbalancers.api.v1.Stats.class);
-            return Response.status(Response.Status.OK).entity(stats).build();
+
+                 //Five minute cache...
+                 memchachedClient.set(CacheKeyNameGenerator.generateKeyName(accountId, id), 300, stats);
+                return Response.status(Response.Status.OK).entity(stats).build();
+            }
+
+            LOG.debug("Content was cached! Grabbing cached content");
+            return Response.status(Response.Status.OK).entity(memchachedClient.get(CacheKeyNameGenerator.generateKeyName(accountId, id))).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

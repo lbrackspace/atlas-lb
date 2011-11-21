@@ -2,6 +2,7 @@ package org.openstack.atlas.api.resources.providers;
 
 import java.util.ArrayList;
 
+import net.spy.memcached.MemcachedClient;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -43,6 +44,7 @@ public class CommonDependencyProvider {
     protected UsageService usageService;
     protected ProtocolsService protocolsService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+    protected MemcachedClient memchachedClient;
 
     public ReverseProxyLoadBalancerService getReverseProxyLoadBalancerService() {
         return reverseProxyLoadBalancerService;
@@ -174,4 +176,15 @@ public class CommonDependencyProvider {
         this.restApiConfiguration = restApiConfiguration;
     }
 
+    public RestApiConfiguration getRestApiConfiguration() {
+        return restApiConfiguration;
+    }
+
+    public void setMemchachedClient(MemcachedClient memchachedClient) {
+        this.memchachedClient = memchachedClient;
+    }
+
+    public MemcachedClient getMemchachedClient() {
+        return memchachedClient;
+    }
 }
