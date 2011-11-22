@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 @Primary
 @Service
 public class RaxZxtmUsageAdapterImpl extends ZxtmUsageAdapterImpl implements RaxZxtmUsageAdapter {

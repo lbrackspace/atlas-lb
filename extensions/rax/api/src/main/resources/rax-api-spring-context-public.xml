@@ -27,7 +27,7 @@
                 <value>dozer-health-monitor-map.xml</value>
                 <value>dozer-node-map.xml</value>
                 <value>dozer-session-persistence-map.xml</value>
-                <value>dozer-usage-map.xml</value>
+                <value>dozer-rax-usage-map.xml</value>
                 <value>dozer-virtual-ip-map.xml</value>
             </list>
         </property>
