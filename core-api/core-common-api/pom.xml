@@ -31,6 +31,22 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>core-null-adapter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>core-zxtm-adapter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>core-netscaler-adapter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!--Used for extensions-->
 <!--        <dependency>
             <groupId>${project.groupId}</groupId>

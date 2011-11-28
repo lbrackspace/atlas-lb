@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.resource;
 
 import org.apache.log4j.Logger;
-import org.openstack.atlas.api.config.ConfigHelper;
+import org.openstack.atlas.api.config.PluginConfiguration;
 import org.openstack.atlas.api.config.PluginContextLoaderListener;
 import org.openstack.atlas.api.resource.provider.CommonDependencyProvider;
 import org.openstack.atlas.api.response.ResponseFactory;
@@ -113,12 +113,9 @@ public class LoadBalancerResource extends CommonDependencyProvider {
 
     @Path("virtualips")
     public Object retrieveVirtualIpsResource() throws IllegalAccessException, InstantiationException {
-        List<String> enabledExtensions = ConfigHelper.getExtensionPrefixesFromConfiguration();
+        String enabledExtension = PluginConfiguration.getExtensionPrefix();
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
-
-        for (String enabledExtension : enabledExtensions) {
-            configBuilder.addUrls(ClasspathHelper.forPackage("org.openstack.atlas." + enabledExtension + ".api"));
-        }
+        configBuilder.addUrls(ClasspathHelper.forPackage("org.openstack.atlas." + enabledExtension + ".api"));
 
         // TODO: Decompose this out and dynamically resolve sub-resource base off of extensions prefix
         Reflections reflections = new Reflections(configBuilder.setScanners(new SubTypesScanner()));

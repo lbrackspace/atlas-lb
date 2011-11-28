@@ -9,11 +9,6 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <import resource="rax-jms-queues.xml"/>
-
-    <context:component-scan base-package="org.openstack.atlas.rax.api"/>
-    <context:annotation-config/>
-
     <bean id="loadBalancingPublicImpl" class="org.openstack.atlas.rax.api.resource.RaxRootResource" scope="request"/>
 
     <!--DOZER SETTINGS-->
@@ -27,7 +22,7 @@
                 <value>dozer-health-monitor-map.xml</value>
                 <value>dozer-node-map.xml</value>
                 <value>dozer-session-persistence-map.xml</value>
-                <value>dozer-rax-usage-map.xml</value>
+                <value>dozer-usage-map.xml</value>
                 <value>dozer-virtual-ip-map.xml</value>
             </list>
         </property>

@@ -12,7 +12,19 @@
        http://www.springframework.org/schema/tx 
        http://www.springframework.org/schema/tx/spring-tx-2.5.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
 
-    <context:component-scan base-package="org.openstack.atlas.adapter.netscaler"/>
+    <context:component-scan base-package="org.openstack.atlas.rax.domain"/>
     <context:annotation-config/>
+
+    <bean id="entityManagerFactory1" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceXmlLocation" value="classpath:META-INF/rax-lb-persistence.xml"/>
+        <property name="persistenceUnitName" value="loadbalancing"/>
+    </bean>
+
+    <!--<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory1"/>
+    </bean>
+
+    <tx:annotation-driven/>
+    <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>-->
 
 </beans>

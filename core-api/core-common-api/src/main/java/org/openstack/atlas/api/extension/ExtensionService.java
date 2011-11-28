@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.extension;
 
 import com.google.gson.Gson;
-import org.openstack.atlas.api.config.ConfigHelper;
+import org.openstack.atlas.api.config.PluginConfiguration;
 import org.openstack.atlas.datamodel.extensions.json.ExtensionWrapper;
 import org.openstack.atlas.datamodel.extensions.json.ExtensionsWrapper;
 import org.openstack.atlas.service.domain.exception.BadRequestException;
@@ -15,10 +15,10 @@ import java.util.Set;
 @Service
 public class ExtensionService {
     public String getExtensionsAsXml() throws Exception {
-        List<String> enabledExtensions = ConfigHelper.getExtensionPrefixesFromConfiguration();
+        String enabledExtension = PluginConfiguration.getExtensionPrefix();
         Document extensions = XmlExtensionDefinitionReader.readAsXmlDocument("extensions.xml");
 
-        Set<String> xmlFiles = XmlExtensionDefinitionReader.getExtensionFiles(enabledExtensions, "xml");
+        Set<String> xmlFiles = XmlExtensionDefinitionReader.getExtensionFiles(enabledExtension, "xml");
         for (String file : xmlFiles) {
             Document extension = XmlExtensionDefinitionReader.readAsXmlDocument(file);
             Node extensionNode = extensions.importNode(extension.getDocumentElement(), true);
@@ -29,11 +29,11 @@ public class ExtensionService {
     }
 
     public String getExtensionAsXml(String alias) throws Exception {
-        List<String> enabledExtensions = ConfigHelper.getExtensionPrefixesFromConfiguration();
+        String enabledExtension = PluginConfiguration.getExtensionPrefix();
         String[] arr = alias.toLowerCase().split("-atlas-"); // eg. alias = "RAX-ATLAS-AL";
         String prefix = arr[0];
         String extensionName = arr[1];
-        if (!enabledExtensions.contains(prefix)) {
+        if (!enabledExtension.equalsIgnoreCase(prefix)) {
             throw new BadRequestException("Extension " + alias + " not found");
         }
 
@@ -42,9 +42,9 @@ public class ExtensionService {
     }
 
     public String getExtensionsAsJson() throws Exception {
-        List<String> enabledExtensions = ConfigHelper.getExtensionPrefixesFromConfiguration();
+        String enabledExtension = PluginConfiguration.getExtensionPrefix();
         ExtensionsWrapper extensionsWrapper = JsonExtensionDefinitionReader.getExtensionsWrapper("extensions.json");
-        Set<String> jsonFiles = JsonExtensionDefinitionReader.getExtensionFiles(enabledExtensions, "json");
+        Set<String> jsonFiles = JsonExtensionDefinitionReader.getExtensionFiles(enabledExtension, "json");
 
         for (String file : jsonFiles) {
             ExtensionWrapper extension = JsonExtensionDefinitionReader.getExtensionWrapper(file);
@@ -57,11 +57,11 @@ public class ExtensionService {
     }
 
     public String getExtensionAsJson(String alias) throws Exception {
-        List<String> enabledExtensions = ConfigHelper.getExtensionPrefixesFromConfiguration();
+        String enabledExtension = PluginConfiguration.getExtensionPrefix();
         String[] arr = alias.toLowerCase().split("-atlas-"); // eg. alias = "RAX-ATLAS-AL";
         String prefix = arr[0];
         String extensionName = arr[1];
-        if (!enabledExtensions.contains(prefix)) {
+        if (!enabledExtension.equalsIgnoreCase(prefix)) {
             throw new BadRequestException("Extension " + alias + " not found");
         }
         String fileName = JsonExtensionDefinitionReader.getExtensionFile(prefix, extensionName, "json");

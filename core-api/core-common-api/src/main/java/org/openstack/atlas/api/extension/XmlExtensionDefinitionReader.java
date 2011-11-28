@@ -45,14 +45,9 @@ public class XmlExtensionDefinitionReader {
         }
     }
 
-    public static Set<String> getExtensionFiles(List<String> enabledExtensions, String format) {
-        if (enabledExtensions.isEmpty()) return new HashSet<String>();
-
+    public static Set<String> getExtensionFiles(String enabledExtension, String format) {
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
-
-        for (String enabledExtension : enabledExtensions) {
-            configBuilder.addUrls(ClasspathHelper.forPackage("org.openstack.atlas." + enabledExtension + ".extensions"));
-        }
+        configBuilder.addUrls(ClasspathHelper.forPackage("org.openstack.atlas." + enabledExtension + ".extensions"));
 
         Reflections reflections = new Reflections(configBuilder.setScanners(new ResourcesScanner(), new TypeAnnotationsScanner(), new SubTypesScanner()));
         return reflections.getResources(Pattern.compile("extension." + format.toLowerCase()));
