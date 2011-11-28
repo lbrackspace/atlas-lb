@@ -387,8 +387,8 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
         String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
-        Stats lbStats;
 
+        Stats lbStats;
         lbStats = (Stats) atlasCache.get(key);
         if (lbStats != null) {
             return lbStats;
