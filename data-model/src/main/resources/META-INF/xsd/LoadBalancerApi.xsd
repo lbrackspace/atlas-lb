@@ -56,6 +56,7 @@
         <xsd:attribute name="connectTimeOut" type="xsd:int"/>
         <xsd:attribute name="connectError" type="xsd:int"/>
         <xsd:attribute name="connectFailure" type="xsd:int"/>
+        <xsd:attribute name="dataTimedOut" type="xsd:int"/>
         <xsd:attribute name="keepAliveTimedOut" type="xsd:int"/>
         <xsd:attribute name="maxConn" type="xsd:int"/>
     </xsd:complexType>
@@ -218,7 +219,7 @@
     </xsd:simpleType>
 
     <xsd:complexType name="loadBalancerUsageRecord">
-        <xsd:attribute name="id" type="xsd:int"/> 
+        <xsd:attribute name="id" type="xsd:int"/>
         <xsd:attribute name="averageNumConnections" type="xsd:double"/>
         <xsd:attribute name="incomingTransfer" type="xsd:long"/>
         <xsd:attribute name="outgoingTransfer" type="xsd:long"/>
@@ -262,7 +263,7 @@
         <xsd:attribute name="loadBalancerId" type="xsd:int"/>
         <xsd:attribute name="loadBalancerName" type="xsd:string"/>
     </xsd:complexType>
-    
+
     <xsd:complexType name="cluster">
         <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>
@@ -326,5 +327,5 @@
             <xsd:element name="content" type="xsd:string"/>
         </xsd:sequence>
     </xsd:complexType>
-    
+
 </xsd:schema>

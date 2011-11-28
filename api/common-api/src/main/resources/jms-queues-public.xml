@@ -8,6 +8,10 @@
 
     <bean id="configuration" class="org.openstack.atlas.api.config.RestApiConfiguration"/>
 
+    <bean id="atlasCache" class="org.openstack.atlas.api.helpers.AtlasCache" scope="singleton">
+        <constructor-arg index="0" ref="configuration"/>
+    </bean>
+
     <!--JMS SETTINGS-->
     <bean id="jmsActiveMQConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
         <property name="brokerURL" value="${activemq_broker_uri}"/>
@@ -42,14 +46,14 @@
 
     <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
 
-    <bean id="reverseProxyLoadBalancerService"
-          class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl">
+    <bean id="reverseProxyLoadBalancerService" class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl">
         <property name="notificationService" ref="notificationService"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>
         <property name="healthMonitorService" ref="healthMonitorService"/>
         <property name="hostService" ref="hostService"/>
         <property name="reverseProxyLoadBalancerAdapter" ref="reverseProxyLoadBalancerAdapter"/>
         <property name="configuration" ref="configuration"/>
+        <property name="atlasCache" ref="atlasCache"/>
     </bean>
 
     <bean id="deleteLoadBalancerListener"

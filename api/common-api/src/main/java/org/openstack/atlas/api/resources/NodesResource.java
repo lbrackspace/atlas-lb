@@ -12,6 +12,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
@@ -53,7 +54,7 @@ public class NodesResource extends CommonDependencyProvider {
 
     @DELETE
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
-    public Response deleteNodes(@QueryParam("id") List<Integer> ids) {
+    public Response deleteNodes(@QueryParam("id") List<Integer> nodeIds) {
 
         MessageDataContainer msg = new MessageDataContainer();
 
@@ -61,22 +62,29 @@ public class NodesResource extends CommonDependencyProvider {
         LoadBalancer dlb = new LoadBalancer();
         List<String> validationErrors;
         dlb.setId(loadBalancerId);
-        Collections.sort(ids);
+        Collections.sort(nodeIds);
         try {
+            if (nodeIds.isEmpty()) {
+                BadRequestException badRequestException = new BadRequestException("Must supply one or more id's to process this request.");
+                return ResponseFactory.getErrorResponse(badRequestException, null, null);
+            }
+
             isLbEditable = loadBalancerService.testAndSetStatusPending(accountId, loadBalancerId);
             if (!isLbEditable) {
                 throw new ImmutableEntityException("LoadBalancer is not ACTIVE");
             }
-            validationErrors = nodeService.prepareForNodesDeletion(accountId, loadBalancerId, ids);
+
+            validationErrors = nodeService.prepareForNodesDeletion(accountId, loadBalancerId, nodeIds);
             if (validationErrors.size() > 0) {
                 loadBalancerService.setStatus(dlb, LoadBalancerStatus.ACTIVE);
                 return getValidationFaultResponse(validationErrors);
             }
-            msg.setIds(ids);
+
+            msg.setIds(nodeIds);
             msg.setAccountId(accountId);
             msg.setLoadBalancerId(loadBalancerId);
             msg.setUserName(getUserName(requestHeaders));
-            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_NODES, msg);            
+            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_NODES, msg);
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
         }

@@ -49,7 +49,6 @@
         <property name="accountLimitService" ref="accountLimitService"/>
         <property name="requestStateContainer" ref="requestStateContainer"/>
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
-        <property name="memchachedClient" ref="memcachedClient"/>
         <property name="restApiConfiguration" ref="configuration"/>
     </bean>
 
@@ -68,23 +67,6 @@
     </bean>
     <bean id="dozerEventListener"
           class="org.openstack.atlas.api.mapper.dozer.converter.EventListener"/>
-
-    <!--MEMCACHED-->
-    <bean id="memcachedClient" class="net.spy.memcached.spring.MemcachedClientFactoryBean">
-        <property name="servers" value="${m1}"/>
-        <property name="protocol" value="BINARY"/>
-        <property name="transcoder">
-            <bean class="net.spy.memcached.transcoders.SerializingTranscoder">
-                <property name="compressionThreshold" value="${compression_threshold}"/>
-            </bean>
-        </property>
-        <property name="opTimeout" value="${op_timeout}"/>
-        <property name="timeoutExceptionThreshold" value="${timeout_ex_threshold}"/>
-        <property name="hashAlg" value="KETAMA_HASH"/>
-        <property name="locatorType" value="CONSISTENT"/>
-        <property name="failureMode" value="${failure_mode}"/>
-        <property name="useNagleAlgorithm" value="false"/>
-    </bean>
 
     <!--RESOURCE BEANS-->
     <bean id="loadBalancingPublicImpl"
@@ -281,4 +263,5 @@
         <property name="ttl" value="300"/>
         <property name="cleanExpiredOn" value="4096"/>
     </bean>
+
 </beans>

@@ -3,6 +3,7 @@ package org.openstack.atlas.api.auth;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.api.exceptions.MissingFieldException;
 import org.openstack.atlas.api.filters.helpers.StringUtilities;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.client.keystone.KeyStoneAdminClient;
@@ -31,7 +32,7 @@ public class AuthTokenValidator {
                     configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_user));
         } else {
             LOG.error(StringUtilities.AUTH_INIT_FAIL);
-            throw new MalformedURLException(StringUtilities.AUTH_INIT_FAIL);
+            throw new MissingFieldException(StringUtilities.AUTH_INIT_FAIL);
         }
     }
 
@@ -39,13 +40,5 @@ public class AuthTokenValidator {
         LOG.info("Within validate ... about to call client authenticate...");
         //Validating mosso style user...
         return keyStoneAdminClient.validateToken(String.valueOf(passedAccountId), authToken, "mosso");
-    }
-
-    public Configuration getConfiguration() {
-        return configuration;
-    }
-
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
     }
 }

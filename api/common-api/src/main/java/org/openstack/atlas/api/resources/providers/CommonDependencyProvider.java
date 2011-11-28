@@ -13,6 +13,7 @@ import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.dozer.DozerBeanMapper;
 import org.openstack.atlas.api.config.RestApiConfiguration;
+
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -44,7 +45,6 @@ public class CommonDependencyProvider {
     protected UsageService usageService;
     protected ProtocolsService protocolsService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
-    protected MemcachedClient memchachedClient;
 
     public ReverseProxyLoadBalancerService getReverseProxyLoadBalancerService() {
         return reverseProxyLoadBalancerService;
@@ -178,13 +178,5 @@ public class CommonDependencyProvider {
 
     public RestApiConfiguration getRestApiConfiguration() {
         return restApiConfiguration;
-    }
-
-    public void setMemchachedClient(MemcachedClient memchachedClient) {
-        this.memchachedClient = memchachedClient;
-    }
-
-    public MemcachedClient getMemchachedClient() {
-        return memchachedClient;
     }
 }

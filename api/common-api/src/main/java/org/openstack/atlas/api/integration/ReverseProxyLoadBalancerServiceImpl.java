@@ -1,5 +1,8 @@
 package org.openstack.atlas.api.integration;
 
+import org.openstack.atlas.api.exceptions.CacheException;
+import org.openstack.atlas.api.helpers.AtlasCache;
+import org.openstack.atlas.api.helpers.CacheKeyGen;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
@@ -34,6 +37,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     private NotificationService notificationService;
     private HealthMonitorService healthMonitorService;
     private Configuration configuration;
+    private AtlasCache atlasCache;
 
     public void setLoadBalancerService(LoadBalancerService loadBalancerService) {
         this.loadBalancerService = loadBalancerService;
@@ -244,7 +248,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void updateConnectionThrottle(Integer lbId, Integer accountId,
-            ConnectionLimit connectionThrottle) throws Exception {
+                                         ConnectionLimit connectionThrottle) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
             reverseProxyLoadBalancerAdapter.updateConnectionThrottle(config, lbId, accountId,
@@ -312,7 +316,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void createHostBackup(Host host,
-            String backupName) throws RemoteException, MalformedURLException, DecryptException {
+                                 String backupName) throws RemoteException, MalformedURLException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
         try {
             reverseProxyLoadBalancerAdapter.createHostBackup(config, backupName);
@@ -382,12 +386,20 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     @Override
     public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
+        String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
         Stats lbStats;
-        try {
-            lbStats = reverseProxyLoadBalancerAdapter.getLoadBalancerStats(config, loadbalancerId, accountId);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
+
+        lbStats = (Stats) atlasCache.get(key);
+        if (lbStats != null) {
+            return lbStats;
+        } else {
+            try {
+                lbStats = reverseProxyLoadBalancerAdapter.getLoadBalancerStats(config, loadbalancerId, accountId);
+                atlasCache.set(key, lbStats);
+            } catch (AxisFault af) {
+                checkAndSetIfSoapEndPointBad(config, af);
+                throw af;
+            }
         }
         return lbStats;
     }
@@ -516,11 +528,11 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void deleteErrorFile(Integer loadbalancerId,Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
-        LoadBalancer lb = loadBalancerService.get(loadbalancerId,accountId);
+    public void deleteErrorFile(Integer loadbalancerId, Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
+        LoadBalancer lb = loadBalancerService.get(loadbalancerId, accountId);
         LoadBalancerEndpointConfiguration config = getConfig(lb.getHost());
         try {
-            reverseProxyLoadBalancerAdapter.deleteErrorFile(config,loadbalancerId,accountId);
+            reverseProxyLoadBalancerAdapter.deleteErrorFile(config, loadbalancerId, accountId);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -590,5 +602,13 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             badHost.setSoapEndpointActive(Boolean.FALSE);
             hostService.update(badHost);
         }
+    }
+
+    public void setAtlasCache(AtlasCache atlasCache) {
+        this.atlasCache = atlasCache;
+    }
+
+    public AtlasCache getAtlasCache() {
+        return atlasCache;
     }
 }

@@ -328,7 +328,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             dlb.setId(loadBalancerId);
             NodeMap nodeMap = getNodeMap(accountId, loadBalancerId);
             Set<Integer> idSet = NodeMap.listToSet(ids);
-            Set<Integer> notMyIds = nodeMap.idsThatAreNotInThisMap(idSet); // Either some one elese ids or non existen ids
+            Set<Integer> notMyIds = nodeMap.idsThatAreNotInThisMap(idSet); // Either some one elese ids or non existent ids
             Set<Integer> survivingEnabledNodes = nodeMap.nodesInConditionAfterDelete(NodeCondition.ENABLED, idSet);
             List<Node> doomedNodes = nodeMap.getNodesList(idSet);
             int doomedNodeCount = doomedNodes.size();
@@ -342,7 +342,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             if (notMyIds.size() > 0) {
                 // Don't even take this request seriously any
                 // ID does not belong to this account
-                format = "Node ids %s are not apart of your loadbalancer";
+                format = "Node ids %s are not a part of your loadbalancer";
                 errMsg = String.format(format, StringConverter.integersAsString(notMyIds));
                 validationErrors.add(errMsg);
             }

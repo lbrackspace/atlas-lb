@@ -18,5 +18,6 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     access_log_file_location,
     usage_timezone_code,
     health_check,
-    stats;
+    stats,
+    memcached_servers;
 }
