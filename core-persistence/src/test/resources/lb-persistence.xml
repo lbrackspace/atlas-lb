@@ -20,6 +20,7 @@
         <class>org.openstack.atlas.service.domain.entity.Node</class>
         <class>org.openstack.atlas.service.domain.entity.SessionPersistence</class>
         <class>org.openstack.atlas.service.domain.entity.UsageRecord</class>
+        <class>org.openstack.atlas.service.domain.entity.UsageEventRecord</class>
         <class>org.openstack.atlas.service.domain.entity.VirtualIp</class>
         <class>org.openstack.atlas.service.domain.entity.VirtualIpv6</class>
 

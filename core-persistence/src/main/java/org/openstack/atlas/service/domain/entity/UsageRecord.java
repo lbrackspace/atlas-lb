@@ -19,6 +19,9 @@ public class UsageRecord extends org.openstack.atlas.service.domain.entity.Entit
     @JoinColumn(name="load_balancer_id", nullable = false)
     protected LoadBalancer loadBalancer;
 
+    @Column(name = "event", nullable = true)
+    protected String event;
+
     @Column(name = "transfer_bytes_in", nullable = false)
     protected Long transferBytesIn;
 
@@ -45,6 +48,14 @@ public class UsageRecord extends org.openstack.atlas.service.domain.entity.Entit
 
     public void setLoadBalancer(LoadBalancer loadBalancer) {
         this.loadBalancer = loadBalancer;
+    }
+
+    public String getEvent() {
+        return event;
+    }
+
+    public void setEvent(String event) {
+        this.event = event;
     }
 
     public Long getTransferBytesIn() {
@@ -100,8 +111,11 @@ public class UsageRecord extends org.openstack.atlas.service.domain.entity.Entit
         return "UsageRecord{" +
                 "endTime=" + endTime +
                 ", startTime=" + startTime +
+                ", lastBytesOutCount=" + lastBytesOutCount +
+                ", lastBytesInCount=" + lastBytesInCount +
                 ", transferBytesOut=" + transferBytesOut +
                 ", transferBytesIn=" + transferBytesIn +
+                ", event='" + event + '\'' +
                 '}';
     }
 }
