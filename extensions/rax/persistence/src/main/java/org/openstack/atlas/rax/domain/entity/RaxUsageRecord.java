@@ -16,6 +16,22 @@ public class RaxUsageRecord extends UsageRecord implements Serializable {
     @Column(name = "num_polls", nullable = false)
     Integer numberOfPolls = 0;
 
+    public RaxUsageRecord() {
+    }
+
+    public RaxUsageRecord(UsageRecord usageRecord) {
+        this.setId(usageRecord.getId());
+        this.setLoadBalancer(usageRecord.getLoadBalancer());
+        this.setEvent(usageRecord.getEvent());
+        this.setTransferBytesIn(usageRecord.getTransferBytesIn());
+        this.setTransferBytesOut(usageRecord.getTransferBytesOut());
+        this.setLastBytesInCount(usageRecord.getLastBytesInCount());
+        this.setLastBytesOutCount(usageRecord.getLastBytesOutCount());
+        this.setStartTime(usageRecord.getStartTime());
+        this.setEndTime(usageRecord.getEndTime());
+        this.setUserName(usageRecord.getUserName());
+    }
+
     public Double getAverageConcurrentConnections() {
         return averageConcurrentConnections;
     }

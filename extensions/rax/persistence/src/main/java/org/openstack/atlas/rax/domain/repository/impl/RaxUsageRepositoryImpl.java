@@ -11,6 +11,7 @@ import javax.persistence.Query;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -20,7 +21,7 @@ import java.util.Set;
 public class RaxUsageRepositoryImpl extends UsageRepositoryImpl {
 
     @Override
-    public List<UsageRecord> getMostRecentUsageRecordsForLoadBalancers(Set<Integer> lbIds) {
+    public List<UsageRecord> getMostRecentUsageRecordsForLoadBalancers(Collection<Integer> lbIds) {
         if (lbIds == null || lbIds.isEmpty()) return new ArrayList<UsageRecord>();
 
         Query query = entityManager.createNativeQuery("SELECT a.* " +
@@ -38,7 +39,7 @@ public class RaxUsageRepositoryImpl extends UsageRepositoryImpl {
     @Override
     protected String generateBatchInsertQuery(List<UsageRecord> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO load_balancer_usage(vendor, load_balancer_id, transfer_bytes_in, transfer_bytes_out, last_bytes_in_count, last_bytes_out_count, avg_concurrent_conns, num_polls, start_time, end_time) values");
+        sb.append("INSERT INTO load_balancer_usage(vendor, load_balancer_id, event, transfer_bytes_in, transfer_bytes_out, last_bytes_in_count, last_bytes_out_count, avg_concurrent_conns, num_polls, start_time, end_time) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
@@ -46,7 +47,7 @@ public class RaxUsageRepositoryImpl extends UsageRepositoryImpl {
     @Override
     protected String generateBatchUpdateQuery(List<UsageRecord> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("REPLACE INTO load_balancer_usage(vendor, id, load_balancer_id, transfer_bytes_in, transfer_bytes_out, last_bytes_in_count, last_bytes_out_count, avg_concurrent_conns, num_polls, start_time, end_time) values");
+        sb.append("REPLACE INTO load_balancer_usage(vendor, id, load_balancer_id, event, transfer_bytes_in, transfer_bytes_out, last_bytes_in_count, last_bytes_out_count, avg_concurrent_conns, num_polls, start_time, end_time) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
@@ -56,7 +57,14 @@ public class RaxUsageRepositoryImpl extends UsageRepositoryImpl {
         StringBuilder sb = new StringBuilder();
 
         for (UsageRecord usage : usages) {
-            final RaxUsageRecord raxUsageRecord = (RaxUsageRecord) usage;
+            final RaxUsageRecord raxUsageRecord;
+
+            if (usage instanceof RaxUsageRecord) {
+                raxUsageRecord = (RaxUsageRecord) usage;
+            } else {
+                raxUsageRecord = new RaxUsageRecord(usage);
+            }
+
             DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String startTime = formatter.format(raxUsageRecord.getStartTime().getTime());
             String endTime = formatter.format(raxUsageRecord.getEndTime().getTime());
@@ -65,6 +73,8 @@ public class RaxUsageRepositoryImpl extends UsageRepositoryImpl {
             sb.append("'RAX'").append(",");
             if (raxUsageRecord.getId() != null) sb.append(raxUsageRecord.getId()).append(",");
             sb.append(raxUsageRecord.getLoadBalancer().getId()).append(",");
+            if (raxUsageRecord.getEvent() != null) sb.append("'").append(raxUsageRecord.getEvent()).append("',");
+            else sb.append(raxUsageRecord.getEvent()).append(",");
             sb.append(raxUsageRecord.getTransferBytesIn()).append(",");
             sb.append(raxUsageRecord.getTransferBytesOut()).append(",");
             sb.append(raxUsageRecord.getLastBytesInCount()).append(",");

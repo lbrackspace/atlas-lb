@@ -2,7 +2,9 @@ package org.openstack.atlas.service.domain.repository.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entity.*;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.entity.UsageRecord;
+import org.openstack.atlas.service.domain.entity.UsageRecord_;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.springframework.stereotype.Repository;
@@ -18,8 +20,8 @@ import javax.persistence.criteria.Root;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Repository
 @Transactional
@@ -45,7 +47,7 @@ public class UsageRepositoryImpl implements UsageRepository {
     }
 
     @Override
-    public List<UsageRecord> getMostRecentUsageRecordsForLoadBalancers(Set<Integer> lbIds) {
+    public List<UsageRecord> getMostRecentUsageRecordsForLoadBalancers(Collection<Integer> lbIds) {
         if (lbIds == null || lbIds.isEmpty()) return new ArrayList<UsageRecord>();
 
         Query query = entityManager.createNativeQuery("SELECT a.* " +
@@ -58,6 +60,17 @@ public class UsageRepositoryImpl implements UsageRepository {
         if (usage == null) return new ArrayList<UsageRecord>();
 
         return usage;
+    }
+
+    @Override
+    public UsageRecord getMostRecentUsageForLoadBalancer(Integer loadBalancerId) {
+        List<Integer> loadBalancerIds = new ArrayList<Integer>();
+        loadBalancerIds.add(loadBalancerId);
+        List<UsageRecord> usages = getMostRecentUsageRecordsForLoadBalancers(loadBalancerIds);
+        if (usages == null || usages.isEmpty()) {
+            return null;
+        }
+        return usages.get(0);
     }
 
     @Override
@@ -76,14 +89,14 @@ public class UsageRepositoryImpl implements UsageRepository {
 
     protected String generateBatchInsertQuery(List<UsageRecord> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO load_balancer_usage(vendor, load_balancer_id, transfer_bytes_in, transfer_bytes_out, last_bytes_in_count, last_bytes_out_count, start_time, end_time) values");
+        sb.append("INSERT INTO load_balancer_usage(vendor, load_balancer_id, event, transfer_bytes_in, transfer_bytes_out, last_bytes_in_count, last_bytes_out_count, start_time, end_time) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
 
     protected String generateBatchUpdateQuery(List<UsageRecord> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("REPLACE INTO load_balancer_usage(vendor, id, load_balancer_id, transfer_bytes_in, transfer_bytes_out, last_bytes_in_count, last_bytes_out_count, start_time, end_time) values");
+        sb.append("REPLACE INTO load_balancer_usage(vendor, id, load_balancer_id, event, transfer_bytes_in, transfer_bytes_out, last_bytes_in_count, last_bytes_out_count, start_time, end_time) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
@@ -95,11 +108,13 @@ public class UsageRepositoryImpl implements UsageRepository {
             DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String startTime = formatter.format(usage.getStartTime().getTime());
             String endTime = formatter.format(usage.getEndTime().getTime());
-            
+
             sb.append("(");
             sb.append("'CORE'").append(",");
             if (usage.getId() != null) sb.append(usage.getId()).append(",");
             sb.append(usage.getLoadBalancer().getId()).append(",");
+            if (usage.getEvent() != null) sb.append("'").append(usage.getEvent()).append("',");
+            else sb.append(usage.getEvent()).append(",");
             sb.append(usage.getTransferBytesIn()).append(",");
             sb.append(usage.getTransferBytesOut()).append(",");
             sb.append(usage.getLastBytesInCount()).append(",");
