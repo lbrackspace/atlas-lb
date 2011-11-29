@@ -8,10 +8,10 @@
                 http://www.springframework.org/schema/tx
                 http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
 
-    <!-- Wires up the @Tx's -->
+   <!-- &lt;!&ndash; Wires up the @Tx's &ndash;&gt;
     <tx:annotation-driven/>
 
-    <!--Mark exceptions that shouldn't roll back-->
+    &lt;!&ndash;Mark exceptions that shouldn't roll back&ndash;&gt;
     <tx:advice id="noRollback">
         <tx:attributes>
             <tx:method name="noRollback" propagation="NEVER"
@@ -19,23 +19,23 @@
         </tx:attributes>
     </tx:advice>
 
-    <!-- Wires up the @PC's -->
+    &lt;!&ndash; Wires up the @PC's &ndash;&gt;
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
-    <!-- Grab the UT & TXMgr that were set up in JNDI -->
+    &lt;!&ndash; Grab the UT & TXMgr that were set up in JNDI &ndash;&gt;
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory"/>
     </bean>
 
-    <!-- Standard JPA Mumbo Jumbo -->
+    &lt;!&ndash; Standard JPA Mumbo Jumbo &ndash;&gt;
     <bean id="jpaTemplate" class="org.springframework.orm.jpa.JpaTemplate">
         <property name="entityManagerFactory" ref="entityManagerFactory"/>
     </bean>
 
-    <!-- The EM Factory is where the magic happens :) -->
+    &lt;!&ndash; The EM Factory is where the magic happens :) &ndash;&gt;
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="persistenceXmlLocation" value="classpath:META-INF/lb-persistence.xml"/>
         <property name="persistenceUnitName" value="loadbalancing"/>
-    </bean>
+    </bean>-->
 
 </beans>
