@@ -1,6 +1,6 @@
 package org.openstack.atlas.rax.domain.repository.impl;
 
-import org.openstack.atlas.rax.domain.entity.AccessList;
+import org.openstack.atlas.rax.domain.entity.RaxAccessList;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.repository.impl.LoadBalancerRepositoryImpl;
@@ -24,7 +24,7 @@ public class RaxLoadBalancerRepositoryImpl extends LoadBalancerRepositoryImpl {
         super.setLbIdOnChildObjects(loadBalancer);
         if (loadBalancer instanceof RaxLoadBalancer) {
             if (((RaxLoadBalancer) loadBalancer).getAccessLists() != null) {
-                for (AccessList accessList : ((RaxLoadBalancer) loadBalancer).getAccessLists()) {
+                for (RaxAccessList accessList : ((RaxLoadBalancer) loadBalancer).getAccessLists()) {
                     accessList.setLoadbalancer(((RaxLoadBalancer) loadBalancer));
                 }
             }

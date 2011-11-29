@@ -1,7 +1,8 @@
 package org.openstack.atlas.rax.domain.stub;
 
 import org.openstack.atlas.rax.datamodel.XmlHelper;
-import org.openstack.atlas.rax.domain.entity.AccessListType;
+import org.openstack.atlas.rax.domain.entity.RaxAccessListType;
+import org.openstack.atlas.rax.domain.entity.RaxAccessList;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.rax.domain.helper.ExtensionConverter;
 import org.openstack.atlas.service.domain.entity.*;
@@ -25,11 +26,11 @@ public class RaxStubFactory extends StubFactory {
 
         loadBalancer.getOtherAttributes().put(new QName("http://docs.openstack.org/atlas/api/v1.1/extensions/rax", "crazyName", "rax"), "foo");
 
-        org.openstack.atlas.rax.domain.entity.AccessList accessList = new org.openstack.atlas.rax.domain.entity.AccessList();
+        RaxAccessList accessList = new RaxAccessList();
         accessList.setIpAddress(NETWORK_ITEM1_ADDRESS);
         accessList.setIpVersion(IpVersion.valueOf(NETWORK_ITEM1_IP_VERSION));
-        accessList.setType(AccessListType.valueOf(NETWORK_ITEM1_TYPE));
-        Set<org.openstack.atlas.rax.domain.entity.AccessList> accessListSet = new HashSet<org.openstack.atlas.rax.domain.entity.AccessList>();
+        accessList.setType(RaxAccessListType.valueOf(NETWORK_ITEM1_TYPE));
+        Set<RaxAccessList> accessListSet = new HashSet<RaxAccessList>();
         accessListSet.add(accessList);
 
         org.openstack.atlas.api.v1.extensions.rax.AccessList dataModelAccessList = ExtensionConverter.convertAccessList(accessListSet);
@@ -43,11 +44,11 @@ public class RaxStubFactory extends StubFactory {
 
         loadBalancer.getOtherAttributes().put(new QName("http://docs.openstack.org/atlas/api/v1.1/extensions/rax", "crazyName", "rax"), "foo");
 
-        org.openstack.atlas.rax.domain.entity.AccessList accessList = new org.openstack.atlas.rax.domain.entity.AccessList();
+        RaxAccessList accessList = new RaxAccessList();
         accessList.setIpAddress(NETWORK_ITEM1_ADDRESS);
         accessList.setIpVersion(IpVersion.valueOf(NETWORK_ITEM1_IP_VERSION));
-        accessList.setType(AccessListType.valueOf(NETWORK_ITEM1_TYPE));
-        Set<org.openstack.atlas.rax.domain.entity.AccessList> accessListSet = new HashSet<org.openstack.atlas.rax.domain.entity.AccessList>();
+        accessList.setType(RaxAccessListType.valueOf(NETWORK_ITEM1_TYPE));
+        Set<RaxAccessList> accessListSet = new HashSet<RaxAccessList>();
         accessListSet.add(accessList);
 
         org.openstack.atlas.api.v1.extensions.rax.AccessList dataModelAccessList = ExtensionConverter.convertAccessList(accessListSet);
@@ -112,12 +113,12 @@ public class RaxStubFactory extends StubFactory {
         // RAX SPECIFIC SETTINGS
         loadBalancer.setCrazyName("foobar");
 
-        org.openstack.atlas.rax.domain.entity.AccessList accessList = new org.openstack.atlas.rax.domain.entity.AccessList();
+        RaxAccessList accessList = new RaxAccessList();
         accessList.setId(NETWORK_ITEM1_ID);
         accessList.setIpAddress(NETWORK_ITEM1_ADDRESS);
         accessList.setIpVersion(IpVersion.valueOf(NETWORK_ITEM1_IP_VERSION));
-        accessList.setType(AccessListType.valueOf(NETWORK_ITEM1_TYPE));
-        Set<org.openstack.atlas.rax.domain.entity.AccessList> accessLists = new HashSet<org.openstack.atlas.rax.domain.entity.AccessList>();
+        accessList.setType(RaxAccessListType.valueOf(NETWORK_ITEM1_TYPE));
+        Set<RaxAccessList> accessLists = new HashSet<RaxAccessList>();
         accessLists.add(accessList);
         loadBalancer.setAccessLists(accessLists);
 

@@ -14,7 +14,7 @@ public class RaxLoadBalancer extends LoadBalancer implements Serializable {
 
     @OrderBy("id")
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<AccessList> accessLists = new HashSet<AccessList>();
+    private Set<RaxAccessList> accessLists = new HashSet<RaxAccessList>();
 
     @Column(name = "crazy_name", length = 128)
     private String crazyName = "WeeWooWoo!";
@@ -22,15 +22,15 @@ public class RaxLoadBalancer extends LoadBalancer implements Serializable {
     @Column(name = "connection_logging", nullable = false)
     private Boolean connectionLogging = false;
 
-    public Set<AccessList> getAccessLists() {
+    public Set<RaxAccessList> getAccessLists() {
         return accessLists;
     }
 
-    public void setAccessLists(Set<AccessList> accessLists) {
+    public void setAccessLists(Set<RaxAccessList> accessLists) {
         this.accessLists = accessLists;
     }
 
-    public void addAccessList(AccessList accessList) {
+    public void addAccessList(RaxAccessList accessList) {
         accessList.setLoadbalancer(this);
         accessLists.add(accessList);
     }

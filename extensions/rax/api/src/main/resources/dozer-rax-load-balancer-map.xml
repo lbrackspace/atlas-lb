@@ -97,7 +97,7 @@
             <a>anies</a>
             <b>accessLists</b>
             <a-hint>java.util.List</a-hint>
-            <b-hint>org.openstack.atlas.rax.domain.entity.AccessList</b-hint>
+            <b-hint>org.openstack.atlas.rax.domain.entity.RaxAccessList</b-hint>
         </field>
     </mapping>
 

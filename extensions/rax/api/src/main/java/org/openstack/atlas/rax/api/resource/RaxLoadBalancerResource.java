@@ -22,6 +22,9 @@ import javax.ws.rs.core.Response;
 public class RaxLoadBalancerResource extends LoadBalancerResource {
 
     @Autowired
+    protected RaxAccessListResource raxAccessListResource;
+
+    @Autowired
     protected RaxConnectionLoggingResource connectionLoggingResource;
 
     @Override
@@ -60,6 +63,15 @@ public class RaxLoadBalancerResource extends LoadBalancerResource {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
     }
+
+    @Path("accesslist")
+    public RaxAccessListResource retrieveAccessListResource() {
+        //accessListResource.setRequestHeaders(requestHeaders);
+        raxAccessListResource.setAccountId(accountId);
+        raxAccessListResource.setLoadBalancerId(id);
+        return raxAccessListResource;
+    }
+
 
     @Path("connectionlogging")
     public RaxConnectionLoggingResource retrieveConnectionLoggingResource() {

@@ -13,7 +13,7 @@ import java.io.Serializable;
 )
 @DiscriminatorValue("RAX")
 @Table(name = "access_list")
-public class AccessList extends org.openstack.atlas.service.domain.entity.Entity implements Serializable {
+public class RaxAccessList extends org.openstack.atlas.service.domain.entity.Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @ManyToOne
@@ -29,7 +29,7 @@ public class AccessList extends org.openstack.atlas.service.domain.entity.Entity
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
-    private AccessListType type;
+    private RaxAccessListType type;
 
     public RaxLoadBalancer getLoadbalancer() {
         return loadbalancer;
@@ -55,11 +55,11 @@ public class AccessList extends org.openstack.atlas.service.domain.entity.Entity
         this.ipVersion = ipVersion;
     }
 
-    public AccessListType getType() {
+    public RaxAccessListType getType() {
         return type;
     }
 
-    public void setType(AccessListType type) {
+    public void setType(RaxAccessListType type) {
         this.type = type;
     }
 
