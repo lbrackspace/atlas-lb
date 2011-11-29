@@ -1,15 +1,16 @@
 package org.openstack.atlas.service.domain.repository;
 
-import org.openstack.atlas.service.domain.entities.BlacklistItem;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.BlacklistItem;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -48,10 +49,26 @@ public class BlacklistRepository {
         return query.getResultList();
     }
 
-    public void saveBlacklist(List<BlacklistItem> blackListItems) {
+    public List<BlacklistItem> saveBlacklist(List<BlacklistItem> blackListItems) {
+        List<BlacklistItem> goodList = new ArrayList<BlacklistItem>();
+        List<BlacklistItem> badList = new ArrayList<BlacklistItem>();
+        Boolean unique = false;
+        List<BlacklistItem> blacklist = getAllBlacklistItems();
         for (BlacklistItem bli : blackListItems) {
-            persist(bli);
+            // Optimize
+            for (BlacklistItem item : blacklist) {
+                if (item.getCidrBlock().equals(bli.getCidrBlock())) {
+                    badList.add(bli);
+                } else {
+                    goodList.add(bli);
+                }
+            }
         }
+        if (badList.isEmpty())
+            for (BlacklistItem bli : goodList)
+                persist(bli);
+
+        return badList;
     }
 
     public void persist(Object obj) {

@@ -1,25 +1,25 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.ByIdOrName;
-
-import java.util.HashSet;
-import org.openstack.atlas.service.domain.entities.Node;
-import java.util.Set;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Blacklist;
-import org.openstack.atlas.service.domain.entities.BlacklistItem;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Blacklist;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ByIdOrName;
+import org.openstack.atlas.service.domain.entities.BlacklistItem;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.util.StringUtilities;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
@@ -69,7 +69,17 @@ public class BlackListResource extends ManagementDependencyProvider {
                 blitems.add(dozerMapper.map(bli, BlacklistItem.class));
             }
 
-            blacklistRepository.saveBlacklist(blitems);
+            List<BlacklistItem> blacklist = blacklistRepository.saveBlacklist(blitems);
+            if (!blacklist.isEmpty()) {
+                String retString = "The following CIDR blocks are currently black listed: ";
+                String list[] = new String[blacklist.size()];
+                int index = 0;
+                for (BlacklistItem bli : blacklist) {
+                    list[index++] = bli.getCidrBlock();
+                }
+                retString += StringUtilities.buildDelemtedListFromStringArray(list, ", ");
+                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, retString);
+            }
 
 
           /*  EsbRequest req = new EsbRequest();
