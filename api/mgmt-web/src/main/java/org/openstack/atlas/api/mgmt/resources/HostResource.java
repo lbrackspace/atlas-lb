@@ -1,12 +1,5 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
-import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
-import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
-import org.openstack.atlas.service.domain.management.operations.EsbRequest;
-import org.openstack.atlas.service.domain.operations.Operation;
-import org.openstack.atlas.service.domain.operations.OperationResponse;
-import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHostId;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.helpers.StubFactory;
@@ -14,15 +7,20 @@ import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.mgmt.validation.contexts.HostContext;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.service.domain.operations.OperationResponse.ErrorReason;
-import javax.ws.rs.core.Response.Status;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.management.operations.EsbRequest;
+import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.operations.OperationResponse;
+import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHostId;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
 public class HostResource extends ManagementDependencyProvider {
 
@@ -360,7 +358,7 @@ public class HostResource extends ManagementDependencyProvider {
 
     public Integer getTotalConcurrentConnections(Integer hostId) {
         int connection = 0;
-        List<org.openstack.atlas.service.domain.entities.Host> hosts = new ArrayList();
+        List<org.openstack.atlas.service.domain.entities.Host> hosts = new ArrayList<org.openstack.atlas.service.domain.entities.Host>();
         org.openstack.atlas.service.domain.entities.Host host = new org.openstack.atlas.service.domain.entities.Host();
         host.setId(hostId);
 
