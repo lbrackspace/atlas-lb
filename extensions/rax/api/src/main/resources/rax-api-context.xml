@@ -4,12 +4,14 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-              http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <import resource="classpath:META-INF/spring/jobs-context.xml"/>
-    
-<!--    <context:component-scan base-package="org.openstack.atlas.common"/>
-    <context:component-scan base-package="org.openstack.atlas.service.domain"/>-->
+    <import resource="rax-jms-queues.xml"/>
+
+    <context:component-scan base-package="org.openstack.atlas.rax.api"/>
+    <context:annotation-config/>
 
 </beans>
