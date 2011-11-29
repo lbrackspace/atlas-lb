@@ -5,11 +5,12 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.async.BaseListener;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
+import org.openstack.atlas.datamodel.CoreUsageEventType;
 import org.openstack.atlas.rax.api.integration.RaxProxyService;
+import org.openstack.atlas.rax.datamodel.RaxUsageEventType;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.VirtualIp;
 import org.openstack.atlas.service.domain.entity.VirtualIpv6;
-import org.openstack.atlas.service.domain.event.UsageEvent;
 import org.openstack.atlas.service.domain.event.entity.EventType;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
@@ -77,7 +78,7 @@ public class RaxAddVirtualIpListener extends BaseListener {
         }
 
         // Notify usage processor with a usage event
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);
+        notifyUsageProcessor(message, dbLoadBalancer, RaxUsageEventType.ADD_VIRTUAL_IP);
 
         LOG.info(String.format("Add virtual ip operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }

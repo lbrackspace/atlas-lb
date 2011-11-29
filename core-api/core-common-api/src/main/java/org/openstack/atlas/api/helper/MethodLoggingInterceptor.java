@@ -52,6 +52,7 @@ public class MethodLoggingInterceptor {
         sb.append("(");
         Object[] args = pjp.getArgs();
         for (Object arg : args) {
+            if (arg == null) continue;
             String fullParameterClassName = arg.getClass().getName();
             String parameterClassName = fullParameterClassName.substring(fullParameterClassName.lastIndexOf(".") +1, fullParameterClassName.length());
             sb.append(parameterClassName).append(" ").append(arg);

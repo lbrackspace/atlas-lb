@@ -151,6 +151,7 @@
     <xsd:element name="loadBalancerUsageRecord" type="tns:loadBalancerUsageRecord"/>
     <xsd:complexType name="loadBalancerUsageRecord">
         <xsd:attribute name="id" type="xsd:int"/> 
+        <xsd:attribute name="event" type="xsd:string"/>
         <xsd:attribute name="transferBytesIn" type="xsd:long"/>
         <xsd:attribute name="transferBytesOut" type="xsd:long"/>
         <xsd:attribute name="startTime" type="xsd:dateTime"/>
