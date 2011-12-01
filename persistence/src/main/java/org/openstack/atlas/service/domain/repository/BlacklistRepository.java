@@ -55,9 +55,8 @@ public class BlacklistRepository {
         Boolean unique = false;
         List<BlacklistItem> blacklist = getAllBlacklistItems();
         for (BlacklistItem bli : blackListItems) {
-            // Optimize
             for (BlacklistItem item : blacklist) {
-                if (item.getCidrBlock().equals(bli.getCidrBlock())) {
+                if (item.getCidrBlock().equals(bli.getCidrBlock()) && item.getBlacklistType().equals(bli.getBlacklistType())) {
                     badList.add(bli);
                 } else {
                     goodList.add(bli);
