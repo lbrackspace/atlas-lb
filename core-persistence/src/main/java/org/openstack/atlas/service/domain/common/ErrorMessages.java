@@ -4,6 +4,11 @@ import java.text.MessageFormat;
 
 public enum ErrorMessages {
 
+    ACCOUNT_LIMIT_NOT_FOUND("No limit type found for {0}"),
+    ACCOUNT_LIMIT_REACHED("{0} limit reached. Total must not exceed {1}."),
+
+    DUPLICATE_ITEMS_FOUND("Must supply a unique {0} item to update the current list."),
+
     LB_NOT_FOUND("Load balancer not found"),
     LB_DELETED("The load balancer is deleted and considered immutable"),
     LB_IMMUTABLE("Load Balancer {0} has a status of {1} and is considered immutable."),

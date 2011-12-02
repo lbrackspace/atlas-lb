@@ -9,15 +9,13 @@ import org.openstack.atlas.adapter.exception.RollbackException;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.helper.ZxtmNameHelper;
 import org.openstack.atlas.adapter.zxtm.service.ZxtmServiceStubs;
+import org.openstack.atlas.rax.domain.entity.RaxAccessList;
 import org.openstack.atlas.service.domain.entity.*;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Primary
 @Service
@@ -110,6 +108,19 @@ public class RaxZxtmAdapterImpl extends ZxtmAdapterImpl implements RaxZxtmAdapte
         } catch (RemoteException e) {
             throw new AdapterException(e);
         }
+    }
+
+    @Override
+    public void updateAccessList(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Collection<RaxAccessList> accessListItems) throws AdapterException {
+    }
+
+    @Override
+    public void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
+    }
+
+    @Override
+    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException {
+
     }
 
     private boolean[] generateBooleanArray(int size, boolean value) {

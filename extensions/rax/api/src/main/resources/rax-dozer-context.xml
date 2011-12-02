@@ -15,8 +15,8 @@
     <bean id="dozerBeanMapper" class="org.dozer.DozerBeanMapper">
         <property name="mappingFiles">
             <list>
-                <value>dozer-rax-load-balancer-map.xml</value>
                 <value>dozer-rax-access-list-map.xml</value>
+                <value>dozer-rax-load-balancer-map.xml</value>
                 <value>dozer-config-map.xml</value>
                 <value>dozer-rax-connection-throttle-map.xml</value>
                 <value>dozer-health-monitor-map.xml</value>

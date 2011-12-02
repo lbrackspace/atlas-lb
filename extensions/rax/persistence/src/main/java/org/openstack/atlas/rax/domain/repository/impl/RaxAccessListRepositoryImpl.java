@@ -5,6 +5,7 @@ import org.openstack.atlas.rax.domain.repository.RaxAccessListRepository;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.exception.DeletedStatusException;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
@@ -25,7 +26,7 @@ public class RaxAccessListRepositoryImpl implements RaxAccessListRepository {
     private EntityManager entityManager;
 
     @Autowired
-    private RaxLoadBalancerRepositoryImpl loadBalancerRepository;
+    private LoadBalancerRepository loadBalancerRepository;
 
     public RaxAccessList getNetworkItemByAccountIdLoadBalancerIdNetworkItemId(Integer aid, Integer lid, Integer nid) throws EntityNotFoundException {
         List<RaxAccessList> al = null;

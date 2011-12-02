@@ -12,5 +12,5 @@ public interface RaxAccessListRepository {
 
     public RaxAccessList getNetworkItemByAccountIdLoadBalancerIdNetworkItemId(Integer aid, Integer lid, Integer nid) throws EntityNotFoundException;
 
-    public List<RaxAccessList> getAccessListByAccountIdLoadBalancerId(int accountId, int loadbalancerId, Integer offset, Integer limit, Integer marker) throws EntityNotFoundException, DeletedStatusException;
+    public List<RaxAccessList> getAccessListByAccountIdLoadBalancerId(int accountId, int loadbalancerId, Integer offset, Integer limit, Integer markers) throws EntityNotFoundException, DeletedStatusException;
 }

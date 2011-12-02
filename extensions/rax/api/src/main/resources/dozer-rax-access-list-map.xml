@@ -16,9 +16,10 @@
             <a>ipVersion</a>
             <b>ipVersion</b>
         </field>-->
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumConverter">
+        <field>
             <a>type</a>
             <b>type</b>
         </field>
     </mapping>
+
 </mappings>

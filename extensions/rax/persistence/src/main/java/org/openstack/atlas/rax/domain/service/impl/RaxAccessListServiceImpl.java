@@ -1,43 +1,77 @@
 package org.openstack.atlas.rax.domain.service.impl;
 
-import org.openstack.atlas.core.api.v1.LoadBalancer;
+import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.rax.domain.entity.RaxAccessList;
+import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.rax.domain.repository.RaxAccessListRepository;
 import org.openstack.atlas.rax.domain.service.RaxAccessListService;
-import org.openstack.atlas.service.domain.exception.*;
+import org.openstack.atlas.service.domain.common.ErrorMessages;
+import org.openstack.atlas.service.domain.entity.AccountLimitType;
+import org.openstack.atlas.service.domain.entity.LoadBalancer;
+import org.openstack.atlas.service.domain.exception.BadRequestException;
+import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exception.ImmutableEntityException;
+import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.repository.AccountLimitRepository;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.service.AccountLimitService;
+import org.openstack.atlas.service.domain.service.impl.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 @Service
-public class RaxAccessListServiceImpl implements RaxAccessListService {
+public class RaxAccessListServiceImpl extends BaseService implements RaxAccessListService {
 
     @Autowired
     private RaxAccessListRepository accessListRepository;
 
-    public List<RaxAccessList> getAccessListByAccountIdLoadBalancerId(int accountId, int loadbalancerId, Integer offset, Integer limit, Integer marker) throws EntityNotFoundException, DeletedStatusException {
-        return accessListRepository.getAccessListByAccountIdLoadBalancerId(accountId, loadbalancerId, offset, limit, marker);
+    @Autowired
+    private AccountLimitRepository accountLimitRepository;
+
+    @Autowired
+    private LoadBalancerRepository loadBalancerRepository;
+
+    @Override
+    public LoadBalancer updateAccessList(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
+        RaxLoadBalancer dbLoadBalancer = (RaxLoadBalancer) loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
+        isLbActive(dbLoadBalancer);
+
+        if (loadBalancer instanceof RaxLoadBalancer) {
+            RaxLoadBalancer raxLoadBalancer = (RaxLoadBalancer) loadBalancer;
+            int total = dbLoadBalancer.getAccessLists().size() + raxLoadBalancer.getAccessLists().size();
+            int max = accountLimitRepository.getLimit(dbLoadBalancer.getAccountId(), AccountLimitType.ACCESS_LIST_LIMIT);
+            if (total > max) {
+                throw new BadRequestException(ErrorMessages.ACCOUNT_LIMIT_REACHED.getMessage("Access List", max));
+            }
+            if (hasDupeIpInAccessLists(dbLoadBalancer.getAccessLists(), raxLoadBalancer.getAccessLists())) {
+                throw new BadRequestException(ErrorMessages.DUPLICATE_ITEMS_FOUND.getMessage("Access List"));
+            }
+            for (RaxAccessList accessList : raxLoadBalancer.getAccessLists()) {
+                dbLoadBalancer.addAccessList(accessList);
+            }
+            dbLoadBalancer.setStatus(CoreLoadBalancerStatus.PENDING_UPDATE);
+            loadBalancerRepository.update(dbLoadBalancer);
+        }
+        return dbLoadBalancer;
     }
 
-    public LoadBalancer markForDeletionNetworkItems(LoadBalancer returnLB, List<Integer> networkItemIds) throws BadRequestException, ImmutableEntityException {
-        return null;
-    }
-
-    public LoadBalancer updateAccessList(LoadBalancer rLb) throws ImmutableEntityException, BadRequestException, UnprocessableEntityException {
-        return null;
-    }
-
-    public Set<RaxAccessList> diffRequestAccessListWithDomainAccessList(LoadBalancer rLb, org.openstack.atlas.service.domain.entity.LoadBalancer dLb) {
-        return null;
-    }
-
-    public LoadBalancer markForDeletionAccessList(LoadBalancer rLb) throws ImmutableEntityException, DeletedStatusException, UnprocessableEntityException {
-        return null;
-    }
-
-    public LoadBalancer markForDeletionNetworkItem(LoadBalancer rLb) throws ImmutableEntityException {
-        return null;
+    private boolean hasDupeIpInAccessLists(Set<RaxAccessList>... accessLists) {
+        boolean out;
+        Set<String> ipSet = new HashSet<String>();
+        for (int i = 0; i < accessLists.length; i++) {
+            for (RaxAccessList accessList : accessLists[i]) {
+                String ip = accessList.getIpAddress();
+                if (ipSet.contains(ip)) {
+                    out = true;
+                    return out;
+                }
+                ipSet.add(ip);
+            }
+        }
+        out = false;
+        return out;
     }
 }

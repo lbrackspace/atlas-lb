@@ -53,7 +53,7 @@ public class AccessListConverter implements CustomConverter {
                 RaxAccessList accessList = new RaxAccessList();
                 accessList.setId(networkItem.getId());
                 accessList.setIpAddress(networkItem.getAddress());
-                accessList.setIpVersion(IpVersion.valueOf(networkItem.getIpVersion().name()));
+                //accessList.setIpVersion(IpVersion.valueOf(networkItem.getIpVersion().name()));
                 accessList.setType(RaxAccessListType.valueOf(networkItem.getType().name()));
                 accessLists.add(accessList);
             }

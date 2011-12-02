@@ -17,7 +17,6 @@ public class NumPollsConverter implements CustomConverter {
         if(destinationClass == Map.class) {
             Map<QName, String> otherAttributes = (Map<QName, String>)(existingDestinationFieldValue);
             if (otherAttributes == null) otherAttributes = new HashMap<QName, String>();
-
             otherAttributes.put((new QName("http://docs.openstack.org/atlas/api/v1.1/extensions/rax", "numberOfPolls", "rax")), sourceFieldValue.toString());
 
             return otherAttributes;
