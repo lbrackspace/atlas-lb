@@ -9,11 +9,7 @@ import javax.persistence.DiscriminatorValue;
 import java.io.Serializable;
 
 @javax.persistence.Entity
-@DiscriminatorColumn(
-        name = "vendor",
-        discriminatorType = DiscriminatorType.STRING
-)
-@DiscriminatorValue("RAX")
+@DiscriminatorValue(Discriminator.RAX)
 public class RaxHost extends Host implements Serializable {
     private final static long serialVersionUID = 532512316L;
 

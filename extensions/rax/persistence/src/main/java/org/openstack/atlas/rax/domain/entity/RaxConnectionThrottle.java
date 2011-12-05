@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@DiscriminatorValue("RAX")
+@DiscriminatorValue(Discriminator.RAX)
 public class RaxConnectionThrottle extends ConnectionThrottle implements Serializable {
     private final static long serialVersionUID = 532512316L;
 

@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @javax.persistence.Entity
-@DiscriminatorValue("RAX")
+@DiscriminatorValue(Discriminator.RAX)
 public class RaxLoadBalancer extends LoadBalancer implements Serializable {
     private final static long serialVersionUID = 532512316L;
 

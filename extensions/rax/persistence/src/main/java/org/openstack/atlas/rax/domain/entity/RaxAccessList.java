@@ -11,7 +11,7 @@ import java.io.Serializable;
     name="vendor",
     discriminatorType=DiscriminatorType.STRING
 )
-@DiscriminatorValue("RAX")
+@DiscriminatorValue(Discriminator.RAX)
 @Table(name = "access_list")
 public class RaxAccessList extends org.openstack.atlas.service.domain.entity.Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
