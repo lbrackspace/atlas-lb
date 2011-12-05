@@ -21,6 +21,6 @@ public interface RaxProxyService extends ReverseProxyLoadBalancerService {
 
     void deleteAccessList(Integer accountId, Integer lbId) throws Exception;
 
-    void updateConnectionLogging(Integer accountId, Integer lbId) throws Exception;
+    void updateConnectionLogging(Integer accountId, Integer lbId, boolean connectionLogging, String protocol) throws Exception;
 
 }

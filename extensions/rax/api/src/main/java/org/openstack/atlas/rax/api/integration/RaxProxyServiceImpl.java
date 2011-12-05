@@ -64,10 +64,10 @@ public class RaxProxyServiceImpl extends ReverseProxyLoadBalancerServiceImpl imp
     }
 
     @Override
-    public void updateConnectionLogging(Integer accountId, Integer lbId) throws Exception {
+    public void updateConnectionLogging(Integer accountId, Integer lbId, boolean isConnectionLogging, String protocol) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            ((RaxZxtmAdapter) loadBalancerAdapter).updateConnectionLogging(config, accountId, lbId);
+            ((RaxZxtmAdapter) loadBalancerAdapter).updateConnectionLogging(config, accountId, lbId, isConnectionLogging, protocol);
         } catch (ConnectionException exc) {
             checkAndSetIfEndPointBad(config, exc);
             throw exc;
