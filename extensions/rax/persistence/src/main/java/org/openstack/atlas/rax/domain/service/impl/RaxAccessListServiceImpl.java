@@ -8,18 +8,18 @@ import org.openstack.atlas.rax.domain.service.RaxAccessListService;
 import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.AccountLimitType;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.exception.BadRequestException;
-import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exception.ImmutableEntityException;
-import org.openstack.atlas.service.domain.exception.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.exception.*;
 import org.openstack.atlas.service.domain.repository.AccountLimitRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.AccountLimitService;
 import org.openstack.atlas.service.domain.service.impl.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -56,6 +56,53 @@ public class RaxAccessListServiceImpl extends BaseService implements RaxAccessLi
             loadBalancerRepository.update(dbLoadBalancer);
         }
         return dbLoadBalancer;
+    }
+
+    @Transactional
+    @Override
+    public LoadBalancer markAccessListForDeletion(Integer accountId, Integer loadBalancerId) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, DeletedStatusException {
+        RaxLoadBalancer dbLoadBalancer = (RaxLoadBalancer) loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
+        isLbActive(dbLoadBalancer);
+        if (dbLoadBalancer.getAccessLists().isEmpty()) {
+            throw new UnprocessableEntityException(ErrorMessages.ACCESSLIST_NOT_FOUND);
+        }
+        dbLoadBalancer.setStatus(CoreLoadBalancerStatus.PENDING_UPDATE);
+        loadBalancerRepository.update(dbLoadBalancer);
+        return dbLoadBalancer;
+    }
+
+    @Override
+    @Transactional
+    public LoadBalancer markNetworkItemsForDeletion(Integer accountId, Integer loadBalancerId, List<Integer> networkItemIds) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
+        RaxLoadBalancer dbLoadBalancer = (RaxLoadBalancer) loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
+        isLbActive(dbLoadBalancer);
+
+        List<RaxAccessList> accessLists = new ArrayList<RaxAccessList>();
+        for (Integer networkItem : networkItemIds) {
+            Boolean isFound = false;
+            for (RaxAccessList al : dbLoadBalancer.getAccessLists()) {
+                if (networkItem.equals(al.getId())) {
+                    isFound = true;
+                    accessLists.add(al);
+                }
+            }
+            if (!isFound) {
+                throw new EntityNotFoundException(ErrorMessages.NETWORK_ITEM_NOT_FOUND);
+            }
+            dbLoadBalancer.getAccessLists().removeAll(accessLists);
+        }
+
+        dbLoadBalancer.setStatus(CoreLoadBalancerStatus.PENDING_UPDATE);
+        loadBalancerRepository.update(dbLoadBalancer);
+        return dbLoadBalancer;
+    }
+
+    @Transactional
+    @Override
+    public LoadBalancer markNetworkItemForDeletion(Integer accountId, Integer loadBalancerId, Integer networkItem) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
+        List<Integer> networkItems = new ArrayList<Integer>();
+        networkItems.add(networkItem);
+        return markNetworkItemsForDeletion(accountId, loadBalancerId, networkItems);
     }
 
     private boolean hasDupeIpInAccessLists(Set<RaxAccessList>... accessLists) {

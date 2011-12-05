@@ -50,7 +50,7 @@ public class RaxUpdateConnectionLoggingListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Updating connection logging for load balancer '%d' in LB Device...", dbLoadBalancer.getId()));
-            ((RaxProxyService)reverseProxyLoadBalancerService).updateConnectionLogging(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId());
+            ((RaxProxyService)reverseProxyLoadBalancerService).updateConnectionLogging(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getConnectionLogging(), dbLoadBalancer.getProtocol());
             LOG.debug(String.format("Successfully updated connection logging for load balancer '%d' in LB Device.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ERROR);

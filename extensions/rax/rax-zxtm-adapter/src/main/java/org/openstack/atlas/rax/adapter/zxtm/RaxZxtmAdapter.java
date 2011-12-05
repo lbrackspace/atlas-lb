@@ -1,5 +1,6 @@
 package org.openstack.atlas.rax.adapter.zxtm;
 
+import org.apache.axis.AxisFault;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exception.AdapterException;
 import org.openstack.atlas.rax.domain.entity.RaxAccessList;
@@ -18,8 +19,8 @@ public interface RaxZxtmAdapter {
 
     void updateAccessList(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Collection<RaxAccessList> accessListItems) throws AdapterException;
 
-    void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException;
+    void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException, AxisFault;
 
-    void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId) throws AdapterException;
+    void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, boolean isConnectionLogging, String protocol) throws AdapterException;
 
 }

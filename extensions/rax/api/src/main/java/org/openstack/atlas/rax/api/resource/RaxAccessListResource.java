@@ -13,6 +13,7 @@ import org.openstack.atlas.rax.domain.operation.RaxOperation;
 import org.openstack.atlas.rax.domain.repository.RaxAccessListRepository;
 import org.openstack.atlas.rax.domain.service.RaxAccessListService;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
@@ -36,9 +37,14 @@ public class RaxAccessListResource extends CommonDependencyProvider {
     protected RaxAccessListService accessListService;
     @Autowired
     protected RaxAccessListRepository accessListRepository;
+    @Autowired
+    protected LoadBalancerRepository loadBalancerRepository;
 
     protected Integer accountId;
     protected Integer loadBalancerId;
+
+    @Autowired
+    private RaxNetworkItemResource networkItemResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON})
@@ -70,21 +76,95 @@ public class RaxAccessListResource extends CommonDependencyProvider {
             loadBalancer.setAccountId(accountId);
             loadBalancer.setId(loadBalancerId);
 
-            for(NetworkItem _networkItem : _accessList.getNetworkItems()) {
+            for (NetworkItem _networkItem : _accessList.getNetworkItems()) {
                 RaxAccessList raxAccessList = dozerMapper.map(_networkItem, RaxAccessList.class);
                 loadBalancer.getAccessLists().add(raxAccessList);
             }
 
+
+            loadBalancer = (RaxLoadBalancer) accessListService.updateAccessList(loadBalancer);
+
             MessageDataContainer data = new MessageDataContainer();
             data.setLoadBalancer(loadBalancer);
-
-            accessListService.updateAccessList(loadBalancer);
 
             asyncService.callAsyncLoadBalancingOperation(RaxOperation.UPDATE_ACCESS_LIST, data);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
+    }
+
+    @DELETE
+    public Response deleteAccessList(@QueryParam("id") List<Integer> networkItemIds) {
+        try {
+
+            RaxLoadBalancer loadBalancer = new RaxLoadBalancer();
+            loadBalancer.setAccountId(accountId);
+            loadBalancer.setId(loadBalancerId);
+
+            MessageDataContainer data = new MessageDataContainer();
+
+            if (networkItemIds.size() == 0) {
+                loadBalancer = (RaxLoadBalancer) accessListService.markAccessListForDeletion(accountId, loadBalancerId);
+                data.setLoadBalancer(loadBalancer);
+                asyncService.callAsyncLoadBalancingOperation(RaxOperation.DELETE_ACCESS_LIST, data);
+            } else {
+                loadBalancer = (RaxLoadBalancer) accessListService.markNetworkItemsForDeletion(accountId, loadBalancerId, networkItemIds);
+                data.setLoadBalancer(loadBalancer);
+                asyncService.callAsyncLoadBalancingOperation(RaxOperation.UPDATE_ACCESS_LIST, data);
+            }
+
+            return Response.status(Response.Status.ACCEPTED).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+        /*LoadBalancer returnLB = new LoadBalancer();
+        LoadBalancer domainLB = new LoadBalancer();
+        Integer size = accountLimitService.getLimit(accountId, AccountLimitType.BATCH_DELETE_LIMIT);
+
+        if (networkItemIds.size() == 0) {
+            try {
+                domainLB.setId(loadBalancerId);
+                domainLB.setAccountId(accountId);
+                if (requestHeaders != null) {
+                    domainLB.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
+                }
+                loadBalancerService.get(loadBalancerId, accountId);
+                returnLB.setId(loadBalancerId);
+                returnLB.setAccountId(accountId);
+                returnLB = accessListService.markForDeletionAccessList(returnLB);
+                asyncService.callAsyncLoadBalancingOperation(RaxOperation.DELETE_ACCESS_LIST, returnLB);
+            } catch (Exception badRequestException) {
+                badRequestException = new BadRequestException(String.format("Must supply one or more id's to process this request.", size));
+                return ResponseFactory.getErrorResponse(badRequestException, null, null);
+            }
+            return Response.status(Response.Status.ACCEPTED).build();
+        } else if (networkItemIds.size() <= size) {
+            try {
+                Set<org.openstack.atlas.service.domain.entities.AccessList> accessLists = new HashSet<org.openstack.atlas.service.domain.entities.AccessList>();
+                org.openstack.atlas.service.domain.entities.AccessList aList = new org.openstack.atlas.service.domain.entities.AccessList();
+                accessLists.add(aList);
+                returnLB.setId(loadBalancerId);
+                returnLB.setAccountId(accountId);
+                returnLB.setAccessLists(accessLists);
+                returnLB = accessListService.markForDeletionNetworkItems(returnLB, networkItemIds);
+                asyncService.callAsyncLoadBalancingOperation(RaxOperation.APPEND_TO_ACCESS_LIST, returnLB);
+                return Response.status(Response.Status.ACCEPTED).build();
+            } catch (Exception e) {
+                return ResponseFactory.getErrorResponse(e, null, null);
+            }
+        } else {
+            Exception badRequestException = new BadRequestException(String.format("Currently, the limit of accepted parameters is: %s :please supply a valid parameter list.", size));
+            return ResponseFactory.getErrorResponse(badRequestException, null, null);
+        }*/
+    }
+
+    @Path("{id: [-+]?[0-9][0-9]*}")
+    public RaxNetworkItemResource retrieveNetworkItemResource(@PathParam("id") int id) {
+        networkItemResource.setAccountId(accountId);
+        networkItemResource.setLoadBalancerId(loadBalancerId);
+        networkItemResource.setId(id);
+        return networkItemResource;
     }
 
     public void setAccountId(Integer accountId) {
