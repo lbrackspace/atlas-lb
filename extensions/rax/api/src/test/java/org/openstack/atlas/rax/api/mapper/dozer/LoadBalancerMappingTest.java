@@ -125,7 +125,7 @@ public class LoadBalancerMappingTest {
 
             for (RaxAccessList accessList : accessListSet) {
                 Assert.assertEquals(apiAccessList.getNetworkItems().get(0).getAddress(), accessList.getIpAddress());
-                Assert.assertEquals(apiAccessList.getNetworkItems().get(0).getIpVersion().name(), accessList.getIpVersion().name());
+                //Assert.assertEquals(apiAccessList.getNetworkItems().get(0).getIpVersion().name(), accessList.getIpVersion().name());
                 Assert.assertEquals(apiAccessList.getNetworkItems().get(0).getType().name(), accessList.getType().name());
             }
         }
@@ -251,7 +251,7 @@ public class LoadBalancerMappingTest {
 
             Assert.assertNotNull(apiAccessList);
             Assert.assertEquals(accessList.getIpAddress(), apiAccessList.getNetworkItems().get(0).getAddress());
-            Assert.assertEquals(accessList.getIpVersion().name(), apiAccessList.getNetworkItems().get(0).getIpVersion().name());
+            //Assert.assertEquals(accessList.getIpVersion().name(), apiAccessList.getNetworkItems().get(0).getIpVersion().name());
             Assert.assertEquals(accessList.getType().name(), apiAccessList.getNetworkItems().get(0).getType().name());
         }
     }
