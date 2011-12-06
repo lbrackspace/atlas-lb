@@ -328,16 +328,14 @@ public class HostRepository {
 
     public Integer getNumberOfUniqueAccountsForHost(Integer id) {
         List<Object> results;
-        String query = "select distinct(l.accountId) from LoadBalancer l "
-                + "where l.host.id = :id";
+        String query = "SELECT distinct(l.accountId) FROM LoadBalancer l WHERE l.host.id = :id AND l.status != 'DELETED'";
         results = entityManager.createQuery(query).setParameter("id", id).getResultList();
         return results.size();
     }
 
     public long getActiveLoadBalancerForHost(Integer id) {
         long lbs = 0;
-        String query = "select count(*) from LoadBalancer l "
-                + "where l.host.id = :id";
+        String query = "SELECT COUNT(*) FROM LoadBalancer l WHERE l.host.id = :id AND l.status != 'DELETED'";
         List<Long> results = entityManager.createQuery(query).setParameter("id", id).getResultList();
         if (results.size() > 0 && results.get(0) != null) {
             lbs = results.get(0).longValue();
