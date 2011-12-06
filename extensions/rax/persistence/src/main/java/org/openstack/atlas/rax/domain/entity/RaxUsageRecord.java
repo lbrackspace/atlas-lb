@@ -7,7 +7,7 @@ import javax.persistence.DiscriminatorValue;
 import java.io.Serializable;
 
 @javax.persistence.Entity
-@DiscriminatorValue("RAX")
+@DiscriminatorValue(Discriminator.RAX)
 public class RaxUsageRecord extends UsageRecord implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
