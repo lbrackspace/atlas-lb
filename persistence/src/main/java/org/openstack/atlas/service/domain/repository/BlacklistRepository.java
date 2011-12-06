@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
+import org.openstack.atlas.service.domain.entities.BlacklistType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,17 +53,9 @@ public class BlacklistRepository {
     public List<BlacklistItem> saveBlacklist(List<BlacklistItem> blackListItems) {
         List<BlacklistItem> goodList = new ArrayList<BlacklistItem>();
         List<BlacklistItem> badList = new ArrayList<BlacklistItem>();
-        Boolean unique = false;
-        List<BlacklistItem> blacklist = getAllBlacklistItems();
-        for (BlacklistItem bli : blackListItems) {
-            for (BlacklistItem item : blacklist) {
-                if (item.getCidrBlock().equals(bli.getCidrBlock()) && item.getBlacklistType().equals(bli.getBlacklistType())) {
-                    badList.add(bli);
-                } else {
-                    goodList.add(bli);
-                }
-            }
-        }
+
+        List<BlacklistItem> blacklist = getAllBlacklistItemsWithCIDRBlocks(blackListItems);
+        
         if (badList.isEmpty())
             for (BlacklistItem bli : goodList)
                 persist(bli);
@@ -70,7 +63,33 @@ public class BlacklistRepository {
         return badList;
     }
 
+    public List<BlacklistItem> getAllBlacklistItemsWithCIDRBlocks(List<BlacklistItem> list) {
+        List<String> cidrBlocks = new ArrayList<String>();
+        for (BlacklistItem item : list) {
+            cidrBlocks.add(item.getCidrBlock());
+        }
+        String query = "SELECT * FROM BlacklistItem b WHERE b.cidrBlock in (:cidrBlocks)";
+        List<BlacklistItem> retList = entityManager.createQuery(query).setParameter("cidrBlocks", cidrBlocks).getResultList();
+        return retList;
+        /*
+        List<LoadBalancerJoinVip> vips;
+        String query = "select j from LoadBalancerJoinVip j where j.loadBalancer.id = :loadBalancerId";
+        //String query = "select l.virtualIps from LoadBalancer l where l.id = :loadBalancerId";
+        vips = entityManager.createQuery(query).setParameter("loadBalancerId", loadBalancerId).getResultList();
+        return vips;
+         */
+    }
+
     public void persist(Object obj) {
         entityManager.persist(obj);
+    }
+
+    private BlacklistItem setBlacklistItemElements(BlacklistItem originalBL, BlacklistType type) {
+        BlacklistItem blitem = new BlacklistItem();
+        blitem.setBlacklistType(type);
+        blitem.setCidrBlock(originalBL.getCidrBlock());
+        blitem.setIpVersion(originalBL.getIpVersion());
+        blitem.setUserName(originalBL.getUserName());
+        return blitem;
     }
 }
