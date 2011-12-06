@@ -64,32 +64,48 @@ public class BlacklistRepository {
     }
 
     public List<BlacklistItem> getAllBlacklistItemsWithCIDRBlocks(List<BlacklistItem> list) {
+        List<BlacklistItem> goodList = new ArrayList<BlacklistItem>();
+        List<BlacklistItem> badList = new ArrayList<BlacklistItem>();
         List<String> cidrBlocks = new ArrayList<String>();
         for (BlacklistItem item : list) {
             cidrBlocks.add(item.getCidrBlock());
         }
-        String query = "SELECT * FROM BlacklistItem b WHERE b.cidrBlock in (:cidrBlocks)";
-        List<BlacklistItem> retList = entityManager.createQuery(query).setParameter("cidrBlocks", cidrBlocks).getResultList();
-        return retList;
-        /*
-        List<LoadBalancerJoinVip> vips;
-        String query = "select j from LoadBalancerJoinVip j where j.loadBalancer.id = :loadBalancerId";
-        //String query = "select l.virtualIps from LoadBalancer l where l.id = :loadBalancerId";
-        vips = entityManager.createQuery(query).setParameter("loadBalancerId", loadBalancerId).getResultList();
-        return vips;
-         */
+        String query = "SELECT b FROM BlacklistItem b WHERE b.cidrBlock in (:cidrBlocks)";
+        List<BlacklistItem> dbList = entityManager.createQuery(query).setParameter("cidrBlocks", cidrBlocks).getResultList();
+        if (dbList.size() > 0) {
+            for (BlacklistItem item : dbList) {
+                for (BlacklistItem blitem : list) {
+
+                    // TODO: Finish logic
+                    if (item.getCidrBlock().equals(blitem.getCidrBlock())) {
+                        if (blitem.getBlacklistType() == null) {
+                            if (item.getBlacklistType().equals(BlacklistType.NODE)) {
+                                blitem.setBlacklistType(BlacklistType.ACCESSLIST);
+                            } else if (item.getBlacklistType().equals(BlacklistType.ACCESSLIST)) {
+                                blitem.setBlacklistType(BlacklistType.NODE);
+                            } else {
+                                BlacklistItem newItem = new BlacklistItem();
+                                newItem.setBlacklistType(BlacklistType.NODE);
+                                newItem.setCidrBlock(blitem.getCidrBlock());
+                                newItem.setIpVersion(blitem.getIpVersion());
+                                newItem.setUserName(blitem.getUserName());
+                                goodList.add(newItem);
+                                blitem.setBlacklistType(BlacklistType.ACCESSLIST);
+                            }
+                            goodList.add(blitem);
+                        } else if (blitem.getBlacklistType().equals(BlacklistType.ACCESSLIST)) {
+                            
+                        } else {
+
+                        }
+                    }
+                }
+            }
+        }
+        return dbList;
     }
 
     public void persist(Object obj) {
         entityManager.persist(obj);
-    }
-
-    private BlacklistItem setBlacklistItemElements(BlacklistItem originalBL, BlacklistType type) {
-        BlacklistItem blitem = new BlacklistItem();
-        blitem.setBlacklistType(type);
-        blitem.setCidrBlock(originalBL.getCidrBlock());
-        blitem.setIpVersion(originalBL.getIpVersion());
-        blitem.setUserName(originalBL.getUserName());
-        return blitem;
     }
 }
