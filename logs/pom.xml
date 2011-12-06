@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.8.2</version>
+        <version>1.8.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-logs</artifactId>
