@@ -1,8 +1,8 @@
 package org.openstack.atlas.api.integration;
 
-import org.openstack.atlas.api.exceptions.CacheException;
-import org.openstack.atlas.api.helpers.AtlasCache;
+import org.openstack.atlas.api.cache.AtlasCache;
 import org.openstack.atlas.api.helpers.CacheKeyGen;
+import org.openstack.atlas.api.helpers.DateHelpers;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
@@ -27,6 +27,8 @@ import org.apache.commons.logging.LogFactory;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.util.*;
+
+import static java.util.Calendar.getInstance;
 
 public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBalancerService {
 
@@ -387,19 +389,22 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
         String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
-
         Stats lbStats;
+
+        long cal = getInstance().getTimeInMillis();
         lbStats = (Stats) atlasCache.get(key);
-        if (lbStats != null) {
-            return lbStats;
-        } else {
+        if (lbStats == null) {
             try {
                 lbStats = reverseProxyLoadBalancerAdapter.getLoadBalancerStats(config, loadbalancerId, accountId);
+                LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, Missed from cache, retrieved from api... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
                 atlasCache.set(key, lbStats);
             } catch (AxisFault af) {
                 checkAndSetIfSoapEndPointBad(config, af);
                 throw af;
             }
+        } else {
+            LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, retrieved from cache... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
+            return lbStats;
         }
         return lbStats;
     }
