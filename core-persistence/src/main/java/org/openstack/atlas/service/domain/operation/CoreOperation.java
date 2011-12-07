@@ -17,9 +17,9 @@ public class CoreOperation implements Operation {
     public static final String DELETE_NODES = "DELETE_NODES";
     public static final String UPDATE_CONNECTION_THROTTLE = "UPDATE_CONNECTION_THROTTLE";
     public static final String DELETE_CONNECTION_THROTTLE = "DELETE_CONNECTION_THROTTLE";
-    public static final String UPDATE_HEALTH_MONITOR = "SET_HEALTH_MONITOR";
+    public static final String UPDATE_HEALTH_MONITOR = "UPDATE_HEALTH_MONITOR";
     public static final String DELETE_HEALTH_MONITOR = "DELETE_HEALTH_MONITOR";
-    public static final String UPDATE_SESSION_PERSISTENCE = "SET_SESSION_PERSISTENCE";
+    public static final String UPDATE_SESSION_PERSISTENCE = "UPDATE_SESSION_PERSISTENCE";
     public static final String DELETE_SESSION_PERSISTENCE = "DELETE_SESSION_PERSISTENCE";
     private static final Set<String> operationTypes;
 
