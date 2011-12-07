@@ -1,7 +1,9 @@
 package org.openstack.atlas.rax.adapter.zxtm;
 
+import com.zxtm.service.client.CatalogMonitorType;
 import com.zxtm.service.client.ObjectDoesNotExist;
 import com.zxtm.service.client.ObjectInUse;
+import org.apache.axis.types.UnsignedInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
@@ -11,9 +13,11 @@ import org.openstack.atlas.adapter.exception.RollbackException;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.helper.ZxtmNameHelper;
 import org.openstack.atlas.adapter.zxtm.service.ZxtmServiceStubs;
+import org.openstack.atlas.datamodel.CoreHealthMonitorType;
 import org.openstack.atlas.datamodel.CoreProtocolType;
 import org.openstack.atlas.rax.domain.entity.RaxAccessList;
 import org.openstack.atlas.rax.domain.entity.RaxAccessListType;
+import org.openstack.atlas.rax.domain.entity.RaxHealthMonitor;
 import org.openstack.atlas.service.domain.entity.*;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -194,6 +198,54 @@ public class RaxZxtmAdapterImpl extends ZxtmAdapterImpl implements RaxZxtmAdapte
             }
 
             LOG.info(String.format("Successfully updated connection logging for virtual server '%s'...", virtualServerName));
+        } catch (RemoteException e) {
+            throw new AdapterException(e);
+        }
+    }
+
+    @Override
+    public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, HealthMonitor healthMonitor) throws AdapterException {
+        try {
+            ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+            final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+            final String monitorName = poolName;
+
+            LOG.debug(String.format("Updating health monitor for node pool '%s'.", poolName));
+
+            addMonitorClass(serviceStubs, monitorName);
+
+            // Set the properties on the monitor class that apply to all configurations.
+            serviceStubs.getMonitorBinding().setDelay(new String[]{monitorName}, new UnsignedInt[]{new UnsignedInt(healthMonitor.getDelay())});
+            serviceStubs.getMonitorBinding().setTimeout(new String[]{monitorName}, new UnsignedInt[]{new UnsignedInt(healthMonitor.getTimeout())});
+            serviceStubs.getMonitorBinding().setFailures(new String[]{monitorName}, new UnsignedInt[]{new UnsignedInt(healthMonitor.getAttemptsBeforeDeactivation())});
+
+            if (healthMonitor.getType().equals(CoreHealthMonitorType.CONNECT)) {
+                serviceStubs.getMonitorBinding().setType(new String[]{monitorName}, new CatalogMonitorType[]{CatalogMonitorType.connect});
+            } else if (healthMonitor.getType().equals(CoreHealthMonitorType.HTTP) || healthMonitor.getType().equals(CoreHealthMonitorType.HTTPS)) {
+                serviceStubs.getMonitorBinding().setType(new String[]{monitorName}, new CatalogMonitorType[]{CatalogMonitorType.http});
+                serviceStubs.getMonitorBinding().setPath(new String[]{monitorName}, new String[]{healthMonitor.getPath()});
+
+                if (healthMonitor instanceof RaxHealthMonitor) {
+                    RaxHealthMonitor raxHealthMonitor = (RaxHealthMonitor) healthMonitor;
+                    if (raxHealthMonitor.getBodyRegex() != null || !raxHealthMonitor.getBodyRegex().isEmpty())
+                        serviceStubs.getMonitorBinding().setBodyRegex(new String[]{monitorName}, new String[]{raxHealthMonitor.getBodyRegex()});
+                    if (raxHealthMonitor.getStatusRegex() != null || !raxHealthMonitor.getStatusRegex().isEmpty())
+                        serviceStubs.getMonitorBinding().setStatusRegex(new String[]{monitorName}, new String[]{raxHealthMonitor.getStatusRegex()});
+                }
+
+                if (healthMonitor.getType().equals(CoreHealthMonitorType.HTTPS)) {
+                    serviceStubs.getMonitorBinding().setUseSSL(new String[]{monitorName}, new boolean[]{true});
+                }
+            } else {
+                throw new BadRequestException(String.format("Unsupported monitor type: %s", healthMonitor.getType()));
+            }
+
+            // Assign monitor to the node pool
+            String[][] monitors = new String[1][1];
+            monitors[0][0] = monitorName;
+            serviceStubs.getPoolBinding().setMonitors(new String[]{poolName}, monitors);
+
+            LOG.info(String.format("Health monitor successfully updated for node pool '%s'.", poolName));
         } catch (RemoteException e) {
             throw new AdapterException(e);
         }
