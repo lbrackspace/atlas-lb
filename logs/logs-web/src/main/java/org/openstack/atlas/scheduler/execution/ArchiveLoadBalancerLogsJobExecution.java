@@ -193,7 +193,7 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
     }
 
     private String getFormattedName(String name) {
-        return name.replaceAll(" ", "_");
+        return name.replaceAll(" ", "_").replaceAll("/", "_");
 
     }
 
