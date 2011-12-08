@@ -69,7 +69,7 @@ public class BlackListResource extends ManagementDependencyProvider {
                 blitems.add(dozerMapper.map(bli, BlacklistItem.class));
             }
 
-            List<BlacklistItem> blacklist = blacklistRepository.saveBlacklist(blitems);
+            List<BlacklistItem> blacklist = blackListService.createBlacklist(blitems);
             if (!blacklist.isEmpty()) {
                 String retString = "The following CIDR blocks are currently black listed: ";
                 String list[] = new String[blacklist.size()];

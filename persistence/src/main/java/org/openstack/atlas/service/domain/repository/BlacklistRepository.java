@@ -3,7 +3,6 @@ package org.openstack.atlas.service.domain.repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
-import org.openstack.atlas.service.domain.entities.BlacklistType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +11,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @Transactional
@@ -50,79 +51,46 @@ public class BlacklistRepository {
         return query.getResultList();
     }
 
-    public List<BlacklistItem> saveBlacklist(List<BlacklistItem> blackListItems) {
-        List<BlacklistItem> goodList = new ArrayList<BlacklistItem>();
-        List<BlacklistItem> badList = new ArrayList<BlacklistItem>();
-
-        List<BlacklistItem> blacklist = getAllBlacklistItemsWithCIDRBlocks(blackListItems);
-        
-        if (badList.isEmpty())
-            for (BlacklistItem bli : goodList)
-                persist(bli);
-
-        return badList;
+    public void saveBlacklist(List<BlacklistItem> blackListItems) {
+        for (BlacklistItem item : blackListItems) {
+            persist(item);
+        }
     }
 
-    public List<BlacklistItem> getAllBlacklistItemsWithCIDRBlocks(List<BlacklistItem> list) {
-        List<BlacklistItem> goodList = new ArrayList<BlacklistItem>();
-        List<BlacklistItem> badList = new ArrayList<BlacklistItem>();
+    public Map<String, List<BlacklistItem>> getBlacklistItemsCidrHashMap(List<BlacklistItem> list) {
         List<String> cidrBlocks = new ArrayList<String>();
         for (BlacklistItem item : list) {
             cidrBlocks.add(item.getCidrBlock());
         }
         String query = "SELECT b FROM BlacklistItem b WHERE b.cidrBlock in (:cidrBlocks)";
-        List<BlacklistItem> dbList = entityManager.createQuery(query).setParameter("cidrBlocks", cidrBlocks).getResultList();
-        if (dbList.size() > 0) {
-            for (BlacklistItem dbitem : dbList) {
-                for (BlacklistItem blitem : list) {
 
-                    // TODO: Finish logic
-                    if (dbitem.getCidrBlock().equals(blitem.getCidrBlock())) {
-                        if (blitem.getBlacklistType() == null) {
-                            if (dbitem.getBlacklistType().equals(BlacklistType.NODE)) {
-                                blitem.setBlacklistType(BlacklistType.ACCESSLIST);
-                            } else if (dbitem.getBlacklistType().equals(BlacklistType.ACCESSLIST)) {
-                                blitem.setBlacklistType(BlacklistType.NODE);
-                            } else {
-                                goodList.add(setAllBlacklistItemAttributes(blitem, BlacklistType.NODE));
-                                blitem.setBlacklistType(BlacklistType.ACCESSLIST);
-                            }
-                            goodList.add(blitem);
-                        } else if (blitem.getBlacklistType().equals(BlacklistType.ACCESSLIST)) {
-                            if (dbitem.getBlacklistType().equals(BlacklistType.NODE)) {
-                                goodList.add(blitem);
-                            } else if (dbitem.getBlacklistType().equals(BlacklistType.ACCESSLIST)) {
-                                badList.add(blitem);
-                            }
-                        } else {
-                            if (dbitem.getBlacklistType().equals(BlacklistType.NODE)) {
-                                goodList.add(blitem);
-                            } else {
-                                badList.add(blitem);
-                            }
-                        }
-                    } else if (dbitem.getBlacklistType() == null) {
-                        goodList.add(setAllBlacklistItemAttributes(blitem, BlacklistType.NODE));
-                        blitem.setBlacklistType(BlacklistType.ACCESSLIST);
-                        goodList.add(blitem);
-                    } else if (dbitem.getBlacklistType().equals(BlacklistType.NODE)) {
-                        goodList.add(setAllBlacklistItemAttributes(blitem, BlacklistType.ACCESSLIST));
-                    } else {
-                        goodList.add(setAllBlacklistItemAttributes(blitem, BlacklistType.NODE));
-                    }
-                }
-            }
-        }
-        return dbList;
+        return toHashMap(entityManager.createQuery(query).setParameter("cidrBlocks", cidrBlocks).getResultList());
     }
 
-    public BlacklistItem setAllBlacklistItemAttributes(BlacklistItem blitem, BlacklistType type) {
-        BlacklistItem item = new BlacklistItem();
-        item.setBlacklistType(type);
-        item.setCidrBlock(blitem.getCidrBlock());
-        item.setIpVersion(blitem.getIpVersion());
-        item.setUserName(blitem.getUserName());
-        return item;
+    private Map<String, List<BlacklistItem>> toHashMap(List<BlacklistItem> blackList) {
+        Map<String, List<BlacklistItem>> map = new HashMap<String, List<BlacklistItem>>();
+        List<BlacklistItem> list;
+        Boolean notExists = true;
+        for (BlacklistItem blackListItem : blackList) {
+            list = new ArrayList<BlacklistItem>();
+            if(map.containsKey(blackListItem.getCidrBlock())) {
+                for (BlacklistItem item : map.get(blackListItem)) {
+                    if (item.getBlacklistType().equals(blackListItem.getBlacklistType())) {
+                        notExists = false;
+                    } else {
+                        list.add(item);
+                    }
+                }
+                if (notExists) {
+                    list.add(blackListItem);
+                    map.put(blackListItem.getCidrBlock(), list);
+                }
+            } else {
+                list.add(blackListItem);
+                map.put(blackListItem.getCidrBlock(), list);
+            }
+        }
+        return map;
     }
 
     public void persist(Object obj) {
