@@ -351,10 +351,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void suspendLoadBalancer(Integer lbId, Integer accountId) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void suspendLoadBalancer(LoadBalancer lb) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerAdapter.suspendLoadBalancer(config, lbId, accountId);
+            reverseProxyLoadBalancerAdapter.suspendLoadBalancer(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -362,10 +362,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void removeSuspension(Integer id, Integer accountId) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(id);
+    public void removeSuspension(LoadBalancer lb) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerAdapter.removeSuspension(config, id, accountId);
+            reverseProxyLoadBalancerAdapter.removeSuspension(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;

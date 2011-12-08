@@ -40,7 +40,7 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
             
         try {
             LOG.debug(String.format("Removing suspension from load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.removeSuspension(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+            reverseProxyLoadBalancerService.removeSuspension(dbLoadBalancer);
             LOG.debug(String.format("Successfully removed suspension from load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

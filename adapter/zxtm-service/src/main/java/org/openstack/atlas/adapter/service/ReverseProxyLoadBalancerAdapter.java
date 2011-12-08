@@ -85,10 +85,10 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
             throws RemoteException, InsufficientRequestException;
 
-    public void suspendLoadBalancer(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
+    public void suspendLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException;
 
-    public void removeSuspension(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
+    public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException;
 
     public void createHostBackup(LoadBalancerEndpointConfiguration config, String backupName)

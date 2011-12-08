@@ -39,7 +39,7 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
 
         try {
             LOG.debug(String.format("Suspending load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.suspendLoadBalancer(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+            reverseProxyLoadBalancerService.suspendLoadBalancer(dbLoadBalancer);
             LOG.debug(String.format("Successfully suspended load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
