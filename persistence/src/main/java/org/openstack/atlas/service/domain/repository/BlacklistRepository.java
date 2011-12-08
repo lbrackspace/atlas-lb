@@ -73,36 +73,56 @@ public class BlacklistRepository {
         String query = "SELECT b FROM BlacklistItem b WHERE b.cidrBlock in (:cidrBlocks)";
         List<BlacklistItem> dbList = entityManager.createQuery(query).setParameter("cidrBlocks", cidrBlocks).getResultList();
         if (dbList.size() > 0) {
-            for (BlacklistItem item : dbList) {
+            for (BlacklistItem dbitem : dbList) {
                 for (BlacklistItem blitem : list) {
 
                     // TODO: Finish logic
-                    if (item.getCidrBlock().equals(blitem.getCidrBlock())) {
+                    if (dbitem.getCidrBlock().equals(blitem.getCidrBlock())) {
                         if (blitem.getBlacklistType() == null) {
-                            if (item.getBlacklistType().equals(BlacklistType.NODE)) {
+                            if (dbitem.getBlacklistType().equals(BlacklistType.NODE)) {
                                 blitem.setBlacklistType(BlacklistType.ACCESSLIST);
-                            } else if (item.getBlacklistType().equals(BlacklistType.ACCESSLIST)) {
+                            } else if (dbitem.getBlacklistType().equals(BlacklistType.ACCESSLIST)) {
                                 blitem.setBlacklistType(BlacklistType.NODE);
                             } else {
-                                BlacklistItem newItem = new BlacklistItem();
-                                newItem.setBlacklistType(BlacklistType.NODE);
-                                newItem.setCidrBlock(blitem.getCidrBlock());
-                                newItem.setIpVersion(blitem.getIpVersion());
-                                newItem.setUserName(blitem.getUserName());
-                                goodList.add(newItem);
+                                goodList.add(setAllBlacklistItemAttributes(blitem, BlacklistType.NODE));
                                 blitem.setBlacklistType(BlacklistType.ACCESSLIST);
                             }
                             goodList.add(blitem);
                         } else if (blitem.getBlacklistType().equals(BlacklistType.ACCESSLIST)) {
-                            
+                            if (dbitem.getBlacklistType().equals(BlacklistType.NODE)) {
+                                goodList.add(blitem);
+                            } else if (dbitem.getBlacklistType().equals(BlacklistType.ACCESSLIST)) {
+                                badList.add(blitem);
+                            }
                         } else {
-
+                            if (dbitem.getBlacklistType().equals(BlacklistType.NODE)) {
+                                goodList.add(blitem);
+                            } else {
+                                badList.add(blitem);
+                            }
                         }
+                    } else if (dbitem.getBlacklistType() == null) {
+                        goodList.add(setAllBlacklistItemAttributes(blitem, BlacklistType.NODE));
+                        blitem.setBlacklistType(BlacklistType.ACCESSLIST);
+                        goodList.add(blitem);
+                    } else if (dbitem.getBlacklistType().equals(BlacklistType.NODE)) {
+                        goodList.add(setAllBlacklistItemAttributes(blitem, BlacklistType.ACCESSLIST));
+                    } else {
+                        goodList.add(setAllBlacklistItemAttributes(blitem, BlacklistType.NODE));
                     }
                 }
             }
         }
         return dbList;
+    }
+
+    public BlacklistItem setAllBlacklistItemAttributes(BlacklistItem blitem, BlacklistType type) {
+        BlacklistItem item = new BlacklistItem();
+        item.setBlacklistType(type);
+        item.setCidrBlock(blitem.getCidrBlock());
+        item.setIpVersion(blitem.getIpVersion());
+        item.setUserName(blitem.getUserName());
+        return item;
     }
 
     public void persist(Object obj) {
