@@ -18,15 +18,27 @@
     <bean id="entityManagerFactory1" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="persistenceXmlLocation" value="classpath:META-INF/rax-lb-persistence.xml"/>
         <property name="persistenceUnitName" value="loadbalancing"/>
-        <property name="dataSource" ref="loadbalancingDataSource"/>
+        <property name="dataSource" ref="loadBalancingDataSource"/>
     </bean>
 
-    <bean id="loadbalancingDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    <!--<bean id="loadbalancingDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="${database.driver.class.name}"/>
         <property name="url" value="${database.url}"/>
         <property name="username" value="${database.username}"/>
         <property name="password" value="${database.password}"/>
+    </bean>-->
+
+    <bean id="loadBalancingDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${database.driver.class.name}"/>
+        <property name="url" value="${database.url}"/>
+        <property name="username" value="${database.username}"/>
+        <property name="password" value="${database.password}"/>
+        <property name="maxActive" value="${database.pool.connections.max.active}"/>
+        <property name="maxIdle" value="${database.pool.connections.max.idle}"/>
+        <property name="minIdle" value="${database.pool.connections.min.idle}"/>
+        <property name="validationQuery" value="SELECT 1"/>
     </bean>
+
 
     <!--<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory1"/>
