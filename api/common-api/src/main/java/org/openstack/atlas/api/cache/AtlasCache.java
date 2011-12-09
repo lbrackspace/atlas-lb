@@ -1,4 +1,4 @@
-package org.openstack.atlas.api.helpers;
+package org.openstack.atlas.api.cache;
 
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.BinaryConnectionFactory;
@@ -14,7 +14,7 @@ import java.io.IOException;
 public class AtlasCache {
     final Log LOG = LogFactory.getLog(AtlasCache.class);
     private static MemcachedClient cacheClient;
-    private static final int ttl = 300;
+    private String ttl = "300";
 
     private AtlasCache(Configuration configuration) throws IOException {
         String cacheHosts;
@@ -23,6 +23,9 @@ public class AtlasCache {
             buildCacheInstance(cacheHosts);
         } else {
             throw new MissingFieldException("The cache server host(s) information could not be found for the current configuration.");
+        }
+        if (configuration.hasKeys(PublicApiServiceConfigurationKeys.ttl)) {
+            this.ttl = configuration.getString(PublicApiServiceConfigurationKeys.ttl);
         }
     }
 
@@ -48,7 +51,7 @@ public class AtlasCache {
      * @param o   the object to set
      */
     public void set(String key, final Object o) {
-        set(key, ttl, o);
+        set(key, Integer.valueOf(this.ttl), o);
     }
 
     /**
@@ -62,7 +65,8 @@ public class AtlasCache {
         try {
             o = cacheClient.get(key);
             if (o == null) {
-                LOG.info("Cache MISS for KEY: " + key + "Retrying...");
+                //Sometimes connection is stale
+                LOG.info("Cache miss Retrying...");
                 o = cacheClient.get(key);
             }
         } catch (RuntimeException ex) {

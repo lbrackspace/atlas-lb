@@ -591,7 +591,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
 
-   // upload the file then set the Errorpage.
+    // upload the file then set the Errorpage.
     @Override
     public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content) throws RemoteException {
         String[] vsNames = new String[1];
@@ -626,7 +626,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws InsufficientRequestException, RemoteException {
-        deleteErrorFile(config, loadbalancerId,accountId);
+        deleteErrorFile(config, loadbalancerId, accountId);
         setDefaultErrorFile(config, loadbalancerId, accountId);
     }
 
@@ -655,19 +655,19 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId,Integer accountId) throws AxisFault {
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws AxisFault {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         String fileToDelete = getErrorFileName(loadbalancerId, accountId);
-           try {
-            LOG.debug(String.format("Attempting to delete a custom error file for: %s%s",accountId,loadbalancerId));
+        try {
+            LOG.debug(String.format("Attempting to delete a custom error file for: %s%s", accountId, loadbalancerId));
             serviceStubs.getZxtmConfExtraBinding().deleteFile(new String[]{fileToDelete});
-            LOG.info(String.format("Successfully deleted a custom error file for: %s%s",accountId,loadbalancerId));
+            LOG.info(String.format("Successfully deleted a custom error file for: %s%s", accountId, loadbalancerId));
         } catch (RemoteException e) {
-               if (e instanceof ObjectDoesNotExist) {
+            if (e instanceof ObjectDoesNotExist) {
                 LOG.warn(String.format("Cannot delete custom error page as, %s, it does not exist. Ignoring...", fileToDelete));
             }
-        }catch(Exception ex){
-            LOG.error(String.format("Exception: ",ex));
+        } catch (Exception ex) {
+            LOG.error(String.format("Exception: ", ex));
         }
     }
 
@@ -1150,20 +1150,52 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void suspendLoadBalancer(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId)
+    public void suspendLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+        final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
 
         // Disable the virtual server
         serviceStubs.getVirtualServerBinding().setEnabled(new String[]{poolName}, new boolean[]{false});
+
+        // Disable the traffic ip groups
+        LOG.info("grabbing all tigs related to VS..." + poolName);
+        for (LoadBalancerJoinVip loadBalancerJoinVip : lb.getLoadBalancerJoinVipSet()) {
+            String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip.getVirtualIp());
+            LOG.info("disabling tig " + trafficIpGroupName + " related to vs: " + poolName);
+            serviceStubs.getTrafficIpGroupBinding().setEnabled(new String[]{trafficIpGroupName}, new boolean[]{false});
+            LOG.info("Succesfully disabled tig " + trafficIpGroupName + " on VS: " + poolName);
+        }
+
+        for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : lb.getLoadBalancerJoinVip6Set()) {
+            String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip6.getVirtualIp());
+            LOG.info("disabling tig " + trafficIpGroupName + " related to vs: " + poolName);
+            serviceStubs.getTrafficIpGroupBinding().setEnabled(new String[]{trafficIpGroupName}, new boolean[]{false});
+            LOG.info("Succesfully disabled tig " + trafficIpGroupName + " on VS: " + poolName);
+        }
     }
 
     @Override
-    public void removeSuspension(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId)
+    public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+        final String poolName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
+
+        // Disable the traffic ip groups
+        LOG.info("grabbing all tigs related to VS..." + poolName);
+        for (LoadBalancerJoinVip loadBalancerJoinVip : lb.getLoadBalancerJoinVipSet()) {
+            String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip.getVirtualIp());
+            LOG.info("enabling tig " + trafficIpGroupName + " related to vs: " + poolName);
+            serviceStubs.getTrafficIpGroupBinding().setEnabled(new String[]{trafficIpGroupName}, new boolean[]{true});
+            LOG.info("Succesfully enabled tig " + trafficIpGroupName + " on VS: " + poolName);
+        }
+
+        for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : lb.getLoadBalancerJoinVip6Set()) {
+            String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip6.getVirtualIp());
+            LOG.info("enabling tig " + trafficIpGroupName + " related to vs: " + poolName);
+            serviceStubs.getTrafficIpGroupBinding().setEnabled(new String[]{trafficIpGroupName}, new boolean[]{true});
+            LOG.info("Succesfully enabled tig " + trafficIpGroupName + " on VS: " + poolName);
+        }
 
         // Enable the virtual server
         serviceStubs.getVirtualServerBinding().setEnabled(new String[]{poolName}, new boolean[]{true});

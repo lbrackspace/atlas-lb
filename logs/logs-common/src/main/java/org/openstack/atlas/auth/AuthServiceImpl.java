@@ -46,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public String getCloudFilesAuthUrl() {
-        return configuration.getString(LbLogsConfigurationKeys.cloud_files_auth_url);
+        return configuration.getString(LbLogsConfigurationKeys.auth_management_uri);
     }
 
 

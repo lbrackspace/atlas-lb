@@ -5,7 +5,11 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
+<<<<<<< HEAD
         <version>1.9-SNAPSHOT</version>
+=======
+        <version>1.8.7-SNAPSHOT</version>
+>>>>>>> 1.8-candidate
     </parent>
 
     <artifactId>atlas-logs-common</artifactId>
@@ -73,11 +77,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
         </dependency>
@@ -93,11 +92,27 @@
             <groupId>org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-common</artifactId>
         </dependency>
-            <dependency>
-                <groupId>org.openstack.client.keystone</groupId>
-                <artifactId>java-keystone</artifactId>
-                <version>1.0</version>
-            </dependency>
+        <dependency>
+            <groupId>org.openstack.client.keystone</groupId>
+            <artifactId>java-keystone</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

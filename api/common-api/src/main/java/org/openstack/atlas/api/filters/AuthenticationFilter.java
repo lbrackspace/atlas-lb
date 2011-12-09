@@ -116,9 +116,8 @@ public class AuthenticationFilter implements Filter {
                     String exceptMsg = getExtendedStackTrace(e);
                     LOG.error(String.format("Error while authenticating user:%s\n", exceptMsg));
                     httpServletResponse.sendError(500, e.getMessage());
-
+                    return;
                 }
-
             }
 
             HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);

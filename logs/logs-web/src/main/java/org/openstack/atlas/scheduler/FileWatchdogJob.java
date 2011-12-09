@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.net.URL;
@@ -20,7 +21,7 @@ import java.net.URL;
  *
  *
  */
-public class FileWatchdogJob extends BaseMapreduceJob {
+public class FileWatchdogJob extends BaseMapreduceJob implements StatefulJob {
 
     private static final Log LOG = LogFactory.getLog(FileWatchdogJob.class);
 

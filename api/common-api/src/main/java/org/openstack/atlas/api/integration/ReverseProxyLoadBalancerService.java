@@ -62,9 +62,9 @@ public interface ReverseProxyLoadBalancerService {
 
     void deleteHostBackup(Host host, String backupName) throws Exception;
 
-    void suspendLoadBalancer(Integer id, Integer accountId) throws Exception;
+    void suspendLoadBalancer(LoadBalancer lb) throws Exception;
 
-    void removeSuspension(Integer id, Integer accountId) throws Exception;
+    void removeSuspension(LoadBalancer lb) throws Exception;
 
     void addVirtualIps(Integer id, Integer accountId, LoadBalancer loadBalancer) throws Exception;
 
