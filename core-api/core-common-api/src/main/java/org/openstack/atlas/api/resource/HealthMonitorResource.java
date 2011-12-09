@@ -25,8 +25,8 @@ import static javax.ws.rs.core.MediaType.*;
 @Scope("request")
 public class HealthMonitorResource extends CommonDependencyProvider {
     private final Logger LOG = Logger.getLogger(HealthMonitorResource.class);
-    private Integer accountId;
-    private Integer loadBalancerId;
+    protected Integer accountId;
+    protected Integer loadBalancerId;
 
     @Autowired
     protected HealthMonitorValidator validator;

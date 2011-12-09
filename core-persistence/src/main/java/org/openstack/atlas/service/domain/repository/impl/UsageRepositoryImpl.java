@@ -2,9 +2,7 @@ package org.openstack.atlas.service.domain.repository.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.entity.UsageRecord;
-import org.openstack.atlas.service.domain.entity.UsageRecord_;
+import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.springframework.stereotype.Repository;

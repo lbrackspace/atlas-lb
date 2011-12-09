@@ -1,0 +1,14 @@
+{
+  "extension":{
+    "name": "Rackspace Atlas Health Monitor Status Regex",
+    "namespace": "http://docs.rackspace.com/identity/api/ext/RAX-ATLAS-SR/v1.0",
+    "alias": "RAX-ATLAS-SR",
+    "updated": "2011-08-14T13:25:27-06:00",
+    "description": "Rackspace extensions to Atlas v1.1 API allowing a status regex for health monitors.",
+    "links": [{
+        "rel": "describedby",
+        "type": "application/pdf",
+        "href": "https://github.com/openstack/atlas/master/extensions/rax/contrib/RAX-ATLAS-SR-service-devguide.pdf"
+    }]
+   }
+}

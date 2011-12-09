@@ -11,7 +11,6 @@
         <class>org.openstack.atlas.service.domain.entity.BlacklistItem</class>
         <class>org.openstack.atlas.service.domain.entity.Cluster</class>
         <class>org.openstack.atlas.service.domain.entity.ConnectionThrottle</class>
-        <class>org.openstack.atlas.service.domain.entity.HealthMonitor</class>
         <class>org.openstack.atlas.service.domain.entity.LimitType</class>
         <class>org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip</class>
         <class>org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip6</class>
@@ -31,6 +30,7 @@
         <class>org.openstack.atlas.rax.domain.entity.RaxHost</class>
         <class>org.openstack.atlas.rax.domain.entity.RaxLoadBalancer</class>
         <class>org.openstack.atlas.rax.domain.entity.RaxConnectionThrottle</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxHealthMonitor</class>
         <class>org.openstack.atlas.rax.domain.entity.RaxUsageRecord</class>
 
         <!-- Hibernate Properties -->
