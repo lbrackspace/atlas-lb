@@ -8,6 +8,7 @@
     <version>1.8.7</version>
     <packaging>pom</packaging>
 
+
     <scm>
         <url>scm:git:git@github-lbaas:lbrackspace/atlas-lb.git</url>
         <developerConnection>scm:git:git@github-lbaas:lbrackspace/atlas-lb.git</developerConnection>
