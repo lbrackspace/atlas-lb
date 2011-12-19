@@ -57,9 +57,7 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
         List<BlacklistItem> goodList = new ArrayList<BlacklistItem>();
         List<BlacklistItem> badList = new ArrayList<BlacklistItem>();
         Boolean hasAccessList, hasNode, hasItem;
-        hasAccessList = false;
-        hasNode = false;
-        hasItem = false;
+        hasAccessList = hasNode = hasItem = false;
 
         for (BlacklistItem item : list) {
             if (map.containsKey(item.getCidrBlock()) && map.get(item.getCidrBlock()).size() >= 2) {
@@ -93,6 +91,9 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
                 }
             } else if ((hasAccessList && hasNode) || hasItem) {
                 badList.add(item);
+            }
+            if (hasAccessList && hasNode) {
+                hasAccessList = hasNode = false;
             }
         }
 
