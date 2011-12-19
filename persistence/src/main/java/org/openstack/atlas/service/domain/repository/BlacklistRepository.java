@@ -22,13 +22,6 @@ public class BlacklistRepository {
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
 
-     public BlacklistRepository() {
-    }
-
-    public BlacklistRepository(EntityManager em) {
-        this.entityManager = em;
-    }
-
 
     public BlacklistItem getById(Integer id) throws EntityNotFoundException {
         BlacklistItem bl = entityManager.find(BlacklistItem.class, id);
@@ -71,14 +64,13 @@ public class BlacklistRepository {
         Map<String, List<BlacklistItem>> map = new HashMap<String, List<BlacklistItem>>();
         List<BlacklistItem> list;
         Boolean notExists = true;
+
         for (BlacklistItem blackListItem : blackList) {
             list = new ArrayList<BlacklistItem>();
             if(map.containsKey(blackListItem.getCidrBlock())) {
-                for (BlacklistItem item : map.get(blackListItem)) {
+                for (BlacklistItem item : map.get(blackListItem.getCidrBlock())) {
                     if (item.getBlacklistType().equals(blackListItem.getBlacklistType())) {
                         notExists = false;
-                    } else {
-                        list.add(item);
                     }
                 }
                 if (notExists) {
