@@ -386,6 +386,50 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     @Test
+    public void setSuspendedLb() throws Exception {
+        VirtualIp vip = new VirtualIp();
+        vip.setId(ADDITIONAL_IPV6_VIP_ID);
+
+        try {
+            zxtmAdapter.suspendLoadBalancer(config, lb);
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+            } else Assert.fail(e.getMessage());
+        }
+
+        String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, vip.getId());
+
+        try {
+            Assert.assertFalse(getServiceStubs().getTrafficIpGroupBinding().getEnabled(new String[]{trafficIpGroupName})[0]);
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+            } else Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void removeSuspendedLb() throws Exception {
+        VirtualIp vip = new VirtualIp();
+        vip.setId(ADDITIONAL_IPV6_VIP_ID);
+
+        try {
+            zxtmAdapter.removeSuspension(config, lb);
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+            } else Assert.fail(e.getMessage());
+        }
+
+        String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, vip.getId());
+
+        try {
+            Assert.assertTrue(getServiceStubs().getTrafficIpGroupBinding().getEnabled(new String[]{trafficIpGroupName})[0]);
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+            } else Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void testAllSessionPersistenceOperations() throws Exception {
         updateSessionPersistence();
         removeSessionPersistence();

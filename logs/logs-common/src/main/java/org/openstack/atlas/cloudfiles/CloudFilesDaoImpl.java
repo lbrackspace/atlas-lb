@@ -1,5 +1,6 @@
 package org.openstack.atlas.cloudfiles;
 
+import org.apache.http.HttpException;
 import org.openstack.atlas.data.AuthUser;
 import org.openstack.atlas.util.FileSystemUtils;
 import com.rackspacecloud.client.cloudfiles.FilesClient;
@@ -30,7 +31,7 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
         this.fileSystemUtils = fileSystemUtils;
     }
 
-    private void storeObject(String containerName, File file, String contentType, String remoteFilename, Map values) throws IOException {
+    private void storeObject(String containerName, File file, String contentType, String remoteFilename, Map values) throws IOException, HttpException {
         try {
             client.storeObjectAs(containerName, file, contentType, remoteFilename, values);
         } catch (Exception e) {
@@ -40,7 +41,7 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
     }
 
     public void uploadLocalFile(AuthUser user, String containerName, String localFilename, String remoteFileName) throws FilesException {
-        client = new FilesClient(user.getUsername(), user.getAuthKey(), null, 5000);
+        client = new FilesClient(user.getUsername(), user.getAuthKey(),user.getCloudFilesAuthUrl(), null, 5000);
         client.setAuthenticationURL(user.getCloudFilesAuthUrl());
 
         String fullFilename = localFilename.replaceAll("\\.\\./", "./");

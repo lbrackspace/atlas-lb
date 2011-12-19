@@ -69,7 +69,8 @@
                 </plugin>
 
             </plugins>
-        </pluginManagement>
+        
+	</pluginManagement>
     </build>
 
     <properties>
@@ -464,6 +465,26 @@
                 <version>2.0</version>
             </dependency>
             <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.3</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>1.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.0.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>4.1</version>
+            </dependency>
+            <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-all</artifactId>
                 <version>1.8.5</version>
@@ -493,7 +514,7 @@
             <dependency>
                 <groupId>com.mosso.client</groupId>
                 <artifactId>cloudfiles</artifactId>
-                <version>1.3.1</version>
+                <version>1.4.0_patch</version>
             </dependency>
 
             <dependency>
@@ -526,12 +547,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-httpclient</groupId>
-                <artifactId>commons-httpclient</artifactId>
-                <version>3.1</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>commons-collections</groupId>

@@ -8,7 +8,7 @@
 
     <bean id="configuration" class="org.openstack.atlas.api.config.RestApiConfiguration"/>
 
-    <bean id="atlasCache" class="org.openstack.atlas.api.helpers.AtlasCache" scope="singleton">
+    <bean id="atlasCache" class="org.openstack.atlas.api.cache.AtlasCache" scope="singleton">
         <constructor-arg index="0" ref="configuration"/>
     </bean>
 

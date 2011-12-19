@@ -28,8 +28,8 @@ public class ZeusTestBase {
     public static final Integer SLEEP_TIME_BETWEEN_TESTS = 500;
 
     // TODO: get this from external config...
-    public static final String ZXTM_USERNAME = "user";
-    public static final String ZXTM_PASSWORD = "passwd";
+    public static final String ZXTM_USERNAME = "lbaas_dev";
+    public static final String ZXTM_PASSWORD = "9pdJF2scMUmXfs";
     public static final String ZXTM_ENDPOINT_URI = "https://173.203.239.70:9090/soap";
     public static final String TARGET_HOST = "ztm-n01.dev.lbaas.rackspace.com";
     public static final String FAILOVER_HOST_1 = "ztm-n03.dev.lbaas.rackspace.com";
@@ -225,7 +225,7 @@ public class ZeusTestBase {
             Assert.assertEquals(ZxtmAdapterImpl.ruleXForwardedFor, virtualServerRules[0][0]);
 
             final String[] errorFile = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()});
-            Assert.assertEquals("global_error.html", errorFile[0]);
+            Assert.assertEquals("Default", errorFile[0]);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -45,6 +45,12 @@ public final class ZxtmNameBuilder {
         return lb.getAccountId() + "_" + vipId;
     }
 
+    public static String generateTrafficIpGroupName(Integer accountId, String vipId) throws InsufficientRequestException {
+        if (vipId == null)
+            throw new InsufficientRequestException("Missing id for virtual ip.");
+        return accountId + "_" + vipId;
+    }
+
     public static String generateTrafficIpGroupName(LoadBalancer lb, VirtualIp vip) throws InsufficientRequestException {
         if (vip.getId() == null)
             throw new InsufficientRequestException("Missing id for virtual ip.");
