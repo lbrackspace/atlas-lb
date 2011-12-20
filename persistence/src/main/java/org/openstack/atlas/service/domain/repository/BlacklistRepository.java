@@ -60,27 +60,14 @@ public class BlacklistRepository {
         return toHashMap(entityManager.createQuery(query).setParameter("cidrBlocks", cidrBlocks).getResultList());
     }
 
-    private Map<String, List<BlacklistItem>> toHashMap(List<BlacklistItem> blackList) {
+    private Map<String, List<BlacklistItem>> toHashMap(List<BlacklistItem> list) {
         Map<String, List<BlacklistItem>> map = new HashMap<String, List<BlacklistItem>>();
-        List<BlacklistItem> list;
-        Boolean notExists = true;
 
-        for (BlacklistItem blackListItem : blackList) {
-            list = new ArrayList<BlacklistItem>();
-            if(map.containsKey(blackListItem.getCidrBlock())) {
-                for (BlacklistItem item : map.get(blackListItem.getCidrBlock())) {
-                    if (item.getBlacklistType().equals(blackListItem.getBlacklistType())) {
-                        notExists = false;
-                    }
-                }
-                if (notExists) {
-                    list.add(blackListItem);
-                    map.put(blackListItem.getCidrBlock(), list);
-                }
-            } else {
-                list.add(blackListItem);
-                map.put(blackListItem.getCidrBlock(), list);
+        for (BlacklistItem item : list) {
+            if (!map.containsKey(item.getCidrBlock())) {
+                map.put(item.getCidrBlock(), new ArrayList<BlacklistItem>());
             }
+            map.get(item.getCidrBlock()).add(item);
         }
         return map;
     }

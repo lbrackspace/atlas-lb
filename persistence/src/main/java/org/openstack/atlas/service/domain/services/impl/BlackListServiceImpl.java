@@ -56,48 +56,32 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
         Map<String, List<BlacklistItem>> map = blacklistRepository.getBlacklistItemsCidrHashMap(list);
         List<BlacklistItem> goodList = new ArrayList<BlacklistItem>();
         List<BlacklistItem> badList = new ArrayList<BlacklistItem>();
-        Boolean hasAccessList, hasNode, hasItem;
-        hasAccessList = hasNode = hasItem = false;
+        List<BlacklistItem> blist;
 
         for (BlacklistItem item : list) {
-            if (map.containsKey(item.getCidrBlock()) && map.get(item.getCidrBlock()).size() >= 2) {
-                badList.add(item);
-            } else if (map.containsKey(item.getCidrBlock()) && map.get(item.getCidrBlock()).size() == 1) {
-                for (BlacklistItem blitem : map.get(item.getCidrBlock())) {
+            if (map.get(item.getCidrBlock()) != null) {
+                blist = map.get(item.getCidrBlock());
+            } else {
+                blist = new ArrayList<BlacklistItem>();
+            }
+            if (blist.size() == 1) {
+                for (BlacklistItem bli : blist) {
                     if (item.getBlacklistType() == null) {
-                        if (blitem.getBlacklistType().equals(BlacklistType.ACCESSLIST)) {
-                            hasAccessList = true;
-                        } else {
-                            hasNode = true;
-                        }
-                    } else if (item.getBlacklistType().equals(blitem.getBlacklistType())) {
-                        hasItem = true;
+                        map.get(item.getCidrBlock()).add(item);
+                        goodList.add(item);
+                    } else if (item.getBlacklistType().equals(bli.getBlacklistType())) {
+                        badList.add(item);
                     }
                 }
-                if (hasAccessList) {
-                    item.setBlacklistType(BlacklistType.NODE);
-                    goodList.add(item);
-                } else if (hasNode) {
-                    item.setBlacklistType(BlacklistType.ACCESSLIST);
-                    goodList.add(item);
-                }
-            }
-            if (!hasItem && !hasAccessList && !hasNode) {
-                if (item.getBlacklistType() == null) {
-                    goodList.add(setBlacklistItemFields(item, BlacklistType.ACCESSLIST));
-                    goodList.add(setBlacklistItemFields(item, BlacklistType.NODE));
-                } else {
-                    goodList.add(setBlacklistItemFields(item, item.getBlacklistType()));
-                }
-            } else if ((hasAccessList && hasNode) || hasItem) {
+            } else if (blist.size() == 2) {
                 badList.add(item);
-            }
-            if (hasAccessList && hasNode) {
-                hasAccessList = hasNode = false;
+            } else {
+                goodList.add(setBlacklistItemFields(item, BlacklistType.ACCESSLIST));
+                goodList.add(setBlacklistItemFields(item, BlacklistType.NODE));
             }
         }
 
-        if (badList.isEmpty()) {
+        if (badList.size() == 0) {
             blacklistRepository.saveBlacklist(goodList);
         }
 
@@ -112,25 +96,4 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
         blItem.setUserName(item.getUserName());
         return blItem;
     }
-
-//    private class Blacklists {
-//        private List<BlacklistItem> goodList = new ArrayList<BlacklistItem>();
-//        private List<BlacklistItem> badList = new ArrayList<BlacklistItem>();
-//
-//        public List<BlacklistItem> getBadList() {
-//            return this.badList;
-//        }
-//
-//        public List<BlacklistItem> getGoodList() {
-//            return this.goodList;
-//        }
-//
-//        public void setGoodList(List<BlacklistItem> goodList) {
-//            this.goodList = goodList;
-//        }
-//
-//        public void setBadList(List<BlacklistItem> badList) {
-//            this.badList = badList;
-//        }
-//    }
 }
