@@ -67,17 +67,21 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
             if (blist.size() == 1) {
                 for (BlacklistItem bli : blist) {
                     if (item.getBlacklistType() == null) {
-                        map.get(item.getCidrBlock()).add(item);
-                        goodList.add(item);
+                        blist.add(item);
                     } else if (item.getBlacklistType().equals(bli.getBlacklistType())) {
                         badList.add(item);
                     }
+                    goodList.add(item);
                 }
             } else if (blist.size() == 2) {
                 badList.add(item);
             } else {
-                goodList.add(setBlacklistItemFields(item, BlacklistType.ACCESSLIST));
-                goodList.add(setBlacklistItemFields(item, BlacklistType.NODE));
+                if (item.getBlacklistType() == null) {
+                    goodList.add(setBlacklistItemFields(item, BlacklistType.ACCESSLIST));
+                    goodList.add(setBlacklistItemFields(item, BlacklistType.NODE));
+                } else {
+                    goodList.add(item);
+                }
             }
         }
 
