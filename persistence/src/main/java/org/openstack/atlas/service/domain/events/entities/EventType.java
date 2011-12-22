@@ -24,7 +24,8 @@ public enum EventType implements Serializable {
     CREATE_SESSION_PERSISTENCE,
     UPDATE_SESSION_PERSISTENCE,
     DELETE_SESSION_PERSISTENCE,
-    UPDATE_CONNECTION_LOGGING;
+    UPDATE_CONNECTION_LOGGING,
+    CREATE_SSL_TERMINATION;
     
     private final static long serialVersionUID = 532512316L;
     }   

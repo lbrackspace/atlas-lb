@@ -251,7 +251,7 @@
                      <xsd:documentation>Telnet</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
-               <xsd:enumeration value="ssl">
+               <xsd:enumeration value="sslTermination">
                   <xsd:annotation>
                      <xsd:documentation>SSL</xsd:documentation>
                   </xsd:annotation>
@@ -4563,7 +4563,7 @@
       
       <operation name="getLogSSLFailures">
          <documentation>
-            Get whether the virtual server will log ssl failures.
+            Get whether the virtual server will log sslTermination failures.
          </documentation>
          
          <input message="zeusns:getLogSSLFailuresRequest"/>
@@ -4573,7 +4573,7 @@
       
       <operation name="getLogSSLFailuresByLocation">
          <documentation>
-            Get whether the virtual server will log ssl failures. This is a location specific function, any action will operate on the specified location.
+            Get whether the virtual server will log sslTermination failures. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:getLogSSLFailuresByLocationRequest"/>
@@ -6507,7 +6507,7 @@
       
       <operation name="setLogSSLFailures">
          <documentation>
-            Set whether the virtual server will log ssl failures.
+            Set whether the virtual server will log sslTermination failures.
          </documentation>
          
          <input message="zeusns:setLogSSLFailuresRequest"/>
@@ -6519,7 +6519,7 @@
       
       <operation name="setLogSSLFailuresByLocation">
          <documentation>
-            Set whether the virtual server will log ssl failures. This is a location specific function, any action will operate on the specified location.
+            Set whether the virtual server will log sslTermination failures. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:setLogSSLFailuresByLocationRequest"/>
@@ -9201,7 +9201,7 @@
       <operation name="getLogSSLFailures">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getLogSSLFailures"/>
          <documentation>
-            Get whether the virtual server will log ssl failures.
+            Get whether the virtual server will log sslTermination failures.
          </documentation>
          
          <input>
@@ -9218,7 +9218,7 @@
       <operation name="getLogSSLFailuresByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getLogSSLFailuresByLocation"/>
          <documentation>
-            Get whether the virtual server will log ssl failures. This is a location specific function, any action will operate on the specified location.
+            Get whether the virtual server will log sslTermination failures. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -12706,7 +12706,7 @@
       <operation name="setLogSSLFailures">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setLogSSLFailures"/>
          <documentation>
-            Set whether the virtual server will log ssl failures.
+            Set whether the virtual server will log sslTermination failures.
          </documentation>
          
          <input>
@@ -12729,7 +12729,7 @@
       <operation name="setLogSSLFailuresByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setLogSSLFailuresByLocation"/>
          <documentation>
-            Set whether the virtual server will log ssl failures. This is a location specific function, any action will operate on the specified location.
+            Set whether the virtual server will log sslTermination failures. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>

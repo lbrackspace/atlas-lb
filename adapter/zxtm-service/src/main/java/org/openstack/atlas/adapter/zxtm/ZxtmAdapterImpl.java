@@ -105,6 +105,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 updateAccessList(config, lb.getId(), lb.getAccountId(), lb.getAccessLists());
             }
 
+            //TODO: add ssl termination
+
             if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
                 TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
                 attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
@@ -622,6 +624,27 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
             }
         }
+    }
+
+    // Set SSL Termination for load balancer
+    @Override
+    public void createSslTermination(LoadBalancerEndpointConfiguration conf, int id, int accountId, SslTermination sslTermination) throws RemoteException, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
+        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(id, accountId);
+
+        String cert = sslTermination.getKey() + sslTermination.getCert();
+
+        try {
+            CatalogSSLCertificatesBindingStub catlog = new CatalogSSLCertificatesBindingStub();
+            catlog.setRawCertificate(new String[]{virtualServerName}, new String[]{cert});
+
+            VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
+            virtualServerService.setSSLCertificate(new String[]{virtualServerName}, new String[]{cert});
+            virtualServerService.setSSLDecrypt(new String[]{virtualServerName}, new boolean[]{true});
+        } catch (AxisFault af) {
+            LOG.error("there was a error setting ssl termination in zxtm adapter...");
+        }
+
     }
 
     @Override

@@ -704,7 +704,7 @@
         <!-- Future Profing for JIRA:SITESLB-687
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SslTagConverter">
             <a>tags</a>
-            <b get-method="isSsl">ssl</b>
+            <b get-method="isSsl">sslTermination</b>
         </field>  -->
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VipTypeTagConverter">
             <a>tags</a>

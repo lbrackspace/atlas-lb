@@ -155,4 +155,6 @@ public interface ReverseProxyLoadBalancerAdapter {
 
     public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content)
             throws RemoteException;
+
+    public void createSslTermination(LoadBalancerEndpointConfiguration config, int id, int accountId, SslTermination loadbalancer) throws AxisFault, RemoteException, InsufficientRequestException;
 }

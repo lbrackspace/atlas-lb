@@ -3,6 +3,14 @@ package org.openstack.atlas.service.domain.services.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.HealthMonitorType;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.NodeStatus;
+import org.openstack.atlas.service.domain.entities.SessionPersistence;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
@@ -54,7 +62,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Required
-    public void setNodeService (NodeService nodeService) {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -108,6 +116,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             verifyProtocolAndHealthMonitorType(lb);
             setHostForNewLoadBalancer(lb);
             setVipConfigForLoadBalancer(lb);
+            //TODO: add shared verification for ssl termination
+//            setSslTermination(lb.getId(), lb.getAccountId(), lb.getSslTermination());
         } catch (UniqueLbPortViolationException e) {
             LOG.debug("The port of the new LB is the same as the LB to which you wish to share a virtual ip.");
             throw e;
@@ -471,7 +481,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         if (loadBalancer.getSessionPersistence() == null) {
             loadBalancer.setSessionPersistence(SessionPersistence.NONE);
         }
-        
+
         for (Node node : loadBalancer.getNodes()) {
             if (node.getWeight() == null) {
                 node.setWeight(Constants.DEFAULT_NODE_WEIGHT);
@@ -742,6 +752,37 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Transactional
     @Override
+    public boolean setSslTermination(Integer lid, Integer accountId, SslTermination sslTermination) throws EntityNotFoundException {
+        //TODO: validate here...
+        if (sslTermination != null) {
+            return loadBalancerRepository.setSslTermination(lid, accountId, sslTermination);
+        }
+        return false;
+    }
+
+    @Transactional
+    @Override
+    public boolean updateSslTermination(int id, Integer accountId, SslTermination domainSslTermination) {
+        //TODO: imp update ssl
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Transactional
+    @Override
+    public boolean deleteSslTermination(int id, Integer accountId, SslTermination domainSslTermination) {
+        //TODO: impl delete ssl termination
+        return false;
+    }
+
+    @Transactional
+    @Override
+    public SslTermination getSslTermination(int id, Integer accountId) {
+        return loadBalancerRepository.getSslTermination(id, accountId);
+    }
+
+
+    @Transactional
+    @Override
     public boolean setDefaultErrorPage(String content) throws EntityNotFoundException {
         return loadBalancerRepository.setDefaultErrorPage(content);
     }
@@ -766,6 +807,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
         return domainLbs;
     }
+
 
     private List<LoadBalancer> verifySharedVipsOnLoadBalancers(List<LoadBalancer> lbs) throws EntityNotFoundException, BadRequestException {
         List<LoadBalancer> lbsWithSharedVips = new ArrayList<LoadBalancer>();

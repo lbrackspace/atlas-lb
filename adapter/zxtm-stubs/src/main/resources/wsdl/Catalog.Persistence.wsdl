@@ -90,7 +90,7 @@
                      <xsd:documentation>X-Zeus-Backend cookies</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
-               <xsd:enumeration value="ssl">
+               <xsd:enumeration value="sslTermination">
                   <xsd:annotation>
                      <xsd:documentation>SSL Session ID persistence</xsd:documentation>
                   </xsd:annotation>

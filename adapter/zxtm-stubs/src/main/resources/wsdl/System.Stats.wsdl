@@ -310,7 +310,7 @@
                </xsd:enumeration>
                <xsd:enumeration value="xZeusBackend">
                </xsd:enumeration>
-               <xsd:enumeration value="ssl">
+               <xsd:enumeration value="sslTermination">
                </xsd:enumeration>
          
             </xsd:restriction>

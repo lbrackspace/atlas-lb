@@ -1,0 +1,165 @@
+package org.openstack.atlas.api.resources;
+
+import org.apache.abdera.model.Feed;
+import org.openstack.atlas.api.atom.FeedType;
+import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.api.repository.ValidatorRepository;
+import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
+import org.openstack.atlas.api.validation.context.HttpRequestType;
+import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
+import java.util.*;
+
+import static javax.ws.rs.core.MediaType.*;
+
+public class SslTerminationResource extends CommonDependencyProvider {
+
+    private int id;
+    private Integer accountId;
+    private Integer loadBalancerId;
+    private HttpHeaders requestHeaders;
+
+
+    @GET
+    @Produces({APPLICATION_XML, APPLICATION_JSON})
+    public Response retrieveSSL() {
+        try {
+//            org.openstack.atlas.service.domain.entities.SslTermination ssl = lbRepository.getSslTermination(id, accountId);
+//               SslTermination dataSsl;
+//                dataSsl = dozerMapper.map(ssl, SslTermination.class);
+
+            SslTermination ssll = new SslTermination();
+            ssll.setId(2323);
+            ssll.setCert("tehCert");
+            ssll.setKey("aKey");
+            ssll.setEnabled(true);
+
+            return Response.status(Response.Status.OK).entity(ssll).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @PUT
+    @Consumes({APPLICATION_XML, APPLICATION_JSON})
+    public Response updateSsl(SslTermination ssl) {
+        ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(ssl, HttpRequestType.PUT);
+        if (!result.passedValidation()) {
+            return getValidationFaultResponse(result);
+        }
+
+        try {
+            ssl.setId(id);
+            SslTermination apiSsl = new SslTermination();
+
+            org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(apiSsl,
+                    org.openstack.atlas.service.domain.entities.SslTermination.class);
+
+            boolean dbSsl = loadBalancerService.updateSslTermination(loadBalancerId, accountId, domainSslTermination);
+
+//            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_NODE, dbLb);
+            return Response.status(Response.Status.ACCEPTED).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @POST
+    @Consumes({APPLICATION_XML, APPLICATION_JSON})
+    public Response createSsl(SslTermination ssl) {
+        ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(ssl, HttpRequestType.PUT);
+        if (!result.passedValidation()) {
+            return getValidationFaultResponse(result);
+        }
+
+        try {
+            ssl.setId(id);
+            SslTermination apiSsl = new SslTermination();
+
+            org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(apiSsl,
+                    org.openstack.atlas.service.domain.entities.SslTermination.class);
+
+            boolean dbSsl = loadBalancerService.setSslTermination(loadBalancerId, accountId, domainSslTermination);
+            MessageDataContainer dataContainer = new MessageDataContainer();
+            dataContainer.setAccountId(accountId);
+            dataContainer.setLoadBalancerId(loadBalancerId);
+            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_SSL_TERMINATION, dataContainer);
+            return Response.status(Response.Status.ACCEPTED).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @DELETE
+    public Response removeSsl(SslTermination ssl) {
+        try {
+            ssl.setId(id);
+            SslTermination apiSsl = new SslTermination();
+
+            org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(apiSsl,
+                    org.openstack.atlas.service.domain.entities.SslTermination.class);
+
+            boolean dbSsl = loadBalancerService.deleteSslTermination(loadBalancerId, accountId, domainSslTermination);
+//            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_NODE, dbLb);
+            return Response.status(Response.Status.ACCEPTED).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+
+
+    private Response getFeedResponse(Integer page) {
+        Map<String, Object> feedAttributes = new HashMap<String, Object>();
+        feedAttributes.put("feedType", FeedType.NODE_FEED);
+        feedAttributes.put("accountId", accountId);
+        feedAttributes.put("loadBalancerId", loadBalancerId);
+        feedAttributes.put("nodeId", id);
+        feedAttributes.put("page", page);
+        Feed feed = atomFeedAdapter.getFeed(feedAttributes);
+
+        if (feed.getEntries().isEmpty()) {
+            try {
+                nodeService.getNodeByAccountIdLoadBalancerIdNodeId(accountId, loadBalancerId, id);
+            } catch (Exception e) {
+                return ResponseFactory.getErrorResponse(e, null, null);
+            }
+        }
+
+        return Response.status(200).entity(feed).build();
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public Integer getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(Integer accountId) {
+        this.accountId = accountId;
+    }
+
+    public Integer getLoadBalancerId() {
+        return loadBalancerId;
+    }
+
+    public void setLoadBalancerId(Integer loadBalancerId) {
+        this.loadBalancerId = loadBalancerId;
+    }
+
+    public void setRequestHeaders(HttpHeaders requestHeaders) {
+        this.requestHeaders = requestHeaders;
+    }
+}

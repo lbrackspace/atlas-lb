@@ -1,7 +1,12 @@
 package org.openstack.atlas.service.domain.services;
 
 import javassist.tools.rmi.ObjectNotFoundException;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.SessionPersistence;
+import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -74,10 +79,17 @@ public interface LoadBalancerService {
 
     public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException;
 
+    public boolean setSslTermination(Integer lid, Integer accountId, SslTermination sslTermination) throws EntityNotFoundException;
+
     public boolean setDefaultErrorPage(String content) throws EntityNotFoundException;
 
     public boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException;
 
     public List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId);
 
+    boolean updateSslTermination(int id, Integer accountId, SslTermination domainSslTermination) throws EntityNotFoundException;
+
+    public boolean deleteSslTermination(int id, Integer accountId, SslTermination domainSslTermination) throws EntityNotFoundException;
+
+    public SslTermination getSslTermination(int id, Integer accountId) throws EntityNotFoundException;
 }

@@ -1,9 +1,20 @@
 package org.openstack.atlas.service.domain.repository;
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.service.domain.entities.*;
 
+import org.openstack.atlas.service.domain.entities.AccessList;
+import org.openstack.atlas.service.domain.entities.AccountUsage;
+import org.openstack.atlas.service.domain.entities.HealthMonitor;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.SessionPersistence;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.*;
+import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,33 +94,33 @@ public class LoadBalancerRepository {
         return up.getErrorpage();
     }
 
-    public boolean setErrorPage(Integer lid,Integer aid,String errorpage) throws EntityNotFoundException{
-        boolean out=false;
+    public boolean setErrorPage(Integer lid, Integer aid, String errorpage) throws EntityNotFoundException {
+        boolean out = false;
         LoadBalancer lb = getByIdAndAccountId(lid, aid);
-        UserPages up = getUserPages(lid,aid);
-        if(up==null){
+        UserPages up = getUserPages(lid, aid);
+        if (up == null) {
             up = new UserPages();
             up.setLoadbalancer(lb);
             up.setErrorpage(errorpage);
             entityManager.merge(up);
             return true;
-        }else{
+        } else {
             up.setErrorpage(errorpage);
             entityManager.merge(up);
             return false;
         }
     }
 
-    public boolean setDefaultErrorPage(String errorpage) throws EntityNotFoundException{
-        boolean out=false;
+    public boolean setDefaultErrorPage(String errorpage) throws EntityNotFoundException {
+        boolean out = false;
         Defaults up = getDefaultErrorPage();
-        if(up==null){
+        if (up == null) {
             up = new Defaults();
             up.setName(Constants.DEFAULT_ERRORFILE);
             up.setValue(errorpage);
             entityManager.merge(up);
             return true;
-        }else{
+        } else {
             up.setValue(errorpage);
             entityManager.merge(up);
             return false;
@@ -128,6 +139,40 @@ public class LoadBalancerRepository {
         return true;
 
 
+    }
+
+    public boolean removeSslTermination(Integer lid, Integer aid) {
+        SslTermination up = getSslTermination(lid, aid);
+        if (up == null) {
+            return false;
+        } else {
+            entityManager.remove(up);
+            return true;
+        }
+    }
+
+    public SslTermination getSslTermination(Integer lid, Integer aid) {
+        SslTermination sslTermination;
+        String qStr = "FROM SslTermination u where u.loadbalancer.id = :lid and u.loadbalancer.accountId = :aid";
+        Query q = entityManager.createQuery(qStr).setParameter("lid", lid).setParameter("aid", aid);
+        sslTermination = (SslTermination) q.getResultList().get(0);
+        return sslTermination;
+    }
+
+    public boolean setSslTermination(Integer lid, Integer aid, SslTermination sslTermination) throws EntityNotFoundException {
+        boolean out = false;
+        LoadBalancer lb = getByIdAndAccountId(lid, aid);
+        SslTermination up = getSslTermination(lid, aid);
+        if (up == null) {
+            up = new SslTermination();
+            up.setLoadbalancer(lb);
+            up.setKey(sslTermination.getKey());
+            up.setCert(sslTermination.getCert());
+            up.setEnabled(sslTermination.isEnabled());
+            entityManager.merge(up);
+            out = true;
+        }
+        return out;
     }
 
     public LoadBalancer getByIdAndAccountId(Integer id, Integer accountId) throws EntityNotFoundException {
@@ -211,7 +256,7 @@ public class LoadBalancerRepository {
     }
 
     public ConnectionLimit getConnectionLimitsbyAccountIdLoadBalancerId(Integer accountId,
-            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
+                                                                        Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -235,7 +280,7 @@ public class LoadBalancerRepository {
     }
 
     public SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId,
-            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
+                                                                             Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -247,7 +292,7 @@ public class LoadBalancerRepository {
     }
 
     public LoadBalancer enableSessionPersistenceByIdAndAccountId(Integer id,
-            Integer accountId) throws EntityNotFoundException, BadRequestException {
+                                                                 Integer accountId) throws EntityNotFoundException, BadRequestException {
         LoadBalancer lb;
         lb = getById(id);
         if (!lb.getAccountId().equals(accountId)) {
@@ -401,8 +446,8 @@ public class LoadBalancerRepository {
     }
 
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
-            String status, LbQueryStatus queryStatus, Calendar changedSince,
-            Integer offset, Integer limit, Integer marker) throws BadRequestException {
+                                                      String status, LbQueryStatus queryStatus, Calendar changedSince,
+                                                      Integer offset, Integer limit, Integer marker) throws BadRequestException {
         List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
         LoadBalancerStatus lbStatus;
         String selectClause;
@@ -553,7 +598,7 @@ public class LoadBalancerRepository {
     }
 
     public List<AccessList> getAccessListByAccountIdLoadBalancerId(int accountId, int loadbalancerId,
-            Integer... p) throws EntityNotFoundException, DeletedStatusException {
+                                                                   Integer... p) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId,
                 accountId); // Puke if the LoadBalancer is not found presumebly Account LoadBalancer mismatch
         List<AccessList> accessList = new ArrayList<AccessList>();
@@ -587,7 +632,7 @@ public class LoadBalancerRepository {
     }
 
     public HealthMonitor getHealthMonitor(Integer accountId,
-            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
+                                          Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -599,7 +644,7 @@ public class LoadBalancerRepository {
     }
 
     public Set<VirtualIp> getVipsByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId,
-            Integer... p) throws EntityNotFoundException, DeletedStatusException {
+                                                           Integer... p) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadBalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -898,7 +943,7 @@ public class LoadBalancerRepository {
     }
 
     private Collection<AccountBilling> createAccountBillings(List<AccountUsage> accountUsageResults,
-            List<Usage> lbUsageResults) {
+                                                             List<Usage> lbUsageResults) {
         Map<Integer, AccountBilling> accountBillings = new HashMap<Integer, AccountBilling>();
         Map<Integer, LoadBalancerBilling> loadBalancerBillings = new HashMap<Integer, LoadBalancerBilling>();
 
@@ -925,7 +970,7 @@ public class LoadBalancerRepository {
     }
 
     private AccountBilling getNewOrExistingAccountBilling(Map<Integer, AccountBilling> accountBillings,
-            Integer accountId) {
+                                                          Integer accountId) {
         AccountBilling accountBilling;
         if (accountBillings.containsKey(accountId)) {
             accountBilling = accountBillings.get(accountId);
@@ -1004,7 +1049,7 @@ public class LoadBalancerRepository {
     }
 
     public HostUsageRecord getHostUsage(Integer hostId, Calendar startTime,
-            Calendar endTime) throws EntityNotFoundException {
+                                        Calendar endTime) throws EntityNotFoundException {
 
         Query query;
         List<Object> hostUsageResults;
@@ -1263,7 +1308,7 @@ public class LoadBalancerRepository {
         List<Object> retLoadbalancers = entityManager.createQuery("SELECT l FROM LoadBalancer l, Node n WHERE l.id = n.loadbalancer.id AND l.accountId = :accountId AND n.ipAddress = :address AND l.status <> 'DELETED' AND l.status <> 'PENDING_DELETE'").setParameter("accountId", accountId).setParameter("address", nodeAddress).getResultList();
         List<LoadBalancer> loadbalancers = new ArrayList<LoadBalancer>();
         for (Object o : retLoadbalancers) {
-            loadbalancers.add((LoadBalancer)o);
+            loadbalancers.add((LoadBalancer) o);
         }
         return loadbalancers;
     }

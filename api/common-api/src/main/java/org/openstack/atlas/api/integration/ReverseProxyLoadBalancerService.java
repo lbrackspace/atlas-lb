@@ -105,4 +105,6 @@ public interface ReverseProxyLoadBalancerService {
     public void uploadDefaultErrorFile(Integer clusterId, String content) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
 
     public void setDefaultErrorFile(Integer loadbalancerId, Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
+
+    public void createSslTermination(int id, int accountId, SslTermination dbTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException;
 }
