@@ -4,6 +4,7 @@ from java.lang import Class
 
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs as ZxtmServiceStubs
 import java.net.URL as URL
+import com.zxtm.service.client.CertificateFiles
 
 import org.openstack.atlas.util.crypto.CryptoUtil as CryptoUtil
 import org.hexp.hibernateexp.util.BitUtil as BitUtil
@@ -167,7 +168,9 @@ class ZxtmStubs(object):
                            "p" :"PoolBindingStub",
                            "pc":"CatalogProtectionBindingStub",
                            "tg":"TrafficIPGroupsBindingStub",
-                           "vs":"VirtualServerBindingStub"
+                           "vs":"VirtualServerBindingStub",
+                           "cert":"CatalogSSLCertificatesBindingStub",
+                           "ca":"CatalogSSLCertificateAuthoritiesBindingStub"
                          }
 
     def __init__(self,endpoints,user,passwd,*args,**kw):
@@ -1213,19 +1216,21 @@ def allocatedThisWeek():
     out.append(cluster)
     return out        
 
-def load_json(json_file):
-    full_path = os.path.expanduser(json_file)
+def fullPath(file_path):
+    full_path = os.path.expanduser(file_path)
     full_path = os.path.abspath(full_path)
-    fp = open(full_path,"r")
+    return full_path
+
+
+def load_json(json_file):
+    fp = open(fullPath(json_file),"r")
     json_data = fp.read()
     fp.close()
     out = json.loads(json_data)
     return out
 
 def save_json(json_file,obj):
-    full_path = os.path.expanduser(json_file)
-    full_path = os.path.abspath(full_path)
-    fp = open(full_path,"w")
+    fp = open(fullPath(json_file),"w")
     out = json.dumps(obj, indent=2)
     fp.write(out)
     fp.close()
@@ -1348,3 +1353,13 @@ def newAlert(account,lid,day):
     a.setMessageName("TESTING")
     a.setStatus(AlertStatus.valueOf("UNACKNOWLEDGED"))
     return a
+
+def newCertificateFile(key_file,crt_file):
+    pem_key = open(fullPath(key_file),"r").read()
+    crt_key = open(fullPath(crt_file),"r").read()
+    certFile = CertificateFiles()
+    certFile.setPrivate_key(pem_key)
+    certFile.setPublic_cert(crt_pem)
+    return certFile
+
+

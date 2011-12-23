@@ -1,24 +1,51 @@
 #!/usr/bin/env jython
 	
+import com.zxtm.service.client.CertificateFiles as CertificateFiles
 import util
 util.setConfig("local.json")
 from util import *
 
-stubs.ce.getFileNames()
-String(stubs.ce.downloadFile("global_error.html"))
+certNames = stubs.cert.getCertificateNames()
+certs = {}
+certsRaw = {}
+
+#stubs.cert.deleteCertificate(["test"])
+
+i = 0
+for certInfo in stubs.cert.getCertificateInfo(certNames):
+    certs[certNames[i]] = certInfo
+    i += 1
+
+i = 0
+for rawCert in stubs.cert.getRawCertificate(certNames):
+    certsRaw[certNames[i]] = rawCert
+    i += 1
 
 
-vnames = stubs.vs.getVirtualServerNames()
-protocols = stubs.vs.getProtocol(vnames)
-
-for i in xrange(0,len(vnames)):
-    if protocols[i].toString() != "http":
-       continue
-    print vnames[]
-
-httpvs = [v for (v,p) in zip(vnames,protocols) if p.toString()=="http"]
 
 
+#create new cert and Key and save  through zeus
+key_file = "smurf.key"
+crt_file = "smurf.crt"
+name = "smurfette.smurfvilliage.com"
+key = open(key_file,"r").read()
+crt = open(crt_file,"r").read()
 
-errorfiles = ["global_error.html"]*len(httpvs)
-stubs.vs.setErrorFile(httpvs, errorfiles)
+#not sure why zeus named this class plural since its singular
+cf = CertificateFiles()# In java its CertificateFiles cf = new CertificateFiles()
+cf.setPrivate_key(key)
+cf.setPublic_cert(crt)
+
+#save it in zeus
+stubs.cert.importCertificate([name],[cf])
+#Don't forget stubs.cert is an initialized CatalogSSLCertificatesBindingStub obj
+
+
+
+
+
+
+
+
+
+
