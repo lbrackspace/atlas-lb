@@ -17,6 +17,8 @@ for i in xrange(0,len(vnames)):
     print vnames[]
 
 httpvs = [v for (v,p) in zip(vnames,protocols) if p.toString()=="http"]
-errorfiles = ["global_error.html"]*len(httpvs)
 
+
+
+errorfiles = ["global_error.html"]*len(httpvs)
 stubs.vs.setErrorFile(httpvs, errorfiles)

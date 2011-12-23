@@ -1,5 +1,6 @@
 #!/usr/bin/env jython
 
+from java.lang import Class
 
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs as ZxtmServiceStubs
 import java.net.URL as URL
@@ -159,46 +160,56 @@ app = HuApp()
 #select v.id,v.ip_address,lv.loadbalancer_id,l.account_id from virtual_ip_ipv4 v left join loadbalancer_virtualip lv on v.id = lv.virtualip_id join loadbalancer l on lv.loadbalancer_id = l.id order by v.id;
 
 class ZxtmStubs(object):
-    stubMap = {
-               "ce":"getZxtmConfExtraBinding",
-               "p" :"getPoolBinding",
-               "pc":"getProtectionBinding",
-               "tg":"getTrafficIpGroupBinding",
-               "vs":"getVirtualServerBinding"}
+    default_package = "com.zxtm.service.client"
 
-    directMap = {
-                }
+    stubNames_default  = {
+                           "ce":"ConfExtraBindingStub",
+                           "p" :"PoolBindingStub",
+                           "pc":"CatalogProtectionBindingStub",
+                           "tg":"TrafficIPGroupsBindingStub",
+                           "vs":"VirtualServerBindingStub"
+                         }
 
-    def __init__(self,endpoints,user,passwd):
+    def __init__(self,endpoints,user,passwd,*args,**kw):
+        self.stubNames = kw.get("stubNames",ZxtmStubs.stubNames_default)
+        self.package = kw.get("package",ZxtmStubs.default_package)
         self.user = user
         self.passwd = passwd
         self.endpoints = endpoints
         endpointkeys = endpoints.keys()
         self.endpoint = endpoints[endpointkeys[0]]
         endpoint = self.endpoint
-        self.stubs = ZxtmServiceStubs.getServiceStubs(endpoint,user,passwd)
+        self.stubs = {}
+        self.setStubs()
+
+    def setStubs(self):
+        ep = self.endpoint
+        self.stubs = {}
+        for (shortName,stubClassName) in self.stubNames.items():
+            fullClassName = "%s.%s"%(self.package,stubClassName)
+            stubClass = Class.forName(fullClassName)
+            stubInstance = stubClass(ep,None)
+            stubInstance.setUsername(self.user)
+            stubInstance.setPassword(self.passwd)
+            print self.stubs
+            self.stubs[shortName] = stubInstance
 
     def setEndpoint(self,id):
         self.endpoint = self.endpoints[id]
-        endpoint = self.endpoint
-        user = self.user
-        passwd = self.passwd
-        self.stubs = ZxtmServiceStubs.getServiceStubs(endpoint,user,passwd)
+        self.setStubs()
         
     def getMethods(self,stubName):
         out = []
-        out = dir(self.__getattr__(stubName))
+        out = dir(self.stubs[stubName])
         out.sort()
         return out
         
         
-    def __getattr__(self,stubName):
-        if not ZxtmStubs.stubMap.has_key(stubName):
+    def __getattr__(self,shortName):
+        if not self.stubs.has_key(shortName):
             raise AttributeError("'ZxtmStubs' has no attribute '%s'"%stubName)
         else:
-            f = getattr(self.stubs,ZxtmStubs.stubMap[stubName])
-            return f()
-
+            return self.stubs[shortName]
 
 class CidrBlackList(object):
     def __init__(self):
