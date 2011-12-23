@@ -1,7 +1,7 @@
 #!/usr/bin/env jython
 	
 import util
-util.setConfig("slice.json")
+util.setConfig("local.json")
 from util import *
 
 stubs.ce.getFileNames()
