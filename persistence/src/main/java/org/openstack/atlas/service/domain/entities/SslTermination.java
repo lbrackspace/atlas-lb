@@ -19,10 +19,10 @@ public class SslTermination extends Entity implements Serializable {
     @JoinColumn(name = "loadbalancer_id")
     private LoadBalancer loadbalancer;
 
-    @Column(name = "key", nullable = true, length = 64, columnDefinition = "mediumtext")
+    @Column(name = "pem_key", nullable = true, length = 64, columnDefinition = "mediumtext")
     private String key;
 
-    @Column(name = "cert", nullable = true,length = 64, columnDefinition = "mediumtext")
+    @Column(name = "pem_cert", nullable = true,length = 64, columnDefinition = "mediumtext")
     private String cert;
 
     @Column(name = "enabled", nullable = true)

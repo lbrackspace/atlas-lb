@@ -166,6 +166,9 @@ class ZxtmStubs(object):
                "tg":"getTrafficIpGroupBinding",
                "vs":"getVirtualServerBinding"}
 
+    directMap = {
+                }
+
     def __init__(self,endpoints,user,passwd):
         self.user = user
         self.passwd = passwd
