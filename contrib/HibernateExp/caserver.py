@@ -27,11 +27,9 @@ import sys
 import os
 import re
 
-def printf(format, *args): print format % args,
-    
-def fprintf(fp,format,*args): 
-    print >> fp,format % args,
-    fp.flush()
+def printf(format,*args): sys.stdout.write(format%args)
+
+def fprintf(fp,format,*args): fp.write(format%args)
 
 def has_keys(dict_in,keys):
     for key in keys:
@@ -68,14 +66,12 @@ def pad(digits,ch,val,**kargs):
         return str_out
 
 def excuse():
-    except_message = traceback.format_exc()
-    stack_message  = traceback.format_stack()
-    return except_message + " " + str(stack_message)
+    (t,v,s) = sys.exc_info()
+    eList= traceback.format_exception(t,v,s)
+    return eList
 
-def printexcuse():
-    text = excuse()
-    for line in text:
-        fprintf(lf,"%s\n",chop(line))
+def printexcuse(text):
+    lf.write(text)
     lf.flush()
 
 def version():
@@ -252,6 +248,26 @@ class CaServer(object):
     @Auth
     def echo(self,str_in):
         return "echo: %s"%str_in
+
+    @Auth
+    def genCrt(self,key_bits,subj):
+        out = {"key":"","csr":"","crt":"","error":""}
+        try:
+            key = self.ca.genkey(key_bits)
+            out["key"] = key.as_pem(cipher=None)
+            csr = self.ca.gencsr(key,**subj)
+            out["csr"] = csr.as_pem()
+            crt = self.ca.signcsr(csr,days=1825)
+            out["crt"] = crt.as_pem()
+        except Exception, ex:
+            (t,v,s) = sys.exc_info()
+            eList = traceback.format_exception(t,v,s)
+            out["error"] = eList
+            for entry in eList:
+                lf.write(entry)
+                lf.flush()
+            return out
+        return out
 
 
 if __name__ == "__main__":
