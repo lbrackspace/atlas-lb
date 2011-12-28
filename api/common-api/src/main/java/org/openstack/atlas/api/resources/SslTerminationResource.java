@@ -30,17 +30,10 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON})
     public Response retrieveSSL() {
         try {
-//            org.openstack.atlas.service.domain.entities.SslTermination ssl = lbRepository.getSslTermination(id, accountId);
-//               SslTermination dataSsl;
-//                dataSsl = dozerMapper.map(ssl, SslTermination.class);
+            org.openstack.atlas.service.domain.entities.SslTermination ssl = loadBalancerService.getSslTermination(id, accountId);
+               SslTermination dataSsl = dozerMapper.map(ssl, SslTermination.class);
 
-            SslTermination ssll = new SslTermination();
-            ssll.setId(2323);
-            ssll.setCert("tehCert");
-            ssll.setKey("aKey");
-            ssll.setEnabled(true);
-
-            return Response.status(Response.Status.OK).entity(ssll).build();
+            return Response.status(Response.Status.OK).entity(dataSsl).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
@@ -79,18 +72,19 @@ public class SslTerminationResource extends CommonDependencyProvider {
         }
 
         try {
-            ssl.setId(id);
-            SslTermination apiSsl = new SslTermination();
-
-            org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(apiSsl,
+            org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(ssl,
                     org.openstack.atlas.service.domain.entities.SslTermination.class);
 
-            boolean dbSsl = loadBalancerService.setSslTermination(loadBalancerId, accountId, domainSslTermination);
+            SslTermination apiSsl = dozerMapper.map(loadBalancerService.setSslTermination(accountId, loadBalancerId,
+                    domainSslTermination), SslTermination.class);
+
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setAccountId(accountId);
             dataContainer.setLoadBalancerId(loadBalancerId);
+            dataContainer.setUserName(getUserName(requestHeaders));
+
             asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_SSL_TERMINATION, dataContainer);
-            return Response.status(Response.Status.ACCEPTED).build();
+            return Response.status(Response.Status.ACCEPTED).entity(apiSsl).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

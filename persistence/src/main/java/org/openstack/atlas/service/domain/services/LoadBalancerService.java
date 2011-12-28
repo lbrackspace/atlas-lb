@@ -7,10 +7,7 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
 import org.openstack.atlas.service.domain.entities.SslTermination;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.pojos.AccountLoadBalancer;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
@@ -79,7 +76,9 @@ public interface LoadBalancerService {
 
     public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException;
 
-    public boolean setSslTermination(Integer lid, Integer accountId, SslTermination sslTermination) throws EntityNotFoundException;
+    public SslTermination setSslTermination(Integer lid, Integer accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException;
+
+    public SslTermination getSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException;
 
     public boolean setDefaultErrorPage(String content) throws EntityNotFoundException;
 

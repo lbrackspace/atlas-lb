@@ -26,7 +26,7 @@ public class SslTermination extends Entity implements Serializable {
     private String cert;
 
     @Column(name = "enabled", nullable = true)
-    private boolean enabled;
+    private boolean enabled = true;
 
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;

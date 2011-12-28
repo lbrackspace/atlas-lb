@@ -152,27 +152,25 @@ public class LoadBalancerRepository {
     }
 
     public SslTermination getSslTermination(Integer lid, Integer aid) {
-        SslTermination sslTermination;
-        String qStr = "FROM SslTermination u where u.loadbalancer.id = :lid and u.loadbalancer.accountId = :aid";
-        Query q = entityManager.createQuery(qStr).setParameter("lid", lid).setParameter("aid", aid);
-        sslTermination = (SslTermination) q.getResultList().get(0);
+        SslTermination sslTermination = new SslTermination();
+        String qStr = "FROM SslTermination u where u.loadbalancer.id = :lid";
+        Query q = entityManager.createQuery(qStr).setParameter("lid", lid);
+        try {
+            if (!q.getResultList().isEmpty()) {
+                sslTermination = (SslTermination) q.getResultList().get(0);
+            }
+        } catch (IndexOutOfBoundsException iex) {
+            return new SslTermination();
+        }
         return sslTermination;
     }
 
-    public boolean setSslTermination(Integer lid, Integer aid, SslTermination sslTermination) throws EntityNotFoundException {
-        boolean out = false;
+    public SslTermination setSslTermination(Integer lid, Integer aid, SslTermination sslTermination) throws EntityNotFoundException {
         LoadBalancer lb = getByIdAndAccountId(lid, aid);
-        SslTermination up = getSslTermination(lid, aid);
-        if (up == null) {
-            up = new SslTermination();
-            up.setLoadbalancer(lb);
-            up.setKey(sslTermination.getKey());
-            up.setCert(sslTermination.getCert());
-            up.setEnabled(sslTermination.isEnabled());
-            entityManager.merge(up);
-            out = true;
-        }
-        return out;
+        sslTermination.setLoadbalancer(lb);
+        entityManager.merge(sslTermination);
+        entityManager.flush();
+        return sslTermination;
     }
 
     public LoadBalancer getByIdAndAccountId(Integer id, Integer accountId) throws EntityNotFoundException {

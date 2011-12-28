@@ -44,13 +44,13 @@ public class CreateSslTerminationListener extends BaseListener {
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
 
-         MessageDataContainer dataContainer = getDataContainerFromMessage(message);
-        SslTermination dbTermination;
-
+        MessageDataContainer dataContainer = getDataContainerFromMessage(message);
         LoadBalancer dbLoadBalancer = new LoadBalancer();
+        SslTermination dbTermination;
 
         try {
             dbLoadBalancer = loadBalancerService.get(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
+            dbLoadBalancer.setUserName(dataContainer.getUserName());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", dataContainer.getLoadBalancerId());
             LOG.error(alertDescription, enfe);
@@ -70,11 +70,11 @@ public class CreateSslTerminationListener extends BaseListener {
         }
 
         try {
-            LOG.debug("Creating load balancer in Zeus...");
+            LOG.debug("Creating load balancer ssl termination in Zeus...");
             reverseProxyLoadBalancerService.createSslTermination(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), dbTermination);
-            LOG.debug("Successfully created a load balancer in Zeus.");
+            LOG.debug("Successfully created a load balancer ssl termination in Zeus.");
         } catch (Exception e) {
-            String alertDescription = String.format("An error occurred while creating loadbalancer '%d' in Zeus.", dbTermination.getId());
+            String alertDescription = String.format("An error occurred while creating loadbalancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dbLoadBalancer);
@@ -83,14 +83,14 @@ public class CreateSslTerminationListener extends BaseListener {
             return;
         }
 
-        addAtomEntriesForSslTermination(dbLoadBalancer, dbLoadBalancer, dbTermination);
+        addAtomEntriesForSslTermination(dbLoadBalancer, dbTermination);
         // Notify usage processor
         notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
         LOG.info(String.format("Created load balancer ssl termination'%d' successfully for loadbalancer: ", dbLoadBalancer.getId()));
     }
 
-    private void addAtomEntriesForSslTermination(LoadBalancer queueLb, LoadBalancer dbLoadBalancer, SslTermination sslTermination) {
-            notificationService.saveSslTerminationEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getConnectionLimit().getId(), CREATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), CREATE_SSL_TERMINATION, CREATE, INFO);
+    private void addAtomEntriesForSslTermination(LoadBalancer dbLoadBalancer, SslTermination sslTermination) {
+        notificationService.saveSslTerminationEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), sslTermination.getId(), CREATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), CREATE_SSL_TERMINATION, CREATE, INFO);
     }
 
     private void sendErrorToEventResource(LoadBalancer lb) {

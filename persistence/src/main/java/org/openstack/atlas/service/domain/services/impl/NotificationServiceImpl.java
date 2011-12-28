@@ -20,8 +20,8 @@ public class NotificationServiceImpl extends BaseService implements Notification
     }
 
     @Transactional
-    public void saveSslTerminationEvent(String userName, Integer accountId, Integer loadbalancerId, Integer nodeId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity) {
-        LoadBalancerServiceEvent lsE = AtomHelper.createloadBalancerSslTerminationEvent(userName, accountId, loadbalancerId, title, desc, eventType, category, severity, nodeId);
+    public void saveSslTerminationEvent(String userName, Integer accountId, Integer loadbalancerId, Integer sslTerminationId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity) {
+        LoadBalancerServiceEvent lsE = AtomHelper.createloadBalancerSslTerminationEvent(userName, accountId, loadbalancerId, title, desc, eventType, category, severity, sslTerminationId);
         loadBalancerEventRepository.save(lsE);
     }
 

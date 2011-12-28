@@ -632,19 +632,20 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(id, accountId);
 
-        String cert = sslTermination.getKey() + sslTermination.getCert();
-
         try {
-            CatalogSSLCertificatesBindingStub catlog = new CatalogSSLCertificatesBindingStub();
-            catlog.setRawCertificate(new String[]{virtualServerName}, new String[]{cert});
+            CatalogSSLCertificatesBindingStub catlog = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
+            CertificateFiles certificateFiles = new CertificateFiles();
+            certificateFiles.setPrivate_key(sslTermination.getKey());
+            certificateFiles.setPublic_cert(sslTermination.getCert());
+            catlog.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
 
             VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
-            virtualServerService.setSSLCertificate(new String[]{virtualServerName}, new String[]{cert});
+            virtualServerService.setSSLCertificate(new String[]{virtualServerName}, new String[]{virtualServerName});
             virtualServerService.setSSLDecrypt(new String[]{virtualServerName}, new boolean[]{true});
         } catch (AxisFault af) {
             LOG.error("there was a error setting ssl termination in zxtm adapter...");
+            throw new RuntimeException(af);
         }
-
     }
 
     @Override

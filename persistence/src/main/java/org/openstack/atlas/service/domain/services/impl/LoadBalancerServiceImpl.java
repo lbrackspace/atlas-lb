@@ -752,12 +752,24 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Transactional
     @Override
-    public boolean setSslTermination(Integer lid, Integer accountId, SslTermination sslTermination) throws EntityNotFoundException {
+    public SslTermination setSslTermination(Integer lid, Integer accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException {
         //TODO: validate here...
         if (sslTermination != null) {
-            return loadBalancerRepository.setSslTermination(lid, accountId, sslTermination);
+            if (loadBalancerRepository.getSslTermination(lid, accountId) == null) {
+                return loadBalancerRepository.setSslTermination(accountId, lid, sslTermination);
+            } else {
+                String message = StringHelper.imutableSslTermination(sslTermination);
+                LOG.warn(message);
+                throw new ImmutableEntityException(message);
+            }
         }
-        return false;
+        return new SslTermination();
+    }
+
+    @Transactional
+    @Override
+    public SslTermination getSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException {
+        return loadBalancerRepository.getSslTermination(lid, accountId);
     }
 
     @Transactional
