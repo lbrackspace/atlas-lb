@@ -21,7 +21,7 @@ def genCf(name):
     subj = copy.deepcopy(base_subj)
     subj["CN"]="%s.%s"%(name,"rackexp.org")
     subj["OU"]="%s Unit"%name
-    r = s.genCrt(cred,2048,subj)
+    r = s.genCrt(cred,1024,subj)
     if r["error"]:
         printf("Error generating crt")
     crt = r["crt"]
