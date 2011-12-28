@@ -15,7 +15,9 @@ import re
 
 def printf(format,*args): sys.stdout.write(format%args)
 
-def fprintf(fp,format,*args): fp.write(format%args)
+def fprintf(fp,format,*args):
+    fp.write(format%args)
+    fp.flush()
 
 def genCf(name):
     subj = copy.deepcopy(base_subj)
@@ -75,15 +77,19 @@ for (k,v) in name_prots.items():
 lp =  open("./log.txt","a")
 fprintf(lp,"Staring run:\n")
 
+last_i = len(httpVsList)
+i = 0
+
 for name in httpVsList:
+    i += 1
     fprintf(lp,"Adding cert for %s\nGenerating cert and key",name)
     cf = genCf(name)
     fprintf(lp,"Calling zues importCertificate\n")
     try:
         stubs.cert.importCertificate([name],[cf])    
     except:
-        (t,v,s) = sys.exc_info()
-        msg = traceback.format_exception(t,v,s)
+        (t,v,st) = sys.exc_info()
+        msg = traceback.format_exception(t,v,st)
         fmt = "Failed to gencrt for %s\n"
         fprintf(lp,fmt,name)
         for m in msg:
@@ -93,3 +99,4 @@ for name in httpVsList:
         sys.stdout.flush()
         continue
     fprintf(lp,"Import complete for %s\n",name)
+    msg = "%d of %d"%(i,last_i)
