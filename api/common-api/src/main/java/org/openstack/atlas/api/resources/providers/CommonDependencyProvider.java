@@ -44,6 +44,7 @@ public class CommonDependencyProvider {
     protected AlgorithmsService algorithmsService;
     protected UsageService usageService;
     protected ProtocolsService protocolsService;
+    protected SslTerminationService sslTerminationService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
 
     public ReverseProxyLoadBalancerService getReverseProxyLoadBalancerService() {
@@ -116,6 +117,10 @@ public class CommonDependencyProvider {
 
     public void setAccountLimitService(AccountLimitService accountLimitService) {
         this.accountLimitService = accountLimitService;
+    }
+
+    public void setSslTerminationService(SslTerminationService sslTerminationService) {
+        this.sslTerminationService = sslTerminationService;
     }
 
     public String getUserName(HttpHeaders headers){

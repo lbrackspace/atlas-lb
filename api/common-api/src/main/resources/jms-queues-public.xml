@@ -42,6 +42,7 @@
         <property name="accessListService" ref="accessListService"/>
         <property name="rateLimitingService" ref="rateLimitingService"/>
         <property name="hostService" ref="hostService"/>
+        <property name="sslTerminationService" ref="sslTerminationService"/>
     </bean>
 
     <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>

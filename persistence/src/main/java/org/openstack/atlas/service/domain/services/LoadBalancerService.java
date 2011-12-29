@@ -76,19 +76,9 @@ public interface LoadBalancerService {
 
     public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException;
 
-    public SslTermination setSslTermination(Integer lid, Integer accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException;
-
-    public SslTermination getSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException;
-
     public boolean setDefaultErrorPage(String content) throws EntityNotFoundException;
 
     public boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException;
 
     public List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId);
-
-    boolean updateSslTermination(int id, Integer accountId, SslTermination domainSslTermination) throws EntityNotFoundException;
-
-    public boolean deleteSslTermination(int id, Integer accountId, SslTermination domainSslTermination) throws EntityNotFoundException;
-
-    public SslTermination getSslTermination(int id, Integer accountId) throws EntityNotFoundException;
 }

@@ -50,6 +50,7 @@
         <property name="requestStateContainer" ref="requestStateContainer"/>
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
         <property name="restApiConfiguration" ref="configuration"/>
+        <property name="sslTerminationService" ref="sslTerminationService"/>
     </bean>
 
     <!--DOZER SETTINGS-->

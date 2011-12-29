@@ -60,7 +60,7 @@ public class CreateSslTerminationListener extends BaseListener {
         }
 
         try {
-            dbTermination = loadBalancerService.getSslTermination(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
+            dbTermination = sslTerminationService.getSslTermination(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' Ssl termination not found in database.", dataContainer.getLoadBalancerId());
             LOG.error(alertDescription, enfe);

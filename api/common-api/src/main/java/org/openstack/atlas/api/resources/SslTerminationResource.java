@@ -30,7 +30,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON})
     public Response retrieveSSL() {
         try {
-            org.openstack.atlas.service.domain.entities.SslTermination ssl = loadBalancerService.getSslTermination(id, accountId);
+            org.openstack.atlas.service.domain.entities.SslTermination ssl = sslTerminationService.getSslTermination(id, accountId);
                SslTermination dataSsl = dozerMapper.map(ssl, SslTermination.class);
 
             return Response.status(Response.Status.OK).entity(dataSsl).build();
@@ -54,7 +54,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(apiSsl,
                     org.openstack.atlas.service.domain.entities.SslTermination.class);
 
-            boolean dbSsl = loadBalancerService.updateSslTermination(loadBalancerId, accountId, domainSslTermination);
+            boolean dbSsl = sslTerminationService.updateSslTermination(loadBalancerId, accountId, domainSslTermination);
 
 //            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_NODE, dbLb);
             return Response.status(Response.Status.ACCEPTED).build();
@@ -75,7 +75,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(ssl,
                     org.openstack.atlas.service.domain.entities.SslTermination.class);
 
-            SslTermination apiSsl = dozerMapper.map(loadBalancerService.setSslTermination(accountId, loadBalancerId,
+            SslTermination apiSsl = dozerMapper.map(sslTerminationService.setSslTermination(accountId, loadBalancerId,
                     domainSslTermination), SslTermination.class);
 
             MessageDataContainer dataContainer = new MessageDataContainer();
@@ -99,7 +99,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(apiSsl,
                     org.openstack.atlas.service.domain.entities.SslTermination.class);
 
-            boolean dbSsl = loadBalancerService.deleteSslTermination(loadBalancerId, accountId, domainSslTermination);
+            boolean dbSsl = sslTerminationService.deleteSslTermination(loadBalancerId, accountId, domainSslTermination);
 //            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_NODE, dbLb);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
