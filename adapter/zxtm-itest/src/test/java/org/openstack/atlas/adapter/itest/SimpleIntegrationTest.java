@@ -114,17 +114,23 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         final int defaultNodeWeight = 1;
         Node node3 = new Node();
         Node node4 = new Node();
+        Node node5 = new Node();
         node3.setIpAddress("127.0.0.3");
         node4.setIpAddress("127.0.0.4");
+        node5.setIpAddress("127.0.0.5");
         node3.setPort(81);
         node4.setPort(82);
+        node5.setPort(83);
         node3.setCondition(ENABLED);
         node4.setCondition(DISABLED);
+        node5.setCondition(DRAINING);
         node3.setWeight(15);
         node4.setWeight(20);
+        node5.setWeight(25);
 
         lb.getNodes().add(node3);
         lb.getNodes().add(node4);
+        lb.getNodes().add(node5);
 
         zxtmAdapter.setNodes(config, lb.getId(), lb.getAccountId(), lb.getNodes());
 
@@ -132,10 +138,11 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         String node2ZeusString = IpHelper.createZeusIpString(node2.getIpAddress(), node2.getPort());
         String node3ZeusString = IpHelper.createZeusIpString(node3.getIpAddress(), node3.getPort());
         String node4ZeusString = IpHelper.createZeusIpString(node4.getIpAddress(), node4.getPort());
+        String node5ZeusString = IpHelper.createZeusIpString(node5.getIpAddress(), node5.getPort());
 
         final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
         Assert.assertEquals(1, enabledNodes.length);
-        Assert.assertEquals(2, enabledNodes[0].length);
+        Assert.assertEquals(3, enabledNodes[0].length);
         Assert.assertEquals(node1ZeusString, enabledNodes[0][0]);
         Assert.assertEquals(node3ZeusString, enabledNodes[0][1]);
 
@@ -145,9 +152,14 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         Assert.assertEquals(node2ZeusString, disabledNodes[0][0]);
         Assert.assertEquals(node4ZeusString, disabledNodes[0][1]);
 
+        final String[][] drainingNodes = getServiceStubs().getPoolBinding().getDrainingNodes(new String[]{poolName()});
+        Assert.assertEquals(1, drainingNodes.length);
+        Assert.assertEquals(1, drainingNodes[0].length);
+        Assert.assertEquals(node5ZeusString, drainingNodes[0][0]);
+
         final PoolWeightingsDefinition[][] weightingsDefinitions = getServiceStubs().getPoolBinding().getWeightings(new String[]{poolName()});
         Assert.assertEquals(1, weightingsDefinitions.length);
-        Assert.assertEquals(4, weightingsDefinitions[0].length);
+        Assert.assertEquals(5, weightingsDefinitions[0].length);
 
         for (PoolWeightingsDefinition weightingsDefinition : weightingsDefinitions[0]) {
             if (weightingsDefinition.getNode().equals(node1ZeusString))
@@ -158,6 +170,8 @@ public class SimpleIntegrationTest extends ZeusTestBase {
                 Assert.assertEquals(node3.getWeight().intValue(), weightingsDefinition.getWeighting());
             else if (weightingsDefinition.getNode().equals(node4ZeusString))
                 Assert.assertEquals(node4.getWeight().intValue(), weightingsDefinition.getWeighting());
+            else if (weightingsDefinition.getNode().equals(node5ZeusString))
+                Assert.assertEquals(node5.getWeight().intValue(), weightingsDefinition.getWeighting());
             else Assert.fail("Unrecognized node weighting definition.");
         }
 
@@ -180,7 +194,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     private void assertThatAllNodesAreEnabled() throws RemoteException, InsufficientRequestException {
         final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
         Assert.assertEquals(1, enabledNodes.length);
-        Assert.assertEquals(2, enabledNodes[0].length);
+        Assert.assertEquals(3, enabledNodes[0].length);
 
         final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
         Assert.assertEquals(1, disabledNodes.length);
@@ -213,7 +227,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
         final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
         Assert.assertEquals(1, enabledNodes.length);
-        Assert.assertEquals(2, enabledNodes[0].length);
+        Assert.assertEquals(3, enabledNodes[0].length);
 
         final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
         Assert.assertEquals(1, disabledNodes.length);
@@ -221,7 +235,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
         final String[][] drainingNodes = getServiceStubs().getPoolBinding().getDrainingNodes(new String[]{poolName()});
         Assert.assertEquals(1, drainingNodes.length);
-        Assert.assertEquals(2, drainingNodes[0].length);
+        Assert.assertEquals(3, drainingNodes[0].length);
     }
 
     private void shouldRollbackWhenSettingUnsupportedNodeWeights() throws Exception {
@@ -238,8 +252,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
                 final PoolWeightingsDefinition[][] enabledNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, enabledNodes);
                 Assert.assertEquals(1, enabledNodeWeights.length);
-                Assert.assertEquals(2, enabledNodeWeights[0].length);
-                Assert.assertEquals(1, enabledNodeWeights[0][0].getWeighting());
+                Assert.assertEquals(3, enabledNodeWeights[0].length);
                 Assert.assertEquals(1, enabledNodeWeights[0][1].getWeighting());
 
                 final PoolWeightingsDefinition[][] disabledNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, disabledNodes);
@@ -248,7 +261,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
                 final PoolWeightingsDefinition[][] drainingNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, drainingNodes);
                 Assert.assertEquals(1, drainingNodeWeights.length);
-                Assert.assertEquals(2, drainingNodeWeights[0].length);
+                Assert.assertEquals(3, drainingNodeWeights[0].length);
                 Assert.assertEquals(1, drainingNodeWeights[0][0].getWeighting());
                 Assert.assertEquals(1, drainingNodeWeights[0][1].getWeighting());
             } else {
@@ -269,7 +282,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
         final PoolWeightingsDefinition[][] enabledNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, enabledNodes);
         Assert.assertEquals(1, enabledNodeWeights.length);
-        Assert.assertEquals(2, enabledNodeWeights[0].length);
+        Assert.assertEquals(3, enabledNodeWeights[0].length);
         Assert.assertTrue((enabledNodeWeights[0][0].getWeighting() == node1.getWeight()) || (enabledNodeWeights[0][0].getWeighting() == node2.getWeight()));
         Assert.assertTrue((enabledNodeWeights[0][1].getWeighting() == node1.getWeight()) || (enabledNodeWeights[0][1].getWeighting() == node2.getWeight()));
 
@@ -279,7 +292,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
         final PoolWeightingsDefinition[][] drainingNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, drainingNodes);
         Assert.assertEquals(1, drainingNodeWeights.length);
-        Assert.assertEquals(2, drainingNodeWeights[0].length);
+        Assert.assertEquals(3, drainingNodeWeights[0].length);
         Assert.assertTrue((drainingNodeWeights[0][0].getWeighting() == node1.getWeight()) || (drainingNodeWeights[0][0].getWeighting() == node2.getWeight()));
         Assert.assertTrue((drainingNodeWeights[0][1].getWeighting() == node1.getWeight()) || (drainingNodeWeights[0][1].getWeighting() == node2.getWeight()));
     }
@@ -289,7 +302,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
         final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
         Assert.assertEquals(1, enabledNodes.length);
-        Assert.assertEquals(1, enabledNodes[0].length);
+        Assert.assertEquals(2, enabledNodes[0].length);
 
         final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
         Assert.assertEquals(1, disabledNodes.length);
