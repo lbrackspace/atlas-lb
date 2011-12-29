@@ -19,7 +19,6 @@ import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHost
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 
 public class HostResource extends ManagementDependencyProvider {
@@ -358,15 +357,16 @@ public class HostResource extends ManagementDependencyProvider {
 
     public Integer getTotalConcurrentConnections(Integer hostId) {
         int connection = 0;
-        List<org.openstack.atlas.service.domain.entities.Host> hosts = new ArrayList<org.openstack.atlas.service.domain.entities.Host>();
-        org.openstack.atlas.service.domain.entities.Host host = new org.openstack.atlas.service.domain.entities.Host();
-        host.setId(hostId);
+//        List<org.openstack.atlas.service.domain.entities.Host> hosts = new ArrayList<org.openstack.atlas.service.domain.entities.Host>();
+        org.openstack.atlas.service.domain.entities.Host host;// = new org.openstack.atlas.service.domain.entities.Host();
+//        host.setId(hostId);
 
         try {
-            hostService.getById(id);
+            host = hostService.getById(id);
             connection = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(host);
 
         } catch (Exception e) {
+            System.out.println(e.getMessage()); 
         }
         return connection;
     }
