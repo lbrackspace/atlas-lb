@@ -6,7 +6,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-import org.rackexp.ca.primitives.RsaConst;
+import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ca.PemUtils;
 import java.awt.Color;
 import java.util.logging.Level;
@@ -29,7 +29,7 @@ import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.ca.gui.utils.ButtonGroupMapper;
 import org.openstack.atlas.util.ca.RSAKeyUtils;
 import static org.openstack.atlas.ca.gui.utils.GuiConst.*;
-import org.rackexp.ca.primitives.RsaPair;
+import org.openstack.atlas.util.ca.primitives.RsaPair;
 import org.openstack.atlas.util.ca.exceptions.ConversionException;
 import org.openstack.atlas.util.ca.exceptions.NoSuchAlgorithmException;
 import org.openstack.atlas.util.ca.exceptions.NullKeyException;
@@ -39,7 +39,7 @@ import org.openstack.atlas.util.ca.exceptions.RsaException;
 import static org.openstack.atlas.util.ca.StringUtils.getEST;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.CsrUtils;
-import org.rackexp.ca.primitives.PemBlock;
+import org.openstack.atlas.util.ca.primitives.PemBlock;
 
 public class CaFrame extends javax.swing.JFrame {
 
@@ -113,6 +113,13 @@ public class CaFrame extends javax.swing.JFrame {
         certOutFN = new javax.swing.JTextField();
         signCSRButton = new javax.swing.JButton();
         selfSignCA = new javax.swing.JCheckBox();
+        VerifyPanel = new javax.swing.JPanel();
+        verifyKeyCertPanel = new javax.swing.JPanel();
+        vkcKeyButton = new javax.swing.JButton();
+        vkcKeyFN = new javax.swing.JTextField();
+        vkcCertButton = new javax.swing.JButton();
+        vkcCertFN = new javax.swing.JTextField();
+        verifyKeyAndCertButton = new javax.swing.JButton();
         DebugTab = new javax.swing.JPanel();
         debugPanel = new javax.swing.JPanel();
         clearDebugButton = new javax.swing.JButton();
@@ -191,14 +198,14 @@ public class CaFrame extends javax.swing.JFrame {
             .addGroup(keyGenTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(rsaGenPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(512, Short.MAX_VALUE))
+                .addContainerGap(514, Short.MAX_VALUE))
         );
         keyGenTabLayout.setVerticalGroup(
             keyGenTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(keyGenTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(rsaGenPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(545, Short.MAX_VALUE))
+                .addContainerGap(555, Short.MAX_VALUE))
         );
 
         appTabs.addTab("Key Generation", keyGenTab);
@@ -337,7 +344,7 @@ public class CaFrame extends javax.swing.JFrame {
                         .addGroup(lsRSAPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(newCsrKeySizeTextField))))
-                .addContainerGap(206, Short.MAX_VALUE))
+                .addContainerGap(209, Short.MAX_VALUE))
         );
         lsRSAPanelLayout.setVerticalGroup(
             lsRSAPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -370,8 +377,8 @@ public class CaFrame extends javax.swing.JFrame {
                     .addGroup(csrOptionsPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(csrOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(csrFnButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
-                            .addComponent(keyFnButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE))
+                            .addComponent(csrFnButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
+                            .addComponent(keyFnButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(csrOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(keyFN2)
@@ -406,7 +413,7 @@ public class CaFrame extends javax.swing.JFrame {
                 .addGroup(csrGenTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(csrOptionsPanel, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(csrSubjectPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 734, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(460, Short.MAX_VALUE))
+                .addContainerGap(461, Short.MAX_VALUE))
         );
         csrGenTabLayout.setVerticalGroup(
             csrGenTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -415,7 +422,7 @@ public class CaFrame extends javax.swing.JFrame {
                 .addComponent(csrSubjectPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(csrOptionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(14, Short.MAX_VALUE))
+                .addContainerGap(37, Short.MAX_VALUE))
         );
 
         appTabs.addTab("CSR Generation", csrGenTab);
@@ -587,17 +594,95 @@ public class CaFrame extends javax.swing.JFrame {
             .addGroup(csrSigningTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(CSRSigningPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(448, Short.MAX_VALUE))
+                .addContainerGap(450, Short.MAX_VALUE))
         );
         csrSigningTabLayout.setVerticalGroup(
             csrSigningTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(csrSigningTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(CSRSigningPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(171, Short.MAX_VALUE))
+                .addContainerGap(189, Short.MAX_VALUE))
         );
 
         appTabs.addTab("CSR Signing", csrSigningTab);
+
+        verifyKeyCertPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Key And Cert Verify"));
+
+        vkcKeyButton.setText("Set Key File");
+        vkcKeyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                vkcKeyButtonActionPerformed(evt);
+            }
+        });
+
+        vkcKeyFN.setEditable(false);
+
+        vkcCertButton.setText("Set Cert File");
+        vkcCertButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                vkcCertButtonActionPerformed(evt);
+            }
+        });
+
+        vkcCertFN.setEditable(false);
+
+        verifyKeyAndCertButton.setText("Verify Key And Cert");
+        verifyKeyAndCertButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                verifyKeyAndCertButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout verifyKeyCertPanelLayout = new javax.swing.GroupLayout(verifyKeyCertPanel);
+        verifyKeyCertPanel.setLayout(verifyKeyCertPanelLayout);
+        verifyKeyCertPanelLayout.setHorizontalGroup(
+            verifyKeyCertPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(verifyKeyCertPanelLayout.createSequentialGroup()
+                .addGroup(verifyKeyCertPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(verifyKeyCertPanelLayout.createSequentialGroup()
+                        .addGroup(verifyKeyCertPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(vkcCertButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(vkcKeyButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(verifyKeyCertPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(vkcCertFN)
+                            .addComponent(vkcKeyFN, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)))
+                    .addComponent(verifyKeyAndCertButton, javax.swing.GroupLayout.PREFERRED_SIZE, 378, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(38, Short.MAX_VALUE))
+        );
+        verifyKeyCertPanelLayout.setVerticalGroup(
+            verifyKeyCertPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(verifyKeyCertPanelLayout.createSequentialGroup()
+                .addGroup(verifyKeyCertPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(vkcKeyButton)
+                    .addComponent(vkcKeyFN, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(verifyKeyCertPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(vkcCertButton)
+                    .addComponent(vkcCertFN, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(verifyKeyAndCertButton)
+                .addContainerGap(15, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout VerifyPanelLayout = new javax.swing.GroupLayout(VerifyPanel);
+        VerifyPanel.setLayout(VerifyPanelLayout);
+        VerifyPanelLayout.setHorizontalGroup(
+            VerifyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(VerifyPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(verifyKeyCertPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(542, Short.MAX_VALUE))
+        );
+        VerifyPanelLayout.setVerticalGroup(
+            VerifyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(VerifyPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(verifyKeyCertPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(532, Short.MAX_VALUE))
+        );
+
+        appTabs.addTab("Verification", VerifyPanel);
 
         debugPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Debug Messages"));
 
@@ -653,14 +738,14 @@ public class CaFrame extends javax.swing.JFrame {
                 .addGroup(debugPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(debugPanelLayout.createSequentialGroup()
                         .addGroup(debugPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1160, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1162, Short.MAX_VALUE)
                             .addGroup(debugPanelLayout.createSequentialGroup()
                                 .addComponent(setMysteryFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(mysteryFN, javax.swing.GroupLayout.DEFAULT_SIZE, 957, Short.MAX_VALUE)))
+                                .addComponent(mysteryFN, javax.swing.GroupLayout.DEFAULT_SIZE, 959, Short.MAX_VALUE)))
                         .addContainerGap())
                     .addGroup(debugPanelLayout.createSequentialGroup()
-                        .addComponent(clearDebugButton, javax.swing.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                        .addComponent(clearDebugButton, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(debugStateButton, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -683,7 +768,7 @@ public class CaFrame extends javax.swing.JFrame {
                     .addComponent(debugStateButton)
                     .addComponent(identifyFileButton)
                     .addComponent(MultiParseFileButton))
-                .addContainerGap(63, Short.MAX_VALUE))
+                .addContainerGap(71, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout DebugTabLayout = new javax.swing.GroupLayout(DebugTab);
@@ -1163,6 +1248,45 @@ public class CaFrame extends javax.swing.JFrame {
 
     }//GEN-LAST:event_MultiParseFileButtonActionPerformed
 
+    private void vkcKeyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vkcKeyButtonActionPerformed
+        setFileName(vkcKeyFN);
+    }//GEN-LAST:event_vkcKeyButtonActionPerformed
+
+    private void verifyKeyAndCertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verifyKeyAndCertButtonActionPerformed
+        String keyFile;
+        String certFile;
+        byte[] keyPem;
+        byte[] certPem;
+        List<String> errors;
+        keyFile = vkcKeyFN.getText();
+        certFile = vkcCertFN.getText();
+        try {
+            keyPem = PemUtils.readFileToByteArray(keyFile);
+        }catch(IOException ex) {
+            logError("Error reading key from \"%s\"\n%s\n", keyFile,getEST(ex));
+            return;
+        }
+        try {
+            certPem = PemUtils.readFileToByteArray(certFile);
+        } catch (IOException ex) {
+           logError("Error reading cert from \"%s\"\n%s\n",certFile,getEST(ex));
+           return;
+        }
+
+        errors = RSAKeyUtils.verifyKeyAndCert(keyPem, certPem);
+        if(errors.size()>0){
+            for(String error : errors){
+                logError("%s\n", error);
+            }
+        }else{
+            logDbg("cert And Key Matched\n");
+        }
+    }//GEN-LAST:event_verifyKeyAndCertButtonActionPerformed
+
+    private void vkcCertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vkcCertButtonActionPerformed
+        setFileName(vkcCertFN);
+    }//GEN-LAST:event_vkcCertButtonActionPerformed
+
     private void userInit() {
         RsaConst.init();
         StyledDocument doc = (StyledDocument) debugMessagesPane.getStyledDocument();
@@ -1229,6 +1353,7 @@ public class CaFrame extends javax.swing.JFrame {
     private javax.swing.JPanel DebugTab;
     private javax.swing.JButton GenerateCsrButton;
     private javax.swing.JButton MultiParseFileButton;
+    private javax.swing.JPanel VerifyPanel;
     private javax.swing.JTabbedPane appTabs;
     private javax.swing.JTextField cTextField;
     private javax.swing.JButton caCertButton;
@@ -1290,6 +1415,12 @@ public class CaFrame extends javax.swing.JFrame {
     private javax.swing.JButton setOutputCrtFileButton;
     private javax.swing.JButton signCSRButton;
     private javax.swing.JTextField stTextField;
+    private javax.swing.JButton verifyKeyAndCertButton;
+    private javax.swing.JPanel verifyKeyCertPanel;
+    private javax.swing.JButton vkcCertButton;
+    private javax.swing.JTextField vkcCertFN;
+    private javax.swing.JButton vkcKeyButton;
+    private javax.swing.JTextField vkcKeyFN;
     private javax.swing.JPanel x509OptionsPanel;
     // End of variables declaration//GEN-END:variables
     private Style redStyle;

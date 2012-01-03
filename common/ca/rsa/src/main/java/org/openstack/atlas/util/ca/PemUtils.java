@@ -1,6 +1,6 @@
 package org.openstack.atlas.util.ca;
 
-import org.rackexp.ca.primitives.PemBlock;
+import org.openstack.atlas.util.ca.primitives.PemBlock;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.nio.charset.Charset;
-import org.rackexp.ca.primitives.ByteLineList;
-import org.rackexp.ca.primitives.ByteLineListEntry;
-import org.rackexp.ca.primitives.ByteLineReader;
-import static org.rackexp.ca.primitives.ByteLineReader.cmpBytes;
-import static org.rackexp.ca.primitives.ByteLineReader.appendLF;
+import org.openstack.atlas.util.ca.primitives.ByteLineList;
+import org.openstack.atlas.util.ca.primitives.ByteLineListEntry;
+import org.openstack.atlas.util.ca.primitives.ByteLineReader;
+import static org.openstack.atlas.util.ca.primitives.ByteLineReader.cmpBytes;
+import static org.openstack.atlas.util.ca.primitives.ByteLineReader.appendLF;
 
 public class PemUtils {
 

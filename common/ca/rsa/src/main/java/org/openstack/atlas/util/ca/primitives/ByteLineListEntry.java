@@ -1,4 +1,4 @@
-package org.rackexp.ca.primitives;
+package org.openstack.atlas.util.ca.primitives;
 
 // Can't make Lists out of primitives so where stuck with this nonsense.
 public class ByteLineListEntry {

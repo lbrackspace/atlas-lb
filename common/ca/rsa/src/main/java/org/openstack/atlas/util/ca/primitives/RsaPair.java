@@ -1,4 +1,4 @@
-package org.rackexp.ca.primitives;
+package org.openstack.atlas.util.ca.primitives;
 
 import java.security.KeyPair;
 import java.math.BigInteger;

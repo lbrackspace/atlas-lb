@@ -1,12 +1,10 @@
 package org.openstack.atlas.util.ca.primitives;
 
-import org.rackexp.ca.primitives.ByteLineReader;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.rackexp.ca.primitives.ByteLineReader;
 import static org.junit.Assert.*;
 import static org.openstack.atlas.util.ca.StringUtils.asciiBytes;
 

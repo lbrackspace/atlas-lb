@@ -1,7 +1,7 @@
 package org.openstack.atlas.util.ca;
 
-import org.rackexp.ca.primitives.RsaConst;
-import org.rackexp.ca.primitives.RsaPair;
+import org.openstack.atlas.util.ca.primitives.RsaConst;
+import org.openstack.atlas.util.ca.primitives.RsaPair;
 import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;

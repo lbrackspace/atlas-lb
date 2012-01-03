@@ -1,4 +1,4 @@
-package org.rackexp.ca.primitives;
+package org.openstack.atlas.util.ca.primitives;
 
 public class PemBlock {
     private int lineNum;

@@ -12,7 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openstack.atlas.util.ca.StringUtils;
 import static org.junit.Assert.*;
-import org.rackexp.ca.primitives.RsaPair;
+import org.openstack.atlas.util.ca.primitives.RsaPair;
 import org.openstack.atlas.util.ca.exceptions.NoSuchAlgorithmException;
 import org.openstack.atlas.util.ca.exceptions.NullKeyException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
