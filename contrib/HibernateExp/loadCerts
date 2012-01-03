@@ -8,6 +8,7 @@ import com.zxtm.service.client.CertificateFiles as CertificateFiles
 import traceback
 import xmlrpclib
 import random
+import time
 import copy
 import sys
 import os
@@ -16,6 +17,8 @@ import re
 def printf(format,*args): sys.stdout.write(format%args)
 
 def fprintf(fp,format,*args):
+    sys.stdout.write(format%args)
+    sys.stdout.flush()
     fp.write(format%args)
     fp.flush()
 
@@ -77,16 +80,27 @@ for (k,v) in name_prots.items():
 lp =  open("./log.txt","a")
 fprintf(lp,"Staring run:\n")
 
+httpVsList.sort()
+
+
+
 last_i = len(httpVsList)
 i = 0
 
+secs = 3.0
 for name in httpVsList:
     i += 1
-    fprintf(lp,"Adding cert for %s\nGenerating cert and key",name)
+    fmt = "Adding cert %i of %i for %s\n"
+    args = (i,last_i,name)
+    fprintf(lp,fmt,*args)
     cf = genCf(name)
     fprintf(lp,"Calling zues importCertificate\n")
     try:
-        stubs.cert.importCertificate([name],[cf])    
+        stubs.cert.importCertificate([name],[cf])
+        fprintf(lp,"sleeping for %f seconds\n",secs)
+        time.sleep(secs)
+        stubs.vs.setSSLCertificate([name],[name])
+        stubs.vs.setSSLDecrypt([name],[True])
     except:
         (t,v,st) = sys.exc_info()
         msg = traceback.format_exception(t,v,st)
