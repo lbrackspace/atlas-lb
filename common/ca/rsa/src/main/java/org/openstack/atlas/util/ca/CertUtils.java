@@ -17,7 +17,9 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.security.auth.x500.X500Principal;
@@ -191,5 +193,10 @@ public class CertUtils {
             throw new RsaException("Error generating x509 certificate", ex);
         }
         return cert;
+    }
+
+    public List<String> verifyParentAndChildCert(byte[] parentPem,byte[] childPem){
+        List<String> errorList = new ArrayList<String>();
+        return errorList;
     }
 }
