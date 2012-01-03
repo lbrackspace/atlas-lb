@@ -332,10 +332,13 @@
     <xsd:element name="sslTermination" type="tns:sslTermination"/>
     <xsd:complexType name="sslTermination">
         <xsd:sequence>
-            <xsd:element name="key" type="xsd:string"/>
-            <xsd:element name="cert" type="xsd:string"/>
+            <xsd:element name="privatekey" type="xsd:string"/>
+            <xsd:element name="certificate" type="xsd:string"/>
+            <xsd:element name="intermediateCertificate" type="xsd:string"/>
         </xsd:sequence>
         <xsd:attribute name="id" type="xsd:int"/>
         <xsd:attribute name="enabled" type="xsd:boolean"/>
+        <xsd:attribute name="securePort" type="xsd:int"/>
+        <xsd:attribute name="secureTrafficOnly" type="xsd:boolean"/>
     </xsd:complexType>
 </xsd:schema>

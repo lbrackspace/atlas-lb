@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.atom;
 
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.HealthMonitorType;
@@ -33,8 +32,8 @@ public final class EntryHelper {
     public static String createSslTerminationSummary(SslTermination ssl) {
         StringBuffer atomSummary = new StringBuffer();
         atomSummary.append("SslTermination successfully created with ");
-        atomSummary.append("key: '").append(ssl.getKey()).append("', ");
-        atomSummary.append("cert: '").append(ssl.getCert()).append("', ");
+        atomSummary.append("key: '").append(ssl.getPrivatekey()).append("', ");
+        atomSummary.append("cert: '").append(ssl.getCertificate()).append("', ");
         atomSummary.append("isEnabled: '").append(ssl.isEnabled()).append("'");
         return atomSummary.toString();
     }

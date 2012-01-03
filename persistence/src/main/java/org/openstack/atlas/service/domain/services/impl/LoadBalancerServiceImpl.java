@@ -116,8 +116,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             verifyProtocolAndHealthMonitorType(lb);
             setHostForNewLoadBalancer(lb);
             setVipConfigForLoadBalancer(lb);
-            //TODO: add shared verification for ssl termination
-//            setSslTermination(lb.getId(), lb.getAccountId(), lb.getSslTermination());
         } catch (UniqueLbPortViolationException e) {
             LOG.debug("The port of the new LB is the same as the LB to which you wish to share a virtual ip.");
             throw e;

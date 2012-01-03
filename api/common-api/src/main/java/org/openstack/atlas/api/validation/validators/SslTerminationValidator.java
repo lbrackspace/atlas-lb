@@ -28,7 +28,7 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
                 must().adhereTo(new Verifier<SslTermination>() {
                     @Override
                     public VerifierResult verify(SslTermination ssl) {
-                        if (ssl.getCert() == null || ssl.getKey() == null) {
+                        if (ssl.getCertificate() == null || ssl.getPrivatekey() == null) {
                             return new VerifierResult(false);
                         }
                         return new VerifierResult(true);

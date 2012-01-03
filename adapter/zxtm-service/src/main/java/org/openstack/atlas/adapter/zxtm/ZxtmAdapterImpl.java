@@ -628,24 +628,55 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     // Set SSL Termination for load balancer
     @Override
-    public void createSslTermination(LoadBalancerEndpointConfiguration conf, int id, int accountId, SslTermination sslTermination) throws RemoteException, InsufficientRequestException {
-        ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
+    public void updateSslTermination(LoadBalancerEndpointConfiguration conf, int id, int accountId, SslTermination sslTermination) throws RemoteException, InsufficientRequestException {
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(id, accountId);
+        ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
+        CatalogSSLCertificatesBindingStub catlog = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
 
         try {
-            CatalogSSLCertificatesBindingStub catlog = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
             CertificateFiles certificateFiles = new CertificateFiles();
-            certificateFiles.setPrivate_key(sslTermination.getKey());
-            certificateFiles.setPublic_cert(sslTermination.getCert());
+            certificateFiles.setPrivate_key(sslTermination.getPrivatekey());
+            certificateFiles.setPublic_cert(sslTermination.getCertificate());
             catlog.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
 
             VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
             virtualServerService.setSSLCertificate(new String[]{virtualServerName}, new String[]{virtualServerName});
-            virtualServerService.setSSLDecrypt(new String[]{virtualServerName}, new boolean[]{true});
+            enableDisableSslTermination(serviceStubs, id, accountId, true);
         } catch (AxisFault af) {
             LOG.error("there was a error setting ssl termination in zxtm adapter...");
             throw new RuntimeException(af);
         }
+    }
+
+    @Override
+    public void removeSslTermination(LoadBalancerEndpointConfiguration conf, int id, int accountId) throws RemoteException, InsufficientRequestException {
+        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(id, accountId);
+        ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
+        CatalogSSLCertificatesBindingStub catlog = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
+        VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
+
+        try {
+            enableDisableSslTermination(serviceStubs, id, accountId, false);
+            virtualServerService.setSSLCertificate(new String[]{virtualServerName}, new String[]{""});
+            catlog.deleteCertificate(new String[]{virtualServerName});
+        } catch (AxisFault af) {
+            LOG.error("there was a error removing ssl termination in zxtm adapter...");
+            throw new RuntimeException(af);
+        }
+    }
+
+    private void enableDisableSslTermination(ZxtmServiceStubs serviceStubs, int id, int accountId, boolean isSslTermination) throws RemoteException, InsufficientRequestException {
+        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(id, accountId);
+        CatalogSSLCertificatesBindingStub catlog = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
+        VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
+
+        try {
+            virtualServerService.setSSLDecrypt(new String[]{virtualServerName}, new boolean[]{isSslTermination});
+        } catch (AxisFault af) {
+            LOG.error("there was a error updating ssl termination in zxtm adapter...");
+            throw new RuntimeException(af);
+        }
+
     }
 
     @Override

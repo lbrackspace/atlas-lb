@@ -145,16 +145,24 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, int id, int accountId, RateLimit rateLimit)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws RemoteException, InsufficientRequestException;
+    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId)
+            throws RemoteException, InsufficientRequestException;
 
-    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config,  Integer loadbalancerId, Integer accountId) throws RemoteException, InsufficientRequestException;
+    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId)
+            throws RemoteException, InsufficientRequestException;
 
-    public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config,  String content) throws RemoteException, InsufficientRequestException;
+    public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content)
+            throws RemoteException, InsufficientRequestException;
 
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId,Integer accountId) throws AxisFault;
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId)
+            throws AxisFault;
 
     public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content)
             throws RemoteException;
 
-    public void createSslTermination(LoadBalancerEndpointConfiguration config, int id, int accountId, SslTermination loadbalancer) throws AxisFault, RemoteException, InsufficientRequestException;
+    public void updateSslTermination(LoadBalancerEndpointConfiguration config, int loadBalancerId, int accountId, SslTermination loadbalancer)
+            throws RemoteException, InsufficientRequestException;
+
+    public void removeSslTermination(LoadBalancerEndpointConfiguration config, int loadBalancerId, int accountId)
+            throws RemoteException, InsufficientRequestException;
 }

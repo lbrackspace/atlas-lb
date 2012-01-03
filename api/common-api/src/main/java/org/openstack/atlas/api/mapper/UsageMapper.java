@@ -54,7 +54,7 @@ public final class UsageMapper {
         rusage.setStartTime(dusage.getStartTime());
         rusage.setEndTime(dusage.getEndTime());
         rusage.setEventType(dusage.getEventType());
-        // rusage.setSslTermination((dusage.getTags() & BitTags.BIT_TAG_SSL) == 1); Hidden per JIRA:SITESLB-687
+        // rusage.updateSslTermination((dusage.getTags() & BitTags.BIT_TAG_SSL) == 1); Hidden per JIRA:SITESLB-687
 
         BitTags bitTags = new BitTags(dusage.getTags());
 

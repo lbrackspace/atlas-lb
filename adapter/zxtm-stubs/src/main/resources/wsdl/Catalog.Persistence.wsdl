@@ -202,7 +202,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="key" type="xsd:string">
+             <xsd:element name="privatekey" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -247,7 +247,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="key" type="xsd:string">
+             <xsd:element name="privatekey" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -314,7 +314,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="key" type="xsd:string">
+             <xsd:element name="privatekey" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)

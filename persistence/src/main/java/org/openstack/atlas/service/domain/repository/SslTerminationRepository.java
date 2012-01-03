@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.util.List;
 
 @Repository
 @Transactional
@@ -21,8 +22,8 @@ public class SslTerminationRepository {
     private EntityManager entityManager;/**/
 
 
-    public boolean removeSslTermination(Integer lid, Integer aid) {
-        SslTermination up = getSslTermination(lid, aid);
+    public boolean removeSslTermination(Integer lid, Integer aid) throws EntityNotFoundException {
+        SslTermination up = getSslTerminationByLbId(lid, aid);
         if (up == null) {
             return false;
         } else {
@@ -31,25 +32,21 @@ public class SslTerminationRepository {
         }
     }
 
-    public SslTermination getSslTermination(Integer lid, Integer aid) {
-        SslTermination sslTermination = new SslTermination();
-        String qStr = "FROM SslTermination u where u.loadbalancer.id = :lid";
-        Query q = entityManager.createQuery(qStr).setParameter("lid", lid);
-        try {
-            if (!q.getResultList().isEmpty()) {
-                sslTermination = (SslTermination) q.getResultList().get(0);
-            }
-        } catch (IndexOutOfBoundsException iex) {
-            return new SslTermination();
+    public SslTermination getSslTerminationByLbId(Integer lid, Integer accountId) throws EntityNotFoundException {
+        List<SslTermination> sslTerminations = entityManager.createQuery("SELECT s FROM SslTermination s where s.loadbalancer.id = :lid").setParameter("lid", lid).getResultList();
+        if (sslTerminations != null && sslTerminations.size() > 0 && sslTerminations.get(0).getLoadbalancer().getAccountId().equals(accountId)) {
+            return sslTerminations.get(0);
+        } else {
+            String message = Constants.SslTerminationNotFound;
+            LOG.warn(message);
+            throw new EntityNotFoundException(message);
         }
-        return sslTermination;
     }
 
-    public SslTermination setSslTermination(Integer lid, Integer aid, SslTermination sslTermination) throws EntityNotFoundException {
+    public SslTermination setSslTermination(Integer lid, SslTermination sslTermination) throws EntityNotFoundException {
         LoadBalancer lb = getLbById(lid);
         sslTermination.setLoadbalancer(lb);
-        entityManager.merge(sslTermination);
-        entityManager.flush();
+        entityManager.persist(sslTermination);
         return sslTermination;
     }
 

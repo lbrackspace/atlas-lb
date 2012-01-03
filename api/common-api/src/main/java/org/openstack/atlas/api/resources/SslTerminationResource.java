@@ -30,7 +30,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON})
     public Response retrieveSSL() {
         try {
-            org.openstack.atlas.service.domain.entities.SslTermination ssl = sslTerminationService.getSslTermination(id, accountId);
+            org.openstack.atlas.service.domain.entities.SslTermination ssl = sslTerminationService.getSslTermination(loadBalancerId, accountId);
                SslTermination dataSsl = dozerMapper.map(ssl, SslTermination.class);
 
             return Response.status(Response.Status.OK).entity(dataSsl).build();
@@ -40,30 +40,6 @@ public class SslTerminationResource extends CommonDependencyProvider {
     }
 
     @PUT
-    @Consumes({APPLICATION_XML, APPLICATION_JSON})
-    public Response updateSsl(SslTermination ssl) {
-        ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(ssl, HttpRequestType.PUT);
-        if (!result.passedValidation()) {
-            return getValidationFaultResponse(result);
-        }
-
-        try {
-            ssl.setId(id);
-            SslTermination apiSsl = new SslTermination();
-
-            org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(apiSsl,
-                    org.openstack.atlas.service.domain.entities.SslTermination.class);
-
-            boolean dbSsl = sslTerminationService.updateSslTermination(loadBalancerId, accountId, domainSslTermination);
-
-//            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_NODE, dbLb);
-            return Response.status(Response.Status.ACCEPTED).build();
-        } catch (Exception e) {
-            return ResponseFactory.getErrorResponse(e, null, null);
-        }
-    }
-
-    @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createSsl(SslTermination ssl) {
         ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(ssl, HttpRequestType.PUT);
@@ -75,7 +51,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(ssl,
                     org.openstack.atlas.service.domain.entities.SslTermination.class);
 
-            SslTermination apiSsl = dozerMapper.map(sslTerminationService.setSslTermination(accountId, loadBalancerId,
+            SslTermination apiSsl = dozerMapper.map(sslTerminationService.updateSslTermination(loadBalancerId, accountId,
                     domainSslTermination), SslTermination.class);
 
             MessageDataContainer dataContainer = new MessageDataContainer();
@@ -83,7 +59,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
             dataContainer.setLoadBalancerId(loadBalancerId);
             dataContainer.setUserName(getUserName(requestHeaders));
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_SSL_TERMINATION, dataContainer);
+            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_SSL_TERMINATION, dataContainer);
             return Response.status(Response.Status.ACCEPTED).entity(apiSsl).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
@@ -91,16 +67,14 @@ public class SslTerminationResource extends CommonDependencyProvider {
     }
 
     @DELETE
-    public Response removeSsl(SslTermination ssl) {
+    public Response removeSsl() {
         try {
-            ssl.setId(id);
-            SslTermination apiSsl = new SslTermination();
+            MessageDataContainer dataContainer = new MessageDataContainer();
+            dataContainer.setAccountId(accountId);
+            dataContainer.setLoadBalancerId(loadBalancerId);
+            dataContainer.setUserName(getUserName(requestHeaders));
 
-            org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(apiSsl,
-                    org.openstack.atlas.service.domain.entities.SslTermination.class);
-
-            boolean dbSsl = sslTerminationService.deleteSslTermination(loadBalancerId, accountId, domainSslTermination);
-//            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_NODE, dbLb);
+            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_SSL_TERMINATION, dataContainer);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
