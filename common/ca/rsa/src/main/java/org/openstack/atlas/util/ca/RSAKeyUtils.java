@@ -26,6 +26,7 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+import org.bouncycastle.asn1.x509.RSAPublicKeyStructure;
 import org.bouncycastle.jce.provider.JCERSAPublicKey;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.openstack.atlas.util.ca.exceptions.ConversionException;
@@ -36,6 +37,7 @@ import org.openstack.atlas.util.ca.exceptions.NoSuchAlgorithmException;
 public class RSAKeyUtils {
 
     private static final int SB_INIT_CAPACITY = 4096;
+    private static final BigInteger m16bit = new BigInteger("ffff", 16);
 
     public static RsaPair genRSAPair(int bits, int certainity) throws NoSuchAlgorithmException {
         return RsaPair.getInstance(bits, certainity);
@@ -83,19 +85,31 @@ public class RSAKeyUtils {
         } catch (CertificateNotYetValidException ex) {
             errorList.add("Error cert not yet valid");
         }
-        try {
-            cert.verify(keyPub);
-        } catch (CertificateException ex) {
-            errorList.add("Error certificate signature was invalid");
-        } catch (java.security.NoSuchAlgorithmException ex) {
-            errorList.add("Error application does not recognize signature algo when attempting to verify signature");
-        } catch (InvalidKeyException ex) {
-            errorList.add("Error invalid Key when verifying signature of cert");
-        } catch (NoSuchProviderException ex) {
-            errorList.add("Error application does not support verification of this signature");
-        } catch (SignatureException ex) {
-            errorList.add("Error signature was not valid for this cert");
-        }
+
         return errorList;
+    }
+
+    public static String shortPub(Object obj) {
+        String out = null;
+        BigInteger n;
+        BigInteger e;
+        if (obj instanceof JCERSAPublicKey) {
+            JCERSAPublicKey jk = (JCERSAPublicKey) obj;
+            n = jk.getModulus().mod(m16bit);
+            e = jk.getPublicExponent();
+            return String.format("(%s,%s)", e, n);
+        } else if (obj instanceof RSAKeyParameters) {
+            RSAKeyParameters rp = (RSAKeyParameters) obj;
+            n = rp.getModulus().mod(m16bit);
+            e = rp.getExponent();
+            return String.format("(%s,%s)", e, n);
+        } else if (obj instanceof RSAPublicKeyStructure) {
+            RSAPublicKeyStructure rs = (RSAPublicKeyStructure) obj;
+            n = rs.getModulus().mod(m16bit);
+            e = rs.getPublicExponent();
+            return String.format("(%s,%s)",e,n);
+        } else {
+            return String.format("(%s,%s)", "None", "None");
+        }
     }
 }

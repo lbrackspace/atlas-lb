@@ -123,8 +123,8 @@ public class CaFrame extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         setParentCertButton = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
-        parentCertFN = new javax.swing.JTextField();
-        childCertFN = new javax.swing.JTextField();
+        issuerCertFN = new javax.swing.JTextField();
+        subjectCertFN = new javax.swing.JTextField();
         verifyParentAndChildCertButton = new javax.swing.JButton();
         DebugTab = new javax.swing.JPanel();
         debugPanel = new javax.swing.JPanel();
@@ -655,21 +655,21 @@ public class CaFrame extends javax.swing.JFrame {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Verify IssueingCert and Child Chain Cert"));
 
-        setParentCertButton.setText("Set Parent Cert");
+        setParentCertButton.setText("Set Issuer Cert");
         setParentCertButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 setParentCertButtonActionPerformed(evt);
             }
         });
 
-        jButton1.setText("Set Child Cert");
+        jButton1.setText("Set Subject Cert");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
 
-        verifyParentAndChildCertButton.setText("Verify Parent and Child Cert");
+        verifyParentAndChildCertButton.setText("Verify Issuer and Subject Cert");
         verifyParentAndChildCertButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 verifyParentAndChildCertButtonActionPerformed(evt);
@@ -688,21 +688,21 @@ public class CaFrame extends javax.swing.JFrame {
                             .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(childCertFN)
-                            .addComponent(parentCertFN, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)))
+                            .addComponent(subjectCertFN)
+                            .addComponent(issuerCertFN, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)))
                     .addComponent(verifyParentAndChildCertButton, javax.swing.GroupLayout.PREFERRED_SIZE, 368, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(543, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(setParentCertButton)
-                    .addComponent(parentCertFN, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(issuerCertFN, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
-                    .addComponent(childCertFN, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(subjectCertFN, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
                 .addComponent(verifyParentAndChildCertButton)
                 .addContainerGap())
@@ -714,10 +714,10 @@ public class CaFrame extends javax.swing.JFrame {
             VerifyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(VerifyPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(VerifyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(verifyKeyCertPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addGroup(VerifyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(verifyKeyCertPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(530, Short.MAX_VALUE))
         );
         VerifyPanelLayout.setVerticalGroup(
             VerifyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -846,7 +846,7 @@ public class CaFrame extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(appTabs, javax.swing.GroupLayout.DEFAULT_SIZE, 720, Short.MAX_VALUE))
         );
@@ -907,6 +907,10 @@ public class CaFrame extends javax.swing.JFrame {
             PKCS10CertificationRequest req = (PKCS10CertificationRequest) obj;
             msg = String.format(fmt, CsrUtils.csrToStr(req));
             logDbg("%s\n", msg);
+        } else if (obj instanceof X509CertificateObject) {
+            X509CertificateObject cert = (X509CertificateObject)obj;
+            String certStr = CertUtils.certToStr(cert);
+            logDbg("%s",certStr);
         }
 }//GEN-LAST:event_identifyFileButtonActionPerformed
 
@@ -1255,7 +1259,7 @@ public class CaFrame extends javax.swing.JFrame {
                 logError(fmt, crtOutFile, getEST(ex));
             }
 
-            logDbg("Cert saved to \"%s\"", crtOutFile);
+            logDbg("Cert saved to \"%s\"\n", crtOutFile);
         }
     }//GEN-LAST:event_signCSRButtonActionPerformed
 
@@ -1333,33 +1337,42 @@ public class CaFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_vkcCertButtonActionPerformed
 
     private void setParentCertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setParentCertButtonActionPerformed
-        setFileName(parentCertFN);
+        setFileName(issuerCertFN);
     }//GEN-LAST:event_setParentCertButtonActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        setFileName(childCertFN);
+        setFileName(subjectCertFN);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void verifyParentAndChildCertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verifyParentAndChildCertButtonActionPerformed
         String parentFile;
-        String childFile;
-        byte[] parentPem;
-        byte[] childPem;
+        String subjectFile;
+        List<String> errorList;
+        byte[] issuerCertPem;
+        byte[] subjectCertPem;
 
-        parentFile = parentCertFN.getText();
-        childFile = childCertFN.getText();
+        parentFile = issuerCertFN.getText();
+        subjectFile = subjectCertFN.getText();
         try {
-            parentPem = PemUtils.readFileToByteArray(parentFile);
+            issuerCertPem = PemUtils.readFileToByteArray(parentFile);
         }catch(IOException ex) {
             logError("Error reading parentCert from \"%s\"\n%s\n",parentFile,getEST(ex));
             return;
         }
         try {
-            childPem = PemUtils.readFileToByteArray(childFile);
+            subjectCertPem = PemUtils.readFileToByteArray(subjectFile);
         } catch (IOException ex) {
-            logError("Error reading childCert from \"%s\"\n%s\n",childFile,getEST(ex));
+            logError("Error reading childCert from \"%s\"\n%s\n",subjectFile,getEST(ex));
+            return;
         }
-
+        errorList = CertUtils.verifyIssuerAndSubjectCert(issuerCertPem, subjectCertPem);
+        if(errorList.size()<=0){
+            logDbg("Parent and child Cert are valid\n");
+        }else{
+            for(String errorStr : errorList){
+                logError("%s\n",errorStr);
+            }
+        }
 
     }//GEN-LAST:event_verifyParentAndChildCertButtonActionPerformed
 
@@ -1439,7 +1452,6 @@ public class CaFrame extends javax.swing.JFrame {
     private javax.swing.JTextField caKeyFN;
     private javax.swing.JButton caKeyFNButton;
     private javax.swing.JTextField certOutFN;
-    private javax.swing.JTextField childCertFN;
     private javax.swing.JButton clearDebugButton;
     private javax.swing.JTextField cnTextField;
     private javax.swing.JButton csrButton2;
@@ -1458,6 +1470,7 @@ public class CaFrame extends javax.swing.JFrame {
     private javax.swing.JButton genKeyButton;
     private javax.swing.JButton identifyFileButton;
     private javax.swing.JCheckBox isSerialNumberSpecified;
+    private javax.swing.JTextField issuerCertFN;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -1485,7 +1498,6 @@ public class CaFrame extends javax.swing.JFrame {
     private javax.swing.JTextField newCsrKeySizeTextField;
     private javax.swing.JTextField oTextField;
     private javax.swing.JTextField ouTextField;
-    private javax.swing.JTextField parentCertFN;
     private javax.swing.JPanel rsaGenPanel;
     private javax.swing.JRadioButton saveRsaRadio;
     private javax.swing.JCheckBox selfSignCA;
@@ -1496,6 +1508,7 @@ public class CaFrame extends javax.swing.JFrame {
     private javax.swing.JButton setParentCertButton;
     private javax.swing.JButton signCSRButton;
     private javax.swing.JTextField stTextField;
+    private javax.swing.JTextField subjectCertFN;
     private javax.swing.JButton verifyKeyAndCertButton;
     private javax.swing.JPanel verifyKeyCertPanel;
     private javax.swing.JButton verifyParentAndChildCertButton;

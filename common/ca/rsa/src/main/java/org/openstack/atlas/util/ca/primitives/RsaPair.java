@@ -27,6 +27,7 @@ import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.jce.provider.JCERSAPublicKey;
 import org.bouncycastle.jce.provider.JCERSAPrivateCrtKey;
 import org.openstack.atlas.util.ca.PemUtils;
+import org.openstack.atlas.util.ca.RSAKeyUtils;
 import org.openstack.atlas.util.ca.exceptions.ConversionException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.NoSuchAlgorithmException;
@@ -130,6 +131,7 @@ public class RsaPair {
         sb.append("PubKey:\n");
         sb.append(String.format("    n=%s\n", n.toString()));
         sb.append(String.format("    e=%s\n", e.toString()));
+        sb.append(String.format("    shortPub = %s\n",RSAKeyUtils.shortPub(pubStruct)));
         return sb.toString();
     }
 
@@ -209,7 +211,7 @@ public class RsaPair {
         PrivateKey jPriv;
         PublicKey jPub;
         if (priv == null && pub == null) {
-            throw new NullKeyException("keypair has no publicor or private key");
+            throw new NullKeyException("keypair has no public or private key");
         } else if (priv == null) {
             throw new NullKeyException("keypair has not private key");
         } else if (pub == null) {
