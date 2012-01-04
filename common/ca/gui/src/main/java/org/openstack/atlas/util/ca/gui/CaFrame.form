@@ -152,9 +152,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="keyFN1">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="genKeyButton">
                   <Properties>
@@ -413,9 +410,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="csrFN1">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="keyFnButton1">
                   <Properties>
@@ -426,9 +420,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="keyFN2">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="GenerateCsrButton">
                   <Properties>
@@ -658,14 +649,8 @@
                       </Events>
                     </Component>
                     <Component class="javax.swing.JTextField" name="caCertFN">
-                      <Properties>
-                        <Property name="editable" type="boolean" value="false"/>
-                      </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="caKeyFN">
-                      <Properties>
-                        <Property name="editable" type="boolean" value="false"/>
-                      </Properties>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -761,9 +746,6 @@
                       </Events>
                     </Component>
                     <Component class="javax.swing.JTextField" name="csrFN2">
-                      <Properties>
-                        <Property name="editable" type="boolean" value="false"/>
-                      </Properties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel12">
                       <Properties>
@@ -779,9 +761,6 @@
                       </Events>
                     </Component>
                     <Component class="javax.swing.JTextField" name="certOutFN">
-                      <Properties>
-                        <Property name="editable" type="boolean" value="false"/>
-                      </Properties>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -898,9 +877,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="vkcKeyFN">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="vkcCertButton">
                   <Properties>
@@ -911,9 +887,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="vkcCertFN">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="verifyKeyAndCertButton">
                   <Properties>
@@ -993,14 +966,8 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="parentCertFN">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="childCertFN">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="verifyParentAndChildCertButton">
                   <Properties>
@@ -1154,9 +1121,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="mysteryFN">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="identifyFileButton">
                   <Properties>

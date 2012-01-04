@@ -156,8 +156,6 @@ public class CaFrame extends javax.swing.JFrame {
             }
         });
 
-        keyFN1.setEditable(false);
-
         genKeyButton.setText("Generate RSA Key Pair");
         genKeyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -303,16 +301,12 @@ public class CaFrame extends javax.swing.JFrame {
             }
         });
 
-        csrFN1.setEditable(false);
-
         keyFnButton1.setText("Set Key filename");
         keyFnButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 keyFnButton1ActionPerformed(evt);
             }
         });
-
-        keyFN2.setEditable(false);
 
         GenerateCsrButton.setText("Generate CSR");
         GenerateCsrButton.addActionListener(new java.awt.event.ActionListener() {
@@ -451,10 +445,6 @@ public class CaFrame extends javax.swing.JFrame {
             }
         });
 
-        caCertFN.setEditable(false);
-
-        caKeyFN.setEditable(false);
-
         javax.swing.GroupLayout caFilesPanelLayout = new javax.swing.GroupLayout(caFilesPanel);
         caFilesPanel.setLayout(caFilesPanelLayout);
         caFilesPanelLayout.setHorizontalGroup(
@@ -495,8 +485,6 @@ public class CaFrame extends javax.swing.JFrame {
             }
         });
 
-        csrFN2.setEditable(false);
-
         jLabel12.setText("<html><small>(leave unchecked to generate serial number <span style=\"color: blue;\">automatically</span>)</small></html> ");
 
         setOutputCrtFileButton.setText("Set Output CRT File");
@@ -505,8 +493,6 @@ public class CaFrame extends javax.swing.JFrame {
                 setOutputCrtFileButtonActionPerformed(evt);
             }
         });
-
-        certOutFN.setEditable(false);
 
         javax.swing.GroupLayout x509OptionsPanelLayout = new javax.swing.GroupLayout(x509OptionsPanel);
         x509OptionsPanel.setLayout(x509OptionsPanelLayout);
@@ -621,16 +607,12 @@ public class CaFrame extends javax.swing.JFrame {
             }
         });
 
-        vkcKeyFN.setEditable(false);
-
         vkcCertButton.setText("Set Cert File");
         vkcCertButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 vkcCertButtonActionPerformed(evt);
             }
         });
-
-        vkcCertFN.setEditable(false);
 
         verifyKeyAndCertButton.setText("Verify Key And Cert");
         verifyKeyAndCertButton.addActionListener(new java.awt.event.ActionListener() {
@@ -686,10 +668,6 @@ public class CaFrame extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-
-        parentCertFN.setEditable(false);
-
-        childCertFN.setEditable(false);
 
         verifyParentAndChildCertButton.setText("Verify Parent and Child Cert");
         verifyParentAndChildCertButton.addActionListener(new java.awt.event.ActionListener() {
@@ -781,8 +759,6 @@ public class CaFrame extends javax.swing.JFrame {
                 setMysteryFileButtonActionPerformed(evt);
             }
         });
-
-        mysteryFN.setEditable(false);
 
         identifyFileButton.setText("Identify Mystery file");
         identifyFileButton.addActionListener(new java.awt.event.ActionListener() {
