@@ -39,7 +39,7 @@ public class AccountLimitServiceImpl extends BaseService implements AccountLimit
     @Override
     public void delete(AccountLimit accountLimit) throws EntityNotFoundException {
         AccountLimit dbLimit = accountLimitRepository.getById(accountLimit.getId());
-        if(accountLimit.getAccountId() != dbLimit.getAccountId()) {
+        if (!accountLimit.getAccountId().equals(dbLimit.getAccountId())) {
             String errMsg = String.format("Cannot access accountLimit {id=%d}", accountLimit.getId());
             throw new EntityNotFoundException(errMsg);
         }
@@ -49,7 +49,7 @@ public class AccountLimitServiceImpl extends BaseService implements AccountLimit
     @Override
     public AccountLimit update(AccountLimit accountLimit) throws EntityNotFoundException {
         AccountLimit dbLimit = accountLimitRepository.getById(accountLimit.getId());
-        if(accountLimit.getAccountId() != dbLimit.getAccountId()) {
+        if (!accountLimit.getAccountId().equals(dbLimit.getAccountId())) {
             String errMsg = String.format("Cannot access accountLimit {id=%d}", accountLimit.getId());
             throw new EntityNotFoundException(errMsg);
         }
