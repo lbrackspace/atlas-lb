@@ -27,6 +27,7 @@ import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.jce.provider.JCERSAPublicKey;
 import org.bouncycastle.jce.provider.JCERSAPrivateCrtKey;
 import org.openstack.atlas.util.ca.PemUtils;
+import org.openstack.atlas.util.ca.RSAKeyUtils;
 import org.openstack.atlas.util.ca.exceptions.ConversionException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.NoSuchAlgorithmException;
@@ -120,7 +121,7 @@ public class RsaPair {
     }
 
     public String getPubAsString() {
-        StringBuilder sb = new StringBuilder(RsaConst.INIT_BUFFER_SIZE);
+        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
         RSAPublicKeyStructure pubStruct = getPubAsStruct();
         if (pubStruct == null) {
             return "";
@@ -130,11 +131,12 @@ public class RsaPair {
         sb.append("PubKey:\n");
         sb.append(String.format("    n=%s\n", n.toString()));
         sb.append(String.format("    e=%s\n", e.toString()));
+        sb.append(String.format("    shortPub = %s\n",RSAKeyUtils.shortPub(pubStruct)));
         return sb.toString();
     }
 
     public String getPrivAsString() {
-        StringBuilder sb = new StringBuilder(RsaConst.INIT_BUFFER_SIZE);
+        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
         RSAPrivateKeyStructure privStruct = getPrivAsStruct();
         if (privStruct == null) {
             return null;
@@ -196,7 +198,7 @@ public class RsaPair {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(RsaConst.INIT_BUFFER_SIZE);
+        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
         sb.append(getPubAsString());
         sb.append("\n");
         sb.append(getPrivAsString());
@@ -209,7 +211,7 @@ public class RsaPair {
         PrivateKey jPriv;
         PublicKey jPub;
         if (priv == null && pub == null) {
-            throw new NullKeyException("keypair has no publicor or private key");
+            throw new NullKeyException("keypair has no public or private key");
         } else if (priv == null) {
             throw new NullKeyException("keypair has not private key");
         } else if (pub == null) {

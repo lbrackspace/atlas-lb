@@ -4,7 +4,9 @@ from java.lang import Class
 
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs as ZxtmServiceStubs
 import java.net.URL as URL
-import com.zxtm.service.client.CertificateFiles
+import com.zxtm.service.client.CertificateFiles as CertificateFiles
+import org.openstack.atlas.util.ca.zeus.ZeusUtil as ZeusUtil
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile as ZeusCertFile
 
 import org.openstack.atlas.util.crypto.CryptoUtil as CryptoUtil
 import org.hexp.hibernateexp.util.BitUtil as BitUtil

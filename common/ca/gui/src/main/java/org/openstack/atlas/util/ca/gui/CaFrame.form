@@ -34,7 +34,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="appTabs" pref="720" max="32767" attributes="0"/>
+              <Component id="appTabs" pref="830" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -76,7 +77,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="rsaGenPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="555" max="32767" attributes="0"/>
+                      <EmptySpace pref="665" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -152,9 +153,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="keyFN1">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="genKeyButton">
                   <Properties>
@@ -197,7 +195,7 @@
                       <Component id="csrSubjectPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="csrOptionsPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="37" max="32767" attributes="0"/>
+                      <EmptySpace pref="147" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -413,9 +411,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="csrFN1">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="keyFnButton1">
                   <Properties>
@@ -426,9 +421,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="keyFN2">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="GenerateCsrButton">
                   <Properties>
@@ -547,7 +539,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="CSRSigningPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="189" max="32767" attributes="0"/>
+                      <EmptySpace pref="299" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -658,14 +650,8 @@
                       </Events>
                     </Component>
                     <Component class="javax.swing.JTextField" name="caCertFN">
-                      <Properties>
-                        <Property name="editable" type="boolean" value="false"/>
-                      </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="caKeyFN">
-                      <Properties>
-                        <Property name="editable" type="boolean" value="false"/>
-                      </Properties>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -761,9 +747,6 @@
                       </Events>
                     </Component>
                     <Component class="javax.swing.JTextField" name="csrFN2">
-                      <Properties>
-                        <Property name="editable" type="boolean" value="false"/>
-                      </Properties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel12">
                       <Properties>
@@ -779,16 +762,12 @@
                       </Events>
                     </Component>
                     <Component class="javax.swing.JTextField" name="certOutFN">
-                      <Properties>
-                        <Property name="editable" type="boolean" value="false"/>
-                      </Properties>
                     </Component>
                   </SubComponents>
                 </Container>
                 <Component class="javax.swing.JButton" name="signCSRButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Sing CSR into x509 certificate"/>
-                    <Property name="actionCommand" type="java.lang.String" value="Sign CSR into x509 certificate"/>
+                    <Property name="text" type="java.lang.String" value="Sign CSR into x509 certificate"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="signCSRButtonActionPerformed"/>
@@ -818,10 +797,19 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jPanel1" alignment="0" max="32767" attributes="1"/>
-                          <Component id="verifyKeyCertPanel" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="verifyKeyCertPanel" min="-2" max="-2" attributes="1"/>
+                              <EmptySpace pref="518" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="keycertandchainPanel" max="32767" attributes="1"/>
+                              <EmptySpace min="-2" pref="518" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jPanel2" min="-2" max="-2" attributes="1"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -831,8 +819,10 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="verifyKeyCertPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="389" max="32767" attributes="0"/>
+                      <Component id="keycertandchainPanel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="24" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -865,7 +855,7 @@
                               </Group>
                               <Component id="verifyKeyAndCertButton" alignment="0" min="-2" pref="378" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="50" max="32767" attributes="0"/>
+                          <EmptySpace pref="62" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -898,9 +888,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="vkcKeyFN">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="vkcCertButton">
                   <Properties>
@@ -911,9 +898,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="vkcCertFN">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="verifyKeyAndCertButton">
                   <Properties>
@@ -925,11 +909,11 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Container class="javax.swing.JPanel" name="jPanel1">
+            <Container class="javax.swing.JPanel" name="keycertandchainPanel">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Verify IssueingCert and Child Chain Cert"/>
+                    <TitledBorder title="Verify Issueing Cert and Subject Chain Cert"/>
                   </Border>
                 </Property>
               </Properties>
@@ -946,13 +930,13 @@
                                   </Group>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="childCertFN" max="32767" attributes="1"/>
-                                      <Component id="parentCertFN" alignment="0" pref="446" max="32767" attributes="1"/>
+                                      <Component id="subjectCertFN" max="32767" attributes="1"/>
+                                      <Component id="issuerCertFN" alignment="0" pref="446" max="32767" attributes="1"/>
                                   </Group>
                               </Group>
-                              <Component id="verifyParentAndChildCertButton" alignment="0" min="-2" pref="368" max="-2" attributes="1"/>
+                              <Component id="verifyIssuerAndSubjectCertButton" alignment="0" min="-2" pref="368" max="-2" attributes="1"/>
                           </Group>
-                          <EmptySpace pref="543" max="32767" attributes="0"/>
+                          <EmptySpace pref="37" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -961,15 +945,15 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="setParentCertButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="parentCertFN" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="issuerCertFN" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="childCertFN" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="subjectCertFN" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace pref="11" max="32767" attributes="0"/>
-                          <Component id="verifyParentAndChildCertButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="verifyIssuerAndSubjectCertButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -978,7 +962,7 @@
               <SubComponents>
                 <Component class="javax.swing.JButton" name="setParentCertButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Set Parent Cert"/>
+                    <Property name="text" type="java.lang.String" value="Set Issuer Cert"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="setParentCertButtonActionPerformed"/>
@@ -986,28 +970,216 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="jButton1">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Set Child Cert"/>
+                    <Property name="text" type="java.lang.String" value="Set Subject Cert"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
                   </Events>
                 </Component>
-                <Component class="javax.swing.JTextField" name="parentCertFN">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
+                <Component class="javax.swing.JTextField" name="issuerCertFN">
                 </Component>
-                <Component class="javax.swing.JTextField" name="childCertFN">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
+                <Component class="javax.swing.JTextField" name="subjectCertFN">
                 </Component>
-                <Component class="javax.swing.JButton" name="verifyParentAndChildCertButton">
+                <Component class="javax.swing.JButton" name="verifyIssuerAndSubjectCertButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Verify Parent and Child Cert"/>
+                    <Property name="text" type="java.lang.String" value="Verify Issuer and Subject Cert"/>
                   </Properties>
                   <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="verifyParentAndChildCertButtonActionPerformed"/>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="verifyIssuerAndSubjectCertButtonActionPerformed"/>
+                  </Events>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="jPanel2">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Verify Key Cert and Chain"/>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="1" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                                          <Component id="clearKeyButton" min="-2" pref="287" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Component id="jScrollPane2" alignment="1" pref="328" max="32767" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                                          <Component id="jScrollPane4" pref="350" max="32767" attributes="1"/>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="jLabel14" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="clearCertButton" pref="316" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="jScrollPane3" pref="350" max="32767" attributes="1"/>
+                                      <Group type="102" attributes="0">
+                                          <Component id="jLabel15" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                                          <Component id="clearChainButton" pref="296" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                              <Component id="verifyKeyCertChain" alignment="0" min="-2" pref="162" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="jScrollPane4" alignment="1" min="-2" pref="316" max="-2" attributes="0"/>
+                              <Component id="jScrollPane3" alignment="1" min="-2" pref="316" max="-2" attributes="0"/>
+                              <Group type="102" alignment="1" attributes="0">
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="jLabel13" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="clearKeyButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel14" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="clearCertButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel15" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="clearChainButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                                  <Component id="jScrollPane2" min="-2" pref="316" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Component id="verifyKeyCertChain" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace pref="36" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Container class="javax.swing.JScrollPane" name="jScrollPane2">
+                  <AuxValues>
+                    <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                  <SubComponents>
+                    <Component class="javax.swing.JTextPane" name="keyText">
+                      <Properties>
+                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="0" green="0" red="0" type="rgb"/>
+                        </Property>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Monospaced" size="8" style="1"/>
+                        </Property>
+                        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="0" green="ff" red="0" type="rgb"/>
+                        </Property>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Component class="javax.swing.JLabel" name="jLabel13">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Key"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JButton" name="clearKeyButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Clear"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="clearKeyButtonActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JButton" name="verifyKeyCertChain">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Verify"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="verifyKeyCertChainActionPerformed"/>
+                  </Events>
+                </Component>
+                <Container class="javax.swing.JScrollPane" name="jScrollPane3">
+                  <AuxValues>
+                    <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                  <SubComponents>
+                    <Component class="javax.swing.JTextPane" name="chainText">
+                      <Properties>
+                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="0" green="0" red="0" type="rgb"/>
+                        </Property>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Monospaced" size="8" style="1"/>
+                        </Property>
+                        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="0" green="ff" red="0" type="rgb"/>
+                        </Property>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Container class="javax.swing.JScrollPane" name="jScrollPane4">
+                  <AuxValues>
+                    <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                  </AuxValues>
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                  <SubComponents>
+                    <Component class="javax.swing.JTextPane" name="certText">
+                      <Properties>
+                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="0" green="0" red="0" type="rgb"/>
+                        </Property>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Monospaced" size="8" style="1"/>
+                        </Property>
+                        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="0" green="ff" red="0" type="rgb"/>
+                        </Property>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Component class="javax.swing.JLabel" name="jLabel14">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Cert"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JButton" name="clearCertButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Clear"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="clearCertButtonActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JLabel" name="jLabel15">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Chain"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JButton" name="clearChainButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Clear"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="clearChainButtonActionPerformed"/>
                   </Events>
                 </Component>
               </SubComponents>
@@ -1100,7 +1272,7 @@
                               <Component id="identifyFileButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="MultiParseFileButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="71" max="32767" attributes="0"/>
+                          <EmptySpace pref="181" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1154,9 +1326,6 @@
                   </Events>
                 </Component>
                 <Component class="javax.swing.JTextField" name="mysteryFN">
-                  <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="identifyFileButton">
                   <Properties>

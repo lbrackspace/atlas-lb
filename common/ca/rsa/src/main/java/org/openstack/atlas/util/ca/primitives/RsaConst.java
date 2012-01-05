@@ -15,7 +15,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class RsaConst {
     public static final String SIGNATURE_ALGO = "SHA1WITHRSA";
-    public static final int INIT_BUFFER_SIZE = 1024;
     public static final BigInteger E = new BigInteger("65537");
     public static final int PAGESIZE = 4096;
     public static final int DEFAULT_PRIME_CERTAINTY = 32;

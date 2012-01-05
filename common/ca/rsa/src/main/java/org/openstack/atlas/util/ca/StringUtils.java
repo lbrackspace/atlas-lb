@@ -1,14 +1,10 @@
 package org.openstack.atlas.util.ca;
 
-import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import org.openstack.atlas.util.ca.primitives.RsaConst;
 
 public class StringUtils {
-
-    public static final int PAGESIZE = 4096;
 
     public static String displayParsedInt(String strIn) {
         try {
@@ -23,7 +19,7 @@ public class StringUtils {
     // It iterates the string character per caracher and builds a new one so
     // Its like really slow. :(
     public static String escape_html(String html) {
-        StringBuilder sb = new StringBuilder(PAGESIZE / 4);
+        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
         char ch;
         int len = html.length();
         int i;
@@ -63,7 +59,7 @@ public class StringUtils {
 
     public static String getExtendedStackTrace(Throwable th) {
         Throwable t;
-        StringBuilder sb = new StringBuilder(PAGESIZE);
+        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
         Exception currEx;
         String msg;
 
