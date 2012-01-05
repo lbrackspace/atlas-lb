@@ -1,6 +1,7 @@
 package org.openstack.atlas.rax.api.integration;
 
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
+import org.openstack.atlas.adapter.exception.AdapterException;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.rax.domain.entity.RaxAccessList;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
@@ -23,4 +24,11 @@ public interface RaxProxyService extends ReverseProxyLoadBalancerService {
 
     void updateConnectionLogging(Integer accountId, Integer lbId, boolean connectionLogging, String protocol) throws Exception;
 
+    void uploadDefaultErrorPage(Integer clusterId, String content) throws Exception;
+
+    void setDefaultErrorPage(Integer loadBalancerId, Integer accountId) throws Exception;
+
+    void setErrorPage(Integer loadBalancerId, Integer accountId, String content) throws Exception;
+
+    void deleteErrorPage(Integer loadBalancerId, Integer accountId) throws Exception;
 }

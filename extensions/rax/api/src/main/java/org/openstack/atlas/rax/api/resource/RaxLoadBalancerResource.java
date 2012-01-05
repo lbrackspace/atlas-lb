@@ -27,6 +27,9 @@ public class RaxLoadBalancerResource extends LoadBalancerResource {
     @Autowired
     protected RaxConnectionLoggingResource connectionLoggingResource;
 
+    @Autowired
+    protected RaxErrorPageResource raxErrorPageResource;
+
     @Override
     public Response get() {
         try {
@@ -78,5 +81,12 @@ public class RaxLoadBalancerResource extends LoadBalancerResource {
         connectionLoggingResource.setAccountId(accountId);
         connectionLoggingResource.setLoadBalancerId(id);
         return connectionLoggingResource;
+    }
+
+    @Path("errorpage")
+    public RaxErrorPageResource retrieveErrorpageResource() {
+        raxErrorPageResource.setAccountId(accountId);
+        raxErrorPageResource.setLoadBalancerId(id);
+        return raxErrorPageResource;
     }
 }

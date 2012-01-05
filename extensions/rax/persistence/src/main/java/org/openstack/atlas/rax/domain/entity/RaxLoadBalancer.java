@@ -1,5 +1,7 @@
 package org.openstack.atlas.rax.domain.entity;
 
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 
 import javax.persistence.*;
@@ -21,6 +23,10 @@ public class RaxLoadBalancer extends LoadBalancer implements Serializable {
 
     @Column(name = "connection_logging", nullable = false)
     private Boolean connectionLogging = false;
+
+    @OneToOne(mappedBy = "loadbalancer",fetch=FetchType.LAZY,optional=false)
+    @LazyToOne(LazyToOneOption.NO_PROXY)
+    private RaxUserPages userPages;
 
     public Set<RaxAccessList> getAccessLists() {
         return accessLists;
@@ -49,6 +55,14 @@ public class RaxLoadBalancer extends LoadBalancer implements Serializable {
 
     public void setConnectionLogging(Boolean connectionLogging) {
         this.connectionLogging = connectionLogging;
+    }
+
+    public RaxUserPages getUserPages() {
+        return userPages;
+    }
+
+    public void setUserPages(RaxUserPages userPages) {
+        this.userPages = userPages;
     }
 
     @Override

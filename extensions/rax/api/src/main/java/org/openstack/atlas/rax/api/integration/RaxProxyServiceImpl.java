@@ -73,4 +73,48 @@ public class RaxProxyServiceImpl extends ReverseProxyLoadBalancerServiceImpl imp
             throw exc;
         }
     }
+
+    @Override
+    public void uploadDefaultErrorPage(Integer clusterId, String content) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyClusterId(clusterId);
+        try {
+            ((RaxZxtmAdapter) loadBalancerAdapter).uploadDefaultErrorPage(config, content);
+        } catch (ConnectionException exc) {
+            checkAndSetIfEndPointBad(config, exc);
+            throw exc;
+        }
+    }
+
+    @Override
+    public void setDefaultErrorPage(Integer loadBalancerId, Integer accountId) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancerId);
+        try {
+            ((RaxZxtmAdapter) loadBalancerAdapter).setDefaultErrorPage(config, accountId, loadBalancerId);
+        } catch (ConnectionException exc) {
+            checkAndSetIfEndPointBad(config, exc);
+            throw exc;
+        }
+    }
+
+    @Override
+    public void setErrorPage(Integer loadBalancerId, Integer accountId, String content) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancerId);
+        try {
+            ((RaxZxtmAdapter) loadBalancerAdapter).setErrorPage(config, accountId, loadBalancerId, content);
+        } catch (ConnectionException exc) {
+            checkAndSetIfEndPointBad(config, exc);
+            throw exc;
+        }
+    }
+
+    @Override
+    public void deleteErrorPage(Integer loadBalancerId, Integer accountId) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancerId);
+        try {
+            ((RaxZxtmAdapter) loadBalancerAdapter).deleteErrorPage(config, accountId, loadBalancerId);
+        } catch (ConnectionException exc) {
+            checkAndSetIfEndPointBad(config, exc);
+            throw exc;
+        }
+    }
 }

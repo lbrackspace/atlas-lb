@@ -23,4 +23,11 @@ public interface RaxZxtmAdapter {
 
     void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, boolean isConnectionLogging, String protocol) throws AdapterException;
 
+    void uploadDefaultErrorPage(LoadBalancerEndpointConfiguration config, String content) throws AdapterException;
+
+    void setDefaultErrorPage(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId) throws AdapterException;
+
+    void setErrorPage(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String content) throws AdapterException;
+
+    void deleteErrorPage(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId) throws AdapterException;
 }

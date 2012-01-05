@@ -27,11 +27,13 @@
 
         <class>org.openstack.atlas.rax.domain.entity.RaxAccessList</class>
         <class>org.openstack.atlas.rax.domain.entity.RaxAccessListType</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxDefaults</class>
         <class>org.openstack.atlas.rax.domain.entity.RaxHost</class>
         <class>org.openstack.atlas.rax.domain.entity.RaxLoadBalancer</class>
         <class>org.openstack.atlas.rax.domain.entity.RaxConnectionThrottle</class>
         <class>org.openstack.atlas.rax.domain.entity.RaxHealthMonitor</class>
         <class>org.openstack.atlas.rax.domain.entity.RaxUsageRecord</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxUserPages</class>
 
         <!-- Hibernate Properties -->
         <properties>

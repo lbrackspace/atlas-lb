@@ -92,6 +92,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
                     TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
                     attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
                 }
+                afterLoadBalancerCreate(config, lb);
             } catch (Exception e) {
                 deleteLoadBalancer(config, lb);
                 throw new RollbackException(rollBackMessage, e);
@@ -101,6 +102,20 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         } catch (RemoteException e) {
             throw new AdapterException(e);
         }
+    }
+
+    /**
+     * Override this method if you want to do extra stuffs in the extension
+     */
+    protected void afterLoadBalancerCreate(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
+
+    }
+
+    /**
+     * Override this method if you want to do extra stuffs in the extension
+     */
+    protected void afterLoadBalancerDelete(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
+
     }
 
     @Override
@@ -129,6 +144,8 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
             deleteNodePool(serviceStubs, poolName);
             deleteProtectionCatalog(serviceStubs, poolName);
             deleteTrafficIpGroups(serviceStubs, trafficIpGroups[0]);
+
+            afterLoadBalancerDelete(config, lb);
 
             LOG.info(String.format("Successfully deleted load balancer '%s'.", virtualServerName));
         } catch (RemoteException e) {

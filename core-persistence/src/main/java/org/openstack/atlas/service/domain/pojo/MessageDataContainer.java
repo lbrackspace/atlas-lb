@@ -155,4 +155,12 @@ public class MessageDataContainer implements Serializable {
     public List<VirtualIp> getVirtualIps() {
         return (List<VirtualIp>) this.resource;
     }
+
+    public Object getResource() {
+        return resource;
+    }
+
+    public void setResource(Object resource) {
+        this.resource = resource;
+    }
 }

@@ -12,6 +12,7 @@ import org.openstack.atlas.common.crypto.CryptoUtil;
 import org.openstack.atlas.common.crypto.exception.DecryptException;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.ClusterRepository;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     protected LoadBalancerRepository loadBalancerRepository;
     @Autowired
     protected HostRepository hostRepository;
+
+    @Autowired
+    protected ClusterRepository clusterRepositpry;
 
     @Override
     public void createLoadBalancer(Integer accountId, LoadBalancer lb) throws AdapterException, DecryptException, MalformedURLException, Exception {
@@ -189,6 +193,14 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         List<String> failoverHosts = hostRepository.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
         return new LoadBalancerEndpointConfiguration(endpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
+    }
+
+    protected LoadBalancerEndpointConfiguration getConfigbyClusterId(Integer clusterId) throws EntityNotFoundException, DecryptException, MalformedURLException {
+        Cluster cluster = clusterRepositpry.getById(clusterId);
+        Host endpointHost = hostRepository.getEndPointHost(cluster.getId());
+        List<String> failoverHosts = hostRepository.getFailoverHostNames(cluster.getId());
+        String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
+        return new LoadBalancerEndpointConfiguration(endpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), endpointHost, failoverHosts, logFileLocation);
     }
 
     private boolean isConnectionExcept(Exception exc) {

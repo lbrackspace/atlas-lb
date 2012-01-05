@@ -1,8 +1,7 @@
 package org.openstack.atlas.rax.adapter.zxtm;
 
-import com.zxtm.service.client.CatalogMonitorType;
-import com.zxtm.service.client.ObjectDoesNotExist;
-import com.zxtm.service.client.ObjectInUse;
+import com.zxtm.service.client.*;
+import org.apache.axis.AxisFault;
 import org.apache.axis.types.UnsignedInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,9 +14,11 @@ import org.openstack.atlas.adapter.zxtm.helper.ZxtmNameHelper;
 import org.openstack.atlas.adapter.zxtm.service.ZxtmServiceStubs;
 import org.openstack.atlas.datamodel.CoreHealthMonitorType;
 import org.openstack.atlas.datamodel.CoreProtocolType;
+import org.openstack.atlas.rax.domain.common.RaxConstants;
 import org.openstack.atlas.rax.domain.entity.RaxAccessList;
 import org.openstack.atlas.rax.domain.entity.RaxAccessListType;
 import org.openstack.atlas.rax.domain.entity.RaxHealthMonitor;
+import org.openstack.atlas.service.domain.common.Constants;
 import org.openstack.atlas.service.domain.entity.*;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,20 @@ import java.util.*;
 public class RaxZxtmAdapterImpl extends ZxtmAdapterImpl implements RaxZxtmAdapter {
 
     private static Log LOG = LogFactory.getLog(RaxZxtmAdapterImpl.class.getName());
+
+    @Override
+    protected void afterLoadBalancerCreate(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
+        if (lb.getProtocol().equals(CoreProtocolType.HTTP)) {
+            setDefaultErrorPage(config, lb.getId(), lb.getAccountId());
+        }
+    }
+
+    @Override
+    protected void afterLoadBalancerDelete(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
+        if (lb.getProtocol().equals(CoreProtocolType.HTTP)) {
+            deleteErrorPage(config, lb.getId(), lb.getAccountId());
+        }
+    }
 
     @Override
     public void addVirtualIps(LoadBalancerEndpointConfiguration config, Integer accountId, Integer lbId, Set<VirtualIp> ipv4Vips, Set<VirtualIpv6> ipv6Vips) throws AdapterException {
@@ -198,6 +213,93 @@ public class RaxZxtmAdapterImpl extends ZxtmAdapterImpl implements RaxZxtmAdapte
             }
 
             LOG.info(String.format("Successfully updated connection logging for virtual server '%s'...", virtualServerName));
+        } catch (RemoteException e) {
+            throw new AdapterException(e);
+        }
+    }
+
+    @Override
+    public void uploadDefaultErrorPage(LoadBalancerEndpointConfiguration config, String content) throws AdapterException {
+        try {
+            ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+            LOG.debug("Attempting to upload the default error file...");
+            ConfExtraBindingStub extraService = serviceStubs.getZxtmConfExtraService();
+            if (extraService != null) {
+                extraService.uploadFile(RaxConstants.DEFAULT_ERROR_PAGE, content.getBytes());
+                LOG.info("Successfully uploaded the default error file...");
+            }
+        } catch (RemoteException e) {
+            throw new AdapterException(e);
+        }
+    }
+
+    @Override
+    public void setDefaultErrorPage(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId) throws AdapterException {
+        try {
+            ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+            final String virtualServerName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(loadBalancerId, accountId);
+            LOG.debug(String.format("Attempting to set the default error file for: %s_%s", accountId, loadBalancerId));
+            //TODO: uncomment when zeus performance issues are resolved... (VERSION 1) TK-12805
+            serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{RaxConstants.DEFAULT_ERROR_PAGE});
+            LOG.info(String.format("Successfully set the default error file for: %s_%s", accountId, loadBalancerId));
+        } catch (RemoteException e) {
+            throw new AdapterException(e);
+        }
+    }
+
+
+    @Override
+    public void setErrorPage(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String content) throws AdapterException {
+        try {
+            String[] vsNames = new String[1];
+            String[] errorFiles = new String[1];
+
+            ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+            ConfExtraBindingStub extraService = serviceStubs.getZxtmConfExtraService();
+            VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
+
+            try {
+                String errorFileName = getErrorFileName(loadBalancerId, accountId);
+
+                LOG.debug("Attempting to upload the error file...");
+                extraService.uploadFile(errorFileName, content.getBytes());
+                LOG.info(String.format("Successfully uploaded the error file for: %s_%s...", accountId, loadBalancerId));
+
+                vsNames[0] = String.format("%d_%d", accountId, loadBalancerId);
+                errorFiles[0] = errorFileName;
+
+                LOG.debug("Attempting to set the error file...");
+                virtualServerService.setErrorFile(vsNames, errorFiles);
+                LOG.info(String.format("Successfully set the error file for: %s_%s...", accountId, loadBalancerId));
+            } catch (AxisFault af) {
+                if (af instanceof InvalidInput) {
+                    //Couldn't find a custom 'default' error file...
+                    errorFiles[1] = "Default";
+                    virtualServerService.setErrorFile(vsNames, errorFiles);
+
+                }
+            }
+        } catch (RemoteException e) {
+            throw new AdapterException(e);
+        }
+    }
+
+    private String getErrorFileName(Integer loadbalancerId, Integer accountId) {
+        String msg = String.format("%d_%d_error.html", accountId, loadbalancerId);
+        return msg;
+    }
+
+    @Override
+    public void deleteErrorPage(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId) throws AdapterException {
+        String fileToDelete = "";
+        try {
+            ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+            fileToDelete = getErrorFileName(loadBalancerId, accountId);
+            LOG.debug(String.format("Attempting to delete a custom error file for: %s%s", accountId, loadBalancerId));
+            serviceStubs.getZxtmConfExtraService().deleteFile(new String[]{fileToDelete});
+            LOG.info(String.format("Successfully deleted a custom error file for: %s%s", accountId, loadBalancerId));
+        } catch (ObjectDoesNotExist e) {
+            LOG.warn(String.format("Cannot delete custom error page as, %s, it does not exist. Ignoring...", fileToDelete));
         } catch (RemoteException e) {
             throw new AdapterException(e);
         }
