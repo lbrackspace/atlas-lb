@@ -2,6 +2,7 @@
 
 from java.lang import Class
 
+import org.openstack.atlas.util.ca.primitives.RsaConst as RsaConst
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs as ZxtmServiceStubs
 import java.net.URL as URL
 import com.zxtm.service.client.CertificateFiles as CertificateFiles
@@ -109,6 +110,8 @@ import re
 
 import traceback
 
+RsaConst.init();
+
 ubyte2int = BitUtil.ubyte2int
 int2ubyte = BitUtil.int2ubyte
 sha1sum = HashUtil.sha1sum
@@ -161,6 +164,70 @@ stubs = None
 app = HuApp()
 
 #select v.id,v.ip_address,lv.loadbalancer_id,l.account_id from virtual_ip_ipv4 v left join loadbalancer_virtualip lv on v.id = lv.virtualip_id join loadbalancer l on lv.loadbalancer_id = l.id order by v.id;
+
+class SslTermTest(object):
+    def __init__(self,zxtmStubs,keyfile,certfile,chainfile):
+        self.stubs = zxtmStubs
+        self.keyfile = keyfile
+        self.certfile = certfile
+        self.chainfile = chainfile
+        self.cf = None
+
+    def showCF(self):
+        if self.cf == None:
+            return "None"
+        key   = self.cf.getPrivate_key()
+        certs = self.cf.getPublic_cert()
+        out = ""
+        out += "key = %s\n"%key
+        out += "certs = %s\n"%certs
+        return out
+
+    def getNames(self):
+        self.names = set([n for n in self.stubs.cert.getCertificateNames()])
+        return self.names
+
+    def addCert(self,name):
+        if name in self.names:
+            self.delCert(name)
+            return "OverWritten"
+        self.stubs.cert.importCertificate([name],[self.cf])
+        self.names.add(name)
+        return "Written"
+
+    def delCert(self,name):
+        if name in self.names:
+            self.stubs.cert.deleteCertificate([name])
+            self.names.remove(name)
+            return True
+        else:
+            return False
+
+    def setCF(self,api=False,chain=False):
+        key  = open(self.keyfile,"r").read()
+        cert = open(self.certfile,"r").read()
+
+        if chain:
+            chainStr = open(self.chainfile,"r").read()
+        else:
+            chainStr = ""
+
+        if api:
+            zcf = ZeusUtil.getCertFile(key,cert,chainStr)
+            for error in zcf.getErrorList():
+                printf("%s\n",error)
+            cf = CertificateFiles()
+            cf.setPublic_cert(zcf.getPublic_cert())
+            cf.setPrivate_key(zcf.getPrivate_key())
+            self.cf = cf
+            return cf
+        else:
+            zcert = cert + chainStr
+            cf = CertificateFiles()
+            cf.setPrivate_key(key)
+            cf.setPublic_cert(zcert)
+            self.cf = cf
+            return cf
 
 class ZxtmStubs(object):
     default_package = "com.zxtm.service.client"
@@ -264,6 +331,7 @@ class CidrBlackList(object):
             self.ipv6Cidrs.getCidrs().add(IPv6Cidr(cidr))
             return "ADD %s to ipv6subnets"%cidr
         return "UNKNOWN ERROR %s"%cidr
+
 
 def bi(val):
     return BigInteger("%i"%val)
