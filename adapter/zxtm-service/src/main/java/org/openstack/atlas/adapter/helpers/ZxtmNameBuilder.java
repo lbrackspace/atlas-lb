@@ -21,6 +21,17 @@ public final class ZxtmNameBuilder {
         return accountId + "_" + lbId;
     }
 
+    public static String generateNameWithAccountIdAndLoadBalancerIdForSslTermination(Integer lbId, Integer accountId) throws InsufficientRequestException {
+        if (lbId == null) {
+            throw new InsufficientRequestException("Missing id for load balancer.");
+        }
+        if (accountId == null) {
+            throw new InsufficientRequestException("Missing account id for load balancer.");
+        }
+
+        return accountId + "_" + lbId + "_S";
+    }
+
     public static String generateNameWithAccountIdAndLoadBalancerId(LoadBalancer lb) throws InsufficientRequestException {
         if (lb.getAccountId() == null)
             throw new InsufficientRequestException(

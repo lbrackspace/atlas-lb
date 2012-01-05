@@ -28,6 +28,7 @@ public class UpdateSslTerminationListener extends BaseListener {
         LOG.debug(message);
 
         MessageDataContainer dataContainer = getDataContainerFromMessage(message);
+        SslTermination queTermination = dataContainer.getQueTermination();
         LoadBalancer dbLoadBalancer = new LoadBalancer();
         SslTermination dbTermination;
 
@@ -42,24 +43,25 @@ public class UpdateSslTerminationListener extends BaseListener {
             return;
         }
 
-        try {
-            dbTermination = sslTerminationService.getSslTermination(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
-        } catch (EntityNotFoundException enfe) {
-            String alertDescription = String.format("Load balancer '%d' ssl termination not found in database.", dataContainer.getLoadBalancerId());
-            LOG.error(alertDescription, enfe);
-            notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(dbLoadBalancer);
-            return;
-        }
+//        try {
+//            dbTermination = sslTerminationService.getSslTermination(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
+//        } catch (EntityNotFoundException enfe) {
+//            String alertDescription = String.format("Load balancer '%d' ssl termination not found in database.", dataContainer.getLoadBalancerId());
+//            LOG.error(alertDescription, enfe);
+//            notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
+//            sendErrorToEventResource(dbLoadBalancer);
+//            return;
+//        }
 
         try {
             LOG.debug("Updating load balancer ssl termination in Zeus...");
-            reverseProxyLoadBalancerService.updateSslTermination(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), dbTermination);
-            if (!dbLoadBalancer.getSslTermination().isEnabled()) {
-                LOG.debug("Updating load balancer  in Zeus to disable ssl termination...");
-                reverseProxyLoadBalancerService.enableDisableSslTermination(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), false);
+            if (queTermination.getCertificate() == null && queTermination.getIntermediateCertificate() == null && queTermination.getPrivatekey() == null) {
+                reverseProxyLoadBalancerService.enableDisableSslTermination(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), dbLoadBalancer.getSslTermination().isEnabled());
+                LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
+            } else {
+                reverseProxyLoadBalancerService.updateSslTermination(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), dbLoadBalancer, queTermination);
+                LOG.debug("Updating load balancer  in Zeus to enable/disable ssl termination...");
             }
-            LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
         } catch (Exception e) {
             String alertDescription = String.format("An error occurred while creating loadbalancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
@@ -70,7 +72,7 @@ public class UpdateSslTerminationListener extends BaseListener {
             return;
         }
 
-        addAtomEntriesForSslTermination(dbLoadBalancer, dbTermination);
+        addAtomEntriesForSslTermination(dbLoadBalancer, dbLoadBalancer.getSslTermination());
         // Notify usage processor
         notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
         LOG.info(String.format("Updated load balancer '%d' ssl termination successfully for loadbalancer: ", dbLoadBalancer.getId()));

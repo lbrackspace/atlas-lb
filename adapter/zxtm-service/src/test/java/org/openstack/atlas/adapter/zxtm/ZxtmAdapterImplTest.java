@@ -3,6 +3,7 @@ package org.openstack.atlas.adapter.zxtm;
 import com.zxtm.service.client.*;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -35,6 +36,7 @@ import static org.openstack.atlas.service.domain.entities.NodeCondition.DRAINING
 import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
 
+@Ignore
 @RunWith(Enclosed.class)
 public class ZxtmAdapterImplTest {
 

@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.pojos;
 
+import org.openstack.atlas.service.domain.entities.SslTermination;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,7 @@ public class MessageDataContainer implements Serializable {
     private Integer clusterId;
     private List<Integer> newVipIds;
     private List<Integer> newNodeIds;
+    private SslTermination queTermination;
     //for batch deletes
     private List<Integer> ids;
 
@@ -106,5 +109,13 @@ public class MessageDataContainer implements Serializable {
 
     public void setClusterId(Integer clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public SslTermination getQueTermination() {
+        return queTermination;
+    }
+
+    public void setQueSslTermination(SslTermination queTermination) {
+        this.queTermination = queTermination;
     }
 }

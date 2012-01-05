@@ -69,7 +69,7 @@ public class LoadBalancer extends Entity implements Serializable {
     @LazyToOne(LazyToOneOption.NO_PROXY)
     private UserPages userPages;
 
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
     private SslTermination sslTermination;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -280,12 +280,16 @@ public class LoadBalancer extends Entity implements Serializable {
         this.tickets = tickets;
     }
 
-    //TODO: we wont verify against protocol... only enable/disable on start/stop of ssl termination service...
     public boolean isUsingSsl() {
-        return (protocol.equals(LoadBalancerProtocol.HTTPS)
-                || protocol.equals(LoadBalancerProtocol.IMAPS)
-                || protocol.equals(LoadBalancerProtocol.LDAPS)
-                || protocol.equals(LoadBalancerProtocol.POP3S));
+        return (sslTermination != null && sslTermination.isEnabled());
+    }
+
+    public boolean hasSsl() {
+        return (sslTermination != null);
+    }
+
+    public boolean isSecureOnly() {
+        return (sslTermination != null && sslTermination.isSecureTrafficOnly());
     }
 
     public String getIpv6Servicenet() {

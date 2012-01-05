@@ -58,6 +58,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
             dataContainer.setAccountId(accountId);
             dataContainer.setLoadBalancerId(loadBalancerId);
             dataContainer.setUserName(getUserName(requestHeaders));
+            dataContainer.setQueSslTermination(domainSslTermination);
 
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_SSL_TERMINATION, dataContainer);
             return Response.status(Response.Status.ACCEPTED).entity(apiSsl).build();
