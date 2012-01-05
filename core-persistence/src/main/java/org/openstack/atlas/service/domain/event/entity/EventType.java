@@ -22,7 +22,7 @@ public enum EventType implements Serializable {
     SET_SESSION_PERSISTENCE,
     DELETE_SESSION_PERSISTENCE,
     UPDATE_CONNECTION_LOGGING,
-    SET_ERROR_PAGE,
+    UPDATE_ERROR_PAGE,
     DELETE_ERROR_PAGE;
     
     private final static long serialVersionUID = 532512316L;

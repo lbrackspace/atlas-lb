@@ -7,7 +7,7 @@ import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 public interface RaxUserPagesRepository {
     RaxUserPages getUserPagesByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId);
 
-    RaxDefaults getDefaultErrorPage();
+    RaxDefaults getDefaultErrorPage() throws EntityNotFoundException;
 
     String getErrorPageByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) throws EntityNotFoundException;
 

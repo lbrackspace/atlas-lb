@@ -6,6 +6,7 @@ import org.openstack.atlas.api.v1.extensions.rax.ErrorPage;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
 import org.openstack.atlas.rax.domain.operation.RaxOperation;
 import org.openstack.atlas.rax.domain.repository.RaxUserPagesRepository;
+import org.openstack.atlas.rax.domain.service.RaxUserPagesService;
 import org.openstack.atlas.service.domain.common.Constants;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -29,6 +30,9 @@ public class RaxErrorPageResource extends CommonDependencyProvider {
 
     @Autowired
     protected RaxUserPagesRepository userPagesRepository;
+
+    @Autowired
+    protected RaxUserPagesService raxUserPagesService;
 
     protected Integer accountId;
     protected Integer loadBalancerId;
@@ -78,7 +82,7 @@ public class RaxErrorPageResource extends CommonDependencyProvider {
             }
 
             RaxLoadBalancer loadBalancer = (RaxLoadBalancer) loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
-            userPagesRepository.setErrorPage(accountId, loadBalancerId, content);
+            raxUserPagesService.setErrorPage(accountId, loadBalancerId, content);
 
             MessageDataContainer dataContainer;
             dataContainer = new MessageDataContainer();

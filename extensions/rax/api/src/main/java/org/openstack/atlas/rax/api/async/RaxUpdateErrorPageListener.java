@@ -17,10 +17,10 @@ import org.springframework.stereotype.Component;
 
 import javax.jms.Message;
 
-import static org.openstack.atlas.api.atom.EntryHelper.UPDATE_LOGGING_TITLE;
 import static org.openstack.atlas.service.domain.event.entity.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.event.entity.EventSeverity.CRITICAL;
-import static org.openstack.atlas.service.domain.event.entity.EventType.*;
+import static org.openstack.atlas.service.domain.event.entity.EventType.UPDATE_ERROR_PAGE;
+
 
 @Component
 public class RaxUpdateErrorPageListener extends BaseListener {
@@ -74,11 +74,19 @@ public class RaxUpdateErrorPageListener extends BaseListener {
                 notificationService.saveAlert(null, null, e, AlertType.LBDEVICE_FAILURE.name(), tmpMsg);
             }
         }
+
+        String desc = "Error Page successully set for loadbalancer " + dbLoadBalancer.getId();
+        notificationService.saveLoadBalancerEvent(loadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), desc, desc, UPDATE_ERROR_PAGE, UPDATE, EventSeverity.INFO);
+
+        // Update load balancer status in DB
+        loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ACTIVE);
+
+        LOG.info("Update error page operation complete.");
     }
 
     private void sendErrorToEventResource(RaxLoadBalancer lb) {
         String title = "Error setting Error File";
         String desc = "Could not set Error Page at this time.";
-        notificationService.saveLoadBalancerEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, SET_ERROR_PAGE, UPDATE, CRITICAL);
+        notificationService.saveLoadBalancerEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, UPDATE_ERROR_PAGE, UPDATE, CRITICAL);
     }
 }

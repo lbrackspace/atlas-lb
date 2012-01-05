@@ -43,13 +43,13 @@ public class RaxUserPagesRepositoryImpl implements RaxUserPagesRepository {
         return userPages;
     }
 
-    public RaxDefaults getDefaultErrorPage() {
+    public RaxDefaults getDefaultErrorPage() throws EntityNotFoundException {
         RaxDefaults raxDefaults;
         String qStr = "FROM RaxDefaults d WHERE d.name = :globalError";
         Query q = entityManager.createQuery(qStr).setParameter("globalError", RaxConstants.DEFAULT_ERROR_PAGE);
         List<RaxDefaults> defaultsList = q.setMaxResults(1).getResultList();
         if (defaultsList.size() <= 0) {
-            raxDefaults = null;
+            throw new EntityNotFoundException("The default error page could not be located.");
         } else {
             raxDefaults = defaultsList.get(0);
         }

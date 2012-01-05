@@ -7,6 +7,7 @@ import org.openstack.atlas.api.helper.AlertType;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
 import org.openstack.atlas.rax.api.integration.RaxProxyService;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
+import org.openstack.atlas.service.domain.event.entity.EventSeverity;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 import javax.jms.Message;
 
-import static org.openstack.atlas.service.domain.event.entity.CategoryType.UPDATE;
+import static org.openstack.atlas.service.domain.event.entity.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.event.entity.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.event.entity.EventType.*;
 
@@ -61,11 +62,18 @@ public class RaxDeleteErrorPageListener extends BaseListener {
                 return;
             }
         }
+        String desc = "Error Page successully deleted for loadbalancer " + dbLoadBalancer.getId();
+        notificationService.saveLoadBalancerEvent(loadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), desc, desc, DELETE_ERROR_PAGE, DELETE, EventSeverity.INFO);
+
+        // Update load balancer status in DB
+        loadBalancerRepository.changeStatus(dbLoadBalancer, CoreLoadBalancerStatus.ACTIVE);
+
+        LOG.info("Delete error page operation complete.");
     }
 
     private void sendErrorToEventResource(RaxLoadBalancer lb) {
         String title = "Error setting Error File";
         String desc = "Could not set Error Page at this time.";
-        notificationService.saveLoadBalancerEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, DELETE_ERROR_PAGE, UPDATE, CRITICAL);
+        notificationService.saveLoadBalancerEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, DELETE_ERROR_PAGE, DELETE, CRITICAL);
     }
 }
