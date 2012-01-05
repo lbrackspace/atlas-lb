@@ -159,6 +159,8 @@ public class ZeusUtil {
                 if (!isCert(issuerBlock.getDecodedObject())) {
                     fmt = "Object at line %d is not a X509 Certificate";
                     msg = String.format(fmt, issuerBlock.getLineNum());
+                    errorList.add(msg);
+                    return zcf;
                 }
                 subjectCrt = (X509CertificateObject) subjectBlock.getDecodedObject();
                 issuerCrt = (X509CertificateObject) issuerBlock.getDecodedObject();

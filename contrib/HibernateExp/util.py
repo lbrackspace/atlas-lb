@@ -265,6 +265,7 @@ class CidrBlackList(object):
             return "ADD %s to ipv6subnets"%cidr
         return "UNKNOWN ERROR %s"%cidr
 
+
 def bi(val):
     return BigInteger("%i"%val)
 
