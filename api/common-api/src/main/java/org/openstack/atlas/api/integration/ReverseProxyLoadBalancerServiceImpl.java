@@ -630,6 +630,17 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         }
     }
 
+    @Override
+    public void enableDisableSslTermination(int lbId, int accountId, boolean isSslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        try {
+            reverseProxyLoadBalancerAdapter.enableDisableSslTermination(config, lbId, accountId, isSslTermination);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
     public void setAtlasCache(AtlasCache atlasCache) {
         this.atlasCache = atlasCache;
     }

@@ -12,9 +12,9 @@ import java.util.List;
 
 public interface SslTerminationService {
 
-    public SslTermination updateSslTermination(Integer lid, Integer accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException;
+    public SslTermination updateSslTermination(Integer lid, Integer accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException;
 
-    public boolean deleteSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException;
+    public boolean deleteSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException;
 
     public SslTermination getSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException;
 }
