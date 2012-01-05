@@ -176,18 +176,32 @@ class SslTermTest(object):
     def showCF(self):
         if self.cf == None:
             return "None"
-        key   = cf.getPrivate_Key()
-        certs = cf.getPublic_cert()
+        key   = self.cf.getPrivate_key()
+        certs = self.cf.getPublic_cert()
         out = ""
         out += "key = %s\n"%key
         out += "certs = %s\n"%certs
         return out
 
+    def getNames(self):
+        self.names = set([n for n in self.stubs.cert.getCertificateNames()])
+        return self.names
+
     def addCert(self,name):
+        if name in self.names:
+            self.delCert(name)
+            return "OverWritten"
         self.stubs.cert.importCertificate([name],[self.cf])
+        self.names.add(name)
+        return "Written"
 
     def delCert(self,name):
-        self.stubs.cert.deleteCertificate([name])
+        if name in self.names:
+            self.stubs.cert.deleteCertificate([name])
+            self.names.remove(name)
+            return True
+        else:
+            return False
 
     def setCF(self,api=False,chain=False):
         key  = open(self.keyfile,"r").read()
