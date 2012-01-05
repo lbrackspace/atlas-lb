@@ -2,6 +2,8 @@ package org.openstack.atlas.util.ca;
 
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ca.primitives.RsaPair;
@@ -23,22 +25,17 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.security.auth.x500.X500Principal;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.x509.extension.SubjectKeyIdentifierStructure;
 import org.bouncycastle.x509.extension.AuthorityKeyIdentifierStructure;
-import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -49,9 +46,6 @@ import org.openstack.atlas.util.ca.exceptions.NullKeyException;
 import org.openstack.atlas.util.ca.exceptions.RsaException;
 
 public class CertUtils {
-
-    public static final int SB_INIT_SIZE = 4096;
-
     public static X509Certificate signCSR(PKCS10CertificationRequest req,
             RsaPair keys, X509Certificate caCrt, int days, BigInteger serial) throws NullKeyException, RsaException {
         long nowMillis;
@@ -203,30 +197,13 @@ public class CertUtils {
         return cert;
     }
 
-    public static List<String> verifyIssuerAndSubjectCert(byte[] issuerCertPem, byte[] subjectCertPem) {
+    public static List<String> verifyIssuerAndSubjectCert(X509CertificateObject issuerCert, X509CertificateObject subjectCert) {
         List<String> errorList = new ArrayList<String>();
-        X509CertificateObject issuerCert = null;
-        X509CertificateObject subjectCert = null;
         JCERSAPublicKey parentPub = null;
         try {
-            issuerCert = (X509CertificateObject) PemUtils.fromPem(issuerCertPem);
             parentPub = (JCERSAPublicKey) issuerCert.getPublicKey();
-        } catch (PemException ex) {
-            errorList.add("Error decodeing issuer Cert data to X509Certificate");
         } catch (ClassCastException ex) {
-            errorList.add("Error decodeing issuer Cert data to X509Certificate");
-        }
-
-        try {
-            subjectCert = (X509CertificateObject) PemUtils.fromPem(subjectCertPem);
-        } catch (PemException ex) {
-            errorList.add("Error decodeing subject Cert data to X509Certificate");
-        } catch (ClassCastException ex) {
-            errorList.add("Error decodeing subject Cert data to X509Certificate");
-        }
-
-        if (issuerCert == null || subjectCert == null || parentPub == null) {
-            return errorList;
+            errorList.add("error getting Public key from issuer cert");
         }
         try {
             subjectCert.checkValidity();
@@ -235,6 +212,14 @@ public class CertUtils {
         } catch (CertificateNotYetValidException ex) {
             errorList.add("subject Cert Not Before Fail");
         }
+        try {
+            issuerCert.checkValidity();
+        } catch (CertificateExpiredException ex) {
+            errorList.add("issuer Cert Not After Fail");
+        } catch (CertificateNotYetValidException ex) {
+            errorList.add("issuer Cert Not Before Fail");
+        }
+
         try {
             subjectCert.verify(parentPub);
         } catch (CertificateException ex) {
@@ -252,8 +237,35 @@ public class CertUtils {
         return errorList;
     }
 
+    public static List<String> verifyIssuerAndSubjectCert(byte[] issuerCertPem, byte[] subjectCertPem) {
+        List<String> errorList = new ArrayList<String>();
+        X509CertificateObject issuerCert = null;
+        X509CertificateObject subjectCert = null;
+        try {
+            issuerCert = (X509CertificateObject) PemUtils.fromPem(issuerCertPem);
+        } catch (PemException ex) {
+            errorList.add("Error decodeing issuer Cert data to X509Certificate");
+        } catch (ClassCastException ex) {
+            errorList.add("Error decodeing issuer Cert data to X509Certificate");
+        }
+
+        try {
+            subjectCert = (X509CertificateObject) PemUtils.fromPem(subjectCertPem);
+        } catch (PemException ex) {
+            errorList.add("Error decodeing subject Cert data to X509Certificate");
+        } catch (ClassCastException ex) {
+            errorList.add("Error decodeing subject Cert data to X509Certificate");
+        }
+
+        if (issuerCert == null || subjectCert == null) {
+            return errorList;
+        }
+
+        return verifyIssuerAndSubjectCert(issuerCert, subjectCert);
+    }
+
     public static String certToStr(X509CertificateObject cert) {
-        StringBuilder sb = new StringBuilder(SB_INIT_SIZE);
+        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
         String subjectStr = cert.getSubjectX500Principal().toString();
         String issuerStr = cert.getIssuerX500Principal().toString();
         JCERSAPublicKey pub = (JCERSAPublicKey) cert.getPublicKey();
@@ -274,8 +286,8 @@ public class CertUtils {
         } catch (CertificateNotYetValidException ex) {
             valid = "Not Before Fail";
         }
-        String selfSigned = (isSelfSigned(cert))?"true":"false";
-        sb.append(String.format("isSelfSigned = %s\n",selfSigned));
+        String selfSigned = (isSelfSigned(cert)) ? "true" : "false";
+        sb.append(String.format("isSelfSigned = %s\n", selfSigned));
         return sb.toString();
     }
 

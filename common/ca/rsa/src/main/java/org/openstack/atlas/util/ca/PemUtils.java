@@ -1,5 +1,6 @@
 package org.openstack.atlas.util.ca;
 
+import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,7 +32,6 @@ import static org.openstack.atlas.util.ca.primitives.ByteLineReader.appendLF;
 
 public class PemUtils {
 
-    private static final int PAGESIZE = 4096;
     private static final byte[] BEG_PRV;
     private static final byte[] END_PRV;
     private static final byte[] BEG_CSR;
@@ -104,7 +104,7 @@ public class PemUtils {
         ByteArrayOutputStream bas;
         OutputStreamWriter osw;
         PEMWriter pw;
-        bas = new ByteArrayOutputStream(PAGESIZE);
+        bas = new ByteArrayOutputStream(RsaConst.PAGESIZE);
         osw = new OutputStreamWriter(bas);
         pw = new PEMWriter(osw);
         try {

@@ -121,7 +121,7 @@ public class RsaPair {
     }
 
     public String getPubAsString() {
-        StringBuilder sb = new StringBuilder(RsaConst.INIT_BUFFER_SIZE);
+        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
         RSAPublicKeyStructure pubStruct = getPubAsStruct();
         if (pubStruct == null) {
             return "";
@@ -136,7 +136,7 @@ public class RsaPair {
     }
 
     public String getPrivAsString() {
-        StringBuilder sb = new StringBuilder(RsaConst.INIT_BUFFER_SIZE);
+        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
         RSAPrivateKeyStructure privStruct = getPrivAsStruct();
         if (privStruct == null) {
             return null;
@@ -198,7 +198,7 @@ public class RsaPair {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(RsaConst.INIT_BUFFER_SIZE);
+        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
         sb.append(getPubAsString());
         sb.append("\n");
         sb.append(getPrivAsString());
