@@ -123,7 +123,8 @@ public class RateLimitIntegrationTest extends ZeusTestBase {
 
     private void updateProtocolToHttps() {
         try {
-            zxtmAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(), HTTPS);
+            lb.setProtocol(HTTPS);
+            zxtmAdapter.updateProtocol(config, lb);
 
             final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
             Assert.assertEquals(1, virtualServerBasicInfos.length);

@@ -116,15 +116,15 @@ public class ZeusTestBase {
     }
 
     protected static String loadBalancerName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
+        return ZxtmNameBuilder.genVSName(lb);
     }
 
     protected static String poolName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
+        return ZxtmNameBuilder.genVSName(lb);
     }
 
     protected static String protectionClassName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
+        return ZxtmNameBuilder.genVSName(lb);
     }
 
     protected static String trafficIpGroupName(VirtualIp vip) throws InsufficientRequestException {
@@ -136,7 +136,7 @@ public class ZeusTestBase {
     }
 
     protected static String rateLimitName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
+        return ZxtmNameBuilder.genVSName(lb);
     }
 
     protected static String errorFileName() throws InsufficientRequestException {
@@ -144,7 +144,7 @@ public class ZeusTestBase {
     }
 
     protected static String monitorName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lb);
+        return ZxtmNameBuilder.genVSName(lb);
     }
 
     protected static void setupSimpleLoadBalancer() {

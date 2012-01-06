@@ -150,8 +150,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public void updateProtocol(LoadBalancer lb) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(),
-                    lb.getProtocol());
+            reverseProxyLoadBalancerAdapter.updateProtocol(config,lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
