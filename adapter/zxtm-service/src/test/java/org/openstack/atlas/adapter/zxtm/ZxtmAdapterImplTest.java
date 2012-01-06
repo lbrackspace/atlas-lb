@@ -36,7 +36,6 @@ import static org.openstack.atlas.service.domain.entities.NodeCondition.DRAINING
 import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
 
-@Ignore
 @RunWith(Enclosed.class)
 public class ZxtmAdapterImplTest {
 

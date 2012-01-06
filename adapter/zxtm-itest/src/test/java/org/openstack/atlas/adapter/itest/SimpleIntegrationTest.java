@@ -2,10 +2,7 @@ package org.openstack.atlas.adapter.itest;
 
 import com.zxtm.service.client.*;
 import org.apache.axis.types.UnsignedInt;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
@@ -40,6 +37,11 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         setupSimpleLoadBalancer();
     }
 
+    @Before
+    public static void setUp() {
+        setupIvars();
+    }
+
     @AfterClass
     public static void tearDownClass() {
         removeSimpleLoadBalancer();
@@ -48,8 +50,6 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     @Test
     public void updateProtocol() {
         try {
-            ZeusTestBase.setupIvars();
-            lb.setProtocol(HTTPS);
             zxtmAdapter.updateProtocol(config, lb);
 
             final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
@@ -520,7 +520,7 @@ zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), HTTP_CO
         throttle.setMaxConnections(30);
         throttle.setMaxConnectionRate(2000);
         throttle.setRateInterval(60);
-        zxtmAdapter.updateConnectionThrottle(config, lb.getId(), lb.getAccountId(), throttle);
+        zxtmAdapter.updateConnectionThrottle(config, lb);
 
         final UnsignedInt[] minConnections = getServiceStubs().getProtectionBinding().getMinConnections(new String[]{protectionClassName()});
         Assert.assertEquals(1, minConnections.length);
@@ -551,7 +551,7 @@ zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), HTTP_CO
         networkItems.add(item1);
         networkItems.add(item2);
 
-        zxtmAdapter.updateAccessList(config, lb.getId(), lb.getAccountId(), networkItems);
+        zxtmAdapter.updateAccessList(config, lb);
 
         final String[][] bannedAddresses = getServiceStubs().getProtectionBinding().getBannedAddresses(new String[]{protectionClassName()});
         Assert.assertEquals(1, bannedAddresses.length);

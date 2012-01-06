@@ -9,9 +9,9 @@ s.getNames()
 
 
 
-s.setCF(api=True,chain=True)
+s.setCF(api=True,chain=False)
 
-s.setCF(api=False,chain=True)
+s.setCF(api=False,chain=False)
 
 s.showCF()
 

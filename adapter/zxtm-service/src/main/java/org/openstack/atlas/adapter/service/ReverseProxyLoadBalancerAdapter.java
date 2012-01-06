@@ -64,13 +64,13 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, boolean isConnectionLogging, LoadBalancerProtocol protocol)
+    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, ConnectionLimit throttle)
+    public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
+    public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
     public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, HealthMonitor healthMonitor)
@@ -79,7 +79,7 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void removeHealthMonitor(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
             throws RemoteException, InsufficientRequestException;
 
-    public void updateAccessList(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<AccessList> accessListItems)
+    public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException;
 
     public void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)

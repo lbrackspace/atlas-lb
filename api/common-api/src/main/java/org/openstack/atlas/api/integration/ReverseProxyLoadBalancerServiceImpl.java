@@ -161,7 +161,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public void updateConnectionLogging(LoadBalancer lb) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerAdapter.updateConnectionLogging(config, lb.getId(), lb.getAccountId(), lb.isConnectionLogging(), lb.getProtocol());
+            reverseProxyLoadBalancerAdapter.updateConnectionLogging(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -225,10 +225,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void updateAccessList(Integer lbId, Integer accountId, Collection<AccessList> accessListItems) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void updateAccessList(LoadBalancer loadBalancer) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            reverseProxyLoadBalancerAdapter.updateAccessList(config, lbId, accountId, accessListItems);
+            reverseProxyLoadBalancerAdapter.updateAccessList(config, loadBalancer);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -248,12 +248,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void updateConnectionThrottle(Integer lbId, Integer accountId,
-                                         ConnectionLimit connectionThrottle) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void updateConnectionThrottle(LoadBalancer loadBalancer) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            reverseProxyLoadBalancerAdapter.updateConnectionThrottle(config, lbId, accountId,
-                    connectionThrottle);
+            reverseProxyLoadBalancerAdapter.updateConnectionThrottle(config, loadBalancer);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -261,10 +259,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void deleteConnectionThrottle(Integer lbId, Integer accountId) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void deleteConnectionThrottle(LoadBalancer loadBalancer) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            reverseProxyLoadBalancerAdapter.deleteConnectionThrottle(config, lbId, accountId);
+            reverseProxyLoadBalancerAdapter.deleteConnectionThrottle(config, loadBalancer);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;

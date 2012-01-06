@@ -42,11 +42,11 @@ public interface ReverseProxyLoadBalancerService {
 
     void setNodeWeights(Integer id, Integer accountId, Set<Node> nodes) throws Exception;
 
-    void updateAccessList(Integer id, Integer accountId, Collection<AccessList> accessListItems) throws Exception;
+    void updateAccessList(LoadBalancer loadBalancer) throws Exception;
 
-    void updateConnectionThrottle(Integer id, Integer accountId, ConnectionLimit connectionThrottle) throws Exception;
+    void updateConnectionThrottle(LoadBalancer loadbalancer) throws Exception;
 
-    void deleteConnectionThrottle(Integer id, Integer accountId) throws Exception;
+    void deleteConnectionThrottle(LoadBalancer loadBalancer) throws Exception;
 
     void updateSessionPersistence(Integer id, Integer accountId, SessionPersistence persistenceMode) throws Exception;
 
