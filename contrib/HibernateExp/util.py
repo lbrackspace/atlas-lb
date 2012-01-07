@@ -163,7 +163,6 @@ stubs = None
 
 app = HuApp()
 
-#select v.id,v.ip_address,lv.loadbalancer_id,l.account_id from virtual_ip_ipv4 v left join loadbalancer_virtualip lv on v.id = lv.virtualip_id join loadbalancer l on lv.loadbalancer_id = l.id order by v.id;
 
 class SslTermTest(object):
     def __init__(self,zxtmStubs,keyfile,certfile,chainfile):
@@ -172,6 +171,14 @@ class SslTermTest(object):
         self.certfile = certfile
         self.chainfile = chainfile
         self.cf = None
+        self.vsName = None
+        self.crtName = None
+
+    def setVsName(self,vsName):
+        self.vsName = vsName
+
+    def setCrtName(self,crtName):
+        self.crtName = crtName
 
     def showCF(self):
         if self.cf == None:
@@ -183,25 +190,36 @@ class SslTermTest(object):
         out += "certs = %s\n"%certs
         return out
 
-    def getNames(self):
-        self.names = set([n for n in self.stubs.cert.getCertificateNames()])
-        return self.names
+    def getCrtNames(self):
+        names = [n for n in self.stubs.cert.getCertificateNames()]
+        names.sort()
+        return names
 
-    def addCert(self,name):
-        if name in self.names:
-            self.delCert(name)
-            return "OverWritten"
-        self.stubs.cert.importCertificate([name],[self.cf])
-        self.names.add(name)
-        return "Written"
+    def getVsNames(self):
+        names = [n for n in stubs.vs.getVirtualServerNames()]
+        names.sort()
+        return names
 
-    def delCert(self,name):
-        if name in self.names:
-            self.stubs.cert.deleteCertificate([name])
-            self.names.remove(name)
-            return True
+    def addCrt(self):
+        self.stubs.cert.importCertificate([self.crtName],[self.cf])
+
+    def delCrt(self):
+        self.stubs.cert.deleteCertificate([self.crtName])
+
+
+    def setVsCrt(self,*args):
+        if len(args) > 0:
+            crtName = args[0]
         else:
-            return False
+            crtName = self.crtName
+        self.stubs.vs.setSSLCertificate([self.vsName],[crtName])
+
+
+    def sslOn(self):
+        self.stubs.vs.setSSLDecrypt([self.vsName],[True])
+
+    def sslOff(self):
+        self.stubs.vs.setSSLDecrypt([self.vsName],[False])
 
     def setCF(self,api=False,chain=False):
         key  = open(self.keyfile,"r").read()
@@ -1433,3 +1451,24 @@ def newCertificateFile(key_file,crt_file):
     return certFile
 
 
+def filterList(listIn,rregxPattern):
+    out = []
+    list_re = re.compile(rregxPattern,re.IGNORECASE)
+    for entry in listIn:
+        if list_re.match(entry):
+            out.append(entry)
+    out.sort()
+    return out
+
+def dirMethods(*args):
+    obj = args[0]
+    methods = dir(obj)
+    if len(args)<2:
+        methods.sort()
+        for m in methods:
+            print m
+        return
+    for m in filterList(methods,args[1]):
+        print m
+
+    
