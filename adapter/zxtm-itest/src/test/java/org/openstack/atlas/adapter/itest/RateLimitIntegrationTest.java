@@ -43,7 +43,7 @@ public class RateLimitIntegrationTest extends ZeusTestBase {
             rateLimit.setExpirationTime(Calendar.getInstance());
             rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
 
-            zxtmAdapter.setRateLimit(config, lb.getId(), lb.getAccountId(), rateLimit);
+            zxtmAdapter.setRateLimit(config, lb, rateLimit);
 
             String[] rateNames = getServiceStubs().getZxtmRateCatalogService().getRateNames();
             boolean doesExist = false;
@@ -76,7 +76,7 @@ public class RateLimitIntegrationTest extends ZeusTestBase {
             rateLimit.setExpirationTime(Calendar.getInstance());
             rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
 
-            zxtmAdapter.updateRateLimit(config, lb.getId(), lb.getAccountId(), rateLimit);
+            zxtmAdapter.updateRateLimit(config, lb, rateLimit);
 
             String[] rateNames = getServiceStubs().getZxtmRateCatalogService().getRateNames();
             boolean doesExist = false;
@@ -98,7 +98,7 @@ public class RateLimitIntegrationTest extends ZeusTestBase {
 
     private void deleteRateLimit() {
         try {
-            zxtmAdapter.deleteRateLimit(config, lb.getId(), lb.getAccountId());
+            zxtmAdapter.deleteRateLimit(config, lb);
             String[] rateNames = getServiceStubs().getZxtmRateCatalogService().getRateNames();
             boolean doesExist = false;
             for (String rateName : rateNames) {
