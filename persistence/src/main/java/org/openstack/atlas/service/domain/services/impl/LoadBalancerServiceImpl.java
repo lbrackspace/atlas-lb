@@ -569,9 +569,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         if (!isHost) {
             loadBalancer.setHost(host);
         } else {
-            if (gLb != null && !gLb.getHost().getCluster().getId().equals(host.getCluster().getId())) {
-                throw new UnprocessableEntityException("There is an error regarding the virtual IP hosts, with a shared virtual IP the LoadBalancers must reside within the same cluster.");
-            }
+            //Removed V1-D-20679  1-9-12
+//            if (gLb != null && !gLb.getHost().getCluster().getId().equals(host.getCluster().getId())) {
+//                throw new UnprocessableEntityException("There is an error regarding the virtual IP hosts, with a shared virtual IP the LoadBalancers must reside within the same cluster.");
+//            }
             loadBalancer.setHost(gLb.getHost());
         }
     }
