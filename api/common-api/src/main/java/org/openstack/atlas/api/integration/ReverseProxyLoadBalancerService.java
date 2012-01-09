@@ -54,7 +54,7 @@ public interface ReverseProxyLoadBalancerService {
 
     void updateHealthMonitor(Integer lbId, Integer accountId, HealthMonitor monitor) throws Exception;
 
-    void removeHealthMonitor(Integer lbId, Integer accountId) throws Exception;
+    void removeHealthMonitor(LoadBalancer loadBalancer) throws Exception;
 
     void createHostBackup(Host host, String backupName) throws Exception;
 
@@ -92,11 +92,11 @@ public interface ReverseProxyLoadBalancerService {
 
     public boolean isEndPointWorking(Host host) throws Exception;
 
-    public void setRateLimit(int id, int accountId, RateLimit rateLimit) throws Exception;
+    public void setRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws Exception;
 
-    public void deleteRateLimit(int id, int accountId) throws Exception;
+    public void deleteRateLimit(LoadBalancer loadBalancer) throws Exception;
 
-    public void updateRateLimit(int id, int accountId, RateLimit rateLimit) throws Exception;
+    public void updateRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws Exception;
 
     public void removeAndSetDefaultErrorFile(LoadBalancer loadBalancer) throws EntityNotFoundException, MalformedURLException, DecryptException, RemoteException, InsufficientRequestException;
 

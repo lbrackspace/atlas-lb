@@ -22,7 +22,7 @@ public class UpdateRateLimitListener extends BaseListener {
 
         LOG.debug("Rate limit attributes verified. Continuing...");
         LOG.debug("Updating rate limit in Zeus...");
-        reverseProxyLoadBalancerService.updateRateLimit(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), queueLb.getRateLimit());
+        reverseProxyLoadBalancerService.updateRateLimit(dbLoadBalancer, queueLb.getRateLimit());
         LOG.debug("Setting loadbalancer status to 'ACTIVE'...");
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
         LOG.info("Update rate limit operation complete.");

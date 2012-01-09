@@ -38,7 +38,7 @@ public class DeleteHealthMonitorListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Deleting health monitor for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.removeHealthMonitor(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+            reverseProxyLoadBalancerService.removeHealthMonitor(dbLoadBalancer);
             LOG.debug(String.format("Successfully deleted the health monitor for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

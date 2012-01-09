@@ -620,7 +620,7 @@ zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), HTTP_CO
     }
 
     private void removeHttpHealthMonitor() throws Exception {
-        zxtmAdapter.removeHealthMonitor(config, lb.getId(), lb.getAccountId());
+        zxtmAdapter.removeHealthMonitor(config, lb);
 
         String monitorName = monitorName();
         String[] allMonitorNames = getServiceStubs().getMonitorBinding().getAllMonitorNames();
@@ -678,7 +678,7 @@ zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), HTTP_CO
     }
 
     private void removeHttpsHealthMonitor() throws Exception {
-        zxtmAdapter.removeHealthMonitor(config, lb.getId(), lb.getAccountId());
+        zxtmAdapter.removeHealthMonitor(config, lb);
 
         String monitorName = monitorName();
         String[] allMonitorNames = getServiceStubs().getMonitorBinding().getAllMonitorNames();
