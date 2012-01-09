@@ -617,10 +617,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void removeSslTermination(int lbId, int accountId) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void removeSslTermination(LoadBalancer lb) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerAdapter.removeSslTermination(config, lbId, accountId);
+            reverseProxyLoadBalancerAdapter.removeSslTermination(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;

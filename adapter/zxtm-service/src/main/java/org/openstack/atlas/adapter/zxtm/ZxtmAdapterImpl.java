@@ -154,7 +154,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-
     @Override
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException {
@@ -625,7 +624,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-
     // upload the file then set the Errorpage.
     @Override
     public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content) throws RemoteException {
@@ -694,8 +692,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void removeSslTermination(LoadBalancerEndpointConfiguration conf, int id, int accountId) throws RemoteException, InsufficientRequestException {
-        final String virtualServerName = ZxtmNameBuilder.genSslVSName(id, accountId);
+    public void removeSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer lb) throws RemoteException, InsufficientRequestException {
+        int id = lb.getId();
+        int accountId = lb.getAccountId();
+        String virtualServerName = ZxtmNameBuilder.genSslVSName(id, accountId);
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
         CatalogSSLCertificatesBindingStub catlog = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
         VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
@@ -764,7 +764,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws AxisFault, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         String secureFiletoDelete = "";
-        if (loadBalancer.hasSsl()) secureFiletoDelete = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        if (loadBalancer.hasSsl()) {
+            secureFiletoDelete = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        }
 
         String fileToDelete = getErrorFileName(loadBalancer.getId(), loadBalancer.getAccountId());
         try {
@@ -874,7 +876,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     private void setDisabledNodes(LoadBalancerEndpointConfiguration config, String poolName, List<Node> nodesToDisable) throws RemoteException {
-        if (nodesToDisable == null || nodesToDisable.isEmpty()) return;
+        if (nodesToDisable == null || nodesToDisable.isEmpty()) {
+            return;
+        }
 
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
@@ -883,7 +887,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     private void setDrainingNodes(LoadBalancerEndpointConfiguration config, String poolName, List<Node> nodesToDrain) throws RemoteException {
-        if (nodesToDrain == null || nodesToDrain.isEmpty()) return;
+        if (nodesToDrain == null || nodesToDrain.isEmpty()) {
+            return;
+        }
 
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
@@ -892,7 +898,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     private void verifyDrainingNodes(LoadBalancerEndpointConfiguration config, String poolName, List<Node> nodesToDrain) throws RemoteException {
-        if (nodesToDrain == null) return;
+        if (nodesToDrain == null) {
+            return;
+        }
 
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
@@ -1081,7 +1089,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         LOG.info(String.format("Successfully updated connection logging for virtual server '%s'...", virtualServerName));
     }
-
 
     @Override
     public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)

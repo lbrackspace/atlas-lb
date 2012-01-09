@@ -108,7 +108,7 @@ public interface ReverseProxyLoadBalancerService {
 
     public void updateSslTermination(int lbId, int accountId, LoadBalancer loadBalancer, SslTermination sslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void removeSslTermination(int lbId, int accountId) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException;
+    public void removeSslTermination(LoadBalancer lb) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException;
 
     public void enableDisableSslTermination(int lbId, int accountId, boolean isSslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException;
 }

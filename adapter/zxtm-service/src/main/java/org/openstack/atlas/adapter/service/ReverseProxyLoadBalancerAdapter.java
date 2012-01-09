@@ -163,7 +163,7 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void updateSslTermination(LoadBalancerEndpointConfiguration config, int loadBalancerId, int accountId, LoadBalancer loadBalancer, SslTermination sslTermination)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void removeSslTermination(LoadBalancerEndpointConfiguration config, int loadBalancerId, int accountId)
+    public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException;
 
     public void enableDisableSslTermination(LoadBalancerEndpointConfiguration config, int loadBalancerId, int accountId, boolean isSslTermination)
