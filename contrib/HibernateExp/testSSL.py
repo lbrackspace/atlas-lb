@@ -1,13 +1,15 @@
 #!/usr/bin/env jython
 
 import util
-util.setConfig("local.json")
+util.setConfig("stag.json")
 from util import *
 
 s = SslTermTest(stubs,"./key","./crt","./chain")
 
 #s.getCrtNames()
 #s.getVsNames()
+
+#ips = getIPAddresses(stubs)
 
 s.setCrtName("TEST")
 s.setVsName("354934_41")
