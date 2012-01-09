@@ -133,7 +133,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
                 TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
                 attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
-                setDefaultErrorFile(config, lb.getId(), lb.getAccountId(), isSslOn);
+                setDefaultErrorFile(config, lb);
             }
         } catch (Exception e) {
             deleteLoadBalancer(config, lb);
@@ -156,21 +156,21 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
 
     @Override
-    public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
+    public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String virtualServerName = ZxtmNameBuilder.genVSName(lb);
-        final String poolName = ZxtmNameBuilder.genVSName(lb);
+        final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
+        final String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
 
         LOG.debug(String.format("Deleting load balancer '%s'...", virtualServerName));
 
-        removeAndSetDefaultErrorFile(config, lb.getId(), lb.getAccountId());
-        removeHealthMonitor(config, lb.getId(), lb.getAccountId());
-        deleteRateLimit(config, lb.getId(), lb.getAccountId());
+        removeAndSetDefaultErrorFile(config, loadBalancer);
+        removeHealthMonitor(config, loadBalancer.getId(), loadBalancer.getAccountId());
+        deleteRateLimit(config, loadBalancer.getId(), loadBalancer.getAccountId());
         deleteVirtualServer(serviceStubs, virtualServerName);
         deleteNodePool(serviceStubs, poolName);
         deleteProtectionCatalog(serviceStubs, poolName);
-        deleteTrafficIpGroups(serviceStubs, lb);
+        deleteTrafficIpGroups(serviceStubs, loadBalancer);
 
         LOG.info(String.format("Successfully deleted load balancer '%s'.", virtualServerName));
     }
@@ -705,7 +705,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             enableDisableSslTermination(conf, id, accountId, false);
             virtualServerService.setSSLCertificate(new String[]{virtualServerName}, new String[]{""});
             catlog.deleteCertificate(new String[]{virtualServerName});
-
+            //TODO: delete shadowServer
+            deleteLoadBalancer(conf, lb);
             //TODO: unsuspend non-secure VS
         } catch (AxisFault af) {
             LOG.error("there was a error removing ssl termination in zxtm adapter for load balancer " + id);
@@ -730,9 +731,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws InsufficientRequestException, RemoteException {
-        deleteErrorFile(config, loadbalancerId, accountId);
-        setDefaultErrorFile(config, loadbalancerId, accountId);
+    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, RemoteException {
+        deleteErrorFile(config, loadBalancer);
+        setDefaultErrorFile(config, loadBalancer);
     }
 
     @Override
@@ -749,29 +750,27 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountid) throws InsufficientRequestException, RemoteException {
-        setDefaultErrorFile(config, loadbalancerId, accountid, false);
-    }
-
-    private void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountid, boolean isSslOn) throws InsufficientRequestException, RemoteException {
+    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        String virtualServerName = ZxtmNameBuilder.genVSName(loadbalancerId, accountid);
-        if (isSslOn) virtualServerName = ZxtmNameBuilder.genSslVSName(loadbalancerId, accountid);
-        LOG.debug(String.format("Attempting to set the default error file for: %s_%s", accountid, loadbalancerId));
+        String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        LOG.debug(String.format("Attempting to set the default error file for: %s_%s", loadBalancer.getId(), loadBalancer.getAccountId()));
         //TODO: uncomment when zeus performance issues are resolved... (VERSION 1) TK-12805
 //        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{Constants.DEFAULT_ERRORFILE});
-        LOG.info(String.format("Successfully set the default error file for: %s_%s", accountid, loadbalancerId));
+        LOG.info(String.format("Successfully set the default error file for: %s_%s", loadBalancer.getId(), loadBalancer.getAccountId()));
 
     }
 
     @Override
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws AxisFault {
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws AxisFault, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        String fileToDelete = getErrorFileName(loadbalancerId, accountId);
+        String secureFiletoDelete = "";
+        if (loadBalancer.hasSsl()) secureFiletoDelete = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+
+        String fileToDelete = getErrorFileName(loadBalancer.getId(), loadBalancer.getAccountId());
         try {
-            LOG.debug(String.format("Attempting to delete a custom error file for: %s%s", accountId, loadbalancerId));
-            serviceStubs.getZxtmConfExtraBinding().deleteFile(new String[]{fileToDelete});
-            LOG.info(String.format("Successfully deleted a custom error file for: %s%s", accountId, loadbalancerId));
+            LOG.debug(String.format("Attempting to delete a custom error file for: %s%s", loadBalancer.getAccountId(), loadBalancer.getId()));
+            serviceStubs.getZxtmConfExtraBinding().deleteFile(new String[]{fileToDelete, secureFiletoDelete});
+            LOG.info(String.format("Successfully deleted a custom error file for: %s%s", loadBalancer.getAccountId(), loadBalancer.getId()));
         } catch (RemoteException e) {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.warn(String.format("Cannot delete custom error page as, %s, it does not exist. Ignoring...", fileToDelete));
@@ -1096,8 +1095,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         String[] configuredVSNames;
 
 
-         String protectionClassName = virtualServerName;
-         String rollBackMessage = "Update connection throttle request canceled.";
+        String protectionClassName = virtualServerName;
+        String rollBackMessage = "Update connection throttle request canceled.";
 
         LOG.debug(String.format("Updating connection throttle for virtual server '%s'...", virtualServerName));
 
