@@ -2,6 +2,7 @@ package org.openstack.atlas.util.ca.primitives;
 
 import java.security.KeyPair;
 import java.math.BigInteger;
+import java.lang.Math;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -128,9 +129,10 @@ public class RsaPair {
         }
         BigInteger n = pubStruct.getModulus();
         BigInteger e = pubStruct.getPublicExponent();
+
         sb.append("PubKey:\n");
-        sb.append(String.format("    n=%s\n", n.toString()));
-        sb.append(String.format("    e=%s\n", e.toString()));
+        sb.append(String.format("    n=%s(%d bit)\n", n.toString(),n.bitLength()));
+        sb.append(String.format("    e=%s(%d bit)\n", e.toString(),n.bitLength()));
         sb.append(String.format("    shortPub = %s\n",RSAKeyUtils.shortPub(pubStruct)));
         return sb.toString();
     }
@@ -144,24 +146,24 @@ public class RsaPair {
         BigInteger n = privStruct.getModulus();
         BigInteger e = privStruct.getPublicExponent();
         BigInteger d = privStruct.getPrivateExponent();
-        BigInteger q = privStruct.getPrime1();
-        BigInteger p = privStruct.getPrivateExponent();
+        BigInteger p = privStruct.getPrime1();
+        BigInteger q = privStruct.getPrime2();
         BigInteger dP = privStruct.getExponent1();
         BigInteger dQ = privStruct.getExponent2();
         BigInteger qInv = privStruct.getCoefficient();
         sb.append("PrivKey:\n");
-        sb.append(String.format("    n=%s\n", n.toString()));
-        sb.append(String.format("    e=%s\n", e.toString()));
-        sb.append(String.format("    d=%s\n", d.toString()));
-        sb.append(String.format("    q=%s\n", q.toString()));
-        sb.append(String.format("    p=%s\n", p.toString()));
-        sb.append(String.format("    dP=%s\n", dP.toString()));
-        sb.append(String.format("    dQ=%s\n", dQ.toString()));
-        sb.append(String.format("    qInv=%s\n", qInv.toString()));
+        sb.append(String.format("    n=%s(%d bit)\n", n.toString(),n.bitLength()));
+        sb.append(String.format("    e=%s(%d bit)\n", e.toString(),e.bitLength()));
+        sb.append(String.format("    d=%s(%d bit)\n", d.toString(),d.bitLength()));
+        sb.append(String.format("    q=%s(%d bit)\n", q.toString(),q.bitLength()));
+        sb.append(String.format("    p=%s(%d bit)\n", p.toString(),p.bitLength()));
+        sb.append(String.format("    dP=%s(%d bit)\n", dP.toString(),dP.bitLength()));
+        sb.append(String.format("    dQ=%s(%d bin)\n", dQ.toString(),dQ.bitLength()));
+        sb.append(String.format("    qInv=%s(%d bit)\n", qInv.toString(),qInv.bitLength()));
         BigInteger pMinus1 = p.subtract(BigInteger.ONE);
         BigInteger qMinus1 = q.subtract(BigInteger.ONE);
-        BigInteger totient = pMinus1.multiply(qMinus1);
-        sb.append(String.format("    \u03A6(n)=%s\n", totient));
+        BigInteger t = pMinus1.multiply(qMinus1);
+        sb.append(String.format("    \u03A6(n)=%s(%d bit)\n", t,t.bitLength()));
 
 
         return sb.toString();
