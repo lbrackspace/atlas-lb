@@ -23,6 +23,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 
 // TODO: Remove this class resource when we go to production
 public class BounceResource extends CommonDependencyProvider {
@@ -99,7 +100,7 @@ public class BounceResource extends CommonDependencyProvider {
     @POST
     @Path("accesslist")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public Response echoAccessList(AccessList accessList){
+    public Response echoAccessList(AccessList accessList) {
         Response resp = Response.status(200).entity(accessList).build();
         return resp;
     }
@@ -114,10 +115,25 @@ public class BounceResource extends CommonDependencyProvider {
 
     @POST
     @Path("errorpage")
-    public Response echoErrorpage(Errorpage errorpage){
+    public Response echoErrorpage(Errorpage errorpage) {
         Errorpage errorpage_out = new Errorpage();
         errorpage_out.setContent(errorpage.getContent());
         Response resp = Response.status(200).entity(errorpage_out).build();
+        return resp;
+    }
+
+    @POST
+    @Path("ssltermination")
+    public Response echoSslTermination(SslTermination in) {
+        SslTermination out = new SslTermination();
+        out.setCertificate(in.getCertificate());
+        out.setEnabled(in.isEnabled());
+        out.setId(in.getId());
+        out.setIntermediateCertificate(in.getIntermediateCertificate());
+        out.setPrivatekey(in.getPrivatekey());
+        out.setSecurePort(in.getSecurePort());
+        out.setSecureTrafficOnly(in.isSecureTrafficOnly());
+        Response resp = Response.status(200).entity(out).build();
         return resp;
     }
 }

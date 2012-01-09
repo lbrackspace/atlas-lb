@@ -1116,7 +1116,7 @@ public class CaFrame extends javax.swing.JFrame {
                     return;
                 }
                 try {
-                    rsaPair = RSAKeyUtils.genRSAPair(bits, 32);
+                    rsaPair = RSAKeyUtils.genRSAPair(bits, RsaConst.DEFAULT_PRIME_CERTAINTY);
                 } catch (NoSuchAlgorithmException ex) {
                     fmt = "Error generating %d bit key\n%s\n";
                     msg = String.format(fmt, bits, getEST(ex));
@@ -1224,7 +1224,7 @@ public class CaFrame extends javax.swing.JFrame {
             return;
         }
         try {
-            key = RSAKeyUtils.genRSAPair(keySize, 32);
+            key = RSAKeyUtils.genRSAPair(keySize, RsaConst.DEFAULT_PRIME_CERTAINTY);
         } catch (NoSuchAlgorithmException ex) {
             logError(String.format("%s\n", getEST(ex)));
             return;
