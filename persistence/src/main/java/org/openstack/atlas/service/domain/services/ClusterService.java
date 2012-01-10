@@ -10,6 +10,7 @@ import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.pojos.VirtualIpAvailabilityReport;
@@ -20,7 +21,7 @@ import java.util.List;
 public interface ClusterService {
     public Cluster get(Integer clusterId) throws EntityNotFoundException;
 
-    public Cluster getActiveCluster() throws EntityNotFoundException;
+    public Cluster getActiveCluster() throws EntityNotFoundException, ClusterStatusException;
 
     public List<Cluster> getAll();
 
