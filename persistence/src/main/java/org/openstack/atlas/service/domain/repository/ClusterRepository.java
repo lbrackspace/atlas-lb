@@ -2,6 +2,7 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Customer;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
@@ -582,8 +583,19 @@ public class ClusterRepository  {
         return vm;
     }
 
-    public Cluster getActiveCluster() {
+    public Cluster getActiveCluster() throws ClusterStatusException {
         List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl where cl.clusterStatus = :status").setParameter("status", ClusterStatus.ACTIVE).getResultList();
+        if (cls != null && cls.size() > 0) {
+            return cls.get(0);
+        } else {
+            String errMsg = "Active cluster not found, please contact support...";
+            LOG.warn(errMsg);
+            throw new ClusterStatusException(errMsg);
+        }
+    }
+
+    public Cluster getCluster() {
+        List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl").getResultList();
         if (cls != null && cls.size() > 0) {
             return cls.get(0);
         } else {

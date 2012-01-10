@@ -54,7 +54,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Required
-    public void setNodeService (NodeService nodeService) {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -471,7 +471,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         if (loadBalancer.getSessionPersistence() == null) {
             loadBalancer.setSessionPersistence(SessionPersistence.NONE);
         }
-        
+
         for (Node node : loadBalancer.getNodes()) {
             if (node.getWeight() == null) {
                 node.setWeight(Constants.DEFAULT_NODE_WEIGHT);
@@ -515,7 +515,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
     }
 
-    private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException {
+    private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException {
         boolean isHost = false;
         LoadBalancer gLb = new LoadBalancer();
 
@@ -565,15 +565,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
             }
         }
-        Host host = hostService.getDefaultActiveHostAndActiveCluster();
+
         if (!isHost) {
-            loadBalancer.setHost(host);
+            loadBalancer.setHost(hostService.getDefaultActiveHostAndActiveCluster());
         } else {
-            //Removed V1-D-20679  1-9-12
-//            if (gLb != null && !gLb.getHost().getCluster().getId().equals(host.getCluster().getId())) {
-//                throw new UnprocessableEntityException("There is an error regarding the virtual IP hosts, with a shared virtual IP the LoadBalancers must reside within the same cluster.");
-//            }
-            loadBalancer.setHost(gLb.getHost());
+            if (gLb != null) {
+                loadBalancer.setHost(gLb.getHost());
+            }
         }
     }
 
@@ -716,7 +714,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return validLbs;
     }
 
-    private void processSpecifiedOrDefaultHost(LoadBalancer lb) throws EntityNotFoundException, BadRequestException {
+    private void processSpecifiedOrDefaultHost(LoadBalancer lb) throws EntityNotFoundException, BadRequestException, ClusterStatusException {
         Integer hostId = null;
         Host specifiedHost;
 
