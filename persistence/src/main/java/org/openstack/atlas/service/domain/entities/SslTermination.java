@@ -26,7 +26,7 @@ public class SslTermination extends Entity implements Serializable {
     private String intermediateCertificate;
 
     @Column(name = "enabled", nullable = true)
-    private boolean enabled = true;
+    private boolean enabled =  true;
 
     @Column(name = "secure_port", nullable = true)
     private int securePort;

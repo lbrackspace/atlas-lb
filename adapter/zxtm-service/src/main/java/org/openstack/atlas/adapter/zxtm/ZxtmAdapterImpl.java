@@ -642,7 +642,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         CatalogSSLCertificatesBindingStub catlog = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
 
         try {
-            LOG.info("Creating ssl termination load balancer in zeus..." + virtualServerName);
+            LOG.info(String.format("Creating ssl termination load balancer in zeus...", virtualServerName));
             createLoadBalancer(conf, loadBalancer);
         } catch (AxisFault af) {
             if (af instanceof ObjectAlreadyExists) {
@@ -653,7 +653,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         try {
-            LOG.error("Importing certificate for load balancer: " + id);
+            LOG.error(String.format("Importing certificate for load balancer: ", id));
             CertificateFiles certificateFiles = new CertificateFiles();
             certificateFiles.setPrivate_key(sslTermination.getPrivatekey());
             certificateFiles.setPublic_cert(sslTermination.getCertificate());
@@ -694,9 +694,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.info(String.format("Rules detached from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
             //Removing the shadow VS
+            LOG.info(String.format("Removing the shadow virtual server..."));
             deleteVirtualServer(serviceStubs, virtualServerName);
 
             //Un-suspending non-secure vs
+            LOG.info(String.format("Attempting to re-enable non-secure virtual server for loadbalancer: '%s'", loadBalancer.getId()));
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{ZxtmNameBuilder.genVSName(loadBalancer)}, new boolean[]{true});
 
         } catch (AxisFault af) {

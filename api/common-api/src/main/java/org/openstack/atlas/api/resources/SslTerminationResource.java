@@ -37,6 +37,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(ssl,
                     org.openstack.atlas.service.domain.entities.SslTermination.class);
 
+            //do this or just pass what the user gave us back to them
             SslTermination apiSsl = dozerMapper.map(sslTerminationService.updateSslTermination(loadBalancerId, accountId,
                     domainSslTermination), SslTermination.class);
 
