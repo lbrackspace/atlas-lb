@@ -159,7 +159,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug(String.format("Deleting load balancer '%s'...", virtualServerName));
 
         removeAndSetDefaultErrorFile(config, loadBalancer);
-        removeHealthMonitor(config, loadBalancer);
         deleteRateLimit(config, loadBalancer);
         deleteVirtualServer(serviceStubs, virtualServerName);
         if (loadBalancer.hasSsl()) {
@@ -167,6 +166,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
         deleteNodePool(serviceStubs, poolName);
         deleteProtectionCatalog(serviceStubs, poolName);
+        removeHealthMonitor(config, loadBalancer);
         deleteTrafficIpGroups(serviceStubs, loadBalancer);
 
         LOG.info(String.format("Successfully deleted load balancer '%s'.", virtualServerName));
@@ -1250,13 +1250,19 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
         final String monitorName = poolName;
+        String[] poolNames;
+        if (loadBalancer.hasSsl()) {
+            poolNames = new String[]{ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId())};
+        } else {
+            poolNames = new String[]{monitorName};
+        }
 
         String[][] monitors = new String[1][1];
         monitors[0][0] = monitorName;
 
         try {
             LOG.debug(String.format("Removing health monitor for node pool '%s'...", poolName));
-            serviceStubs.getPoolBinding().removeMonitors(new String[]{poolName}, monitors);
+            serviceStubs.getPoolBinding().removeMonitors(poolNames, monitors);
             LOG.info(String.format("Health monitor successfully removed for node pool '%s'.", poolName));
         } catch (ObjectDoesNotExist odne) {
             LOG.warn(String.format("Node pool '%s' does not exist. Ignoring...", poolName));
