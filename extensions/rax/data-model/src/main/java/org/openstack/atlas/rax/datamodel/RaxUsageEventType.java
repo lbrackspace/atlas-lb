@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Primary
 @Component
-@Scope("request")
+@Scope("singleton")
 public class RaxUsageEventType extends CoreUsageEventType {
     public static final String ADD_VIRTUAL_IP = "ADD_VIRTUAL_IP";
     public static final String REMOVE_VIRTUAL_IP = "REMOVE_VIRTUAL_IP";

@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
-@Scope("request")
+@Scope("singleton")
 public class CorePersistenceType implements PersistenceType {
     public static final String HTTP_COOKIE = "HTTP_COOKIE";
     private static final Set<String> persistenceTypes;

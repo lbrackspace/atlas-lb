@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
-@Scope("request")
+@Scope("singleton")
 public class CoreNodeStatus implements NodeStatus {
     public static final String ONLINE = "ONLINE";
     public static final String OFFLINE = "OFFLINE";

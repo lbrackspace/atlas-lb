@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Primary
 @Component
-@Scope("request")
+@Scope("singleton")
 public class RaxProtocolType extends CoreProtocolType {
     public static final String FTP = "FTP";
     public static final String IMAPv2 = "IMAPv2";

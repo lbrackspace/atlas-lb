@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
-@Scope("request")
+@Scope("singleton")
 public class CoreAlgorithmType implements AlgorithmType {
     public static final String LEAST_CONNECTIONS = "LEAST_CONNECTIONS";
     public static final String ROUND_ROBIN = "ROUND_ROBIN";

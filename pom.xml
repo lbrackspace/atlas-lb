@@ -17,6 +17,7 @@
         <module>core-api</module>
         <module>core-jobs</module>
         <module>extensions</module>
+        <module>server</module>
     </modules>
 
     <build>

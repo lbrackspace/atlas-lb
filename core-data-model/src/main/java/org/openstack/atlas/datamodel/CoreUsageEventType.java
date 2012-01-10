@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
-@Scope("request")
+@Scope("singleton")
 public class CoreUsageEventType implements UsageEventType {
     public static final String CREATE_CONNECTION_THROTTLE = "CREATE_CONNECTION_THROTTLE";
     public static final String UPDATE_CONNECTION_THROTTLE = "UPDATE_CONNECTION_THROTTLE";
