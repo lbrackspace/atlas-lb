@@ -1471,4 +1471,36 @@ def dirMethods(*args):
     for m in filterList(methods,args[1]):
         print m
 
-    
+def getIPAddresses(stubs,*args):
+    if len(args) <= 0:
+        out = {}
+        names = [n for n in stubs.tg.getTrafficIPGroupNames()]
+        li = len(names)
+        i = 0
+        for name in names:
+            i += 1
+            printf("Scanning %i for %i\n",i,li)
+            ips = getIPAddresses(stubs,name)
+            if ips == None:
+                continue
+            else:
+                out[name] = ips
+        return out
+    else:
+        try:
+            ips = stubs.tg.getIPAddresses([args[0]])
+            if len(ips) < 1:
+                return None
+            else:
+                return [i for i in ips[0]]
+        except:
+            return None
+
+def invips(ips):
+    out =  {}
+    for (k,v) in ips.iteritems():
+        for ip in v:
+            if not out.has_key(ip):
+                out[ip] = []
+            out[ip].append(k)
+    return out
