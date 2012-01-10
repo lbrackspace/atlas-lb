@@ -9,10 +9,12 @@ s = SslTermTest(stubs,"./key","./crt","./chain")
 #s.getCrtNames()
 #s.getVsNames()
 
-#ips = getIPAddresses(stubs)
+#ips = invips(getIPAddresses(stubs))
+#working external vip is 184.106.24.18
+
 
 s.setCrtName("TEST")
-s.setVsName("354934_41")
+s.setVsName("546428_4")
 
 s.setCF(api=True,chain=True)
 
