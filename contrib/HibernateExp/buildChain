@@ -39,10 +39,10 @@ if __name__ == "__main__":
         row["crt"] = toPem(chain[i][2])
         pemChain.append(row)
 
-    
+    pemChain.reverse()
 
     fp = fullOpen(pem_file,"w")
-    for pemTuple in sorted(pemChain,reverse=True):
+    for pemTuple in pemChain:
         fp.write(pemTuple["crt"])
     fp.close()
 

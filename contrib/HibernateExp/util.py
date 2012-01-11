@@ -15,7 +15,7 @@ import org.openstack.atlas.util.ca.RSAKeyUtils as RSAKeyUtils
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs as ZxtmServiceStubs
 import java.net.URL as URL
 import com.zxtm.service.client.CertificateFiles as CertificateFiles
-
+import com.zxtm.service.client.VirtualServerSSLSite as VirtualServerSSLSite
 import org.openstack.atlas.util.crypto.CryptoUtil as CryptoUtil
 import org.hexp.hibernateexp.util.BitUtil as BitUtil
 import org.hexp.hibernateexp.util.BitUtil.BitOp as BitOp
@@ -114,8 +114,8 @@ import os
 import string
 import random
 import re
-
 import traceback
+import cPickle
 
 RsaConst.init();
 
@@ -1422,6 +1422,29 @@ def save_json(json_file,obj):
     out = json.dumps(obj, indent=2)
     fp.write(out)
     fp.close()
+
+def save_cpickle(pickle_file,obj):
+    data = cPickle.dumps(obj)
+    fp = fullOpen(pickle_file,"w")
+    fp.write(data)
+    fp.close()
+
+def load_cpickle(pickle_file):
+    fp = fullOpen(pickle_file,"r")
+    data = fp.read()
+    fp.close()
+    obj = cPickle.loads(data)
+    return obj
+
+def write_file(file_path,stringOut):
+    fp = fullOpen(file_path,"w")
+    fp.write(stringOut)
+    fp.close()
+
+def read_file(file_path):
+    fp = fullOpen(file_path,"r")
+    strOut = fp.read()
+    return strOut
 
 def fullOpen(file_path,*args):
     full_path = fullPath(file_path)
