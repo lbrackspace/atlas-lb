@@ -1,0 +1,50 @@
+#!/usr/bin/env jython
+
+from util import *
+import sys
+import os
+
+subjFmt  = "C=US,ST=Texas,L=Texas,O=RackSpace Hosting"
+subjFmt += ",OU=RackExp CA%i,CN=ca%i.rackexp.org"
+
+def usage(prog):
+    printf("Usage is %s <depth> <chain pem file> <chain json file>\n",prog)
+    printf("\n")
+    printf("Build a CA chain up to the specified depth\n")
+    printf("Save the keys crts and csrs in the chain json file ")
+    printf("(in json format)\n But save the chain crt to the chain pem file\n")
+
+if __name__ == "__main__":
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<4:
+        usage(prog)
+        sys.exit()
+    depth = int(sys.argv[1])
+    pem_file  = sys.argv[2]
+    json_file = sys.argv[3]
+
+    subjs = []
+
+    for i in xrange(1,depth + 1):
+        subjs.append( subjFmt%(i,i) )
+
+    chain = buildChain(2048,subjs,log=sys.stdout)
+
+    pemChain = []
+
+    for i in xrange(0,len(chain)):
+        row = {}
+        row["key"] = toPem(chain[i][0])
+        row["csr"] = toPem(chain[i][1])
+        row["crt"] = toPem(chain[i][2])
+        pemChain.append(row)
+
+    
+
+    fp = fullOpen(pem_file,"w")
+    for pemTuple in sorted(pemChain,reverse=True):
+        fp.write(pemTuple["crt"])
+    fp.close()
+
+    save_json(json_file,pemChain)
+    

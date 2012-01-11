@@ -42,9 +42,11 @@ stubs.cert.importCertificate([name],[cf])
 
 
 
-
-
-
+baseSubj = "C=US,ST=Texas,L=Texas,O=RackSpace Hosting"
+subjs = []
+chainPems = []
+for i in xrange(1,10):
+    subjs.append("%s,OU=RackExp CA%i,CN=ca%i.rackexp.org"%(baseSubj,i,i))
 
 
 
