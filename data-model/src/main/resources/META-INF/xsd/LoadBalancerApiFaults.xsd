@@ -79,6 +79,13 @@
         </xsd:complexContent>
     </xsd:complexType>
 
+    <xsd:element name="clusterStatus" type="tns:clusterStatus"/>
+    <xsd:complexType name="clusterStatus">
+        <xsd:complexContent>
+            <xsd:extension base="tns:lbaasFault"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
     <xsd:element name="immutableEntity" type="tns:immutableEntity"/>
     <xsd:complexType name="immutableEntity">
         <xsd:complexContent>

@@ -4,6 +4,7 @@ import org.openstack.atlas.service.domain.entities.Backup;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
@@ -78,7 +79,7 @@ public interface HostService {
 
     public void deleteHost(Host queueHost) throws Exception;
 
-    public Host getDefaultActiveHostAndActiveCluster() throws EntityNotFoundException;
+    public Host getDefaultActiveHostAndActiveCluster() throws EntityNotFoundException, ClusterStatusException;
 
     public boolean isActiveHost(Host host) throws EntityNotFoundException;
 
