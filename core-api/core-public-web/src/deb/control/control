@@ -1,0 +1,10 @@
+Package: openstack-atlas
+Version: [[version]]
+Section: libs
+Priority: optional
+Architecture: all
+Depends: python-software-properties, sun-java6-jdk, sun-java6-jre, unzip, mysql-server
+Maintainer: Jorge Miramontes <jorge.miramontes@rackspace.com>
+Description: Openstack Atlas Cloud Load Balancing solution
+ that currently runs under the Glassfish web server
+Distribution: development

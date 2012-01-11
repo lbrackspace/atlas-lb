@@ -1,0 +1,24 @@
+#! /bin/bash
+
+case "$1" in
+    install)
+        echo "preinst called with arguments: '$1', '$2'"
+    ;;
+
+    upgrade)
+        echo "preinst called with arguments: '$1', '$2'"
+    ;;
+
+    abort-upgrade)
+        echo "preinst called with argument: '$1'"
+    ;;
+
+    *)
+    echo "preinst called with unknown argument '$1'" >&2
+    exit 0
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0
