@@ -24,13 +24,9 @@ public class AccountLimitServiceImpl extends BaseService implements AccountLimit
 
     @Override
     public void save(AccountLimit accountLimit) throws BadRequestException {
-        try {
-            AccountLimit dbLimit = accountLimitRepository.getByAccountIdAndType(accountLimit.getAccountId(), accountLimit.getLimitType());
-            if (dbLimit != null) {
-                throw new BadRequestException("A limit for the Limit Type " + dbLimit.getLimitType().getName().toString() + " already exists for the account id " + dbLimit.getAccountId());
-            }
-        } catch(Exception e) {
-            //This is good. No record for the account and type already exists.
+        AccountLimit dbLimit = accountLimitRepository.getByAccountIdAndType(accountLimit.getAccountId(), accountLimit.getLimitType());
+        if (dbLimit != null) {
+            throw new BadRequestException("A limit for the Limit Type " + dbLimit.getLimitType().getName().toString() + " already exists for the account id " + dbLimit.getAccountId());
         }
 
         accountLimitRepository.save(accountLimit);
@@ -39,7 +35,7 @@ public class AccountLimitServiceImpl extends BaseService implements AccountLimit
     @Override
     public void delete(AccountLimit accountLimit) throws EntityNotFoundException {
         AccountLimit dbLimit = accountLimitRepository.getById(accountLimit.getId());
-        if(accountLimit.getAccountId() != dbLimit.getAccountId()) {
+        if (!accountLimit.getAccountId().equals(dbLimit.getAccountId())) {
             String errMsg = String.format("Cannot access accountLimit {id=%d}", accountLimit.getId());
             throw new EntityNotFoundException(errMsg);
         }
@@ -49,7 +45,7 @@ public class AccountLimitServiceImpl extends BaseService implements AccountLimit
     @Override
     public AccountLimit update(AccountLimit accountLimit) throws EntityNotFoundException {
         AccountLimit dbLimit = accountLimitRepository.getById(accountLimit.getId());
-        if(accountLimit.getAccountId() != dbLimit.getAccountId()) {
+        if (!accountLimit.getAccountId().equals(dbLimit.getAccountId())) {
             String errMsg = String.format("Cannot access accountLimit {id=%d}", accountLimit.getId());
             throw new EntityNotFoundException(errMsg);
         }

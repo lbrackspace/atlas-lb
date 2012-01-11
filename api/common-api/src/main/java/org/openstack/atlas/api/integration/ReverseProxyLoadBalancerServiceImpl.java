@@ -388,8 +388,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     @Override
     public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
-        String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
-        Stats lbStats;
+        String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId); Stats lbStats;
 
         long cal = getInstance().getTimeInMillis();
         lbStats = (Stats) atlasCache.get(key);

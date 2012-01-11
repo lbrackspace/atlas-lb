@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+
+import getpass
+import base64
+import sys
+import os
+
+def printf(format,*args): sys.stdout.write(format%args)
+def fprintf(fp,format,*args): fp.write(format%args)
+
+def usage(prog):
+    printf("Usage is %s <User:password>\n",prog)
+    printf("Store the user name and password in the pickle\n")
+    printf("realm.db\n")
+    printf("\n")
+    printf("example %s someone:somepassword\n",prog)
+
+def chop(line):
+    return line.replace("\n","").replace("\r","")
+
+def getuserpass(uprompt="Enter user name: ",pprompt="passwd: ",fp=sys.stdout):
+    fprintf(fp,"%s",uprompt)
+    user   = chop(sys.stdin.readline())
+    passwd = getpass.getpass(pprompt)
+    return (user,passwd)
+
+if __name__ == "__main__":
+    (user,passwd) = getuserpass()
+    realm = "BASIC %s"%(base64.standard_b64encode("%s:%s"%(user,passwd)))
+    headers = {"Authorization":realm}
+    printf("Autorization: %s\n",realm)
+
+
