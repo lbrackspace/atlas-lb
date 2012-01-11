@@ -234,7 +234,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
-        boolean connectionLogging = serviceStubs.getVirtualServerBinding().getLogEnabled(new String[]{virtualServerName})[0];
 
         try {
             if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
@@ -258,8 +257,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             if (rateLimitExists) {
                 removeRateLimitRulesFromVirtualServer(serviceStubs, virtualServerName);
             }
-
-            serviceStubs.getVirtualServerBinding().setLogEnabled(new String[]{virtualServerName}, new boolean[]{false});
 
             LOG.debug(String.format("Updating protocol to '%s' for virtual server '%s'...", protocol.name(), virtualServerName));
             serviceStubs.getVirtualServerBinding().setProtocol(new String[]{virtualServerName}, new VirtualServerProtocol[]{ZxtmConversionUtils.mapProtocol(protocol)});
@@ -287,13 +284,46 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             // Update log format to match protocol
-            if (connectionLogging) {
+            if (serviceStubs.getVirtualServerBinding().getLogEnabled(new String[]{virtualServerName})[0]) {
                 updateConnectionLogging(config, lbId, accountId, true, protocol);
             }
         } catch (Exception e) {
             throw new ZxtmRollBackException("Update protocol request canceled.", e);
         }
     }
+    /*
+    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, boolean isConnectionLogging, LoadBalancerProtocol protocol)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+        final String rollBackMessage = "Update connection logging request canceled.";
+        final String nonHttpLogFormat = "%v %t %h %A:%p %n %B %b %T";
+        final String httpLogFormat = "%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\"";
+
+        if (isConnectionLogging) {
+            LOG.debug(String.format("ENABLING logging for virtual server '%s'...", virtualServerName));
+        } else {
+            LOG.debug(String.format("DISABLING logging for virtual server '%s'...", virtualServerName));
+        }
+
+        try {
+            if (protocol != LoadBalancerProtocol.HTTP) {
+                serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{nonHttpLogFormat});
+            } else if (protocol == LoadBalancerProtocol.HTTP) {
+                serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{httpLogFormat});
+            }
+            serviceStubs.getVirtualServerBinding().setLogFilename(new String[]{virtualServerName}, new String[]{config.getLogFileLocation()});
+            serviceStubs.getVirtualServerBinding().setLogEnabled(new String[]{virtualServerName}, new boolean[]{isConnectionLogging});
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+                LOG.error(String.format("Virtual server '%s' does not exist. Cannot update connection logging.", virtualServerName));
+            }
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }
+
+        LOG.info(String.format("Successfully updated connection logging for virtual server '%s'...", virtualServerName));
+    }
+     */
 
     @Override
     public void updatePort(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Integer port)

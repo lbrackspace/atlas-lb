@@ -69,6 +69,16 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     @Test
+    public void changeProtocolWithConnectionLoggingEnabled() {
+        try {
+            zxtmAdapter.updateConnectionLogging(config, lb.getId(), lb.getAccountId(), true, lb.getProtocol());
+            zxtmAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(), HTTPS);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
     public void updatePort() throws Exception {
         try {
             zxtmAdapter.updatePort(config, lb.getId(), lb.getAccountId(), 8080);
