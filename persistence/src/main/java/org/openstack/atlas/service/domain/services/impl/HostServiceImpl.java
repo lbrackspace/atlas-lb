@@ -1,6 +1,7 @@
 package org.openstack.atlas.service.domain.services.impl;
 
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
@@ -14,7 +15,7 @@ import java.util.List;
 
 @Service
 public class HostServiceImpl extends BaseService implements HostService {
-    
+
     @Override
     public Host getById(Integer id) throws EntityNotFoundException {
         return hostRepository.getById(id);
@@ -37,7 +38,7 @@ public class HostServiceImpl extends BaseService implements HostService {
 
 
     @Override
-    public Host getDefaultActiveHostAndActiveCluster() throws EntityNotFoundException {
+    public Host getDefaultActiveHostAndActiveCluster() throws ClusterStatusException, EntityNotFoundException {
         return hostRepository.getDefaultActiveHost(clusterRepository.getActiveCluster().getId());
     }
 
@@ -54,13 +55,13 @@ public class HostServiceImpl extends BaseService implements HostService {
     @Transactional
     public void deleteHost(Host queueHost) throws Exception {
 
-               List<LoadBalancer> dbLoadBalancers = hostRepository.getLoadBalancers(queueHost.getId());
-               if (dbLoadBalancers != null && dbLoadBalancers.size() > 0 ) {
-                   throw new UnprocessableEntityException("Host is un-processable - has loadbalancers associated to it");
+        List<LoadBalancer> dbLoadBalancers = hostRepository.getLoadBalancers(queueHost.getId());
+        if (dbLoadBalancers != null && dbLoadBalancers.size() > 0) {
+            throw new UnprocessableEntityException("Host is un-processable - has loadbalancers associated to it");
 
-               }
+        }
 
-               hostRepository.delete(queueHost);
+        hostRepository.delete(queueHost);
 
     }
 
@@ -235,7 +236,7 @@ public class HostServiceImpl extends BaseService implements HostService {
         LOG.debug("Adding the backup to the database...");
         backup = hostRepository.createBackup(dbHost, backup);
         LOG.debug("Backup successfully added to the database.");
-        
+
         return backup;
     }
 
@@ -272,49 +273,49 @@ public class HostServiceImpl extends BaseService implements HostService {
     }
 
 
-     @Override
-     @Transactional
-     public void activateHost(Host host) throws Exception {
-         Host dbHost = null;
+    @Override
+    @Transactional
+    public void activateHost(Host host) throws Exception {
+        Host dbHost = null;
 
-         try {
-             dbHost = hostRepository.getById(host.getId());
-         } catch (EntityNotFoundException enfe) {
+        try {
+            dbHost = hostRepository.getById(host.getId());
+        } catch (EntityNotFoundException enfe) {
             throw new EntityNotFoundException(String.format("Cannot find host with id #%d", host.getId()));
-         }
+        }
 
-         if (!(dbHost.getHostStatus().equals(HostStatus.BURN_IN) || dbHost.getHostStatus().equals(HostStatus.OFFLINE))) {
-             throw new ImmutableEntityException(String.format("Host %d is currently active. Canceling request...", host.getId()));
-         }
+        if (!(dbHost.getHostStatus().equals(HostStatus.BURN_IN) || dbHost.getHostStatus().equals(HostStatus.OFFLINE))) {
+            throw new ImmutableEntityException(String.format("Host %d is currently active. Canceling request...", host.getId()));
+        }
 
 //       TODO: Make Zeus call here       "Activating Host in ZEUS.. TODO: No Zeus call yet :(");
-         hostRepository.update(dbHost);
+        hostRepository.update(dbHost);
 
-     }
+    }
 
-     @Override
-     @Transactional
-     public void inActivateHost(Host host) throws Exception {
-         Host dbHost = null;
+    @Override
+    @Transactional
+    public void inActivateHost(Host host) throws Exception {
+        Host dbHost = null;
 
-         try {
-             dbHost = hostRepository.getById(host.getId());
-         } catch (EntityNotFoundException enfe) {
+        try {
+            dbHost = hostRepository.getById(host.getId());
+        } catch (EntityNotFoundException enfe) {
             throw new EntityNotFoundException(String.format("Cannot find host with id #%d", host.getId()));
-         }
+        }
 
-         if (!(dbHost.getHostStatus().equals(HostStatus.BURN_IN) || dbHost.getHostStatus().equals(HostStatus.OFFLINE))) {
-             throw new ImmutableEntityException(String.format("Host %d is currently active. Canceling request...", host.getId()));
-         }
+        if (!(dbHost.getHostStatus().equals(HostStatus.BURN_IN) || dbHost.getHostStatus().equals(HostStatus.OFFLINE))) {
+            throw new ImmutableEntityException(String.format("Host %d is currently active. Canceling request...", host.getId()));
+        }
 
 //       TODO: Make Zeus call here       "In Activating Host in ZEUS.. TODO: No Zeus call yet :(");
-         hostRepository.update(dbHost);
+        hostRepository.update(dbHost);
 
-     }
+    }
 
     @Override
     public boolean isActiveHost(Host host) throws EntityNotFoundException {
-        if(host.getHostStatus() == null) host = hostRepository.getById(host.getId());
+        if (host.getHostStatus() == null) host = hostRepository.getById(host.getId());
         return !(host.getHostStatus().equals(HostStatus.BURN_IN) || host.getHostStatus().equals(HostStatus.OFFLINE));
 
     }

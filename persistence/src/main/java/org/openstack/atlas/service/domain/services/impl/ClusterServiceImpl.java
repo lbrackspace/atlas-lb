@@ -12,6 +12,7 @@ import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPRangeTooBigException
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.pojos.VirtualIpAvailabilityReport;
@@ -53,7 +54,7 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
     }
 
     @Override
-    public Cluster getActiveCluster() throws EntityNotFoundException {
+    public Cluster getActiveCluster() throws EntityNotFoundException, ClusterStatusException {
         return clusterRepository.getActiveCluster();
     }
 

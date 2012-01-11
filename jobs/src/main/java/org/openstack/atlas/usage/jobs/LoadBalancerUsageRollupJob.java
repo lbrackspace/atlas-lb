@@ -93,7 +93,9 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
             LOG.info("Deleting processed usage entries...");
             pollingUsageRepository.deleteAllRecordsBefore(rollupTimeMarker);
         } catch (Exception e) {
+            LOG.error("Usage rollup job failed!", e);
             jobStateService.updateJobState(JobName.LB_USAGE_ROLLUP, JobStateVal.FAILED);
+            return;
         }
 
         Calendar endTime = Calendar.getInstance();

@@ -523,7 +523,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
     }
 
-    private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException {
+    private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException {
         boolean isHost = false;
         LoadBalancer gLb = new LoadBalancer();
 
@@ -573,14 +573,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
             }
         }
-        Host host = hostService.getDefaultActiveHostAndActiveCluster();
+
         if (!isHost) {
-            loadBalancer.setHost(host);
+            loadBalancer.setHost(hostService.getDefaultActiveHostAndActiveCluster());
         } else {
-            if (gLb != null && !gLb.getHost().getCluster().getId().equals(host.getCluster().getId())) {
-                throw new UnprocessableEntityException("There is an error regarding the virtual IP hosts, with a shared virtual IP the LoadBalancers must reside within the same cluster.");
+            if (gLb != null) {
+                loadBalancer.setHost(gLb.getHost());
             }
-            loadBalancer.setHost(gLb.getHost());
         }
     }
 
@@ -723,7 +722,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return validLbs;
     }
 
-    private void processSpecifiedOrDefaultHost(LoadBalancer lb) throws EntityNotFoundException, BadRequestException {
+    private void processSpecifiedOrDefaultHost(LoadBalancer lb) throws EntityNotFoundException, BadRequestException, ClusterStatusException {
         Integer hostId = null;
         Host specifiedHost;
 
