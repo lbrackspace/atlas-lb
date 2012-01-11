@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.api.repository.ValidatorRepository;
+import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
 import org.openstack.atlas.service.domain.usage.entities.HostUsage;

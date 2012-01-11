@@ -245,26 +245,21 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         try {
-            // Update log format to match protocol
-            if (serviceStubs.getVirtualServerBinding().getLogEnabled(new String[]{virtualServerName})[0]) {
-                updateConnectionLogging(config, lbId, accountId, true, protocol);
-            }
-        } catch (Exception e) {
-            throw new ZxtmRollBackException("Update protocol request canceled.", e);
-        }
-
-        try {
             // Drop rate-limit Rule if it exists
             boolean rateLimitExists = false;
             String[] rateNames = serviceStubs.getZxtmRateCatalogService().getRateNames();
             for (String rateName : rateNames) {
                 if (rateName.equals(virtualServerName)) {
                     rateLimitExists = true;
+                    break;
                 }
             }
             if (rateLimitExists) {
                 removeRateLimitRulesFromVirtualServer(serviceStubs, virtualServerName);
             }
+
+            // Disable logging for protocol switch
+            serviceStubs.getVirtualServerBinding().setLogEnabled(new String[]{virtualServerName}, new boolean[]{false});
 
             LOG.debug(String.format("Updating protocol to '%s' for virtual server '%s'...", protocol.name(), virtualServerName));
             serviceStubs.getVirtualServerBinding().setProtocol(new String[]{virtualServerName}, new VirtualServerProtocol[]{ZxtmConversionUtils.mapProtocol(protocol)});
@@ -287,6 +282,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.error(String.format("Cannot update protocol for virtual server '%s' as it does not exist.", virtualServerName), e);
             }
+            throw new ZxtmRollBackException("Update protocol request canceled.", e);
+        }
+
+        try {
+            // Update log format to match protocol
+            if (serviceStubs.getVirtualServerBinding().getLogEnabled(new String[]{virtualServerName})[0]) {
+                updateConnectionLogging(config, lbId, accountId, true, protocol);
+            }
+        } catch (Exception e) {
             throw new ZxtmRollBackException("Update protocol request canceled.", e);
         }
     }

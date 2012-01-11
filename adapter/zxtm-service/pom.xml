@@ -4,7 +4,6 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-
         <version>1.8.13-SNAPSHOT</version>
     </parent>
 
