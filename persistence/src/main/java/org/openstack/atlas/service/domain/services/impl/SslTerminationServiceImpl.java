@@ -2,7 +2,11 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.*;
+import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,16 +15,30 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
     @Transactional
     @Override
-    public SslTermination updateSslTermination(Integer lbId, Integer accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
+    public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbId, accountId);
-        isLbActive(dbLoadBalancer);
-        isProtocolSecure(dbLoadBalancer);
-        //TODO: validate here...
+        ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
 
-        if (sslTermination != null) {
-            return sslTerminationRepository.setSslTermination(lbId, sslTermination);
+        LOG.debug("Updating the lb status to pending_update");
+        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
+            LOG.warn(message);
+            throw new ImmutableEntityException(message);
         }
-        return new SslTermination();
+        isProtocolSecure(dbLoadBalancer);
+
+        //TODO: validate here...
+        ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(sslTermination.getPrivatekey(), sslTermination.getCertificate(), sslTermination.getIntermediateCertificate());
+        if (zeusCertFile.getErrorList().size() > 0) {
+            //TODO: throw exception
+        } else {
+            sslTerminationRepository.setSslTermination(lbId, sslTermination);
+            //Do not persiste SslTermination beyond this point...
+            zeusSslTermination.setSslTermination(sslTermination);
+            zeusSslTermination.setCertIntermediateCert(zeusCertFile.getPublic_cert());
+        }
+
+        return zeusSslTermination;
     }
 
     @Transactional

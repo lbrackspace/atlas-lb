@@ -54,7 +54,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName;
         if (!lb.hasSsl()) {
-            virtualServerName = ZxtmNameBuilder.genVSName(lb.getId(), lb.getAccountId());
+            virtualServerName = ZxtmNameBuilder.genVSName(lb);
         } else {
             virtualServerName = ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
         }
@@ -635,7 +635,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void updateSslTermination(LoadBalancerEndpointConfiguration conf, int id, int accountId, LoadBalancer loadBalancer, SslTermination sslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void updateSslTermination(LoadBalancerEndpointConfiguration conf, int id, int accountId, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         final String virtualServerName = ZxtmNameBuilder.genSslVSName(id, accountId);
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
         VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
@@ -655,8 +655,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         try {
             LOG.error(String.format("Importing certificate for load balancer: ", id));
             CertificateFiles certificateFiles = new CertificateFiles();
-            certificateFiles.setPrivate_key(sslTermination.getPrivatekey());
-            certificateFiles.setPublic_cert(sslTermination.getCertificate());
+            certificateFiles.setPrivate_key(sslTermination.getSslTermination().getPrivatekey());
+            certificateFiles.setPublic_cert(sslTermination.getCertIntermediateCert());
             catlog.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
 
             LOG.error("Attaching and enabling certificate for load balancer: " + id);

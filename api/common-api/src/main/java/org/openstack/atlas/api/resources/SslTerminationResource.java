@@ -8,8 +8,10 @@ import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
@@ -34,21 +36,23 @@ public class SslTerminationResource extends CommonDependencyProvider {
         }
 
         try {
+
             org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(ssl,
                     org.openstack.atlas.service.domain.entities.SslTermination.class);
 
-            //do this or just pass what the user gave us back to them
-            SslTermination apiSsl = dozerMapper.map(sslTerminationService.updateSslTermination(loadBalancerId, accountId,
-                    domainSslTermination), SslTermination.class);
+
+//            SslTermination apiSsl = dozerMapper.map(sslTerminationService.updateSslTermination(loadBalancerId, accountId,
+//                    domainSslTermination), SslTermination.class);
+            ZeusSslTermination zeusSslTermination = sslTerminationService.updateSslTermination(loadBalancerId, accountId, domainSslTermination);
 
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setAccountId(accountId);
             dataContainer.setLoadBalancerId(loadBalancerId);
             dataContainer.setUserName(getUserName(requestHeaders));
-            dataContainer.setQueSslTermination(domainSslTermination);
+            dataContainer.setZeusSslTermination(zeusSslTermination);
 
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_SSL_TERMINATION, dataContainer);
-            return Response.status(Response.Status.ACCEPTED).entity(apiSsl).build();
+            return Response.status(Response.Status.ACCEPTED).entity(domainSslTermination).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

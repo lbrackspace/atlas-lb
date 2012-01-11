@@ -4,10 +4,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 
 import javax.jms.Message;
 
@@ -28,7 +30,7 @@ public class UpdateSslTerminationListener extends BaseListener {
         LOG.debug(message);
 
         MessageDataContainer dataContainer = getDataContainerFromMessage(message);
-        SslTermination queTermination = dataContainer.getQueTermination();
+        ZeusSslTermination queTermination = dataContainer.getZeusSslTermination();
         LoadBalancer dbLoadBalancer = new LoadBalancer();
         SslTermination dbTermination;
 
@@ -55,12 +57,14 @@ public class UpdateSslTerminationListener extends BaseListener {
 
         try {
             LOG.debug("Updating load balancer ssl termination in Zeus...");
-            if (queTermination.getCertificate() == null && queTermination.getIntermediateCertificate() == null && queTermination.getPrivatekey() == null) {
+            if (queTermination.getSslTermination().getCertificate() == null && queTermination.getSslTermination().getIntermediateCertificate() == null && queTermination.getSslTermination().getPrivatekey() == null) {
+                LOG.debug("Updating load balancer  in Zeus to enable/disable ssl termination...");
                 reverseProxyLoadBalancerService.enableDisableSslTermination(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), dbLoadBalancer.getSslTermination().isEnabled());
                 LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
             } else {
+                LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
                 reverseProxyLoadBalancerService.updateSslTermination(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), dbLoadBalancer, queTermination);
-                LOG.debug("Updating load balancer  in Zeus to enable/disable ssl termination...");
+                LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
             }
         } catch (Exception e) {
             String alertDescription = String.format("An error occurred while creating loadbalancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId());
@@ -71,6 +75,9 @@ public class UpdateSslTerminationListener extends BaseListener {
             notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.SSL_OFF);
             return;
         }
+
+        // Update load balancer status in DB
+        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
         addAtomEntriesForSslTermination(dbLoadBalancer, dbLoadBalancer.getSslTermination());
         // Notify usage processor

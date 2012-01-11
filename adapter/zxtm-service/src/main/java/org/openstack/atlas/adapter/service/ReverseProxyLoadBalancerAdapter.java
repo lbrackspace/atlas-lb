@@ -8,6 +8,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.apache.axis.AxisFault;
 import org.openstack.atlas.service.domain.pojos.Stats;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
@@ -160,7 +161,7 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content)
             throws RemoteException;
 
-    public void updateSslTermination(LoadBalancerEndpointConfiguration config, int loadBalancerId, int accountId, LoadBalancer loadBalancer, SslTermination sslTermination)
+    public void updateSslTermination(LoadBalancerEndpointConfiguration config, int loadBalancerId, int accountId, LoadBalancer loadBalancer, ZeusSslTermination sslTermination)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
     public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb)

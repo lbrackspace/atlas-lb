@@ -12,6 +12,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
@@ -606,7 +607,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void updateSslTermination(int lbId, int accountId, LoadBalancer loadBalancer, SslTermination sslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, ZxtmRollBackException {
+    public void updateSslTermination(int lbId, int accountId, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, ZxtmRollBackException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
             reverseProxyLoadBalancerAdapter.updateSslTermination(config, lbId, accountId, loadBalancer, sslTermination);

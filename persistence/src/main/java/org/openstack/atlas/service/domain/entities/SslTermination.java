@@ -26,13 +26,13 @@ public class SslTermination extends Entity implements Serializable {
     private String intermediateCertificate;
 
     @Column(name = "enabled", nullable = true)
-    private boolean enabled =  true;
+    private boolean enabled = true;
 
     @Column(name = "secure_port", nullable = true)
     private int securePort;
 
     @Column(name = "secure_traffic_only", nullable = true)
-    private boolean secureTrafficOnly = false;
+    private boolean secureTrafficOnly;
 
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;

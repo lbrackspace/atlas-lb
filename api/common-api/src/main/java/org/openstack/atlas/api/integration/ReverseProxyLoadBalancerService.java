@@ -9,6 +9,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 
 import java.net.MalformedURLException;
@@ -106,7 +107,7 @@ public interface ReverseProxyLoadBalancerService {
 
     public void setDefaultErrorFile(LoadBalancer loadBalancer) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
 
-    public void updateSslTermination(int lbId, int accountId, LoadBalancer loadBalancer, SslTermination sslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, ZxtmRollBackException;
+    public void updateSslTermination(int lbId, int accountId, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, ZxtmRollBackException;
 
     public void removeSslTermination(LoadBalancer lb) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException;
 

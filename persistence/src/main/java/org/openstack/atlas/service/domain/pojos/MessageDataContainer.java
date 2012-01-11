@@ -18,7 +18,7 @@ public class MessageDataContainer implements Serializable {
     private Integer clusterId;
     private List<Integer> newVipIds;
     private List<Integer> newNodeIds;
-    private SslTermination queTermination;
+    private ZeusSslTermination zeusSslTermination;
     //for batch deletes
     private List<Integer> ids;
 
@@ -111,11 +111,11 @@ public class MessageDataContainer implements Serializable {
         this.clusterId = clusterId;
     }
 
-    public SslTermination getQueTermination() {
-        return queTermination;
+    public ZeusSslTermination getZeusSslTermination() {
+        return zeusSslTermination;
     }
 
-    public void setQueSslTermination(SslTermination queTermination) {
-        this.queTermination = queTermination;
+    public void setZeusSslTermination(ZeusSslTermination zeusSslTermination) {
+        this.zeusSslTermination = zeusSslTermination;
     }
 }
