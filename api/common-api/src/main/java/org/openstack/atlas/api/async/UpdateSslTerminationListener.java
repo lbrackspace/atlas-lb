@@ -38,8 +38,6 @@ public class UpdateSslTerminationListener extends BaseListener {
         try {
             LOG.debug("Grabbing loadbalancer...");
             dbLoadBalancer = loadBalancerService.get(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
-            dbLoadBalancer.getLoadBalancerJoinVip6Set();
-            dbLoadBalancer.getLoadBalancerJoinVipSet();
             dbLoadBalancer.setUserName(dataContainer.getUserName());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", dataContainer.getLoadBalancerId());
