@@ -340,6 +340,38 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
+    private void updatePort(LoadBalancerEndpointConfiguration config, String virtualServerName, Integer port)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        try {
+            LOG.debug(String.format("Updating port to '%d' for virtual server '%s'...", port, virtualServerName));
+            serviceStubs.getVirtualServerBinding().setPort(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(port)});
+            LOG.info(String.format("Successfully updated port for virtual server '%s'.", virtualServerName));
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+                LOG.error(String.format("Cannot update port for virtual server '%s' as it does not exist.", virtualServerName), e);
+            }
+            throw new ZxtmRollBackException("Update port request canceled.", e);
+        }
+    }
+
+    private void suspendUnsuspendVirtualServer(LoadBalancerEndpointConfiguration config, String virtualServerName, boolean isSuspended)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        try {
+            LOG.debug(String.format("Updating suspension to '%d' for virtual server '%s'...", isSuspended, virtualServerName));
+            serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{isSuspended});
+            LOG.info(String.format("Successfully updated suspension for virtual server '%s'.", virtualServerName));
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+                LOG.error(String.format("Cannot suspend/unsuspend virtual server '%s' as it does not exist.", virtualServerName), e);
+            }
+            throw new ZxtmRollBackException("Suspend/unsuspend request canceled.", e);
+        }
+    }
+
     @Override
     public void setLoadBalancingAlgorithm(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, LoadBalancerAlgorithm algorithm)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
@@ -635,8 +667,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void updateSslTermination(LoadBalancerEndpointConfiguration conf, int id, int accountId, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        final String virtualServerName = ZxtmNameBuilder.genSslVSName(id, accountId);
+    public void updateSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        final String virtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
         VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
         CatalogSSLCertificatesBindingStub catlog = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
@@ -647,61 +679,69 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         } catch (AxisFault af) {
             if (af instanceof ObjectAlreadyExists) {
                 //Expected if it already exists
+                LOG.warn(String.format("Object already exist for ssl termination loadbalancer: ", virtualServerName));
             } else {
                 throw new ZxtmRollBackException("Secure virtual server could not be created..", af);
             }
         }
 
         try {
-            LOG.error(String.format("Importing certificate for load balancer: ", id));
+            if (serviceStubs.getVirtualServerBinding().getPort(new String[]{virtualServerName})[0].equals(sslTermination.getSslTermination().getSecurePort())) {
+                LOG.info(String.format("Updating secure servers port for ssl termination load balancer in zeus...", virtualServerName));
+                updatePort(conf, virtualServerName, sslTermination.getSslTermination().getSecurePort());
+                LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer in zeus...", virtualServerName));
+            }
+
+            LOG.info(String.format("Importing certificate for load balancer: ", loadBalancer.getId()));
             CertificateFiles certificateFiles = new CertificateFiles();
             certificateFiles.setPrivate_key(sslTermination.getSslTermination().getPrivatekey());
             certificateFiles.setPublic_cert(sslTermination.getCertIntermediateCert());
             catlog.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
+            LOG.debug(String.format("Successfully imported certificate for load balancer: ", loadBalancer.getId()));
 
-            LOG.error("Attaching and enabling certificate for load balancer: " + id);
+            LOG.info("Attaching and enabling certificate for load balancer: " + loadBalancer.getId());
             virtualServerService.setSSLCertificate(new String[]{virtualServerName}, new String[]{virtualServerName});
-            enableDisableSslTermination(conf, id, accountId, loadBalancer.getSslTermination().isEnabled());
+            enableDisableSslTermination(conf, loadBalancer, loadBalancer.getSslTermination().isEnabled());
+            LOG.debug("Succesfullly attached and enabled certificate for load balancer: " + loadBalancer.getId());
 
-            //Check for other values/features
-            if (loadBalancer.isSecureOnly()) {
-                LOG.info("Suspending/disabling non-secure virtual server for load balancer: " + loadBalancer.getId());
-                serviceStubs.getVirtualServerBinding().setEnabled(new String[]{ZxtmNameBuilder.genVSName(loadBalancer)}, new boolean[]{false});
-            }
 
+            LOG.info("Suspending/disabling non-secure virtual server for load balancer: " + loadBalancer.getId());
+            suspendUnsuspendVirtualServer(conf, virtualServerName, sslTermination.getSslTermination().isSecureTrafficOnly());
+            LOG.debug("Successfully suspended/disabled non-secure virtual server for load balancer: " + loadBalancer.getId());
         } catch (AxisFault af) {
-            LOG.error("there was a error setting ssl termination in zxtm adapter for load balancer " + id);
+            LOG.error("there was a error setting ssl termination in zxtm adapter for load balancer " + loadBalancer.getId());
             throw new RuntimeException(af);
         }
     }
 
     @Override
-    public void removeSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
+    public void removeSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         String virtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
 
         try {
             //Detach and remove ssl termination (shadow server)
-            LOG.error(String.format("Detaching and disabling certificate for load balancer: '%s'", loadBalancer.getId()));
-            enableDisableSslTermination(conf, loadBalancer.getId(), loadBalancer.getAccountId(), false);
+            LOG.info(String.format("Detaching and disabling certificate for load balancer: '%s'", loadBalancer.getId()));
+            enableDisableSslTermination(conf, loadBalancer, false);
             serviceStubs.getVirtualServerBinding().setSSLCertificate(new String[]{virtualServerName}, new String[]{""});
             serviceStubs.getZxtmCatalogSSLCertificatesBinding().deleteCertificate(new String[]{virtualServerName});
 
             //Removing rateLimit from shadow server
-            LOG.debug(String.format("Removing a rate limit from load balancer...'%s'...", loadBalancer.getId()));
+            LOG.info(String.format("Removing a rate limit from load balancer...'%s'...", loadBalancer.getId()));
             removeRateLimitRulesFromVirtualServer(serviceStubs, virtualServerName);
-//            serviceStubs.getZxtmRateCatalogService().deleteRate(new String[]{virtualServerName});
-            LOG.info(String.format("Rules detached from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
+            LOG.debug(String.format("Rules detached from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
             //Removing the shadow VS
             LOG.info(String.format("Removing the shadow virtual server..."));
             deleteVirtualServer(serviceStubs, virtualServerName);
+            LOG.debug(String.format("Successfully removed the shadow virtual server..."));
 
             //Un-suspending non-secure vs
-            LOG.info(String.format("Attempting to re-enable non-secure virtual server for loadbalancer: '%s'", loadBalancer.getId()));
-            serviceStubs.getVirtualServerBinding().setEnabled(new String[]{ZxtmNameBuilder.genVSName(loadBalancer)}, new boolean[]{true});
+            LOG.info("Suspending/disabling non-secure virtual server for load balancer: " + loadBalancer.getId());
+            suspendUnsuspendVirtualServer(conf, virtualServerName, loadBalancer.getSslTermination().isSecureTrafficOnly());
+            LOG.debug("Successfully suspended/disabled non-secure virtual server for load balancer: " + loadBalancer.getId());
 
-        } catch (AxisFault af) {
+        } catch (RemoteException af) {
             if (af instanceof ObjectDoesNotExist) {
                 LOG.warn(String.format("There was an warning removing rate limit from the shadow server (it may not exist) for load balancer: '%s' ", loadBalancer.getId()));
             } else {
@@ -712,14 +752,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void enableDisableSslTermination(LoadBalancerEndpointConfiguration conf, int loadBalancerId, int accountId, boolean isSslTermination) throws RemoteException, InsufficientRequestException {
-        final String virtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancerId, accountId);
+    public void enableDisableSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isSslTermination) throws RemoteException, InsufficientRequestException {
+        final String virtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
 
         try {
             serviceStubs.getVirtualServerBinding().setSSLDecrypt(new String[]{virtualServerName}, new boolean[]{isSslTermination});
-        } catch (AxisFault af) {
-            LOG.error(String.format("There was a error updating ssl termination in zxtm adapter for loadbalancer: ", loadBalancerId));
+        } catch (RemoteException af) {
+            LOG.error(String.format("There was a error updating ssl termination in zxtm adapter for loadbalancer: ", loadBalancer.getId()));
             throw new RuntimeException(af);
         }
 

@@ -1,11 +1,7 @@
 package org.openstack.atlas.service.domain.services;
 
-import javassist.tools.rmi.ObjectNotFoundException;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.*;
-import org.openstack.atlas.service.domain.pojos.AccountBilling;
-import org.openstack.atlas.service.domain.pojos.AccountLoadBalancer;
-import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 
 import java.util.Calendar;
@@ -17,5 +13,5 @@ public interface SslTerminationService {
 
     public boolean deleteSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException;
 
-    public SslTermination getSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException;
+    public org.openstack.atlas.service.domain.entities.SslTermination getSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException;
 }

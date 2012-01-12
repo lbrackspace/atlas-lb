@@ -37,13 +37,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
 
         try {
 
-            org.openstack.atlas.service.domain.entities.SslTermination domainSslTermination = dozerMapper.map(ssl,
-                    org.openstack.atlas.service.domain.entities.SslTermination.class);
-
-
-//            SslTermination apiSsl = dozerMapper.map(sslTerminationService.updateSslTermination(loadBalancerId, accountId,
-//                    domainSslTermination), SslTermination.class);
-            ZeusSslTermination zeusSslTermination = sslTerminationService.updateSslTermination(loadBalancerId, accountId, domainSslTermination);
+            ZeusSslTermination zeusSslTermination = sslTerminationService.updateSslTermination(loadBalancerId, accountId, ssl);
 
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setAccountId(accountId);
@@ -52,7 +46,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
             dataContainer.setZeusSslTermination(zeusSslTermination);
 
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_SSL_TERMINATION, dataContainer);
-            return Response.status(Response.Status.ACCEPTED).entity(domainSslTermination).build();
+            return Response.status(Response.Status.ACCEPTED).entity(zeusSslTermination.getSslTermination()).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
@@ -72,7 +66,6 @@ public class SslTerminationResource extends CommonDependencyProvider {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
     }
-
 
 
     private Response getFeedResponse(Integer page) {
