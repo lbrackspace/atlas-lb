@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+echo "Removing 'glassfish' user..."
+sudo deluser glassfish
+
+echo "Removing 'glassfishadm' group..."
+sudo delgroup glassfishadm
+
+echo "Removing old files..."
+sudo rm -rf /home/glassfish
+
+#DEBHELPER#
+
+exit 0

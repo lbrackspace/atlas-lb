@@ -19,7 +19,7 @@
             <artifactId>core-common-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-       <!-- <dependency>
+        <!-- <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId></artifactId>
             <version>${project.version}</version>
@@ -38,7 +38,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>core-netscaler-adapter</artifactId>
             <version>${project.version}</version>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>atlas-rax-api</artifactId>
@@ -84,4 +84,64 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>gen-deb-packages</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>jdeb</artifactId>
+                        <groupId>org.vafer</groupId>
+                        <version>0.9</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jdeb</goal>
+                                </goals>
+                                <configuration>
+                                    <deb>${project.build.directory}/openstack-atlas_${version}_all.deb</deb>
+                                    <dataSet>
+                                        <data>
+                                            <src>${project.basedir}/src/deb/contrib/db</src>
+                                            <type>directory</type>
+                                            <mapper>
+                                                <type>perm</type>
+                                                <prefix>/opt/openstack/atlas/db</prefix>
+                                            </mapper>
+                                        </data>
+                                        <data>
+                                            <src>${project.basedir}/src/deb/contrib/maven</src>
+                                            <type>directory</type>
+                                            <mapper>
+                                                <type>perm</type>
+                                                <prefix>/opt/openstack/atlas/maven</prefix>
+                                            </mapper>
+                                        </data>
+                                        <data>
+                                            <src>${project.basedir}/src/deb/contrib/config</src>
+                                            <type>directory</type>
+                                            <mapper>
+                                                <type>perm</type>
+                                                <prefix>/etc/openstack/atlas/config</prefix>
+                                            </mapper>
+                                        </data>
+                                        <data>
+                                            <src>${project.build.directory}/${project.build.finalName}.war</src>
+                                            <type>file</type>
+                                            <mapper>
+                                                <type>perm</type>
+                                                <prefix>/opt/openstack/atlas/api</prefix>
+                                            </mapper>
+                                        </data>
+                                    </dataSet>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
