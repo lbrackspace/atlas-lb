@@ -24,17 +24,12 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
         org.openstack.atlas.service.domain.entities.SslTermination updatedSslTermination;
 
-        LOG.debug("Updating the lb status to pending_update");
-        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
-            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
-            LOG.warn(message);
-            throw new ImmutableEntityException(message);
-        }
 
         //If the lb is already a secure protocol, reject the request...
         isProtocolSecure(dbLoadBalancer);
 
-         updatedSslTermination = verifyAttributes(sslTermination, dbLoadBalancer);
+        updatedSslTermination = verifyAttributes(sslTermination, dbLoadBalancer);
+
 
         //Validate the certifications and key return the list of errors if there are any, otherwise, pass the transport object to async layer...
         ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(updatedSslTermination.getPrivatekey(), updatedSslTermination.getCertificate(), updatedSslTermination.getIntermediateCertificate());
@@ -43,11 +38,18 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             LOG.error(String.format("There was an error(s) while updating ssl termination: '%s'", errors));
             throw new BadRequestException(errors);
         } else {
+            LOG.debug("Updating the lb status to pending_update");
+            if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+                String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
+                LOG.warn(message);
+                throw new ImmutableEntityException(message);
+            }
 
             LOG.info(String.format("Saving ssl termination to the data base for loadbalancer: '%s'", lbId));
             sslTerminationRepository.setSslTermination(lbId, updatedSslTermination);
             LOG.info(String.format("Succesfully saved ssl termination to the data base for loadbalancer: '%s'", lbId));
 
+            updatedSslTermination.setLoadbalancer(null);
             zeusSslTermination.setSslTermination(updatedSslTermination);
             zeusSslTermination.setCertIntermediateCert(zeusCertFile.getPublic_cert());
         }
@@ -107,7 +109,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         if (queTermination.getSecurePort() != null) {
             dbTermination.setSecurePort(queTermination.getSecurePort());
         }
-        return null;
+        return dbTermination;
     }
 }
 

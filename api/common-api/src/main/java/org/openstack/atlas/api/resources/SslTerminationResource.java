@@ -45,8 +45,10 @@ public class SslTerminationResource extends CommonDependencyProvider {
             dataContainer.setUserName(getUserName(requestHeaders));
             dataContainer.setZeusSslTermination(zeusSslTermination);
 
+            SslTermination returnTermination = dozerMapper.map(zeusSslTermination.getSslTermination(), SslTermination.class);
+
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_SSL_TERMINATION, dataContainer);
-            return Response.status(Response.Status.ACCEPTED).entity(zeusSslTermination.getSslTermination()).build();
+            return Response.status(Response.Status.ACCEPTED).entity(returnTermination).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

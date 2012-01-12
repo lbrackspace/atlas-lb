@@ -124,7 +124,7 @@ public class ZeusUtil {
                 if (pemBlocks.size() > 0) {
                     issuerBlock = pemBlocks.get(0);
                     if (!isCert(issuerBlock.getDecodedObject())) {
-                        errorList.add("Object at line %d in chain cert is not an X509 certificate");
+                        errorList.add(String.format("Object at line %d in chain cert is not an X509 certificate", pemBlocks.get(0).getLineNum()));
                     } else {
                         issuerCrt = (X509CertificateObject) issuerBlock.getDecodedObject();
                         currErrors = CertUtils.verifyIssuerAndSubjectCert(issuerCrt, subjectCrt);
