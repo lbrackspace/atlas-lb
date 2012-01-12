@@ -24,7 +24,7 @@ public class RaxLoadBalancer extends LoadBalancer implements Serializable {
     @Column(name = "connection_logging", nullable = false)
     private Boolean connectionLogging = false;
 
-    @OneToOne(mappedBy = "loadbalancer",fetch=FetchType.LAZY,optional=false)
+    @OneToOne(mappedBy = "loadbalancer",fetch=FetchType.LAZY,optional=true)
     @LazyToOne(LazyToOneOption.NO_PROXY)
     private RaxUserPages userPages;
 
