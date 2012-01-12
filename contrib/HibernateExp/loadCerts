@@ -2,7 +2,7 @@
 
 import org.hexp.hibernateexp.util.SslNonsense.SecurityBorker as SecurityBorker
 import util
-util.setConfig("stag.json")
+util.setConfig("stag.json",skipDB=True)
 from util import *
 import com.zxtm.service.client.CertificateFiles as CertificateFiles
 import traceback

@@ -2,6 +2,9 @@
 
 from java.lang import Class
 
+import org.hexp.hibernateexp.util.FileUtils as FileUtils
+import org.hexp.hibernateexp.util.Aes as Aes
+
 import org.openstack.atlas.util.ca.primitives.RsaConst as RsaConst
 import org.openstack.atlas.util.ca.primitives.RsaPair as RsaPair
 import org.openstack.atlas.util.ca.zeus.ZeusUtil as ZeusUtil
@@ -117,7 +120,19 @@ import re
 import traceback
 import cPickle
 
+def printf(format,*args): sys.stdout.write(format%args)
+
+SEEDFILE = "util.seed"
+
 RsaConst.init();
+
+if os.path.isfile(SEEDFILE):
+    aes = Aes(FileUtils.readFileToBytes(SEEDFILE))
+else:
+    printf("Don't forget to seed a key via ./seedKey\n")
+    sys.stdout.flush()
+    sys.exit()
+
 
 ubyte2int = BitUtil.ubyte2int
 int2ubyte = BitUtil.int2ubyte
@@ -150,7 +165,6 @@ SimpleDateFormat = java.text.SimpleDateFormat
 ipv4BlockToIpStrings = IPv4ToolSet.ipv4BlockToIpStrings
 ipv4BlocksToIpStrings = IPv4ToolSet.ipv4BlocksToIpStrings
 
-def printf(format,*args): sys.stdout.write(format%args)
 
 n = netcidr.NetCidr()
 
@@ -556,7 +570,7 @@ def setConfig(*args,**kw):
     default_db = dbConfigs[0]["db_key"]
     zxtm = config["zxtm"]
     zxtmUser = zxtm["user"]
-    zxtmPasswd = CryptoUtil.decrypt(zxtm["passwd"])
+    zxtmPasswd = aes.decryptString(zxtm["passwd"])
     endpoints = {}
     for(k,v) in zxtm["endpoints"].items():
         ki = int(k)
@@ -568,7 +582,7 @@ def setConfig(*args,**kw):
         db_key = dbConfig["db_key"]
         url = dbConfig["url"]
         user = dbConfig["user"]
-        passwd = CryptoUtil.decrypt(dbConfig["passwd"])
+        passwd = aes.decryptString(dbConfig["passwd"])
         hbm2ddl = dbConfig["hbm2ddl"]
         mapcfg = load_json(dbConfig["mapfile"])
         package = mapcfg["package"] if mapcfg.has_key("package") else None
