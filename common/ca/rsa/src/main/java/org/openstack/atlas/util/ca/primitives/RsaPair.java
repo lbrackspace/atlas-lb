@@ -57,6 +57,10 @@ public class RsaPair {
 
         jPrivClass = jPriv.getClass().getCanonicalName();
         jPubClass = jPub.getClass().getCanonicalName();
+
+        String jPrivClassPath = RsaConst.findClassPath(jPriv.getClass());
+        String JPCLClassPath = RsaConst.findClassPath(JCERSAPublicKey.class);
+
         try {
             this.priv = HackedProviderAccessor.newRSAPrivateCrtKeyParameters((JCERSAPrivateCrtKey) jPriv);
             this.pub =  HackedProviderAccessor.newRSAKeyParameters((JCERSAPublicKey) jPub);

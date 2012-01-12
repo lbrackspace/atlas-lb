@@ -1,6 +1,7 @@
 package org.openstack.atlas.util.ca.primitives;
 
 import java.math.BigInteger;
+import java.net.URL;
 import java.security.Provider;
 import java.security.Security;
 import java.util.Hashtable;
@@ -12,6 +13,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.teletrust.TeleTrusTObjectIdentifiers;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.openstack.atlas.util.ca.StringUtils;
 
 public class RsaConst {
     public static final String SIGNATURE_ALGO = "SHA1WITHRSA";
@@ -104,4 +106,18 @@ public class RsaConst {
     // accesses for the first time.
     public static void init() {
     }
+
+    public static String findClassPath(Class<?> cls){
+        try{
+        String className   = cls.getName();
+        String mangledName = "/" + className.replace(".","/") + ".class";
+        URL loc = cls.getResource(mangledName);
+        String classPath = loc.getPath();
+        return classPath;
+        }catch(Exception ex){
+            String st = StringUtils.getExtendedStackTrace(ex);
+            return st;
+        }
+    }
+
 }

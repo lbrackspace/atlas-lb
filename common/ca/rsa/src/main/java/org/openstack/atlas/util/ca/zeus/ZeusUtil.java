@@ -124,7 +124,7 @@ public class ZeusUtil {
                 if (pemBlocks.size() > 0) {
                     issuerBlock = pemBlocks.get(0);
                     if (!isCert(issuerBlock.getDecodedObject())) {
-                        errorList.add(String.format("Object at line %d in chain cert is not an X509 certificate", pemBlocks.get(0).getLineNum()));
+                        errorList.add(String.format("Object at line %d in chain cert is not an X509 certificate(Does not sign Main certificate)", pemBlocks.get(0).getLineNum()));
                     } else {
                         issuerCrt = (X509CertificateObject) issuerBlock.getDecodedObject();
                         currErrors = CertUtils.verifyIssuerAndSubjectCert(issuerCrt, subjectCrt);
@@ -151,16 +151,16 @@ public class ZeusUtil {
                 subjectBlock = pemBlocks.get(i - 1);
                 issuerBlock = pemBlocks.get(i);
                 if (!isCert(subjectBlock.getDecodedObject())) {
-                    fmt = "Object at line %d is not a X509 Certificate";
+                    fmt = "Object at line %d is not an X509 Certificate(Not readable as a Subject certificate when testing signature)";
                     msg = String.format(fmt, subjectBlock.getLineNum());
                     errorList.add(msg);
-                    return zcf;
+                    continue;
                 }
                 if (!isCert(issuerBlock.getDecodedObject())) {
-                    fmt = "Object at line %d is not a X509 Certificate";
+                    fmt = "Object at line %d is not an X509 Certificate(Not readable as an Issuing certificate when testing signature)";
                     msg = String.format(fmt, issuerBlock.getLineNum());
                     errorList.add(msg);
-                    return zcf;
+                    continue;
                 }
                 subjectCrt = (X509CertificateObject) subjectBlock.getDecodedObject();
                 issuerCrt = (X509CertificateObject) issuerBlock.getDecodedObject();

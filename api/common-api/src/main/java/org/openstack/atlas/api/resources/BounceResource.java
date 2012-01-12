@@ -23,7 +23,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 
 // TODO: Remove this class resource when we go to production
 public class BounceResource extends CommonDependencyProvider {
@@ -125,15 +128,16 @@ public class BounceResource extends CommonDependencyProvider {
     @POST
     @Path("ssltermination")
     public Response echoSslTermination(SslTermination in) {
-        SslTermination out = new SslTermination();
-        out.setCertificate(in.getCertificate());
-        out.setEnabled(in.isEnabled());
-        out.setId(in.getId());
-        out.setIntermediateCertificate(in.getIntermediateCertificate());
-        out.setPrivatekey(in.getPrivatekey());
-        out.setSecurePort(in.getSecurePort());
-        out.setSecureTrafficOnly(in.isSecureTrafficOnly());
-        Response resp = Response.status(200).entity(out).build();
+        String key = in.getPrivatekey();
+        String crt = in.getCertificate();
+        String chain = in.getIntermediateCertificate();
+        Response resp;
+        ZeusCertFile zcf = ZeusUtil.getCertFile(key, crt, chain);
+        if (zcf.isError()) {
+            resp = getValidationFaultResponse(zcf.getErrorList());
+        } else {
+            resp = ResponseFactory.getSuccessResponse("ssltermination was valid", 200);
+        }
         return resp;
     }
 }
