@@ -234,6 +234,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+        boolean connectionLogging = serviceStubs.getVirtualServerBinding().getLogEnabled(new String[]{virtualServerName})[0];
 
         try {
             if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
@@ -259,7 +260,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
 
             // Disable logging for protocol switch
-            serviceStubs.getVirtualServerBinding().setLogEnabled(new String[]{virtualServerName}, new boolean[]{false});
+            if (connectionLogging) {
+                serviceStubs.getVirtualServerBinding().setLogEnabled(new String[]{virtualServerName}, new boolean[]{false});
+            }
 
             LOG.debug(String.format("Updating protocol to '%s' for virtual server '%s'...", protocol.name(), virtualServerName));
             serviceStubs.getVirtualServerBinding().setProtocol(new String[]{virtualServerName}, new VirtualServerProtocol[]{ZxtmConversionUtils.mapProtocol(protocol)});
@@ -287,7 +290,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             // Update log format to match protocol
-            if (serviceStubs.getVirtualServerBinding().getLogEnabled(new String[]{virtualServerName})[0]) {
+            if (connectionLogging) {
                 updateConnectionLogging(config, lbId, accountId, true, protocol);
             }
         } catch (Exception e) {

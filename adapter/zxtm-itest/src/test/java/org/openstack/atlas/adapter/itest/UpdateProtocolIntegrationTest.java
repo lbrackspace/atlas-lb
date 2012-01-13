@@ -54,6 +54,9 @@ public class UpdateProtocolIntegrationTest extends ZeusTestBase {
                 Assert.assertEquals(true, connectionLogging[0]);
 
                 zxtmAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(), HTTPS);
+                connectionLogging = getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{loadBalancerName()});
+                Assert.assertEquals(1, connectionLogging.length);
+                Assert.assertEquals(true, connectionLogging[0]);
             } catch (Exception e) {
                 e.printStackTrace();
                 Assert.fail(e.getMessage());
@@ -89,6 +92,9 @@ public class UpdateProtocolIntegrationTest extends ZeusTestBase {
                 Assert.assertEquals(true, connectionLogging[0]);
 
                 zxtmAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(), HTTP);
+                connectionLogging = getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{loadBalancerName()});
+                Assert.assertEquals(1, connectionLogging.length);
+                Assert.assertEquals(true, connectionLogging[0]);
             } catch (Exception e) {
                 e.printStackTrace();
                 Assert.fail(e.getMessage());
