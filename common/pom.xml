@@ -17,6 +17,7 @@
         <module>configuration</module>
         <module>util</module>
         <module>ca</module>
+        <module>crypto-tool</module>
     </modules>
 
    <!-- <properties>
