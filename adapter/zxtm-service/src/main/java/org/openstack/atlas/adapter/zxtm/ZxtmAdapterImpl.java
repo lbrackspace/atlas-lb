@@ -234,20 +234,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
+        boolean connectionLogging = serviceStubs.getVirtualServerBinding().getLogEnabled(new String[]{virtualServerName})[0];
 
         try {
             if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
                 removeSessionPersistence(config, lbId, accountId); // We currently only support HTTP session persistence
                 removeXFFRuleFromVirtualServer(serviceStubs, virtualServerName); // XFF is only for the HTTP protocol
-            }
-        } catch (Exception e) {
-            throw new ZxtmRollBackException("Update protocol request canceled.", e);
-        }
-
-        try {
-            // Update log format to match protocol
-            if (serviceStubs.getVirtualServerBinding().getLogEnabled(new String[]{virtualServerName})[0]) {
-                updateConnectionLogging(config, lbId, accountId, true, protocol);
             }
         } catch (Exception e) {
             throw new ZxtmRollBackException("Update protocol request canceled.", e);
@@ -260,10 +252,16 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             for (String rateName : rateNames) {
                 if (rateName.equals(virtualServerName)) {
                     rateLimitExists = true;
+                    break;
                 }
             }
             if (rateLimitExists) {
                 removeRateLimitRulesFromVirtualServer(serviceStubs, virtualServerName);
+            }
+
+            // Disable logging for protocol switch
+            if (connectionLogging) {
+                serviceStubs.getVirtualServerBinding().setLogEnabled(new String[]{virtualServerName}, new boolean[]{false});
             }
 
             LOG.debug(String.format("Updating protocol to '%s' for virtual server '%s'...", protocol.name(), virtualServerName));
@@ -287,6 +285,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.error(String.format("Cannot update protocol for virtual server '%s' as it does not exist.", virtualServerName), e);
             }
+            throw new ZxtmRollBackException("Update protocol request canceled.", e);
+        }
+
+        try {
+            // Update log format to match protocol
+            if (connectionLogging) {
+                updateConnectionLogging(config, lbId, accountId, true, protocol);
+            }
+        } catch (Exception e) {
             throw new ZxtmRollBackException("Update protocol request canceled.", e);
         }
     }
