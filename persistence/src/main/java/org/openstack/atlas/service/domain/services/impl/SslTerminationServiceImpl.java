@@ -49,7 +49,6 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             sslTerminationRepository.setSslTermination(lbId, updatedSslTermination);
             LOG.info(String.format("Succesfully saved ssl termination to the data base for loadbalancer: '%s'", lbId));
 
-            updatedSslTermination.setLoadbalancer(null);
             zeusSslTermination.setSslTermination(updatedSslTermination);
             zeusSslTermination.setCertIntermediateCert(zeusCertFile.getPublic_cert());
         }
