@@ -8,12 +8,12 @@
  *
  * Created on Mar 28, 2011, 7:41:51 PM
  */
-package org.util.cidr.gui;
+package org.openstack.atlas.util.cidr.gui;
 
 import java.security.NoSuchAlgorithmException;
-import org.util.cidr.validate.ValidateType;
-import org.util.cidr.validate.ValidateVersion;
-import org.util.cidr.validate.IpValidator;
+import org.openstack.atlas.util.cidr.validate.ValidateType;
+import org.openstack.atlas.util.cidr.validate.ValidateVersion;
+import org.openstack.atlas.util.cidr.validate.IpValidator;
 import org.openstack.atlas.util.ip.ByteStreamOperation;
 import org.openstack.atlas.util.ip.IPUtils;
 import org.openstack.atlas.util.ip.IPv4Cidr;
