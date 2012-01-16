@@ -1,4 +1,4 @@
-package org.util.cidr.validate;
+package org.openstack.atlas.util.cidr.validate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
