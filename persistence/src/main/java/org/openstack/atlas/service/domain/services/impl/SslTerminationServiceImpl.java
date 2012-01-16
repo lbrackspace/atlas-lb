@@ -89,26 +89,35 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             LOG.warn("LoadBalancer ssl termination could not be found, ignoring...");
         }
 
+        org.openstack.atlas.service.domain.entities.SslTermination updatedTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
+
         //Set fields to updated values
         if (queTermination.isEnabled() != null) {
-            dbTermination.setEnabled(queTermination.isEnabled());
+            updatedTermination.setEnabled(queTermination.isEnabled());
+        } else {
+            updatedTermination.setEnabled(dbTermination.isEnabled());
         }
         if (queTermination.isSecureTrafficOnly() != null) {
-            dbTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
-        }
-        if (queTermination.getCertificate() != null) {
-            dbTermination.setCertificate(queTermination.getCertificate());
-        }
-        if (queTermination.getIntermediateCertificate() != null) {
-            dbTermination.setIntermediateCertificate(queTermination.getIntermediateCertificate());
-        }
-        if (queTermination.getPrivatekey() != null) {
-            dbTermination.setPrivatekey(queTermination.getPrivatekey());
+            updatedTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
+        } else {
+            updatedTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
         }
         if (queTermination.getSecurePort() != null) {
-            dbTermination.setSecurePort(queTermination.getSecurePort());
+            updatedTermination.setSecurePort(queTermination.getSecurePort());
+        } else {
+            updatedTermination.setSecurePort(queTermination.getSecurePort());
         }
-        return dbTermination;
+
+//        if (queTermination.getCertificate() != null) {
+//            dbTermination.setCertificate(queTermination.getCertificate());
+//        }
+//        if (queTermination.getIntermediateCertificate() != null) {
+//            dbTermination.setIntermediateCertificate(queTermination.getIntermediateCertificate());
+//        }
+//        if (queTermination.getPrivatekey() != null) {
+//            dbTermination.setPrivatekey(queTermination.getPrivatekey());
+//        }
+        return updatedTermination;
     }
 }
 

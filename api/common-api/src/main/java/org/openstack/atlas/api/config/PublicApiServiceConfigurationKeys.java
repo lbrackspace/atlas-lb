@@ -20,5 +20,6 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     health_check,
     stats,
     ttl,
+    ssl_termination,
     memcached_servers;
 }

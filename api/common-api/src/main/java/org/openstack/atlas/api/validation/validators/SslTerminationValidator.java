@@ -75,16 +75,16 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
                         return new VerifierResult(true);
                     }
                 }).withMessage("Must supply secure port to complete this operation.");
-//                //If user supplies cert and key but not the secure port
-//                must().adhereTo(new Verifier<SslTermination>() {
-//                    @Override
-//                    public VerifierResult verify(SslTermination ssl) {
-//                        if (ssl.getCertificate() != null && ssl.getPrivatekey() != null && (ssl.getSecurePort() == null)) {
-//                            return new VerifierResult(false);
-//                        }
-//                        return new VerifierResult(true);
-//                    }
-//                }).withMessage("Must supply secure port for updating cert/key credentials.");
+//                  //If user supplies  cert or key and nothing else
+                must().adhereTo(new Verifier<SslTermination>() {
+                    @Override
+                    public VerifierResult verify(SslTermination ssl) {
+                        if ((ssl.getCertificate() == null || ssl.getPrivatekey() == null) && (ssl.isEnabled() == null && (ssl.isSecureTrafficOnly() == null) && ssl.getPrivatekey() == null && ssl.getSecurePort() == null) && ssl.getIntermediateCertificate() == null) {
+                            return new VerifierResult(false);
+                        }
+                        return new VerifierResult(true);
+                    }
+                }).withMessage("Must supply secure port to complete this operation.");
             }
         });
     }

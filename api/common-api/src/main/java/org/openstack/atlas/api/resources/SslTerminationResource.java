@@ -2,6 +2,8 @@ package org.openstack.atlas.api.resources;
 
 import org.apache.abdera.model.Feed;
 import org.openstack.atlas.api.atom.FeedType;
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
@@ -30,6 +32,9 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createSsl(SslTermination ssl) {
+        if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination))
+            return Response.status(Response.Status.BAD_REQUEST).build();
+
         ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(ssl, HttpRequestType.PUT);
         if (!result.passedValidation()) {
             return getValidationFaultResponse(result);
