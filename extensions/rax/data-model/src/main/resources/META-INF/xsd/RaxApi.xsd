@@ -35,6 +35,13 @@
         </xsd:restriction>
     </xsd:simpleType>
 
+    <xsd:element name="errorPage" type="tns:errorPage"/>
+    <xsd:complexType name="errorPage">
+        <xsd:sequence>
+            <xsd:element name="content" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
     <!--CONNECTION THROTTLE EXTENSIONS-->
     <xsd:attribute name="minRequests" type="xsd:int"/>
     <xsd:attribute name="maxRequests" type="xsd:int"/>

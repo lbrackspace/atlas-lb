@@ -7,9 +7,15 @@ import org.openstack.atlas.api.validation.context.NetworkItemContext;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.ResourceValidator;
 import org.openstack.atlas.api.validation.validator.ValidatorUtilities;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
 
+@Primary
+@Component
+@Scope("request")
 public class AccessListValidator implements ResourceValidator<AccessList> {
 
     private final Validator<AccessList> validator;

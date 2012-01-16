@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
-@Scope("request")
+@Scope("singleton")
 public class CoreLoadBalancerStatus implements LoadBalancerStatus {
     public static final String QUEUED = "QUEUED";
     public static final String BUILD = "BUILD";

@@ -25,11 +25,10 @@ import org.springframework.context.annotation.Primary;
 import java.rmi.RemoteException;
 import java.util.*;
 
-@Primary
 @Service
 public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
-    public static Log LOG = LogFactory.getLog(ZxtmAdapterImpl.class.getName());
+    private static Log LOG = LogFactory.getLog(ZxtmAdapterImpl.class.getName());
     public static final String DEFAULT_ALGORITHM = CoreAlgorithmType.ROUND_ROBIN;
     public static final String SOURCE_IP = "SOURCE_IP";
     public static final String HTTP_COOKIE = "HTTP_COOKIE";
@@ -93,6 +92,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
                     TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
                     attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
                 }
+                afterLoadBalancerCreate(config, lb);
             } catch (Exception e) {
                 deleteLoadBalancer(config, lb);
                 throw new RollbackException(rollBackMessage, e);
@@ -102,6 +102,20 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         } catch (RemoteException e) {
             throw new AdapterException(e);
         }
+    }
+
+    /**
+     * Override this method if you want to do extra stuffs in the extension
+     */
+    protected void afterLoadBalancerCreate(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
+
+    }
+
+    /**
+     * Override this method if you want to do extra stuffs in the extension
+     */
+    protected void afterLoadBalancerDelete(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws AdapterException {
+
     }
 
     @Override
@@ -130,6 +144,8 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
             deleteNodePool(serviceStubs, poolName);
             deleteProtectionCatalog(serviceStubs, poolName);
             deleteTrafficIpGroups(serviceStubs, trafficIpGroups[0]);
+
+            afterLoadBalancerDelete(config, lb);
 
             LOG.info(String.format("Successfully deleted load balancer '%s'.", virtualServerName));
         } catch (RemoteException e) {
@@ -503,15 +519,15 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
     /*
      * *******************
-     * * PRIVATE METHODS *
+     * * PROTECTED METHODS *
      * *******************
      */
 
-    private ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
+    protected ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
         return ZxtmServiceStubs.getServiceStubs(config.getEndpointUrl(), config.getUsername(), config.getPassword());
     }
 
-    private void setLoadBalancingAlgorithm(ZxtmServiceStubs serviceStubs, Integer accountId, Integer lbId, String algorithm) throws AdapterException {
+    protected void setLoadBalancingAlgorithm(ZxtmServiceStubs serviceStubs, Integer accountId, Integer lbId, String algorithm) throws AdapterException {
         final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
 
         try {
@@ -526,7 +542,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, AdapterException {
+    protected void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, AdapterException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
         String[] failoverTrafficManagers = config.getFailoverHostNames().toArray(new String[config.getFailoverHostNames().size()]);
@@ -605,7 +621,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     /*
      *  A traffic ip group consists of only one virtual ip at this time.
      */
-    private void createTrafficIpGroup(LoadBalancerEndpointConfiguration config, ZxtmServiceStubs serviceStubs, String ipAddress, String newTrafficIpGroup) throws RemoteException {
+    protected void createTrafficIpGroup(LoadBalancerEndpointConfiguration config, ZxtmServiceStubs serviceStubs, String ipAddress, String newTrafficIpGroup) throws RemoteException {
         final TrafficIPGroupsDetails details = new TrafficIPGroupsDetails(new String[]{ipAddress}, new String[]{config.getHostName()});
 
         try {
@@ -617,19 +633,19 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private void deleteTrafficIpGroups(ZxtmServiceStubs serviceStubs, String[] trafficIpGroups) throws RemoteException, BadRequestException {
+    protected void deleteTrafficIpGroups(ZxtmServiceStubs serviceStubs, String[] trafficIpGroups) throws RemoteException, BadRequestException {
         for (String trafficIpGroupName : trafficIpGroups) {
             deleteTrafficIpGroup(serviceStubs, trafficIpGroupName);
         }
     }
 
-    private void deleteTrafficIpGroups(ZxtmServiceStubs serviceStubs, List<String> trafficIpGroups) throws RemoteException {
+    protected void deleteTrafficIpGroups(ZxtmServiceStubs serviceStubs, List<String> trafficIpGroups) throws RemoteException {
         for (String trafficIpGroupName : trafficIpGroups) {
             deleteTrafficIpGroup(serviceStubs, trafficIpGroupName);
         }
     }
 
-    private void deleteTrafficIpGroup(ZxtmServiceStubs serviceStubs, String trafficIpGroupName) throws RemoteException {
+    protected void deleteTrafficIpGroup(ZxtmServiceStubs serviceStubs, String trafficIpGroupName) throws RemoteException {
         try {
             LOG.debug(String.format("Deleting traffic ip group '%s'...", trafficIpGroupName));
             serviceStubs.getTrafficIpGroupBinding().deleteTrafficIPGroup(new String[]{trafficIpGroupName});
@@ -641,7 +657,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private void createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> nodes) throws RemoteException, AdapterException {
+    protected void createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> nodes) throws RemoteException, AdapterException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(loadBalancerId, accountId);
 
@@ -657,7 +673,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         setNodeWeights(config, loadBalancerId, accountId, nodes);
     }
 
-    private List<Node> getNodesWithCondition(Collection<Node> nodes, Boolean enabled) {
+    protected List<Node> getNodesWithCondition(Collection<Node> nodes, Boolean enabled) {
         List<Node> nodesWithCondition = new ArrayList<Node>();
         for (Node node : nodes) {
             if (node.isEnabled().equals(enabled)) {
@@ -667,18 +683,18 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         return nodesWithCondition;
     }
 
-    private void setDisabledNodes(LoadBalancerEndpointConfiguration config, String poolName, List<String> nodesToDisable) throws RemoteException, BadRequestException {
+    protected void setDisabledNodes(LoadBalancerEndpointConfiguration config, String poolName, List<String> nodesToDisable) throws RemoteException, BadRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         LOG.debug(String.format("Setting disabled nodes for pool '%s'", poolName));
         serviceStubs.getPoolBinding().setDisabledNodes(new String[]{poolName}, ListUtil.wrap(ListUtil.convert(nodesToDisable)));
     }
 
-    private void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes) throws RemoteException, AdapterException {
+    protected void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes) throws RemoteException, AdapterException {
         setNodeWeights(config, lbId, accountId, buildPoolWeightingsDefinition(nodes));
     }
 
-    private void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, PoolWeightingsDefinition[] definitions) throws RemoteException, AdapterException {
+    protected void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, PoolWeightingsDefinition[] definitions) throws RemoteException, AdapterException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(lbId, accountId);
         final String rollBackMessage = "Update node weights request canceled.";
@@ -698,7 +714,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private PoolWeightingsDefinition[] buildPoolWeightingsDefinition(Collection<Node> nodes) throws BadRequestException {
+    protected PoolWeightingsDefinition[] buildPoolWeightingsDefinition(Collection<Node> nodes) throws BadRequestException {
         final PoolWeightingsDefinition[] poolWeightings = new PoolWeightingsDefinition[nodes.size()];
         final Integer DEFAULT_NODE_WEIGHT = 1;
 
@@ -712,7 +728,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         return poolWeightings;
     }
 
-    private void deleteVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
+    protected void deleteVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
         try {
             LOG.debug(String.format("Deleting virtual server '%s'...", virtualServerName));
             serviceStubs.getVirtualServerBinding().deleteVirtualServer(new String[]{virtualServerName});
@@ -722,7 +738,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private void deleteNodePool(ZxtmServiceStubs serviceStubs, String poolName) throws RemoteException {
+    protected void deleteNodePool(ZxtmServiceStubs serviceStubs, String poolName) throws RemoteException {
         try {
             LOG.debug(String.format("Deleting pool '%s'...", poolName));
             serviceStubs.getPoolBinding().deletePool(new String[]{poolName});
@@ -734,7 +750,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private void deleteProtectionCatalog(ZxtmServiceStubs serviceStubs, String poolName) throws RemoteException {
+    protected void deleteProtectionCatalog(ZxtmServiceStubs serviceStubs, String poolName) throws RemoteException {
         try {
             LOG.debug(String.format("Deleting service protection catalog '%s'...", poolName));
             serviceStubs.getProtectionBinding().deleteProtection(new String[]{poolName});
@@ -746,7 +762,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private void addMonitorClass(ZxtmServiceStubs serviceStubs, String monitorName) throws RemoteException {
+    protected void addMonitorClass(ZxtmServiceStubs serviceStubs, String monitorName) throws RemoteException {
         try {
             LOG.debug(String.format("Adding monitor class '%s'...", monitorName));
             serviceStubs.getMonitorBinding().addMonitors(new String[]{monitorName});
@@ -756,7 +772,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private void deleteMonitorClass(ZxtmServiceStubs serviceStubs, String monitorName) throws RemoteException {
+    protected void deleteMonitorClass(ZxtmServiceStubs serviceStubs, String monitorName) throws RemoteException {
         try {
             LOG.debug(String.format("Removing monitor class '%s'...", monitorName));
             serviceStubs.getMonitorBinding().deleteMonitors(new String[]{monitorName});
@@ -771,7 +787,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
     /*
      *  Returns true is the protection class is brand new. Returns false if it already exists.
      */
-    private boolean addProtectionClass(LoadBalancerEndpointConfiguration config, String poolName) throws RemoteException {
+    protected boolean addProtectionClass(LoadBalancerEndpointConfiguration config, String poolName) throws RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         boolean isNewProtectionClass = true;
 
@@ -789,7 +805,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
 
     // Translates from the transfer object "PersistenceMode" to an array of
     // strings, which is used for Zeus.
-    private String[] getPersistenceMode(SessionPersistence sessionPersistence) throws BadRequestException {
+    protected String[] getPersistenceMode(SessionPersistence sessionPersistence) throws BadRequestException {
         if (sessionPersistence.getPersistenceType().equals(CorePersistenceType.HTTP_COOKIE)) {
             return new String[]{HTTP_COOKIE};
         } else {
@@ -797,7 +813,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private void zeroOutConnectionThrottleConfig(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId) throws RemoteException, AdapterException {
+    protected void zeroOutConnectionThrottleConfig(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId) throws RemoteException, AdapterException {
         final String protectionClassName = ZxtmNameHelper.generateNameWithAccountIdAndLoadBalancerId(loadBalancerId, accountId);
 
         LOG.debug(String.format("Zeroing out connection throttle settings for protection class '%s'.", protectionClassName));
@@ -811,7 +827,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         LOG.info(String.format("Successfully zeroed out connection throttle settings for protection class '%s'.", protectionClassName));
     }
 
-    private void attachXFFRuleToVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
+    protected void attachXFFRuleToVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
         if (serviceStubs.getVirtualServerBinding().getProtocol(new String[]{virtualServerName})[0].equals(VirtualServerProtocol.http)) {
             LOG.debug(String.format("Attaching the XFF rule and enabling it on load balancer '%s'...", virtualServerName));
             serviceStubs.getVirtualServerBinding().addRules(new String[]{virtualServerName}, new VirtualServerRule[][]{{ZxtmAdapterImpl.ruleXForwardedFor}});
@@ -819,7 +835,7 @@ public class ZxtmAdapterImpl implements LoadBalancerAdapter {
         }
     }
 
-    private void removeXFFRuleFromVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
+    protected void removeXFFRuleFromVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
         LOG.debug(String.format("Removing the XFF rule from load balancer '%s'...", virtualServerName));
         VirtualServerRule[][] virtualServerRules = serviceStubs.getVirtualServerBinding().getRules(new String[]{virtualServerName});
         if (virtualServerRules.length > 0) {

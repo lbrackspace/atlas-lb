@@ -8,7 +8,7 @@ import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.LoadBalancerValidator;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.core.api.v1.LoadBalancers;
-import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.operation.CoreOperation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
@@ -60,7 +60,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setLoadBalancer(loadBalancer);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_LOADBALANCER, dataContainer);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.CREATE_LOADBALANCER, dataContainer);
             return Response.status(Response.Status.ACCEPTED).entity(dozerMapper.map(loadBalancer, LoadBalancer.class)).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);

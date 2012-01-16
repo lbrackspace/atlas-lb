@@ -23,7 +23,7 @@ import java.util.*;
 public class VirtualIpRepositoryImpl implements VirtualIpRepository {
     private final Log LOG = LogFactory.getLog(VirtualIpRepositoryImpl.class);
     @PersistenceContext(unitName = "loadbalancing")
-    private EntityManager entityManager;
+    protected EntityManager entityManager;
 
     public void persist(Object obj) {
         entityManager.persist(obj);

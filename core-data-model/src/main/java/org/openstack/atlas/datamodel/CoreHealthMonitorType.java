@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
-@Scope("request")
+@Scope("singleton")
 public class CoreHealthMonitorType implements HealthMonitorType {
     public static final String CONNECT = "CONNECT";
     public static final String HTTP = "HTTP";

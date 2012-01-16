@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Openstack :: Atlas :: API :: Extensions :: RAX</name>
+    <name>Openstack :: Atlas :: Extension :: RAX :: Parent</name>
     <artifactId>rax</artifactId>
     <packaging>pom</packaging>
 
@@ -17,6 +17,8 @@
         <module>data-model</module>
         <module>persistence</module>
         <module>api</module>
+        <module>rax-zxtm-adapter</module>
+        <module>rax-jobs</module>
     </modules>
     <dependencies>
 

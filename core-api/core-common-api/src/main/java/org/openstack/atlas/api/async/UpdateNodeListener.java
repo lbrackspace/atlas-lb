@@ -24,15 +24,12 @@ import static org.openstack.atlas.service.domain.event.entity.EventSeverity.*;
 
 import javax.jms.Message;
 
-
 @Component
 public class UpdateNodeListener extends BaseListener {
-
     private final Log LOG = LogFactory.getLog(UpdateNodeListener.class);
 
     @Autowired
     private NotificationService notificationService;
-
     @Autowired
     private LoadBalancerRepository loadBalancerRepository;
 

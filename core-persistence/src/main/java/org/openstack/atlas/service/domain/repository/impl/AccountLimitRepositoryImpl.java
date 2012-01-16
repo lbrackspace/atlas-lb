@@ -2,6 +2,7 @@ package org.openstack.atlas.service.domain.repository.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.common.ErrorMessages;
 import org.openstack.atlas.service.domain.entity.*;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.AccountLimitRepository;
@@ -43,6 +44,24 @@ public class AccountLimitRepositoryImpl implements AccountLimitRepository {
         criteria.select(accountLimitRoot);
         criteria.where(hasAccountId);
         return entityManager.createQuery(criteria).getResultList();
+    }
+
+    @Override
+    public int getLimit(Integer accountId, AccountLimitType accountLimitType) throws EntityNotFoundException {
+        List<AccountLimit> allAccountLimits = getAccountLimits(accountId);
+
+        for (AccountLimit accountLimit : allAccountLimits) {
+            if (accountLimit.getLimitType().getName().equals(accountLimitType)) {
+                return accountLimit.getLimit();
+            }
+        }
+
+        LimitType dbLimitType = this.getLimitType(accountLimitType);
+        if (dbLimitType == null) {
+            throw new EntityNotFoundException(ErrorMessages.ACCOUNT_LIMIT_NOT_FOUND.getMessage(accountLimitType.name()));
+        }
+
+        return dbLimitType.getDefaultValue();
     }
 
     @Override

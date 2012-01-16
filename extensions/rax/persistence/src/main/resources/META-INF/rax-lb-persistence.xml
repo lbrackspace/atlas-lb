@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
+
+    <persistence-unit name="loadbalancing" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <!--<jta-data-source>jdbc/atlasRaxDB1</jta-data-source>-->
+
+        <class>org.openstack.atlas.service.domain.entity.Account</class>
+        <class>org.openstack.atlas.service.domain.entity.AccountLimit</class>
+        <class>org.openstack.atlas.service.domain.entity.BlacklistItem</class>
+        <class>org.openstack.atlas.service.domain.entity.Cluster</class>
+        <class>org.openstack.atlas.service.domain.entity.ConnectionThrottle</class>
+        <class>org.openstack.atlas.service.domain.entity.LimitType</class>
+        <class>org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip</class>
+        <class>org.openstack.atlas.service.domain.entity.LoadBalancerJoinVip6</class>
+        <class>org.openstack.atlas.service.domain.entity.Node</class>
+        <class>org.openstack.atlas.service.domain.entity.SessionPersistence</class>
+        <class>org.openstack.atlas.service.domain.entity.UsageEventRecord</class>
+        <class>org.openstack.atlas.service.domain.entity.VirtualIp</class>
+        <class>org.openstack.atlas.service.domain.entity.VirtualIpv6</class>
+
+        <class>org.openstack.atlas.service.domain.entity.AccountLimitType</class>
+        <class>org.openstack.atlas.service.domain.entity.BlacklistType</class>
+        <class>org.openstack.atlas.service.domain.entity.IpVersion</class>
+        <class>org.openstack.atlas.service.domain.entity.VirtualIpType</class>
+
+        <class>org.openstack.atlas.rax.domain.entity.RaxAccessList</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxAccessListType</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxDefaults</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxHost</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxLoadBalancer</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxConnectionThrottle</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxHealthMonitor</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxUsageRecord</class>
+        <class>org.openstack.atlas.rax.domain.entity.RaxUserPages</class>
+
+        <!-- Hibernate Properties -->
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
+            <!--<property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.SunONETransactionManagerLookup"/>-->
+            <property name="hibernate.transaction.flush_before_completion" value="false"/>
+            <property name="hibernate.connection.autocommit" value="false"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.connection.release_mode" value="auto"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+        </properties>
+    </persistence-unit>
+</persistence>

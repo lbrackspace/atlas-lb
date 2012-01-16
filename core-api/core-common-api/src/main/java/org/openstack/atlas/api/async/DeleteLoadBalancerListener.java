@@ -3,8 +3,8 @@ package org.openstack.atlas.api.async;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
+import org.openstack.atlas.datamodel.CoreUsageEventType;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.event.UsageEvent;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.service.LoadBalancerService;
@@ -72,7 +72,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
         notificationService.saveLoadBalancerEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
         // Notify usage processor with a usage event
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+        notifyUsageProcessor(message, dbLoadBalancer, CoreUsageEventType.DELETE_LOAD_BALANCER);
 
         LOG.info(String.format("Load balancer '%d' successfully deleted.", dbLoadBalancer.getId()));
     }

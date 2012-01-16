@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozer.sourceforge.net"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://dozer.sourceforge.net
+          http://dozer.sourceforge.net/schema/beanmapping.xsd">
+
+    <mapping map-null="false" type="one-way">
+        <class-a>org.openstack.atlas.rax.domain.entity.RaxUsageRecord</class-a>
+        <class-b>org.openstack.atlas.core.api.v1.LoadBalancerUsageRecord</class-b>
+        <field custom-converter="org.openstack.atlas.rax.api.mapper.dozer.converter.AverageConnectionsConverter">
+            <a>averageConcurrentConnections</a>
+            <b>otherAttributes</b>
+            <a-hint>java.lang.Double</a-hint>
+            <b-hint>java.util.Map</b-hint>
+        </field>
+        <field custom-converter="org.openstack.atlas.rax.api.mapper.dozer.converter.NumPollsConverter">
+            <a>numberOfPolls</a>
+            <b>otherAttributes</b>
+            <a-hint>java.lang.Integer</a-hint>
+            <b-hint>java.util.Map</b-hint>
+        </field>
+    </mapping>
+
+</mappings>

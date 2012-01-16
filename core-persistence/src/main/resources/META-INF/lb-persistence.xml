@@ -4,7 +4,7 @@
 
     <persistence-unit name="loadbalancing" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <jta-data-source>jdbc/atlasCoreDB</jta-data-source>
+       <!-- <jta-data-source>jdbc/atlasCoreDB1</jta-data-source>-->
 
         <class>org.openstack.atlas.service.domain.entity.Account</class>
         <class>org.openstack.atlas.service.domain.entity.AccountLimit</class>
@@ -20,6 +20,7 @@
         <class>org.openstack.atlas.service.domain.entity.Node</class>
         <class>org.openstack.atlas.service.domain.entity.SessionPersistence</class>
         <class>org.openstack.atlas.service.domain.entity.UsageRecord</class>
+        <class>org.openstack.atlas.service.domain.entity.UsageEventRecord</class>
         <class>org.openstack.atlas.service.domain.entity.VirtualIp</class>
         <class>org.openstack.atlas.service.domain.entity.VirtualIpv6</class>
 
@@ -31,7 +32,8 @@
         <!-- Hibernate Properties -->
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
-            <property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.SunONETransactionManagerLookup"/>
+            <!--<property name="hibernate.transaction.manager_lookup_class"
+                      value="org.hibernate.transaction.SunONETransactionManagerLookup"/>-->
             <property name="hibernate.transaction.flush_before_completion" value="false"/>
             <property name="hibernate.connection.autocommit" value="false"/>
             <property name="hibernate.show_sql" value="false"/>

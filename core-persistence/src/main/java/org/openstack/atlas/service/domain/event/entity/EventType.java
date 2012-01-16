@@ -9,7 +9,7 @@ public enum EventType implements Serializable {
     CREATE_NODE,
     UPDATE_NODE,
     DELETE_NODE,
-    CREATE_VIRTUAL_IP,
+    ADD_VIRTUAL_IP,
     DELETE_VIRTUAL_IP,
     DELETE_NETWORK_ITEM,
     CREATE_ACCESS_LIST,
@@ -21,7 +21,9 @@ public enum EventType implements Serializable {
     DELETE_HEALTH_MONITOR,
     SET_SESSION_PERSISTENCE,
     DELETE_SESSION_PERSISTENCE,
-    UPDATE_CONNECTION_LOGGING;
+    UPDATE_CONNECTION_LOGGING,
+    UPDATE_ERROR_PAGE,
+    DELETE_ERROR_PAGE;
     
     private final static long serialVersionUID = 532512316L;
     }   

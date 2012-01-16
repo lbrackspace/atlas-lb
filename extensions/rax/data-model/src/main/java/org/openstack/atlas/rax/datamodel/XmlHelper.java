@@ -20,7 +20,7 @@ public final class XmlHelper {
         jaxbContext.createMarshaller().marshal(objectToMarshall, rootNode);
         Node objectNode = rootNode.getFirstChild();
         XmlHelper.setPrefixRecursively(objectNode, "rax");
-        XmlHelper.clearAttributes(objectNode);
+        //XmlHelper.clearAttributes(objectNode);
         return objectNode;
     }
 

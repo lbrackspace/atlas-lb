@@ -29,10 +29,11 @@
             <artifactId>atlas-rax-persistence</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--<dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>atlas-rax-adapter</artifactId>
+            <artifactId>rax-zxtm-adapter</artifactId>
             <version>${project.version}</version>
-        </dependency>-->
+        </dependency>
     </dependencies>
+
 </project>

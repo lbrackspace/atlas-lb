@@ -1,5 +1,7 @@
 package org.openstack.atlas.rax.domain.entity;
 
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 
 import javax.persistence.*;
@@ -8,29 +10,33 @@ import java.util.HashSet;
 import java.util.Set;
 
 @javax.persistence.Entity
-@DiscriminatorValue("RAX")
+@DiscriminatorValue(Discriminator.RAX)
 public class RaxLoadBalancer extends LoadBalancer implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @OrderBy("id")
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<AccessList> accessLists = new HashSet<AccessList>();
+    private Set<RaxAccessList> accessLists = new HashSet<RaxAccessList>();
 
     @Column(name = "crazy_name", length = 128)
     private String crazyName = "WeeWooWoo!";
 
     @Column(name = "connection_logging", nullable = false)
-    private Boolean connectionLogging;
+    private Boolean connectionLogging = false;
 
-    public Set<AccessList> getAccessLists() {
+    @OneToOne(mappedBy = "loadbalancer",fetch=FetchType.LAZY,optional=true)
+    @LazyToOne(LazyToOneOption.NO_PROXY)
+    private RaxUserPages userPages;
+
+    public Set<RaxAccessList> getAccessLists() {
         return accessLists;
     }
 
-    public void setAccessLists(Set<AccessList> accessLists) {
+    public void setAccessLists(Set<RaxAccessList> accessLists) {
         this.accessLists = accessLists;
     }
 
-    public void addAccessList(AccessList accessList) {
+    public void addAccessList(RaxAccessList accessList) {
         accessList.setLoadbalancer(this);
         accessLists.add(accessList);
     }
@@ -49,6 +55,14 @@ public class RaxLoadBalancer extends LoadBalancer implements Serializable {
 
     public void setConnectionLogging(Boolean connectionLogging) {
         this.connectionLogging = connectionLogging;
+    }
+
+    public RaxUserPages getUserPages() {
+        return userPages;
+    }
+
+    public void setUserPages(RaxUserPages userPages) {
+        this.userPages = userPages;
     }
 
     @Override

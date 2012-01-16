@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Primary
 @Component
-@Scope("request")
+@Scope("singleton")
 public class RaxAlgorithmType extends CoreAlgorithmType {
     public static final String RANDOM = "RANDOM";
     public static final String WEIGHTED_LEAST_CONNECTIONS = "WEIGHTED_LEAST_CONNECTIONS";

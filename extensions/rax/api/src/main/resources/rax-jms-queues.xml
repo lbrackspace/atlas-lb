@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+    <import resource="jms-queues.xml"/>
+
+    <!--RAX QUEUES-->
+    <bean id="raxAddVirtualIpListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="raxAddVirtualIpListener"/>
+        <property name="destinationName" value="RAX_ADD_VIRTUAL_IP"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+    <bean id="raxRemoveVirtualIpsListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="raxRemoveVirtualIpsListener"/>
+        <property name="destinationName" value="RAX_REMOVE_VIRTUAL_IPS"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+    <bean id="raxUpdateAccessListListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="raxUpdateAccessListListener"/>
+        <property name="destinationName" value="UPDATE_ACCESS_LIST"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+    <bean id="raxDeleteAccessListListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="raxDeleteAccessListListener"/>
+        <property name="destinationName" value="DELETE_ACCESS_LIST"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+    <bean id="raxUpdateConnectionLoggingListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="raxUpdateConnectionLoggingListener"/>
+        <property name="destinationName" value="UPDATE_CONNECTION_LOGGING"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+    <bean id="raxDeleteErrorPageListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="raxDeleteErrorPageListener"/>
+        <property name="destinationName" value="DELETE_ERROR_PAGE"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+    <bean id="raxUpdateErrorPageListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="raxUpdateErrorPageListener"/>
+        <property name="destinationName" value="UPDATE_ERROR_PAGE"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+</beans>

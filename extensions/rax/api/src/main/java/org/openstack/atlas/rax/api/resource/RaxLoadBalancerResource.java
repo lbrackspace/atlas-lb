@@ -6,7 +6,7 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.core.api.v1.LoadBalancer;
 import org.openstack.atlas.rax.domain.entity.RaxLoadBalancer;
-import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.operation.CoreOperation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -22,7 +22,13 @@ import javax.ws.rs.core.Response;
 public class RaxLoadBalancerResource extends LoadBalancerResource {
 
     @Autowired
+    protected RaxAccessListResource raxAccessListResource;
+
+    @Autowired
     protected RaxConnectionLoggingResource connectionLoggingResource;
+
+    @Autowired
+    protected RaxErrorPageResource raxErrorPageResource;
 
     @Override
     public Response get() {
@@ -54,17 +60,33 @@ public class RaxLoadBalancerResource extends LoadBalancerResource {
             MessageDataContainer msg = new MessageDataContainer();
             msg.setLoadBalancer(raxLoadBalancer);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_LOADBALANCER, msg);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.UPDATE_LOADBALANCER, msg);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
     }
 
+    @Path("accesslist")
+    public RaxAccessListResource retrieveAccessListResource() {
+        //accessListResource.setRequestHeaders(requestHeaders);
+        raxAccessListResource.setAccountId(accountId);
+        raxAccessListResource.setLoadBalancerId(id);
+        return raxAccessListResource;
+    }
+
+
     @Path("connectionlogging")
     public RaxConnectionLoggingResource retrieveConnectionLoggingResource() {
         connectionLoggingResource.setAccountId(accountId);
         connectionLoggingResource.setLoadBalancerId(id);
         return connectionLoggingResource;
+    }
+
+    @Path("errorpage")
+    public RaxErrorPageResource retrieveErrorpageResource() {
+        raxErrorPageResource.setAccountId(accountId);
+        raxErrorPageResource.setLoadBalancerId(id);
+        return raxErrorPageResource;
     }
 }

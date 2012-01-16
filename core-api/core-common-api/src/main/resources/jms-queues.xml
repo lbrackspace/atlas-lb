@@ -3,9 +3,6 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
-    <!--<import resource="db-services.xml"/>-->
-    <!--<import resource="db-usage-services.xml"/>-->
-
 
     <!--JMS SETTINGS-->
     <bean id="jmsActiveMQConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
@@ -23,15 +20,7 @@
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
     </bean>
 
-
-<!--    <bean id="baseListener" class="org.openstack.atlas.api.async.BaseListener" abstract="true">
-        <property name="jmsTemplate" ref="jmsTemplate"/>
-    </bean>
-    
-    <bean id="createLoadBalancerListener"
-          class="org.openstack.atlas.api.async.CreateLoadBalancerListener"
-          parent="baseListener"/>
-
+    <!--QUEUES-->
     <bean id="createLoadBalancerListenerContainer"
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
@@ -45,37 +34,7 @@
         <property name="sessionTransacted" value="true"/>
     </bean>
 
-    <bean id="updateLoadBalancerListener"
-          class="org.openstack.atlas.api.async.CreateLoadBalancerListener"
-          parent="baseListener"/>
-
     <bean id="updateLoadBalancerListenerContainer"
-          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
-        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
-        <property name="messageListener" ref="updateLoadBalancerListener"/>
-        <property name="destinationName" value="UPDATE_LOADBALANCER"/>
-        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
-        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
-        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
-        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
-        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
-        <property name="sessionTransacted" value="true"/>
-    </bean>-->
-
-     <bean id="createLoadBalancerListenerContainer"
-          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
-        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
-        <property name="messageListener" ref="createLoadBalancerListener"/>
-        <property name="destinationName" value="CREATE_LOADBALANCER"/>
-        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
-        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
-        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
-        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
-        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
-        <property name="sessionTransacted" value="true"/>
-    </bean>
-
-     <bean id="updateLoadBalancerListenerContainer"
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
         <property name="messageListener" ref="updateLoadBalancerListener"/>
@@ -144,7 +103,7 @@
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
         <property name="messageListener" ref="setSessionPersistenceListener"/>
-        <property name="destinationName" value="SET_SESSION_PERSISTENCE"/>
+        <property name="destinationName" value="UPDATE_SESSION_PERSISTENCE"/>
         <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
         <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
         <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
@@ -170,7 +129,7 @@
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
         <property name="messageListener" ref="setConnectionThrottleListener"/>
-        <property name="destinationName" value="SET_CONNECTION_THROTTLE"/>
+        <property name="destinationName" value="UPDATE_CONNECTION_THROTTLE"/>
         <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
         <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
         <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
@@ -196,7 +155,7 @@
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
         <property name="messageListener" ref="setHealthMonitorListener"/>
-        <property name="destinationName" value="SET_HEALTH_MONITOR"/>
+        <property name="destinationName" value="UPDATE_HEALTH_MONITOR"/>
         <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
         <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
         <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
@@ -210,6 +169,19 @@
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
         <property name="messageListener" ref="deleteHealthMonitorListener"/>
         <property name="destinationName" value="DELETE_HEALTH_MONITOR"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+    <bean id="usageEventListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="usageEventListener"/>
+        <property name="destinationName" value="USAGE_EVENT"/>
         <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
         <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
         <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>

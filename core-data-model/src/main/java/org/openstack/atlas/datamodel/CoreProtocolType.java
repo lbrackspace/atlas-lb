@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-@Scope("request")
+@Scope("singleton")
 public class CoreProtocolType implements ProtocolType {
     public static final String HTTP = "HTTP";
     public static final String HTTPS = "HTTPS";

@@ -1,0 +1,168 @@
+#! /bin/bash
+
+set -e
+
+function install_glassfish_user {
+    echo "Adding a new group for Glassfish administration..."
+    sudo groupadd glassfishadm
+
+    echo "Adding user 'glassfish'..."
+    sudo adduser --home /home/glassfish --ingroup glassfishadm --system --shell /bin/bash glassfish
+
+    echo "Adding 'glassfish' user to be a Glassfish adminstrator..."
+    sudo usermod -a -G glassfishadm glassfish
+
+    return 0
+}
+
+function configure_java {
+    #echo "Removing OpenJDK if installed..."
+    #sudo apt-get remove openjdk-6-jre openjdk-6-jdk
+
+    #maybe you have to execute this here first, else
+    #add-apt-repository might fail
+    #sudo apt-get install python-software-properties
+
+    #add new repository that contains sun java (see https://wiki.ubuntu.com/LucidLynx/ReleaseNotes)
+    #sudo add-apt-repository "deb http://archive.canonical.com/ lucid partner"
+
+    #update to know about new repository
+    #sudo apt-get update
+
+    #now install Sun JDK
+    #sudo apt-get install sun-java6-jdk  sun-java6-jre
+
+    #echo "Getting rid of several automatically installed packages that are not needed anymore..."
+    #sudo apt-get autoremove
+
+    #optional:
+    #make sure environment points to a valid install if you are replacing...
+    #sudo update-alternatives --config java
+
+    #check JDK by looking in the /etc/alternatives/ directory
+    #cd /etc/alternatives
+    #ls -lrt java*
+
+    #setting JAVA_HOME globally for all users (only for bash)
+    #vim /etc/bash.bashrc
+    #append the following line:
+    #export JAVA_HOME=/usr/lib/jvm/java-6-sun
+    echo "Setting JAVA_HOME globally for all users (only for bash)..."
+    echo "JAVA_HOME=/usr/lib/jvm/java-6-sun" >> /etc/bash.bashrc
+
+    #setting JAVA_HOME for everyone (best place for setting env vars globally)
+    #see https://help.ubuntu.com/community/EnvironmentVariables for details
+    #vim /etc/environment
+    #append the following lines:
+    #JAVA_HOME=/usr/lib/jvm/java-6-sun
+    #we will set this here because it might prevent problems later
+    #AS_JAVA=/usr/lib/jvm/java-6-sun
+
+    echo "Setting JAVA_HOME and AS_JAVA for everyone (best place for setting env vars globally)..."
+    echo "JAVA_HOME=/usr/lib/jvm/java-6-sun" >> /etc/environment
+    echo "AS_JAVA=/usr/lib/jvm/java-6-sun" >> /etc/environment
+
+    return 0
+}
+
+function install_glassfish {
+    #if you dont't have "unzip" installed run this here first
+    #sudo apt-get install unzip
+
+    #now switch user to the glassfish user we created (see step 1)
+    #sudo su glassfish
+
+    #change to home dir of glassfish
+    cd /home/glassfish/
+
+    #create new directory if not already available
+    sudo -u glassfish mkdir downloads
+
+    #go to the directory we created
+    cd /home/glassfish/downloads/
+
+    echo "Downloading Glassfish and installing..."
+    sudo -u glassfish wget http://download.java.net/glassfish/3.1/release/glassfish-3.1.zip
+    sudo -u glassfish unzip glassfish-3.1.zip
+
+    #move the relevant content to home directory
+    sudo -u glassfish mv /home/glassfish/downloads/glassfish3/* /home/glassfish/
+    #if something has not been moved, then move it manually, i.e.:
+    sudo -u glassfish mv /home/glassfish/downloads/glassfish3/.org.opensolaris,pkg /home/glassfish/.org.opensolaris,pkg
+
+    #exit from glassfish user
+    #exit
+
+    #change group of glassfish home directory to glassfishadm
+    sudo chgrp -R glassfishadm /home/glassfish
+
+    #just to make sure: change owner of glassfish home directory to glassfish
+    sudo chown -R glassfish /home/glassfish
+
+    #make sure the relevant files are executable/modifyable/readable for owner and group
+    sudo chmod -R ug+rwx /home/glassfish/bin/
+    sudo chmod -R ug+rwx /home/glassfish/glassfish/bin/
+
+    #others are not allowed to execute/modify/read them
+    sudo chmod -R o-rwx /home/glassfish/bin/
+    sudo chmod -R o-rwx /home/glassfish/glassfish/bin/
+
+    return 0
+}
+
+function configure_mysql {
+    echo "Adding mysql database 'openstack_atlas' and mysql user 'atlas' with password 'password' (please change later)..."
+    MYSQL=`which mysql`
+    DATABASE="openstack_atlas"
+    USER="atlas"
+    PASSWORD="password"
+     
+    Q1="CREATE DATABASE IF NOT EXISTS $DATABASE;"
+    Q2="GRANT ALL ON *.* TO '$USER'@'localhost' IDENTIFIED BY '$PASSWORD';"
+    Q3="FLUSH PRIVILEGES;"
+    SQL="${Q1}${Q2}${Q3}"
+
+    echo "Please enter the root password for MySQL..."
+    $MYSQL -uroot -p -e "$SQL"
+
+    return 0
+}
+
+function deploy_app {
+    echo "Starting up proper ownership on atlas files..."
+    chown -R glassfish:glassfishadm /opt/openstack/atlas/
+    chown -R root:glassfishadm /etc/openstack/atlas/
+
+    echo "Starting up Glassfish..."
+    sudo -u glassfish /home/glassfish/glassfish/bin/asadmin start-domain domain1
+
+    echo "Deploying Atlas WAR..."
+    WAR_FILE=`ls /opt/openstack/atlas/api/*.war`
+    sudo -u glassfish /home/glassfish/glassfish/bin/asadmin deploy --contextroot "/atlas" ${WAR_FILE}
+
+    return 0
+}
+
+case "$1" in
+    configure|triggered)
+        echo "postinst called with arguments: '$1', '$2'"
+        install_glassfish_user
+        configure_java
+        install_glassfish
+        configure_mysql
+        deploy_app  
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        echo "postinst called with argument: '$1'"
+    ;;
+
+    *)
+    echo "postinst called with unknown argument '$1'" >&2
+    exit 0
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

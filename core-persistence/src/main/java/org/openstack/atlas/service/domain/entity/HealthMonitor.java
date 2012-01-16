@@ -19,22 +19,22 @@ public class HealthMonitor extends org.openstack.atlas.service.domain.entity.Ent
 
     @OneToOne
     @JoinColumn(name = "load_balancer_id")
-    private LoadBalancer loadBalancer;
+    protected LoadBalancer loadBalancer;
 
     @JoinColumn(name = "type", nullable = false)
-    private String type = CoreHealthMonitorType.CONNECT;
+    protected String type = CoreHealthMonitorType.CONNECT;
 
     @Column(name = "delay", nullable = false)
-    private Integer delay = 3600;
+    protected Integer delay = 3600;
 
     @Column(name = "timeout", nullable = false)
-    private Integer timeout = 300;
+    protected Integer timeout = 300;
 
     @Column(name = "attempts_before_deactivation", nullable = false)
-    private Integer attemptsBeforeDeactivation = 10;
+    protected Integer attemptsBeforeDeactivation = 10;
 
     @Column(name = "path", length = 128, nullable = true)
-    private String path = "/";
+    protected String path = "/";
 
     public LoadBalancer getLoadBalancer() {
         return loadBalancer;

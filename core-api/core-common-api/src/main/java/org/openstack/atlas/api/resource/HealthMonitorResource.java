@@ -8,7 +8,7 @@ import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.HealthMonitorValidator;
 import org.openstack.atlas.core.api.v1.HealthMonitor;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.operation.CoreOperation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.HealthMonitorRepository;
 import org.openstack.atlas.service.domain.service.HealthMonitorService;
@@ -25,8 +25,8 @@ import static javax.ws.rs.core.MediaType.*;
 @Scope("request")
 public class HealthMonitorResource extends CommonDependencyProvider {
     private final Logger LOG = Logger.getLogger(HealthMonitorResource.class);
-    private Integer accountId;
-    private Integer loadBalancerId;
+    protected Integer accountId;
+    protected Integer loadBalancerId;
 
     @Autowired
     protected HealthMonitorValidator validator;
@@ -64,7 +64,7 @@ public class HealthMonitorResource extends CommonDependencyProvider {
 
             org.openstack.atlas.service.domain.entity.HealthMonitor healthMonitor = dozerMapper.map(_healthMonitor, org.openstack.atlas.service.domain.entity.HealthMonitor.class);
             healthMonitor = service.update(loadBalancerId, healthMonitor);
-            asyncService.callAsyncLoadBalancingOperation(Operation.SET_HEALTH_MONITOR, data);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.UPDATE_HEALTH_MONITOR, data);
             _healthMonitor = dozerMapper.map(healthMonitor, HealthMonitor.class);
             return Response.status(Response.Status.ACCEPTED).entity(_healthMonitor).build();
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class HealthMonitorResource extends CommonDependencyProvider {
             data.setLoadBalancer(loadBalancer);
 
             service.preDelete(loadBalancerId);
-            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_HEALTH_MONITOR, data);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.DELETE_HEALTH_MONITOR, data);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);

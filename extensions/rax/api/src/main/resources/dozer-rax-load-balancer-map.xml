@@ -81,6 +81,12 @@
             <a>sessionPersistence</a>
             <b>sessionPersistence</b>
         </field>
+        <field custom-converter="org.openstack.atlas.rax.api.mapper.dozer.converter.ConnectionLoggingConverter">
+            <a>anies</a>
+            <b>connectionLogging</b>
+            <a-hint>java.util.List</a-hint>
+            <b-hint>java.lang.Boolean</b-hint>
+        </field>
         <field custom-converter="org.openstack.atlas.rax.api.mapper.dozer.converter.CrazyNameConverter">
             <a>otherAttributes</a>
             <b>crazyName</b>
@@ -91,7 +97,7 @@
             <a>anies</a>
             <b>accessLists</b>
             <a-hint>java.util.List</a-hint>
-            <b-hint>org.openstack.atlas.rax.domain.entity.AccessList</b-hint>
+            <b-hint>org.openstack.atlas.rax.domain.entity.RaxAccessList</b-hint>
         </field>
     </mapping>
 

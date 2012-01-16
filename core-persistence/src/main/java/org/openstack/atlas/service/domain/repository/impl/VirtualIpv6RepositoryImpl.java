@@ -21,7 +21,7 @@ public class VirtualIpv6RepositoryImpl implements VirtualIpv6Repository {
 
     private final Log LOG = LogFactory.getLog(VirtualIpv6RepositoryImpl.class);
     @PersistenceContext(unitName = "loadbalancing")
-    private EntityManager entityManager;
+    protected EntityManager entityManager;
 
     @Override
     public List<VirtualIpv6> getVipsByAccountId(Integer accountId) {

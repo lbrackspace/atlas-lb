@@ -6,7 +6,7 @@ import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.ResourceValidator;
 import org.openstack.atlas.api.validation.validator.ValidatorUtilities;
 import org.openstack.atlas.api.validation.verifier.IsInstanceOf;
-import org.openstack.atlas.rax.domain.entity.AccessList;
+import org.openstack.atlas.rax.domain.entity.RaxAccessList;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ public class RaxLoadBalancerValidator implements ResourceValidator<Object> {
         validator = build(new ValidatorBuilder<Object>(Object.class) {
             {
                 // POST EXPECTATIONS
-                if_().adhereTo(new IsInstanceOf(AccessList.class)).then().must().delegateTo(new AccessListValidator().getValidator(), POST).forContext(POST);
+                if_().adhereTo(new IsInstanceOf(RaxAccessList.class)).then().must().delegateTo(new AccessListValidator().getValidator(), POST).forContext(POST);
             }
         });
     }

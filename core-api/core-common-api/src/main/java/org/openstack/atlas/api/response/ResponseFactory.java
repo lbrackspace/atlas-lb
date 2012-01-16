@@ -9,6 +9,7 @@ import org.openstack.atlas.core.api.v1.exceptions.ValidationErrors;
 import org.openstack.atlas.api.validation.result.ValidatorResult;
 
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ResponseFactory {
@@ -21,6 +22,19 @@ public class ResponseFactory {
         BadRequest badreq = buildBadRequestResponse(VALIDATION_FAILURE, vmessages);
         Response vresp = Response.status(status).entity(badreq).build();
         return vresp;
+    }
+
+    public static Response getValidationFaultResponse(List<String> messages) {
+        int status = 400;
+        BadRequest badreq = buildBadRequestResponse(VALIDATION_FAILURE, messages);
+        Response vresp = Response.status(status).entity(badreq).build();
+        return vresp;
+    }
+
+    public static Response getValidationFaultResponse(String errorStr){
+        List<String> errorStrs = new ArrayList<String>();
+        errorStrs.add(errorStr);
+        return getValidationFaultResponse(errorStrs);
     }
 
     public static BadRequest buildBadRequestResponse(String message, List<String> validationErrors) {

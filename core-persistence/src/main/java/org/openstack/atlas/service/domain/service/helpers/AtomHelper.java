@@ -3,8 +3,7 @@ package org.openstack.atlas.service.domain.service.helpers;
 import org.openstack.atlas.service.domain.event.entity.*;
 
 import java.util.Calendar;
-import static org.openstack.atlas.service.domain.service.helpers.AlertHelper.*;
-import static org.openstack.atlas.service.domain.service.helpers.AlertType.*;
+
 import static org.openstack.atlas.service.domain.event.entity.EventType.*;
 
 
@@ -155,7 +154,7 @@ public class AtomHelper {
             urI.append("/nodes/").append(additionalId);
         } else if (eventType.equals(EventType.SET_SESSION_PERSISTENCE) || eventType.equals(EventType.DELETE_SESSION_PERSISTENCE)) {
             urI.append("/sessionpersistence");
-        } else if (eventType.equals(CREATE_VIRTUAL_IP) || eventType.equals(DELETE_VIRTUAL_IP)) {
+        } else if (eventType.equals(ADD_VIRTUAL_IP) || eventType.equals(DELETE_VIRTUAL_IP)) {
             urI.append("/virtualips/").append(additionalId);
         }
 

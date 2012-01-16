@@ -13,6 +13,8 @@ public interface AccountLimitRepository {
 
     List<AccountLimit> getAccountLimits(Integer accountId);
 
+    int getLimit(Integer accountId, AccountLimitType accountLimitType) throws EntityNotFoundException;
+
     LimitType getLimitType(AccountLimitType accountLimitType) throws EntityNotFoundException;
 
     List<AccountLimit> getCustomLimitsByAccountId(Integer accountId) throws EntityNotFoundException;

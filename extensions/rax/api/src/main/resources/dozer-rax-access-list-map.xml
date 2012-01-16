@@ -6,7 +6,7 @@
 
     <mapping map-null="false">
         <class-a>org.openstack.atlas.api.v1.extensions.rax.NetworkItem</class-a>
-        <class-b>org.openstack.atlas.rax.domain.entity.AccessList</class-b>
+        <class-b>org.openstack.atlas.rax.domain.entity.RaxAccessList</class-b>
         <field>
             <a>address</a>
             <b>ipAddress</b>
@@ -16,9 +16,10 @@
             <a>ipVersion</a>
             <b>ipVersion</b>
         </field>-->
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumConverter">
+        <field>
             <a>type</a>
             <b>type</b>
         </field>
     </mapping>
+
 </mappings>

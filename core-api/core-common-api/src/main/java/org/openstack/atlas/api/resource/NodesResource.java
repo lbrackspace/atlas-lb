@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.resource;
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.apache.log4j.Logger;
 import org.openstack.atlas.api.resource.provider.CommonDependencyProvider;
 import org.openstack.atlas.api.response.ResponseFactory;
@@ -9,11 +8,10 @@ import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.api.validation.validator.NodesValidator;
 import org.openstack.atlas.core.api.v1.Nodes;
 import org.openstack.atlas.datamodel.CoreLoadBalancerStatus;
-import org.openstack.atlas.service.domain.common.StringUtilities;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
 import org.openstack.atlas.service.domain.entity.Node;
 import org.openstack.atlas.service.domain.exception.ImmutableEntityException;
-import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.operation.CoreOperation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.NodeRepository;
@@ -98,7 +96,7 @@ public class NodesResource extends CommonDependencyProvider {
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setLoadBalancer(domainLb);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_NODES, dataContainer);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.CREATE_NODES, dataContainer);
             return Response.status(Response.Status.ACCEPTED).entity(returnNodes).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e);
@@ -134,7 +132,7 @@ public class NodesResource extends CommonDependencyProvider {
             msg.setAccountId(accountId);
             msg.setLoadBalancerId(loadBalancerId);
             msg.setUserName(getUserName(requestHeaders));
-            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_NODES, msg);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.DELETE_NODES, msg);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);

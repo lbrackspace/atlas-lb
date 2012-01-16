@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.rmi.RemoteException;
 import java.util.*;
 
-@Primary
 @Service
 public class ZxtmUsageAdapterImpl implements UsageAdapter {
     private static Log LOG = LogFactory.getLog(ZxtmUsageAdapterImpl.class.getName());
@@ -60,16 +59,16 @@ public class ZxtmUsageAdapterImpl implements UsageAdapter {
     }
 
     /*
-    * *******************
-    * * PRIVATE METHODS *
-    * *******************
+    * *********************
+    * * PROTECTED METHODS *
+    * *********************
     */
 
-    private ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
+    protected ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
         return ZxtmServiceStubs.getServiceStubs(config.getEndpointUrl(), config.getUsername(), config.getPassword());
     }
 
-    private List<String> toVirtualServerNames(List<LoadBalancer> lbs) throws BadRequestException {
+    protected List<String> toVirtualServerNames(List<LoadBalancer> lbs) throws BadRequestException {
         List<String> virtualServerNames = new ArrayList<String>();
 
         for (LoadBalancer lb : lbs) {
@@ -79,14 +78,14 @@ public class ZxtmUsageAdapterImpl implements UsageAdapter {
         return virtualServerNames;
     }
 
-    private List<String> getValidVsNames(LoadBalancerEndpointConfiguration config, List<String> virtualServerNames) throws RemoteException, BadRequestException {
+    protected List<String> getValidVsNames(LoadBalancerEndpointConfiguration config, List<String> virtualServerNames) throws RemoteException, BadRequestException {
         Set<String> allLoadBalancerNames = new HashSet<String>(getStatsSystemLoadBalancerNames(config));
         Set<String> loadBalancerNamesForHost = new HashSet<String>(virtualServerNames);
         loadBalancerNamesForHost.retainAll(allLoadBalancerNames); // Get the intersection
         return new ArrayList<String>(loadBalancerNamesForHost);
     }
 
-    private List<String> getStatsSystemLoadBalancerNames(LoadBalancerEndpointConfiguration config) throws RemoteException {
+    protected List<String> getStatsSystemLoadBalancerNames(LoadBalancerEndpointConfiguration config) throws RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         List<String> loadBalancerNames = new ArrayList<String>();
         loadBalancerNames.addAll(Arrays.asList(serviceStubs.getSystemStatsBinding().getVirtualservers()));

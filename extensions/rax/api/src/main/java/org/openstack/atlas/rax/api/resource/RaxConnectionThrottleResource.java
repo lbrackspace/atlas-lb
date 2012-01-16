@@ -8,7 +8,7 @@ import org.openstack.atlas.api.validation.result.ValidatorResult;
 import org.openstack.atlas.core.api.v1.ConnectionThrottle;
 import org.openstack.atlas.rax.domain.entity.RaxConnectionThrottle;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.operation.Operation;
+import org.openstack.atlas.service.domain.operation.CoreOperation;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
@@ -48,7 +48,7 @@ public class RaxConnectionThrottleResource extends ConnectionThrottleResource {
             loadBalancer.setConnectionThrottle(connectionThrottle);
             data.setLoadBalancer(loadBalancer);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.SET_CONNECTION_THROTTLE, data);
+            asyncService.callAsyncLoadBalancingOperation(CoreOperation.UPDATE_CONNECTION_THROTTLE, data);
             _connectionThrottle = dozerMapper.map(connectionThrottle, ConnectionThrottle.class);
             return Response.status(Response.Status.ACCEPTED).entity(_connectionThrottle).build();
         } catch (Exception e) {

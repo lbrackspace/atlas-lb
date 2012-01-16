@@ -4,10 +4,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.service.domain.entity.LoadBalancer;
-import org.openstack.atlas.service.domain.event.UsageEvent;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Component;
@@ -38,7 +36,7 @@ public abstract class BaseListener implements MessageListener {
         return (MessageDataContainer) object.getObject();
     }
 
-    protected void notifyUsageProcessor(final Message message, final LoadBalancer loadBalancer, final UsageEvent event) throws JMSException {
+    protected void notifyUsageProcessor(final Message message, final LoadBalancer loadBalancer, final String event) throws JMSException {
         LOG.debug("Sending notification to usage processor...");
         final String finalDestination = "USAGE_EVENT";
         jmsTemplate.send(finalDestination, new MessageCreator() {
@@ -46,7 +44,7 @@ public abstract class BaseListener implements MessageListener {
             public Message createMessage(Session session) throws JMSException {
                 ObjectMessage response = session.createObjectMessage(loadBalancer);
                 response.setJMSCorrelationID(message.getJMSCorrelationID());
-                response.setObjectProperty("usageEvent", event.toString());
+                response.setObjectProperty("usageEvent", event);
                 return response;
             }
         });

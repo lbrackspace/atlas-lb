@@ -5,8 +5,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.helper.NodesHelper;
 import org.openstack.atlas.datamodel.CoreNodeStatus;
+import org.openstack.atlas.datamodel.CoreUsageEventType;
 import org.openstack.atlas.service.domain.entity.*;
-import org.openstack.atlas.service.domain.event.UsageEvent;
 import org.openstack.atlas.service.domain.event.entity.EventType;
 import org.openstack.atlas.service.domain.exception.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojo.MessageDataContainer;
@@ -23,7 +23,6 @@ import static org.openstack.atlas.datamodel.CoreLoadBalancerStatus.ACTIVE;
 import static org.openstack.atlas.datamodel.CoreLoadBalancerStatus.ERROR;
 import static org.openstack.atlas.service.domain.common.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.common.AlertType.LBDEVICE_FAILURE;
-import static org.openstack.atlas.service.domain.event.UsageEvent.SSL_ON;
 import static org.openstack.atlas.service.domain.event.entity.CategoryType.CREATE;
 import static org.openstack.atlas.service.domain.event.entity.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.event.entity.EventSeverity.CRITICAL;
@@ -97,8 +96,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         addAtomEntryForConnectionThrottle(dbLoadBalancer, dbLoadBalancer);
 
         // Notify usage processor
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
-        if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+        notifyUsageProcessor(message, dbLoadBalancer, CoreUsageEventType.CREATE_LOAD_BALANCER);
 
         LOG.info(String.format("Successfully created load balancer '%d'.", dbLoadBalancer.getId()));
     }
@@ -118,12 +116,12 @@ public class CreateLoadBalancerListener extends BaseListener {
     private void addAtomEntriesForVips(LoadBalancer queueLb, org.openstack.atlas.service.domain.entity.LoadBalancer dbLoadBalancer) {
         for (LoadBalancerJoinVip loadBalancerJoinVip : dbLoadBalancer.getLoadBalancerJoinVipSet()) {
             VirtualIp vip = loadBalancerJoinVip.getVirtualIp();
-            notificationService.saveVirtualIpEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), vip.getId(), CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(vip), EventType.CREATE_VIRTUAL_IP, CREATE, INFO);
+            notificationService.saveVirtualIpEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), vip.getId(), CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(vip), EventType.ADD_VIRTUAL_IP, CREATE, INFO);
         }
 
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : dbLoadBalancer.getLoadBalancerJoinVip6Set()) {
             VirtualIpv6 vip = loadBalancerJoinVip6.getVirtualIp();
-            notificationService.saveVirtualIpEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), vip.getId(), CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(vip), EventType.CREATE_VIRTUAL_IP, CREATE, INFO);
+            notificationService.saveVirtualIpEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), vip.getId(), CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(vip), EventType.ADD_VIRTUAL_IP, CREATE, INFO);
         }
     }
 

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
-@Primary
 @Service
 public class NullAdapterImpl implements LoadBalancerAdapter {
     public static Log LOG = LogFactory.getLog(NullAdapterImpl.class.getName());
