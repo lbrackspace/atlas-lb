@@ -23,6 +23,8 @@ import java.util.Calendar;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS;
 
 public class SslTerminationIntegrationTest extends ZeusTestBase {
+    //TODO: robustoize it...
+
      final String testCert = "-----BEGIN CERTIFICATE-----\n" +
              "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
              "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
@@ -244,6 +246,18 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
                 }
             }
             Assert.assertFalse(doesExist);
+
+            //Check to see if original VS is still here
+            String[] virtualServers2 = getServiceStubs().getVirtualServerBinding().getVirtualServerNames();
+            boolean doesExist1 = false;
+            for (String vsName : virtualServers) {
+                if (vsName.equals(ZxtmNameBuilder.genVSName(lb))) {
+                    doesExist1 = true;
+                    break;
+                }
+            }
+            Assert.assertTrue(doesExist1);
+
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
