@@ -766,6 +766,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return domainLbs;
     }
 
+    @Override
+    public List<LoadBalancer> getLoadBalancersWithUsage(Integer accountId, Calendar startTime, Calendar endTime) {
+        List<LoadBalancer> domainLbs;
+        domainLbs = loadBalancerRepository.getLoadBalancersActiveInRange(accountId, startTime, endTime);
+        return domainLbs;
+    }
+
     private List<LoadBalancer> verifySharedVipsOnLoadBalancers(List<LoadBalancer> lbs) throws EntityNotFoundException, BadRequestException {
         List<LoadBalancer> lbsWithSharedVips = new ArrayList<LoadBalancer>();
         List<LoadBalancer> lbsNeededForRequest = new ArrayList<LoadBalancer>();

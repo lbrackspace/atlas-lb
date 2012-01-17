@@ -1267,4 +1267,18 @@ public class LoadBalancerRepository {
         }
         return loadbalancers;
     }
+
+    public List<LoadBalancer> getLoadBalancersActiveInRange(Integer accountId, Calendar startTime, Calendar endTime) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancer> criteria = builder.createQuery(LoadBalancer.class);
+        Root<LoadBalancer> lbRoot = criteria.from(LoadBalancer.class);
+
+        Predicate hasAccountId = builder.equal(lbRoot.get(LoadBalancer_.accountId), accountId);
+        Predicate createdBetweenDates = builder.between(lbRoot.get(LoadBalancer_.created), startTime, endTime);
+        Predicate updatedBetweenDates = builder.between(lbRoot.get(LoadBalancer_.updated), startTime, endTime);
+
+        criteria.select(lbRoot);
+        criteria.where(builder.and(hasAccountId, builder.or(createdBetweenDates, updatedBetweenDates)));
+        return entityManager.createQuery(criteria).getResultList();
+    }
 }
