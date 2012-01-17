@@ -733,7 +733,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void updateSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void updateSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, ZeusSslTermination zeusSslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         final String virtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         final String virtualServerNameNonSecure = ZxtmNameBuilder.genVSName(loadBalancer);
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
@@ -750,39 +750,43 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         try {
-            if (!serviceStubs.getVirtualServerBinding().getPort(new String[]{virtualServerName})[0].equals(sslTermination.getSslTermination().getSecurePort())) {
+            if (!serviceStubs.getVirtualServerBinding().getPort(new String[]{virtualServerName})[0].equals(zeusSslTermination.getSslTermination().getSecurePort())) {
                 LOG.info(String.format("Updating secure servers port for ssl termination load balancer in zeus...", virtualServerName));
-                updatePort(conf, virtualServerName, sslTermination.getSslTermination().getSecurePort());
+                updatePort(conf, virtualServerName, zeusSslTermination.getSslTermination().getSecurePort());
                 LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer in zeus...", virtualServerName));
             }
 
             try {
-                if (catlog.getCertificateInfo(new String[]{virtualServerName}) != null) {
-                    LOG.info(String.format("Certificate already exists, removing it for loadbalancer: %s", loadBalancer.getId()));
-                    enableDisableSslTermination(conf, loadBalancer, false);
-                    catlog.deleteCertificate(new String[]{virtualServerName});
-                    LOG.debug(String.format("Removed existing certificate for loadbalancer: %s", loadBalancer.getId()));
+                if (zeusSslTermination.getCertIntermediateCert() != null) {
+                    if (catlog.getCertificateInfo(new String[]{virtualServerName}) != null) {
+                        LOG.info(String.format("Certificate already exists, removing it for loadbalancer: %s", loadBalancer.getId()));
+                        enableDisableSslTermination(conf, loadBalancer, false);
+                        catlog.deleteCertificate(new String[]{virtualServerName});
+                        LOG.debug(String.format("Removed existing certificate for loadbalancer: %s", loadBalancer.getId()));
+                    }
+
+                    LOG.info(String.format("Importing certificate for load balancer: ", loadBalancer.getId()));
+                    CertificateFiles certificateFiles = new CertificateFiles();
+                    certificateFiles.setPrivate_key(zeusSslTermination.getSslTermination().getPrivatekey());
+                    certificateFiles.setPublic_cert(zeusSslTermination.getCertIntermediateCert());
+                    catlog.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
+                    LOG.debug(String.format("Successfully imported certificate for load balancer: ", loadBalancer.getId()));
+
+                    LOG.info(String.format("Attaching certificate and key, load balancer: %s ", loadBalancer.getId()));
+                    virtualServerService.setSSLCertificate(new String[]{virtualServerName}, new String[]{virtualServerName});
+                    LOG.debug(String.format("Succesfullly attached certificate and key for load balancer: %s", loadBalancer.getId()));
                 }
             } catch (ObjectDoesNotExist odne) {
                 LOG.debug(String.format("The certificate does not exist, ignoring... loadbalancer: %s", loadBalancer.getId()));
             }
 
-            LOG.info(String.format("Importing certificate for load balancer: ", loadBalancer.getId()));
-            CertificateFiles certificateFiles = new CertificateFiles();
-            certificateFiles.setPrivate_key(sslTermination.getSslTermination().getPrivatekey());
-            certificateFiles.setPublic_cert(sslTermination.getCertIntermediateCert());
-            catlog.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
-            LOG.debug(String.format("Successfully imported certificate for load balancer: ", loadBalancer.getId()));
+            LOG.info(String.format("Ssl termination virtual server will be enabled:'%s' for load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
+            enableDisableSslTermination(conf, loadBalancer, zeusSslTermination.getSslTermination().isEnabled());
+            LOG.debug(String.format("Successfully enabled:'%s' load balancer: %s ssl termination", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
 
-            LOG.info(String.format("Attaching and enabling certificate, load balancer: %s ", loadBalancer.getId()));
-            virtualServerService.setSSLCertificate(new String[]{virtualServerName}, new String[]{virtualServerName});
-            enableDisableSslTermination(conf, loadBalancer, sslTermination.getSslTermination().isEnabled());
-            LOG.debug(String.format("Succesfullly attached and enabled certificate for load balancer: %s", loadBalancer.getId()));
-
-
-            LOG.info(String.format("Suspending/enabling non-secure virtual server. load balancer: '%s' is enabled:%s", loadBalancer.getId(), sslTermination.getSslTermination().isEnabled()));
-            suspendUnsuspendVirtualServer(conf, virtualServerNameNonSecure, sslTermination.getSslTermination().isSecureTrafficOnly());
-            LOG.debug(String.format("Successfully suspended/enabled non-secure virtual server. load balancer: '%s' is enabled:%s", loadBalancer.getId(), sslTermination.getSslTermination().isEnabled()));
+            LOG.info(String.format("Non-secure virtual server will be enabled:'%s' load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
+            suspendUnsuspendVirtualServer(conf, virtualServerNameNonSecure, zeusSslTermination.getSslTermination().isSecureTrafficOnly());
+            LOG.debug(String.format("Successfully enabled:'%s' non-secure server for load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
         } catch (AxisFault af) {
             LOG.error("there was a error setting ssl termination in zxtm adapter for load balancer " + loadBalancer.getId());
             throw new RuntimeException(af);
