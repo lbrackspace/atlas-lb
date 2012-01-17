@@ -764,21 +764,23 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                         catlog.deleteCertificate(new String[]{virtualServerName});
                         LOG.debug(String.format("Removed existing certificate for loadbalancer: %s", loadBalancer.getId()));
                     }
-
-                    LOG.info(String.format("Importing certificate for load balancer: ", loadBalancer.getId()));
-                    CertificateFiles certificateFiles = new CertificateFiles();
-                    certificateFiles.setPrivate_key(zeusSslTermination.getSslTermination().getPrivatekey());
-                    certificateFiles.setPublic_cert(zeusSslTermination.getCertIntermediateCert());
-                    catlog.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
-                    LOG.debug(String.format("Successfully imported certificate for load balancer: ", loadBalancer.getId()));
-
-                    LOG.info(String.format("Attaching certificate and key, load balancer: %s ", loadBalancer.getId()));
-                    virtualServerService.setSSLCertificate(new String[]{virtualServerName}, new String[]{virtualServerName});
-                    LOG.debug(String.format("Succesfullly attached certificate and key for load balancer: %s", loadBalancer.getId()));
                 }
             } catch (ObjectDoesNotExist odne) {
                 LOG.debug(String.format("The certificate does not exist, ignoring... loadbalancer: %s", loadBalancer.getId()));
             }
+
+            if (zeusSslTermination.getCertIntermediateCert() != null) {
+                LOG.info(String.format("Importing certificate for load balancer: ", loadBalancer.getId()));
+                CertificateFiles certificateFiles = new CertificateFiles();
+                certificateFiles.setPrivate_key(zeusSslTermination.getSslTermination().getPrivatekey());
+                certificateFiles.setPublic_cert(zeusSslTermination.getCertIntermediateCert());
+                catlog.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
+                LOG.debug(String.format("Successfully imported certificate for load balancer: ", loadBalancer.getId()));
+            }
+
+            LOG.info(String.format("Attaching certificate and key, load balancer: %s ", loadBalancer.getId()));
+            virtualServerService.setSSLCertificate(new String[]{virtualServerName}, new String[]{virtualServerName});
+            LOG.debug(String.format("Succesfullly attached certificate and key for load balancer: %s", loadBalancer.getId()));
 
             LOG.info(String.format("Ssl termination virtual server will be enabled:'%s' for load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
             enableDisableSslTermination(conf, loadBalancer, zeusSslTermination.getSslTermination().isEnabled());
@@ -796,6 +798,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void removeSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         String virtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        String virtualServerNameNonSecure = ZxtmNameBuilder.genVSName(loadBalancer);
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
 
         try {
@@ -817,7 +820,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
             //Un-suspending non-secure vs
             LOG.info("Suspending/disabling non-secure virtual server for load balancer: " + loadBalancer.getId());
-            suspendUnsuspendVirtualServer(conf, virtualServerName, loadBalancer.getSslTermination().isSecureTrafficOnly());
+            suspendUnsuspendVirtualServer(conf, virtualServerNameNonSecure, false);
             LOG.debug("Successfully suspended/disabled non-secure virtual server for load balancer: " + loadBalancer.getId());
 
         } catch (RemoteException af) {
