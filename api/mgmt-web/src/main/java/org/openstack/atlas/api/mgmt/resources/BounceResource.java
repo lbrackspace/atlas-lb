@@ -8,6 +8,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 
 // TODO: Undocumented Resource
 public class BounceResource extends ManagementDependencyProvider {
@@ -62,6 +65,23 @@ public class BounceResource extends ManagementDependencyProvider {
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response echoLoadBalancer(LoadBalancers lbs) {
         Response resp = Response.status(200).entity(lbs).build();
+        return resp;
+    }
+
+
+    @POST
+    @Path("ssltermination")
+    public Response echoSslTermination(org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination in) {
+        String key = in.getPrivatekey();
+        String crt = in.getCertificate();
+        String chain = in.getIntermediateCertificate();
+        Response resp;
+        ZeusCertFile zcf = ZeusUtil.getCertFile(key, crt, chain);
+        if (zcf.isError()) {
+            resp = getValidationFaultResponse(zcf.getErrorList());
+        } else {
+            resp = ResponseFactory.getSuccessResponse("ssltermination was valid", 200);
+        }
         return resp;
     }
 }
