@@ -1,19 +1,20 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountBillings;
-import org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling;
-import org.openstack.atlas.api.helpers.CalendarHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountBillings;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling;
+import org.openstack.atlas.util.converters.exceptions.ConverterException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Collection;
+
+import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
 
 public class AccountsResource extends ManagementDependencyProvider {
 
@@ -46,8 +47,8 @@ public class AccountsResource extends ManagementDependencyProvider {
         Calendar endTime;
 
         try {
-            startTime = CalendarHelper.generateCalendar(startTimeString);
-            endTime = CalendarHelper.generateCalendar(endTimeString);
+            startTime = isoTocal(startTimeString);
+            endTime = isoTocal(endTimeString);
 
             final long timeDiff = endTime.getTimeInMillis() - startTime.getTimeInMillis();
             final int millisecondsInADay = 86400000;
@@ -56,8 +57,12 @@ public class AccountsResource extends ManagementDependencyProvider {
                 return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Time range cannot be greater than one day.");
             }
 
-        } catch (ParseException pe) {
-            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Date parameter must follow the yyyy-MM-dd'T'HH:mm:ss format.");
+            if (timeDiff < 0) {
+                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "");
+            }
+
+        } catch (ConverterException ce) {
+            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Date parameter(s) must follow ISO-8601 format.");
         }
 
         try {
