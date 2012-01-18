@@ -107,17 +107,6 @@ public class RsaConst {
     public static void init() {
     }
 
-    public static String findClassPath(Class<?> cls){
-        try{
-        String className   = cls.getName();
-        String mangledName = "/" + className.replace(".","/") + ".class";
-        URL loc = cls.getResource(mangledName);
-        String classPath = loc.getPath();
-        return classPath;
-        }catch(Exception ex){
-            String st = StringUtils.getExtendedStackTrace(ex);
-            return st;
-        }
-    }
+
 
 }

@@ -16,6 +16,7 @@ import org.openstack.atlas.util.ca.exceptions.NullKeyException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.primitives.RsaPair;
 import org.openstack.atlas.util.ca.exceptions.NoSuchAlgorithmException;
+import org.openstack.atlas.util.ca.primitives.Debug;
 
 public class RSAKeyUtils {
 
@@ -30,7 +31,10 @@ public class RSAKeyUtils {
         JCERSAPublicKey certPub = null;
         JCERSAPublicKey keyPub = null;
         try {
-            keyPub = (JCERSAPublicKey) rp.toJavaSecurityKeyPair().getPublic();
+            Object obj = rp.toJavaSecurityKeyPair().getPublic();
+            String objInfo = Debug.classLoaderInfo(obj.getClass());
+            String jpkInfo = Debug.classLoaderInfo(JCERSAPublicKey.class);
+            keyPub = (JCERSAPublicKey) obj;
         } catch (NullKeyException ex) {
             errorList.add("privateKey or publicKey was null ");
             return errorList;

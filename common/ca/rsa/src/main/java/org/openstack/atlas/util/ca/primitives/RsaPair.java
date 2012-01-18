@@ -48,6 +48,7 @@ public class RsaPair {
     }
 
     public RsaPair(KeyPair jKeyPair) throws ConversionException {
+
         String msg;
         String fmt;
         String jPrivClass;
@@ -58,8 +59,7 @@ public class RsaPair {
         jPrivClass = jPriv.getClass().getCanonicalName();
         jPubClass = jPub.getClass().getCanonicalName();
 
-        String jPrivClassPath = RsaConst.findClassPath(jPriv.getClass());
-        String JPCLClassPath = RsaConst.findClassPath(JCERSAPublicKey.class);
+        String classInfo = Debug.classLoaderInfo(JCERSAPrivateCrtKey.class);
 
         try {
             this.priv = HackedProviderAccessor.newRSAPrivateCrtKeyParameters((JCERSAPrivateCrtKey) jPriv);
