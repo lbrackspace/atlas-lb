@@ -31,15 +31,11 @@ import org.openstack.atlas.api.helpers.JsonDeserializer.DeserializerProviderBuil
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 
 public class JsonObjectMapper extends ObjectMapper {
 
-    //protected DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
     public void init() {
-        //this.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false);
-        //this.getSerializationConfig().setDateFormat(df);
-        //this.getDeserializationConfig().setDateFormat(df);
-
         CustomSerializerFactory csf = new CustomSerializerFactory();
         CustomDeserializerFactory cdf = new CustomDeserializerFactory();
         SerializationConfig serConf = this.getSerializationConfig();
@@ -51,12 +47,12 @@ public class JsonObjectMapper extends ObjectMapper {
 
         Class[] serializerWrapperClasses = new Class[]{HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class,
-            Node.class, RateLimit.class, Errorpage.class};
+            Node.class, RateLimit.class, Errorpage.class,SslTermination.class};
 
         Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class,
             ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
-            Errorpage.class};
+            Errorpage.class, SslTermination.class};
 
 
         for (Class wrapperClass : serializerWrapperClasses) {
