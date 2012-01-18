@@ -93,7 +93,7 @@ public class SyncListener extends BaseListener {
 
                         // Notify usage processor
                         notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
-                        if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+//                        if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
                     }
                 } catch (Exception e) {
                     String msg = "Error re-creating loadbalancer in SyncListener():";
@@ -102,18 +102,19 @@ public class SyncListener extends BaseListener {
                     LOG.error(msg, e);
                 }
 
-                //Now create the secure VS if ssl termination was already on the loadbalancer...
                 try {
+                    //Now create the secure VS if ssl termination was already on the loadbalancer...
                     if (dbLoadBalancer.hasSsl()) {
+                        org.openstack.atlas.service.domain.entities.SslTermination dbTermination = sslTerminationService.getSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
 
+                        //Certs were valid before sync, append them and send them...
                         StringBuilder stringBuilder = new StringBuilder();
-                        stringBuilder.append(dbLoadBalancer.getSslTermination().getCertificate());
-                        stringBuilder.append(dbLoadBalancer.getSslTermination().getIntermediateCertificate());
-
+                        stringBuilder.append(dbTermination.getCertificate());
+                        stringBuilder.append(dbTermination.getIntermediateCertificate());
 
 //                        ZeusSslTermination zeusTermination = sslTerminationService.updateSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), domainSslTermination);
                         ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
-                        zeusSslTermination.setSslTermination(dbLoadBalancer.getSslTermination());
+                        zeusSslTermination.setSslTermination(dbTermination);
                         zeusSslTermination.setCertIntermediateCert(stringBuilder.toString());
 
                         reverseProxyLoadBalancerService.updateSslTermination(dbLoadBalancer, zeusSslTermination);

@@ -29,10 +29,23 @@ public class ZxtmNameBuilderTest {
         Assert.assertEquals(expectedName, generatedName);
     }
 
+    @Test
+    public void generateSecureServerNameWithAccountIdAndLoadBalancerIdShouldCreateExpectedName() throws InsufficientRequestException {
+        String expectedName = loadBalancer.getAccountId() + "_" + loadBalancer.getId() + "_S";
+        String generatedName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        Assert.assertEquals(expectedName, generatedName);
+    }
+
     @Test(expected = InsufficientRequestException.class)
-    public void generateNameWithAccountIdAndLoadBalancerIdShouldThrowExceptionWhenMissingId() throws InsufficientRequestException {
+    public void generateSecureServerNameWithAccountIdAndLoadBalancerIdShouldThrowExceptionWhenMissingId() throws InsufficientRequestException {
         loadBalancer.setId(null);
-        ZxtmNameBuilder.genVSName(loadBalancer);
+        ZxtmNameBuilder.genSslVSName(null, loadBalancer.getAccountId());
+    }
+
+    @Test(expected = InsufficientRequestException.class)
+    public void generateSecureSeverNameWithAccountIdAndLoadBalancerIdShouldThrowExceptionWhenMissingAccountId() throws InsufficientRequestException {
+        loadBalancer.setId(null);
+        ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), null);
     }
 
     @Test(expected = InsufficientRequestException.class)
