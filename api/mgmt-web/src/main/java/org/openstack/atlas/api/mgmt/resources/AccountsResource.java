@@ -58,7 +58,7 @@ public class AccountsResource extends ManagementDependencyProvider {
             }
 
             if (timeDiff < 0) {
-                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "");
+                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Must specify an earlier startTime than endTime.");
             }
 
         } catch (ConverterException ce) {
