@@ -11,6 +11,6 @@ public final class ConfigurationHelper {
     public static boolean isAllowed(Configuration configuration, PublicApiServiceConfigurationKeys key) {
         //Verify the users request is allowed...
             return (configuration.hasKeys(key)
-                    && configuration.getString(key).equals("true"));
+                    && configuration.getString(key).toLowerCase().equals("true"));
     }
 }

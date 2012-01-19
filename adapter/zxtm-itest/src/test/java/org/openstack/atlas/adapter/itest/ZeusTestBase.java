@@ -156,7 +156,7 @@ public class ZeusTestBase {
         removeLoadBalancer();
     }
 
-    private static void shouldBeValidApiVersion() {
+    protected static void shouldBeValidApiVersion() {
         String ZEUS_API_VERSION = "7.3r1";
         try {
             Assert.assertEquals(ZEUS_API_VERSION, getServiceStubs().getSystemMachineInfoBinding().getProductVersion());

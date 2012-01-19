@@ -21,6 +21,8 @@ import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
@@ -126,6 +128,9 @@ public class BounceResource extends CommonDependencyProvider {
     @POST
     @Path("ssltermination")
     public Response echoSslTerminationValidation(SslTermination in) {
+        if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
         String key = in.getPrivatekey();
         String crt = in.getCertificate();
         String chain = in.getIntermediateCertificate();

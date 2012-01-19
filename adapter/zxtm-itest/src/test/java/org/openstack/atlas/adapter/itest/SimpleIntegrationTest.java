@@ -50,6 +50,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     @Test
     public void updateProtocol() {
         try {
+            lb.setProtocol(HTTPS);
             zxtmAdapter.updateProtocol(config, lb);
 
             final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
@@ -67,6 +68,18 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void changeProtocolWithConnectionLoggingEnabled() {
+        try {
+            lb.setConnectionLogging(Boolean.TRUE);
+            zxtmAdapter.updateConnectionLogging(config, lb);
+            lb.setProtocol(HTTPS);
+            zxtmAdapter.updateProtocol(config, lb);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -501,7 +514,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
     private void shouldDisableSessionPersistenceWhenUpdatingToNonHttpProtocol() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
         ZeusTestBase.setupIvars();
-zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), HTTP_COOKIE);
+        zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), HTTP_COOKIE);
         String[] persistenceCatalogList = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
         Assert.assertEquals(1, persistenceCatalogList.length);
         Assert.assertEquals(HTTP_COOKIE.name(), persistenceCatalogList[0]);

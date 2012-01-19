@@ -38,11 +38,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final VirtualServerRule ruleRateLimitNonHttp = new VirtualServerRule(RATE_LIMIT_NON_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
 
-    static {
-        //Security.addProvider(new NaiveTrustProvider());
-        //Security.setProperty("ssl.TrustManagerFactory.algorithm", NaiveTrustProvider.TRUST_PROVIDER_ALG);
-    }
-
     @Override
     public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
         return ZxtmServiceStubs.getServiceStubs(config.getEndpointUrl(), config.getUsername(), config.getPassword());
@@ -321,6 +316,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         Integer lbId = lb.getId();
         Integer accountId = lb.getAccountId();
         LoadBalancerProtocol protocol = lb.getProtocol();
+        boolean connectionLogging = lb.isConnectionLogging();
         String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
         String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
         String[] vsNames;
@@ -339,14 +335,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             throw new ZxtmRollBackException("Update protocol request canceled.", e);
         }
 
-        try {
-            // Update log format to match protocol
-            if (serviceStubs.getVirtualServerBinding().getLogEnabled(new String[]{virtualServerName})[0]) {
-                updateConnectionLogging(config, lb);
-            }
-        } catch (Exception e) {
-            throw new ZxtmRollBackException("Update protocol request canceled.", e);
-        }
 
         try {
             // Drop rate-limit Rule if it exists
@@ -360,6 +348,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
             if (rateLimitExists) {
                 removeRateLimitRulesFromVirtualServers(serviceStubs, vsNames);
+            }
+
+            // Disable logging for protocol switch (keeping trevors commit)
+            if (connectionLogging) {
+                serviceStubs.getVirtualServerBinding().setLogEnabled(new String[]{virtualServerName}, new boolean[]{false});
             }
 
             LOG.debug(String.format("Updating protocol to '%s' for virtual server '%s'...", protocol.name(), virtualServerName));
@@ -385,6 +378,17 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
             throw new ZxtmRollBackException("Update protocol request canceled.", e);
         }
+
+
+        try {
+            // Update log format to match protocol
+            if (connectionLogging) {
+                serviceStubs.getVirtualServerBinding().setLogEnabled(new String[]{virtualServerName}, new boolean[]{true});
+            }
+        } catch (Exception e) {
+            throw new ZxtmRollBackException("Update protocol request canceled.", e);
+        }
+
     }
 
     @Override
