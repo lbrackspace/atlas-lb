@@ -14,7 +14,7 @@ CREATE TABLE `lb_ssl` (
   PRIMARY KEY  (`id`),
   KEY `loadbalancer_id` (`loadbalancer_id`),
   CONSTRAINT `lb_ssl_ibfk_1` FOREIGN KEY (`loadbalancer_id`) REFERENCES `loadbalancer` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=103 DEFAULT CHARSET=utf8
+) ENGINE=InnoDB AUTO_INCREMENT=103 DEFAULT CHARSET=utf8;
 
 INSERT INTO `event_type` VALUES('UPDATE_SSL_TERMINATION', 'Update SSL termination');
 INSERT INTO `event_type` VALUES('DELETE_SSL_TERMINATION', 'Delete SSL termination');
