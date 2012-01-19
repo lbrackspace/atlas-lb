@@ -64,6 +64,8 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @DELETE
     public Response removeSsl() {
         try {
+            sslTerminationService.getSslTermination(loadBalancerId, accountId);
+
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setAccountId(accountId);
             dataContainer.setLoadBalancerId(loadBalancerId);

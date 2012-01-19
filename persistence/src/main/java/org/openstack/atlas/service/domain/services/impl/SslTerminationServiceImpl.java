@@ -72,9 +72,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     public boolean deleteSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lid, accountId);
         isLbActive(dbLoadBalancer);
-        if (!dbLoadBalancer.hasSsl()) {
-            throw new BadRequestException("SSL Termination to be deleted not found on loadbalancer: " + dbLoadBalancer.getId());
-        }
+
         return sslTerminationRepository.removeSslTermination(lid, accountId);
     }
 
