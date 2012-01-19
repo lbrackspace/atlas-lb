@@ -127,6 +127,7 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
             for (AccessList al : domainLB.getAccessLists()) {
                 if (networkItemId.equals(al.getId())) {
                     isFound = true;
+                    accessLists.add(al);
                 }
             }
             if (!isFound) {
