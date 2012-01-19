@@ -22,7 +22,7 @@ public class DeleteExpiredRateLimitListener extends BaseListener {
             for (RateLimit rl : rateLimits) {
                 LoadBalancer lb = rl.getLoadbalancer();
                 LOG.debug(String.format("Attempting to remove expired rate limit for load balancer... '%d' ...", lb.getId()));
-                reverseProxyLoadBalancerService.deleteRateLimit(lb.getId(), lb.getAccountId());
+                reverseProxyLoadBalancerService.deleteRateLimit(lb);
                 LOG.debug(String.format("expired rate limits were removed from zeus..loadbalancer...'%s'..", lb.getId())
                         + "Now we can remove the from the database...");
                 try {

@@ -25,7 +25,7 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException;
 
-    public void updateProtocol(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, LoadBalancerProtocol protocol)
+    public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
     public void updatePort(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Integer port)
@@ -64,22 +64,22 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, boolean isConnectionLogging, LoadBalancerProtocol protocol)
+    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, ConnectionLimit throttle)
+    public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
+    public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
     public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, HealthMonitor healthMonitor)
             throws RemoteException, InsufficientRequestException;
 
-    public void removeHealthMonitor(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
+    public void removeHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException;
 
-    public void updateAccessList(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<AccessList> accessListItems)
+    public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException;
 
     public void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
@@ -136,26 +136,26 @@ public interface ReverseProxyLoadBalancerAdapter {
     public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config)
             throws RemoteException;
 
-    public void deleteRateLimit(LoadBalancerEndpointConfiguration config, int id, int accountId)
+    public void deleteRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException;
 
-    public void setRateLimit(LoadBalancerEndpointConfiguration config, int id, int accountId, RateLimit rateLimit)
+    public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void updateRateLimit(LoadBalancerEndpointConfiguration config, int id, int accountId, RateLimit rateLimit)
+    public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId)
+    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException;
 
-    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId)
+    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException;
 
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content)
             throws RemoteException, InsufficientRequestException;
 
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId)
-            throws AxisFault;
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws AxisFault, InsufficientRequestException;
 
     public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content)
             throws RemoteException;
@@ -163,7 +163,7 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void updateSslTermination(LoadBalancerEndpointConfiguration config, int loadBalancerId, int accountId, LoadBalancer loadBalancer, SslTermination sslTermination)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void removeSslTermination(LoadBalancerEndpointConfiguration config, int loadBalancerId, int accountId)
+    public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException;
 
     public void enableDisableSslTermination(LoadBalancerEndpointConfiguration config, int loadBalancerId, int accountId, boolean isSslTermination)

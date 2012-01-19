@@ -42,11 +42,11 @@ public interface ReverseProxyLoadBalancerService {
 
     void setNodeWeights(Integer id, Integer accountId, Set<Node> nodes) throws Exception;
 
-    void updateAccessList(Integer id, Integer accountId, Collection<AccessList> accessListItems) throws Exception;
+    void updateAccessList(LoadBalancer loadBalancer) throws Exception;
 
-    void updateConnectionThrottle(Integer id, Integer accountId, ConnectionLimit connectionThrottle) throws Exception;
+    void updateConnectionThrottle(LoadBalancer loadbalancer) throws Exception;
 
-    void deleteConnectionThrottle(Integer id, Integer accountId) throws Exception;
+    void deleteConnectionThrottle(LoadBalancer loadBalancer) throws Exception;
 
     void updateSessionPersistence(Integer id, Integer accountId, SessionPersistence persistenceMode) throws Exception;
 
@@ -54,7 +54,7 @@ public interface ReverseProxyLoadBalancerService {
 
     void updateHealthMonitor(Integer lbId, Integer accountId, HealthMonitor monitor) throws Exception;
 
-    void removeHealthMonitor(Integer lbId, Integer accountId) throws Exception;
+    void removeHealthMonitor(LoadBalancer loadBalancer) throws Exception;
 
     void createHostBackup(Host host, String backupName) throws Exception;
 
@@ -92,23 +92,23 @@ public interface ReverseProxyLoadBalancerService {
 
     public boolean isEndPointWorking(Host host) throws Exception;
 
-    public void setRateLimit(int id, int accountId, RateLimit rateLimit) throws Exception;
+    public void setRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws Exception;
 
-    public void deleteRateLimit(int id, int accountId) throws Exception;
+    public void deleteRateLimit(LoadBalancer loadBalancer) throws Exception;
 
-    public void updateRateLimit(int id, int accountId, RateLimit rateLimit) throws Exception;
+    public void updateRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws Exception;
 
-    public void removeAndSetDefaultErrorFile(Integer loadbalancerId, Integer accountId) throws EntityNotFoundException, MalformedURLException, DecryptException, RemoteException, InsufficientRequestException;
+    public void removeAndSetDefaultErrorFile(LoadBalancer loadBalancer) throws EntityNotFoundException, MalformedURLException, DecryptException, RemoteException, InsufficientRequestException;
 
-    public void deleteErrorFile(Integer lbId, Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
+    public void deleteErrorFile(LoadBalancer loadBalancer) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
 
     public void uploadDefaultErrorFile(Integer clusterId, String content) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
 
-    public void setDefaultErrorFile(Integer lbId, Integer accountId) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
+    public void setDefaultErrorFile(LoadBalancer loadBalancer) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
 
     public void updateSslTermination(int lbId, int accountId, LoadBalancer loadBalancer, SslTermination sslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void removeSslTermination(int lbId, int accountId) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException;
+    public void removeSslTermination(LoadBalancer lb) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException;
 
     public void enableDisableSslTermination(int lbId, int accountId, boolean isSslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException;
 }

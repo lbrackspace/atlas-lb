@@ -30,10 +30,17 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON})
     public Response retrieveSSL() {
         try {
-            org.openstack.atlas.service.domain.entities.SslTermination ssl = sslTerminationService.getSslTermination(loadBalancerId, accountId);
-               SslTermination dataSsl = dozerMapper.map(ssl, SslTermination.class);
+//            org.openstack.atlas.service.domain.entities.SslTermination ssl = sslTerminationService.getSslTermination(loadBalancerId, accountId);
+//               SslTermination dataSsl = dozerMapper.map(ssl, SslTermination.class);
 
-            return Response.status(Response.Status.OK).entity(dataSsl).build();
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setCertificate("aGiantCert");
+            sslTermination.setPrivatekey("APrivateKeyBLIGGITYBLAH");
+            sslTermination.setIntermediateCertificate("anIntermediateCert");
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(443);
+            sslTermination.setSecureTrafficOnly(false);
+            return Response.status(Response.Status.OK).entity(sslTermination).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

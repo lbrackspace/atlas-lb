@@ -25,20 +25,20 @@ public class ZxtmNameBuilderTest {
     @Test
     public void generateNameWithAccountIdAndLoadBalancerIdShouldCreateExpectedName() throws InsufficientRequestException {
         String expectedName = loadBalancer.getAccountId() + "_" + loadBalancer.getId();
-        String generatedName = ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancer);
+        String generatedName = ZxtmNameBuilder.genVSName(loadBalancer);
         Assert.assertEquals(expectedName, generatedName);
     }
 
     @Test(expected = InsufficientRequestException.class)
     public void generateNameWithAccountIdAndLoadBalancerIdShouldThrowExceptionWhenMissingId() throws InsufficientRequestException {
         loadBalancer.setId(null);
-        ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancer);
+        ZxtmNameBuilder.genVSName(loadBalancer);
     }
 
     @Test(expected = InsufficientRequestException.class)
     public void generateNameWithAccountIdAndLoadBalancerIdShouldThrowExceptionWhenMissingAccountId() throws InsufficientRequestException {
         loadBalancer.setAccountId(null);
-        ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(loadBalancer);
+        ZxtmNameBuilder.genVSName(loadBalancer);
     }
 
     @Test
@@ -56,11 +56,11 @@ public class ZxtmNameBuilderTest {
 
     @Test(expected = InsufficientRequestException.class)
     public void generateNameWithAccountIdAndLoadBalancerIdShouldThrowExceptionWhenMissingLbId() throws InsufficientRequestException {
-        ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(null, 1);
+        ZxtmNameBuilder.genVSName(null, 1);
     }
 
     @Test(expected = InsufficientRequestException.class)
     public void generateNameWithAccountIdAndLoadBalancerIdShouldThrowExceptionWhenMissingActId() throws InsufficientRequestException {
-        ZxtmNameBuilder.generateNameWithAccountIdAndLoadBalancerId(1, null);
+        ZxtmNameBuilder.genVSName(1, null);
     }
 }

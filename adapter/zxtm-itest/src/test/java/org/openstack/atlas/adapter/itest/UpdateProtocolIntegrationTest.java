@@ -47,13 +47,14 @@ public class UpdateProtocolIntegrationTest extends ZeusTestBase {
                 VirtualServerProtocol[] protocols = getServiceStubs().getVirtualServerBinding().getProtocol(new String[]{loadBalancerName()});
                 Assert.assertEquals(1, protocols.length);
                 Assert.assertEquals(VirtualServerProtocol.http, protocols[0]);
-
-                zxtmAdapter.updateConnectionLogging(config, lb.getId(), lb.getAccountId(), true, lb.getProtocol());
+                lb.setConnectionLogging(Boolean.TRUE);
+                zxtmAdapter.updateConnectionLogging(config, lb);
                 boolean[] connectionLogging = getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{loadBalancerName()});
                 Assert.assertEquals(1, connectionLogging.length);
                 Assert.assertEquals(true, connectionLogging[0]);
 
-                zxtmAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(), HTTPS);
+                lb.setProtocol(HTTPS);
+                zxtmAdapter.updateProtocol(config, lb);
                 connectionLogging = getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{loadBalancerName()});
                 Assert.assertEquals(1, connectionLogging.length);
                 Assert.assertEquals(true, connectionLogging[0]);
@@ -85,13 +86,13 @@ public class UpdateProtocolIntegrationTest extends ZeusTestBase {
                 VirtualServerProtocol[] protocols = getServiceStubs().getVirtualServerBinding().getProtocol(new String[]{loadBalancerName()});
                 Assert.assertEquals(1, protocols.length);
                 Assert.assertEquals(VirtualServerProtocol.https, protocols[0]);
-
-                zxtmAdapter.updateConnectionLogging(config, lb.getId(), lb.getAccountId(), true, lb.getProtocol());
+                lb.setConnectionLogging(Boolean.TRUE);
+                zxtmAdapter.updateConnectionLogging(config, lb);
                 boolean[] connectionLogging = getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{loadBalancerName()});
                 Assert.assertEquals(1, connectionLogging.length);
                 Assert.assertEquals(true, connectionLogging[0]);
-
-                zxtmAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(), HTTP);
+                lb.setProtocol(HTTP);
+                zxtmAdapter.updateProtocol(config, lb);
                 connectionLogging = getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{loadBalancerName()});
                 Assert.assertEquals(1, connectionLogging.length);
                 Assert.assertEquals(true, connectionLogging[0]);

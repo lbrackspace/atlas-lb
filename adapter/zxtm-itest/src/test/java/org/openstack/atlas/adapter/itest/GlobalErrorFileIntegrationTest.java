@@ -54,7 +54,7 @@ public class GlobalErrorFileIntegrationTest extends ZeusTestBase {
 
     private void deleteErrorFile() {
         try {
-            zxtmAdapter.removeAndSetDefaultErrorFile(config, lb.getId(), lb.getAccountId());
+            zxtmAdapter.removeAndSetDefaultErrorFile(config, lb);
             String[] errorFile = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()});
             String fileNameAfterDeletion = null;
 

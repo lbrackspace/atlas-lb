@@ -29,24 +29,24 @@ public class DeleteSslTerminationListener extends BaseListener {
 
         MessageDataContainer dataContainer = getDataContainerFromMessage(message);
         LoadBalancer dbLoadBalancer;
-        LoadBalancer queueLb = new LoadBalancer();
-        queueLb.setUserName(dataContainer.getUserName());
-        queueLb.setId(dataContainer.getLoadBalancerId());
-        queueLb.setAccountId(dataContainer.getAccountId());
+        LoadBalancer errorMsgLB = new LoadBalancer();
+        errorMsgLB.setUserName(dataContainer.getUserName());
+        errorMsgLB.setId(dataContainer.getLoadBalancerId());
+        errorMsgLB.setAccountId(dataContainer.getAccountId());
 
         try {
-            dbLoadBalancer = loadBalancerService.get(queueLb.getId());
+            dbLoadBalancer = loadBalancerService.get(errorMsgLB.getId());
         } catch (EntityNotFoundException enfe) {
-            String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
+            String alertDescription = String.format("Load balancer '%d' not found in database.", errorMsgLB.getId());
             LOG.error(alertDescription, enfe);
-            notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(queueLb);
+            notificationService.saveAlert(errorMsgLB.getAccountId(), errorMsgLB.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
+            sendErrorToEventResource(errorMsgLB);
             return;
         }
 
         try {
             LOG.debug(String.format("Deleting load balancer '%d' ssl termination in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.removeSslTermination(queueLb.getId(), queueLb.getAccountId());
+            reverseProxyLoadBalancerService.removeSslTermination(dbLoadBalancer);
             LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
@@ -54,7 +54,7 @@ public class DeleteSslTerminationListener extends BaseListener {
             String alertDescription = String.format("Error deleting loadbalancer '%d' ssl termination in Zeus.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(queueLb);
+            sendErrorToEventResource(errorMsgLB);
             // Notify usage processor with a usage event
             notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.SSL_OFF);
             return;
@@ -65,7 +65,7 @@ public class DeleteSslTerminationListener extends BaseListener {
         // Add atom entry
         String atomTitle = "Load Balancer SSL Termination Successfully Deleted";
         String atomSummary = "Load balancer ssl termination successfully deleted";
-        notificationService.saveLoadBalancerEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_SSL_TERMINATION, DELETE, INFO);
+        notificationService.saveLoadBalancerEvent(errorMsgLB.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_SSL_TERMINATION, DELETE, INFO);
 
         // Notify usage processor with a usage event
         notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.SSL_OFF);
