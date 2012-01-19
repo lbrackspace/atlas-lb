@@ -50,6 +50,7 @@
         <property name="requestStateContainer" ref="requestStateContainer"/>
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
         <property name="restApiConfiguration" ref="configuration"/>
+        <property name="sslTerminationService" ref="sslTerminationService"/>
     </bean>
 
     <!--DOZER SETTINGS-->
@@ -103,6 +104,7 @@
                         <property name="healthMonitorResource" ref="healthMonitorResource"/>
                         <property name="usageResource" ref="usageResource"/>
                         <property name="errorpageResource" ref="errorpageResource"/>
+                        <property name="sslTerminationResource" ref="sslTerminationResource"/>
                     </bean>
                 </property>
                 <property name="algorithmsResource">
@@ -117,8 +119,12 @@
     <bean id="errorpageResource"
           class="org.openstack.atlas.api.resources.ErrorpageResource"
           parent="commonDependencyProvider"
-          scope="request"
-            >
+          scope="request">
+    </bean>
+    <bean id="sslTerminationResource"
+          class="org.openstack.atlas.api.resources.SslTerminationResource"
+          parent="commonDependencyProvider"
+          scope="request">
     </bean>
 
     <bean id="stubResource"

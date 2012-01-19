@@ -1,8 +1,13 @@
 #!/usr/bin/env jython
 
+from java.lang import Class
 
+import org.openstack.atlas.util.ca.primitives.RsaConst as RsaConst
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs as ZxtmServiceStubs
 import java.net.URL as URL
+import com.zxtm.service.client.CertificateFiles as CertificateFiles
+import org.openstack.atlas.util.ca.zeus.ZeusUtil as ZeusUtil
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile as ZeusCertFile
 
 import org.openstack.atlas.util.crypto.CryptoUtil as CryptoUtil
 import org.hexp.hibernateexp.util.BitUtil as BitUtil
@@ -105,6 +110,8 @@ import re
 
 import traceback
 
+RsaConst.init();
+
 ubyte2int = BitUtil.ubyte2int
 int2ubyte = BitUtil.int2ubyte
 sha1sum = HashUtil.sha1sum
@@ -158,44 +165,123 @@ app = HuApp()
 
 #select v.id,v.ip_address,lv.loadbalancer_id,l.account_id from virtual_ip_ipv4 v left join loadbalancer_virtualip lv on v.id = lv.virtualip_id join loadbalancer l on lv.loadbalancer_id = l.id order by v.id;
 
-class ZxtmStubs(object):
-    stubMap = {
-               "ce":"getZxtmConfExtraBinding",
-               "p" :"getPoolBinding",
-               "pc":"getProtectionBinding",
-               "tg":"getTrafficIpGroupBinding",
-               "vs":"getVirtualServerBinding"}
+class SslTermTest(object):
+    def __init__(self,zxtmStubs,keyfile,certfile,chainfile):
+        self.stubs = zxtmStubs
+        self.keyfile = keyfile
+        self.certfile = certfile
+        self.chainfile = chainfile
+        self.cf = None
 
-    def __init__(self,endpoints,user,passwd):
+    def showCF(self):
+        if self.cf == None:
+            return "None"
+        key   = self.cf.getPrivate_key()
+        certs = self.cf.getPublic_cert()
+        out = ""
+        out += "key = %s\n"%key
+        out += "certs = %s\n"%certs
+        return out
+
+    def getNames(self):
+        self.names = set([n for n in self.stubs.cert.getCertificateNames()])
+        return self.names
+
+    def addCert(self,name):
+        if name in self.names:
+            self.delCert(name)
+            return "OverWritten"
+        self.stubs.cert.importCertificate([name],[self.cf])
+        self.names.add(name)
+        return "Written"
+
+    def delCert(self,name):
+        if name in self.names:
+            self.stubs.cert.deleteCertificate([name])
+            self.names.remove(name)
+            return True
+        else:
+            return False
+
+    def setCF(self,api=False,chain=False):
+        key  = open(self.keyfile,"r").read()
+        cert = open(self.certfile,"r").read()
+
+        if chain:
+            chainStr = open(self.chainfile,"r").read()
+        else:
+            chainStr = ""
+
+        if api:
+            zcf = ZeusUtil.getCertFile(key,cert,chainStr)
+            for error in zcf.getErrorList():
+                printf("%s\n",error)
+            cf = CertificateFiles()
+            cf.setPublic_cert(zcf.getPublic_cert())
+            cf.setPrivate_key(zcf.getPrivate_key())
+            self.cf = cf
+            return cf
+        else:
+            zcert = cert + chainStr
+            cf = CertificateFiles()
+            cf.setPrivate_key(key)
+            cf.setPublic_cert(zcert)
+            self.cf = cf
+            return cf
+
+class ZxtmStubs(object):
+    default_package = "com.zxtm.service.client"
+
+    stubNames_default  = {
+                           "ce":"ConfExtraBindingStub",
+                           "p" :"PoolBindingStub",
+                           "pc":"CatalogProtectionBindingStub",
+                           "tg":"TrafficIPGroupsBindingStub",
+                           "vs":"VirtualServerBindingStub",
+                           "cert":"CatalogSSLCertificatesBindingStub",
+                           "ca":"CatalogSSLCertificateAuthoritiesBindingStub"
+                         }
+
+    def __init__(self,endpoints,user,passwd,*args,**kw):
+        self.stubNames = kw.get("stubNames",ZxtmStubs.stubNames_default)
+        self.package = kw.get("package",ZxtmStubs.default_package)
         self.user = user
         self.passwd = passwd
         self.endpoints = endpoints
         endpointkeys = endpoints.keys()
         self.endpoint = endpoints[endpointkeys[0]]
         endpoint = self.endpoint
-        self.stubs = ZxtmServiceStubs.getServiceStubs(endpoint,user,passwd)
+        self.stubs = {}
+        self.setStubs()
+
+    def setStubs(self):
+        ep = self.endpoint
+        self.stubs = {}
+        for (shortName,stubClassName) in self.stubNames.items():
+            fullClassName = "%s.%s"%(self.package,stubClassName)
+            stubClass = Class.forName(fullClassName)
+            stubInstance = stubClass(ep,None)
+            stubInstance.setUsername(self.user)
+            stubInstance.setPassword(self.passwd)
+            print self.stubs
+            self.stubs[shortName] = stubInstance
 
     def setEndpoint(self,id):
         self.endpoint = self.endpoints[id]
-        endpoint = self.endpoint
-        user = self.user
-        passwd = self.passwd
-        self.stubs = ZxtmServiceStubs.getServiceStubs(endpoint,user,passwd)
+        self.setStubs()
         
     def getMethods(self,stubName):
         out = []
-        out = dir(self.__getattr__(stubName))
+        out = dir(self.stubs[stubName])
         out.sort()
         return out
         
         
-    def __getattr__(self,stubName):
-        if not ZxtmStubs.stubMap.has_key(stubName):
+    def __getattr__(self,shortName):
+        if not self.stubs.has_key(shortName):
             raise AttributeError("'ZxtmStubs' has no attribute '%s'"%stubName)
         else:
-            f = getattr(self.stubs,ZxtmStubs.stubMap[stubName])
-            return f()
-
+            return self.stubs[shortName]
 
 class CidrBlackList(object):
     def __init__(self):
@@ -245,6 +331,7 @@ class CidrBlackList(object):
             self.ipv6Cidrs.getCidrs().add(IPv6Cidr(cidr))
             return "ADD %s to ipv6subnets"%cidr
         return "UNKNOWN ERROR %s"%cidr
+
 
 def bi(val):
     return BigInteger("%i"%val)
@@ -1199,19 +1286,21 @@ def allocatedThisWeek():
     out.append(cluster)
     return out        
 
-def load_json(json_file):
-    full_path = os.path.expanduser(json_file)
+def fullPath(file_path):
+    full_path = os.path.expanduser(file_path)
     full_path = os.path.abspath(full_path)
-    fp = open(full_path,"r")
+    return full_path
+
+
+def load_json(json_file):
+    fp = open(fullPath(json_file),"r")
     json_data = fp.read()
     fp.close()
     out = json.loads(json_data)
     return out
 
 def save_json(json_file,obj):
-    full_path = os.path.expanduser(json_file)
-    full_path = os.path.abspath(full_path)
-    fp = open(full_path,"w")
+    fp = open(fullPath(json_file),"w")
     out = json.dumps(obj, indent=2)
     fp.write(out)
     fp.close()
@@ -1334,3 +1423,13 @@ def newAlert(account,lid,day):
     a.setMessageName("TESTING")
     a.setStatus(AlertStatus.valueOf("UNACKNOWLEDGED"))
     return a
+
+def newCertificateFile(key_file,crt_file):
+    pem_key = open(fullPath(key_file),"r").read()
+    crt_key = open(fullPath(crt_file),"r").read()
+    certFile = CertificateFiles()
+    certFile.setPrivate_key(pem_key)
+    certFile.setPublic_cert(crt_pem)
+    return certFile
+
+

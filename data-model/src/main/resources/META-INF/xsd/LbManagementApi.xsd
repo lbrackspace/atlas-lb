@@ -440,7 +440,7 @@
         <xsd:attribute name="incomingTransfer" type="xsd:long"/>
         <xsd:attribute name="outgoingTransfer" type="xsd:long"/>
         <xsd:attribute name="numVips" type="xsd:int"/>
-        <xsd:attribute name="ssl" type="xsd:boolean"/>
+        <xsd:attribute name="sslTermination" type="xsd:boolean"/>
         <xsd:attribute name="tier" type="xsd:string"/>
     </xsd:complexType>
 

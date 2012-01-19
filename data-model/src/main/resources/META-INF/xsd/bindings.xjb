@@ -99,6 +99,9 @@
         <bindings scd="~tns:loadBalancerUsageRecord">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord"/>
         </bindings>
+        <bindings scd="~tns:sslTermination">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination"/>
+        </bindings>
     </bindings>
 </bindings>
 

@@ -33,6 +33,7 @@
             <xsd:element name="updated" type="tns:updated" minOccurs="0"/>
             <xsd:element name="connectionLogging" type="tns:connectionLogging" minOccurs="0"/>
             <xsd:element name="sourceAddresses" type="tns:sourceAddresses" minOccurs="0"/>
+            <xsd:element name="sslTermination" type="tns:sslTermination" minOccurs="0"/>
         </xsd:sequence>
         <xsd:attribute name="id" type="xsd:int"/>
         <xsd:attribute name="name" type="xsd:string"/>
@@ -328,4 +329,16 @@
         </xsd:sequence>
     </xsd:complexType>
 
+    <xsd:element name="sslTermination" type="tns:sslTermination"/>
+    <xsd:complexType name="sslTermination">
+        <xsd:sequence>
+            <xsd:element name="privatekey" type="xsd:string"/>
+            <xsd:element name="certificate" type="xsd:string"/>
+            <xsd:element name="intermediateCertificate" type="xsd:string"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:attribute name="enabled" type="xsd:boolean"/>
+        <xsd:attribute name="securePort" type="xsd:int"/>
+        <xsd:attribute name="secureTrafficOnly" type="xsd:boolean"/>
+    </xsd:complexType>
 </xsd:schema>

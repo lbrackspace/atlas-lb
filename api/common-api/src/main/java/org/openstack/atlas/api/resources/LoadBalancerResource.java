@@ -1,7 +1,6 @@
 package org.openstack.atlas.api.resources;
 
 import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
-import org.openstack.atlas.api.helpers.CacheKeyGen;
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -40,6 +39,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     private VirtualIpsResource virtualIpsResource;
     private UsageResource usageResource;
     private ErrorpageResource errorpageResource;
+    private SslTerminationResource sslTerminationResource;
     private int id;
     private Integer accountId;
     private HttpHeaders requestHeaders;
@@ -203,6 +203,13 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         return errorpageResource;
     }
 
+    @Path("ssltermination")
+    public SslTerminationResource retrieveSslResource() {
+        sslTerminationResource.setAccountId(accountId);
+        sslTerminationResource.setLoadBalancerId(id);
+        return sslTerminationResource;
+    }
+
     private Response getFeedResponse(Integer page) {
         Map<String, Object> feedAttributes = new HashMap<String, Object>();
         feedAttributes.put("feedType", FeedType.LOADBALANCER_FEED);
@@ -272,5 +279,13 @@ public class LoadBalancerResource extends CommonDependencyProvider {
 
     public void setErrorpageResource(ErrorpageResource errorpageResource) {
         this.errorpageResource = errorpageResource;
+    }
+
+    public SslTerminationResource getSslTerminationResource() {
+        return sslTerminationResource;
+    }
+
+    public void setSslTerminationResource(SslTerminationResource sslTerminationResource) {
+        this.sslTerminationResource = sslTerminationResource;
     }
 }

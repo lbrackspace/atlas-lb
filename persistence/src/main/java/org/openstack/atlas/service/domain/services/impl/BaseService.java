@@ -41,6 +41,7 @@ public class BaseService {
     protected NodeRepository nodeRepository;
     protected RateLimitRepository rateLimitRepository;
     protected JobStateRepository jobStateRepository;
+    protected SslTerminationRepository sslTerminationRepository;
 
     public void setRateLimitRepository(RateLimitRepository rateLimitRepository) {
         this.rateLimitRepository = rateLimitRepository;
@@ -90,6 +91,10 @@ public class BaseService {
         this.jobStateRepository = jobStateRepository;
     }
 
+    public void setSslTerminationRepository(SslTerminationRepository sslTerminationRepository) {
+        this.sslTerminationRepository = sslTerminationRepository;
+    }
+
     public void isLbActive(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException {
         if (dbLoadBalancer.getStatus().equals(DELETED)) {
             throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);
@@ -100,6 +105,7 @@ public class BaseService {
             LOG.warn(message);
             throw new ImmutableEntityException(message);
         }
+
     }
 
     protected boolean isActiveLoadBalancer(LoadBalancer rLb, boolean refetch) throws EntityNotFoundException {
