@@ -11,6 +11,8 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.MethodNotAllowedException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -33,7 +35,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createSsl(SslTermination ssl) {
         if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination))
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return ResponseFactory.getErrorResponse(new MethodNotAllowedException("Resource not implemented yet..."), null, null);
 
         ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(ssl, HttpRequestType.PUT);
         if (!result.passedValidation()) {

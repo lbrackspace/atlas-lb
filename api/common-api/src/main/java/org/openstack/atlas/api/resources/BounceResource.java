@@ -138,20 +138,4 @@ public class BounceResource extends CommonDependencyProvider {
         }
         return resp;
     }
-
-    @PUT
-    @Path("ssltermination")
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public Response echoSslTermination(SslTermination in) {
-        SslTermination sslTermination_out = new SslTermination();
-        sslTermination_out.setSecureTrafficOnly(in.isSecureTrafficOnly());
-        sslTermination_out.setEnabled(in.isEnabled());
-        sslTermination_out.setSecurePort(in.getSecurePort());
-        sslTermination_out.setPrivatekey(in.getPrivatekey());
-        sslTermination_out.setCertificate(in.getCertificate());
-        sslTermination_out.setIntermediateCertificate(in.getIntermediateCertificate());
-        Response resp = Response.status(200).entity(sslTermination_out).build();
-        return  resp;
-    }
 }

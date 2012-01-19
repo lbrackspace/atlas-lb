@@ -95,6 +95,7 @@ public class ZxtmAdapterImplTest {
             when(serviceStubs.getVirtualServerBinding().getRules(Matchers.<String[]>any())).thenReturn(new VirtualServerRule[][]{{}});
             when(serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(Matchers.<String[]>any())).thenReturn(new boolean[]{false});
             when(serviceStubs.getVirtualServerBinding().getProtocol(Matchers.<String[]>any())).thenReturn(new VirtualServerProtocol[]{VirtualServerProtocol.fromValue(VirtualServerProtocol._http)});
+            when(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).thenReturn(new String[]{lb.getId()+"_"+lb.getAccountId()});
             when(serviceStubs.getZxtmRuleCatalogService().getRuleNames()).thenReturn(new String[]{});
         }
 
