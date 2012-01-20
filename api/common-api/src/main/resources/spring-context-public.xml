@@ -2,15 +2,17 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       http://www.springframework.org/schema/util 
+       http://www.springframework.org/schema/util/spring-util-2.0.xsd
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd ">
 
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
-    <import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml"/>
     <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
     <import resource="db-services.xml"/>
     <import resource="db-usage-services.xml"/>
@@ -22,6 +24,17 @@
     <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="location" value="file:/etc/openstack/atlas/public-api.conf"/>
     </bean>
+
+    <!-- START NAMESPACE PREFIX CONFIGURATION-->
+    <bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
+        <property name="namespacePrefixes" ref="namespacePrefixMap"/>
+    </bean>
+    <util:map id="namespacePrefixMap">
+        <entry key="http://docs.openstack.org/loadbalancers/api/v1.0" value=""/>
+        <entry key="http://docs.openstack.org/loadbalancers/api/management/v1.0" value="mgmt"/>
+        <entry key="http://www.w3.org/2005/Atom" value="atom"/>
+    </util:map>
+    <!-- END NAMESPACE PREFIX CONFIGURATION-->
 
     <bean id="objectMapper" class="org.openstack.atlas.api.helpers.JsonObjectMapper"
           init-method="init"/>

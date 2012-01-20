@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -111,11 +112,6 @@
             <artifactId>abdera-server</artifactId>
         </dependency>
 
-        <!--<dependency> -->
-        <!--<groupId>javax.servlet</groupId> -->
-        <!--<artifactId>servlet-api</artifactId> -->
-        <!--</dependency> -->
-
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
@@ -126,16 +122,6 @@
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache-core</artifactId>
         </dependency>
-
-        <!--		<dependency>
-              <groupId>net.sf.ehcache</groupId>
-              <artifactId>ehcache-core</artifactId>
-          </dependency>
-
-          <dependency>
-              <groupId>net.sf.ehcache</groupId>
-              <artifactId>ehcache-terracotta</artifactId>
-          </dependency>-->
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -182,8 +168,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-cxf</artifactId>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxrs</artifactId>
         </dependency>
 
         <dependency>
