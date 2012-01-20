@@ -49,6 +49,10 @@ public class UsageResource extends CommonDependencyProvider {
             }
         }
 
+        if ((startTimeParam != null && endTimeParam != null) && startTime.compareTo(endTime) > 0) {
+            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Must specify an earlier startTime than endTime.");
+        }
+
         try {
             usages = usageService.getUsageByAccountIdandLbId(accountId, loadBalancerId, startTime, endTime);
             return Response.status(200).entity(UsageMapper.toRestApiServiceUsage(usages)).build();

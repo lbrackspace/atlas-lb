@@ -53,7 +53,7 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
             throw new UnprocessableEntityException("Session persistence is already deleted.");
         }
 
-        if(!loadBalancerRepository.testAndSetStatus(dbLb.getAccountId(), dbLb.getId(), LoadBalancerStatus.PENDING_DELETE, false)) {
+        if(!loadBalancerRepository.testAndSetStatus(dbLb.getAccountId(), dbLb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dbLb);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
