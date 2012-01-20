@@ -18,11 +18,15 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.api.helpers.ConfigurationHelper;
+import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 
 // TODO: Remove this class resource when we go to production
 public class BounceResource extends CommonDependencyProvider {
@@ -99,7 +103,7 @@ public class BounceResource extends CommonDependencyProvider {
     @POST
     @Path("accesslist")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public Response echoAccessList(AccessList accessList){
+    public Response echoAccessList(AccessList accessList) {
         Response resp = Response.status(200).entity(accessList).build();
         return resp;
     }
@@ -114,10 +118,29 @@ public class BounceResource extends CommonDependencyProvider {
 
     @POST
     @Path("errorpage")
-    public Response echoErrorpage(Errorpage errorpage){
+    public Response echoErrorpage(Errorpage errorpage) {
         Errorpage errorpage_out = new Errorpage();
         errorpage_out.setContent(errorpage.getContent());
         Response resp = Response.status(200).entity(errorpage_out).build();
+        return resp;
+    }
+
+    @POST
+    @Path("ssltermination")
+    public Response echoSslTerminationValidation(SslTermination in) {
+        if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        String key = in.getPrivatekey();
+        String crt = in.getCertificate();
+        String chain = in.getIntermediateCertificate();
+        Response resp;
+        ZeusCertFile zcf = ZeusUtil.getCertFile(key, crt, chain);
+        if (zcf.isError()) {
+            resp = getValidationFaultResponse(zcf.getErrorList());
+        } else {
+            resp = ResponseFactory.getSuccessResponse("ssltermination was valid", 200);
+        }
         return resp;
     }
 }

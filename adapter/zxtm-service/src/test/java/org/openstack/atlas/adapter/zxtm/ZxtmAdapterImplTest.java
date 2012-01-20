@@ -3,6 +3,7 @@ package org.openstack.atlas.adapter.zxtm;
 import com.zxtm.service.client.*;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -94,6 +95,7 @@ public class ZxtmAdapterImplTest {
             when(serviceStubs.getVirtualServerBinding().getRules(Matchers.<String[]>any())).thenReturn(new VirtualServerRule[][]{{}});
             when(serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(Matchers.<String[]>any())).thenReturn(new boolean[]{false});
             when(serviceStubs.getVirtualServerBinding().getProtocol(Matchers.<String[]>any())).thenReturn(new VirtualServerProtocol[]{VirtualServerProtocol.fromValue(VirtualServerProtocol._http)});
+            when(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).thenReturn(new String[]{lb.getId()+"_"+lb.getAccountId()});
             when(serviceStubs.getZxtmRuleCatalogService().getRuleNames()).thenReturn(new String[]{});
         }
 
@@ -203,11 +205,11 @@ public class ZxtmAdapterImplTest {
         public void shouldRunInOrderWhenDeletingALoadBalancer() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
             InOrder inOrder = inOrder(poolStub, vsStub, monitorStub, protectionStub, trafficIpGroupStub);
             adapterSpy.deleteLoadBalancer(dummyConfig, lb);
-            inOrder.verify(poolStub).removeMonitors(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(monitorStub).deleteMonitors(Matchers.<String[]>anyObject());
             inOrder.verify(vsStub).deleteVirtualServer(Matchers.<String[]>anyObject());
             inOrder.verify(poolStub).deletePool(Matchers.<String[]>anyObject());
             inOrder.verify(protectionStub).deleteProtection(Matchers.<String[]>anyObject());
+            inOrder.verify(poolStub).removeMonitors(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
+            inOrder.verify(monitorStub).deleteMonitors(Matchers.<String[]>anyObject());
             inOrder.verify(trafficIpGroupStub).deleteTrafficIPGroup(Matchers.<String[]>anyObject());
         }
 

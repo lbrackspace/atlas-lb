@@ -1,9 +1,24 @@
 #!/usr/bin/env jython
 
+from java.lang import Class
+
+import org.hexp.hibernateexp.util.FileUtils as FileUtils
+import org.hexp.hibernateexp.util.Aes as Aes
+
+import org.openstack.atlas.util.ca.primitives.RsaConst as RsaConst
+import org.openstack.atlas.util.ca.primitives.RsaPair as RsaPair
+import org.openstack.atlas.util.ca.zeus.ZeusUtil as ZeusUtil
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile as ZeusCertFile
+import org.openstack.atlas.util.ca.PemUtils as PemUtils
+import org.openstack.atlas.util.ca.CertUtils as CertUtils
+import org.openstack.atlas.util.ca.CsrUtils as CsrUtils
+import org.openstack.atlas.util.ca.RSAKeyUtils as RSAKeyUtils
+
 
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs as ZxtmServiceStubs
 import java.net.URL as URL
-
+import com.zxtm.service.client.CertificateFiles as CertificateFiles
+import com.zxtm.service.client.VirtualServerSSLSite as VirtualServerSSLSite
 import org.openstack.atlas.util.crypto.CryptoUtil as CryptoUtil
 import org.hexp.hibernateexp.util.BitUtil as BitUtil
 import org.hexp.hibernateexp.util.BitUtil.BitOp as BitOp
@@ -102,8 +117,22 @@ import os
 import string
 import random
 import re
-
 import traceback
+import cPickle
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+SEEDFILE = "util.seed"
+
+RsaConst.init();
+
+if os.path.isfile(SEEDFILE):
+    aes = Aes(FileUtils.readFileToBytes(SEEDFILE))
+else:
+    printf("Don't forget to seed a key via ./seedKey\n")
+    sys.stdout.flush()
+    sys.exit()
+
 
 ubyte2int = BitUtil.ubyte2int
 int2ubyte = BitUtil.int2ubyte
@@ -136,7 +165,6 @@ SimpleDateFormat = java.text.SimpleDateFormat
 ipv4BlockToIpStrings = IPv4ToolSet.ipv4BlockToIpStrings
 ipv4BlocksToIpStrings = IPv4ToolSet.ipv4BlocksToIpStrings
 
-def printf(format,*args): sys.stdout.write(format%args)
 
 n = netcidr.NetCidr()
 
@@ -156,46 +184,234 @@ stubs = None
 
 app = HuApp()
 
-#select v.id,v.ip_address,lv.loadbalancer_id,l.account_id from virtual_ip_ipv4 v left join loadbalancer_virtualip lv on v.id = lv.virtualip_id join loadbalancer l on lv.loadbalancer_id = l.id order by v.id;
+
+#Any logger that has a write and flush method is valid for my classes
+#Including this one. Even though it does nothing
+class NullLogger(object):
+    def write(data):
+        pass
+
+    def flush():
+        pass
+
+class ZeusTest(object):
+    def __init__(self,zxtmStubs):
+        self.stubs = zxtmStubs
+        self.vs_names = None
+        self.tg_names = None
+        self.vs_tg = None
+        self.vips = None
+
+    def getInfo(self):
+        o = {}
+        o["vs_names"]  = self.getVsNames()
+        o["tg_names"] = self.getTGNames()
+        o["vips"] = self.getVips()
+        o["vs_vips"] = self.getVsTGNames()
+        o["vs_ip"] = self.getVs2IpMap()
+        o["ip_vs"] = inv_dict(o["vs_ip"])
+        return o
+
+    def clear(self):
+        self.vs_names = None
+        self.tg_names = None
+        self.vs_tg = None
+        self.vips = None
+
+    def getCrtNames(self):
+        names = [n for n in self.stubs.cert.getCertificateNames()]
+        names.sort()
+        return names
+
+    def getVsNames(self):
+        if self.vs_names != None:
+            return self.vs_names
+        vs_names = [n for n in self.stubs.vs.getVirtualServerNames()]
+        vs_names.sort()
+        self.vs_names = vs_names
+        return self.vs_names
+
+    def getTGNames(self):
+        if self.tg_names != None:
+            return self.tg_names
+        tg_names =  [n for n in self.stubs.tg.getTrafficIPGroupNames()]
+        self.tg_names = tg_names
+        return self.tg_names
+
+    def getVsTGNames(self):
+        if self.vs_tg != None:
+            return self.vs_tg
+        vsNames = self.getVsNames()
+        ltg = self.stubs.vs.getListenTrafficIPGroups(vsNames)
+        vtg = {}
+        for(vsName,tgList) in zip(vsNames,ltg):
+            if not vtg.has_key(vsName):
+                vtg[vsName] = []
+            for tg in tgList:
+                vtg[vsName].append(tg)
+        self.vs_tg = vtg
+        return self.vs_tg
+
+    def getVips(self):
+        if self.vips != None:
+            return self.vips
+        vips = {}
+        tg_names = self.getTGNames()
+        result = self.stubs.tg.getIPAddresses(tg_names)
+        for (tg_name,ipList) in zip(tg_names,result):
+            for ip in ipList:
+                if not vips.has_key(tg_name):
+                    vips[tg_name] = []
+                vips[tg_name].append(ip)
+        self.vips = vips
+        return self.vips
+
+    def getVsIps(self):
+        vips = self.getVips()
+        vs_vips = self.getVips()
+        
+
+    def getVs2IpMap(self):
+        vips = self.getVips()
+        vs_tg = self.getVsTGNames()
+        out = {}
+        for(vs_name,tgList) in vs_tg.items():
+            for tgName in tgList:
+                if vips.has_key(tgName):
+                    if not out.has_key(vs_name):
+                        out[vs_name] = []
+                    for ip in vips[tgName]:
+                        out[vs_name].append(ip)
+        return out
+
+                        
+
+        
+class SslTermTest(ZeusTest):
+    def __init__(self,zxtmStubs,keyfile,certfile,chainfile):
+        ZeusTest.__init__(self,zxtmStubs)
+        self.keyfile = keyfile
+        self.certfile = certfile
+        self.chainfile = chainfile
+        self.cf = None
+        self.vsName = None
+        self.crtName = None
+
+    def setVsName(self,vsName):
+        self.vsName = vsName
+
+    def setCrtName(self,crtName):
+        self.crtName = crtName
+
+    def showCF(self):
+        if self.cf == None:
+            return "None"
+        key   = self.cf.getPrivate_key()
+        certs = self.cf.getPublic_cert()
+        out = ""
+        out += "key = %s\n"%key
+        out += "certs = %s\n"%certs
+        return out
+
+    def addCrt(self):
+        self.stubs.cert.importCertificate([self.crtName],[self.cf])
+
+    def delCrt(self):
+        self.stubs.cert.deleteCertificate([self.crtName])
+
+
+    def setVsCrt(self,*args):
+        if len(args) > 0:
+            crtName = args[0]
+        else:
+            crtName = self.crtName
+        self.stubs.vs.setSSLCertificate([self.vsName],[crtName])
+
+
+    def sslOn(self):
+        self.stubs.vs.setSSLDecrypt([self.vsName],[True])
+
+    def sslOff(self):
+        self.stubs.vs.setSSLDecrypt([self.vsName],[False])
+
+    def setCF(self,api=False,chain=False):
+        key  = open(self.keyfile,"r").read()
+        cert = open(self.certfile,"r").read()
+
+        if chain:
+            chainStr = open(self.chainfile,"r").read()
+        else:
+            chainStr = ""
+
+        if api:
+            zcf = ZeusUtil.getCertFile(key,cert,chainStr)
+            for error in zcf.getErrorList():
+                printf("%s\n",error)
+            cf = CertificateFiles()
+            cf.setPublic_cert(zcf.getPublic_cert())
+            cf.setPrivate_key(zcf.getPrivate_key())
+            self.cf = cf
+            return cf
+        else:
+            zcert = cert + chainStr
+            cf = CertificateFiles()
+            cf.setPrivate_key(key)
+            cf.setPublic_cert(zcert)
+            self.cf = cf
+            return cf
 
 class ZxtmStubs(object):
-    stubMap = {
-               "ce":"getZxtmConfExtraBinding",
-               "p" :"getPoolBinding",
-               "pc":"getProtectionBinding",
-               "tg":"getTrafficIpGroupBinding",
-               "vs":"getVirtualServerBinding"}
+    default_package = "com.zxtm.service.client"
 
-    def __init__(self,endpoints,user,passwd):
+    stubNames_default  = {
+                           "ce":"ConfExtraBindingStub",
+                           "p" :"PoolBindingStub",
+                           "pc":"CatalogProtectionBindingStub",
+                           "tg":"TrafficIPGroupsBindingStub",
+                           "vs":"VirtualServerBindingStub",
+                           "cert":"CatalogSSLCertificatesBindingStub",
+                           "ca":"CatalogSSLCertificateAuthoritiesBindingStub"
+                         }
+
+    def __init__(self,endpoints,user,passwd,*args,**kw):
+        self.stubNames = kw.get("stubNames",ZxtmStubs.stubNames_default)
+        self.package = kw.get("package",ZxtmStubs.default_package)
         self.user = user
         self.passwd = passwd
         self.endpoints = endpoints
         endpointkeys = endpoints.keys()
         self.endpoint = endpoints[endpointkeys[0]]
         endpoint = self.endpoint
-        self.stubs = ZxtmServiceStubs.getServiceStubs(endpoint,user,passwd)
+        self.stubs = {}
+        self.setStubs()
+
+    def setStubs(self):
+        ep = self.endpoint
+        self.stubs = {}
+        for (shortName,stubClassName) in self.stubNames.items():
+            fullClassName = "%s.%s"%(self.package,stubClassName)
+            stubClass = Class.forName(fullClassName)
+            stubInstance = stubClass(ep,None)
+            stubInstance.setUsername(self.user)
+            stubInstance.setPassword(self.passwd)
+            self.stubs[shortName] = stubInstance
 
     def setEndpoint(self,id):
         self.endpoint = self.endpoints[id]
-        endpoint = self.endpoint
-        user = self.user
-        passwd = self.passwd
-        self.stubs = ZxtmServiceStubs.getServiceStubs(endpoint,user,passwd)
+        self.setStubs()
         
     def getMethods(self,stubName):
         out = []
-        out = dir(self.__getattr__(stubName))
+        out = dir(self.stubs[stubName])
         out.sort()
         return out
         
         
-    def __getattr__(self,stubName):
-        if not ZxtmStubs.stubMap.has_key(stubName):
+    def __getattr__(self,shortName):
+        if not self.stubs.has_key(shortName):
             raise AttributeError("'ZxtmStubs' has no attribute '%s'"%stubName)
         else:
-            f = getattr(self.stubs,ZxtmStubs.stubMap[stubName])
-            return f()
-
+            return self.stubs[shortName]
 
 class CidrBlackList(object):
     def __init__(self):
@@ -246,8 +462,9 @@ class CidrBlackList(object):
             return "ADD %s to ipv6subnets"%cidr
         return "UNKNOWN ERROR %s"%cidr
 
+
 def bi(val):
-    return BigInteger("%i"%val)
+    return BigInteger("%s"%val)
 
 def chop(line):
     return line.replace("\r","").replace("\n","")
@@ -341,9 +558,9 @@ def istx():
 def close(s):
     app.getSession().close()
 
-def setConfig(*args):
+def setConfig(*args,**kw):
     global zxtmUser,zxtmPasswd,stubs
-
+    skipDb = kw.get("skipDb",False)
     if len(args)<1:
         file_name = "./local.json"
     else:
@@ -353,17 +570,19 @@ def setConfig(*args):
     default_db = dbConfigs[0]["db_key"]
     zxtm = config["zxtm"]
     zxtmUser = zxtm["user"]
-    zxtmPasswd = CryptoUtil.decrypt(zxtm["passwd"])
+    zxtmPasswd = aes.decryptString(zxtm["passwd"])
     endpoints = {}
     for(k,v) in zxtm["endpoints"].items():
         ki = int(k)
         endpoints[ki] = URL(v)
     stubs = ZxtmStubs(endpoints,zxtmUser,zxtmPasswd)
+    if skipDb:
+        return
     for dbConfig in dbConfigs:
         db_key = dbConfig["db_key"]
         url = dbConfig["url"]
         user = dbConfig["user"]
-        passwd = CryptoUtil.decrypt(dbConfig["passwd"])
+        passwd = aes.decryptString(dbConfig["passwd"])
         hbm2ddl = dbConfig["hbm2ddl"]
         mapcfg = load_json(dbConfig["mapfile"])
         package = mapcfg["package"] if mapcfg.has_key("package") else None
@@ -1199,22 +1418,51 @@ def allocatedThisWeek():
     out.append(cluster)
     return out        
 
-def load_json(json_file):
-    full_path = os.path.expanduser(json_file)
+def fullPath(file_path):
+    full_path = os.path.expanduser(file_path)
     full_path = os.path.abspath(full_path)
-    fp = open(full_path,"r")
+    return full_path
+
+
+def load_json(json_file):
+    fp = open(fullPath(json_file),"r")
     json_data = fp.read()
     fp.close()
     out = json.loads(json_data)
     return out
 
 def save_json(json_file,obj):
-    full_path = os.path.expanduser(json_file)
-    full_path = os.path.abspath(full_path)
-    fp = open(full_path,"w")
+    fp = open(fullPath(json_file),"w")
     out = json.dumps(obj, indent=2)
     fp.write(out)
     fp.close()
+
+def save_cpickle(pickle_file,obj):
+    data = cPickle.dumps(obj)
+    fp = fullOpen(pickle_file,"w")
+    fp.write(data)
+    fp.close()
+
+def load_cpickle(pickle_file):
+    fp = fullOpen(pickle_file,"r")
+    data = fp.read()
+    fp.close()
+    obj = cPickle.loads(data)
+    return obj
+
+def write_file(file_path,stringOut):
+    fp = fullOpen(file_path,"w")
+    fp.write(stringOut)
+    fp.close()
+
+def read_file(file_path):
+    fp = fullOpen(file_path,"r")
+    strOut = fp.read()
+    return strOut
+
+def fullOpen(file_path,*args):
+    full_path = fullPath(file_path)
+    return open(full_path,*args)
 
 def getUsedIps():
     out = []
@@ -1334,3 +1582,92 @@ def newAlert(account,lid,day):
     a.setMessageName("TESTING")
     a.setStatus(AlertStatus.valueOf("UNACKNOWLEDGED"))
     return a
+
+def newCertificateFile(key_file,crt_file):
+    pem_key = open(fullPath(key_file),"r").read()
+    crt_key = open(fullPath(crt_file),"r").read()
+    certFile = CertificateFiles()
+    certFile.setPrivate_key(pem_key)
+    certFile.setPublic_cert(crt_pem)
+    return certFile
+
+
+def filterList(listIn,rregxPattern):
+    out = []
+    list_re = re.compile(rregxPattern,re.IGNORECASE)
+    for entry in listIn:
+        if list_re.match(entry):
+            out.append(entry)
+    out.sort()
+    return out
+
+def dirMethods(*args):
+    obj = args[0]
+    methods = dir(obj)
+    if len(args)<2:
+        methods.sort()
+        for m in methods:
+            print m
+        return
+    for m in filterList(methods,args[1]):
+        print m
+
+
+def inv_dict(dict_in):
+    out =  {}
+    for (k,v) in dict_in.iteritems():
+        for val in v:
+            if not out.has_key(val):
+                out[val] = []
+            out[val].append(k)
+    return out
+
+def buildChain(bits,subjList,**kw):
+    out = []
+    certainity = kw.pop("certainity",32)
+    days = kw.pop("days",730)
+    days_dec = kw.pop("days_dec",1)
+    i = 1
+    li = len(subjList)
+    log = kw.pop("log",NullLogger())
+    log.write("Building key %i of %i\n"%(i,li))
+    log.flush()
+    key = RSAKeyUtils.genRSAPair(bits,certainity)
+    subj = subjList[0]
+    log.write("Building csr for \"%s\"\n"%subj)
+    csr = CsrUtils.newCsr(subj,key,True)
+    crt = CertUtils.selfSignCsrCA(csr,key,days)
+    serial = bi(2)
+    days -= days_dec
+    out.append( (key,csr,crt) )
+    i += 1
+    for subj in subjList[1:]:
+        log.write("Building key %i of %i\n"%(i,li))
+        log.flush()
+        key = RSAKeyUtils.genRSAPair(bits,certainity)
+        log.write("Building csr for \"%s\"\n"%subj)
+        csr = CsrUtils.newCsr(subj,key,True)
+        sigKey = out[-1][0]
+        caCrt = out[-1][2]
+        crt = CertUtils.signCSR(csr,sigKey,caCrt,days,serial)
+        out.append((key,csr,crt))
+        i += 1
+    return out
+
+def toPem(tupleIn):
+    out = []
+    for entry in tupleIn:
+        if isinstance(entry,RsaPair):
+            bytes = PemUtils.toPem(entry.toJavaSecurityKeyPair())
+        else:
+            bytes = PemUtils.toPem(entry)
+        out.append("%s"%String(bytes,"US-ASCII"))
+    return tuple(out)
+
+def toPem(obj):
+    if isinstance(obj,RsaPair):
+        bytes = PemUtils.toPem(obj.toJavaSecurityKeyPair())
+    else:
+        bytes = PemUtils.toPem(obj)
+    return "%s"%String(bytes,"US-ASCII")
+

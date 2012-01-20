@@ -1,0 +1,116 @@
+#!/usr/bin/env jython
+
+import org.hexp.hibernateexp.util.SslNonsense.SecurityBorker as SecurityBorker
+import util
+util.setConfig("stag.json",skipDB=True)
+from util import *
+import com.zxtm.service.client.CertificateFiles as CertificateFiles
+import traceback
+import xmlrpclib
+import random
+import time
+import copy
+import sys
+import os
+import re
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def fprintf(fp,format,*args):
+    sys.stdout.write(format%args)
+    sys.stdout.flush()
+    fp.write(format%args)
+    fp.flush()
+
+def genCf(name):
+    subj = copy.deepcopy(base_subj)
+    subj["CN"]="%s.%s"%(name,"rackexp.org")
+    subj["OU"]="%s Unit"%name
+    r = s.genCrt(cred,1024,subj)
+    if r["error"]:
+        printf("Error generating crt")
+    crt = r["crt"]
+    key = r["key"]
+    crt += chain #Slap this cert at the top of the chain
+    cf = CertificateFiles()
+    cf.setPrivate_key(key)
+    cf.setPublic_cert(crt)
+    return cf
+
+chain = open("./chain.crt").read()
+
+
+SecurityBorker.bork() #Disables PKIX validation
+
+cred={"user":"causr","passwd":"capasswd"}
+url = "https://127.0.0.1:9876"
+
+s = xmlrpclib.ServerProxy(url)
+
+base_subj = {}
+base_subj["C"]="US"
+base_subj["ST"]="Texas"
+base_subj["L"]="San Antonio"
+base_subj["O"]="RackExp"
+
+name_prots = {}
+
+vnames = stubs.vs.getVirtualServerNames()
+prots = stubs.vs.getProtocol(vnames)
+for i in xrange(0,len(vnames)):
+    name_prots[vnames[i]]=prots[i].toString()
+
+vsname_re = re.compile("^([0-9])+_([0-9])+$")
+
+def isPropVsAndHttp(k,v):
+    if not vsname_re.match(k):
+        return False
+    if v != "http":
+        return False
+    else:
+        return True
+
+httpVsList = []
+
+for (k,v) in name_prots.items():
+    if not isPropVsAndHttp(k,v):
+        continue
+    httpVsList.append(k)
+
+lp =  open("./log.txt","a")
+fprintf(lp,"Staring run:\n")
+
+httpVsList.sort()
+
+
+
+last_i = len(httpVsList)
+i = 0
+
+secs = 3.0
+for name in httpVsList:
+    i += 1
+    fmt = "Adding cert %i of %i for %s\n"
+    args = (i,last_i,name)
+    fprintf(lp,fmt,*args)
+    cf = genCf(name)
+    fprintf(lp,"Calling zues importCertificate\n")
+    try:
+        stubs.cert.importCertificate([name],[cf])
+        fprintf(lp,"sleeping for %f seconds\n",secs)
+        time.sleep(secs)
+        stubs.vs.setSSLCertificate([name],[name])
+        stubs.vs.setSSLDecrypt([name],[True])
+    except:
+        (t,v,st) = sys.exc_info()
+        msg = traceback.format_exception(t,v,st)
+        fmt = "Failed to gencrt for %s\n"
+        fprintf(lp,fmt,name)
+        for m in msg:
+            lp.write(m)
+            sys.stdout.write(m)
+        lp.flush()
+        sys.stdout.flush()
+        continue
+    fprintf(lp,"Import complete for %s\n",name)
+    msg = "%d of %d"%(i,last_i)

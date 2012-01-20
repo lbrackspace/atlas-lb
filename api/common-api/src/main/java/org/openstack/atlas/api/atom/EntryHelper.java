@@ -1,6 +1,12 @@
 package org.openstack.atlas.api.atom;
 
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.AccessList;
+import org.openstack.atlas.service.domain.entities.HealthMonitorType;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 
 public final class EntryHelper {
@@ -11,6 +17,7 @@ public final class EntryHelper {
     public static final String UPDATE_LOGGING_TITLE = "Connection Logging Successfully Updated";
     public static final String UPDATE_THROTTLE_TITLE = "Connection Throttle Successfully Updated";
     public static final String UPDATE_ACCESS_LIST_TITLE = "Access List Successfully Updated";
+    public static final String CREATE_SSL_TERMINATION_TITLE = "SSL Termination Successfully created";
 
     public static String createNodeSummary(Node node) {
         StringBuffer atomSummary = new StringBuffer();
@@ -19,6 +26,15 @@ public final class EntryHelper {
         atomSummary.append("port: '").append(node.getPort()).append("', ");
         atomSummary.append("condition: '").append(node.getCondition()).append("', ");
         atomSummary.append("weight: '").append(node.getWeight()).append("'");
+        return atomSummary.toString();
+    }
+
+    public static String createSslTerminationSummary(SslTermination ssl) {
+        StringBuffer atomSummary = new StringBuffer();
+        atomSummary.append("SslTermination successfully created with ");
+        atomSummary.append("key: '").append(ssl.getPrivatekey()).append("', ");
+        atomSummary.append("cert: '").append(ssl.getCertificate()).append("', ");
+        atomSummary.append("isEnabled: '").append(ssl.isEnabled()).append("'");
         return atomSummary.toString();
     }
 

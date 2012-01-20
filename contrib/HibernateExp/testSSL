@@ -1,0 +1,39 @@
+#!/usr/bin/env jython
+
+import util
+util.setConfig("stag.json",skipDb=True)
+from util import *
+
+
+from testSSLSites import *
+info = load_cpickle("info.db")
+(certNames,cfs,vss) = getCFS(info)
+write_file("key",cfs[0].getPrivate_key())
+write_file("crt",cfs[0].getPublic_cert())
+
+
+z = ZeusTest(stubs)
+
+ss = SslTermTest(stubs,"./key","./crt","./chain")
+
+#Fetch Zues info and save to json
+info = z.getInfo()
+
+st.setCrtName("TEST")
+st.setVsName("546428_4")
+
+st.setCF(api=True,chain=True)
+
+st.setCF(api=False,chain=True)
+
+st.addCrt()
+st.setVsCrt()
+st.sslOn()
+
+
+st.sslOff()
+st.delCrt()
+
+
+
+

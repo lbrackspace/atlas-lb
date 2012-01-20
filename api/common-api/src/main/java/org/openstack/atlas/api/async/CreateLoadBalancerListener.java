@@ -62,7 +62,7 @@ public class CreateLoadBalancerListener extends BaseListener {
             sendErrorToEventResource(queueLb);
             // Notify usage processor
             notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
-            if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+//            if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
             return;
         }
 
@@ -82,7 +82,9 @@ public class CreateLoadBalancerListener extends BaseListener {
 
         // Notify usage processor
         notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
-        if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+
+        //Takes place on creation of ssl termination...
+//        if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
 
         LOG.info(String.format("Created load balancer '%d' successfully.", dbLoadBalancer.getId()));
     }

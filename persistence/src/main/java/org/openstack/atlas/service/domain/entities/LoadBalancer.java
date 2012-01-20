@@ -65,9 +65,12 @@ public class LoadBalancer extends Entity implements Serializable {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private RateLimit rateLimit;
 
-    @OneToOne(mappedBy = "loadbalancer",fetch=FetchType.LAZY,optional=false)
+    @OneToOne(mappedBy = "loadbalancer", fetch = FetchType.LAZY, optional = false)
     @LazyToOne(LazyToOneOption.NO_PROXY)
     private UserPages userPages;
+
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
+    private SslTermination sslTermination;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar created;
@@ -278,10 +281,15 @@ public class LoadBalancer extends Entity implements Serializable {
     }
 
     public boolean isUsingSsl() {
-        return (protocol.equals(LoadBalancerProtocol.HTTPS)
-                || protocol.equals(LoadBalancerProtocol.IMAPS)
-                || protocol.equals(LoadBalancerProtocol.LDAPS)
-                || protocol.equals(LoadBalancerProtocol.POP3S));
+        return (sslTermination != null && sslTermination.isEnabled());
+    }
+
+    public boolean hasSsl() {
+        return (sslTermination != null);
+    }
+
+    public boolean isSecureOnly() {
+        return (sslTermination != null && sslTermination.isSecureTrafficOnly());
     }
 
     public String getIpv6Servicenet() {
@@ -359,5 +367,13 @@ public class LoadBalancer extends Entity implements Serializable {
      */
     public void setUserPages(UserPages userPages) {
         this.userPages = userPages;
+    }
+
+    public SslTermination getSslTermination() {
+        return sslTermination;
+    }
+
+    public void setSslTermination(SslTermination sslTermination) {
+        this.sslTermination = sslTermination;
     }
 }

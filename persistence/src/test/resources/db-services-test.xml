@@ -91,6 +91,7 @@
         <property name="blacklistRepository" ref="blacklistRepository"/>
         <property name="groupRepository" ref="groupRepository" />
         <property name="clusterRepository" ref="clusterRepository" />
+        <property name="sslTerminationRepository" ref="sslTerminationRepository" />
     </bean>
 
     <bean id="accountUsageRepository" class="org.openstack.atlas.service.domain.repository.AccountUsageRepository" depends-on="entityManagerFactory1"/>
@@ -105,6 +106,7 @@
     <bean id="loadBalancerLimitRepository" class="org.openstack.atlas.service.domain.repository.AccountLimitRepository" depends-on="entityManagerFactory1"/>
     <bean id="virtualIpRepository" class="org.openstack.atlas.service.domain.repository.VirtualIpRepository" depends-on="entityManagerFactory1"/>
     <bean id="virtualIpv6Repository" class="org.openstack.atlas.service.domain.repository.VirtualIpv6Repository" depends-on="entityManagerFactory1"/>
+    <bean id="sslTerminationRepository" class="org.openstack.atlas.service.domain.repository.SslTerminationRepository" depends-on="entityManagerFactory1"/>
 
 </beans>
 

@@ -38,7 +38,7 @@ public class UpdateAccessListListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Update access list for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.updateAccessList(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getAccessLists());
+            reverseProxyLoadBalancerService.updateAccessList(dbLoadBalancer);
             LOG.debug(String.format("Successfully updated access list in Zeus for load balancer '%d'.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
