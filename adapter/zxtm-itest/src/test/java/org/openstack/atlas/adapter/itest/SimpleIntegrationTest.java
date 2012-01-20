@@ -2,10 +2,7 @@ package org.openstack.atlas.adapter.itest;
 
 import com.zxtm.service.client.*;
 import org.apache.axis.types.UnsignedInt;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
@@ -40,6 +37,11 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         setupSimpleLoadBalancer();
     }
 
+    @Before
+    public static void setUp() {
+        setupIvars();
+    }
+
     @AfterClass
     public static void tearDownClass() {
         removeSimpleLoadBalancer();
@@ -48,7 +50,8 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     @Test
     public void updateProtocol() {
         try {
-            zxtmAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(), HTTPS);
+            lb.setProtocol(HTTPS);
+            zxtmAdapter.updateProtocol(config, lb);
 
             final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
             Assert.assertEquals(1, virtualServerBasicInfos.length);
@@ -71,8 +74,10 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     @Test
     public void changeProtocolWithConnectionLoggingEnabled() {
         try {
-            zxtmAdapter.updateConnectionLogging(config, lb.getId(), lb.getAccountId(), true, lb.getProtocol());
-            zxtmAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(), HTTPS);
+            lb.setConnectionLogging(Boolean.TRUE);
+            zxtmAdapter.updateConnectionLogging(config, lb);
+            lb.setProtocol(HTTPS);
+            zxtmAdapter.updateProtocol(config, lb);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -508,12 +513,14 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     private void shouldDisableSessionPersistenceWhenUpdatingToNonHttpProtocol() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        ZeusTestBase.setupIvars();
         zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), HTTP_COOKIE);
         String[] persistenceCatalogList = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
         Assert.assertEquals(1, persistenceCatalogList.length);
         Assert.assertEquals(HTTP_COOKIE.name(), persistenceCatalogList[0]);
-
-        zxtmAdapter.updateProtocol(config, lb.getId(), lb.getAccountId(), LoadBalancerProtocol.HTTPS);
+        ZeusTestBase.setupIvars();
+        lb.setProtocol(HTTPS);
+        zxtmAdapter.updateProtocol(config,lb);
         persistenceCatalogList = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
         Assert.assertEquals(1, persistenceCatalogList.length);
         Assert.assertEquals("", persistenceCatalogList[0]);
@@ -526,7 +533,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         throttle.setMaxConnections(30);
         throttle.setMaxConnectionRate(2000);
         throttle.setRateInterval(60);
-        zxtmAdapter.updateConnectionThrottle(config, lb.getId(), lb.getAccountId(), throttle);
+        zxtmAdapter.updateConnectionThrottle(config, lb);
 
         final UnsignedInt[] minConnections = getServiceStubs().getProtectionBinding().getMinConnections(new String[]{protectionClassName()});
         Assert.assertEquals(1, minConnections.length);
@@ -557,7 +564,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         networkItems.add(item1);
         networkItems.add(item2);
 
-        zxtmAdapter.updateAccessList(config, lb.getId(), lb.getAccountId(), networkItems);
+        zxtmAdapter.updateAccessList(config, lb);
 
         final String[][] bannedAddresses = getServiceStubs().getProtectionBinding().getBannedAddresses(new String[]{protectionClassName()});
         Assert.assertEquals(1, bannedAddresses.length);
@@ -626,7 +633,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     private void removeHttpHealthMonitor() throws Exception {
-        zxtmAdapter.removeHealthMonitor(config, lb.getId(), lb.getAccountId());
+        zxtmAdapter.removeHealthMonitor(config, lb);
 
         String monitorName = monitorName();
         String[] allMonitorNames = getServiceStubs().getMonitorBinding().getAllMonitorNames();
@@ -684,7 +691,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     private void removeHttpsHealthMonitor() throws Exception {
-        zxtmAdapter.removeHealthMonitor(config, lb.getId(), lb.getAccountId());
+        zxtmAdapter.removeHealthMonitor(config, lb);
 
         String monitorName = monitorName();
         String[] allMonitorNames = getServiceStubs().getMonitorBinding().getAllMonitorNames();

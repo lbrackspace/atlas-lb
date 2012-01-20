@@ -40,7 +40,7 @@ public class CreateRateLimitListener extends BaseListener {
 
         try {
             LOG.debug("Creating rate limit in Zeus...");
-            reverseProxyLoadBalancerService.setRateLimit(queueLb.getId(), queueLb.getAccountId(), queueLb.getRateLimit());
+            reverseProxyLoadBalancerService.setRateLimit(queueLb, queueLb.getRateLimit());
             LOG.debug("Successfully created rate limit in Zeus.");
         } catch (Exception e) {
             String alertDescription = String.format("Error adding rate limit for load balancer '%d'", queueLb.getId());

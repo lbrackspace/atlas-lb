@@ -10,6 +10,7 @@ import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRep
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ip.IPv4Cidr;
 import org.openstack.atlas.util.ip.IPv4Cidrs;
 import org.openstack.atlas.util.ip.IPv6Cidr;
@@ -41,6 +42,11 @@ public class BaseService {
     protected NodeRepository nodeRepository;
     protected RateLimitRepository rateLimitRepository;
     protected JobStateRepository jobStateRepository;
+    protected SslTerminationRepository sslTerminationRepository;
+
+    static {
+        org.openstack.atlas.util.ca.primitives.RsaConst.init();
+    }
 
     public void setRateLimitRepository(RateLimitRepository rateLimitRepository) {
         this.rateLimitRepository = rateLimitRepository;
@@ -90,6 +96,10 @@ public class BaseService {
         this.jobStateRepository = jobStateRepository;
     }
 
+    public void setSslTerminationRepository(SslTerminationRepository sslTerminationRepository) {
+        this.sslTerminationRepository = sslTerminationRepository;
+    }
+
     public void isLbActive(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException {
         if (dbLoadBalancer.getStatus().equals(DELETED)) {
             throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);
@@ -100,6 +110,7 @@ public class BaseService {
             LOG.warn(message);
             throw new ImmutableEntityException(message);
         }
+
     }
 
     protected boolean isActiveLoadBalancer(LoadBalancer rLb, boolean refetch) throws EntityNotFoundException {

@@ -97,8 +97,11 @@ public List<GroupRateLimit> getAssignedGroupsForAccount(Integer accountId) throw
 
 
     public GroupRateLimit getByGroupId(Integer id) throws EntityNotFoundException {
-        GroupRateLimit lb = entityManager.find(GroupRateLimit.class, id);
-        return lb;
+        GroupRateLimit groupRateLimit = entityManager.find(GroupRateLimit.class, id);
+        if (groupRateLimit == null) {
+            throw new EntityNotFoundException("Object not found");
+        }
+        return groupRateLimit;
     }
 
 

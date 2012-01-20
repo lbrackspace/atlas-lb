@@ -10,7 +10,7 @@ import java.util.Set;
 
 public final class ZxtmNameBuilder {
 
-    public static String generateNameWithAccountIdAndLoadBalancerId(Integer lbId, Integer accountId) throws InsufficientRequestException {
+    public static String genVSName(Integer lbId, Integer accountId) throws InsufficientRequestException {
         if (lbId == null) {
             throw new InsufficientRequestException("Missing id for load balancer.");
         }
@@ -21,20 +21,31 @@ public final class ZxtmNameBuilder {
         return accountId + "_" + lbId;
     }
 
-    public static String generateNameWithAccountIdAndLoadBalancerId(LoadBalancer lb) throws InsufficientRequestException {
+    public static String genSslVSName(Integer lbId, Integer accountId) throws InsufficientRequestException {
+        if (lbId == null) {
+            throw new InsufficientRequestException("Missing id for load balancer.");
+        }
+        if (accountId == null) {
+            throw new InsufficientRequestException("Missing account id for load balancer.");
+        }
+
+        return accountId + "_" + lbId + "_S";
+    }
+
+    public static String genVSName(LoadBalancer lb) throws InsufficientRequestException {
         if (lb.getAccountId() == null)
             throw new InsufficientRequestException(
                     "Missing account id for load balancer.");
         if (lb.getId() == null)
             throw new InsufficientRequestException(
                     "Missing id for load balancer.");
-        return generateNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
+        return genVSName(lb.getId(), lb.getAccountId());
     }
 
     public static Set<String> generateNamesWithAccountIdAndLoadBalancerId(Set<LoadBalancer> loadBalancers) throws InsufficientRequestException {
         Set<String> generatedNames = new HashSet<String>();
         for (LoadBalancer loadBalancer : loadBalancers) {
-            generatedNames.add(generateNameWithAccountIdAndLoadBalancerId(loadBalancer));
+            generatedNames.add(genVSName(loadBalancer));
         }
         return generatedNames;
     }

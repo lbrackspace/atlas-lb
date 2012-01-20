@@ -1,11 +1,13 @@
 package org.openstack.atlas.service.domain.services;
 
 import javassist.tools.rmi.ObjectNotFoundException;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.SessionPersistence;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.pojos.AccountLoadBalancer;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
@@ -79,5 +81,4 @@ public interface LoadBalancerService {
     public boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException;
 
     public List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId);
-
 }

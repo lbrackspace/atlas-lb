@@ -65,7 +65,7 @@ public class RateLimitDeletionJob extends Job {
                 LOG.info("Removed the rate limit from the database...");
                 LOG.info(String.format("Attempting to remove rate limit with id..'%s' from zeus... ", rl.getId()));
                 try {
-                    reverseProxyLoadBalancerAdapter.deleteRateLimit(config, rl.getLoadbalancer().getId(), rl.getLoadbalancer().getAccountId());
+                    reverseProxyLoadBalancerAdapter.deleteRateLimit(config, rl.getLoadbalancer());
                     LOG.info("Removed the rate limit from zeus...");
 
                 } catch (RemoteException e) {
