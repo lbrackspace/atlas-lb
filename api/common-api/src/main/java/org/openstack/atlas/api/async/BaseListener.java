@@ -50,6 +50,8 @@ public abstract class BaseListener implements MessageListener {
 
     protected NodeService nodeService;
 
+    protected SslTerminationService sslTerminationService;
+
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
 
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
@@ -98,6 +100,10 @@ public abstract class BaseListener implements MessageListener {
 
     public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
         this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
+    }
+
+    public void setSslTerminationService(SslTerminationService sslTerminationService) {
+        this.sslTerminationService = sslTerminationService;
     }
 
     public final void onMessage(Message message) {

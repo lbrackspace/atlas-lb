@@ -37,6 +37,7 @@ public class ValidationFilter implements Filter {
     protected static final String XML = "application/xml";
     protected static final String JSON = "application/json";
     protected static final String VFAIL = "Validation Failure";
+    protected static final int PAGESIZE = 4096;
     protected FilterConfig config = null;
     protected String pPkg;
     protected String pXSD;
@@ -181,7 +182,7 @@ public class ValidationFilter implements Filter {
 
     protected String readFromInputStream(InputStream is) throws IOException {
         String out;
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder(PAGESIZE);
         int nread;
         byte[] buf;
 

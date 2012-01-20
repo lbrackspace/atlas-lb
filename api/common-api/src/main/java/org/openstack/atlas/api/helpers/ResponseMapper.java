@@ -66,11 +66,15 @@ public class ResponseMapper {
                 return uf;
             case BAD_REQUEST:
                 BadRequest badRequest = new BadRequest();
-                badRequest.setMessage((message == null) ? "Bad request" : message);
+                badRequest.setMessage((message == null) ? "Bad request." : message);
                 badRequest.setDetails(details);
                 return badRequest;
             case UNKNOWN:
                 lbf.setMessage((message == null) ? CONTACT_SUPPORT : message);
+                lbf.setDetails(details);
+                return lbf;
+            case METHOD_NOT_ALLOWED:
+                lbf.setMessage((message == null) ? "Method is not available." : message);
                 lbf.setDetails(details);
                 return lbf;
             default:
@@ -114,6 +118,8 @@ public class ResponseMapper {
             return getFault(ErrorReason.BAD_REQUEST, message, details);
         } else if (e instanceof TCPProtocolUnknownPortException) {
             return getFault(ErrorReason.BAD_REQUEST, message, details);
+        } else if (e instanceof MethodNotAllowedException) {
+            return getFault(ErrorReason.METHOD_NOT_ALLOWED, message, details);
         } else {
             LoadBalancerFault lbf = (LoadBalancerFault) getFault(OperationResponse.ErrorReason.UNKNOWN, null, null);
             lbf.setMessage(CONTACT_SUPPORT);
@@ -158,6 +164,8 @@ public class ResponseMapper {
             status = getStatus(ErrorReason.BAD_REQUEST);
         } else if (e instanceof TCPProtocolUnknownPortException) {
             status = getStatus(ErrorReason.BAD_REQUEST);
+        } else if (e instanceof MethodNotAllowedException) {
+            status = getStatus(ErrorReason.METHOD_NOT_ALLOWED);
         } else {
             status = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
         }
@@ -208,6 +216,9 @@ public class ResponseMapper {
                 break;
             case GONE:
                 status = 410;
+                break;
+            case METHOD_NOT_ALLOWED:
+                status = 405;
                 break;
             default:
                 status = 500;

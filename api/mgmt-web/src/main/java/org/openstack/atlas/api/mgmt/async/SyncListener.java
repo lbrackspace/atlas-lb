@@ -1,11 +1,13 @@
 package org.openstack.atlas.api.mgmt.async;
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Sync;
 import org.openstack.atlas.service.domain.pojos.SyncLocation;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.api.helpers.NodesHelper;
 import org.apache.commons.logging.Log;
@@ -15,6 +17,7 @@ import javax.jms.Message;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.*;
 import static org.openstack.atlas.service.domain.entities.NodeStatus.ONLINE;
+import static org.openstack.atlas.service.domain.events.UsageEvent.SSL_OFF;
 import static org.openstack.atlas.service.domain.events.UsageEvent.SSL_ON;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.CREATE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
@@ -68,8 +71,14 @@ public class SyncListener extends BaseListener {
                     notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
                 }
             } else {
+
+                //First recreate the original virtual server...
                 try {
-                    reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
+                    //Ssl termination will be added on second pass...
+                    LoadBalancer tempLb = loadBalancerService.get(queueSyncObject.getLoadBalancerId());
+                    tempLb.setSslTermination(null);
+
+                    reverseProxyLoadBalancerService.createLoadBalancer(tempLb);
                     loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
 
                     if (loadBalancerStatus.equals(BUILD)) {
@@ -84,7 +93,51 @@ public class SyncListener extends BaseListener {
 
                         // Notify usage processor
                         notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
-                        if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+//                        if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+                    }
+                } catch (Exception e) {
+                    String msg = "Error re-creating loadbalancer in SyncListener():";
+                    loadBalancerService.setStatus(dbLoadBalancer, ERROR);
+                    notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
+                    LOG.error(msg, e);
+                }
+
+                try {
+                    //Now create the secure VS if ssl termination was already on the loadbalancer...
+                    if (dbLoadBalancer.hasSsl()) {
+                        org.openstack.atlas.service.domain.entities.SslTermination dbTermination = sslTerminationService.getSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+
+                        //Certs were valid before sync, append them and send them...
+                        StringBuilder stringBuilder = new StringBuilder();
+                        stringBuilder.append(dbTermination.getCertificate());
+                        stringBuilder.append(dbTermination.getIntermediateCertificate());
+
+//                        ZeusSslTermination zeusTermination = sslTerminationService.updateSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), domainSslTermination);
+                        ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
+                        zeusSslTermination.setSslTermination(dbTermination);
+                        zeusSslTermination.setCertIntermediateCert(stringBuilder.toString());
+
+                        reverseProxyLoadBalancerService.updateSslTermination(dbLoadBalancer, zeusSslTermination);
+                        loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
+
+                        if (loadBalancerStatus.equals(BUILD)) {
+                            NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
+                            dbLoadBalancer.setStatus(ACTIVE);
+                            dbLoadBalancer = loadBalancerService.update(dbLoadBalancer);
+
+                            // Add atom entry
+                            String atomTitle = "Load Balancer Successfully Created";
+                            String atomSummary = createAtomSummary(dbLoadBalancer).toString();
+                            notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
+
+                            // Notify usage processor
+                            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+                            if (dbLoadBalancer.isUsingSsl()) {
+                                notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+                            } else {
+                                notifyUsageProcessor(message, dbLoadBalancer, SSL_OFF);
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     String msg = "Error re-creating loadbalancer in SyncListener():";

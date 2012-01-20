@@ -3,12 +3,21 @@ package org.openstack.atlas.service.domain.services.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.HealthMonitorType;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.NodeStatus;
+import org.openstack.atlas.service.domain.entities.SessionPersistence;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
 import org.openstack.atlas.service.domain.services.*;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
+import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
@@ -163,6 +172,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         boolean portHMTypecheck = true;
 
         dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
+
+        if (loadBalancer.hasSsl()) {
+            LOG.debug("Verifying protocol to update is not secure for load balancer with ssl termination");
+            SslTerminationHelper.isProtocolSecure(loadBalancer);
+        }
 
         LOG.debug("Updating the lb status to pending_update");
         if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
@@ -739,6 +753,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return loadBalancerRepository.setErrorPage(lid, accountId, content);
     }
 
+
     @Transactional
     @Override
     public boolean setDefaultErrorPage(String content) throws EntityNotFoundException {
@@ -765,6 +780,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
         return domainLbs;
     }
+
 
     private List<LoadBalancer> verifySharedVipsOnLoadBalancers(List<LoadBalancer> lbs) throws EntityNotFoundException, BadRequestException {
         List<LoadBalancer> lbsWithSharedVips = new ArrayList<LoadBalancer>();
