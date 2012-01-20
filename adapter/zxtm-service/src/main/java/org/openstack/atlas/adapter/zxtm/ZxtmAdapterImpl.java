@@ -178,7 +178,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 setDefaultErrorFile(config, lb);
             }
         } catch (Exception e) {
-            //Were just updating, let caller know
             if (e instanceof ObjectAlreadyExists) {
                 throw new ObjectAlreadyExists();
             } else {
@@ -209,7 +208,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException {
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
         final String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
@@ -220,13 +219,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         removeAndSetDefaultErrorFile(config, loadBalancer);
         deleteRateLimit(config, loadBalancer);
         deleteVirtualServer(serviceStubs, virtualServerName);
-        if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
-            deleteVirtualServer(serviceStubs, ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId()));
-        }
         deleteNodePool(serviceStubs, poolName);
         deleteProtectionCatalog(serviceStubs, poolName);
         removeHealthMonitor(config, loadBalancer);
         deleteTrafficIpGroups(serviceStubs, loadBalancer);
+        if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
+            removeSslTermination(config, loadBalancer);
+        }
 
         LOG.info(String.format("Successfully deleted load balancer '%s'.", virtualServerName));
     }
@@ -855,7 +854,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             deleteAccessList(conf, virtualServerName);
             LOG.debug(String.format("Remove accessList from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
-            //Removing connectionLogging from shadow server
+            //Removing protectionCatalog from shadow server
             LOG.info(String.format("Removing a protection catalog from load balancer...'%s'...", loadBalancer.getId()));
             deleteProtectionCatalog(serviceStubs, virtualServerName);
             LOG.debug(String.format("Removed protection catalog from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));

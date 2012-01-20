@@ -13,7 +13,6 @@ import javax.jms.Message;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
-import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_LOADBALANCER;
 import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_SSL_TERMINATION;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
