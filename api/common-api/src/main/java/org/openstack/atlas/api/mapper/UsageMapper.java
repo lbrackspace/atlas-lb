@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.mapper;
 
-import org.openstack.atlas.docs.loadbalancers.api.v1.LinkType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;

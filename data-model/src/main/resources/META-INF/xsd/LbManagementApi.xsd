@@ -447,7 +447,7 @@
     <xsd:element name="accountBillings" type="tns:accountBillings"/>
     <xsd:complexType name="accountBillings">
         <xsd:sequence>
-            <xsd:element name="accountBilling" type="papi:accountBilling" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="papi:accountBilling" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -764,7 +764,7 @@
     <xsd:element name="CustomLimits" type="tns:CustomLimits" />
     <xsd:complexType name="CustomLimits">
         <xsd:sequence>
-            <xsd:element name="limit" type="papi:limit" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:element ref="papi:limit" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -817,7 +817,7 @@
     <xsd:element name="DefaultLimits" type="tns:DefaultLimits" />
     <xsd:complexType name="DefaultLimits">
         <xsd:sequence>
-            <xsd:element name="limit" type="papi:limit" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:element ref="papi:limit" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
