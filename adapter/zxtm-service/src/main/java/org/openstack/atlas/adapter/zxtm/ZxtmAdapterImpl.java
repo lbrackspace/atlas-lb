@@ -217,17 +217,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug(String.format("Deleting load balancer '%s'...", virtualServerName));
 
         removeAndSetDefaultErrorFile(config, loadBalancer);
-        //Removing connectionLogging from server
-        loadBalancer.setConnectionLogging(false);
-        updateConnectionLogging(config, loadBalancer, virtualServerName);
-        //Removing accessList from server
-        deleteAccessList(config, virtualServerName);
-        //Removing protectionCatalog from server
-        deleteProtectionCatalog(serviceStubs, virtualServerName);
         deleteRateLimit(config, loadBalancer);
-        removeHealthMonitor(config, loadBalancer);
-        deleteNodePool(serviceStubs, poolName);
         deleteVirtualServer(serviceStubs, virtualServerName);
+        deleteNodePool(serviceStubs, poolName);
+        deleteProtectionCatalog(serviceStubs, poolName);
+        removeHealthMonitor(config, loadBalancer);
         deleteTrafficIpGroups(serviceStubs, loadBalancer);
         if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
             removeSslTermination(config, loadBalancer);
@@ -260,8 +254,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     private void deleteProtectionCatalog(ZxtmServiceStubs serviceStubs, String poolName) throws RemoteException {
         try {
-            LOG.debug(String.format("Deleting service protection catalog '%s'...", poolName));
+            LOG.info(String.format("Removing protection catalog from virtual server for: '%s'.", poolName));
             serviceStubs.getVirtualServerBinding().setProtection(new String[]{poolName}, new String[]{""});
+            LOG.debug(String.format("Removed protection catalog from virtual server for: '%s'.", poolName));
+        } catch (ObjectDoesNotExist odne) {
+            LOG.debug(String.format("Virtual server '%s' already deleted. not updating protection catalog on server, ignoring...", poolName));
+        }
+        try {
+            LOG.debug(String.format("Deleting service protection catalog '%s'...", poolName));
             serviceStubs.getProtectionBinding().deleteProtection(new String[]{poolName});
             LOG.info(String.format("Service protection catalog '%s' successfully deleted.", poolName));
         } catch (ObjectDoesNotExist odne) {
