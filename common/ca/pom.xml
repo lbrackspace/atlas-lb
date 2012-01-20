@@ -23,6 +23,21 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>rackspacecloud-snapshots</id>
+            <name>Internal RC Snapshot Maven Repo</name>
+            <url>http://cimaster-n01.cloudplatform.rackspace.net:8081/m2/content/repositories/snapshots/</url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+        <repository>
+            <id>rackspacecloud-releases</id>
+            <name>Internal RC Releases Maven Repo</name>
+            <url>http://cimaster-n01.cloudplatform.rackspace.net:8081/m2/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <pluginManagement>
             <plugins>
