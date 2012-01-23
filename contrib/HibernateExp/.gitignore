@@ -1,3 +1,4 @@
+util.seed
 *.class
 *.pyc
 *.json
