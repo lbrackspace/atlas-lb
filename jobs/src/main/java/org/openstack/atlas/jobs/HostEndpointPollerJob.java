@@ -9,7 +9,10 @@ import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
+import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.service.domain.services.helpers.AlertHelper;
+import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.quartz.JobExecutionContext;
@@ -68,7 +71,10 @@ public class HostEndpointPollerJob extends Job implements StatefulJob {
             }
         } catch (Exception e) {
             jobStateService.updateJobState(JobName.HOST_ENDPOINT_POLLER, JobStateVal.FAILED);
-            LOG.error("There was a problem polling host endpoints. 'HostEndpointPollerJob'");
+            LOG.error(String.format("Host endpoint poller job failed while polling host endpoints: %s", e.getMessage()));
+            Alert alert = AlertHelper.createAlert(null, null, e, AlertType.API_FAILURE.name(), e.getMessage());
+            alertRepository.save(alert);
+            return;
         }
 
         Calendar endTime = Calendar.getInstance();

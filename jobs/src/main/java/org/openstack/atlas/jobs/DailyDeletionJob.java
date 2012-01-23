@@ -4,6 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
+import org.openstack.atlas.service.domain.events.entities.Alert;
+import org.openstack.atlas.service.domain.services.helpers.AlertHelper;
+import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
 import org.quartz.JobExecutionContext;
@@ -38,6 +41,10 @@ public class DailyDeletionJob extends Job {
             deleteHostUsageRecords();
         } catch (Exception e) {
             jobStateService.updateJobState(JobName.DAILY_DELETION_JOB, JobStateVal.FAILED);
+            LOG.error(String.format("Daily deletion job failed: %s", e.getMessage()));
+            Alert alert = AlertHelper.createAlert(null, null, e, AlertType.API_FAILURE.name(), e.getMessage());
+            alertRepository.save(alert);
+            return;
         }
 
         Calendar endTime = Calendar.getInstance();
