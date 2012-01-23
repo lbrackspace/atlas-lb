@@ -15,6 +15,7 @@
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:element name="loadBalancer" type="tns:loadBalancer" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>

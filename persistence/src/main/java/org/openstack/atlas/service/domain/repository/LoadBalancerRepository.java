@@ -1268,7 +1268,7 @@ public class LoadBalancerRepository {
         return loadbalancers;
     }
 
-    public List<LoadBalancer> getLoadBalancersActiveInRange(Integer accountId, Calendar startTime, Calendar endTime) {
+    public List<LoadBalancer> getLoadBalancersActiveInRange(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<LoadBalancer> criteria = builder.createQuery(LoadBalancer.class);
         Root<LoadBalancer> lbRoot = criteria.from(LoadBalancer.class);
@@ -1279,6 +1279,7 @@ public class LoadBalancerRepository {
 
         criteria.select(lbRoot);
         criteria.where(builder.and(hasAccountId, builder.or(createdBetweenDates, updatedBetweenDates)));
-        return entityManager.createQuery(criteria).getResultList();
+        return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit+1).getResultList();
+//        return entityManager.createQuery(criteria).getResultList();
     }
 }

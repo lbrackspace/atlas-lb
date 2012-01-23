@@ -767,9 +767,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
-    public List<LoadBalancer> getLoadBalancersWithUsage(Integer accountId, Calendar startTime, Calendar endTime) {
+    public List<LoadBalancer> getLoadBalancersWithUsage(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit) {
         List<LoadBalancer> domainLbs;
-        domainLbs = loadBalancerRepository.getLoadBalancersActiveInRange(accountId, startTime, endTime);
+        domainLbs = loadBalancerRepository.getLoadBalancersActiveInRange(accountId, startTime, endTime, offset, limit);
         return domainLbs;
     }
 

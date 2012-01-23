@@ -2,6 +2,8 @@ package org.openstack.atlas.api.resources;
 
 
 import org.apache.abdera.model.Feed;
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.api.helpers.PaginationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mapper.DomainToRestModel;
 import org.openstack.atlas.api.repository.ValidatorRepository;
@@ -18,6 +20,7 @@ import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.util.converters.exceptions.ConverterException;
+import org.w3.atom.Link;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
@@ -154,7 +157,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
     @GET
     @Path("billable")
-    public Response retrieveBillableLoadBalancers(@QueryParam("startTime") String startTimeParam, @QueryParam("endTime") String endTimeParam) {
+    public Response retrieveBillableLoadBalancers(@QueryParam("startTime") String startTimeParam, @QueryParam("endTime") String endTimeParam, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
         Calendar startTime;
         Calendar endTime;
         List<org.openstack.atlas.service.domain.entities.LoadBalancer> domainLbs;
@@ -173,11 +176,21 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             }
         }
 
+        limit = PaginationHelper.determinePageLimit(limit);
+        offset = PaginationHelper.determinePageOffset(offset);
+
         try {
-            domainLbs = loadBalancerService.getLoadBalancersWithUsage(accountId, startTime, endTime);
+            domainLbs = loadBalancerService.getLoadBalancersWithUsage(accountId, startTime, endTime, offset, limit);
 
             for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
                 dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB"));
+            }
+
+            if (dataModelLbs.getLoadBalancers().size() > limit) {
+                String relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, offset + limit, limit);
+                Link link = PaginationHelper.createLink("next", relativeUri);
+                dataModelLbs.getLinks().add(link);
+                dataModelLbs.getLoadBalancers().remove(limit.intValue()); // Remove limit+1 item
             }
 
             return Response.status(200).entity(dataModelLbs).build();
