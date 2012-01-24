@@ -119,6 +119,10 @@ public class ZeusTestBase {
         return ZxtmNameBuilder.genVSName(lb);
     }
 
+    protected static String secureLoadBalancerName() throws InsufficientRequestException {
+        return ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
+    }
+
     protected static String poolName() throws InsufficientRequestException {
         return ZxtmNameBuilder.genVSName(lb);
     }

@@ -893,7 +893,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             serviceStubs.getVirtualServerBinding().setSSLDecrypt(new String[]{virtualServerName}, new boolean[]{isSslTermination});
-            suspendUnsuspendVirtualServer(conf, virtualServerName, loadBalancer.getSslTermination().isEnabled());
+            serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{loadBalancer.getSslTermination().isEnabled()});
         } catch (RemoteException af) {
             LOG.error(String.format("There was a error updating ssl termination in zxtm adapter for loadbalancer: ", loadBalancer.getId()));
             throw new RuntimeException(af);

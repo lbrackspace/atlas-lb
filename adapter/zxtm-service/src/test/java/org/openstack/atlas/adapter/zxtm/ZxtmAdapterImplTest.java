@@ -16,7 +16,6 @@ import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.*;
-import sun.net.idn.StringPrep;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
