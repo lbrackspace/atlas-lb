@@ -35,7 +35,7 @@ public class ZeusTestBase {
     public static final String FAILOVER_HOST_1 = "ztm-n03.dev.lbaas.rackspace.com";
     public static final String FAILOVER_HOST_2 = "ztm-n04.dev.lbaas.rackspace.com";
     public static final String DEFAULT_LOG_FILE_LOCATION = "/opt/zeus/zxtm/log/access_log";
-    public static final Integer TEST_ACCOUNT_ID = 999999;
+    public static final Integer TEST_ACCOUNT_ID = 999991;
     public static final Integer TEST_LOADBALANCER_ID = 999999;
     public static final Integer TEST_VIP_ID = 999999;
     public static final Integer TEST_IPV6_VIP_ID = 999996;

@@ -38,7 +38,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     @Before
-    public static void setUp() {
+    public  void setUp() {
         setupIvars();
     }
 

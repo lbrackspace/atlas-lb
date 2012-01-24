@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.exceptions.ConversionException;
@@ -114,7 +115,6 @@ public class ZeusUtil {
         }
 
 
-
         if (chainPem != null) {
             pemBlocks = PemUtils.parseMultiPem(chainPem);
             if (subjectCrt == null) {
@@ -166,6 +166,7 @@ public class ZeusUtil {
                 issuerCrt = (X509CertificateObject) issuerBlock.getDecodedObject();
                 try {
                     decodedStr = new String(issuerBlock.getPemData(), USASCII);
+                    certSB.append(decodedStr);
                 } catch (UnsupportedEncodingException ex) {
                     errorList.add(MISSINGUSASCII);
                 }
