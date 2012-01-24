@@ -39,5 +39,17 @@ public class StringUtilities {
         return result.toString();
     }
 
+    public static String buildDelemtedListFromIntegerArray(Integer[] a, String separator) {
+        StringBuffer result = new StringBuffer();
+        if (a.length > 0) {
+            result.append(String.valueOf(a[0]));
+            for (int i = 1; i < a.length; i++) {
+                result.append(separator);
+                result.append(String.valueOf(a[i]));
+            }
+        }
+        return result.toString();
+    }
+
 
 }

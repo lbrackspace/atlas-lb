@@ -141,7 +141,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             addVirtualIps(config, lb);
 
             //Verify that the server is not listening to all addresses, zeus does this by default and is an unwanted behaviour.
-            //Secure server needs these aswell..
             isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
@@ -767,7 +766,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         final String virtualServerNameNonSecure = ZxtmNameBuilder.genVSName(loadBalancer);
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
         VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
-        CatalogSSLCertificatesBindingStub catlog = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
+        CatalogSSLCertificatesBindingStub certificateCatalogService = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
 
         try {
             LOG.info(String.format("Creating ssl termination load balancer in zeus...", virtualServerName));
@@ -787,10 +786,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
             try {
                 if (zeusSslTermination.getCertIntermediateCert() != null) {
-                    if (catlog.getCertificateInfo(new String[]{virtualServerName}) != null) {
+                    if (certificateCatalogService.getCertificateInfo(new String[]{virtualServerName}) != null) {
                         LOG.info(String.format("Certificate already exists, removing it for loadbalancer: %s", loadBalancer.getId()));
                         enableDisableSslTermination(conf, loadBalancer, false);
-                        catlog.deleteCertificate(new String[]{virtualServerName});
+                        certificateCatalogService.deleteCertificate(new String[]{virtualServerName});
                         LOG.debug(String.format("Removed existing certificate for loadbalancer: %s", loadBalancer.getId()));
                     }
                 }
@@ -803,7 +802,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 CertificateFiles certificateFiles = new CertificateFiles();
                 certificateFiles.setPrivate_key(zeusSslTermination.getSslTermination().getPrivatekey());
                 certificateFiles.setPublic_cert(zeusSslTermination.getCertIntermediateCert());
-                catlog.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
+                certificateCatalogService.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
                 LOG.debug(String.format("Successfully imported certificate for load balancer: ", loadBalancer.getId()));
             }
 
@@ -888,15 +887,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void enableDisableSslTermination
-            (LoadBalancerEndpointConfiguration
-                     conf, LoadBalancer
-                    loadBalancer, boolean isSslTermination) throws RemoteException, InsufficientRequestException {
+    public void enableDisableSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isSslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         final String virtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
 
         try {
             serviceStubs.getVirtualServerBinding().setSSLDecrypt(new String[]{virtualServerName}, new boolean[]{isSslTermination});
+            suspendUnsuspendVirtualServer(conf, virtualServerName, loadBalancer.getSslTermination().isEnabled());
         } catch (RemoteException af) {
             LOG.error(String.format("There was a error updating ssl termination in zxtm adapter for loadbalancer: ", loadBalancer.getId()));
             throw new RuntimeException(af);
@@ -906,12 +903,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     // upload the file then set the Errorpage.
     @Override
-    public void setErrorFile
-    (LoadBalancerEndpointConfiguration
-             conf, Integer
-            loadbalancerId, Integer
-            accountId, String
-            content) throws RemoteException {
+    public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content) throws RemoteException {
         String[] vsNames = new String[1];
         String[] errorFiles = new String[1];
 

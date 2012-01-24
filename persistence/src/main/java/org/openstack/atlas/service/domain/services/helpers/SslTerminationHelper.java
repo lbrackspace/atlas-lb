@@ -8,6 +8,9 @@ import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 
+import java.util.List;
+import java.util.Map;
+
 
 public final class SslTerminationHelper {
     protected static final Log LOG = LogFactory.getLog(SslTerminationHelper.class);
@@ -37,6 +40,30 @@ public final class SslTerminationHelper {
         return true;
     }
 
+    public static boolean verifyPortSecurePort(LoadBalancer loadBalancer, SslTermination sslTermination, Map<Integer, List<LoadBalancer>> vipPorts, Map<Integer, List<LoadBalancer>> vip6Ports) {
+        LOG.info("Verifying port and secure port are unique for loadbalancer: " + loadBalancer.getId());
+        if (sslTermination != null && sslTermination.getSecurePort() != null) {
+            if (loadBalancer.hasSsl()
+                    && loadBalancer.getSslTermination().getSecurePort() == sslTermination.getSecurePort()) {
+                return true;
+            }
+
+            if (!vipPorts.isEmpty()) {
+
+                if (vipPorts.containsKey(sslTermination.getSecurePort())) {
+                    return false;
+                }
+            }
+
+            if (!vip6Ports.isEmpty()) {
+                if ((vip6Ports.containsKey(sslTermination.getSecurePort()))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public static void verifyCertificationCredentials(ZeusCertFile zeusCertFile) throws BadRequestException {
         if (zeusCertFile.getErrorList().size() > 0) {
             String errors = StringUtilities.buildDelemtedListFromStringArray(zeusCertFile.getErrorList().toArray(new String[zeusCertFile.getErrorList().size()]), ",");
@@ -45,37 +72,40 @@ public final class SslTerminationHelper {
         }
     }
 
-    public static org.openstack.atlas.service.domain.entities.SslTermination verifyAttributes(SslTermination queTermination,  org.openstack.atlas.service.domain.entities.SslTermination dbTermination) {
-        org.openstack.atlas.service.domain.entities.SslTermination updatedTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
+    public static org.openstack.atlas.service.domain.entities.SslTermination verifyAttributes(SslTermination queTermination, org.openstack.atlas.service.domain.entities.SslTermination dbTermination) {
+        if (dbTermination == null) {
+            dbTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
+        }
 
         //Set fields to updated values
         if (queTermination.isEnabled() != null) {
-            updatedTermination.setEnabled(queTermination.isEnabled());
-        } else if (dbTermination != null) {
-            updatedTermination.setEnabled(dbTermination.isEnabled());
-        }
-        if (queTermination.isSecureTrafficOnly() != null) {
-            updatedTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
-        } else if (dbTermination != null) {
-            updatedTermination.setSecureTrafficOnly(dbTermination.isSecureTrafficOnly());
-        }
-        if (queTermination.getSecurePort() != null) {
-            updatedTermination.setSecurePort(queTermination.getSecurePort());
-        } else if (dbTermination != null) {
-            updatedTermination.setSecurePort(dbTermination.getSecurePort());
+            dbTermination.setEnabled(queTermination.isEnabled());
         }
 
+        if (queTermination.isSecureTrafficOnly() != null) {
+            dbTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
+        }
+
+        if (queTermination.getSecurePort() != null) {
+            dbTermination.setSecurePort(queTermination.getSecurePort());
+        }
 
         //The certificates are either null or populated, no updating.
         if (queTermination.getCertificate() != null) {
-            updatedTermination.setCertificate(queTermination.getCertificate());
+            dbTermination.setCertificate(queTermination.getCertificate());
         }
+
         if (queTermination.getIntermediateCertificate() != null) {
-            updatedTermination.setIntermediateCertificate(queTermination.getIntermediateCertificate());
+            dbTermination.setIntermediateCertificate(queTermination.getIntermediateCertificate());
+        } else {
+            if (queTermination.getCertificate() != null && queTermination.getCertificate() != null) {
+                dbTermination.setIntermediateCertificate(null);
+            }
         }
+
         if (queTermination.getPrivatekey() != null) {
-            updatedTermination.setPrivatekey(queTermination.getPrivatekey());
+            dbTermination.setPrivatekey(queTermination.getPrivatekey());
         }
-        return updatedTermination;
+        return dbTermination;
     }
 }

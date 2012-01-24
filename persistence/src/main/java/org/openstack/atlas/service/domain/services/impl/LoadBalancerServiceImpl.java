@@ -603,7 +603,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     newVipConfig.add(newJoinRecord);
                 } else {
                     // Add shared vip to set
-                    newVipConfig.addAll(getSharedIpv4Vips(loadBalancerJoinVip.getVirtualIp(), vipsOnAccount, lbFromApi.getPort()));
+                    newVipConfig.addAll(getSharedIpv4Vips(loadBalancerJoinVip.getVirtualIp(), vipsOnAccount, lbFromApi));
                 }
             }
             lbFromApi.setLoadBalancerJoinVipSet(newVipConfig);
@@ -622,23 +622,24 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     newVip6Config.add(jbjv6);
                 } else {
                     //share ipv6 vip here..
-                    newVip6Config.addAll(getSharedIpv6Vips(loadBalancerJoinVip6.getVirtualIp(), vips6OnAccount, lbFromApi.getPort()));
+                    newVip6Config.addAll(getSharedIpv6Vips(loadBalancerJoinVip6.getVirtualIp(), vips6OnAccount, lbFromApi));
                 }
                 lbFromApi.setLoadBalancerJoinVip6Set(newVip6Config);
             }
         }
     }
 
-    private Set<LoadBalancerJoinVip> getSharedIpv4Vips(VirtualIp vipConfig, List<VirtualIp> vipsOnAccount, Integer lbPort) throws AccountMismatchException, UniqueLbPortViolationException {
+    private Set<LoadBalancerJoinVip> getSharedIpv4Vips(VirtualIp vipConfig, List<VirtualIp> vipsOnAccount, LoadBalancer loadBalancer) throws AccountMismatchException, UniqueLbPortViolationException {
         Set<LoadBalancerJoinVip> sharedVips = new HashSet<LoadBalancerJoinVip>();
         boolean belongsToProperAccount = false;
 
         // Verify this is a valid virtual ip to share
         for (VirtualIp vipOnAccount : vipsOnAccount) {
             if (vipOnAccount.getId().equals(vipConfig.getId())) {
-                if (virtualIpService.isIpv4VipPortCombinationInUse(vipOnAccount, lbPort)) {
+                if (virtualIpService.isIpv4VipPortCombinationInUse(vipOnAccount, loadBalancer.getPort())) {
                     throw new UniqueLbPortViolationException("Another load balancer is currently using the requested port with the shared virtual ip.");
                 }
+
                 belongsToProperAccount = true;
                 LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
                 loadBalancerJoinVip.setVirtualIp(vipOnAccount);
@@ -652,16 +653,17 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return sharedVips;
     }
 
-    private Set<LoadBalancerJoinVip6> getSharedIpv6Vips(VirtualIpv6 vipConfig, List<VirtualIpv6> vipsOnAccount, Integer lbPort) throws AccountMismatchException, UniqueLbPortViolationException {
+    private Set<LoadBalancerJoinVip6> getSharedIpv6Vips(VirtualIpv6 vipConfig, List<VirtualIpv6> vipsOnAccount, LoadBalancer loadBalancer) throws AccountMismatchException, UniqueLbPortViolationException {
         Set<LoadBalancerJoinVip6> sharedVips = new HashSet<LoadBalancerJoinVip6>();
         boolean belongsToProperAccount = false;
 
         // Verify this is a valid virtual ip to share
         for (VirtualIpv6 vipOnAccount : vipsOnAccount) {
             if (vipOnAccount.getId().equals(vipConfig.getId())) {
-                if (virtualIpService.isIpv6VipPortCombinationInUse(vipOnAccount, lbPort)) {
+                if (virtualIpService.isIpv6VipPortCombinationInUse(vipOnAccount, loadBalancer.getPort())) {
                     throw new UniqueLbPortViolationException("Another load balancer is currently using the requested port with the shared virtual ip.");
                 }
+
                 belongsToProperAccount = true;
                 LoadBalancerJoinVip6 loadBalancerJoinVip6 = new LoadBalancerJoinVip6();
                 loadBalancerJoinVip6.setVirtualIp(vipOnAccount);

@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.repository;
 
+import javassist.tools.rmi.ObjectNotFoundException;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4Range;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4Ranges;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
@@ -423,12 +424,39 @@ public class VirtualIpRepository {
             if (!map.containsKey(port)) {
                 map.put(port, new ArrayList<LoadBalancer>());
             }
+
             LoadBalancer lb = new LoadBalancer();
             lb.setId((Integer) row[1]);
             lb.setAccountId((Integer) row[2]);
             lb.setPort((Integer) row[3]);
             map.get(port).add(lb);
+
+            int sslPort = getSslPorts((Integer) row[1]);
+            if ((sslPort != -1) && !map.containsKey(sslPort)) {
+                map.put(sslPort, new ArrayList<LoadBalancer>());
+                LoadBalancer lbssl = new LoadBalancer();
+                lbssl.setId((Integer) row[1]);
+                lbssl.setAccountId((Integer) row[2]);
+                lbssl.setPort((Integer) row[3]);
+                map.get(sslPort).add(lbssl);
+            }
         }
         return map;
+    }
+
+    public int getSslPorts(Integer lbId) {
+        Map<Integer, List<LoadBalancer>> map = new TreeMap<Integer, List<LoadBalancer>>();
+        List<Object> hResults;
+
+        String query = "select j.securePort "
+                + "from SslTermination j where j.loadbalancer.id = :lbId";
+
+        hResults = entityManager.createQuery(query).setParameter("lbId", lbId).getResultList();
+
+        if (hResults == null || hResults.isEmpty()) {
+            return -1;
+        }
+
+        return (Integer) hResults.get(0);
     }
 }

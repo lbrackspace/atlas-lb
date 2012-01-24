@@ -1,6 +1,7 @@
 package org.openstack.atlas.adapter.zxtm;
 
 import com.zxtm.service.client.*;
+import org.apache.axis.types.UnsignedInt;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -14,10 +15,8 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.pojos.Cidr;
-import org.openstack.atlas.service.domain.pojos.Hostssubnet;
-import org.openstack.atlas.service.domain.pojos.Hostsubnet;
-import org.openstack.atlas.service.domain.pojos.NetInterface;
+import org.openstack.atlas.service.domain.pojos.*;
+import sun.net.idn.StringPrep;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
@@ -95,7 +94,7 @@ public class ZxtmAdapterImplTest {
             when(serviceStubs.getVirtualServerBinding().getRules(Matchers.<String[]>any())).thenReturn(new VirtualServerRule[][]{{}});
             when(serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(Matchers.<String[]>any())).thenReturn(new boolean[]{false});
             when(serviceStubs.getVirtualServerBinding().getProtocol(Matchers.<String[]>any())).thenReturn(new VirtualServerProtocol[]{VirtualServerProtocol.fromValue(VirtualServerProtocol._http)});
-            when(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).thenReturn(new String[]{lb.getId()+"_"+lb.getAccountId()});
+            when(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).thenReturn(new String[]{});
             when(serviceStubs.getZxtmRuleCatalogService().getRuleNames()).thenReturn(new String[]{});
         }
 
@@ -284,6 +283,191 @@ public class ZxtmAdapterImplTest {
                 iface.getCidrs().add(cidr);
             }
             return iface;
+        }
+    }
+
+    public static class WhenVerifyingSSLTermination {
+        //TODO: move...
+        private LoadBalancerEndpointConfiguration dummyConfig;
+        private ReverseProxyLoadBalancerAdapter adapterSpy;
+        private ZxtmServiceStubs serviceStubs;
+        private PoolBindingStub poolStub;
+        private VirtualServerBindingStub vsStub;
+        private TrafficIPGroupsBindingStub trafficIpGroupStub;
+        private CatalogProtectionBindingStub protectionStub;
+        private CatalogPersistenceBindingStub persistenceStub;
+        private CatalogMonitorBindingStub monitorStub;
+        private CatalogRuleBindingStub ruleStub;
+        private CatalogRateBindingStub rateStub;
+        private CatalogSSLCertificatesBindingStub certificateCatalogService;
+        private LoadBalancer lb;
+
+        private static final String ZXTM_USERNAME = "mocked_username";
+        private static final String ZXTM_PASSWORD = "mocked_password";
+        private static final String ZXTM_ENDPOINT_URI = "https://mock.endpoint.uri:9090/soap";
+        private static final String TARGET_HOST = "ztm-n01.mock.endpoint.uri";
+        private static final String FAILOVER_HOST_1 = "ztm-n03.mock.endpoint.uri";
+        private static final String FAILOVER_HOST_2 = "ztm-n04.mock.endpoint.uri";
+
+        private SslTermination sslTermination;
+
+        @Before
+        public void setupSimpleLoadBalancer() {
+            Set<LoadBalancerJoinVip> vipList = new HashSet<LoadBalancerJoinVip>();
+            VirtualIp vip = new VirtualIp();
+            vip.setId(1234);
+            vip.setIpAddress("10.69.0.60");
+            LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
+            loadBalancerJoinVip.setVirtualIp(vip);
+            vipList.add(loadBalancerJoinVip);
+
+            Set<Node> nodeList = new HashSet<Node>();
+            Node node1 = new Node();
+            Node node2 = new Node();
+            node1.setIpAddress("127.0.0.1");
+            node2.setIpAddress("127.0.0.2");
+            node1.setPort(80);
+            node2.setPort(80);
+            node1.setCondition(DRAINING);
+            node2.setCondition(DISABLED);
+            node1.setWeight(5);
+            node2.setWeight(10);
+            nodeList.add(node1);
+            nodeList.add(node2);
+
+            lb = new LoadBalancer();
+            lb.setId(1234);
+            lb.setAccountId(1234);
+            lb.setPort(80);
+            lb.setAlgorithm(ROUND_ROBIN);
+            lb.setName("integration_test_lb");
+            lb.setProtocol(HTTP);
+            lb.setNodes(nodeList);
+            lb.setLoadBalancerJoinVipSet(vipList);
+        }
+
+        @Before
+        public void setUpClass() throws Exception {
+            List<String> targetFailoverHosts = new ArrayList<String>();
+            targetFailoverHosts.add(FAILOVER_HOST_1);
+            targetFailoverHosts.add(FAILOVER_HOST_2);
+            Host soapEndpointHost = new Host();
+            soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
+            Host trafficManagerHost = new Host();
+            trafficManagerHost.setTrafficManagerName(TARGET_HOST);
+            dummyConfig = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts);
+
+            adapterSpy = spy(new ZxtmAdapterImpl());
+            serviceStubs = mock(ZxtmServiceStubs.class);
+            doReturn(serviceStubs).when(adapterSpy).getServiceStubs(Matchers.<LoadBalancerEndpointConfiguration>anyObject());
+
+            poolStub = mock(PoolBindingStub.class);
+            vsStub = mock(VirtualServerBindingStub.class);
+            trafficIpGroupStub = mock(TrafficIPGroupsBindingStub.class);
+            protectionStub = mock(CatalogProtectionBindingStub.class);
+            persistenceStub = mock(CatalogPersistenceBindingStub.class);
+            monitorStub = mock(CatalogMonitorBindingStub.class);
+            ruleStub = mock(CatalogRuleBindingStub.class);
+            rateStub = mock(CatalogRateBindingStub.class);
+            certificateCatalogService = mock(CatalogSSLCertificatesBindingStub.class);
+
+            when(serviceStubs.getPoolBinding()).thenReturn(poolStub);
+            when(serviceStubs.getVirtualServerBinding()).thenReturn(vsStub);
+            when(serviceStubs.getTrafficIpGroupBinding()).thenReturn(trafficIpGroupStub);
+            when(serviceStubs.getProtectionBinding()).thenReturn(protectionStub);
+            when(serviceStubs.getPersistenceBinding()).thenReturn(persistenceStub);
+            when(serviceStubs.getMonitorBinding()).thenReturn(monitorStub);
+            when(serviceStubs.getZxtmRuleCatalogService()).thenReturn(ruleStub);
+            when(serviceStubs.getZxtmRateCatalogService()).thenReturn(rateStub);
+            when(serviceStubs.getZxtmCatalogSSLCertificatesBinding()).thenReturn(certificateCatalogService);
+
+            when(serviceStubs.getPoolBinding().getLoadBalancingAlgorithm(Matchers.<String[]>any())).thenReturn(new PoolLoadBalancingAlgorithm[]{PoolLoadBalancingAlgorithm.wroundrobin});
+            when(serviceStubs.getVirtualServerBinding().getRules(Matchers.<String[]>any())).thenReturn(new VirtualServerRule[][]{{}});
+            when(serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(Matchers.<String[]>any())).thenReturn(new boolean[]{false});
+            when(serviceStubs.getVirtualServerBinding().getProtocol(Matchers.<String[]>any())).thenReturn(new VirtualServerProtocol[]{VirtualServerProtocol.fromValue(VirtualServerProtocol._http)});
+            when(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).thenReturn(new String[]{});
+            when(serviceStubs.getVirtualServerBinding().getPort(Matchers.<String[]>any())).thenReturn(new UnsignedInt[]{new UnsignedInt(80)});
+            when(serviceStubs.getZxtmRuleCatalogService().getRuleNames()).thenReturn(new String[]{});
+
+        }
+
+        @Test
+        public void WhenAddingSslTermination() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+            lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
+            lb.setSessionPersistence(HTTP_COOKIE);
+
+            HealthMonitor monitor = new HealthMonitor();
+            monitor.setType(HealthMonitorType.CONNECT);
+            monitor.setDelay(10);
+            monitor.setTimeout(20);
+            monitor.setAttemptsBeforeDeactivation(3);
+            lb.setHealthMonitor(monitor);
+
+            ConnectionLimit limit = new ConnectionLimit();
+            limit.setMaxConnections(50);
+            limit.setRateInterval(10);
+            limit.setMaxConnectionRate(10);
+            limit.setMinConnections(1);
+            lb.setConnectionLimit(limit);
+
+            lb.setConnectionLogging(true);
+
+            Set<AccessList> networkItems = new HashSet<AccessList>();
+            AccessList item1 = new AccessList();
+            AccessList item2 = new AccessList();
+            item1.setIpAddress("0.0.0.0/0");
+            item2.setIpAddress("127.0.0.1");
+            item1.setType(DENY);
+            item2.setType(ALLOW);
+            networkItems.add(item1);
+            networkItems.add(item2);
+
+            lb.setAccessLists(networkItems);
+
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setIntermediateCertificate("iCert");
+            sslTermination.setCertificate("cert");
+            sslTermination.setPrivatekey("aPrivateKey");
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(443);
+            sslTermination.setSecureTrafficOnly(false);
+
+            lb.setSslTermination(sslTermination);
+
+            ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
+            zeusSslTermination.setCertIntermediateCert("cert");
+            zeusSslTermination.setSslTermination(sslTermination);
+
+            InOrder inOrder = inOrder(vsStub, vsStub, vsStub, protectionStub, protectionStub, certificateCatalogService, vsStub, vsStub);
+            adapterSpy.updateSslTermination(dummyConfig, lb, zeusSslTermination);
+            inOrder.verify(vsStub).addVirtualServer(Matchers.<String[]>anyObject(), Matchers.<VirtualServerBasicInfo[]>anyObject());
+            inOrder.verify(vsStub).setProtection(Matchers.<String[]>anyObject(), Matchers.<String[]>anyObject());
+            inOrder.verify(vsStub).setLogEnabled(Matchers.<String[]>anyObject(), Matchers.<boolean[]>anyObject());
+            inOrder.verify(protectionStub).setAllowedAddresses(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
+            inOrder.verify(protectionStub).setBannedAddresses(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
+            inOrder.verify(certificateCatalogService).importCertificate(Matchers.<String[]>anyObject(), Matchers.<CertificateFiles[]>anyObject());
+            inOrder.verify(vsStub).setSSLCertificate(Matchers.<String[]>anyObject(), Matchers.<String[]>anyObject());
+            inOrder.verify(vsStub).setSSLDecrypt(Matchers.<String[]>anyObject(), Matchers.<boolean[]>anyObject());
+        }
+
+        @Test
+        public void WhenDeletingSslTermination() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setIntermediateCertificate("iCert");
+            sslTermination.setCertificate("cert");
+            sslTermination.setPrivatekey("aPrivateKey");
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(443);
+            sslTermination.setSecureTrafficOnly(false);
+
+            lb.setSslTermination(sslTermination);
+
+            InOrder inOrder = inOrder(vsStub, vsStub, certificateCatalogService, vsStub);
+            adapterSpy.removeSslTermination(dummyConfig, lb);
+            inOrder.verify(vsStub).setSSLDecrypt(Matchers.<String[]>anyObject(), Matchers.<boolean[]>anyObject());
+            inOrder.verify(vsStub).setSSLCertificate(Matchers.<String[]>anyObject(), Matchers.<String[]>anyObject());
+            inOrder.verify(certificateCatalogService).deleteCertificate(Matchers.<String[]>anyObject());
+            inOrder.verify(vsStub).deleteVirtualServer(Matchers.<String[]>anyObject());
         }
     }
 }

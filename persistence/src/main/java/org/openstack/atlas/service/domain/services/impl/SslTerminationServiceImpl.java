@@ -17,6 +17,11 @@ import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 @Service
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
     protected final Log LOG = LogFactory.getLog(SslTerminationServiceImpl.class);
@@ -25,22 +30,40 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     @Transactional
     @Override
     public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
-        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbId, accountId);
         ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
         ZeusCertFile zeusCertFile = null;
-        org.openstack.atlas.service.domain.entities.SslTermination updatedSslTermination;
 
-        //If the lb is already a secure protocol, reject the request...
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbId, accountId);
+
+        //Verify ports and protocols...
         SslTerminationHelper.isProtocolSecure(dbLoadBalancer);
 
-        org.openstack.atlas.service.domain.entities.SslTermination dbTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
+        //Grab ports from all vips/shared vips and their lbs'
+        Map<Integer, List<LoadBalancer>> vipPorts = new TreeMap<Integer, List<LoadBalancer>>();
+        Map<Integer, List<LoadBalancer>> vip6Ports = new TreeMap<Integer, List<LoadBalancer>>();
+        if (!dbLoadBalancer.getLoadBalancerJoinVipSet().isEmpty()) {
+            vipPorts = virtualIpRepository.getPorts(dbLoadBalancer.getLoadBalancerJoinVipSet().iterator().next().getVirtualIp().getId());
+        }
+
+        if (!dbLoadBalancer.getLoadBalancerJoinVip6Set().isEmpty()) {
+            vip6Ports = virtualIpv6Repository.getPorts(dbLoadBalancer.getLoadBalancerJoinVip6Set().iterator().next().getVirtualIp().getId());
+        }
+
+        if (!SslTerminationHelper.verifyPortSecurePort(dbLoadBalancer, sslTermination, vipPorts, vip6Ports)) {
+            throw new BadRequestException(String.format("Secure port: '%s'  must be unique across loadbalancers " +
+                    "and/or ones being shared across virtual ips. Ports taken: '%s'", sslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
+        }
+
+        org.openstack.atlas.service.domain.entities.SslTermination dbTermination = null;
         try {
             dbTermination = getSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
         } catch (EntityNotFoundException e) {
             //this is fine...
             LOG.warn("LoadBalancer ssl termination could not be found, ");
         }
-        updatedSslTermination = SslTerminationHelper.verifyAttributes(sslTermination, dbTermination);
+
+        //we wont make it here if no dbTermination and no cert/key values.
+        org.openstack.atlas.service.domain.entities.SslTermination updatedSslTermination = SslTerminationHelper.verifyAttributes(sslTermination, dbTermination);
 
         if (!SslTerminationHelper.modificationStatus(sslTermination, dbLoadBalancer)) {
             //Validate the certifications and key return the list of errors if there are any, otherwise, pass the transport object to async layer...
@@ -82,79 +105,10 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         return sslTerminationRepository.getSslTerminationByLbId(lid, accountId);
     }
 
-//    private boolean modificationStatus(SslTermination sslTermination, LoadBalancer dbLoadBalancer) throws BadRequestException {
-//        //Validator let it through, now verify the request is for update of attributes only, skip cert validation...
-//        //Otherwise inform user that there is no ssl termination to update values for...
-//        if (sslTermination.getCertificate() == null && sslTermination.getPrivatekey() == null) {
-//            if (dbLoadBalancer.hasSsl()) {
-//                LOG.info("Updating attributes only, skipping certificate validation.");
-//                return true;
-//            } else {
-//                LOG.error("Cannot update values for non-existent ssl termination object...");
-//                throw new BadRequestException("No ssl termination to update values for.");
-//            }
-//        }
-//        return false;
-//    }
-//
-//    private boolean isProtocolSecure(LoadBalancer loadBalancer) throws BadRequestException {
-//        LoadBalancerProtocol protocol = loadBalancer.getProtocol();
-//        if (protocol == LoadBalancerProtocol.HTTPS || protocol == LoadBalancerProtocol.IMAPS
-//                || protocol == LoadBalancerProtocol.LDAPS || protocol == LoadBalancerProtocol.POP3S) {
-//            throw new BadRequestException("Can not create ssl termination on a load balancer using a secure protocol.");
-//        }
-//        return true;
-//    }
-//
-//    private void verifyCertificationCredentials(ZeusCertFile zeusCertFile, org.openstack.atlas.service.domain.entities.SslTermination updatedSslTermination, LoadBalancer loadBalancer) throws BadRequestException {
-//        if (zeusCertFile.getErrorList().size() > 0) {
-//            String errors = StringUtilities.buildDelemtedListFromStringArray(zeusCertFile.getErrorList().toArray(new String[zeusCertFile.getErrorList().size()]), ",");
-//
-//            LOG.error(String.format("There was an error(s) while updating ssl termination: '%s'", errors));
-//            throw new BadRequestException(errors);
-//        }
-//    }
-//
-//    private org.openstack.atlas.service.domain.entities.SslTermination verifyAttributes(SslTermination queTermination, LoadBalancer loadBalancer) {
-//        org.openstack.atlas.service.domain.entities.SslTermination dbTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
-//        try {
-//            dbTermination = getSslTermination(loadBalancer.getId(), loadBalancer.getAccountId());
-//        } catch (EntityNotFoundException e) {
-//            //this is fine...
-//            LOG.warn("LoadBalancer ssl termination could not be found, ");
-//        }
-//
-//        org.openstack.atlas.service.domain.entities.SslTermination updatedTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
-//
-//        //Set fields to updated values
-//        if (queTermination.isEnabled() != null) {
-//            updatedTermination.setEnabled(queTermination.isEnabled());
-//        } else if (dbTermination != null) {
-//            updatedTermination.setEnabled(dbTermination.isEnabled());
-//        }
-//        if (queTermination.isSecureTrafficOnly() != null) {
-//            updatedTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
-//        } else if (dbTermination != null) {
-//            updatedTermination.setSecureTrafficOnly(dbTermination.isSecureTrafficOnly());
-//        }
-//        if (queTermination.getSecurePort() != null) {
-//            updatedTermination.setSecurePort(queTermination.getSecurePort());
-//        } else if (dbTermination != null) {
-//            updatedTermination.setSecurePort(dbTermination.getSecurePort());
-//        }
-//
-//
-//        //The certificates are either null or populated, no updating.
-//        if (queTermination.getCertificate() != null) {
-//            updatedTermination.setCertificate(queTermination.getCertificate());
-//        }
-//        if (queTermination.getIntermediateCertificate() != null) {
-//            updatedTermination.setIntermediateCertificate(queTermination.getIntermediateCertificate());
-//        }
-//        if (queTermination.getPrivatekey() != null) {
-//            updatedTermination.setPrivatekey(queTermination.getPrivatekey());
-//        }
-//        return updatedTermination;
-//    }
+    private String buildPortString(Map<Integer, List<LoadBalancer>> vipPorts, Map<Integer, List<LoadBalancer>> vip6Ports) {
+        String portString = StringUtilities.buildDelemtedListFromIntegerArray(vipPorts.keySet().toArray(new Integer[vipPorts.keySet().size()]), ",");
+        portString = portString + StringUtilities.buildDelemtedListFromIntegerArray(vip6Ports.keySet().toArray(new Integer[vip6Ports.keySet().size()]), ",");
+        return portString;
+    }
 }
 

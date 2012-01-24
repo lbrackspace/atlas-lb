@@ -99,6 +99,12 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         deleteSslTermination();
     }
 
+    @Test
+    public void testSSlTerminationOperationsWhenUpdatingLBAttributes() {
+        setSslTermination();
+        updateLoadBalancerAttributes();
+    }
+
     private void setSslTermination() {
         String sVs = null;
 
@@ -257,6 +263,69 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
                 }
             }
             Assert.assertTrue(doesExist1);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    private void updateLoadBalancerAttributes() {
+        String sVs = null;
+
+        try {
+            sVs = ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
+        } catch (InsufficientRequestException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        try {
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setSecureTrafficOnly(true);
+            sslTermination.setEnabled(false);
+            sslTermination.setSecurePort(500);
+            sslTermination.setCertificate(testCert);
+            sslTermination.setPrivatekey(testKey);
+
+            ZeusCertFile zeusCertFile = new ZeusCertFile();
+            zeusCertFile.setPublic_cert(testCert);
+            zeusCertFile.setPrivate_key(testKey);
+
+            ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
+            zeusSslTermination.setCertIntermediateCert(testCert);
+            zeusSslTermination.setSslTermination(sslTermination);
+
+            lb.setSslTermination(zeusSslTermination.getSslTermination());
+
+            zxtmAdapter.updateSslTermination(config, lb, zeusSslTermination);
+
+            //Check to see if VS is still here
+            String[] virtualServers = getServiceStubs().getVirtualServerBinding().getVirtualServerNames();
+            boolean doesExist = false;
+            for (String vsName : virtualServers) {
+                if (vsName.equals(sVs)) {
+                    doesExist = true;
+                    break;
+                }
+            }
+            Assert.assertTrue(doesExist);
+
+            String[] certificate = getServiceStubs().getVirtualServerBinding().getSSLCertificate(new String[]{sVs});
+            Assert.assertEquals(sVs, certificate[0]);
+
+            final VirtualServerBasicInfo[] serverBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{sVs});
+            Assert.assertEquals(sslTermination.getSecurePort(), serverBasicInfos[0].getPort());
+            Assert.assertEquals(true, lb.getProtocol().toString().equalsIgnoreCase(serverBasicInfos[0].getProtocol().toString()));
+            Assert.assertEquals(ZxtmNameBuilder.genVSName(lb), serverBasicInfos[0].getDefault_pool());
+
+            boolean[] vsEnabled = getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{ZxtmNameBuilder.genVSName(lb)});
+            Assert.assertEquals(false, vsEnabled[0]);
+
+             boolean[] vsNonSecureEnabled = getServiceStubs().getVirtualServerBinding().getSSLDecrypt(new String[]{sVs});
+            Assert.assertEquals(sslTermination.isEnabled(), vsNonSecureEnabled[0]);
+
+            String[] vsSecureInfo = getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getRawCertificate(new String[]{sVs});
+            Assert.assertEquals(sslTermination.getCertificate(), vsSecureInfo[0]);
 
         } catch (Exception e) {
             e.printStackTrace();

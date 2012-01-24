@@ -46,7 +46,7 @@ public class SslTerminationRepository {
     public SslTermination setSslTermination(Integer lid, SslTermination sslTermination) throws EntityNotFoundException {
         LoadBalancer lb = getLbById(lid);
         sslTermination.setLoadbalancer(lb);
-        entityManager.persist(sslTermination);
+        entityManager.merge(sslTermination);
         return sslTermination;
     }
 
