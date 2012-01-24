@@ -2,7 +2,6 @@ package org.openstack.atlas.api.resources;
 
 
 import org.apache.abdera.model.Feed;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.helpers.PaginationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mapper.DomainToRestModel;
@@ -176,10 +175,9 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             }
         }
 
-        limit = PaginationHelper.determinePageLimit(limit);
-        offset = PaginationHelper.determinePageOffset(offset);
-
         try {
+            limit = PaginationHelper.determinePageLimit(limit);
+            offset = PaginationHelper.determinePageOffset(offset);
             domainLbs = loadBalancerService.getLoadBalancersWithUsage(accountId, startTime, endTime, offset, limit);
 
             for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
@@ -187,9 +185,9 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             }
 
             if (dataModelLbs.getLoadBalancers().size() > limit) {
-                String relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, offset + limit, limit);
-                Link link = PaginationHelper.createLink("next", relativeUri);
-                dataModelLbs.getLinks().add(link);
+                String relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, PaginationHelper.calculateNextOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri);
+                dataModelLbs.getLinks().add(nextLink);
                 dataModelLbs.getLoadBalancers().remove(limit.intValue()); // Remove limit+1 item
             }
 

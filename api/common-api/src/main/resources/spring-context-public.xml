@@ -252,6 +252,9 @@
           parent="validationFilter"/>
 
     <!--ATOM BEANS-->
+    <bean id="paginationHelper" class="org.openstack.atlas.api.helpers.PaginationHelper">
+        <property name="restApiConfiguration" ref="configuration"/>
+    </bean>
     <bean id="atomProvider" class="org.openstack.atlas.api.atom.AbderaSupport"/>
     <bean id="atomFeedAdapter"
           class="org.openstack.atlas.api.atom.AtomFeedAdapter"
