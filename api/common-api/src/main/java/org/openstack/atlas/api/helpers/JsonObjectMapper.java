@@ -1,33 +1,21 @@
 package org.openstack.atlas.api.helpers;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
-import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
-import org.openstack.atlas.api.helpers.JsonSerializer.ObjectWrapperSerializer;
-import org.openstack.atlas.api.helpers.JsonDeserializer.ObjectWrapperDeserializer;
-import org.openstack.atlas.api.helpers.JsonDeserializer.PropertyListDeserializer;
-import org.openstack.atlas.api.helpers.JsonSerializer.PropertyCollectionSerializer;
-import org.openstack.atlas.api.helpers.JsonSerializer.DateTimeSerializer;
-import org.openstack.atlas.api.helpers.JsonDeserializer.DateTimeDeserializer;
-
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.ser.CustomSerializerFactory;
 import org.codehaus.jackson.map.deser.CustomDeserializerFactory;
-import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
-import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
-import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Updated;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
+import org.codehaus.jackson.map.ser.CustomSerializerFactory;
+import org.openstack.atlas.api.helpers.JsonDeserializer.DateTimeDeserializer;
 import org.openstack.atlas.api.helpers.JsonDeserializer.DeserializerProviderBuilder;
+import org.openstack.atlas.api.helpers.JsonDeserializer.ObjectWrapperDeserializer;
+import org.openstack.atlas.api.helpers.JsonDeserializer.PropertyListDeserializer;
+import org.openstack.atlas.api.helpers.JsonSerializer.DateTimeSerializer;
+import org.openstack.atlas.api.helpers.JsonSerializer.ObjectWrapperSerializer;
+import org.openstack.atlas.api.helpers.JsonSerializer.PropertyCollectionSerializer;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+import org.w3.atom.Link;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -50,13 +38,13 @@ public class JsonObjectMapper extends ObjectMapper {
 
 
         Class[] serializerWrapperClasses = new Class[]{HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class,
-            Node.class, RateLimit.class, Errorpage.class};
+                SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class,
+                Node.class, RateLimit.class, Errorpage.class, Link.class};
 
         Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class,
-            ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
-            Errorpage.class};
+                SessionPersistence.class, ConnectionLogging.class,
+                ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
+                Errorpage.class, Link.class};
 
 
         for (Class wrapperClass : serializerWrapperClasses) {
@@ -73,12 +61,11 @@ public class JsonObjectMapper extends ObjectMapper {
         // use the clean collections serializer, which will ensure proper JSON
         // formatting.
 
-
         // Load balancer is a bit of a special case since we want loadbalancer
         // wrapped, but none of the collections within loadbalancer.
 
         csf.addSpecificMapping(LoadBalancer.class, new ObjectWrapperSerializer(this.getSerializationConfig(), LoadBalancer.class));
-        csf.addSpecificMapping(LoadBalancers.class, new PropertyCollectionSerializer(serConf, LoadBalancers.class, "getLoadBalancers"));
+        csf.addSpecificMapping(LoadBalancers.class, new PropertyCollectionSerializer(serConf, LoadBalancers.class, "getLoadBalancers", true));
 
         csf.addSpecificMapping(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems"));
         csf.addSpecificMapping(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes"));

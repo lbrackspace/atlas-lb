@@ -35,6 +35,12 @@
         <bindings scd="~tns:logoType">
             <class ref="org.w3.atom.LogoType"/>
         </bindings>
+        <bindings scd="~tns:personType">
+            <class ref="org.w3.atom.PersonType"/>
+        </bindings>
+        <bindings scd="~tns:sourceType">
+            <class ref="org.w3.atom.SourceType"/>
+        </bindings>
         <bindings scd="~tns:textType">
             <class ref="org.w3.atom.TextType"/>
         </bindings>

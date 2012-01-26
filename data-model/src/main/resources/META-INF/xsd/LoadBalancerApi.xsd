@@ -9,7 +9,7 @@
             xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
             jaxb:extensionBindingPrefixes="xjc">
 
-    <xsd:import schemaLocation="Atom.xsd" namespace="http://www.w3.org/2005/Atom"/>
+    <xsd:import schemaLocation="atom.xsd" namespace="http://www.w3.org/2005/Atom"/>
 
     <xsd:element name="loadBalancers">
         <xsd:complexType>

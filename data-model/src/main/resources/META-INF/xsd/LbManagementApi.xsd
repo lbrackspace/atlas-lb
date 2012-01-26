@@ -3,6 +3,7 @@
             targetNamespace="http://docs.openstack.org/loadbalancers/api/management/v1.0"
             xmlns:tns="http://docs.openstack.org/loadbalancers/api/management/v1.0"
             xmlns:papi="http://docs.openstack.org/loadbalancers/api/v1.0"
+            xmlns:atom="http://www.w3.org/2005/Atom"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
             jaxb:version="2.1"
@@ -10,6 +11,7 @@
             jaxb:extensionBindingPrefixes="xjc">
 
     <xsd:import schemaLocation="LoadBalancerApi.xsd" namespace="http://docs.openstack.org/loadbalancers/api/v1.0"/>
+    <xsd:import schemaLocation="atom.xsd" namespace="http://www.w3.org/2005/Atom"/>
 
     <xsd:element name="loadBalancers" type="tns:loadBalancers"/>
     <xsd:complexType name="loadBalancers">
@@ -449,6 +451,24 @@
         <xsd:sequence>
             <xsd:element ref="papi:accountBilling" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="accountUsageRecords">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="accountUsageRecord" type="tns:accountUsageRecord" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="accountUsageRecord" type="tns:accountUsageRecord"/>
+    <xsd:complexType name="accountUsageRecord">
+        <xsd:attribute name="accountId" type="xsd:int"/>
+        <xsd:attribute name="numLoadBalancers" type="xsd:int"/>
+        <xsd:attribute name="numPublicVips" type="xsd:int"/>
+        <xsd:attribute name="numServicenetVips" type="xsd:int"/>
+        <xsd:attribute name="startTime" type="xsd:dateTime"/>
     </xsd:complexType>
 
     <!--    <xsd:element name="accountBilling" type="tns:accountBilling"/>

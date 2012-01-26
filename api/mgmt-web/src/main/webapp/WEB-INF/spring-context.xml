@@ -106,6 +106,7 @@
         <property name="eventRepository" ref="eventRepository"/>
 
         <property name="accountLimitRepository" ref="accountLimitRepository"/>
+        <property name="accountUsageRepository" ref="accountUsageRepository"/>
         <property name="hostUsageRepository" ref="hostUsageRepository"/>
 
         <property name="blacklistRepository" ref="blacklistRepository"/>
