@@ -46,9 +46,10 @@ public final class ZxtmNameBuilder {
         Set<String> generatedNames = new HashSet<String>();
         for (LoadBalancer loadBalancer : loadBalancers) {
             generatedNames.add(genVSName(loadBalancer));
-            if (loadBalancer.hasSsl()) {
-                generatedNames.add(genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId()));
-            }
+            //TODO: figure out usage for ssl
+//            if (loadBalancer.hasSsl()) {
+//                generatedNames.add(genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId()));
+//            }
         }
         return generatedNames;
     }
