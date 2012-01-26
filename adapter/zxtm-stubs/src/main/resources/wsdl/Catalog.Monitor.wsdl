@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2010 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
 
 -->
 
@@ -239,7 +239,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -284,7 +284,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -351,7 +351,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -890,6 +890,23 @@
       <part name="values" type="zeusns:Catalog.Monitor.TypeArray" />
    </message>
    
+   <message name="getUDPAcceptAllRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getUDPAcceptAllResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getUDPAcceptAllByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getUDPAcceptAllByLocationResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
    <message name="getUseSSLRequest">
       <part name="names" type="zeusns:StringArray" />
    </message>
@@ -1282,6 +1299,21 @@
    </message>
    
    <message name="setTypeResponse"></message>
+   
+   <message name="setUDPAcceptAllRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setUDPAcceptAllResponse"></message>
+   
+   <message name="setUDPAcceptAllByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setUDPAcceptAllByLocationResponse"></message>
    
    <message name="setUseSSLRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -1967,6 +1999,28 @@
          <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
+      <operation name="getUDPAcceptAll">
+         <documentation>
+            Get if the monitor should accept responses from any IP and port. UDP monitors only.
+         </documentation>
+         
+         <input message="zeusns:getUDPAcceptAllRequest"/>
+         <output message="zeusns:getUDPAcceptAllResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
+      <operation name="getUDPAcceptAllByLocation">
+         <documentation>
+            Get if the monitor should accept responses from any IP and port. UDP monitors only. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getUDPAcceptAllByLocationRequest"/>
+         <output message="zeusns:getUDPAcceptAllByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
       <operation name="getUseSSL">
          <documentation>
             Get whether each of the named monitors can connect using SSL.
@@ -2626,6 +2680,32 @@
          
          <input message="zeusns:setTypeRequest"/>
          <output message="zeusns:setTypeResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
+      <operation name="setUDPAcceptAll">
+         <documentation>
+            Set if the monitor should accept responses from any IP and port. UDP monitors only.
+         </documentation>
+         
+         <input message="zeusns:setUDPAcceptAllRequest"/>
+         <output message="zeusns:setUDPAcceptAllResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
+      <operation name="setUDPAcceptAllByLocation">
+         <documentation>
+            Set if the monitor should accept responses from any IP and port. UDP monitors only. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setUDPAcceptAllByLocationRequest"/>
+         <output message="zeusns:setUDPAcceptAllByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
@@ -3804,6 +3884,46 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/getType"/>
          <documentation>
             Get the internal monitor type to use for each named monitor.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getUDPAcceptAll">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/getUDPAcceptAll"/>
+         <documentation>
+            Get if the monitor should accept responses from any IP and port. UDP monitors only.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getUDPAcceptAllByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/getUDPAcceptAllByLocation"/>
+         <documentation>
+            Get if the monitor should accept responses from any IP and port. UDP monitors only. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -5117,6 +5237,58 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/setType"/>
          <documentation>
             Set the internal monitor type to use for each named monitor.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setUDPAcceptAll">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/setUDPAcceptAll"/>
+         <documentation>
+            Set if the monitor should accept responses from any IP and port. UDP monitors only.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setUDPAcceptAllByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Monitor/setUDPAcceptAllByLocation"/>
+         <documentation>
+            Set if the monitor should accept responses from any IP and port. UDP monitors only. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>

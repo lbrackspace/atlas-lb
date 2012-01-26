@@ -18,6 +18,7 @@ import org.openstack.atlas.service.domain.entities.RateLimit;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.crypto.StringUtils;
 
 import java.rmi.RemoteException;
 import java.util.Calendar;
@@ -273,34 +274,6 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
     }
 
     private void updateLoadBalancerAttributes() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
-        //protocol
-        try {
-            lb.setProtocol(HTTPS);
-            zxtmAdapter.updateProtocol(config, lb);
-
-            final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
-            Assert.assertEquals(1, virtualServerBasicInfos.length);
-            Assert.assertEquals(VirtualServerProtocol.https, virtualServerBasicInfos[0].getProtocol());
-
-            final VirtualServerBasicInfo[] virtualServerBasicInfos2 = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{secureLoadBalancerName()});
-            Assert.assertEquals(1, virtualServerBasicInfos2.length);
-            Assert.assertEquals(VirtualServerProtocol.https, virtualServerBasicInfos[0].getProtocol());
-
-            final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
-            Assert.assertEquals(1, virtualServerRules.length);
-
-            final VirtualServerRule[][] virtualServerRules2 = getServiceStubs().getVirtualServerBinding().getRules(new String[]{secureLoadBalancerName()});
-            Assert.assertEquals(1, virtualServerRules2.length);
-
-            for (VirtualServerRule virtualServerRule : virtualServerRules[0]) {
-                if (virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedFor))
-                    Assert.fail("XFF rule should not be enabled!");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail(e.getMessage());
-        }
-
         //port
         try {
             zxtmAdapter.updatePort(config, lb.getId(), lb.getAccountId(), 8080);
@@ -312,12 +285,29 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             //Ports are seperate for vs's
             final VirtualServerBasicInfo[] virtualServerBasicInfos2 = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{secureLoadBalancerName()});
             Assert.assertEquals(1, virtualServerBasicInfos2.length);
-            Assert.assertEquals(500, virtualServerBasicInfos2[0].getPort());
+            Assert.assertEquals(443, virtualServerBasicInfos2[0].getPort());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
 
+        //logging
+        try {
+            lb.setConnectionLogging(Boolean.TRUE);
+            zxtmAdapter.updateConnectionLogging(config, lb);
 
+            Assert.assertEquals(true, getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertEquals(true, getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{loadBalancerName()})[0]);
+
+            lb.setConnectionLogging(Boolean.FALSE);
+            zxtmAdapter.updateConnectionLogging(config, lb);
+
+            Assert.assertEquals(false, getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertEquals(false, getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{loadBalancerName()})[0]);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
     }
 }

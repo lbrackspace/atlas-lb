@@ -17,7 +17,6 @@ import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -71,6 +70,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             SslTerminationHelper.verifyCertificationCredentials(zeusCertFile);
         }
 
+
         LOG.debug("Updating the lb status to pending_update");
         if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
@@ -93,9 +93,8 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     @Transactional
     @Override
     public boolean deleteSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
-        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lid, accountId);
-        isLbActive(dbLoadBalancer);
-
+//        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lid, accountId);
+//        isLbActive(dbLoadBalancer);
         return sslTerminationRepository.removeSslTermination(lid, accountId);
     }
 

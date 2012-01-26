@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2010 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
 
 -->
 
@@ -90,7 +90,7 @@
                      <xsd:documentation>X-Zeus-Backend cookies</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
-               <xsd:enumeration value="sslTermination">
+               <xsd:enumeration value="ssl">
                   <xsd:annotation>
                      <xsd:documentation>SSL Session ID persistence</xsd:documentation>
                   </xsd:annotation>
@@ -202,7 +202,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -247,7 +247,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -314,7 +314,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)

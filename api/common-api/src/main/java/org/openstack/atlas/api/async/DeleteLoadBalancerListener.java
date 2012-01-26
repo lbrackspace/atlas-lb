@@ -51,7 +51,20 @@ public class DeleteLoadBalancerListener extends BaseListener {
             sendErrorToEventResource(queueLb);
             // Notify usage processor with a usage event
             notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+
+            if (dbLoadBalancer.hasSsl()) {
+                notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.SSL_OFF);
+            }
             return;
+        }
+
+        if (dbLoadBalancer.hasSsl()) {
+            LOG.debug(String.format("Deleting load balancer '%d' ssl termination in database...", dbLoadBalancer.getId()));
+            sslTerminationService.deleteSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+            LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in database.", dbLoadBalancer.getId()));
+
+            // Notify usage processor with a usage event
+            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.SSL_OFF);
         }
 
         dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2010 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
 
 -->
 
@@ -134,7 +134,7 @@
             </xsd:annotation>
            </xsd:element>
          
-           <xsd:element name="messages" type="zeusns:AFM.ClusterStatusArray">
+           <xsd:element name="cluster" type="zeusns:AFM.ClusterStatusArray">
             <xsd:annotation>
              <xsd:documentation>
                Statuses for all AFMs in the AFM's cluster.
@@ -274,7 +274,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -315,7 +315,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)

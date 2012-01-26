@@ -173,9 +173,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
 
-        if (loadBalancer.hasSsl()) {
-            LOG.debug("Verifying protocol to update is not secure for load balancer with ssl termination");
-            SslTerminationHelper.isProtocolSecure(loadBalancer);
+        if (dbLoadBalancer.hasSsl()) {
+            LOG.debug("Verifying protocol, cannot update protocol while using ssl termination...");
+            if (loadBalancer.getProtocol() != null && loadBalancer.getProtocol() != dbLoadBalancer.getProtocol()) {
+                throw new BadRequestException("Cannot update protocol on a load balancer with ssl termination.");
+            }
+//            SslTerminationHelper.isProtocolSecure(loadBalancer);
         }
 
         LOG.debug("Updating the lb status to pending_update");

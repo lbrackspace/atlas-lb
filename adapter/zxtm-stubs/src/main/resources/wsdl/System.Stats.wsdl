@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2010 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
 
 -->
 
@@ -310,7 +310,7 @@
                </xsd:enumeration>
                <xsd:enumeration value="xZeusBackend">
                </xsd:enumeration>
-               <xsd:enumeration value="sslTermination">
+               <xsd:enumeration value="ssl">
                </xsd:enumeration>
          
             </xsd:restriction>
@@ -521,7 +521,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -930,6 +930,52 @@
    
    <message name="getLicensekeyNumberResponse">
       <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getListenIPBytesInRequest">
+      <part name="listen_ip_addresses" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getListenIPBytesInResponse">
+      <part name="value" type="zeusns:System.Stats.longArray" />
+   </message>
+   
+   <message name="getListenIPBytesOutRequest">
+      <part name="listen_ip_addresses" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getListenIPBytesOutResponse">
+      <part name="value" type="zeusns:System.Stats.longArray" />
+   </message>
+   
+   <message name="getListenIPCurrentConnRequest">
+      <part name="listen_ip_addresses" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getListenIPCurrentConnResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
+   <message name="getListenIPMaxConnRequest">
+      <part name="listen_ip_addresses" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getListenIPMaxConnResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
+   <message name="getListenIPTotalConnRequest">
+      <part name="listen_ip_addresses" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getListenIPTotalConnResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
+   <message name="getListenIPsRequest"></message>
+   
+   <message name="getListenIPsResponse">
+      <part name="value" type="zeusns:StringArray" />
    </message>
    
    <message name="getLocationLoadRequest">
@@ -3108,6 +3154,70 @@
          
          <input message="zeusns:getLicensekeyNumberRequest"/>
          <output message="zeusns:getLicensekeyNumberResponse"/>
+      </operation>
+      
+      <operation name="getListenIPBytesIn">
+         <documentation>
+            Bytes sent to this listening IP, for each of the specified ListenIPs.
+         </documentation>
+         
+         <input message="zeusns:getListenIPBytesInRequest"/>
+         <output message="zeusns:getListenIPBytesInResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getListenIPBytesOut">
+         <documentation>
+            Bytes sent from this listening IP, for each of the specified ListenIPs.
+         </documentation>
+         
+         <input message="zeusns:getListenIPBytesOutRequest"/>
+         <output message="zeusns:getListenIPBytesOutResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getListenIPCurrentConn">
+         <documentation>
+            TCP connections currently established to this listening IP, for each of the specified ListenIPs.
+         </documentation>
+         
+         <input message="zeusns:getListenIPCurrentConnRequest"/>
+         <output message="zeusns:getListenIPCurrentConnResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getListenIPMaxConn">
+         <documentation>
+            Maximum number of simultaneous TCP connections this listening IP has processed at any one time, for each of the specified ListenIPs.
+         </documentation>
+         
+         <input message="zeusns:getListenIPMaxConnRequest"/>
+         <output message="zeusns:getListenIPMaxConnResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getListenIPTotalConn">
+         <documentation>
+            Requests sent to this listening IP, for each of the specified ListenIPs.
+         </documentation>
+         
+         <input message="zeusns:getListenIPTotalConnRequest"/>
+         <output message="zeusns:getListenIPTotalConnResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getListenIPs">
+         <documentation>
+            Gets the list of all IP addresses that Virtual Servers are listening on.
+         </documentation>
+         
+         <input message="zeusns:getListenIPsRequest"/>
+         <output message="zeusns:getListenIPsResponse"/>
       </operation>
       
       <operation name="getLocationLoad">
@@ -6310,6 +6420,120 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getLicensekeyNumber"/>
          <documentation>
             The number of License keys.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getListenIPBytesIn">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getListenIPBytesIn"/>
+         <documentation>
+            Bytes sent to this listening IP, for each of the specified ListenIPs.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getListenIPBytesOut">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getListenIPBytesOut"/>
+         <documentation>
+            Bytes sent from this listening IP, for each of the specified ListenIPs.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getListenIPCurrentConn">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getListenIPCurrentConn"/>
+         <documentation>
+            TCP connections currently established to this listening IP, for each of the specified ListenIPs.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getListenIPMaxConn">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getListenIPMaxConn"/>
+         <documentation>
+            Maximum number of simultaneous TCP connections this listening IP has processed at any one time, for each of the specified ListenIPs.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getListenIPTotalConn">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getListenIPTotalConn"/>
+         <documentation>
+            Requests sent to this listening IP, for each of the specified ListenIPs.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getListenIPs">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getListenIPs"/>
+         <documentation>
+            Gets the list of all IP addresses that Virtual Servers are listening on.
          </documentation>
          
          <input>
