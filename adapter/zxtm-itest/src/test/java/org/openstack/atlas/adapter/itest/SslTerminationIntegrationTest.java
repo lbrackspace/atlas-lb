@@ -1,8 +1,6 @@
 package org.openstack.atlas.adapter.itest;
 
-import com.zxtm.service.client.Certificate;
 import com.zxtm.service.client.VirtualServerBasicInfo;
-import com.zxtm.service.client.VirtualServerProtocol;
 import com.zxtm.service.client.VirtualServerRule;
 import org.apache.axis.types.UnsignedInt;
 import org.junit.AfterClass;
@@ -13,12 +11,10 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.RateLimit;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
-import org.openstack.atlas.util.crypto.StringUtils;
 
 import java.rmi.RemoteException;
 import java.util.Calendar;
@@ -106,6 +102,13 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
     public void testSSlTerminationOperationsWhenUpdatingLBAttributes() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
         setSslTermination();
         updateLoadBalancerAttributes();
+    }
+
+    @Test
+    public void testWhenAddingRateLimitWithSslTermination() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        setSslTermination();
+        setRateLimit();
+        deleteRateLimit();
     }
 
     private void setSslTermination() {
@@ -305,6 +308,62 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             Assert.assertEquals(false, getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{secureLoadBalancerName()})[0]);
             Assert.assertEquals(false, getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{loadBalancerName()})[0]);
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    private void setRateLimit() {
+        try {
+            final Integer maxRequestsPerSecond = 1000;
+            RateLimit rateLimit = new RateLimit();
+            rateLimit.setExpirationTime(Calendar.getInstance());
+            rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
+
+            zxtmAdapter.setRateLimit(config, lb, rateLimit);
+
+            String[] rateNames = getServiceStubs().getZxtmRateCatalogService().getRateNames();
+            boolean doesExist = false;
+            for (String rateName : rateNames) {
+                if (rateName.equals(rateLimitName())) {
+                    doesExist = true;
+                    break;
+                }
+            }
+            Assert.assertTrue(doesExist);
+
+            final UnsignedInt[] ratePerSecondList = getServiceStubs().getZxtmRateCatalogService().getMaxRatePerSecond(new String[]{rateLimitName()});
+            Assert.assertEquals(new UnsignedInt(maxRequestsPerSecond), ratePerSecondList[0]);
+
+            final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
+            Assert.assertEquals(1, virtualServerRules.length);
+            Assert.assertEquals(2, virtualServerRules[0].length);
+            Assert.assertEquals(ZxtmAdapterImpl.ruleRateLimitHttp, virtualServerRules[0][1]);
+
+            final VirtualServerRule[][] virtualServerRules1 = getServiceStubs().getVirtualServerBinding().getRules(new String[]{secureLoadBalancerName()});
+            Assert.assertEquals(1, virtualServerRules1.length);
+            Assert.assertEquals(2, virtualServerRules1[0].length);
+            Assert.assertEquals(ZxtmAdapterImpl.ruleRateLimitHttp, virtualServerRules1[0][1]);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+     private void deleteRateLimit() {
+        try {
+            zxtmAdapter.deleteRateLimit(config, lb);
+            String[] rateNames = getServiceStubs().getZxtmRateCatalogService().getRateNames();
+            boolean doesExist = false;
+            for (String rateName : rateNames) {
+                if (rateName.equals(rateLimitName())) {
+                    doesExist = true;
+                    break;
+                }
+            }
+            Assert.assertFalse(doesExist);
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());

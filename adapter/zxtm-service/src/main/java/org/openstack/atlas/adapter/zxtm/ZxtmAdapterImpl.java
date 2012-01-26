@@ -408,12 +408,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             // Update log format to match protocol
             boolean[] isConnectionLoggings;
             if (connectionLogging) {
-                if (isSecureVS) {
-                    isConnectionLoggings = new boolean[]{true, true};
-                } else {
-                    isConnectionLoggings = new boolean[]{true};
-                }
-                serviceStubs.getVirtualServerBinding().setLogEnabled(vsNames, isConnectionLoggings);
+                updateConnectionLogging(config, lb);
             }
         } catch (Exception e) {
             throw new ZxtmRollBackException("Update protocol request canceled.", e);
