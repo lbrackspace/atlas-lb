@@ -1,6 +1,7 @@
 package org.openstack.atlas.service.domain.services;
 
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.AccountLimitRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -185,6 +186,48 @@ public class LoadBalancerServiceImplTest {
             Assert.assertEquals(1, node1.getWeight().intValue());
             Assert.assertEquals(0, node2.getWeight().intValue());
             Assert.assertEquals(10, node3.getWeight().intValue());
+        }
+    }
+
+    public static class WhenVerifyingSslTermination {
+        private LoadBalancer lb;
+        LoadBalancerRepository lbRepository;
+        LoadBalancerServiceImpl lbService;
+        LoadBalancerProtocolObject defaultProtocol;
+
+        @Before
+        public void standUp() throws EntityNotFoundException {
+            lb = new LoadBalancer();
+            lbRepository = mock(LoadBalancerRepository.class);
+            lbService = new LoadBalancerServiceImpl();
+            lbService.setLoadBalancerRepository(lbRepository);
+
+
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setIntermediateCertificate("iCert");
+            sslTermination.setCertificate("cert");
+            sslTermination.setPrivatekey("aKey");
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(445);
+            sslTermination.setSecureTrafficOnly(false);
+
+            lb.setSslTermination(sslTermination);
+            lb.setStatus(LoadBalancerStatus.ACTIVE);
+
+
+
+            defaultProtocol = new LoadBalancerProtocolObject(LoadBalancerProtocol.HTTP, "HTTP Protocol", 80, true);
+            when(lbRepository.getByIdAndAccountId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(lb);
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldRejectUpdateProtocolIfUsingSslTermination() throws Exception {
+            LoadBalancer loadBalancer = new LoadBalancer();
+            loadBalancer.setProtocol(LoadBalancerProtocol.HTTPS);
+            loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+
+            lbService.prepareForUpdate(loadBalancer);
+
         }
     }
 }

@@ -18,7 +18,7 @@ import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
 import static org.openstack.atlas.service.domain.entities.AccessListType.DENY;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.RANDOM;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS;
-import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS;
+import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.*;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.*;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
 
@@ -36,7 +36,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     @Before
-    public  void setUp() {
+    public void setUp() {
         setupIvars();
     }
 
@@ -63,11 +63,15 @@ public class SimpleIntegrationTest extends ZeusTestBase {
                     Assert.fail("XFF rule should not be enabled!");
             }
 
+            lb.setProtocol(HTTP);
+            zxtmAdapter.updateProtocol(config, lb);
+
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
     }
+
 
     @Test
     public void changeProtocolWithConnectionLoggingEnabled() {
@@ -519,7 +523,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         Assert.assertEquals(HTTP_COOKIE.name(), persistenceCatalogList[0]);
         ZeusTestBase.setupIvars();
         lb.setProtocol(HTTPS);
-        zxtmAdapter.updateProtocol(config,lb);
+        zxtmAdapter.updateProtocol(config, lb);
         persistenceCatalogList = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
         Assert.assertEquals(1, persistenceCatalogList.length);
         Assert.assertEquals("", persistenceCatalogList[0]);

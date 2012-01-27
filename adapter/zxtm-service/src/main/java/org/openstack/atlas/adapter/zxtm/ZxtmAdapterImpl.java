@@ -19,7 +19,6 @@ import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.converters.StringConverter;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
-import org.xml.sax.SAXException;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -84,29 +83,30 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
-            /* UPDATE REST OF LOADBALANCER CONFIG */
-            if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
-                //sessionPersistence is a pool item
-                setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
-            }
-
-            if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
-                //Healthmonitor is a pool item
-                updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
-            }
-
-            //VirtualServer items
-            if (lb.getConnectionLimit() != null) {
-                updateConnectionThrottle(config, lb);
-            }
-
-            if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
-                updateConnectionLogging(config, lb);
-            }
-
-            if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
-                updateAccessList(config, lb);
-            }
+            updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
+//            /* UPDATE REST OF LOADBALANCER CONFIG */
+//            if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
+//                //sessionPersistence is a pool item
+//                setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
+//            }
+//
+//            if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
+//                //Healthmonitor is a pool item
+//                updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
+//            }
+//
+//            //VirtualServer items
+//            if (lb.getConnectionLimit() != null) {
+//                updateConnectionThrottle(config, lb);
+//            }
+//
+//            if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
+//                updateConnectionLogging(config, lb);
+//            }
+//
+//            if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
+//                updateAccessList(config, lb);
+//            }
 
             //Added rules for HTTP LB
             if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
@@ -145,38 +145,39 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
-            /* UPDATE REST OF LOADBALANCER CONFIG TODO: move to its own method(s) and call from both*/
-            if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
-                //TODO: refactor to take lb only, right now its a pool item and only updates in one place...
-                //sessionPersistence is a pool item
-                setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
-            }
-
-            if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
-                //TODO: refactor to take lb only, right now its a pool item and only updates in one place...
-                //Healthmonitor is a pool item
-                updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
-            }
-
-            //VirtualServer items
-            if (lb.getConnectionLimit() != null) {
-                updateConnectionThrottle(config, lb);
-            }
-
-            if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
-                updateConnectionLogging(config, lb);
-            }
-
-            if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
-                updateAccessList(config, lb);
-            }
-
-            //Added rules for HTTP LB
-            if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
-                TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
-                attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
-                setDefaultErrorFile(config, lb);
-            }
+            updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
+//            /* UPDATE REST OF LOADBALANCER CONFIG TODO: move to its own method(s) and call from both*/
+//            if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
+//                //TODO: refactor to take lb only, right now its a pool item and only updates in one place...
+//                //sessionPersistence is a pool item
+//                setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
+//            }
+//
+//            if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
+//                //TODO: refactor to take lb only, right now its a pool item and only updates in one place...
+//                //Healthmonitor is a pool item
+//                updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
+//            }
+//
+//            //VirtualServer items
+//            if (lb.getConnectionLimit() != null) {
+//                updateConnectionThrottle(config, lb);
+//            }
+//
+//            if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
+//                updateConnectionLogging(config, lb);
+//            }
+//
+//            if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
+//                updateAccessList(config, lb);
+//            }
+//
+//            //Added rules for HTTP LB
+//            if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+//                TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
+//                attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
+//                setDefaultErrorFile(config, lb);
+//            }
         } catch (Exception e) {
             if (e instanceof ObjectAlreadyExists) {
                 throw new ObjectAlreadyExists();
@@ -192,6 +193,41 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         LOG.info(String.format("Secure virtual server '%s' successfully created.", virtualServerName));
+    }
+
+    private void updateLoadBalancerAttributes(LoadBalancerEndpointConfiguration config, ZxtmServiceStubs serviceStubs, LoadBalancer lb, String virtualServerName) throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        /* UPDATE REST OF LOADBALANCER CONFIG */
+        if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
+            //TODO: refactor to take lb only, right now its a pool item and only updates in one place...
+            //sessionPersistence is a pool item
+            setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
+        }
+
+        if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
+            //TODO: refactor to take lb only, right now its a pool item and only updates in one place...
+            //Healthmonitor is a pool item
+            updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
+        }
+
+        //VirtualServer items
+        if (lb.getConnectionLimit() != null) {
+            updateConnectionThrottle(config, lb);
+        }
+
+        if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
+            updateConnectionLogging(config, lb);
+        }
+
+        if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
+            updateAccessList(config, lb);
+        }
+
+        //Added rules for HTTP LB
+        if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+            TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
+            attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
+            setDefaultErrorFile(config, lb);
+        }
     }
 
 
@@ -323,12 +359,18 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         Integer lbId = lb.getId();
         Integer accountId = lb.getAccountId();
         LoadBalancerProtocol protocol = lb.getProtocol();
-        boolean connectionLogging = false;
+
+        boolean connectionLogging;
+
         if (lb.isConnectionLogging() == null) {
             connectionLogging = false;
+            lb.setConnectionLogging(Boolean.FALSE);
         } else {
+            //Keep a record
             connectionLogging = lb.isConnectionLogging();
+            lb.setConnectionLogging(Boolean.FALSE);
         }
+
         String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
         String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
         String[] vsNames;
@@ -337,8 +379,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         } else {
             vsNames = new String[]{virtualServerName};
         }
-
-        boolean isSecureVS = vsNames.length > 1;
 
         try {
             if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
@@ -366,15 +406,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
 
             // Disable logging for protocol switch (keeping trevors commit)
-            boolean[] isConnectionLoggings;
-            if (connectionLogging) {
-                if (isSecureVS) {
-                    isConnectionLoggings = new boolean[]{false, false};
-                } else {
-                    isConnectionLoggings = new boolean[]{false};
-                }
-                serviceStubs.getVirtualServerBinding().setLogEnabled(vsNames, isConnectionLoggings);
-            }
+            updateConnectionLogging(config, lb);
+//            serviceStubs.getVirtualServerBinding().setLogEnabled(vsNames, isConnectionLoggings);
 
             LOG.debug(String.format("Updating protocol to '%s' for virtual server '%s'...", protocol.name(), virtualServerName));
             serviceStubs.getVirtualServerBinding().setProtocol(new String[]{vsNames[0]}, new VirtualServerProtocol[]{ZxtmConversionUtils.mapProtocol(protocol)});
@@ -397,19 +430,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.error(String.format("Cannot update protocol for virtual server '%s' as it does not exist.", virtualServerName), e);
             }
-            if (isSecureVS) {
-                reattachSecureServerWithTempPool(config, lb);
-            }
             throw new ZxtmRollBackException("Update protocol request canceled.", e);
         }
 
-
         try {
             // Update log format to match protocol
-            boolean[] isConnectionLoggings;
             if (connectionLogging) {
-                updateConnectionLogging(config, lb);
+                lb.setConnectionLogging(true);
             }
+            updateConnectionLogging(config, lb);
         } catch (Exception e) {
             throw new ZxtmRollBackException("Update protocol request canceled.", e);
         }
@@ -1405,13 +1434,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         try {
-            if (protocol != LoadBalancerProtocol.HTTP) {
-                serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{nonHttpLogFormat});
-            } else if (protocol == LoadBalancerProtocol.HTTP) {
-                serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{httpLogFormat});
-            }
+            if (isConnectionLogging) {
+                if (protocol != LoadBalancerProtocol.HTTP) {
+                    serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{nonHttpLogFormat});
+                } else if (protocol == LoadBalancerProtocol.HTTP) {
+                    serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{httpLogFormat});
+                }
 
-            serviceStubs.getVirtualServerBinding().setLogFilename(new String[]{virtualServerName}, new String[]{virtualServerName});
+                serviceStubs.getVirtualServerBinding().setLogFilename(new String[]{virtualServerName}, new String[]{virtualServerName});
+            }
             serviceStubs.getVirtualServerBinding().setLogEnabled(new String[]{virtualServerName}, new boolean[]{isConnectionLogging});
 
         } catch (Exception e) {

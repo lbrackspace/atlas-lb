@@ -364,6 +364,15 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
                 }
             }
             Assert.assertFalse(doesExist);
+
+            boolean doesExist2 = false;
+            for (String rateName : rateNames) {
+                if (rateName.equals(secureLoadBalancerName())) { //the rate limit name...
+                    doesExist2 = true;
+                    break;
+                }
+            }
+            Assert.assertFalse(doesExist2);
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
