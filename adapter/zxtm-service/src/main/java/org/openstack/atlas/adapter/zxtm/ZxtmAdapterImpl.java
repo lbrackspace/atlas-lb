@@ -1081,10 +1081,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void deleteRateLimit
-            (LoadBalancerEndpointConfiguration
-                     config, LoadBalancer
-                    loadBalancer) throws RemoteException, InsufficientRequestException {
+    public void deleteRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
         final String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
@@ -1115,11 +1112,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void updateRateLimit
-            (LoadBalancerEndpointConfiguration
-                     config, LoadBalancer
-                    loadBalancer, RateLimit
-                    rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
 
         try {
@@ -1139,11 +1132,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void changeHostForLoadBalancer
-            (LoadBalancerEndpointConfiguration
-                     config, LoadBalancer
-                    lb, Host
-                    newHost) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb, Host newHost) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         final String trafficManagerName = newHost == null ? config.getTrafficManagerName() : newHost.getTrafficManagerName();
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
@@ -1164,11 +1153,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void setNodes
-            (LoadBalancerEndpointConfiguration
-                     config, Integer
-                    lbId, Integer
-                    accountId, Collection<Node> nodes)
+    public void setNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameBuilder.genVSName(lbId, accountId);
@@ -1442,7 +1427,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{httpLogFormat});
                 }
 
-                serviceStubs.getVirtualServerBinding().setLogFilename(new String[]{virtualServerName}, new String[]{virtualServerName});
+                serviceStubs.getVirtualServerBinding().setLogFilename(new String[]{virtualServerName}, new String[]{config.getLogFileLocation()});
             }
             serviceStubs.getVirtualServerBinding().setLogEnabled(new String[]{virtualServerName}, new boolean[]{isConnectionLogging});
 

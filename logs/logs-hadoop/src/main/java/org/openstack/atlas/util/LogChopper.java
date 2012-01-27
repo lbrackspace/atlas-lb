@@ -21,12 +21,19 @@ public final class LogChopper {
         Matcher matcher = HTTP_LB_LOG_PATTERN.matcher(logline);
         boolean matchFound = matcher.find();
         if (matchFound) {
-            String[] arr = matcher.group(2).split("_");
+            String loadBalancerName = matcher.group(2);
+            String[] arr = loadBalancerName.split("_");
             int accountId = Integer.parseInt(arr[0]);
             int loadBalancerId = Integer.parseInt(arr[1]);
+            String accountId_loadBalancerId = accountId + "_" + loadBalancerId;
+
+            if (loadBalancerName.contains("_S")) {
+                logline = stripSSL(logline, loadBalancerName, accountId_loadBalancerId);
+            }
+
             return new LbLogsWritable(accountId,
                     matcher.group(4),
-                    accountId + "_" + loadBalancerId,
+                    accountId_loadBalancerId,
                     loadBalancerId,
                     new DateTime(matcher.group(7), DateTime.APACHE).getCalendar(),
                     logline);
@@ -34,23 +41,36 @@ public final class LogChopper {
             matcher = NON_HTTP_LB_LOG_PATTERN.matcher(logline);
             matchFound = matcher.find();
             if (matchFound) {
-                 String[] arr = matcher.group(2).split("_");
+                String loadBalancerName = matcher.group(2);
+                String[] arr = loadBalancerName.split("_");
                 int accountId = Integer.parseInt(arr[0]);
                 int loadBalancerId = Integer.parseInt(arr[1]);
-                
+                String accountId_loadBalancerId = accountId + "_" + loadBalancerId;
+
+                if (loadBalancerName.contains("_S")) {
+                    logline = stripSSL(logline, loadBalancerName, accountId_loadBalancerId);
+                }
+
                 return new LbLogsWritable(accountId,
                         "",
-                        accountId + "_" + loadBalancerId,
+                        accountId_loadBalancerId,
                         loadBalancerId,
                         new DateTime(matcher.group(3), DateTime.APACHE).getCalendar(),
                         logline
-                        );
+                );
             } else {
                 LOGGER.error(logline);
                 throw getLoglineError(logline.toString());
 
             }
         }
+    }
+
+    private static String stripSSL(String logline, String secureLoadBalancerName, String loadBalancerName) {
+        String[] logSplit = logline.split(secureLoadBalancerName);
+        String restOfLine = logSplit[1];
+
+        return loadBalancerName + restOfLine;
     }
 
     private static Exception getLoglineError(String logline) {
