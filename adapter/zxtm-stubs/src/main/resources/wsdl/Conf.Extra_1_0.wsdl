@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2010 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
 
 -->
 
 <definitions name="Conf.Extra"
- targetNamespace="http://soap.zeus.com/zxtm/1.1/"
- xmlns:zeusns_1_1="http://soap.zeus.com/zxtm/1.1/"
+ targetNamespace="http://soap.zeus.com/zxtm/1.0/"
+ xmlns:zeusns="http://soap.zeus.com/zxtm/1.0/"
  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
@@ -15,7 +15,7 @@
  xmlns="http://schemas.xmlsoap.org/wsdl/">
    
    <types>
-      <xsd:schema targetNamespace='http://soap.zeus.com/zxtm/1.1/'
+      <xsd:schema targetNamespace='http://soap.zeus.com/zxtm/1.0/'
        xmlns='http://www.w3.org/2001/XMLSchema'
        xmlns:SOAP-ENC='http://schemas.xmlsoap.org/soap/encoding/'
        xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'>
@@ -31,7 +31,7 @@
          <xsd:complexType name="StringArrayArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
-             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns_1_1:StringArray[]"/>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns:StringArray[]"/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -47,7 +47,7 @@
          <xsd:complexType name="booleanArrayArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
-             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns_1_1:booleanArray[]"/>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns:booleanArray[]"/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -77,12 +77,12 @@
            </xsd:complexContent>
          </xsd:complexType>
          
-         <xsd:complexType name="InvalidObjectName">
+         <xsd:complexType name="ObjectAlreadyExists">
            <xsd:annotation>
             <xsd:documentation>
-              The InvalidObjectName fault is raised when attempting to create
-              a new object (e.g. via an add, rename or copy) and the name is
-              invalid (e.g. it contains a '/').
+             The ObjectAlreadyExists fault is raised when attempting to create an
+             object (such as a Virtual Server) that already exists. It will also
+             be raised in cases such as renaming and copying objects.
             </xsd:documentation>
            </xsd:annotation>
            <xsd:all>
@@ -135,60 +135,77 @@
       </xsd:schema>
    </types>
    
+   <message name="addFileRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="contents" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="addFileResponse"></message>
+   
    <message name="deleteFileRequest">
-      <part name="names" type="zeusns_1_1:StringArray" />
+      <part name="names" type="zeusns:StringArray" />
    </message>
    
    <message name="deleteFileResponse"></message>
    
-   <message name="downloadFileRequest">
-      <part name="name" type="xsd:string" />
+   <message name="getFileRequest">
+      <part name="names" type="zeusns:StringArray" />
    </message>
    
-   <message name="downloadFileResponse">
-      <part name="contents" type="xsd:base64Binary" />
+   <message name="getFileResponse">
+      <part name="contents" type="zeusns:StringArray" />
    </message>
    
    <message name="getFileNamesRequest"></message>
    
    <message name="getFileNamesResponse">
-      <part name="names" type="zeusns_1_1:StringArray" />
+      <part name="names" type="zeusns:StringArray" />
    </message>
    
-   <message name="uploadFileRequest">
-      <part name="name" type="xsd:string" />
-      <part name="content" type="xsd:base64Binary" />
+   <message name="writeFileRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="contents" type="zeusns:StringArray" />
    </message>
    
-   <message name="uploadFileResponse"></message>
+   <message name="writeFileResponse"></message>
    
-   <message name="InvalidObjectName">
-      <part name="parameters" type="zeusns_1_1:InvalidObjectName" />
+   <message name="ObjectAlreadyExists">
+      <part name="parameters" type="zeusns:ObjectAlreadyExists" />
    </message>
    
    <message name="ObjectDoesNotExist">
-      <part name="parameters" type="zeusns_1_1:ObjectDoesNotExist" />
+      <part name="parameters" type="zeusns:ObjectDoesNotExist" />
    </message>
    
    <portType name="Conf.ExtraPort">
+      <operation name="addFile">
+         <documentation>
+            Add new files to the conf/extra directory. This function will raise an exception if the file already exists.
+         </documentation>
+         
+         <input message="zeusns:addFileRequest"/>
+         <output message="zeusns:addFileResponse"/>
+         <fault name="ObjectAlreadyExists" message="zeusns:ObjectAlreadyExists"/>
+      </operation>
+      
       <operation name="deleteFile">
          <documentation>
             Delete the named files from the conf/extra directory.
          </documentation>
          
-         <input message="zeusns_1_1:deleteFileRequest"/>
-         <output message="zeusns_1_1:deleteFileResponse"/>
-         <fault name="ObjectDoesNotExist" message="zeusns_1_1:ObjectDoesNotExist"/>
+         <input message="zeusns:deleteFileRequest"/>
+         <output message="zeusns:deleteFileResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
-      <operation name="downloadFile">
+      <operation name="getFile">
          <documentation>
-            Download the named from from the conf/extra directory
+            Get the contents of the named files from the conf/extra directory.
          </documentation>
          
-         <input message="zeusns_1_1:downloadFileRequest"/>
-         <output message="zeusns_1_1:downloadFileResponse"/>
-         <fault name="ObjectDoesNotExist" message="zeusns_1_1:ObjectDoesNotExist"/>
+         <input message="zeusns:getFileRequest"/>
+         <output message="zeusns:getFileResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
       <operation name="getFileNames">
@@ -196,86 +213,99 @@
             Get the names of all the files stored in the conf/extra directory.
          </documentation>
          
-         <input message="zeusns_1_1:getFileNamesRequest"/>
-         <output message="zeusns_1_1:getFileNamesResponse"/>
+         <input message="zeusns:getFileNamesRequest"/>
+         <output message="zeusns:getFileNamesResponse"/>
       </operation>
       
-      <operation name="uploadFile">
+      <operation name="writeFile">
          <documentation>
-            Uploads a new file into the conf/extra, overwriting the file if it already exists.
+            Write files to the conf/extra directory, overwriting files if they already exist.
          </documentation>
          
-         <input message="zeusns_1_1:uploadFileRequest"/>
-         <output message="zeusns_1_1:uploadFileResponse"/>
-         <fault name="InvalidObjectName" message="zeusns_1_1:InvalidObjectName"/>
+         <input message="zeusns:writeFileRequest"/>
+         <output message="zeusns:writeFileResponse"/>
       </operation>
    </portType>
    
-   <binding name="Conf.ExtraBinding" type="zeusns_1_1:Conf.ExtraPort">
+   <binding name="Conf.ExtraBinding" type="zeusns:Conf.ExtraPort">
       <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <operation name="addFile">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Conf/Extra/addFile"/>
+         <documentation>
+            Add new files to the conf/extra directory. This function will raise an exception if the file already exists.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectAlreadyExists">
+            <soap:fault use="encoded" name="ObjectAlreadyExists" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="deleteFile">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.1/Conf/Extra/deleteFile"/>
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Conf/Extra/deleteFile"/>
          <documentation>
             Delete the named files from the conf/extra directory.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
          <fault name="ObjectDoesNotExist">
-            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
-      <operation name="downloadFile">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.1/Conf/Extra/downloadFile"/>
+      <operation name="getFile">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Conf/Extra/getFile"/>
          <documentation>
-            Download the named from from the conf/extra directory
+            Get the contents of the named files from the conf/extra directory.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
          <fault name="ObjectDoesNotExist">
-            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
       <operation name="getFileNames">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.1/Conf/Extra/getFileNames"/>
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Conf/Extra/getFileNames"/>
          <documentation>
             Get the names of all the files stored in the conf/extra directory.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
       </operation>
       
-      <operation name="uploadFile">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.1/Conf/Extra/uploadFile"/>
+      <operation name="writeFile">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Conf/Extra/writeFile"/>
          <documentation>
-            Uploads a new file into the conf/extra, overwriting the file if it already exists.
+            Write files to the conf/extra directory, overwriting files if they already exist.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
-         <fault name="InvalidObjectName">
-            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </fault>
       </operation>
    </binding>
    
@@ -284,7 +314,7 @@
          The Conf.Extra interface allows management of the files stored in the conf/extra directory. These files can be read in by rules, and used as error pages to be sent to clients. This interface allows creating, deleting and retrieving the files.
       </documentation>
       
-      <port name="Conf.ExtraPort" binding="zeusns_1_1:Conf.ExtraBinding">
+      <port name="Conf.ExtraPort" binding="zeusns:Conf.ExtraBinding">
          <soap:address location="https://admin_server:9090/soap"/>
       </port>
    </service>

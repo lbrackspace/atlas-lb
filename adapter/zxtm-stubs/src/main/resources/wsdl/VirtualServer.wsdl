@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2010 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
 
 -->
 
@@ -251,7 +251,7 @@
                      <xsd:documentation>Telnet</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
-               <xsd:enumeration value="sslTermination">
+               <xsd:enumeration value="ssl">
                   <xsd:annotation>
                      <xsd:documentation>SSL</xsd:documentation>
                   </xsd:annotation>
@@ -319,6 +319,11 @@
                <xsd:enumeration value="client_first">
                   <xsd:annotation>
                      <xsd:documentation>Generic client first</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="stream">
+                  <xsd:annotation>
+                     <xsd:documentation>Generic streaming</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
             </xsd:restriction>
@@ -631,7 +636,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -676,7 +681,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -743,7 +748,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -1860,6 +1865,23 @@
       <part name="values" type="zeusns:VirtualServer.SIPDangerousRequestModeArray" />
    </message>
    
+   <message name="getSIPFollowRouteRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSIPFollowRouteResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getSIPFollowRouteByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSIPFollowRouteByLocationResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
    <message name="getSIPMaxConnectionMemoryRequest">
       <part name="names" type="zeusns:StringArray" />
    </message>
@@ -1926,6 +1948,23 @@
    
    <message name="getSIPStreamingTimeoutByLocationResponse">
       <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getSIPTimeoutMessagesRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSIPTimeoutMessagesResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getSIPTimeoutMessagesByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSIPTimeoutMessagesByLocationResponse">
+      <part name="values" type="zeusns:booleanArray" />
    </message>
    
    <message name="getSSLCertificateRequest">
@@ -2053,6 +2092,23 @@
    
    <message name="getSSLNeverExpiringClientCertificateAuthoritiesByLocationResponse">
       <part name="values" type="zeusns:StringArrayArray" />
+   </message>
+   
+   <message name="getSSLPreferSSLv3Request">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLPreferSSLv3Response">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getSSLPreferSSLv3ByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLPreferSSLv3ByLocationResponse">
+      <part name="values" type="zeusns:booleanArray" />
    </message>
    
    <message name="getSSLRequestClientCertModeRequest">
@@ -3246,6 +3302,21 @@
    
    <message name="setSIPDangerousRequestModeByLocationResponse"></message>
    
+   <message name="setSIPFollowRouteRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setSIPFollowRouteResponse"></message>
+   
+   <message name="setSIPFollowRouteByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setSIPFollowRouteByLocationResponse"></message>
+   
    <message name="setSIPMaxConnectionMemoryRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="values" type="zeusns:unsignedIntArray" />
@@ -3305,6 +3376,21 @@
    </message>
    
    <message name="setSIPStreamingTimeoutByLocationResponse"></message>
+   
+   <message name="setSIPTimeoutMessagesRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setSIPTimeoutMessagesResponse"></message>
+   
+   <message name="setSIPTimeoutMessagesByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setSIPTimeoutMessagesByLocationResponse"></message>
    
    <message name="setSSLCertificateRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -3417,6 +3503,21 @@
    </message>
    
    <message name="setSSLNeverExpiringClientCertificateAuthoritiesByLocationResponse"></message>
+   
+   <message name="setSSLPreferSSLv3Request">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setSSLPreferSSLv3Response"></message>
+   
+   <message name="setSSLPreferSSLv3ByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setSSLPreferSSLv3ByLocationResponse"></message>
    
    <message name="setSSLRequestClientCertModeRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -4563,7 +4664,7 @@
       
       <operation name="getLogSSLFailures">
          <documentation>
-            Get whether the virtual server will log sslTermination failures.
+            Get whether the virtual server will log ssl failures.
          </documentation>
          
          <input message="zeusns:getLogSSLFailuresRequest"/>
@@ -4573,7 +4674,7 @@
       
       <operation name="getLogSSLFailuresByLocation">
          <documentation>
-            Get whether the virtual server will log sslTermination failures. This is a location specific function, any action will operate on the specified location.
+            Get whether the virtual server will log ssl failures. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:getLogSSLFailuresByLocationRequest"/>
@@ -4961,6 +5062,26 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getSIPFollowRoute">
+         <documentation>
+            Get whether to follow routing information in SIP requests.
+         </documentation>
+         
+         <input message="zeusns:getSIPFollowRouteRequest"/>
+         <output message="zeusns:getSIPFollowRouteResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSIPFollowRouteByLocation">
+         <documentation>
+            Get whether to follow routing information in SIP requests. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSIPFollowRouteByLocationRequest"/>
+         <output message="zeusns:getSIPFollowRouteByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
       <operation name="getSIPMaxConnectionMemory">
          <documentation>
             Get maximum memory per connection.
@@ -5038,6 +5159,26 @@
          
          <input message="zeusns:getSIPStreamingTimeoutByLocationRequest"/>
          <output message="zeusns:getSIPStreamingTimeoutByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSIPTimeoutMessages">
+         <documentation>
+            Get send a timed out response to the client and CANCEL request to the server when a transaction times out.
+         </documentation>
+         
+         <input message="zeusns:getSIPTimeoutMessagesRequest"/>
+         <output message="zeusns:getSIPTimeoutMessagesResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSIPTimeoutMessagesByLocation">
+         <documentation>
+            Get send a timed out response to the client and CANCEL request to the server when a transaction times out. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSIPTimeoutMessagesByLocationRequest"/>
+         <output message="zeusns:getSIPTimeoutMessagesByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -5188,6 +5329,26 @@
          
          <input message="zeusns:getSSLNeverExpiringClientCertificateAuthoritiesByLocationRequest"/>
          <output message="zeusns:getSSLNeverExpiringClientCertificateAuthoritiesByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLPreferSSLv3">
+         <documentation>
+            Get whether to prefer SSLv3 over TLS when the client appears to support both. SSLv3 is slightly faster, but some clients don't allow SSLv3 but still send the ClientHello inside SSLv2 or SSLv3 records.
+         </documentation>
+         
+         <input message="zeusns:getSSLPreferSSLv3Request"/>
+         <output message="zeusns:getSSLPreferSSLv3Response"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLPreferSSLv3ByLocation">
+         <documentation>
+            Get whether to prefer SSLv3 over TLS when the client appears to support both. SSLv3 is slightly faster, but some clients don't allow SSLv3 but still send the ClientHello inside SSLv2 or SSLv3 records. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSSLPreferSSLv3ByLocationRequest"/>
+         <output message="zeusns:getSSLPreferSSLv3ByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -6507,7 +6668,7 @@
       
       <operation name="setLogSSLFailures">
          <documentation>
-            Set whether the virtual server will log sslTermination failures.
+            Set whether the virtual server will log ssl failures.
          </documentation>
          
          <input message="zeusns:setLogSSLFailuresRequest"/>
@@ -6519,7 +6680,7 @@
       
       <operation name="setLogSSLFailuresByLocation">
          <documentation>
-            Set whether the virtual server will log sslTermination failures. This is a location specific function, any action will operate on the specified location.
+            Set whether the virtual server will log ssl failures. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:setLogSSLFailuresByLocationRequest"/>
@@ -6985,6 +7146,30 @@
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
+      <operation name="setSIPFollowRoute">
+         <documentation>
+            Set whether to follow routing information in SIP requests.
+         </documentation>
+         
+         <input message="zeusns:setSIPFollowRouteRequest"/>
+         <output message="zeusns:setSIPFollowRouteResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSIPFollowRouteByLocation">
+         <documentation>
+            Set whether to follow routing information in SIP requests. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSIPFollowRouteByLocationRequest"/>
+         <output message="zeusns:setSIPFollowRouteByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="setSIPMaxConnectionMemory">
          <documentation>
             Set maximum memory per connection.
@@ -7076,6 +7261,30 @@
          
          <input message="zeusns:setSIPStreamingTimeoutByLocationRequest"/>
          <output message="zeusns:setSIPStreamingTimeoutByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSIPTimeoutMessages">
+         <documentation>
+            Set send a timed out response to the client and CANCEL request to the server when a transaction times out.
+         </documentation>
+         
+         <input message="zeusns:setSIPTimeoutMessagesRequest"/>
+         <output message="zeusns:setSIPTimeoutMessagesResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSIPTimeoutMessagesByLocation">
+         <documentation>
+            Set send a timed out response to the client and CANCEL request to the server when a transaction times out. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSIPTimeoutMessagesByLocationRequest"/>
+         <output message="zeusns:setSIPTimeoutMessagesByLocationResponse"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
@@ -7256,6 +7465,30 @@
          
          <input message="zeusns:setSSLNeverExpiringClientCertificateAuthoritiesByLocationRequest"/>
          <output message="zeusns:setSSLNeverExpiringClientCertificateAuthoritiesByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLPreferSSLv3">
+         <documentation>
+            Set whether to prefer SSLv3 over TLS when the client appears to support both. SSLv3 is slightly faster, but some clients don't allow SSLv3 but still send the ClientHello inside SSLv2 or SSLv3 records.
+         </documentation>
+         
+         <input message="zeusns:setSSLPreferSSLv3Request"/>
+         <output message="zeusns:setSSLPreferSSLv3Response"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLPreferSSLv3ByLocation">
+         <documentation>
+            Set whether to prefer SSLv3 over TLS when the client appears to support both. SSLv3 is slightly faster, but some clients don't allow SSLv3 but still send the ClientHello inside SSLv2 or SSLv3 records. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSSLPreferSSLv3ByLocationRequest"/>
+         <output message="zeusns:setSSLPreferSSLv3ByLocationResponse"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
@@ -9201,7 +9434,7 @@
       <operation name="getLogSSLFailures">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getLogSSLFailures"/>
          <documentation>
-            Get whether the virtual server will log sslTermination failures.
+            Get whether the virtual server will log ssl failures.
          </documentation>
          
          <input>
@@ -9218,7 +9451,7 @@
       <operation name="getLogSSLFailuresByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getLogSSLFailuresByLocation"/>
          <documentation>
-            Get whether the virtual server will log sslTermination failures. This is a location specific function, any action will operate on the specified location.
+            Get whether the virtual server will log ssl failures. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -9878,6 +10111,40 @@
          </fault>
       </operation>
       
+      <operation name="getSIPFollowRoute">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSIPFollowRoute"/>
+         <documentation>
+            Get whether to follow routing information in SIP requests.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSIPFollowRouteByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSIPFollowRouteByLocation"/>
+         <documentation>
+            Get whether to follow routing information in SIP requests. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getSIPMaxConnectionMemory">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSIPMaxConnectionMemory"/>
          <documentation>
@@ -10001,6 +10268,40 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSIPStreamingTimeoutByLocation"/>
          <documentation>
             Get the time, in seconds, after which a UDP stream will timeout if it has not seen any data. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSIPTimeoutMessages">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSIPTimeoutMessages"/>
+         <documentation>
+            Get send a timed out response to the client and CANCEL request to the server when a transaction times out.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSIPTimeoutMessagesByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSIPTimeoutMessagesByLocation"/>
+         <documentation>
+            Get send a timed out response to the client and CANCEL request to the server when a transaction times out. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -10256,6 +10557,40 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLNeverExpiringClientCertificateAuthoritiesByLocation"/>
          <documentation>
             Get the CAs for which any client certificate they validate is considered valid even if the client certificate's expiration date has passed. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLPreferSSLv3">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLPreferSSLv3"/>
+         <documentation>
+            Get whether to prefer SSLv3 over TLS when the client appears to support both. SSLv3 is slightly faster, but some clients don't allow SSLv3 but still send the ClientHello inside SSLv2 or SSLv3 records.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLPreferSSLv3ByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLPreferSSLv3ByLocation"/>
+         <documentation>
+            Get whether to prefer SSLv3 over TLS when the client appears to support both. SSLv3 is slightly faster, but some clients don't allow SSLv3 but still send the ClientHello inside SSLv2 or SSLv3 records. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -12706,7 +13041,7 @@
       <operation name="setLogSSLFailures">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setLogSSLFailures"/>
          <documentation>
-            Set whether the virtual server will log sslTermination failures.
+            Set whether the virtual server will log ssl failures.
          </documentation>
          
          <input>
@@ -12729,7 +13064,7 @@
       <operation name="setLogSSLFailuresByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setLogSSLFailuresByLocation"/>
          <documentation>
-            Set whether the virtual server will log sslTermination failures. This is a location specific function, any action will operate on the specified location.
+            Set whether the virtual server will log ssl failures. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -13623,6 +13958,52 @@
          </fault>
       </operation>
       
+      <operation name="setSIPFollowRoute">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSIPFollowRoute"/>
+         <documentation>
+            Set whether to follow routing information in SIP requests.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSIPFollowRouteByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSIPFollowRouteByLocation"/>
+         <documentation>
+            Set whether to follow routing information in SIP requests. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setSIPMaxConnectionMemory">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSIPMaxConnectionMemory"/>
          <documentation>
@@ -13788,6 +14169,52 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSIPStreamingTimeoutByLocation"/>
          <documentation>
             Set the time, in seconds, after which a UDP stream will timeout if it has not seen any data. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSIPTimeoutMessages">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSIPTimeoutMessages"/>
+         <documentation>
+            Set send a timed out response to the client and CANCEL request to the server when a transaction times out.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSIPTimeoutMessagesByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSIPTimeoutMessagesByLocation"/>
+         <documentation>
+            Set send a timed out response to the client and CANCEL request to the server when a transaction times out. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -14133,6 +14560,52 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLNeverExpiringClientCertificateAuthoritiesByLocation"/>
          <documentation>
             Set the CAs for which any client certificate they validate is considered valid even if the client certificate's expiration date has passed. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLPreferSSLv3">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLPreferSSLv3"/>
+         <documentation>
+            Set whether to prefer SSLv3 over TLS when the client appears to support both. SSLv3 is slightly faster, but some clients don't allow SSLv3 but still send the ClientHello inside SSLv2 or SSLv3 records.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLPreferSSLv3ByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLPreferSSLv3ByLocation"/>
+         <documentation>
+            Set whether to prefer SSLv3 over TLS when the client appears to support both. SSLv3 is slightly faster, but some clients don't allow SSLv3 but still send the ClientHello inside SSLv2 or SSLv3 records. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>

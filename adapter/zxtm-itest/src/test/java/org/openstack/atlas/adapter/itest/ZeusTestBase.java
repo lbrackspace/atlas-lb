@@ -3,6 +3,7 @@ package org.openstack.atlas.adapter.itest;
 import com.zxtm.service.client.*;
 import org.apache.axis.AxisFault;
 import org.junit.Assert;
+import org.omg.CORBA.DynAnyPackage.Invalid;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
@@ -11,6 +12,7 @@ import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.service.domain.entities.*;
+import org.xml.sax.SAXException;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
@@ -35,7 +37,7 @@ public class ZeusTestBase {
     public static final String FAILOVER_HOST_1 = "ztm-n03.dev.lbaas.rackspace.com";
     public static final String FAILOVER_HOST_2 = "ztm-n04.dev.lbaas.rackspace.com";
     public static final String DEFAULT_LOG_FILE_LOCATION = "/opt/zeus/zxtm/log/access_log";
-    public static final Integer TEST_ACCOUNT_ID = 999991;
+    public static final Integer TEST_ACCOUNT_ID = 999999;
     public static final Integer TEST_LOADBALANCER_ID = 999999;
     public static final Integer TEST_VIP_ID = 999999;
     public static final Integer TEST_IPV6_VIP_ID = 999996;
@@ -232,8 +234,12 @@ public class ZeusTestBase {
             Assert.assertEquals("Default", errorFile[0]);
 
         } catch (Exception e) {
+            if (e instanceof ObjectAlreadyExists) {
+                removeLoadBalancer();
+            }
             e.printStackTrace();
             Assert.fail(e.getMessage());
+
         }
     }
 
@@ -243,6 +249,8 @@ public class ZeusTestBase {
             zxtmAdapter.deleteLoadBalancer(config, lb);
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
+            }
+            if (e instanceof SAXException) {
             } else {
                 e.printStackTrace();
                 Assert.fail(e.getMessage());

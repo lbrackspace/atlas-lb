@@ -31,28 +31,26 @@ import org.openstack.atlas.util.ca.exceptions.RsaException;
 public class CsrUtils {
     public static final String PASSED;
     public static final String FAILED;
-    public static final DERSet caTrueExt;
 
     static {
         PASSED = "PASSED";
         FAILED = "FAILED";
-        caTrueExt = getCaTrueExt();
     }
 
-    public static DERSet getCaTrueExt() {
+    public static DERSet getCaExt(boolean isCa) {
         Vector extOids = new Vector();
         Vector extVals = new Vector();
 
         extOids.add(X509Extension.basicConstraints);
-        BasicConstraints basicConstraints = new BasicConstraints(true);
+        BasicConstraints basicConstraints = new BasicConstraints(isCa);
         DEROctetString basicConstraintOctets = new DEROctetString(basicConstraints);
         X509Extension basicConstraintsExt = new X509Extension(true, basicConstraintOctets);
         extVals.add(basicConstraintsExt);
         X509Extensions exts = new X509Extensions(extOids, extVals);
         DERSet extDerSet = new DERSet(exts);
         Attribute attr = new Attribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extDerSet);
-        DERSet caTrue = new DERSet(attr);
-        return caTrue;
+        DERSet ca = new DERSet(attr);
+        return ca;
     }
 
     public static PKCS10CertificationRequest newCsr(String subjStr, RsaPair rsaPair) throws NullKeyException, RsaException {
@@ -68,9 +66,7 @@ public class CsrUtils {
         PublicKey pub = jKp.getPublic();
         X500Principal subj = new X500Principal(subjStr);
         DERSet extensions = null;
-        if (isCa) {
-            extensions = caTrueExt;
-        }
+        extensions = getCaExt(isCa);
         try {
             req = new PKCS10CertificationRequest(RsaConst.SIGNATURE_ALGO, subj, pub, extensions, priv);
         } catch (GeneralSecurityException ex) {

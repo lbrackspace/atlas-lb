@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2010 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
 
 -->
 
@@ -130,7 +130,7 @@
          
              <xsd:enumeration value="ERR_SSL">
                <xsd:annotation>
-                 <xsd:documentation>A read-error from an sslTermination-enabled socket.</xsd:documentation>
+                 <xsd:documentation>A read-error from an ssl-enabled socket.</xsd:documentation>
                </xsd:annotation>
              </xsd:enumeration>
          

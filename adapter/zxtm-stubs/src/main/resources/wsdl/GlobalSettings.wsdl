@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2010 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
 
 -->
 
@@ -19,6 +19,56 @@
        xmlns='http://www.w3.org/2001/XMLSchema'
        xmlns:SOAP-ENC='http://schemas.xmlsoap.org/soap/encoding/'
        xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'>
+         
+         <xsd:simpleType name="GlobalSettings.AdminAllowRehandshake">
+            <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="always">
+                  <xsd:annotation>
+                     <xsd:documentation>Always allow</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="safe">
+                  <xsd:annotation>
+                     <xsd:documentation>Allow safe re-handshakes</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="rfc5746">
+                  <xsd:annotation>
+                     <xsd:documentation>Only if client uses RFC 5746 (Secure Renegotiation Extension)</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="never">
+                  <xsd:annotation>
+                     <xsd:documentation>Never allow</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+            </xsd:restriction>
+         </xsd:simpleType>
+         
+         <xsd:simpleType name="GlobalSettings.AdminDiffieHellmanKeyLength">
+            <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="dh_1024">
+                  <xsd:annotation>
+                     <xsd:documentation>1024</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="dh_2048">
+                  <xsd:annotation>
+                     <xsd:documentation>2048</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="dh_3072">
+                  <xsd:annotation>
+                     <xsd:documentation>3072</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="dh_4096">
+                  <xsd:annotation>
+                     <xsd:documentation>4096</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+            </xsd:restriction>
+         </xsd:simpleType>
          
          <xsd:simpleType name="GlobalSettings.ErrorLevel">
             <xsd:restriction base="xsd:string">
@@ -80,6 +130,51 @@
                <xsd:enumeration value="never">
                   <xsd:annotation>
                      <xsd:documentation>Never allow</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+            </xsd:restriction>
+         </xsd:simpleType>
+         
+         <xsd:simpleType name="GlobalSettings.SSL3DiffieHellmanKeyLength">
+            <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="dh_1024">
+                  <xsd:annotation>
+                     <xsd:documentation>1024</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="dh_2048">
+                  <xsd:annotation>
+                     <xsd:documentation>2048</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="dh_3072">
+                  <xsd:annotation>
+                     <xsd:documentation>3072</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="dh_4096">
+                  <xsd:annotation>
+                     <xsd:documentation>4096</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+            </xsd:restriction>
+         </xsd:simpleType>
+         
+         <xsd:simpleType name="GlobalSettings.SSLHardwarePKCS11SlotType">
+            <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="operator">
+                  <xsd:annotation>
+                     <xsd:documentation>Operator Card Set</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="softcard">
+                  <xsd:annotation>
+                     <xsd:documentation>Soft Card</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="module">
+                  <xsd:annotation>
+                     <xsd:documentation>Local Module</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
             </xsd:restriction>
@@ -238,7 +333,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -283,7 +378,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -373,6 +468,48 @@
       <part name="value" type="xsd:unsignedInt" />
    </message>
    
+   <message name="getAdminAllowRehandshakeRequest"></message>
+   
+   <message name="getAdminAllowRehandshakeResponse">
+      <part name="value" type="zeusns:GlobalSettings.AdminAllowRehandshake" />
+   </message>
+   
+   <message name="getAdminDiffieHellmanKeyLengthRequest"></message>
+   
+   <message name="getAdminDiffieHellmanKeyLengthResponse">
+      <part name="value" type="zeusns:GlobalSettings.AdminDiffieHellmanKeyLength" />
+   </message>
+   
+   <message name="getAdminSSLCiphersRequest"></message>
+   
+   <message name="getAdminSSLCiphersResponse">
+      <part name="value" type="xsd:string" />
+   </message>
+   
+   <message name="getAdminSSLSupportTLS11Request"></message>
+   
+   <message name="getAdminSSLSupportTLS11Response">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="getAdminSupportSSL2Request"></message>
+   
+   <message name="getAdminSupportSSL2Response">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="getAdminSupportSSL3Request"></message>
+   
+   <message name="getAdminSupportSSL3Response">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="getAdminSupportTLS1Request"></message>
+   
+   <message name="getAdminSupportTLS1Response">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
    <message name="getAlertEmailIntervalRequest"></message>
    
    <message name="getAlertEmailIntervalResponse">
@@ -399,6 +536,12 @@
    
    <message name="getAlertEmailMaxAttemptsByLocationResponse">
       <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getAllowConsecutiveCharsRequest"></message>
+   
+   <message name="getAllowConsecutiveCharsResponse">
+      <part name="value" type="xsd:boolean" />
    </message>
    
    <message name="getAutoscalerVerboseRequest"></message>
@@ -432,6 +575,12 @@
    <message name="getBandwidthSharingRequest"></message>
    
    <message name="getBandwidthSharingResponse">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="getBannerAcceptRequest"></message>
+   
+   <message name="getBannerAcceptResponse">
       <part name="value" type="xsd:boolean" />
    </message>
    
@@ -979,6 +1128,18 @@
       <part name="value" type="xsd:unsignedInt" />
    </message>
    
+   <message name="getLoginBannerRequest"></message>
+   
+   <message name="getLoginBannerResponse">
+      <part name="value" type="xsd:string" />
+   </message>
+   
+   <message name="getLoginDelayRequest"></message>
+   
+   <message name="getLoginDelayResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
    <message name="getMaxAcceptingRequest"></message>
    
    <message name="getMaxAcceptingResponse">
@@ -1021,6 +1182,24 @@
       <part name="value" type="xsd:unsignedInt" />
    </message>
    
+   <message name="getMaxLoginAttemptsRequest"></message>
+   
+   <message name="getMaxLoginAttemptsResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getMaxLoginExternalRequest"></message>
+   
+   <message name="getMaxLoginExternalResponse">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="getMaxLoginSuspensionTimeRequest"></message>
+   
+   <message name="getMaxLoginSuspensionTimeResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
    <message name="getMaxRetriesRequest"></message>
    
    <message name="getMaxRetriesResponse">
@@ -1038,6 +1217,36 @@
    </message>
    
    <message name="getMaximumFDCountByLocationResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getMinAlphaCharsRequest"></message>
+   
+   <message name="getMinAlphaCharsResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getMinNumericCharsRequest"></message>
+   
+   <message name="getMinNumericCharsResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getMinPasswordLengthRequest"></message>
+   
+   <message name="getMinPasswordLengthResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getMinSpecialCharsRequest"></message>
+   
+   <message name="getMinSpecialCharsResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getMinUppercaseCharsRequest"></message>
+   
+   <message name="getMinUppercaseCharsResponse">
       <part name="value" type="xsd:unsignedInt" />
    </message>
    
@@ -1079,6 +1288,24 @@
    
    <message name="getNodeFailTimeResponse">
       <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getPasswordChangesPerDayRequest"></message>
+   
+   <message name="getPasswordChangesPerDayResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getPasswordReuseAfterRequest"></message>
+   
+   <message name="getPasswordReuseAfterResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getPostLoginBannerRequest"></message>
+   
+   <message name="getPostLoginBannerResponse">
+      <part name="value" type="xsd:string" />
    </message>
    
    <message name="getRateClassLimitRequest"></message>
@@ -1193,6 +1420,20 @@
       <part name="value" type="xsd:string" />
    </message>
    
+   <message name="getSSL3DiffieHellmanKeyLengthRequest"></message>
+   
+   <message name="getSSL3DiffieHellmanKeyLengthResponse">
+      <part name="value" type="zeusns:GlobalSettings.SSL3DiffieHellmanKeyLength" />
+   </message>
+   
+   <message name="getSSL3DiffieHellmanKeyLengthByLocationRequest">
+      <part name="location" type="xsd:string" />
+   </message>
+   
+   <message name="getSSL3DiffieHellmanKeyLengthByLocationResponse">
+      <part name="value" type="zeusns:GlobalSettings.SSL3DiffieHellmanKeyLength" />
+   </message>
+   
    <message name="getSSLDFailureCountRequest"></message>
    
    <message name="getSSLDFailureCountResponse">
@@ -1261,6 +1502,34 @@
    
    <message name="getSSLHardwarePKCS11LibByLocationResponse">
       <part name="value" type="xsd:string" />
+   </message>
+   
+   <message name="getSSLHardwarePKCS11SlotLabelRequest"></message>
+   
+   <message name="getSSLHardwarePKCS11SlotLabelResponse">
+      <part name="value" type="xsd:string" />
+   </message>
+   
+   <message name="getSSLHardwarePKCS11SlotLabelByLocationRequest">
+      <part name="location" type="xsd:string" />
+   </message>
+   
+   <message name="getSSLHardwarePKCS11SlotLabelByLocationResponse">
+      <part name="value" type="xsd:string" />
+   </message>
+   
+   <message name="getSSLHardwarePKCS11SlotTypeRequest"></message>
+   
+   <message name="getSSLHardwarePKCS11SlotTypeResponse">
+      <part name="value" type="zeusns:GlobalSettings.SSLHardwarePKCS11SlotType" />
+   </message>
+   
+   <message name="getSSLHardwarePKCS11SlotTypeByLocationRequest">
+      <part name="location" type="xsd:string" />
+   </message>
+   
+   <message name="getSSLHardwarePKCS11SlotTypeByLocationResponse">
+      <part name="value" type="zeusns:GlobalSettings.SSLHardwarePKCS11SlotType" />
    </message>
    
    <message name="getSSLHardwareTypeRequest"></message>
@@ -1585,6 +1854,20 @@
       <part name="value" type="xsd:unsignedInt" />
    </message>
    
+   <message name="getTrafficscriptRegexMatchLimitRequest"></message>
+   
+   <message name="getTrafficscriptRegexMatchLimitResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getTrafficscriptRegexMatchLimitByLocationRequest">
+      <part name="location" type="xsd:string" />
+   </message>
+   
+   <message name="getTrafficscriptRegexMatchLimitByLocationResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
    <message name="getTrafficscriptVariablePoolUseRequest"></message>
    
    <message name="getTrafficscriptVariablePoolUseResponse">
@@ -1597,6 +1880,12 @@
    
    <message name="getTrafficscriptVariablePoolUseByLocationResponse">
       <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="getUipageBannerRequest"></message>
+   
+   <message name="getUipageBannerResponse">
+      <part name="value" type="xsd:string" />
    </message>
    
    <message name="getUniversalSessionCacheSizeRequest"></message>
@@ -1750,6 +2039,48 @@
    
    <message name="setAcceptingDelayByLocationResponse"></message>
    
+   <message name="setAdminAllowRehandshakeRequest">
+      <part name="value" type="zeusns:GlobalSettings.AdminAllowRehandshake" />
+   </message>
+   
+   <message name="setAdminAllowRehandshakeResponse"></message>
+   
+   <message name="setAdminDiffieHellmanKeyLengthRequest">
+      <part name="value" type="zeusns:GlobalSettings.AdminDiffieHellmanKeyLength" />
+   </message>
+   
+   <message name="setAdminDiffieHellmanKeyLengthResponse"></message>
+   
+   <message name="setAdminSSLCiphersRequest">
+      <part name="value" type="xsd:string" />
+   </message>
+   
+   <message name="setAdminSSLCiphersResponse"></message>
+   
+   <message name="setAdminSSLSupportTLS11Request">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="setAdminSSLSupportTLS11Response"></message>
+   
+   <message name="setAdminSupportSSL2Request">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="setAdminSupportSSL2Response"></message>
+   
+   <message name="setAdminSupportSSL3Request">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="setAdminSupportSSL3Response"></message>
+   
+   <message name="setAdminSupportTLS1Request">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="setAdminSupportTLS1Response"></message>
+   
    <message name="setAlertEmailIntervalRequest">
       <part name="value" type="xsd:unsignedInt" />
    </message>
@@ -1775,6 +2106,12 @@
    </message>
    
    <message name="setAlertEmailMaxAttemptsByLocationResponse"></message>
+   
+   <message name="setAllowConsecutiveCharsRequest">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="setAllowConsecutiveCharsResponse"></message>
    
    <message name="setAutoscalerVerboseRequest">
       <part name="value" type="xsd:boolean" />
@@ -1807,6 +2144,18 @@
    </message>
    
    <message name="setBandwidthSharingResponse"></message>
+   
+   <message name="setBannerAcceptRequest">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="setBannerAcceptResponse"></message>
+   
+   <message name="setBootloaderPasswordRequest">
+      <part name="password" type="xsd:string" />
+   </message>
+   
+   <message name="setBootloaderPasswordResponse"></message>
    
    <message name="setChunkSizeRequest">
       <part name="value" type="xsd:unsignedInt" />
@@ -2327,6 +2676,18 @@
    
    <message name="setLogReopenTimeByLocationResponse"></message>
    
+   <message name="setLoginBannerRequest">
+      <part name="value" type="xsd:string" />
+   </message>
+   
+   <message name="setLoginBannerResponse"></message>
+   
+   <message name="setLoginDelayRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setLoginDelayResponse"></message>
+   
    <message name="setMaxAcceptingRequest">
       <part name="value" type="xsd:unsignedInt" />
    </message>
@@ -2366,6 +2727,24 @@
    
    <message name="setMaxKeepalivesByLocationResponse"></message>
    
+   <message name="setMaxLoginAttemptsRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setMaxLoginAttemptsResponse"></message>
+   
+   <message name="setMaxLoginExternalRequest">
+      <part name="value" type="xsd:boolean" />
+   </message>
+   
+   <message name="setMaxLoginExternalResponse"></message>
+   
+   <message name="setMaxLoginSuspensionTimeRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setMaxLoginSuspensionTimeResponse"></message>
+   
    <message name="setMaxRetriesRequest">
       <part name="value" type="xsd:unsignedInt" />
    </message>
@@ -2384,6 +2763,36 @@
    </message>
    
    <message name="setMaximumFDCountByLocationResponse"></message>
+   
+   <message name="setMinAlphaCharsRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setMinAlphaCharsResponse"></message>
+   
+   <message name="setMinNumericCharsRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setMinNumericCharsResponse"></message>
+   
+   <message name="setMinPasswordLengthRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setMinPasswordLengthResponse"></message>
+   
+   <message name="setMinSpecialCharsRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setMinSpecialCharsResponse"></message>
+   
+   <message name="setMinUppercaseCharsRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setMinUppercaseCharsResponse"></message>
    
    <message name="setMonitorNumNodesRequest">
       <part name="value" type="xsd:unsignedInt" />
@@ -2422,6 +2831,24 @@
    </message>
    
    <message name="setNodeFailTimeResponse"></message>
+   
+   <message name="setPasswordChangesPerDayRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setPasswordChangesPerDayResponse"></message>
+   
+   <message name="setPasswordReuseAfterRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setPasswordReuseAfterResponse"></message>
+   
+   <message name="setPostLoginBannerRequest">
+      <part name="value" type="xsd:string" />
+   </message>
+   
+   <message name="setPostLoginBannerResponse"></message>
    
    <message name="setRateClassLimitRequest">
       <part name="value" type="xsd:unsignedInt" />
@@ -2527,6 +2954,19 @@
    
    <message name="setSSL3CiphersByLocationResponse"></message>
    
+   <message name="setSSL3DiffieHellmanKeyLengthRequest">
+      <part name="value" type="zeusns:GlobalSettings.SSL3DiffieHellmanKeyLength" />
+   </message>
+   
+   <message name="setSSL3DiffieHellmanKeyLengthResponse"></message>
+   
+   <message name="setSSL3DiffieHellmanKeyLengthByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="value" type="zeusns:GlobalSettings.SSL3DiffieHellmanKeyLength" />
+   </message>
+   
+   <message name="setSSL3DiffieHellmanKeyLengthByLocationResponse"></message>
+   
    <message name="setSSLDFailureCountRequest">
       <part name="value" type="xsd:unsignedInt" />
    </message>
@@ -2604,6 +3044,32 @@
    </message>
    
    <message name="setSSLHardwarePKCS11LibByLocationResponse"></message>
+   
+   <message name="setSSLHardwarePKCS11SlotLabelRequest">
+      <part name="value" type="xsd:string" />
+   </message>
+   
+   <message name="setSSLHardwarePKCS11SlotLabelResponse"></message>
+   
+   <message name="setSSLHardwarePKCS11SlotLabelByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="value" type="xsd:string" />
+   </message>
+   
+   <message name="setSSLHardwarePKCS11SlotLabelByLocationResponse"></message>
+   
+   <message name="setSSLHardwarePKCS11SlotTypeRequest">
+      <part name="value" type="zeusns:GlobalSettings.SSLHardwarePKCS11SlotType" />
+   </message>
+   
+   <message name="setSSLHardwarePKCS11SlotTypeResponse"></message>
+   
+   <message name="setSSLHardwarePKCS11SlotTypeByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="value" type="zeusns:GlobalSettings.SSLHardwarePKCS11SlotType" />
+   </message>
+   
+   <message name="setSSLHardwarePKCS11SlotTypeByLocationResponse"></message>
    
    <message name="setSSLHardwarePKCS11UserPINRequest">
       <part name="value" type="xsd:string" />
@@ -2917,6 +3383,19 @@
    
    <message name="setTrafficscriptRegexCacheSizeByLocationResponse"></message>
    
+   <message name="setTrafficscriptRegexMatchLimitRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setTrafficscriptRegexMatchLimitResponse"></message>
+   
+   <message name="setTrafficscriptRegexMatchLimitByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setTrafficscriptRegexMatchLimitByLocationResponse"></message>
+   
    <message name="setTrafficscriptVariablePoolUseRequest">
       <part name="value" type="xsd:boolean" />
    </message>
@@ -2929,6 +3408,12 @@
    </message>
    
    <message name="setTrafficscriptVariablePoolUseByLocationResponse"></message>
+   
+   <message name="setUipageBannerRequest">
+      <part name="value" type="xsd:string" />
+   </message>
+   
+   <message name="setUipageBannerResponse"></message>
    
    <message name="setUniversalSessionCacheSizeRequest">
       <part name="value" type="xsd:unsignedInt" />
@@ -3108,6 +3593,69 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getAdminAllowRehandshake">
+         <documentation>
+            Get whether SSL / TLS re-handshakes are supported.
+         </documentation>
+         
+         <input message="zeusns:getAdminAllowRehandshakeRequest"/>
+         <output message="zeusns:getAdminAllowRehandshakeResponse"/>
+      </operation>
+      
+      <operation name="getAdminDiffieHellmanKeyLength">
+         <documentation>
+            Get the number of bits to use for Diffie-Hellman keys
+         </documentation>
+         
+         <input message="zeusns:getAdminDiffieHellmanKeyLengthRequest"/>
+         <output message="zeusns:getAdminDiffieHellmanKeyLengthResponse"/>
+      </operation>
+      
+      <operation name="getAdminSSLCiphers">
+         <documentation>
+            Get the list of configured SSL ciphers for admin server and internal connections (available ciphers can be displayed using the command $ZEUSHOME/zxtm/bin/zeus.zxtm -s).
+         </documentation>
+         
+         <input message="zeusns:getAdminSSLCiphersRequest"/>
+         <output message="zeusns:getAdminSSLCiphersResponse"/>
+      </operation>
+      
+      <operation name="getAdminSSLSupportTLS11">
+         <documentation>
+            Get whether TLSv1.1 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input message="zeusns:getAdminSSLSupportTLS11Request"/>
+         <output message="zeusns:getAdminSSLSupportTLS11Response"/>
+      </operation>
+      
+      <operation name="getAdminSupportSSL2">
+         <documentation>
+            Get whether SSLv2 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input message="zeusns:getAdminSupportSSL2Request"/>
+         <output message="zeusns:getAdminSupportSSL2Response"/>
+      </operation>
+      
+      <operation name="getAdminSupportSSL3">
+         <documentation>
+            Get whether SSLv3 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input message="zeusns:getAdminSupportSSL3Request"/>
+         <output message="zeusns:getAdminSupportSSL3Response"/>
+      </operation>
+      
+      <operation name="getAdminSupportTLS1">
+         <documentation>
+            Get whether TLSv1 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input message="zeusns:getAdminSupportTLS1Request"/>
+         <output message="zeusns:getAdminSupportTLS1Response"/>
+      </operation>
+      
       <operation name="getAlertEmailInterval">
          <documentation>
             Get the length of time between alert emails, in seconds. Several alert messages will be stored up and sent in one email.
@@ -3144,6 +3692,15 @@
          <input message="zeusns:getAlertEmailMaxAttemptsByLocationRequest"/>
          <output message="zeusns:getAlertEmailMaxAttemptsByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAllowConsecutiveChars">
+         <documentation>
+            Get whether the same character can appear consecutively in passwords.
+         </documentation>
+         
+         <input message="zeusns:getAllowConsecutiveCharsRequest"/>
+         <output message="zeusns:getAllowConsecutiveCharsResponse"/>
       </operation>
       
       <operation name="getAutoscalerVerbose">
@@ -3191,6 +3748,15 @@
          
          <input message="zeusns:getBandwidthSharingRequest"/>
          <output message="zeusns:getBandwidthSharingResponse"/>
+      </operation>
+      
+      <operation name="getBannerAccept">
+         <documentation>
+            Get whether or not users must explicitly agree to the displayed login_banner text before logging in to the Admin Server.
+         </documentation>
+         
+         <input message="zeusns:getBannerAcceptRequest"/>
+         <output message="zeusns:getBannerAcceptResponse"/>
       </operation>
       
       <operation name="getChunkSize">
@@ -3933,6 +4499,24 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getLoginBanner">
+         <documentation>
+            Get the banner text to be shown on the Admin Server login page and before logging in to appliance SSH servers.
+         </documentation>
+         
+         <input message="zeusns:getLoginBannerRequest"/>
+         <output message="zeusns:getLoginBannerResponse"/>
+      </operation>
+      
+      <operation name="getLoginDelay">
+         <documentation>
+            Get the number of seconds before another login attempt can be made after a failed attempt.
+         </documentation>
+         
+         <input message="zeusns:getLoginDelayRequest"/>
+         <output message="zeusns:getLoginDelayResponse"/>
+      </operation>
+      
       <operation name="getMaxAccepting">
          <documentation>
             Get how many traffic manager child processes accept new connections.
@@ -3990,6 +4574,33 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getMaxLoginAttempts">
+         <documentation>
+            Get the number of sequential failed login attempts that will cause a user account to be suspended.  Setting this to 0 disables this feature.
+         </documentation>
+         
+         <input message="zeusns:getMaxLoginAttemptsRequest"/>
+         <output message="zeusns:getMaxLoginAttemptsResponse"/>
+      </operation>
+      
+      <operation name="getMaxLoginExternal">
+         <documentation>
+            Get whether or not usernames blocked due to the max_login_attempts limit should also be blocked from authentication against external services (such as LDAP and RADIUS).
+         </documentation>
+         
+         <input message="zeusns:getMaxLoginExternalRequest"/>
+         <output message="zeusns:getMaxLoginExternalResponse"/>
+      </operation>
+      
+      <operation name="getMaxLoginSuspensionTime">
+         <documentation>
+            Get number of minutes to suspend users who have exceeded the max_login_attempts limit.
+         </documentation>
+         
+         <input message="zeusns:getMaxLoginSuspensionTimeRequest"/>
+         <output message="zeusns:getMaxLoginSuspensionTimeResponse"/>
+      </operation>
+      
       <operation name="getMaxRetries">
          <documentation>
             This method is now obsolete and is replaced by Pool.getNodeConnectionAttempts.
@@ -4016,6 +4627,51 @@
          <input message="zeusns:getMaximumFDCountByLocationRequest"/>
          <output message="zeusns:getMaximumFDCountByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getMinAlphaChars">
+         <documentation>
+            Get the minimum number of alphabetic characters in a password.
+         </documentation>
+         
+         <input message="zeusns:getMinAlphaCharsRequest"/>
+         <output message="zeusns:getMinAlphaCharsResponse"/>
+      </operation>
+      
+      <operation name="getMinNumericChars">
+         <documentation>
+            Get the minimum number of numeric characters in a password.
+         </documentation>
+         
+         <input message="zeusns:getMinNumericCharsRequest"/>
+         <output message="zeusns:getMinNumericCharsResponse"/>
+      </operation>
+      
+      <operation name="getMinPasswordLength">
+         <documentation>
+            Get the minimum number of characters a password must contain.
+         </documentation>
+         
+         <input message="zeusns:getMinPasswordLengthRequest"/>
+         <output message="zeusns:getMinPasswordLengthResponse"/>
+      </operation>
+      
+      <operation name="getMinSpecialChars">
+         <documentation>
+            Get the minimum number of special characters in a password.
+         </documentation>
+         
+         <input message="zeusns:getMinSpecialCharsRequest"/>
+         <output message="zeusns:getMinSpecialCharsResponse"/>
+      </operation>
+      
+      <operation name="getMinUppercaseChars">
+         <documentation>
+            Get the minimum number of uppercase characters in a password.
+         </documentation>
+         
+         <input message="zeusns:getMinUppercaseCharsRequest"/>
+         <output message="zeusns:getMinUppercaseCharsResponse"/>
       </operation>
       
       <operation name="getMonitorNumNodes">
@@ -4072,6 +4728,33 @@
          
          <input message="zeusns:getNodeFailTimeRequest"/>
          <output message="zeusns:getNodeFailTimeResponse"/>
+      </operation>
+      
+      <operation name="getPasswordChangesPerDay">
+         <documentation>
+            Get the maximum number of times a password can be changed every 24 hours.
+         </documentation>
+         
+         <input message="zeusns:getPasswordChangesPerDayRequest"/>
+         <output message="zeusns:getPasswordChangesPerDayResponse"/>
+      </operation>
+      
+      <operation name="getPasswordReuseAfter">
+         <documentation>
+            Get the number of times a password must have been changed before it can be reused.
+         </documentation>
+         
+         <input message="zeusns:getPasswordReuseAfterRequest"/>
+         <output message="zeusns:getPasswordReuseAfterResponse"/>
+      </operation>
+      
+      <operation name="getPostLoginBanner">
+         <documentation>
+            Get the banner text to be displayed on the appliance console after login.
+         </documentation>
+         
+         <input message="zeusns:getPostLoginBannerRequest"/>
+         <output message="zeusns:getPostLoginBannerResponse"/>
       </operation>
       
       <operation name="getRateClassLimit">
@@ -4226,6 +4909,25 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getSSL3DiffieHellmanKeyLength">
+         <documentation>
+            Get the number of bits to use for Diffie-Hellman keys
+         </documentation>
+         
+         <input message="zeusns:getSSL3DiffieHellmanKeyLengthRequest"/>
+         <output message="zeusns:getSSL3DiffieHellmanKeyLengthResponse"/>
+      </operation>
+      
+      <operation name="getSSL3DiffieHellmanKeyLengthByLocation">
+         <documentation>
+            Get the number of bits to use for Diffie-Hellman keys This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSSL3DiffieHellmanKeyLengthByLocationRequest"/>
+         <output message="zeusns:getSSL3DiffieHellmanKeyLengthByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
       <operation name="getSSLDFailureCount">
          <documentation>
             getSSLDFailureCount is deprecated, please use getSSLHardwareFailureCount instead.
@@ -4318,6 +5020,44 @@
          
          <input message="zeusns:getSSLHardwarePKCS11LibByLocationRequest"/>
          <output message="zeusns:getSSLHardwarePKCS11LibByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLHardwarePKCS11SlotLabel">
+         <documentation>
+            Get the label of the SSL hardware slot to use.
+         </documentation>
+         
+         <input message="zeusns:getSSLHardwarePKCS11SlotLabelRequest"/>
+         <output message="zeusns:getSSLHardwarePKCS11SlotLabelResponse"/>
+      </operation>
+      
+      <operation name="getSSLHardwarePKCS11SlotLabelByLocation">
+         <documentation>
+            Get the label of the SSL hardware slot to use. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSSLHardwarePKCS11SlotLabelByLocationRequest"/>
+         <output message="zeusns:getSSLHardwarePKCS11SlotLabelByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLHardwarePKCS11SlotType">
+         <documentation>
+            Get the type of PKCS11 slot to use. Only used for PKCS11.
+         </documentation>
+         
+         <input message="zeusns:getSSLHardwarePKCS11SlotTypeRequest"/>
+         <output message="zeusns:getSSLHardwarePKCS11SlotTypeResponse"/>
+      </operation>
+      
+      <operation name="getSSLHardwarePKCS11SlotTypeByLocation">
+         <documentation>
+            Get the type of PKCS11 slot to use. Only used for PKCS11. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSSLHardwarePKCS11SlotTypeByLocationRequest"/>
+         <output message="zeusns:getSSLHardwarePKCS11SlotTypeByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -4758,6 +5498,25 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getTrafficscriptRegexMatchLimit">
+         <documentation>
+            Get the maximum number of times TrafficScript will attempt to match a regular expression at each position in the subject string, before it aborts the rule and reports a TrafficScript error.
+         </documentation>
+         
+         <input message="zeusns:getTrafficscriptRegexMatchLimitRequest"/>
+         <output message="zeusns:getTrafficscriptRegexMatchLimitResponse"/>
+      </operation>
+      
+      <operation name="getTrafficscriptRegexMatchLimitByLocation">
+         <documentation>
+            Get the maximum number of times TrafficScript will attempt to match a regular expression at each position in the subject string, before it aborts the rule and reports a TrafficScript error. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getTrafficscriptRegexMatchLimitByLocationRequest"/>
+         <output message="zeusns:getTrafficscriptRegexMatchLimitByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
       <operation name="getTrafficscriptVariablePoolUse">
          <documentation>
             Get whether the 'pool.use' and 'pool.select' TrafficScript functions accept variables as well as literal strings.
@@ -4775,6 +5534,15 @@
          <input message="zeusns:getTrafficscriptVariablePoolUseByLocationRequest"/>
          <output message="zeusns:getTrafficscriptVariablePoolUseByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getUipageBanner">
+         <documentation>
+            Get the banner text to be displayed on all Admin Server pages.
+         </documentation>
+         
+         <input message="zeusns:getUipageBannerRequest"/>
+         <output message="zeusns:getUipageBannerResponse"/>
       </operation>
       
       <operation name="getUniversalSessionCacheSize">
@@ -4998,6 +5766,83 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="setAdminAllowRehandshake">
+         <documentation>
+            Set whether SSL / TLS re-handshakes are supported.
+         </documentation>
+         
+         <input message="zeusns:setAdminAllowRehandshakeRequest"/>
+         <output message="zeusns:setAdminAllowRehandshakeResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAdminDiffieHellmanKeyLength">
+         <documentation>
+            Set the number of bits to use for Diffie-Hellman keys
+         </documentation>
+         
+         <input message="zeusns:setAdminDiffieHellmanKeyLengthRequest"/>
+         <output message="zeusns:setAdminDiffieHellmanKeyLengthResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAdminSSLCiphers">
+         <documentation>
+            Set the list of configured SSL ciphers for admin server and internal connections (available ciphers can be displayed using the command $ZEUSHOME/zxtm/bin/zeus.zxtm -s).
+         </documentation>
+         
+         <input message="zeusns:setAdminSSLCiphersRequest"/>
+         <output message="zeusns:setAdminSSLCiphersResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAdminSSLSupportTLS11">
+         <documentation>
+            Set whether TLSv1.1 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input message="zeusns:setAdminSSLSupportTLS11Request"/>
+         <output message="zeusns:setAdminSSLSupportTLS11Response"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAdminSupportSSL2">
+         <documentation>
+            Set whether SSLv2 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input message="zeusns:setAdminSupportSSL2Request"/>
+         <output message="zeusns:setAdminSupportSSL2Response"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAdminSupportSSL3">
+         <documentation>
+            Set whether SSLv3 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input message="zeusns:setAdminSupportSSL3Request"/>
+         <output message="zeusns:setAdminSupportSSL3Response"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAdminSupportTLS1">
+         <documentation>
+            Set whether TLSv1 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input message="zeusns:setAdminSupportTLS1Request"/>
+         <output message="zeusns:setAdminSupportTLS1Response"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="setAlertEmailInterval">
          <documentation>
             Set the length of time between alert emails, in seconds. Several alert messages will be stored up and sent in one email.
@@ -5042,6 +5887,17 @@
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="setAllowConsecutiveChars">
+         <documentation>
+            Set whether the same character can appear consecutively in passwords.
+         </documentation>
+         
+         <input message="zeusns:setAllowConsecutiveCharsRequest"/>
+         <output message="zeusns:setAllowConsecutiveCharsResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
       <operation name="setAutoscalerVerbose">
@@ -5097,6 +5953,28 @@
          
          <input message="zeusns:setBandwidthSharingRequest"/>
          <output message="zeusns:setBandwidthSharingResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setBannerAccept">
+         <documentation>
+            Set whether or not users must explicitly agree to the displayed login_banner text before logging in to the Admin Server.
+         </documentation>
+         
+         <input message="zeusns:setBannerAcceptRequest"/>
+         <output message="zeusns:setBannerAcceptResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setBootloaderPassword">
+         <documentation>
+            Set the lists of nodes for each of the named pools.
+         </documentation>
+         
+         <input message="zeusns:setBootloaderPasswordRequest"/>
+         <output message="zeusns:setBootloaderPasswordResponse"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
@@ -6021,6 +6899,28 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="setLoginBanner">
+         <documentation>
+            Set the banner text to be shown on the Admin Server login page and before logging in to appliance SSH servers.
+         </documentation>
+         
+         <input message="zeusns:setLoginBannerRequest"/>
+         <output message="zeusns:setLoginBannerResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setLoginDelay">
+         <documentation>
+            Set the number of seconds before another login attempt can be made after a failed attempt.
+         </documentation>
+         
+         <input message="zeusns:setLoginDelayRequest"/>
+         <output message="zeusns:setLoginDelayResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="setMaxAccepting">
          <documentation>
             Set how many traffic manager child processes accept new connections.
@@ -6090,6 +6990,39 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="setMaxLoginAttempts">
+         <documentation>
+            Set the number of sequential failed login attempts that will cause a user account to be suspended.  Setting this to 0 disables this feature.
+         </documentation>
+         
+         <input message="zeusns:setMaxLoginAttemptsRequest"/>
+         <output message="zeusns:setMaxLoginAttemptsResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setMaxLoginExternal">
+         <documentation>
+            Set whether or not usernames blocked due to the max_login_attempts limit should also be blocked from authentication against external services (such as LDAP and RADIUS).
+         </documentation>
+         
+         <input message="zeusns:setMaxLoginExternalRequest"/>
+         <output message="zeusns:setMaxLoginExternalResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setMaxLoginSuspensionTime">
+         <documentation>
+            Set number of minutes to suspend users who have exceeded the max_login_attempts limit.
+         </documentation>
+         
+         <input message="zeusns:setMaxLoginSuspensionTimeRequest"/>
+         <output message="zeusns:setMaxLoginSuspensionTimeResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="setMaxRetries">
          <documentation>
             This method is now obsolete and is replaced by Pool.setNodeConnectionAttempts.
@@ -6122,6 +7055,61 @@
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="setMinAlphaChars">
+         <documentation>
+            Set the minimum number of alphabetic characters in a password.
+         </documentation>
+         
+         <input message="zeusns:setMinAlphaCharsRequest"/>
+         <output message="zeusns:setMinAlphaCharsResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setMinNumericChars">
+         <documentation>
+            Set the minimum number of numeric characters in a password.
+         </documentation>
+         
+         <input message="zeusns:setMinNumericCharsRequest"/>
+         <output message="zeusns:setMinNumericCharsResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setMinPasswordLength">
+         <documentation>
+            Set the minimum number of characters a password must contain.
+         </documentation>
+         
+         <input message="zeusns:setMinPasswordLengthRequest"/>
+         <output message="zeusns:setMinPasswordLengthResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setMinSpecialChars">
+         <documentation>
+            Set the minimum number of special characters in a password.
+         </documentation>
+         
+         <input message="zeusns:setMinSpecialCharsRequest"/>
+         <output message="zeusns:setMinSpecialCharsResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setMinUppercaseChars">
+         <documentation>
+            Set the minimum number of uppercase characters in a password.
+         </documentation>
+         
+         <input message="zeusns:setMinUppercaseCharsRequest"/>
+         <output message="zeusns:setMinUppercaseCharsResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
       <operation name="setMonitorNumNodes">
@@ -6188,6 +7176,39 @@
          
          <input message="zeusns:setNodeFailTimeRequest"/>
          <output message="zeusns:setNodeFailTimeResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setPasswordChangesPerDay">
+         <documentation>
+            Set the maximum number of times a password can be changed every 24 hours.
+         </documentation>
+         
+         <input message="zeusns:setPasswordChangesPerDayRequest"/>
+         <output message="zeusns:setPasswordChangesPerDayResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setPasswordReuseAfter">
+         <documentation>
+            Set the number of times a password must have been changed before it can be reused.
+         </documentation>
+         
+         <input message="zeusns:setPasswordReuseAfterRequest"/>
+         <output message="zeusns:setPasswordReuseAfterResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setPostLoginBanner">
+         <documentation>
+            Set the banner text to be displayed on the appliance console after login.
+         </documentation>
+         
+         <input message="zeusns:setPostLoginBannerRequest"/>
+         <output message="zeusns:setPostLoginBannerResponse"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
@@ -6376,6 +7397,29 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="setSSL3DiffieHellmanKeyLength">
+         <documentation>
+            Set the number of bits to use for Diffie-Hellman keys
+         </documentation>
+         
+         <input message="zeusns:setSSL3DiffieHellmanKeyLengthRequest"/>
+         <output message="zeusns:setSSL3DiffieHellmanKeyLengthResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSL3DiffieHellmanKeyLengthByLocation">
+         <documentation>
+            Set the number of bits to use for Diffie-Hellman keys This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSSL3DiffieHellmanKeyLengthByLocationRequest"/>
+         <output message="zeusns:setSSL3DiffieHellmanKeyLengthByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
       <operation name="setSSLDFailureCount">
          <documentation>
             setSSLDFailureCount is deprecated, please use setSSLHardwareFailureCount instead.
@@ -6509,6 +7553,52 @@
          
          <input message="zeusns:setSSLHardwarePKCS11LibByLocationRequest"/>
          <output message="zeusns:setSSLHardwarePKCS11LibByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="setSSLHardwarePKCS11SlotLabel">
+         <documentation>
+            Set the label of the SSL hardware slot to use.
+         </documentation>
+         
+         <input message="zeusns:setSSLHardwarePKCS11SlotLabelRequest"/>
+         <output message="zeusns:setSSLHardwarePKCS11SlotLabelResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLHardwarePKCS11SlotLabelByLocation">
+         <documentation>
+            Set the label of the SSL hardware slot to use. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSSLHardwarePKCS11SlotLabelByLocationRequest"/>
+         <output message="zeusns:setSSLHardwarePKCS11SlotLabelByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="setSSLHardwarePKCS11SlotType">
+         <documentation>
+            Set the type of PKCS11 slot to use. Only used for PKCS11.
+         </documentation>
+         
+         <input message="zeusns:setSSLHardwarePKCS11SlotTypeRequest"/>
+         <output message="zeusns:setSSLHardwarePKCS11SlotTypeResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLHardwarePKCS11SlotTypeByLocation">
+         <documentation>
+            Set the type of PKCS11 slot to use. Only used for PKCS11. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSSLHardwarePKCS11SlotTypeByLocationRequest"/>
+         <output message="zeusns:setSSLHardwarePKCS11SlotTypeByLocationResponse"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
@@ -7066,6 +8156,29 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="setTrafficscriptRegexMatchLimit">
+         <documentation>
+            Set the maximum number of times TrafficScript will attempt to match a regular expression at each position in the subject string, before it aborts the rule and reports a TrafficScript error.
+         </documentation>
+         
+         <input message="zeusns:setTrafficscriptRegexMatchLimitRequest"/>
+         <output message="zeusns:setTrafficscriptRegexMatchLimitResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setTrafficscriptRegexMatchLimitByLocation">
+         <documentation>
+            Set the maximum number of times TrafficScript will attempt to match a regular expression at each position in the subject string, before it aborts the rule and reports a TrafficScript error. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setTrafficscriptRegexMatchLimitByLocationRequest"/>
+         <output message="zeusns:setTrafficscriptRegexMatchLimitByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
       <operation name="setTrafficscriptVariablePoolUse">
          <documentation>
             Set whether the 'pool.use' and 'pool.select' TrafficScript functions accept variables as well as literal strings.
@@ -7087,6 +8200,17 @@
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="setUipageBanner">
+         <documentation>
+            Set the banner text to be displayed on all Admin Server pages.
+         </documentation>
+         
+         <input message="zeusns:setUipageBannerRequest"/>
+         <output message="zeusns:setUipageBannerResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
       <operation name="setUniversalSessionCacheSize">
@@ -7381,6 +8505,104 @@
          </fault>
       </operation>
       
+      <operation name="getAdminAllowRehandshake">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getAdminAllowRehandshake"/>
+         <documentation>
+            Get whether SSL / TLS re-handshakes are supported.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getAdminDiffieHellmanKeyLength">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getAdminDiffieHellmanKeyLength"/>
+         <documentation>
+            Get the number of bits to use for Diffie-Hellman keys
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getAdminSSLCiphers">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getAdminSSLCiphers"/>
+         <documentation>
+            Get the list of configured SSL ciphers for admin server and internal connections (available ciphers can be displayed using the command $ZEUSHOME/zxtm/bin/zeus.zxtm -s).
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getAdminSSLSupportTLS11">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getAdminSSLSupportTLS11"/>
+         <documentation>
+            Get whether TLSv1.1 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getAdminSupportSSL2">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getAdminSupportSSL2"/>
+         <documentation>
+            Get whether SSLv2 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getAdminSupportSSL3">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getAdminSupportSSL3"/>
+         <documentation>
+            Get whether SSLv3 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getAdminSupportTLS1">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getAdminSupportTLS1"/>
+         <documentation>
+            Get whether TLSv1 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
       <operation name="getAlertEmailInterval">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getAlertEmailInterval"/>
          <documentation>
@@ -7441,6 +8663,20 @@
          <fault name="ObjectDoesNotExist">
             <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
+      </operation>
+      
+      <operation name="getAllowConsecutiveChars">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getAllowConsecutiveChars"/>
+         <documentation>
+            Get whether the same character can appear consecutively in passwords.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
       </operation>
       
       <operation name="getAutoscalerVerbose">
@@ -7509,6 +8745,20 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getBandwidthSharing"/>
          <documentation>
             This method is now obsolete and is replaced by Catalog.Bandwidth.getSharing.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getBannerAccept">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getBannerAccept"/>
+         <documentation>
+            Get whether or not users must explicitly agree to the displayed login_banner text before logging in to the Admin Server.
          </documentation>
          
          <input>
@@ -8725,6 +9975,34 @@
          </fault>
       </operation>
       
+      <operation name="getLoginBanner">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getLoginBanner"/>
+         <documentation>
+            Get the banner text to be shown on the Admin Server login page and before logging in to appliance SSH servers.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getLoginDelay">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getLoginDelay"/>
+         <documentation>
+            Get the number of seconds before another login attempt can be made after a failed attempt.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
       <operation name="getMaxAccepting">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getMaxAccepting"/>
          <documentation>
@@ -8818,6 +10096,48 @@
          </fault>
       </operation>
       
+      <operation name="getMaxLoginAttempts">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getMaxLoginAttempts"/>
+         <documentation>
+            Get the number of sequential failed login attempts that will cause a user account to be suspended.  Setting this to 0 disables this feature.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getMaxLoginExternal">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getMaxLoginExternal"/>
+         <documentation>
+            Get whether or not usernames blocked due to the max_login_attempts limit should also be blocked from authentication against external services (such as LDAP and RADIUS).
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getMaxLoginSuspensionTime">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getMaxLoginSuspensionTime"/>
+         <documentation>
+            Get number of minutes to suspend users who have exceeded the max_login_attempts limit.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
       <operation name="getMaxRetries">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getMaxRetries"/>
          <documentation>
@@ -8861,6 +10181,76 @@
          <fault name="ObjectDoesNotExist">
             <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
+      </operation>
+      
+      <operation name="getMinAlphaChars">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getMinAlphaChars"/>
+         <documentation>
+            Get the minimum number of alphabetic characters in a password.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getMinNumericChars">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getMinNumericChars"/>
+         <documentation>
+            Get the minimum number of numeric characters in a password.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getMinPasswordLength">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getMinPasswordLength"/>
+         <documentation>
+            Get the minimum number of characters a password must contain.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getMinSpecialChars">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getMinSpecialChars"/>
+         <documentation>
+            Get the minimum number of special characters in a password.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getMinUppercaseChars">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getMinUppercaseChars"/>
+         <documentation>
+            Get the minimum number of uppercase characters in a password.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
       </operation>
       
       <operation name="getMonitorNumNodes">
@@ -8943,6 +10333,48 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getNodeFailTime"/>
          <documentation>
             This method is now obsolete and is replaced by Pool.getNodeFailTime.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getPasswordChangesPerDay">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getPasswordChangesPerDay"/>
+         <documentation>
+            Get the maximum number of times a password can be changed every 24 hours.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getPasswordReuseAfter">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getPasswordReuseAfter"/>
+         <documentation>
+            Get the number of times a password must have been changed before it can be reused.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getPostLoginBanner">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getPostLoginBanner"/>
+         <documentation>
+            Get the banner text to be displayed on the appliance console after login.
          </documentation>
          
          <input>
@@ -9201,6 +10633,37 @@
          </fault>
       </operation>
       
+      <operation name="getSSL3DiffieHellmanKeyLength">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getSSL3DiffieHellmanKeyLength"/>
+         <documentation>
+            Get the number of bits to use for Diffie-Hellman keys
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSSL3DiffieHellmanKeyLengthByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getSSL3DiffieHellmanKeyLengthByLocation"/>
+         <documentation>
+            Get the number of bits to use for Diffie-Hellman keys This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getSSLDFailureCount">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getSSLDFailureCount"/>
          <documentation>
@@ -9343,6 +10806,68 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getSSLHardwarePKCS11LibByLocation"/>
          <documentation>
             Get the location of the PKCS#11 library supplied by your hardware vendor. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLHardwarePKCS11SlotLabel">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getSSLHardwarePKCS11SlotLabel"/>
+         <documentation>
+            Get the label of the SSL hardware slot to use.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSSLHardwarePKCS11SlotLabelByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getSSLHardwarePKCS11SlotLabelByLocation"/>
+         <documentation>
+            Get the label of the SSL hardware slot to use. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLHardwarePKCS11SlotType">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getSSLHardwarePKCS11SlotType"/>
+         <documentation>
+            Get the type of PKCS11 slot to use. Only used for PKCS11.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSSLHardwarePKCS11SlotTypeByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getSSLHardwarePKCS11SlotTypeByLocation"/>
+         <documentation>
+            Get the type of PKCS11 slot to use. Only used for PKCS11. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -10069,6 +11594,37 @@
          </fault>
       </operation>
       
+      <operation name="getTrafficscriptRegexMatchLimit">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getTrafficscriptRegexMatchLimit"/>
+         <documentation>
+            Get the maximum number of times TrafficScript will attempt to match a regular expression at each position in the subject string, before it aborts the rule and reports a TrafficScript error.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getTrafficscriptRegexMatchLimitByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getTrafficscriptRegexMatchLimitByLocation"/>
+         <documentation>
+            Get the maximum number of times TrafficScript will attempt to match a regular expression at each position in the subject string, before it aborts the rule and reports a TrafficScript error. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getTrafficscriptVariablePoolUse">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getTrafficscriptVariablePoolUse"/>
          <documentation>
@@ -10098,6 +11654,20 @@
          <fault name="ObjectDoesNotExist">
             <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
+      </operation>
+      
+      <operation name="getUipageBanner">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/getUipageBanner"/>
+         <documentation>
+            Get the banner text to be displayed on all Admin Server pages.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
       </operation>
       
       <operation name="getUniversalSessionCacheSize">
@@ -10477,6 +12047,146 @@
          </fault>
       </operation>
       
+      <operation name="setAdminAllowRehandshake">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setAdminAllowRehandshake"/>
+         <documentation>
+            Set whether SSL / TLS re-handshakes are supported.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAdminDiffieHellmanKeyLength">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setAdminDiffieHellmanKeyLength"/>
+         <documentation>
+            Set the number of bits to use for Diffie-Hellman keys
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAdminSSLCiphers">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setAdminSSLCiphers"/>
+         <documentation>
+            Set the list of configured SSL ciphers for admin server and internal connections (available ciphers can be displayed using the command $ZEUSHOME/zxtm/bin/zeus.zxtm -s).
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAdminSSLSupportTLS11">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setAdminSSLSupportTLS11"/>
+         <documentation>
+            Set whether TLSv1.1 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAdminSupportSSL2">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setAdminSupportSSL2"/>
+         <documentation>
+            Set whether SSLv2 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAdminSupportSSL3">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setAdminSupportSSL3"/>
+         <documentation>
+            Set whether SSLv3 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAdminSupportTLS1">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setAdminSupportTLS1"/>
+         <documentation>
+            Set whether TLSv1 support is enabled for admin server and internal connections.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setAlertEmailInterval">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setAlertEmailInterval"/>
          <documentation>
@@ -10560,6 +12270,26 @@
          </fault>
          <fault name="ObjectDoesNotExist">
             <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAllowConsecutiveChars">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setAllowConsecutiveChars"/>
+         <documentation>
+            Set whether the same character can appear consecutively in passwords.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
@@ -10653,6 +12383,46 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setBandwidthSharing"/>
          <documentation>
             This method is now obsolete and is replaced by Catalog.Bandwidth.setSharing.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setBannerAccept">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setBannerAccept"/>
+         <documentation>
+            Set whether or not users must explicitly agree to the displayed login_banner text before logging in to the Admin Server.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setBootloaderPassword">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setBootloaderPassword"/>
+         <documentation>
+            Set the lists of nodes for each of the named pools.
          </documentation>
          
          <input>
@@ -12389,6 +14159,46 @@
          </fault>
       </operation>
       
+      <operation name="setLoginBanner">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setLoginBanner"/>
+         <documentation>
+            Set the banner text to be shown on the Admin Server login page and before logging in to appliance SSH servers.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setLoginDelay">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setLoginDelay"/>
+         <documentation>
+            Set the number of seconds before another login attempt can be made after a failed attempt.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setMaxAccepting">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setMaxAccepting"/>
          <documentation>
@@ -12518,6 +14328,66 @@
          </fault>
       </operation>
       
+      <operation name="setMaxLoginAttempts">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setMaxLoginAttempts"/>
+         <documentation>
+            Set the number of sequential failed login attempts that will cause a user account to be suspended.  Setting this to 0 disables this feature.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setMaxLoginExternal">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setMaxLoginExternal"/>
+         <documentation>
+            Set whether or not usernames blocked due to the max_login_attempts limit should also be blocked from authentication against external services (such as LDAP and RADIUS).
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setMaxLoginSuspensionTime">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setMaxLoginSuspensionTime"/>
+         <documentation>
+            Set number of minutes to suspend users who have exceeded the max_login_attempts limit.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setMaxRetries">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setMaxRetries"/>
          <documentation>
@@ -12578,6 +14448,106 @@
          </fault>
          <fault name="ObjectDoesNotExist">
             <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setMinAlphaChars">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setMinAlphaChars"/>
+         <documentation>
+            Set the minimum number of alphabetic characters in a password.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setMinNumericChars">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setMinNumericChars"/>
+         <documentation>
+            Set the minimum number of numeric characters in a password.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setMinPasswordLength">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setMinPasswordLength"/>
+         <documentation>
+            Set the minimum number of characters a password must contain.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setMinSpecialChars">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setMinSpecialChars"/>
+         <documentation>
+            Set the minimum number of special characters in a password.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setMinUppercaseChars">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setMinUppercaseChars"/>
+         <documentation>
+            Set the minimum number of uppercase characters in a password.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
@@ -12691,6 +14661,66 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setNodeFailTime"/>
          <documentation>
             This method is now obsolete and is replaced by Pool.setNodeFailTime.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setPasswordChangesPerDay">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setPasswordChangesPerDay"/>
+         <documentation>
+            Set the maximum number of times a password can be changed every 24 hours.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setPasswordReuseAfter">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setPasswordReuseAfter"/>
+         <documentation>
+            Set the number of times a password must have been changed before it can be reused.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setPostLoginBanner">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setPostLoginBanner"/>
+         <documentation>
+            Set the banner text to be displayed on the appliance console after login.
          </documentation>
          
          <input>
@@ -13051,6 +15081,49 @@
          </fault>
       </operation>
       
+      <operation name="setSSL3DiffieHellmanKeyLength">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setSSL3DiffieHellmanKeyLength"/>
+         <documentation>
+            Set the number of bits to use for Diffie-Hellman keys
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSL3DiffieHellmanKeyLengthByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setSSL3DiffieHellmanKeyLengthByLocation"/>
+         <documentation>
+            Set the number of bits to use for Diffie-Hellman keys This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setSSLDFailureCount">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setSSLDFailureCount"/>
          <documentation>
@@ -13290,6 +15363,92 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setSSLHardwarePKCS11LibByLocation"/>
          <documentation>
             Set the location of the PKCS#11 library supplied by your hardware vendor. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLHardwarePKCS11SlotLabel">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setSSLHardwarePKCS11SlotLabel"/>
+         <documentation>
+            Set the label of the SSL hardware slot to use.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLHardwarePKCS11SlotLabelByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setSSLHardwarePKCS11SlotLabelByLocation"/>
+         <documentation>
+            Set the label of the SSL hardware slot to use. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLHardwarePKCS11SlotType">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setSSLHardwarePKCS11SlotType"/>
+         <documentation>
+            Set the type of PKCS11 slot to use. Only used for PKCS11.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLHardwarePKCS11SlotTypeByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setSSLHardwarePKCS11SlotTypeByLocation"/>
+         <documentation>
+            Set the type of PKCS11 slot to use. Only used for PKCS11. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -14341,6 +16500,49 @@
          </fault>
       </operation>
       
+      <operation name="setTrafficscriptRegexMatchLimit">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setTrafficscriptRegexMatchLimit"/>
+         <documentation>
+            Set the maximum number of times TrafficScript will attempt to match a regular expression at each position in the subject string, before it aborts the rule and reports a TrafficScript error.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setTrafficscriptRegexMatchLimitByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setTrafficscriptRegexMatchLimitByLocation"/>
+         <documentation>
+            Set the maximum number of times TrafficScript will attempt to match a regular expression at each position in the subject string, before it aborts the rule and reports a TrafficScript error. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setTrafficscriptVariablePoolUse">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setTrafficscriptVariablePoolUse"/>
          <documentation>
@@ -14381,6 +16583,26 @@
          </fault>
          <fault name="ObjectDoesNotExist">
             <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setUipageBanner">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GlobalSettings/setUipageBanner"/>
+         <documentation>
+            Set the banner text to be displayed on all Admin Server pages.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GlobalSettings/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       

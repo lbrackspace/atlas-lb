@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2010 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
 
 -->
 
@@ -647,6 +647,18 @@
                   <xsd:enumeration value="general_licensetoomanylocations">
                      <xsd:annotation>
                         <xsd:documentation>General - A location has been disabled because you have exceeded the licence limit</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_logdiskfull">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Log disk partition full</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_logdiskoverload">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Log disk partition usage has exceeded threshold</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                

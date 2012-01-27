@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2010 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
 
 -->
 
@@ -103,7 +103,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -148,7 +148,7 @@
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
-             <xsd:element name="privatekey" type="xsd:string">
+             <xsd:element name="key" type="xsd:string">
               <xsd:annotation>
                 <xsd:documentation>
                   The configuration key that caused the fault (if appropriate)
@@ -293,6 +293,7 @@
          <input message="zeusns:changePasswordRequest"/>
          <output message="zeusns:changePasswordResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
       </operation>
       
       <operation name="deleteUser">
@@ -364,6 +365,9 @@
          </output>
          <fault name="ObjectDoesNotExist">
             <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Users/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Users/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       

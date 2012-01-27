@@ -77,8 +77,7 @@ public class SslTerminationImplTest {
             lb.setLoadBalancerJoinVipSet(lbjvs);
         }
 
-
-        //Would need to mock everything, ill test components in the helpers test..
+        //Testing components in helpers test
         @Ignore
         @Test
         public void shouldReturnFalseIfNoTermination() throws EntityNotFoundException {

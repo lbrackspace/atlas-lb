@@ -1,8 +1,6 @@
 package org.openstack.atlas.adapter.itest;
 
-import com.zxtm.service.client.Certificate;
 import com.zxtm.service.client.VirtualServerBasicInfo;
-import com.zxtm.service.client.VirtualServerProtocol;
 import com.zxtm.service.client.VirtualServerRule;
 import org.apache.axis.types.UnsignedInt;
 import org.junit.AfterClass;
@@ -13,7 +11,6 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.RateLimit;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -21,8 +18,6 @@ import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 
 import java.rmi.RemoteException;
 import java.util.Calendar;
-
-import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS;
 
 public class SslTerminationIntegrationTest extends ZeusTestBase {
     //TODO: robustoize it...
@@ -105,6 +100,13 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
     public void testSSlTerminationOperationsWhenUpdatingLBAttributes() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
         setSslTermination();
         updateLoadBalancerAttributes();
+    }
+
+    @Test
+    public void testWhenAddingRateLimitWithSslTermination() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        setSslTermination();
+        setRateLimit();
+        deleteRateLimit();
     }
 
     private void setSslTermination() {
@@ -273,34 +275,6 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
     }
 
     private void updateLoadBalancerAttributes() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
-        //protocol
-        try {
-            lb.setProtocol(HTTPS);
-            zxtmAdapter.updateProtocol(config, lb);
-
-            final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
-            Assert.assertEquals(1, virtualServerBasicInfos.length);
-            Assert.assertEquals(VirtualServerProtocol.https, virtualServerBasicInfos[0].getProtocol());
-
-            final VirtualServerBasicInfo[] virtualServerBasicInfos2 = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{secureLoadBalancerName()});
-            Assert.assertEquals(1, virtualServerBasicInfos2.length);
-            Assert.assertEquals(VirtualServerProtocol.https, virtualServerBasicInfos[0].getProtocol());
-
-            final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
-            Assert.assertEquals(1, virtualServerRules.length);
-
-            final VirtualServerRule[][] virtualServerRules2 = getServiceStubs().getVirtualServerBinding().getRules(new String[]{secureLoadBalancerName()});
-            Assert.assertEquals(1, virtualServerRules2.length);
-
-            for (VirtualServerRule virtualServerRule : virtualServerRules[0]) {
-                if (virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedFor))
-                    Assert.fail("XFF rule should not be enabled!");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail(e.getMessage());
-        }
-
         //port
         try {
             zxtmAdapter.updatePort(config, lb.getId(), lb.getAccountId(), 8080);
@@ -312,12 +286,94 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             //Ports are seperate for vs's
             final VirtualServerBasicInfo[] virtualServerBasicInfos2 = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{secureLoadBalancerName()});
             Assert.assertEquals(1, virtualServerBasicInfos2.length);
-            Assert.assertEquals(500, virtualServerBasicInfos2[0].getPort());
+            Assert.assertEquals(443, virtualServerBasicInfos2[0].getPort());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
 
+        //logging
+        try {
+            lb.setConnectionLogging(Boolean.TRUE);
+            zxtmAdapter.updateConnectionLogging(config, lb);
 
+            Assert.assertEquals(true, getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertEquals(true, getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{loadBalancerName()})[0]);
+
+            lb.setConnectionLogging(Boolean.FALSE);
+            zxtmAdapter.updateConnectionLogging(config, lb);
+
+            Assert.assertEquals(false, getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertEquals(false, getServiceStubs().getVirtualServerBinding().getLogEnabled(new String[]{loadBalancerName()})[0]);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    private void setRateLimit() {
+        try {
+            final Integer maxRequestsPerSecond = 1000;
+            RateLimit rateLimit = new RateLimit();
+            rateLimit.setExpirationTime(Calendar.getInstance());
+            rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
+
+            zxtmAdapter.setRateLimit(config, lb, rateLimit);
+
+            String[] rateNames = getServiceStubs().getZxtmRateCatalogService().getRateNames();
+            boolean doesExist = false;
+            for (String rateName : rateNames) {
+                if (rateName.equals(rateLimitName())) {
+                    doesExist = true;
+                    break;
+                }
+            }
+            Assert.assertTrue(doesExist);
+
+            final UnsignedInt[] ratePerSecondList = getServiceStubs().getZxtmRateCatalogService().getMaxRatePerSecond(new String[]{rateLimitName()});
+            Assert.assertEquals(new UnsignedInt(maxRequestsPerSecond), ratePerSecondList[0]);
+
+            final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
+            Assert.assertEquals(1, virtualServerRules.length);
+            Assert.assertEquals(2, virtualServerRules[0].length);
+            Assert.assertEquals(ZxtmAdapterImpl.ruleRateLimitHttp, virtualServerRules[0][1]);
+
+            final VirtualServerRule[][] virtualServerRules1 = getServiceStubs().getVirtualServerBinding().getRules(new String[]{secureLoadBalancerName()});
+            Assert.assertEquals(1, virtualServerRules1.length);
+            Assert.assertEquals(2, virtualServerRules1[0].length);
+            Assert.assertEquals(ZxtmAdapterImpl.ruleRateLimitHttp, virtualServerRules1[0][1]);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+     private void deleteRateLimit() {
+        try {
+            zxtmAdapter.deleteRateLimit(config, lb);
+            String[] rateNames = getServiceStubs().getZxtmRateCatalogService().getRateNames();
+            boolean doesExist = false;
+            for (String rateName : rateNames) {
+                if (rateName.equals(rateLimitName())) {
+                    doesExist = true;
+                    break;
+                }
+            }
+            Assert.assertFalse(doesExist);
+
+            boolean doesExist2 = false;
+            for (String rateName : rateNames) {
+                if (rateName.equals(secureLoadBalancerName())) { //the rate limit name...
+                    doesExist2 = true;
+                    break;
+                }
+            }
+            Assert.assertFalse(doesExist2);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
     }
 }
