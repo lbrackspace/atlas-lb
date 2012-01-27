@@ -8,6 +8,7 @@ import org.openstack.atlas.service.domain.exceptions.UnauthorizedException;
 import org.openstack.atlas.service.domain.repository.AccountUsageRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
+import org.openstack.atlas.service.domain.services.UsageService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
@@ -26,20 +27,14 @@ import static org.openstack.atlas.service.domain.events.UsageEvent.*;
 
 public class UsageEventHelper {
     private final Log LOG = LogFactory.getLog(UsageEventHelper.class);
-    protected LoadBalancerUsageRepository usageRepository;
-    protected LoadBalancerUsageEventRepository usageEventRepository;
+    protected UsageService usageService;
     protected LoadBalancerRepository loadBalancerRepository;
     protected AccountUsageRepository accountUsageRepository;
     protected VirtualIpRepository virtualIpRepository;
 
     @Required
-    public void setUsageRepository(LoadBalancerUsageRepository usageRepository) {
-        this.usageRepository = usageRepository;
-    }
-
-    @Required
-    public void setUsageEventRepository(LoadBalancerUsageEventRepository usageEventRepository) {
-        this.usageEventRepository = usageEventRepository;
+    public void setUsageService(UsageService usageService) {
+        this.usageService = usageService;
     }
 
     @Required
@@ -68,7 +63,7 @@ public class UsageEventHelper {
         newUsageEvent.setNumVips(loadBalancer.getLoadBalancerJoinVipSet().size());
         newUsageEvent.setEventType(usageEvent.name());
 
-        usageEventRepository.create(newUsageEvent);
+        usageService.createUsageEvent(newUsageEvent);
 
         // If account specific event then create entry in account usage table
         if (usageEvent.equals(CREATE_LOADBALANCER) || usageEvent.equals(DELETE_LOADBALANCER) || usageEvent.equals(CREATE_VIRTUAL_IP) || usageEvent.equals(UsageEvent.DELETE_VIRTUAL_IP)) {
