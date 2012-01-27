@@ -20,6 +20,21 @@ public final class LogChopper {
     public static LbLogsWritable getLbLogStats(String logline) throws Exception {
         Matcher matcher = HTTP_LB_LOG_PATTERN.matcher(logline);
         boolean matchFound = matcher.find();
+        String date;
+
+        if (matchFound) {
+            date = matcher.group(7);
+            String sourceIp = matcher.group(4);
+            return parseLogLine(logline, matcher, matchFound, date, sourceIp);
+        } else {
+            matcher = NON_HTTP_LB_LOG_PATTERN.matcher(logline);
+            matchFound = matcher.find();
+            date = matcher.group(3);
+            return parseLogLine(logline, matcher, matchFound, date, null);
+        }
+    }
+
+    private static LbLogsWritable parseLogLine(String logline, Matcher matcher, boolean matchFound, String date, String sourceIp) throws Exception {
         if (matchFound) {
             String loadBalancerName = matcher.group(2);
             String[] arr = loadBalancerName.split("_");
@@ -27,42 +42,25 @@ public final class LogChopper {
             int loadBalancerId = Integer.parseInt(arr[1]);
             String accountId_loadBalancerId = accountId + "_" + loadBalancerId;
 
+
             if (loadBalancerName.contains("_S")) {
                 logline = stripSSL(logline, loadBalancerName, accountId_loadBalancerId);
             }
 
+            if (sourceIp == null) {
+                sourceIp = "";
+            }
             return new LbLogsWritable(accountId,
-                    matcher.group(4),
+                    sourceIp,
                     accountId_loadBalancerId,
                     loadBalancerId,
-                    new DateTime(matcher.group(7), DateTime.APACHE).getCalendar(),
-                    logline);
+                    new DateTime(date, DateTime.APACHE).getCalendar(),
+                    logline
+            );
         } else {
-            matcher = NON_HTTP_LB_LOG_PATTERN.matcher(logline);
-            matchFound = matcher.find();
-            if (matchFound) {
-                String loadBalancerName = matcher.group(2);
-                String[] arr = loadBalancerName.split("_");
-                int accountId = Integer.parseInt(arr[0]);
-                int loadBalancerId = Integer.parseInt(arr[1]);
-                String accountId_loadBalancerId = accountId + "_" + loadBalancerId;
+            LOGGER.error(logline);
+            throw getLoglineError(logline.toString());
 
-                if (loadBalancerName.contains("_S")) {
-                    logline = stripSSL(logline, loadBalancerName, accountId_loadBalancerId);
-                }
-
-                return new LbLogsWritable(accountId,
-                        "",
-                        accountId_loadBalancerId,
-                        loadBalancerId,
-                        new DateTime(matcher.group(3), DateTime.APACHE).getCalendar(),
-                        logline
-                );
-            } else {
-                LOGGER.error(logline);
-                throw getLoglineError(logline.toString());
-
-            }
         }
     }
 
