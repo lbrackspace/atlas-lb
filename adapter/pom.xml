@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.8.17-SNAPSHOT</version>
+        <version>1.8.17</version>
     </parent>
 
     <artifactId>atlas-adapter</artifactId>
