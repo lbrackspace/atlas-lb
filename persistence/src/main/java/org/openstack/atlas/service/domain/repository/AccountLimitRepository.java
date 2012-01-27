@@ -56,8 +56,7 @@ public class AccountLimitRepository {
         Predicate hasType = builder.equal(accountLimitRoot.get(AccountLimit_.limitType), type);
 
         criteria.select(accountLimitRoot);
-        criteria.where(hasType);
-        criteria.where(hasAccountId);
+        criteria.where(builder.and(hasType, hasAccountId));
         return entityManager.createQuery(criteria).getSingleResult();
     }
 
