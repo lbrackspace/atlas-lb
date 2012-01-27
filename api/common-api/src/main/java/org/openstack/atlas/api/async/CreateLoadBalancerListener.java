@@ -61,8 +61,8 @@ public class CreateLoadBalancerListener extends BaseListener {
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             // Notify usage processor
-            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
-            if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+            if (dbLoadBalancer.isUsingSsl()) usageEventHelper.processUsageEvent(dbLoadBalancer, SSL_ON);
             return;
         }
 
@@ -81,8 +81,8 @@ public class CreateLoadBalancerListener extends BaseListener {
         addAtomEntriesForAccessList(queueLb, dbLoadBalancer);
 
         // Notify usage processor
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
-        if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+        if (dbLoadBalancer.isUsingSsl()) usageEventHelper.processUsageEvent(dbLoadBalancer, SSL_ON);
 
         LOG.info(String.format("Created load balancer '%d' successfully.", dbLoadBalancer.getId()));
     }

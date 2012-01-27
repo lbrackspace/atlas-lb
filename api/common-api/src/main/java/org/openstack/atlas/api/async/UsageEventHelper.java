@@ -24,9 +24,8 @@ import java.util.List;
 
 import static org.openstack.atlas.service.domain.events.UsageEvent.*;
 
-public class UsageEventListener implements MessageListener {
-
-    private final Log LOG = LogFactory.getLog(UsageEventListener.class);
+public class UsageEventHelper {
+    private final Log LOG = LogFactory.getLog(UsageEventHelper.class);
     protected LoadBalancerUsageRepository usageRepository;
     protected LoadBalancerUsageEventRepository usageEventRepository;
     protected LoadBalancerRepository loadBalancerRepository;
@@ -58,55 +57,25 @@ public class UsageEventListener implements MessageListener {
         this.virtualIpRepository = virtualIpRepository;
     }
 
-    public final void onMessage(Message message) {
-        try {
-            doOnMessage(message);
-        } catch (UnauthorizedException ue) {
-            System.err.println("Error processing message, " + ue);
-            ue.printStackTrace();
-        } catch (Exception e) {
-            //ToDo: When in production log a cleaner message. But for now show the whole stack trace
-            Log L = LogFactory.getLog(this.getClass());
-            L.error(String.format("Error processing message In Class %s: %s ", this.getClass().getSimpleName(), getStackTrace(e)));
-        }
-    }
-
-    public String getStackTrace(Exception ex) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(String.format("Exception: %s:%s\n", ex.getMessage(), ex.getClass().getName()));
-        for (StackTraceElement se : ex.getStackTrace()) {
-            sb.append(String.format("%s\n", se.toString()));
-        }
-        return sb.toString();
-    }
-
-    public void doOnMessage(Message message) throws Exception {
-        LOG.info("Processing usage event...");
+    public void processUsageEvent(LoadBalancer loadBalancer, UsageEvent usageEvent) throws Exception {
+        LOG.info(String.format("Processing '%s' usage event for load balancer '%d'...", usageEvent.name(), loadBalancer.getId()));
         Calendar eventTime = Calendar.getInstance();
-        ObjectMessage object = (ObjectMessage) message;
-        LoadBalancer loadBalancer = (LoadBalancer) object.getObject();
-        String usageEventString = (String) message.getObjectProperty("usageEvent");
-        UsageEvent usageEvent = UsageEvent.valueOf(usageEventString);
-
-        List<LoadBalancerUsageEvent> newUsages = new ArrayList<LoadBalancerUsageEvent>();
 
         LoadBalancerUsageEvent newUsageEvent = new LoadBalancerUsageEvent();
         newUsageEvent.setAccountId(loadBalancer.getAccountId());
         newUsageEvent.setLoadbalancerId(loadBalancer.getId());
         newUsageEvent.setStartTime(eventTime);
         newUsageEvent.setNumVips(loadBalancer.getLoadBalancerJoinVipSet().size());
-        newUsageEvent.setEventType(usageEvent.toString()); // TODO: Use cached values from database???
+        newUsageEvent.setEventType(usageEvent.name());
 
-        newUsages.add(newUsageEvent);
-
-        if (!newUsages.isEmpty()) usageEventRepository.batchCreate(newUsages);
+        usageEventRepository.create(newUsageEvent);
 
         // If account specific event then create entry in account usage table
         if (usageEvent.equals(CREATE_LOADBALANCER) || usageEvent.equals(DELETE_LOADBALANCER) || usageEvent.equals(CREATE_VIRTUAL_IP) || usageEvent.equals(UsageEvent.DELETE_VIRTUAL_IP)) {
             createAccountUsageEntry(loadBalancer, eventTime);
         }
 
-        LOG.info(String.format("'%s' usage event processed.", usageEvent.name()));
+        LOG.info(String.format("'%s' usage event processed for load balancer '%d'.", usageEvent.name(), loadBalancer.getId()));
     }
 
     private void createAccountUsageEntry(LoadBalancer loadBalancer, Calendar eventTime) {

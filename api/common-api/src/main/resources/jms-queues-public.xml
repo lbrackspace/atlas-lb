@@ -28,6 +28,14 @@
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
     </bean>
 
+    <bean id="usageEventHelper" class="org.openstack.atlas.api.async.UsageEventHelper" scope="prototype">
+        <property name="usageRepository" ref="usageRepository"/>
+        <property name="usageEventRepository" ref="usageEventRepository"/>
+        <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
+        <property name="accountUsageRepository" ref="accountUsageRepository"/>
+        <property name="virtualIpRepository" ref="virtualIpRepository"/>
+    </bean>
+
     <bean id="baseListener" class="org.openstack.atlas.api.async.BaseListener" abstract="true">
         <property name="jmsTemplate" ref="jmsTemplate"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>
@@ -42,6 +50,7 @@
         <property name="accessListService" ref="accessListService"/>
         <property name="rateLimitingService" ref="rateLimitingService"/>
         <property name="hostService" ref="hostService"/>
+        <property name="usageEventHelper" ref="usageEventHelper"/>
     </bean>
 
     <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
@@ -418,25 +427,4 @@
         <property name="sessionTransacted" value="true"/>
     </bean>
 
-    <bean id="usageEventListener"
-          class="org.openstack.atlas.api.async.UsageEventListener">
-        <property name="usageRepository" ref="usageRepository"/>
-        <property name="usageEventRepository" ref="usageEventRepository"/>
-        <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
-        <property name="accountUsageRepository" ref="accountUsageRepository"/>
-        <property name="virtualIpRepository" ref="virtualIpRepository"/>
-    </bean>
-
-    <bean id="usageEventContainer"
-          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
-        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
-        <property name="messageListener" ref="usageEventListener"/>
-        <property name="destinationName" value="USAGE_EVENT"/>
-        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
-        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
-        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
-        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
-        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
-        <property name="sessionTransacted" value="true"/>
-    </bean>
 </beans>

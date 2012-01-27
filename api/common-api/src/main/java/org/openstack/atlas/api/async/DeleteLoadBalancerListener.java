@@ -49,8 +49,8 @@ public class DeleteLoadBalancerListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
-            // Notify usage processor with a usage event
-            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+            // Notify usage processor
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
             return;
         }
 
@@ -61,8 +61,8 @@ public class DeleteLoadBalancerListener extends BaseListener {
         String atomSummary = "Load balancer successfully deleted";
         notificationService.saveLoadBalancerEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
-        // Notify usage processor with a usage event
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+        // Notify usage processor
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
 
         LOG.info(String.format("Load balancer '%d' successfully deleted.", dbLoadBalancer.getId()));
     }
