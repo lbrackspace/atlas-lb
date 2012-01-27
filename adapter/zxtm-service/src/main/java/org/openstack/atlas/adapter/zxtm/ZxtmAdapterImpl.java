@@ -1012,7 +1012,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             String errorFileName = getErrorFileName(loadbalancerId, accountId);
 
             LOG.debug("Attempting to upload the error file...");
-            extraService.writeFile(new String[]{errorFileName}, new String[]{content.getBytes().toString()});
+            extraService.writeFile(new String[]{errorFileName}, new String[]{content.toString()});
             LOG.info(String.format("Successfully uploaded the error file for: %s_%s...", accountId, loadbalancerId));
 
             vsNames[0] = String.format("%d_%d", accountId, loadbalancerId);
@@ -1045,7 +1045,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug("Attempting to upload the default error file...");
         extraService = serviceStubs.getZxtmConfExtraBinding();
         if (extraService != null) {
-            extraService.writeFile(new String[]{Constants.DEFAULT_ERRORFILE}, new String[]{content.getBytes().toString()});
+            extraService.writeFile(new String[]{Constants.DEFAULT_ERRORFILE}, new String[]{content.toString()});
             LOG.info("Successfully uploaded the default error file...");
         }
     }
@@ -1068,6 +1068,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         String fileToDelete = getErrorFileName(loadBalancer.getId(), loadBalancer.getAccountId());
         try {
             LOG.debug(String.format("Attempting to delete a custom error file for: %s%s", loadBalancer.getAccountId(), loadBalancer.getId()));
+            serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{ZxtmNameBuilder.genVSName(loadBalancer)}, new String[]{null});
             serviceStubs.getZxtmConfExtraBinding().deleteFile(new String[]{fileToDelete});
             LOG.info(String.format("Successfully deleted a custom error file for: %s%s", loadBalancer.getAccountId(), loadBalancer.getId()));
         } catch (RemoteException e) {

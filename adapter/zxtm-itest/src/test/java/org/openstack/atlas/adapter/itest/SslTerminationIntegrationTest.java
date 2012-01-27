@@ -19,8 +19,6 @@ import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import java.rmi.RemoteException;
 import java.util.Calendar;
 
-import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS;
-
 public class SslTerminationIntegrationTest extends ZeusTestBase {
     //TODO: robustoize it...
 
