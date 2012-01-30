@@ -471,47 +471,30 @@
         <xsd:attribute name="startTime" type="xsd:dateTime"/>
     </xsd:complexType>
 
-    <!--    <xsd:element name="accountBilling" type="tns:accountBilling"/>
-    <xsd:complexType name="accountBilling">
-        <xsd:sequence>
-            <xsd:element name="accountUsage" type="tns:accountUsage" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="loadBalancerUsage" type="tns:loadBalancerUsage" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="accountId" type="xsd:int"/>
-    </xsd:complexType>
+    <xsd:element name="loadBalancerUsageRecords">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="loadBalancerUsageRecord" type="tns:loadBalancerUsageRecord" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
 
-    <xsd:element name="accountUsage" type="tns:accountUsage"/>
-    <xsd:complexType name="accountUsage">
-        <xsd:sequence>
-            <xsd:element name="accountUsageRecord" type="tns:accountUsageRecord" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-    </xsd:complexType>
-
-    <xsd:element name="accountUsageRecord" type="tns:accountUsageRecord"/>
-    <xsd:complexType name="accountUsageRecord">
-        <xsd:attribute name="numLoadBalancers" type="xsd:int"/>
-        <xsd:attribute name="numPublicVips" type="xsd:int"/>
-        <xsd:attribute name="numServicenetVips" type="xsd:int"/>
-        <xsd:attribute name="startTime" type="xsd:dateTime"/>
-    </xsd:complexType>
-
-    <xsd:element name="loadBalancerUsage" type="tns:loadBalancerUsage"/>
-    <xsd:complexType name="loadBalancerUsage">
-        <xsd:sequence>
-            <xsd:element name="loadBalancerUsageRecord" type="tns:loadBalancerUsageRecord" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="loadBalancerId" type="xsd:int"/>
-        <xsd:attribute name="loadBalancerName" type="xsd:string"/>
-    </xsd:complexType>
-
-    <xsd:element name="loadBalancerUsageRecord" type="tns:loadBalancerUsageRecord"/>
     <xsd:complexType name="loadBalancerUsageRecord">
-        <xsd:complexContent>
-            <xsd:extension base="papi:usage">
-                <xsd:attribute name="numPolls" type="xsd:int"/>
-            </xsd:extension>
-        </xsd:complexContent>
-    </xsd:complexType>-->
+        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:attribute name="accountId" type="xsd:int"/>
+        <xsd:attribute name="loadBalancerId" type="xsd:int"/>
+        <xsd:attribute name="averageNumConnections" type="xsd:double"/>
+        <xsd:attribute name="incomingTransfer" type="xsd:long"/>
+        <xsd:attribute name="outgoingTransfer" type="xsd:long"/>
+        <xsd:attribute name="numVips" type="xsd:int"/>
+        <xsd:attribute name="numPolls" type="xsd:int"/>
+        <xsd:attribute name="vipType" type="papi:vipType"/>
+        <xsd:attribute name="hasSsl" type="xsd:boolean"/>
+        <xsd:attribute name="startTime" type="xsd:dateTime"/>
+        <xsd:attribute name="endTime" type="xsd:dateTime"/>
+        <xsd:attribute name="eventType" type="xsd:string" use="optional"/>
+    </xsd:complexType>
 
     <!-- Testing types. Throw the below test types when going to production -->
     <xsd:element name="listOfInts" type="tns:listOfInts"/>

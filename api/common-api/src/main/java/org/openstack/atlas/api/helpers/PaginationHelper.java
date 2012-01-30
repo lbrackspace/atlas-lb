@@ -8,8 +8,8 @@ import org.w3.atom.Link;
 public class PaginationHelper {
     protected static RestApiConfiguration restApiConfiguration;
     final protected static Integer MIN_PAGE_LIMIT = 1;
-    final protected static Integer MAX_PAGE_LIMIT = 100;
-    final protected static Integer DEFAULT_PAGE_LIMIT = 100;
+    final protected static Integer MAX_PAGE_LIMIT = 1000;
+    final protected static Integer DEFAULT_PAGE_LIMIT = 500;
     final protected static Integer MIN_PAGE_OFFSET = 0;
     final protected static Integer DEFAULT_PAGE_OFFSET = 0;
     final public static String NEXT = "next";

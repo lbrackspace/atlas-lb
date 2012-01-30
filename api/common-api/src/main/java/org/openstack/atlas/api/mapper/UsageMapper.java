@@ -9,6 +9,8 @@ import org.openstack.atlas.service.domain.usage.BitTags;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public final class UsageMapper {
     public static LoadBalancerUsage toRestApiServiceUsage(List<Usage> domainUsageList) {
@@ -58,6 +60,49 @@ public final class UsageMapper {
 
         BitTags bitTags = new BitTags(dusage.getTags());
 
+        if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
+            rusage.setVipType(VipType.SERVICENET);
+        } else {
+            rusage.setVipType(VipType.PUBLIC);
+        }
+
+        return rusage;
+    }
+
+    public static List<org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord> toMgmtApiUsages(List<Usage> usageList, Map<Integer, Integer> accountIdLbIdMap) {
+        List<org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord> apiUsageList = new ArrayList<org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord>();
+
+        if (usageList != null) {
+            for (Usage usage : usageList) {
+                apiUsageList.add(toMgmtApiUsage(usage, accountIdLbIdMap.get(usage.getLoadbalancer().getId())));
+            }
+        }
+
+        return apiUsageList;
+    }
+
+    public static org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord toMgmtApiUsage(Usage dusage, Integer accountId) {
+        org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord rusage = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord();
+        if (dusage == null) {
+            return null;
+        }
+
+        rusage.setId(dusage.getId());
+        rusage.setAccountId(accountId);
+        rusage.setLoadBalancerId(dusage.getLoadbalancer().getId());
+        rusage.setAverageNumConnections(dusage.getAverageConcurrentConnections());
+        rusage.setIncomingTransfer(dusage.getIncomingTransfer());
+        rusage.setOutgoingTransfer(dusage.getOutgoingTransfer());
+        rusage.setNumVips(dusage.getNumVips());
+        rusage.setNumPolls(dusage.getNumberOfPolls());
+        rusage.setStartTime(dusage.getStartTime());
+        rusage.setEndTime(dusage.getEndTime());
+        rusage.setEventType(dusage.getEventType());
+
+        BitTags bitTags = new BitTags(dusage.getTags());
+
+        rusage.setHasSsl(bitTags.isTagOn(BitTag.SSL));
+        
         if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
             rusage.setVipType(VipType.SERVICENET);
         } else {

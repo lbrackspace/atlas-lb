@@ -41,6 +41,7 @@ public class ManagementDependencyProvider {
     protected LoadBalancerEventRepository eventRepository;
     protected AccountLimitRepository accountLimitRepository;
     protected AccountUsageRepository accountUsageRepository;
+    protected UsageRepository usageRepository;
     protected HostUsageRepository hostUsageRepository;
     protected BlacklistRepository blacklistRepository;
     protected TicketService ticketService;
@@ -227,6 +228,14 @@ public class ManagementDependencyProvider {
 
     public void setAccountUsageRepository(AccountUsageRepository accountUsageRepository) {
         this.accountUsageRepository = accountUsageRepository;
+    }
+
+    public UsageRepository getUsageRepository() {
+        return usageRepository;
+    }
+
+    public void setUsageRepository(UsageRepository usageRepository) {
+        this.usageRepository = usageRepository;
     }
 
     public HostUsageRepository getHostUsageRepository() {

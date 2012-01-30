@@ -2,16 +2,25 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.ejb.criteria.OrderImpl;
+import org.openstack.atlas.service.domain.entities.AccountUsage;
+import org.openstack.atlas.service.domain.entities.AccountUsage_;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.entities.Usage_;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
@@ -114,5 +123,19 @@ public class UsageRepository {
 
         return idsInDatabase;
 
+    }
+
+    public List<Usage> getUsageRecords(Calendar startTime, Calendar endTime, Integer offset, Integer limit) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Usage> criteria = builder.createQuery(Usage.class);
+        Root<Usage> lbRoot = criteria.from(Usage.class);
+
+        Predicate startTimeBetweenDates = builder.between(lbRoot.get(Usage_.startTime), startTime, endTime);
+        Predicate endTimeBetweenDates = builder.between(lbRoot.get(Usage_.endTime), startTime, endTime);
+
+        criteria.select(lbRoot);
+        criteria.where(builder.and(startTimeBetweenDates, endTimeBetweenDates));
+        criteria.orderBy(new OrderImpl(lbRoot.get(Usage_.loadbalancer), true), new OrderImpl(lbRoot.get(Usage_.startTime), true));
+        return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit + 1).getResultList();
     }
 }

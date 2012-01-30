@@ -1280,6 +1280,26 @@ public class LoadBalancerRepository {
         criteria.select(lbRoot);
         criteria.where(builder.and(hasAccountId, builder.or(createdBetweenDates, updatedBetweenDates)));
         return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit+1).getResultList();
-//        return entityManager.createQuery(criteria).getResultList();
+    }
+
+    public Map<Integer, Integer> getAccountIdMapForUsageRecords(List<Usage> rawLoadBalancerUsageList) {
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        Set<Integer> loadBalancerIds = new HashSet<Integer>();
+
+        for (Usage usage : rawLoadBalancerUsageList) {
+            loadBalancerIds.add(usage.getLoadbalancer().getId());
+        }
+
+        Query query = entityManager.createQuery("SELECT l.accountId, l.id FROM LoadBalancer l where l.id in (:idList)")
+                .setParameter("idList", loadBalancerIds);
+        final List<Object[]> resultList = query.getResultList();
+
+        for (Object[] row : resultList) {
+            Integer accountId = (Integer) row[0];
+            Integer loadBalancerId = (Integer) row[1];
+            map.put(loadBalancerId, accountId);
+        }
+
+        return map;
     }
 }

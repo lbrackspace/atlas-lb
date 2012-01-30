@@ -1,7 +1,11 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.api.helpers.PaginationHelper;
+import org.openstack.atlas.api.mapper.UsageMapper;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers;
+import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.operations.Operation;
@@ -11,17 +15,19 @@ import org.openstack.atlas.api.mgmt.helpers.CheckQueryParams;
 import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.mgmt.validation.contexts.ReassignHostContext;
+import org.openstack.atlas.util.converters.exceptions.ConverterException;
 import org.openstack.atlas.util.ip.IPUtils;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.w3.atom.Link;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static javax.ws.rs.core.MediaType.*;
+import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
 
 public class LoadBalancersResource extends ManagementDependencyProvider {
 
@@ -41,6 +47,59 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
     public AccountLimitsResource getAccountLimitsResource() {
         accountLimitsResource.setAccountId(accountId);
         return accountLimitsResource;
+    }
+
+    @GET
+    @Path("usage")
+    public Response retrieveAllAccountUsage(@QueryParam("startTime") String startTimeParam, @QueryParam("endTime") String endTimeParam, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
+        if (!isUserInRole("cp,ops,support,billing")) {
+            return ResponseFactory.accessDenied();
+        }
+
+        Calendar startTime;
+        Calendar endTime;
+        List<Usage> rawLoadBalancerUsageList;
+        Map<Integer, Integer> accountIdLbIdMap;
+        org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecords loadBalancerUsageRecords = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecords();
+
+        if (startTimeParam == null || endTimeParam == null) {
+            final String badRequestMessage = "'startTime' and 'endTime' query parameters are required";
+            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, badRequestMessage);
+        } else {
+            try {
+                startTime = isoTocal(startTimeParam);
+                endTime = isoTocal(endTimeParam);
+            } catch (ConverterException ex) {
+                final String badRequestMessage = "Date parameters must follow ISO-8601 (yyyy-MM-dd'T'HH:mm:ss) format";
+                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, badRequestMessage);
+            }
+        }
+
+        try {
+            limit = PaginationHelper.determinePageLimit(limit);
+            offset = PaginationHelper.determinePageOffset(offset);
+            rawLoadBalancerUsageList = usageRepository.getUsageRecords(startTime, endTime, offset, limit);
+            accountIdLbIdMap = loadBalancerRepository.getAccountIdMapForUsageRecords(rawLoadBalancerUsageList);
+
+            loadBalancerUsageRecords.getLoadBalancerUsageRecords().addAll(UsageMapper.toMgmtApiUsages(rawLoadBalancerUsageList, accountIdLbIdMap));
+
+            if (loadBalancerUsageRecords.getLoadBalancerUsageRecords().size() > limit) {
+                String relativeUri = String.format("/management/loadbalancers/usage?startTime=%s&endTime=%s&offset=%d&limit=%d", startTimeParam, endTimeParam, PaginationHelper.calculateNextOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri);
+                loadBalancerUsageRecords.getLinks().add(nextLink);
+                loadBalancerUsageRecords.getLoadBalancerUsageRecords().remove(limit.intValue()); // Remove limit+1 item
+            }
+
+            if (offset > 0) {
+                String relativeUri = String.format("/management/loadbalancers/usage?startTime=%s&endTime=%s&offset=%d&limit=%d", startTimeParam, endTimeParam, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri);
+                loadBalancerUsageRecords.getLinks().add(nextLink);
+            }
+
+            return Response.status(200).entity(loadBalancerUsageRecords).build();
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }
     }
 
     @PUT
