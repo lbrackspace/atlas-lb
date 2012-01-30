@@ -58,10 +58,10 @@
             <a>id</a>
             <b>id</b>
         </field-exclude>
-        <field-exclude>
+        <field>
             <a>privatekey</a>
             <b>privatekey</b>
-        </field-exclude>
+        </field>
         <field>
         <a get-method="isEnabled">enabled</a>
         <b get-method="isEnabled">enabled</b>
