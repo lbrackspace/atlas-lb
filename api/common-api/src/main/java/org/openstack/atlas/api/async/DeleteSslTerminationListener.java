@@ -55,7 +55,7 @@ public class DeleteSslTerminationListener extends BaseListener {
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(errorMsgLB);
             // Notify usage processor with a usage event
-            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.SSL_OFF);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
             return;
         }
 
@@ -67,7 +67,7 @@ public class DeleteSslTerminationListener extends BaseListener {
         notificationService.saveLoadBalancerEvent(errorMsgLB.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_SSL_TERMINATION, DELETE, INFO);
 
         // Notify usage processor with a usage event
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.SSL_OFF);
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
 
         LOG.info(String.format("Load balancer ssl termination '%d' successfully deleted.", dbLoadBalancer.getId()));
     }

@@ -2,13 +2,22 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.entities.Usage_;
+import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage_;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -114,5 +123,21 @@ public class UsageRepository {
 
         return idsInDatabase;
 
+    }
+
+    public List<Usage> getRecordForLoadBalancer(Integer loadBalancerId, UsageEvent usageEvent) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Usage> criteria = builder.createQuery(Usage.class);
+        Root<Usage> loadBalancerUsageRoot = criteria.from(Usage.class);
+        LoadBalancer loadBalancer = new LoadBalancer();
+        loadBalancer.setId(loadBalancerId);
+
+        Predicate hasLoadBalancerId = builder.equal(loadBalancerUsageRoot.get(Usage_.loadbalancer), loadBalancer);
+        Predicate hasEventType = builder.equal(loadBalancerUsageRoot.get(Usage_.eventType), usageEvent.name());
+
+        criteria.select(loadBalancerUsageRoot);
+        criteria.where(builder.and(hasLoadBalancerId, hasEventType));
+
+        return entityManager.createQuery(criteria).getResultList();
     }
 }

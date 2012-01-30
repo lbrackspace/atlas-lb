@@ -27,32 +27,20 @@ public abstract class BaseListener implements MessageListener {
     protected Log LOG = LogFactory.getLog(this.getClass());
 
     protected JmsTemplate jmsTemplate;
-
     protected LoadBalancerService loadBalancerService;
-
     protected VirtualIpService virtualIpService;
-
     protected NotificationService notificationService;
-
     protected HostService hostService;
-
     protected HealthMonitorService healthMonitorService;
-
     protected ConnectionThrottleService connectionThrottleService;
-
     protected ConnectionLoggingService connectionLoggingService;
-
     protected SessionPersistenceService sessionPersistenceService;
-
     protected AccessListService accessListService;
-
     protected RateLimitingService rateLimitingService;
-
     protected NodeService nodeService;
-
     protected SslTerminationService sslTerminationService;
-
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+    protected UsageEventHelper usageEventHelper;
 
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
@@ -104,6 +92,10 @@ public abstract class BaseListener implements MessageListener {
 
     public void setSslTerminationService(SslTerminationService sslTerminationService) {
         this.sslTerminationService = sslTerminationService;
+    }
+
+    public void setUsageEventHelper(UsageEventHelper usageEventHelper) {
+        this.usageEventHelper = usageEventHelper;
     }
 
     public final void onMessage(Message message) {
@@ -188,7 +180,7 @@ public abstract class BaseListener implements MessageListener {
         });
     }
 
-    protected void notifyUsageProcessor(final Message message, final LoadBalancer loadBalancer, final UsageEvent event) throws JMSException {
+/*    protected void notifyUsageProcessor(final Message message, final LoadBalancer loadBalancer, final UsageEvent event) throws JMSException {
         LOG.debug("Sending notification to usage processor...");
         final String finalDestination = "USAGE_EVENT";
         jmsTemplate.send(finalDestination, new MessageCreator() {
@@ -200,7 +192,7 @@ public abstract class BaseListener implements MessageListener {
                 return response;
             }
         });
-    }
+    }*/
 
     public static String getId(String name,Object obj) {
         int hashcode;

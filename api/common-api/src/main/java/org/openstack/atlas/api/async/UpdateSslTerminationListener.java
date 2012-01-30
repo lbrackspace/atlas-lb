@@ -56,7 +56,7 @@ public class UpdateSslTerminationListener extends BaseListener {
             notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dbLoadBalancer);
             // Notify usage processor
-            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.SSL_OFF);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
             return;
         }
 
@@ -67,9 +67,9 @@ public class UpdateSslTerminationListener extends BaseListener {
 
         // Notify usage processor
         if (queTermination.getSslTermination().isEnabled()) {
-            notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ON);
         } else {
-            notifyUsageProcessor(message, dbLoadBalancer, SSL_OFF);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
         }
 
         LOG.info(String.format("Updated load balancer '%d' ssl termination successfully for loadbalancer: ", dbLoadBalancer.getId()));

@@ -18,11 +18,6 @@ import java.util.Calendar;
 public class EventsDeletionJob extends Job {
     private final Log LOG = LogFactory.getLog(EventsDeletionJob.class);
     LoadBalancerEventRepository loadBalancerEventRepository;
-    AlertRepository alertRepository;
-
-    public void setAlertRepository(AlertRepository alertRepository) {
-        this.alertRepository = alertRepository;
-    }
 
     @Required
     public void setLoadBalancerEventRepository(LoadBalancerEventRepository loadBalancerEventRepository) {
@@ -88,6 +83,7 @@ public class EventsDeletionJob extends Job {
             LOG.error(String.format("Failed while removing one of the event entries: %s", e.getMessage()));
             Alert alert = AlertHelper.createAlert(1, 1, e, AlertType.API_FAILURE.name(), "Failed removing an event entry...");
             alertRepository.save(alert);
+            return;
         }
 
         Calendar endTime = Calendar.getInstance();

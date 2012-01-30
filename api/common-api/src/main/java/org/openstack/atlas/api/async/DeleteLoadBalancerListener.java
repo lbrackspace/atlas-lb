@@ -49,12 +49,13 @@ public class DeleteLoadBalancerListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
-            // Notify usage processor with a usage event
-            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
 
+            // Notify usage processor with a usage event
             if (dbLoadBalancer.hasSsl()) {
-                notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.SSL_OFF);
+                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
             }
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+
             return;
         }
 
@@ -64,7 +65,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
             LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in database.", dbLoadBalancer.getId()));
 
             // Notify usage processor with a usage event
-            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.SSL_OFF);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
         }
 
         dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);
@@ -74,8 +75,8 @@ public class DeleteLoadBalancerListener extends BaseListener {
         String atomSummary = "Load balancer successfully deleted";
         notificationService.saveLoadBalancerEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
-        // Notify usage processor with a usage event
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+        // Notify usage processor
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
 
         LOG.info(String.format("Load balancer '%d' successfully deleted.", dbLoadBalancer.getId()));
     }

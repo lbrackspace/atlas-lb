@@ -28,6 +28,73 @@
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
     </bean>
 
+    <bean id="notificationService" class="org.openstack.atlas.service.domain.services.impl.NotificationServiceImpl" parent="baseService" />
+
+    <bean id="loadBalancerService" class="org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl" parent="baseService" >
+        <property name="notificationService" ref="notificationService"/>
+        <property name="virtualIpService" ref="virtualIpService"/>
+        <property name="hostService" ref="hostService"/>
+        <property name="accountLimitService" ref="accountLimitService"/>
+        <property name="nodeService" ref="nodeService" />
+    </bean>
+    <bean id="clusterService" class="org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl" parent="baseService" >
+        <property name="virtualIpService" ref="virtualIpService"/>
+        <property name="ticketService" ref="ticketService" />
+    </bean>
+    <bean id="nodeService" class="org.openstack.atlas.service.domain.services.impl.NodeServiceImpl" parent="baseService">
+        <property name="accountLimitService" ref="accountLimitService"/>
+        <property name="loadBalancerService" ref="loadBalancerService"/>
+    </bean>
+    <bean id="virtualIpService" class="org.openstack.atlas.service.domain.services.impl.VirtualIpServiceImpl" parent="baseService">
+        <property name="accountLimitService" ref="accountLimitService"/>
+    </bean>
+    <bean id="accessListService" class="org.openstack.atlas.service.domain.services.impl.AccessListServiceImpl" parent="baseService">
+        <property name="accountLimitService" ref="accountLimitService"/>
+    </bean>
+    <bean id="healthMonitorService" class="org.openstack.atlas.service.domain.services.impl.HealthMonitorServiceImpl" parent="baseService"/>
+    <bean id="alertService" class="org.openstack.atlas.service.domain.services.impl.AlertServiceImpl" parent="baseService"/>
+    <bean id="hostService" class="org.openstack.atlas.service.domain.services.impl.HostServiceImpl" parent="baseService" />
+    <bean id="connectionLoggingService" class="org.openstack.atlas.service.domain.services.impl.ConnectionLoggingServiceImpl" parent="baseService"/>
+    <bean id="connectionThrottleService" class="org.openstack.atlas.service.domain.services.impl.ConnectionThrottleServiceImpl" parent="baseService"/>
+    <bean id="algorithmService" class="org.openstack.atlas.service.domain.services.impl.AlgorithmsServiceImpl" parent="baseService"/>
+    <bean id="protocolsService" class="org.openstack.atlas.service.domain.services.impl.ProtocolsServiceImpl" parent="baseService"/>
+    <bean id="sessionPersistenceService" class="org.openstack.atlas.service.domain.services.impl.SessionPersistenceServiceImpl" parent="baseService" />
+    <bean id="usageService" class="org.openstack.atlas.service.domain.services.impl.UsageServiceImpl" parent="baseService"/>
+    <bean id="rateLimitingService" class="org.openstack.atlas.service.domain.services.impl.RateLimitingServiceImpl" parent="baseService"/>
+    <bean id="groupService" class="org.openstack.atlas.service.domain.services.impl.GroupServiceImpl" parent="baseService"/>
+    <bean id="ticketService" class="org.openstack.atlas.service.domain.services.impl.TicketServiceImpl" parent="baseService"/>
+    <bean id="accountLimitService" class="org.openstack.atlas.service.domain.services.impl.AccountLimitServiceImpl" parent="baseService"/>
+    <bean id="suspensionService" class="org.openstack.atlas.service.domain.services.impl.SuspensionServiceImpl" parent="baseService"/>
+    <bean id="blackListService" class="org.openstack.atlas.service.domain.services.impl.BlackListServiceImpl" parent="baseService"/>
+    <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl" parent="baseService"/>
+    <bean id="sslTerminationService" class="org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl" parent="baseService"/>
+
+    <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
+        <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
+        <property name="accountLimitRepository" ref="accountLimitRepository"/>
+        <property name="virtualIpRepository" ref="virtualIpRepository"/>
+        <property name="virtualIpv6Repository" ref="virtualIpv6Repository"/>
+        <property name="hostRepository" ref="hostRepository"/>
+        <property name="loadBalancerEventRepository" ref="loadBalancerEventRepository"/>
+        <property name="alertRepository" ref="alertRepository"/>
+        <property name="blacklistRepository" ref="blacklistRepository"/>
+        <property name="groupRepository" ref="groupRepository" />
+        <property name="clusterRepository" ref="clusterRepository" />
+        <property name="nodeRepository" ref="nodeRepository" />
+        <property name="rateLimitRepository" ref="rateLimitRepository" />
+        <property name="jobStateRepository" ref="jobStateRepository" />
+        <property name="usageRepository" ref="usageRepository" />
+        <property name="loadBalancerUsageRepository" ref="loadBalancerUsageRepository" />
+        <property name="loadBalancerUsageEventRepository" ref="loadBalancerUsageEventRepository" />
+    </bean>
+
+    <bean id="usageEventHelper" class="org.openstack.atlas.api.async.UsageEventHelper" scope="prototype">
+        <property name="usageService" ref="usageService"/>
+        <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
+        <property name="accountUsageRepository" ref="accountUsageRepository"/>
+        <property name="virtualIpRepository" ref="virtualIpRepository"/>
+    </bean>
+
     <bean id="baseListener" class="org.openstack.atlas.api.async.BaseListener" abstract="true">
         <property name="jmsTemplate" ref="jmsTemplate"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>
@@ -43,6 +110,7 @@
         <property name="rateLimitingService" ref="rateLimitingService"/>
         <property name="hostService" ref="hostService"/>
         <property name="sslTerminationService" ref="sslTerminationService"/>
+        <property name="usageEventHelper" ref="usageEventHelper"/>
     </bean>
 
     <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
@@ -411,28 +479,6 @@
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
         <property name="messageListener" ref="updateSessionPersistenceListener"/>
         <property name="destinationName" value="ENABLE_SESSION_PERSISTENCE"/>
-        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
-        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
-        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
-        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
-        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
-        <property name="sessionTransacted" value="true"/>
-    </bean>
-
-    <bean id="usageEventListener"
-          class="org.openstack.atlas.api.async.UsageEventListener">
-        <property name="usageRepository" ref="usageRepository"/>
-        <property name="usageEventRepository" ref="usageEventRepository"/>
-        <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
-        <property name="accountUsageRepository" ref="accountUsageRepository"/>
-        <property name="virtualIpRepository" ref="virtualIpRepository"/>
-    </bean>
-
-    <bean id="usageEventContainer"
-          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
-        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
-        <property name="messageListener" ref="usageEventListener"/>
-        <property name="destinationName" value="USAGE_EVENT"/>
         <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
         <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
         <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
