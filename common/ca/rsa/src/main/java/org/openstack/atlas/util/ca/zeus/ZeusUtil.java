@@ -79,6 +79,10 @@ public class ZeusUtil {
         if (keyPem != null) {
             try {
                 kp = (KeyPair) PemUtils.fromPem(keyPem);
+                if(kp == null){
+                    errorList.add(ERRORDECODINGKEY);
+                    return zcf;
+                }
                 rp = new RsaPair(kp);
             } catch (ConversionException ex) {
                 errorList.add(ERRORDECODINGKEY);
@@ -92,6 +96,10 @@ public class ZeusUtil {
         if (certPem != null) {
             try {
                 subjectCrt = (X509CertificateObject) PemUtils.fromPem(certPem);
+                if(subjectCrt == null){
+                    errorList.add(ERRORDECODINGCERT);
+                    return zcf;
+                }
             } catch (PemException ex) {
                 errorList.add(ERRORDECODINGCERT);
             } catch (ClassCastException ex) {
