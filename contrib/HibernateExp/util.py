@@ -26,7 +26,8 @@ import org.hexp.hibernateexp.util.HashUtil as HashUtil
 import org.hexp.hibernateexp.util.HibernateUtil as HibernateUtil
 import org.hexp.hibernateexp.HuApp as HuApp
 
-import org.openstack.atlas.service.domain.entities.VirtualIp as VirtualIp
+import org.openstack.atlas.service.domain.entities.UserPages as UserPages
+import org.openstack.atlas.service.domain.entities.NodeType as NodeType
 import org.openstack.atlas.service.domain.entities.VirtualIpv6 as VirtualIpv6
 import org.openstack.atlas.service.domain.entities.VirtualIpType as VirtualIpType
 import org.openstack.atlas.service.domain.entities.Cluster as Cluster
@@ -106,6 +107,7 @@ import org.openstack.atlas.util.converters.DateTimeConverters as DateTimeConvert
 import java.util.ArrayList as ArrayList
 import java.util.List as List
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfInts as ListOfInts
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus as ClusterStatus
 
 import time
 import datetime
@@ -127,7 +129,8 @@ SEEDFILE = "util.seed"
 RsaConst.init();
 
 if os.path.isfile(SEEDFILE):
-    aes = Aes(FileUtils.readFileToBytes(SEEDFILE))
+    seed = FileUtils.readFileToBytes(SEEDFILE)
+    aes = Aes(seed)
 else:
     printf("Don't forget to seed a key via ./seedKey\n")
     sys.stdout.flush()
@@ -890,6 +893,7 @@ def newClusters(names,ds="DFW"):
         kw["DataCenter"]=DataCenter.valueOf(ds)
         kw["Password"]="***"
         kw["Username"]="wtf"
+        kw["Status"] = ClusterStatus.ACTIVE
         out.append(newObj(Cluster,**kw))
     return out  
 
@@ -897,6 +901,7 @@ def newHost(cluster):
     out = newObj(Host,Name="H1",Id=1,HostStatus=HostStatus.values()[0],
                  Cluster=cluster,CoreDeviceId="1",MaxConcurrentConnections=9,
                  ManagementIp="127.0.0.1")
+    out.setEndpoint("http://127.0.0.1")
     return out
 
 def newRateProfile():
@@ -926,7 +931,7 @@ def linkConnectionLimits2LoadBalancer(cls):
         app.saveOrUpdate(lb)
 
 
-def newLoadBalancers(accountId,num,hosts,rateprofile):
+def newLoadBalancers(accountId,num,hosts):
     today = Calendar.getInstance()
     out = []
     for i in xrange(0,num):
@@ -944,11 +949,9 @@ def newLoadBalancers(accountId,num,hosts,rateprofile):
         lb.setProtocol(rnd.choice(LoadBalancerProtocol.values()))
         lb.setSessionPersistence(rnd.choice(SessionPersistence.values()))
         lb.setStatus(rnd.choice(LoadBalancerStatus.values()))
-        if not rateprofile:
-            rps = app.getList("from LoadBalancerRateProfile")
-            lb.setLoadBalancerRateProfile(rps[0])
-        else:
-            lb.setLoadBalancerRateProfile(rateprofile)
+        up = UserPages()
+        up.setErrorpage("<html>Error</html>")
+        lb.setUserPages(up)
         out.append(lb)
     return out
 
@@ -1001,6 +1004,7 @@ def newNodes(lbs,num):
             n.setPort(80)
             n.setWeight(ri(0,1000))
             n.setStatus(rnd.choice(NodeStatus.values()))
+            n.setType(NodeType.PRIMARY)
             out.append(n)
     return out
 

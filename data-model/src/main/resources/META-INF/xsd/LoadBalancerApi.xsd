@@ -127,6 +127,13 @@
         <xsd:attribute name="type" type="xsd:string"/>
     </xsd:complexType>
 
+    <xsd:simpleType name="nodeType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="PRIMARY"/>
+            <xsd:enumeration value="FAILOVER"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
     <xsd:element name="virtualIp" type="tns:virtualIp"/>
     <xsd:complexType name="virtualIp">
         <xsd:attribute name="id" type="xsd:int"/>

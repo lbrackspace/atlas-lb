@@ -29,6 +29,11 @@ public class Node extends Entity implements Serializable {
     @Column(name = "status")
     private NodeStatus status;
 
+
+    @JoinColumn(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private NodeType type = NodeType.PRIMARY;
+
     @Transient
     private boolean isNew;
 
@@ -116,5 +121,13 @@ public class Node extends Entity implements Serializable {
 
         sb.append("}");
         return sb.toString();
+    }
+
+    public NodeType getType() {
+        return type;
+    }
+
+    public void setType(NodeType type) {
+        this.type = type;
     }
 }
