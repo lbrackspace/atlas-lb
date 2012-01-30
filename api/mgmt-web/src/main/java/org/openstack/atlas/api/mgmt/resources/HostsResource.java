@@ -88,7 +88,9 @@ public class HostsResource extends ManagementDependencyProvider {
 
             if (timeDiff > millisecondsIn31Days) {
                 return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Time range cannot be greater than 31 days.");
-            } else if (startTime.compareTo(endTime) < 0) {
+            }
+
+            if (timeDiff < 0) {
                 return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Must specify an earlier startDate than endDate.");
             }
         } catch (ConverterException ex) {
