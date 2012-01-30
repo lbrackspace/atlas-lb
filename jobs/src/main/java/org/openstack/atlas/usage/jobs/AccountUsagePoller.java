@@ -59,6 +59,7 @@ public class AccountUsagePoller extends Job implements StatefulJob {
             }
         } catch (Exception e) {
             jobStateService.updateJobState(JobName.ACCOUNT_USAGE_POLLER, JobStateVal.FAILED);
+            return;
         }
 
         Calendar endTime = Calendar.getInstance();

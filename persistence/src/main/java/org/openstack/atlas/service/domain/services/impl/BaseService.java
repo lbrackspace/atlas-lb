@@ -9,6 +9,8 @@ import org.openstack.atlas.service.domain.events.repository.AlertRepository;
 import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
+import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ip.IPv4Cidr;
@@ -43,6 +45,9 @@ public class BaseService {
     protected RateLimitRepository rateLimitRepository;
     protected JobStateRepository jobStateRepository;
     protected SslTerminationRepository sslTerminationRepository;
+    protected UsageRepository usageRepository;
+    protected LoadBalancerUsageRepository loadBalancerUsageRepository;
+    protected LoadBalancerUsageEventRepository loadBalancerUsageEventRepository;
 
     static {
         org.openstack.atlas.util.ca.primitives.RsaConst.init();
@@ -98,6 +103,18 @@ public class BaseService {
 
     public void setSslTerminationRepository(SslTerminationRepository sslTerminationRepository) {
         this.sslTerminationRepository = sslTerminationRepository;
+    }
+
+    public void setUsageRepository(UsageRepository usageRepository) {
+        this.usageRepository = usageRepository;
+    }
+
+    public void setLoadBalancerUsageRepository(LoadBalancerUsageRepository loadBalancerUsageRepository) {
+        this.loadBalancerUsageRepository = loadBalancerUsageRepository;
+    }
+
+    public void setLoadBalancerUsageEventRepository(LoadBalancerUsageEventRepository loadBalancerUsageEventRepository) {
+        this.loadBalancerUsageEventRepository = loadBalancerUsageEventRepository;
     }
 
     public void isLbActive(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException {

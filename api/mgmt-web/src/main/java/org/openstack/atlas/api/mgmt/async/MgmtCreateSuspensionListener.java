@@ -61,7 +61,7 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
         notificationService.saveLoadBalancerEvent(requestLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, UPDATE_LOADBALANCER, UPDATE, INFO);
 
         // Notify usage processor
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER);
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER);
 
         LOG.info(String.format("Suspend load balancer operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }
