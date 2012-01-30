@@ -1,14 +1,22 @@
 package org.openstack.atlas.service.domain.usage.repository;
 
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.events.entities.EventType;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent_;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -82,6 +90,35 @@ public class LoadBalancerUsageEventRepository {
             sb.deleteCharAt(sb.lastIndexOf(","));
         }
         return sb.toString();
+    }
+
+    public void create(LoadBalancerUsageEvent loadBalancerUsageEvent) {
+        entityManager.persist(loadBalancerUsageEvent);
+    }
+
+    public List<LoadBalancerUsageEvent> getEventsForLoadBalancer(Integer loadBalancerId) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerUsageEvent> criteria = builder.createQuery(LoadBalancerUsageEvent.class);
+        Root<LoadBalancerUsageEvent> usageEventRoot = criteria.from(LoadBalancerUsageEvent.class);
+
+        Predicate hasLoadBalancerId = builder.equal(usageEventRoot.get(LoadBalancerUsageEvent_.loadbalancerId), loadBalancerId);
+
+        criteria.select(usageEventRoot);
+        criteria.where(hasLoadBalancerId);
+
+        List<LoadBalancerUsageEvent> usageEvents = entityManager.createQuery(criteria).getResultList();
+        return usageEvents;
+    }
+
+    public List<LoadBalancerUsageEvent> getFilteredEventsForLoadBalancer(Integer loadBalancerId, UsageEvent usageEvent) {
+        List<LoadBalancerUsageEvent> usageEvents = getEventsForLoadBalancer(loadBalancerId);
+        List<LoadBalancerUsageEvent> filteredUsageEvents = new ArrayList<LoadBalancerUsageEvent>();
+
+        for (LoadBalancerUsageEvent event : usageEvents) {
+            if (event.getEventType().equals(usageEvent.name())) filteredUsageEvents.add(event);
+        }
+
+        return filteredUsageEvents;
     }
 }
 

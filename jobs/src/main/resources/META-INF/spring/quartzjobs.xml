@@ -39,6 +39,7 @@
                 <entry key="hostRepository" value-ref="hostRepository"/>
                 <entry key="usageRepository" value-ref="usageRepository"/>
                 <entry key="usageEventRepository" value-ref="usageEventRepository"/>
+                <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
@@ -59,6 +60,7 @@
                 <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
                 <entry key="accountUsageRepository" value-ref="accountUsageRepository"/>
                 <entry key="virtualIpRepository" value-ref="virtualIpRepository"/>
+                <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
@@ -78,6 +80,7 @@
                 <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
                 <entry key="hostRepository" value-ref="hostRepository"/>
                 <entry key="hostUsageRepository" value-ref="hostUsageRepository"/>
+                <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
@@ -96,6 +99,7 @@
             <map>
                 <entry key="pollingUsageRepository" value-ref="usageRepository"/>
                 <entry key="rollUpUsageRepository" value-ref="rollupUsageRepository"/>
+                <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
@@ -115,6 +119,7 @@
             <map>
                 <entry key="usageRepository" value-ref="usageRepository"/>
                 <entry key="hostUsageRepository" value-ref="hostUsageRepository"/>
+                <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
@@ -134,6 +139,7 @@
                 <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
                 <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
                 <entry key="hostRepository" value-ref="hostRepository"/>
+                <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
@@ -153,6 +159,7 @@
                 <entry key="reverseProxyLoadBalancerService" value-ref="reverseProxyLoadBalancerService"/>
                 <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
                 <entry key="hostRepository" value-ref="hostRepository"/>
+                <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
@@ -165,8 +172,7 @@
 
     <!--ALERT DELETION JOB CONFIG-->
     <bean name="atomAlertDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"
-                  value="org.openstack.atlas.jobs.AlertDeletionJob"/>
+        <property name="jobClass" value="org.openstack.atlas.jobs.AlertDeletionJob"/>
         <property name="jobDataAsMap">
             <map>
                 <entry key="alertRepository" value-ref="alertRepository"/>

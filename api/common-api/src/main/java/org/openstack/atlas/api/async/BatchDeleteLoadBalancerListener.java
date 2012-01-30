@@ -61,8 +61,8 @@ public class BatchDeleteLoadBalancerListener extends BaseListener {
         String atomSummary = "Load balancer successfully deleted";
         notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
-        // Notify usage processor with a usage event
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+        // Notify usage processor
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
 
         LOG.info(String.format("Load balancer '%d' successfully deleted.", dbLoadBalancer.getId()));
     }

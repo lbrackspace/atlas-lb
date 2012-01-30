@@ -63,8 +63,8 @@ public class AddVirtualIpListener extends BaseListener {
             notificationService.saveVirtualIpEvent(dataContainer.getUserName(), dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), newVipId, CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(), EventType.CREATE_VIRTUAL_IP, CREATE, INFO);
         }
 
-        // Notify usage processor with a usage event
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);
+        // Notify usage processor
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);
 
         LOG.info(String.format("Add virtual ip operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }

@@ -1,15 +1,24 @@
 package org.openstack.atlas.service.domain.usage.repository;
 
+import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent_;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage_;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -152,5 +161,19 @@ public class LoadBalancerUsageRepository {
             sb.deleteCharAt(sb.lastIndexOf(","));
         }
         return sb.toString();
+    }
+
+    public List<LoadBalancerUsage> getRecordsForLoadBalancer(Integer loadBalancerId, UsageEvent usageEvent) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerUsage> criteria = builder.createQuery(LoadBalancerUsage.class);
+        Root<LoadBalancerUsage> loadBalancerUsageRoot = criteria.from(LoadBalancerUsage.class);
+
+        Predicate hasLoadBalancerId = builder.equal(loadBalancerUsageRoot.get(LoadBalancerUsage_.loadbalancerId), loadBalancerId);
+        Predicate hasEventType = builder.equal(loadBalancerUsageRoot.get(LoadBalancerUsage_.eventType), usageEvent.name());
+
+        criteria.select(loadBalancerUsageRoot);
+        criteria.where(builder.and(hasLoadBalancerId, hasEventType));
+
+        return entityManager.createQuery(criteria).getResultList();
     }
 }

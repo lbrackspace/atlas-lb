@@ -180,12 +180,14 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
             }
         }
 
-        Calendar endTime = Calendar.getInstance();
-        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-        LOG.info(String.format("Usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
-
-        if (failed) jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FAILED);
-        else jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FINISHED);
+        if (failed) {
+            jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FAILED);
+        } else {
+            Calendar endTime = Calendar.getInstance();
+            Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
+            LOG.info(String.format("Usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
+            jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FINISHED);
+        }
     }
 
     private boolean isServiceNetLoadBalancer(Integer accountId, Integer lbId) {

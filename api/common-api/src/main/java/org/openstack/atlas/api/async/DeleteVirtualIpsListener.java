@@ -74,8 +74,8 @@ public class DeleteVirtualIpsListener extends BaseListener {
         // Add atom entry
         sendSuccessToEventResource(dataContainer);
 
-        // Notify usage processor with a usage event
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
+        // Notify usage processor
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
 
         LOG.info(String.format("Delete virtual ip operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }
