@@ -1,6 +1,8 @@
 package org.openstack.atlas.api.mgmt.async;
 
-import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.api.helpers.NodesHelper;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
@@ -9,16 +11,11 @@ import org.openstack.atlas.service.domain.pojos.Sync;
 import org.openstack.atlas.service.domain.pojos.SyncLocation;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
-import org.openstack.atlas.api.helpers.NodesHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import javax.jms.Message;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.*;
 import static org.openstack.atlas.service.domain.entities.NodeStatus.ONLINE;
-import static org.openstack.atlas.service.domain.events.UsageEvent.SSL_OFF;
-import static org.openstack.atlas.service.domain.events.UsageEvent.SSL_ON;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.CREATE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
@@ -67,8 +64,8 @@ public class SyncListener extends BaseListener {
                     String atomSummary = "Load balancer successfully deleted";
                     notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
-                    // Notify usage processor with a usage event
-                    notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+                    // Notify usage processor
+                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
                 }
             } else {
 
@@ -92,8 +89,7 @@ public class SyncListener extends BaseListener {
                         notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
 
                         // Notify usage processor
-                        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
-//                        if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+                        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
                     }
                 } catch (Exception e) {
                     String msg = "Error re-creating loadbalancer in SyncListener():";
@@ -131,11 +127,11 @@ public class SyncListener extends BaseListener {
                             notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
 
                             // Notify usage processor
-                            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+                            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
                             if (dbLoadBalancer.isUsingSsl()) {
-                                notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+                                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ON);
                             } else {
-                                notifyUsageProcessor(message, dbLoadBalancer, SSL_OFF);
+                                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
                             }
                         }
                     }

@@ -16,12 +16,6 @@ import java.util.Calendar;
 
 public class AlertDeletionJob extends Job {
     private final Log LOG = LogFactory.getLog(AlertDeletionJob.class);
-    private AlertRepository alertRepository;
-
-    @Required
-    public void setAlertRepository(AlertRepository alertRepository) {
-        this.alertRepository = alertRepository;
-    }
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
@@ -34,9 +28,10 @@ public class AlertDeletionJob extends Job {
             alertRepository.removeAlertEntries();
         } catch (Exception e) {
             jobStateService.updateJobState(JobName.ALERT_DELETION_JOB, JobStateVal.FAILED);
-            LOG.error(String.format("Failed while removing one of the alert entries: %s", e.getMessage()));
+            LOG.error(String.format("Alert deletion job failed while removing one of the alert entries: %s", e.getMessage()));
             Alert alert = AlertHelper.createAlert(null, null, e, AlertType.API_FAILURE.name(), e.getMessage());
             alertRepository.save(alert);
+            return;
         }
 
         Calendar endTime = Calendar.getInstance();

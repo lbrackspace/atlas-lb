@@ -21,12 +21,6 @@ import java.util.List;
 public class LoadBalancerDeletionJob extends Job {
     private final Log LOG = LogFactory.getLog(LoadBalancerDeletionJob.class);
     private LoadBalancerRepository loadBalancerRepository;
-    private AlertRepository alertRepository;
-
-    @Required
-    public void setAlertRepository(AlertRepository alertRepository) {
-        this.alertRepository = alertRepository;
-    }
 
     @Required
     public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
@@ -57,7 +51,10 @@ public class LoadBalancerDeletionJob extends Job {
             }
         } catch (Exception e) {
             jobStateService.updateJobState(JobName.LB_DELETION_JOB, JobStateVal.FAILED);
-            LOG.error("There was a problem deleting a load balancer...", e);
+            LOG.error(String.format("Load balancer deletion job failed while removing load balancers: %s", e.getMessage()));
+            Alert alert = AlertHelper.createAlert(null, null, e, AlertType.API_FAILURE.name(), e.getMessage());
+            alertRepository.save(alert);
+            return;
         }
 
         Calendar endTime = Calendar.getInstance();

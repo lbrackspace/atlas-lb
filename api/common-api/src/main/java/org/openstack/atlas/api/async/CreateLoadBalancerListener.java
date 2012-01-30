@@ -17,7 +17,6 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ACT
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ERROR;
 import static org.openstack.atlas.service.domain.entities.NodeStatus.OFFLINE;
 import static org.openstack.atlas.service.domain.entities.NodeStatus.ONLINE;
-import static org.openstack.atlas.service.domain.events.UsageEvent.SSL_ON;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.CREATE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -61,8 +60,7 @@ public class CreateLoadBalancerListener extends BaseListener {
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             // Notify usage processor
-            notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
-//            if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
             return;
         }
 
@@ -81,10 +79,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         addAtomEntriesForAccessList(queueLb, dbLoadBalancer);
 
         // Notify usage processor
-        notifyUsageProcessor(message, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
-
-        //Takes place on creation of ssl termination...
-//        if (dbLoadBalancer.isUsingSsl()) notifyUsageProcessor(message, dbLoadBalancer, SSL_ON);
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
 
         LOG.info(String.format("Created load balancer '%d' successfully.", dbLoadBalancer.getId()));
     }
