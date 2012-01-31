@@ -49,7 +49,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
         if (!SslTerminationHelper.verifyPortSecurePort(dbLoadBalancer, sslTermination, vipPorts, vip6Ports)) {
             throw new BadRequestException(String.format("Secure port: '%s'  must be unique across loadbalancers " +
-                    "and/or ones being shared across virtual ips. Ports taken: '%s'", sslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
+                    " Ports taken: '%s'", sslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
         }
 
         org.openstack.atlas.service.domain.entities.SslTermination dbTermination = null;
@@ -104,7 +104,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
     private String buildPortString(Map<Integer, List<LoadBalancer>> vipPorts, Map<Integer, List<LoadBalancer>> vip6Ports) {
         String portString = StringUtilities.buildDelemtedListFromIntegerArray(vipPorts.keySet().toArray(new Integer[vipPorts.keySet().size()]), ",");
-        portString = portString + StringUtilities.buildDelemtedListFromIntegerArray(vip6Ports.keySet().toArray(new Integer[vip6Ports.keySet().size()]), ",");
+//        portString = portString + StringUtilities.buildDelemtedListFromIntegerArray(vip6Ports.keySet().toArray(new Integer[vip6Ports.keySet().size()]), ",");
         return portString;
     }
 }
