@@ -69,26 +69,26 @@ public final class UsageMapper {
         return rusage;
     }
 
-    public static List<org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord> toMgmtApiUsages(List<Usage> usageList, Map<Integer, Integer> accountIdLbIdMap) {
+    public static List<org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord> toMgmtApiUsages(List<Usage> usageList) {
         List<org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord> apiUsageList = new ArrayList<org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord>();
 
         if (usageList != null) {
             for (Usage usage : usageList) {
-                apiUsageList.add(toMgmtApiUsage(usage, accountIdLbIdMap.get(usage.getLoadbalancer().getId())));
+                apiUsageList.add(toMgmtApiUsage(usage));
             }
         }
 
         return apiUsageList;
     }
 
-    public static org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord toMgmtApiUsage(Usage dusage, Integer accountId) {
+    public static org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord toMgmtApiUsage(Usage dusage) {
         org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord rusage = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecord();
         if (dusage == null) {
             return null;
         }
 
         rusage.setId(dusage.getId());
-        rusage.setAccountId(accountId);
+        rusage.setAccountId(dusage.getAccountId());
         rusage.setLoadBalancerId(dusage.getLoadbalancer().getId());
         rusage.setAverageNumConnections(dusage.getAverageConcurrentConnections());
         rusage.setIncomingTransfer(dusage.getIncomingTransfer());

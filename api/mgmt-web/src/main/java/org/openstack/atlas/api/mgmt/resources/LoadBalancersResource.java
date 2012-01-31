@@ -59,7 +59,6 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
         Calendar startTime;
         Calendar endTime;
         List<Usage> rawLoadBalancerUsageList;
-        Map<Integer, Integer> accountIdLbIdMap;
         org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecords loadBalancerUsageRecords = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerUsageRecords();
 
         if (startTimeParam == null || endTimeParam == null) {
@@ -79,9 +78,7 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
             limit = PaginationHelper.determinePageLimit(limit);
             offset = PaginationHelper.determinePageOffset(offset);
             rawLoadBalancerUsageList = usageRepository.getUsageRecords(startTime, endTime, offset, limit);
-            accountIdLbIdMap = loadBalancerRepository.getAccountIdMapForUsageRecords(rawLoadBalancerUsageList);
-
-            loadBalancerUsageRecords.getLoadBalancerUsageRecords().addAll(UsageMapper.toMgmtApiUsages(rawLoadBalancerUsageList, accountIdLbIdMap));
+            loadBalancerUsageRecords.getLoadBalancerUsageRecords().addAll(UsageMapper.toMgmtApiUsages(rawLoadBalancerUsageList));
 
             if (loadBalancerUsageRecords.getLoadBalancerUsageRecords().size() > limit) {
                 String relativeUri = String.format("/management/loadbalancers/usage?startTime=%s&endTime=%s&offset=%d&limit=%d", startTimeParam, endTimeParam, PaginationHelper.calculateNextOffset(offset, limit), limit);

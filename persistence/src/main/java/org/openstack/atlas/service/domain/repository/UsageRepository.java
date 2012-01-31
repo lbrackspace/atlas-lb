@@ -3,26 +3,20 @@ package org.openstack.atlas.service.domain.repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.ejb.criteria.OrderImpl;
-import org.openstack.atlas.service.domain.entities.AccountUsage;
-import org.openstack.atlas.service.domain.entities.AccountUsage_;
-import org.openstack.atlas.service.domain.entities.Usage;
-import org.openstack.atlas.service.domain.entities.Usage_;
+import org.openstack.atlas.service.domain.entities.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import sun.security.util.BigInt;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
+import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Repository
 @Transactional
@@ -63,14 +57,14 @@ public class UsageRepository {
 
     private String generateBatchInsertQuery(List<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO lb_usage(loadbalancer_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type) values");
+        sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
 
     private String generateBatchUpdateQuery(List<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("REPLACE INTO lb_usage(id, loadbalancer_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type) values");
+        sb.append("REPLACE INTO lb_usage(id, loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
@@ -84,6 +78,7 @@ public class UsageRepository {
                 sb.append(usage.getId()).append(",");
             }
             sb.append(usage.getLoadbalancer().getId()).append(",");
+            sb.append(usage.getAccountId()).append(",");
             sb.append(usage.getAverageConcurrentConnections()).append(",");
             sb.append(usage.getIncomingTransfer()).append(",");
             sb.append(usage.getOutgoingTransfer()).append(",");
@@ -126,16 +121,41 @@ public class UsageRepository {
     }
 
     public List<Usage> getUsageRecords(Calendar startTime, Calendar endTime, Integer offset, Integer limit) {
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Usage> criteria = builder.createQuery(Usage.class);
-        Root<Usage> lbRoot = criteria.from(Usage.class);
+        Query query = entityManager.createNativeQuery("SELECT u.id, u.loadbalancer_id, u.avg_concurrent_conns, u.bandwidth_in, u.bandwidth_out, u.start_time, u.end_time, u.num_polls, u.num_vips, u.tags_bitmask, u.event_type, u.account_id" +
+                " FROM lb_usage u WHERE u.start_time between :startTime and :endTime" +
+                " and u.end_time between :startTime and :endTime ORDER BY u.account_id, u.loadbalancer_id, u.start_time")
+                .setParameter("startTime", startTime)
+                .setParameter("endTime", endTime);
 
-        Predicate startTimeBetweenDates = builder.between(lbRoot.get(Usage_.startTime), startTime, endTime);
-        Predicate endTimeBetweenDates = builder.between(lbRoot.get(Usage_.endTime), startTime, endTime);
+        final List<Object[]> resultList = query.setFirstResult(offset).setMaxResults(limit + 1).getResultList();
+        List<Usage> usages = new ArrayList<Usage>();
 
-        criteria.select(lbRoot);
-        criteria.where(builder.and(startTimeBetweenDates, endTimeBetweenDates));
-        criteria.orderBy(new OrderImpl(lbRoot.get(Usage_.loadbalancer), true), new OrderImpl(lbRoot.get(Usage_.startTime), true));
-        return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit + 1).getResultList();
+        for (Object[] row : resultList) {
+            Long startTimeMillis = ((Timestamp) row[5]).getTime();
+            Long endTimeMillis = ((Timestamp) row[6]).getTime();
+            Calendar startTimeCal = new GregorianCalendar();
+            Calendar endTimeCal = new GregorianCalendar();
+            startTimeCal.setTimeInMillis(startTimeMillis);
+            endTimeCal.setTimeInMillis(endTimeMillis);
+
+            Usage usageItem = new Usage();
+            usageItem.setId((Integer) row[0]);
+            LoadBalancer lb = new LoadBalancer();
+            lb.setId((Integer) row[1]);
+            usageItem.setLoadbalancer(lb);
+            usageItem.setAverageConcurrentConnections((Double) row[2]);
+            usageItem.setIncomingTransfer(((BigInteger) row[3]).longValue());
+            usageItem.setOutgoingTransfer(((BigInteger) row[4]).longValue());
+            usageItem.setStartTime(startTimeCal);
+            usageItem.setEndTime(endTimeCal);
+            usageItem.setNumberOfPolls((Integer) row[7]);
+            usageItem.setNumVips((Integer) row[8]);
+            usageItem.setTags((Integer) row[9]);
+            usageItem.setEventType((String) row[10]);
+            usageItem.setAccountId((Integer) row[11]);
+            usages.add(usageItem);
+        }
+
+        return usages;
     }
 }
