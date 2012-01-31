@@ -14,7 +14,7 @@ import org.openstack.atlas.util.ca.CertUtils as CertUtils
 import org.openstack.atlas.util.ca.CsrUtils as CsrUtils
 import org.openstack.atlas.util.ca.RSAKeyUtils as RSAKeyUtils
 
-
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer as NodesPrioritiesContainer
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs as ZxtmServiceStubs
 import java.net.URL as URL
 import com.zxtm.service.client.CertificateFiles as CertificateFiles
@@ -123,6 +123,8 @@ import traceback
 import cPickle
 
 def printf(format,*args): sys.stdout.write(format%args)
+
+npc = NodesPrioritiesContainer
 
 SEEDFILE = "util.seed"
 

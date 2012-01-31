@@ -17,9 +17,7 @@ import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Service
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
@@ -92,8 +90,6 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     @Override
     @Transactional
     public boolean deleteSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
-//        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lid, accountId);
-//        isLbActive(dbLoadBalancer);
         return sslTerminationRepository.removeSslTermination(lid, accountId);
     }
 
@@ -103,9 +99,21 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     }
 
     private String buildPortString(Map<Integer, List<LoadBalancer>> vipPorts, Map<Integer, List<LoadBalancer>> vip6Ports) {
-        String portString = StringUtilities.buildDelemtedListFromIntegerArray(vipPorts.keySet().toArray(new Integer[vipPorts.keySet().size()]), ",");
-//        portString = portString + StringUtilities.buildDelemtedListFromIntegerArray(vip6Ports.keySet().toArray(new Integer[vip6Ports.keySet().size()]), ",");
-        return portString;
+        final List<Integer> uniques = new ArrayList<Integer>();
+
+        for(int i : vipPorts.keySet()) {
+            if (!uniques.contains(i)) {
+                uniques.add(i);
+            }
+        }
+
+        for (int i : vip6Ports.keySet()) {
+           if (!uniques.contains(i)) {
+                uniques.add(i);
+            }
+        }
+
+        return StringUtilities.buildDelemtedListFromIntegerArray(uniques.toArray(new Integer[uniques.size()]), ",");
     }
 }
 
