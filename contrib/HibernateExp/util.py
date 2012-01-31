@@ -1004,7 +1004,6 @@ def newNodes(lbs,num):
             n.setPort(80)
             n.setWeight(ri(0,1000))
             n.setStatus(rnd.choice(NodeStatus.values()))
-            n.setType(NodeType.PRIMARY)
             out.append(n)
     return out
 
