@@ -90,8 +90,6 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     @Override
     @Transactional
     public boolean deleteSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
-//        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lid, accountId);
-//        isLbActive(dbLoadBalancer);
         return sslTerminationRepository.removeSslTermination(lid, accountId);
     }
 
@@ -108,13 +106,13 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
                 uniques.add(i);
             }
         }
+
         for (int i : vip6Ports.keySet()) {
            if (!uniques.contains(i)) {
                 uniques.add(i);
             }
         }
 
-        //        portString = portString + StringUtilities.buildDelemtedListFromIntegerArray(vip6Ports.keySet().toArray(new Integer[vip6Ports.keySet().size()]), ",");
         return StringUtilities.buildDelemtedListFromIntegerArray(uniques.toArray(new Integer[uniques.size()]), ",");
     }
 }
