@@ -25,9 +25,8 @@ import java.util.TreeMap;
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
     protected final Log LOG = LogFactory.getLog(SslTerminationServiceImpl.class);
 
-
-    @Transactional
     @Override
+    @Transactional
     public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
         ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
         ZeusCertFile zeusCertFile = null;
@@ -90,15 +89,14 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         return zeusSslTermination;
     }
 
-    @Transactional
     @Override
+    @Transactional
     public boolean deleteSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
 //        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lid, accountId);
 //        isLbActive(dbLoadBalancer);
         return sslTerminationRepository.removeSslTermination(lid, accountId);
     }
 
-    @Transactional
     @Override
     public org.openstack.atlas.service.domain.entities.SslTermination getSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException {
         return sslTerminationRepository.getSslTerminationByLbId(lid, accountId);

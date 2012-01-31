@@ -35,5 +35,4 @@
     <bean id="jobStateRepository" class="org.openstack.atlas.service.domain.repository.JobStateRepository" depends-on="entityManagerFactory1" />
     <bean id="sslTerminationRepository" class="org.openstack.atlas.service.domain.repository.SslTerminationRepository" depends-on="entityManagerFactory1" />
     <bean id="usageRepository" class="org.openstack.atlas.service.domain.repository.UsageRepository" depends-on="entityManagerFactory1" />
-
 </beans>
