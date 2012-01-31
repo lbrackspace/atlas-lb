@@ -124,7 +124,7 @@ import cPickle
 
 def printf(format,*args): sys.stdout.write(format%args)
 
-npc = NodesPrioritiesContainer
+NPC = NodesPrioritiesContainer
 
 SEEDFILE = "util.seed"
 
@@ -1006,6 +1006,7 @@ def newNodes(lbs,num):
             n.setPort(80)
             n.setWeight(ri(0,1000))
             n.setStatus(rnd.choice(NodeStatus.values()))
+            n.setType(rnd.choice(NodeType.values()))
             out.append(n)
     return out
 
