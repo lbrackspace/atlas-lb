@@ -5,8 +5,10 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
 import org.openstack.atlas.service.domain.entities.BlacklistType;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.BlackListService;
+import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,11 +54,12 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
 
     @Override
     @Transactional
-    public List<BlacklistItem> createBlacklist(List<BlacklistItem> list) {
+    public List<BlacklistItem> createBlacklist(List<BlacklistItem> list) throws BadRequestException {
         Map<String, List<BlacklistItem>> map = blacklistRepository.getBlacklistItemsCidrHashMap(list);
         List<BlacklistItem> goodList = new ArrayList<BlacklistItem>();
         List<BlacklistItem> badList = new ArrayList<BlacklistItem>();
         List<BlacklistItem> blist;
+        List<String> cidrs = new ArrayList<String>();
 
         for (BlacklistItem item : list) {
             if (map.get(item.getCidrBlock()) != null) {
@@ -89,7 +92,16 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
             blacklistRepository.saveBlacklist(goodList);
         }
 
-        return badList;
+        String retString = "The following CIDR blocks are currently black listed: ";
+
+        String retList[] = new String[badList.size()];
+        int index = 0;
+        for (BlacklistItem bli : badList) {
+            retList[index++] = bli.getCidrBlock();
+        }
+
+        retString += StringUtilities.buildDelemtedListFromStringArray(retList, ", ");
+        throw new BadRequestException(retString);
     }
 
     private BlacklistItem setBlacklistItemFields(BlacklistItem item, BlacklistType type) {

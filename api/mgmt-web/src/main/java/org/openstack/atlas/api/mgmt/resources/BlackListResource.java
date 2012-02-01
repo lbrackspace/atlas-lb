@@ -69,6 +69,15 @@ public class BlackListResource extends ManagementDependencyProvider {
                 blitems.add(dozerMapper.map(bli, BlacklistItem.class));
             }
 
+            for (BlacklistItem item : blitems) {
+                for (int i = blitems.indexOf(item) + 1; i < blitems.size(); i++) {
+                    if (item.getBlacklistType().equals(blitems.get(i).getBlacklistType())
+                            && item.getCidrBlock().equals(blitems.get(i).getCidrBlock())) {
+                        return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "The request contains duplicate entries.");
+                    }
+                }
+            }
+
             List<BlacklistItem> blacklist = blackListService.createBlacklist(blitems);
             if (!blacklist.isEmpty()) {
                 String retString = "The following CIDR blocks are currently black listed: ";
@@ -81,16 +90,6 @@ public class BlackListResource extends ManagementDependencyProvider {
                 return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, retString);
             }
 
-
-          /*  EsbRequest req = new EsbRequest();
-            req.setBlacklistItems(blitems);
-            OperationResponse response = getManagementEsbService().callLoadBalancingOperation(Operation.CREATE_BLACKLIST_ITEM, req);
-
-            if (response.isExecutedOkay()) {
-                return Response.status(Response.Status.ACCEPTED).build();
-            } else {
-                return ResponseFactory.getErrorResponse(response);
-            } */
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
