@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.NodeCondition;
 import org.openstack.atlas.service.domain.entities.NodeType;
 import org.openstack.atlas.util.converters.StringConverter;
 
@@ -16,19 +17,28 @@ public class NodesPrioritiesContainer {
     private Set<Node> primary;
     private Set<Node> secondary;
     private Set<Node> unknown;
+    private boolean containsPrimary;
+    private boolean containsSecondary;
 
     public NodesPrioritiesContainer(Collection<Node> nodes) {
         primary = new HashSet<Node>();
         secondary = new HashSet<Node>();
         unknown = new HashSet<Node>();
-
+        containsPrimary = false;
+        containsSecondary = false;
         for (Node node : nodes) {
+            if(node.getCondition() != NodeCondition.ENABLED) {
+                continue; // This node doesn't count; It shoulden't be registered in Zeus
+            }
             if (node.getType() == NodeType.PRIMARY) {
                 primary.add(node);
+                containsPrimary = true;
             } else if (node.getType() == NodeType.SECONDARY) {
                 secondary.add(node);
+                containsSecondary = true;
             } else {
                 unknown.add(node);
+                containsSecondary = true;
             }
         }
     }
@@ -39,7 +49,7 @@ public class NodesPrioritiesContainer {
         StringBuilder sb = new StringBuilder(SB_INIT_SIZE);
         sb.append("{primary: [");
         nodeList = new ArrayList<String>();
-        for (Node node : primary) {
+        for (Node node : getPrimary()) {
             try {
                 nodeList.add(node.getId().toString());
             } catch (NullPointerException ex) {
@@ -49,7 +59,7 @@ public class NodesPrioritiesContainer {
         sb.append(StringConverter.commaSeperatedStringList(nodeList));
         sb.append("],\nsecondary: [");
         nodeList = new ArrayList<String>();
-        for (Node node : secondary) {
+        for (Node node : getSecondary()) {
             try {
                 nodeList.add(node.getId().toString());
             } catch (NullPointerException ex) {
@@ -59,7 +69,7 @@ public class NodesPrioritiesContainer {
         sb.append(StringConverter.commaSeperatedStringList(nodeList));
         sb.append("],\nunknown: [");
         nodeList = new ArrayList<String>();
-        for (Node node : unknown) {
+        for (Node node : getUnknown()) {
             try {
                 nodeList.add(node.getId().toString());
             } catch (NullPointerException ex) {
@@ -76,23 +86,19 @@ public class NodesPrioritiesContainer {
         return primary;
     }
 
-    public void setPrimary(Set<Node> primary) {
-        this.primary = primary;
-    }
-
     public Set<Node> getSecondary() {
         return secondary;
-    }
-
-    public void setSecondary(Set<Node> secondary) {
-        this.secondary = secondary;
     }
 
     public Set<Node> getUnknown() {
         return unknown;
     }
 
-    public void setUnknown(Set<Node> unknown) {
-        this.unknown = unknown;
+    public boolean hasPrimary(){
+        return containsPrimary;
+    }
+
+    public boolean hasSecondary(){
+        return containsSecondary;
     }
 }

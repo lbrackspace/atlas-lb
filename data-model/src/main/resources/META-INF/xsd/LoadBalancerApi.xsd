@@ -124,13 +124,13 @@
         <xsd:attribute name="condition" type="tns:nodeCondition"/>
         <xsd:attribute name="status" type="tns:nodeStatus"/>
         <xsd:attribute name="weight" type="xsd:int"/>
-        <xsd:attribute name="type" type="xsd:string"/>
+        <xsd:attribute name="type" type="tns:nodeType" />
     </xsd:complexType>
 
     <xsd:simpleType name="nodeType">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="PRIMARY"/>
-            <xsd:enumeration value="FAILOVER"/>
+            <xsd:enumeration value="SECONDARY"/>
         </xsd:restriction>
     </xsd:simpleType>
 

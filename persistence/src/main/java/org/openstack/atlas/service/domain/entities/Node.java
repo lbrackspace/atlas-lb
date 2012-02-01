@@ -108,17 +108,23 @@ public class Node extends Entity implements Serializable {
         return obj == null ? "null" : obj.toString();
     }
 
+    @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder(128);
+        String lid;
+        if(this.getLoadbalancer() == null || this.getLoadbalancer().getId() == null){
+            lid = "null";
+        }else{
+            lid = this.getLoadbalancer().getId().toString();
+        }
         sb.append("{");
         sb.append(String.format("id=%s, ", vorn(this.getId())));
-
-        sb.append(String.format("loadbalancer_id=%s, ", vorn(this.getLoadbalancer())));
+        sb.append(String.format("loadbalancer_id=%s, ", lid));
         sb.append(String.format("port=%s, ", vorn(this.getPort())));
         sb.append(String.format("wieght=%s, ", vorn(this.getWeight())));
         sb.append(String.format("condition=%s, ", vorn(this.getCondition())));
-        sb.append(String.format("status=%s", vorn(this.getStatus())));
-
+        sb.append(String.format("status=%s,", vorn(this.getStatus())));
+        sb.append(String.format("type=%s",this.getType().toString()));
         sb.append("}");
         return sb.toString();
     }
