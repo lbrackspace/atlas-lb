@@ -61,6 +61,10 @@ public class DeleteSslTerminationListener extends BaseListener {
 
         sslTerminationService.deleteSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
 
+
+        // Update load balancer status in DB
+        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+
         // Add atom entry
         String atomTitle = "Load Balancer SSL Termination Successfully Deleted";
         String atomSummary = "Load balancer ssl termination successfully deleted";
