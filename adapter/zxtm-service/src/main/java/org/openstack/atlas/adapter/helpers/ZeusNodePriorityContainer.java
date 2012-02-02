@@ -11,26 +11,9 @@ import org.openstack.atlas.service.domain.entities.NodeType;
 import org.openstack.atlas.util.converters.StringConverter;
 
 public class ZeusNodePriorityContainer {
-
-    public static final int INVALID = 0;
-    public static final int NOACTION = 1;
-    public static final int DISABLE = 2;
-    public static final int ENABLE = 3;
     private List<PoolPriorityValueDefinition> priorityValues;
     private boolean constainsSecondary;
     private boolean constainsPrimary;
-
-    public static int getAction(ZeusNodePriorityContainer oldPri,ZeusNodePriorityContainer newPri) {
-        if (!newPri.hasPrimary()) {
-            return INVALID;
-        } else if (oldPri.hasSecondary() == newPri.hasSecondary()) {
-            return NOACTION;
-        } else if (newPri.hasSecondary()) {
-            return ENABLE;
-        } else {
-            return DISABLE;
-        }
-    }
 
     public ZeusNodePriorityContainer(Collection<Node> nodesIn) {
         Node[] nodes = (Node[]) nodesIn.toArray(new Node[1]);
@@ -95,9 +78,9 @@ public class ZeusNodePriorityContainer {
             nodeStrList.add(nodeStr);
         }
         nodeStr = StringConverter.commaSeperatedStringList(nodeStrList);
-        sb.append(String.format("{ primaryNodeCount: %d,\n", priCount));
-        sb.append(String.format(" secondaryNodeCount: %d,\n", secCount));
-        sb.append(String.format(" nodes: [%s]\n}", nodeStr));
+        sb.append(String.format("{ primaryNodeCount: %d,", priCount));
+        sb.append(String.format(" secondaryNodeCount: %d,", secCount));
+        sb.append(String.format(" nodes: [%s]}", nodeStr));
         return sb.toString();
     }
 }

@@ -169,4 +169,6 @@ public interface ReverseProxyLoadBalancerAdapter {
 
     public void enableDisableSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, boolean isSslTermination)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+
+    public void setNodesPriorities(LoadBalancerEndpointConfiguration config, String poolName, LoadBalancer lb) throws RemoteException;
 }
