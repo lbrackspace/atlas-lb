@@ -127,13 +127,13 @@ public class SslTerminationHelperTest {
                     "-----END CERTIFICATE-----\n" +
                     "\n");
 
-            sslTermination.setPrivatekey("\n       \n\n\n          \n\n       " +
+            sslTermination.setPrivatekey("\n    \n\n\n          \n\n       " +
                     "-----BEGIN CERTIFICATE-----\n" +
                     "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
                     "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
                     "dZsGmy48UFF4pBHdhnE8bCAt8KgK3BJb0XqNrUxxI6Jc/Hcl9AfppFIEGw==\n" +
                     "-----END CERTIFICATE-----\n\n\n\n  " +
-                    "               \n      \n");
+                    "               \n      \n  ");
 
             sslTermination.setIntermediateCertificate("\n\n-----BEGIN CERTIFICATE-----\n" +
                     "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +

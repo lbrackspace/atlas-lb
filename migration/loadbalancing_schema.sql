@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 5.1.57, for apple-darwin10.6.0 (i386)
+-- MySQL dump 10.13  Distrib 5.1.61, for apple-darwin10.6.0 (i386)
 --
 -- Host: 173.203.200.79    Database: loadbalancing
 -- ------------------------------------------------------
@@ -155,7 +155,7 @@ CREATE TABLE `account_usage` (
   UNIQUE KEY `id` (`id`),
   KEY `account_usage_account_id` (`account_id`),
   KEY `account_usage_start_time` (`start_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -177,7 +177,7 @@ CREATE TABLE `alert` (
   PRIMARY KEY  (`id`),
   UNIQUE KEY `id` (`id`),
   KEY `alert_status_fk` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -256,12 +256,29 @@ CREATE TABLE `cluster` (
   `password` varchar(32) NOT NULL,
   `data_center` varchar(32) NOT NULL,
   `cluster_ipv6_cidr` varchar(44) default NULL,
+  `cluster_status` varchar(32) NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `id` (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `data_center` (`data_center`),
+  KEY `cluster_status_fk` (`cluster_status`),
+  CONSTRAINT `cluster_ibfk_2` FOREIGN KEY (`cluster_status`) REFERENCES `cluster_status` (`name`),
   CONSTRAINT `cluster_ibfk_1` FOREIGN KEY (`data_center`) REFERENCES `lb_data_center` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `cluster_status`
+--
+
+DROP TABLE IF EXISTS `cluster_status`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `cluster_status` (
+  `name` varchar(32) NOT NULL,
+  `description` varchar(128) NOT NULL,
+  PRIMARY KEY  (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -312,6 +329,21 @@ CREATE TABLE `connection_limit_event` (
   CONSTRAINT `cle_sc1` FOREIGN KEY (`category`) REFERENCES `category_type` (`name`),
   CONSTRAINT `cle_st1` FOREIGN KEY (`type`) REFERENCES `event_type` (`name`),
   CONSTRAINT `cle_sv1` FOREIGN KEY (`severity`) REFERENCES `event_severity` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `defaults`
+--
+
+DROP TABLE IF EXISTS `defaults`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `defaults` (
+  `id` int(11) NOT NULL auto_increment,
+  `name` varchar(32) NOT NULL,
+  `value` mediumtext,
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -379,6 +411,7 @@ CREATE TABLE `health_monitor` (
   `loadbalancer_id` int(11) default NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `id` (`id`),
+  UNIQUE KEY `loadbalancer_id` (`loadbalancer_id`),
   KEY `FK59EB4A771210C19B` (`loadbalancer_id`),
   KEY `health_monitor_type_fk` (`type`),
   CONSTRAINT `FK59EB4A771210C19B` FOREIGN KEY (`loadbalancer_id`) REFERENCES `loadbalancer` (`id`),
@@ -594,6 +627,29 @@ CREATE TABLE `lb_session_persistence` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `lb_ssl`
+--
+
+DROP TABLE IF EXISTS `lb_ssl`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lb_ssl` (
+  `id` int(11) NOT NULL auto_increment,
+  `loadbalancer_id` int(11) default NULL,
+  `pem_key` mediumtext,
+  `pem_cert` mediumtext,
+  `intermediate_certificate` mediumtext,
+  `enabled` tinyint(1) default '0',
+  `secure_port` int(11) default NULL,
+  `secure_traffic_only` tinyint(1) default '0',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `id` (`id`),
+  KEY `loadbalancer_id` (`loadbalancer_id`),
+  CONSTRAINT `lb_ssl_ibfk_1` FOREIGN KEY (`loadbalancer_id`) REFERENCES `loadbalancer` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=103 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `lb_status`
 --
 
@@ -716,7 +772,7 @@ CREATE TABLE `loadbalancer` (
   CONSTRAINT `loadbalancer_ibfk_2` FOREIGN KEY (`sessionPersistence`) REFERENCES `lb_session_persistence` (`name`),
   CONSTRAINT `loadbalancer_ibfk_3` FOREIGN KEY (`protocol`) REFERENCES `lb_protocol` (`name`),
   CONSTRAINT `loadbalancer_ibfk_4` FOREIGN KEY (`status`) REFERENCES `lb_status` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -745,7 +801,7 @@ CREATE TABLE `loadbalancer_event` (
   CONSTRAINT `le_sc1` FOREIGN KEY (`category`) REFERENCES `category_type` (`name`),
   CONSTRAINT `le_st1` FOREIGN KEY (`type`) REFERENCES `event_type` (`name`),
   CONSTRAINT `le_sv1` FOREIGN KEY (`severity`) REFERENCES `event_severity` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -774,7 +830,7 @@ CREATE TABLE `loadbalancer_service_event` (
   CONSTRAINT `lse_sc1` FOREIGN KEY (`category`) REFERENCES `category_type` (`name`),
   CONSTRAINT `lse_st1` FOREIGN KEY (`type`) REFERENCES `event_type` (`name`),
   CONSTRAINT `lse_sv1` FOREIGN KEY (`severity`) REFERENCES `event_severity` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -852,7 +908,7 @@ CREATE TABLE `node` (
   CONSTRAINT `FK33AE021210C19B` FOREIGN KEY (`loadbalancer_id`) REFERENCES `loadbalancer` (`id`),
   CONSTRAINT `node_ibfk_1` FOREIGN KEY (`node_condition`) REFERENCES `node_condition` (`name`),
   CONSTRAINT `node_ibfk_2` FOREIGN KEY (`status`) REFERENCES `node_status` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -896,7 +952,7 @@ CREATE TABLE `node_event` (
   CONSTRAINT `ne_sc1` FOREIGN KEY (`category`) REFERENCES `category_type` (`name`),
   CONSTRAINT `ne_st1` FOREIGN KEY (`type`) REFERENCES `event_type` (`name`),
   CONSTRAINT `ne_sv1` FOREIGN KEY (`severity`) REFERENCES `event_severity` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1002,6 +1058,23 @@ CREATE TABLE `traffic_scripts` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `user_pages`
+--
+
+DROP TABLE IF EXISTS `user_pages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_pages` (
+  `id` int(11) NOT NULL auto_increment,
+  `loadbalancer_id` int(11) NOT NULL,
+  `errorpage` mediumtext,
+  PRIMARY KEY  (`id`),
+  KEY `loadbalancer_id` (`loadbalancer_id`),
+  CONSTRAINT `user_pages_ibfk_1` FOREIGN KEY (`loadbalancer_id`) REFERENCES `loadbalancer` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `virtual_ip_event`
 --
 
@@ -1028,7 +1101,7 @@ CREATE TABLE `virtual_ip_event` (
   CONSTRAINT `vie_sc1` FOREIGN KEY (`category`) REFERENCES `category_type` (`name`),
   CONSTRAINT `vie_st1` FOREIGN KEY (`type`) REFERENCES `event_type` (`name`),
   CONSTRAINT `vie_sv1` FOREIGN KEY (`severity`) REFERENCES `event_severity` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1053,7 +1126,7 @@ CREATE TABLE `virtual_ip_ipv4` (
   KEY `virtual_ip_type_fk` (`type`),
   CONSTRAINT `FK71B4F2DBD56C3599` FOREIGN KEY (`cluster_id`) REFERENCES `cluster` (`id`),
   CONSTRAINT `virtual_ip_ipv4_ibfk_1` FOREIGN KEY (`type`) REFERENCES `virtual_ip_type` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=255 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1074,7 +1147,7 @@ CREATE TABLE `virtual_ip_ipv6` (
   KEY `account_id` (`account_id`),
   KEY `vip_octets` (`vip_octets`),
   CONSTRAINT `virtual_ip_ipv6_ibfk_1` FOREIGN KEY (`cluster_id`) REFERENCES `cluster` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9000000 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=9000002 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1100,4 +1173,4 @@ CREATE TABLE `virtual_ip_type` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2011-07-12 11:49:22
+-- Dump completed on 2012-02-02 13:26:19

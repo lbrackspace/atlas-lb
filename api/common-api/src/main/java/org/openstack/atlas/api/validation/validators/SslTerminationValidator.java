@@ -35,7 +35,7 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
                         return new VerifierResult(true);
                     }
                 }).withMessage("Must supply certificates(s), key and secure port for updating ssl termination.");
-                //If user supplies nothing, cert key and port must exist as bare minimum
+                //If user supplies nothing, maybe some attrs.. cert key and port must exist as bare minimum
                 must().adhereTo(new Verifier<SslTermination>() {
                     @Override
                     public VerifierResult verify(SslTermination ssl) {
@@ -55,6 +55,18 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
                         return new VerifierResult(true);
                     }
                 }).withMessage("Must supply certificates(s), key and secure port for updating ssl termination.");
+                //If cert or key is null, and  other attrs are present
+                must().adhereTo(new Verifier<SslTermination>() {
+                    @Override
+                    public VerifierResult verify(SslTermination ssl) {
+                        if ((ssl.getCertificate() != null || ssl.getPrivatekey() != null)) {
+                            if (ssl.getCertificate() == null || ssl.getPrivatekey() == null) {
+                            return new VerifierResult(false);
+                            }
+                        }
+                        return new VerifierResult(true);
+                    }
+                }).withMessage("Must supply certificates(s), key and secure port for updating ssl termination cert and or key values.");
                 //If cert or key and secure port is null, and no other attrs are present
                 must().adhereTo(new Verifier<SslTermination>() {
                     @Override
