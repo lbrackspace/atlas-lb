@@ -28,16 +28,8 @@ if __name__ == "__main__":
     for i in xrange(1,depth + 1):
         subjs.append( subjFmt%(i,i) )
 
-    chain = buildChain(2048,subjs,log=sys.stdout)
-
-    pemChain = []
-
-    for i in xrange(0,len(chain)):
-        row = {}
-        row["key"] = toPem(chain[i][0])
-        row["csr"] = toPem(chain[i][1])
-        row["crt"] = toPem(chain[i][2])
-        pemChain.append(row)
+    chain = buildChain(4096,subjs,log=sys.stdout)
+    pemChain = chainToPem(chain)
 
     pemChain.reverse()
 
@@ -46,4 +38,4 @@ if __name__ == "__main__":
         fp.write(pemTuple["crt"])
     fp.close()
     save_json(json_file,pemChain)
-    
+
