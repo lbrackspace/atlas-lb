@@ -20,25 +20,28 @@ public class NodesPrioritiesContainer {
     private boolean containsPrimary;
     private boolean containsSecondary;
 
-    public NodesPrioritiesContainer(Collection<Node> nodes) {
+    public NodesPrioritiesContainer(Collection<Node>... nodeCollections) {
         primary = new HashSet<Node>();
         secondary = new HashSet<Node>();
         unknown = new HashSet<Node>();
         containsPrimary = false;
         containsSecondary = false;
-        for (Node node : nodes) {
-            if(node.getCondition() != NodeCondition.ENABLED) {
-                continue; // This node doesn't count; It shoulden't be registered in Zeus
-            }
-            if (node.getType() == NodeType.PRIMARY) {
-                primary.add(node);
-                containsPrimary = true;
-            } else if (node.getType() == NodeType.SECONDARY) {
-                secondary.add(node);
-                containsSecondary = true;
-            } else {
-                unknown.add(node);
-                containsSecondary = true;
+        for (int i = 0; i < nodeCollections.length; i++) {
+            Collection<Node> nodes = nodeCollections[i];
+            for (Node node : nodes) {
+                if (node.getCondition() != NodeCondition.ENABLED) {
+                    continue; // Non enabled nodes don't count as they aren't avalable for nothing
+                }
+                if (node.getType() == NodeType.PRIMARY) {
+                    primary.add(node);
+                    containsPrimary = true;
+                } else if (node.getType() == NodeType.SECONDARY) {
+                    secondary.add(node);
+                    containsSecondary = true;
+                } else {
+                    unknown.add(node);
+                    containsSecondary = true;
+                }
             }
         }
     }
@@ -94,11 +97,11 @@ public class NodesPrioritiesContainer {
         return unknown;
     }
 
-    public boolean hasPrimary(){
+    public boolean hasPrimary() {
         return containsPrimary;
     }
 
-    public boolean hasSecondary(){
+    public boolean hasSecondary() {
         return containsSecondary;
     }
 }

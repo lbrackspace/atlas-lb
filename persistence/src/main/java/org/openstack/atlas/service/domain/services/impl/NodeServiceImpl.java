@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.openstack.atlas.util.ip.IPUtils;
+import org.openstack.atlas.service.domain.util.Constants;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,12 +25,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
+
 @Service
 public class NodeServiceImpl extends BaseService implements NodeService {
+
     private final Log LOG = LogFactory.getLog(NodeServiceImpl.class);
     private AccountLimitService accountLimitService;
     private LoadBalancerService loadBalancerService;
-    
+
     @Required
     public void setAccountLimitService(AccountLimitService accountLimitService) {
         this.accountLimitService = accountLimitService;
@@ -47,7 +51,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     @Transactional
     public Node getNodeByAccountIdLoadBalancerIdNodeId(Integer aid, Integer lid, Integer nid) throws EntityNotFoundException, DeletedStatusException {
         Node node;
-        node = nodeRepository.getNodeByAccountIdLoadBalancerIdNodeId(loadBalancerRepository.getByIdAndAccountId(lid, aid),nid);
+        node = nodeRepository.getNodeByAccountIdLoadBalancerIdNodeId(loadBalancerRepository.getByIdAndAccountId(lid, aid), nid);
         return node;
     }
 
@@ -57,47 +61,50 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         return nodeRepository.getNodeByLoadBalancerIdIpAddressAndPort(loadBalancerId, ipAddress, ipPort);
     }
 
-
     @Transactional
     @Override
-    public LoadBalancer delNodes(LoadBalancer lb,Collection<Node> nodes){
-        LoadBalancer lbReturn = nodeRepository.delNodes(lb,nodes);
+    public LoadBalancer delNodes(LoadBalancer lb, Collection<Node> nodes) {
+        LoadBalancer lbReturn = nodeRepository.delNodes(lb, nodes);
         return lbReturn;
     }
 
     @Transactional
     @Override
-    public List<Node> getNodesByIds(Collection<Integer> ids){
+    public List<Node> getNodesByIds(Collection<Integer> ids) {
         List<Node> nodes = nodeRepository.getNodesByIds(ids);
         return nodes;
     }
 
     @Override
     @Transactional
-    public Set<Node> createNodes(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
-        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
-        isLbActive(dbLoadBalancer);
+    public Set<Node> createNodes(LoadBalancer newNodesLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
+        LoadBalancer oldNodesLb = loadBalancerRepository.getByIdAndAccountId(newNodesLb.getId(), newNodesLb.getAccountId());
+        isLbActive(oldNodesLb);
 
-        Integer potentialTotalNumNodes = dbLoadBalancer.getNodes().size() + loadBalancer.getNodes().size();
-        Integer nodeLimit = accountLimitService.getLimit(dbLoadBalancer.getAccountId(), AccountLimitType.NODE_LIMIT);
+        Integer potentialTotalNumNodes = oldNodesLb.getNodes().size() + newNodesLb.getNodes().size();
+        Integer nodeLimit = accountLimitService.getLimit(oldNodesLb.getAccountId(), AccountLimitType.NODE_LIMIT);
 
         if (potentialTotalNumNodes > nodeLimit) {
             throw new BadRequestException(String.format("Nodes must not exceed %d per load balancer.", nodeLimit));
         }
+        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldNodesLb.getNodes(), newNodesLb.getNodes());
+        if (!npc.hasPrimary()) {
+            throw new BadRequestException(Constants.NoPrimaryNodeError);
+        }
 
         LOG.debug("Verifying that there are no duplicate nodes...");
-        if (detectDuplicateNodes(dbLoadBalancer, loadBalancer)) {
+        if (detectDuplicateNodes(oldNodesLb, newNodesLb)) {
             LOG.warn("Duplicate nodes found! Sending failure response back to client...");
             throw new UnprocessableEntityException("Duplicate nodes detected. One or more nodes already configured on load balancer.");
         }
 
-        if(!areAddressesValidForUse(loadBalancer.getNodes(), dbLoadBalancer)) {
+        if (!areAddressesValidForUse(newNodesLb.getNodes(), oldNodesLb)) {
             LOG.warn("Internal Ips found! Sending failure response back to client...");
             throw new BadRequestException("Invalid node address. The load balancer's virtual ip or host end point address cannot be used as a node address.");
         }
 
         try {
-            Node badNode = blackListedItemNode(loadBalancer.getNodes());
+            Node badNode = blackListedItemNode(newNodesLb.getNodes());
             if (badNode != null) {
                 throw new BadRequestException(String.format("Invalid node address. The address '%s' is currently not accepted for this request.", badNode.getIpAddress()));
             }
@@ -110,19 +117,19 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         }
 
         LOG.debug("Updating the lb status to pending_update");
-        dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
+        oldNodesLb.setStatus(LoadBalancerStatus.PENDING_UPDATE);
 
-        LOG.debug("Current number of nodes for loadbalancer: " + dbLoadBalancer.getNodes().size());
-        LOG.debug("Number of new nodes to be added: " + loadBalancer.getNodes().size());
-        NodesHelper.setNodesToStatus(loadBalancer, NodeStatus.ONLINE);
+        LOG.debug("Current number of nodes for loadbalancer: " + oldNodesLb.getNodes().size());
+        LOG.debug("Number of new nodes to be added: " + newNodesLb.getNodes().size());
+        NodesHelper.setNodesToStatus(newNodesLb, NodeStatus.ONLINE);
 
-        for (Node newNode : loadBalancer.getNodes()) {
+        for (Node newNode : newNodesLb.getNodes()) {
             if (newNode.getWeight() == null) {
                 newNode.setWeight(1);
             }
         }
 
-        return nodeRepository.addNodes(dbLoadBalancer, loadBalancer.getNodes());
+        return nodeRepository.addNodes(oldNodesLb, newNodesLb.getNodes());
     }
 
     @Override
@@ -134,7 +141,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         if (!loadBalancerContainsNode(dbLoadBalancer, nodeToUpdate)) {
             LOG.warn("Node to update not found. Sending response to client...");
             throw new EntityNotFoundException(String.format("Node with id #%d not found for loadbalancer #%d", nodeToUpdate.getId(),
-                            loadBalancer.getId()));
+                    loadBalancer.getId()));
         }
 
         isLbActive(dbLoadBalancer);
@@ -194,7 +201,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         if (!loadBalancerContainsNode(dbLoadBalancer, nodeToDelete)) {
             LOG.warn("Node to delete not found. Sending response to client...");
             throw new EntityNotFoundException(String.format("Node with id #%d not found for loadbalancer #%d", nodeToDelete.getId(),
-                            loadBalancer.getId()));
+                    loadBalancer.getId()));
         }
 
         isLbActive(dbLoadBalancer);
@@ -300,8 +307,9 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         }
         if (nodeList.size() <= 1) {
             if (updateNode.getCondition() != null) {
-                if (!NodeCondition.ENABLED.equals(n.getCondition()))
+                if (!NodeCondition.ENABLED.equals(n.getCondition())) {
                     return false;
+                }
             }
         }
         return true;
@@ -316,46 +324,45 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         return false;
     }
 
-    public NodeMap getNodeMap(Integer accountId,Integer loadbalancerId){
+    public NodeMap getNodeMap(Integer accountId, Integer loadbalancerId) {
         return nodeRepository.getNodeMap(accountId, loadbalancerId);
     }
 
-    public List<String> prepareForNodesDeletion(Integer accountId,Integer loadBalancerId,List<Integer> ids) throws EntityNotFoundException{
-            List<String> validationErrors = new ArrayList<String>();
-            String format;
-            String errMsg;
-            LoadBalancer dlb = new LoadBalancer();
-            dlb.setId(loadBalancerId);
-            NodeMap nodeMap = getNodeMap(accountId, loadBalancerId);
-            Set<Integer> idSet = NodeMap.listToSet(ids);
-            Set<Integer> notMyIds = nodeMap.idsThatAreNotInThisMap(idSet); // Either some one elese ids or non existent ids
-            Set<Integer> survivingEnabledNodes = nodeMap.nodesInConditionAfterDelete(NodeCondition.ENABLED, idSet);
-            List<Node> doomedNodes = nodeMap.getNodesList(idSet);
-            int doomedNodeCount = doomedNodes.size();
-            int batch_delete_limit = accountLimitService.getLimit(accountId, AccountLimitType.BATCH_DELETE_LIMIT);
-            if (doomedNodeCount > batch_delete_limit) {
-                format = "Request to delete %d nodes exceeds the account limit"
-                        + " BATCH_DELETE_LIMIT of %d please attempt to delete fewer then %d nodes";
-                errMsg = String.format(format, doomedNodeCount, batch_delete_limit, batch_delete_limit);
-                validationErrors.add(errMsg);
-            }
-            if (notMyIds.size() > 0) {
-                // Don't even take this request seriously any
-                // ID does not belong to this account
-                format = "Node ids %s are not a part of your loadbalancer";
-                errMsg = String.format(format, StringConverter.integersAsString(notMyIds));
-                validationErrors.add(errMsg);
-            }
-            if (survivingEnabledNodes.size() < 1) {
-                loadBalancerService.setStatus(dlb, LoadBalancerStatus.ACTIVE);
-                errMsg = "delete node operation would result in no Enabled nodes available. You must leave at least one node enabled";
-                validationErrors.add(errMsg);
-            }
-            return validationErrors;
+    public List<String> prepareForNodesDeletion(Integer accountId, Integer loadBalancerId, List<Integer> ids) throws EntityNotFoundException {
+        List<String> validationErrors = new ArrayList<String>();
+        String format;
+        String errMsg;
+        LoadBalancer dlb = new LoadBalancer();
+        dlb.setId(loadBalancerId);
+        NodeMap nodeMap = getNodeMap(accountId, loadBalancerId);
+        Set<Integer> idSet = NodeMap.listToSet(ids);
+        Set<Integer> notMyIds = nodeMap.idsThatAreNotInThisMap(idSet); // Either some one elese ids or non existent ids
+        Set<Integer> survivingEnabledNodes = nodeMap.nodesInConditionAfterDelete(NodeCondition.ENABLED, idSet);
+        List<Node> doomedNodes = nodeMap.getNodesList(idSet);
+        int doomedNodeCount = doomedNodes.size();
+        int batch_delete_limit = accountLimitService.getLimit(accountId, AccountLimitType.BATCH_DELETE_LIMIT);
+        if (doomedNodeCount > batch_delete_limit) {
+            format = "Request to delete %d nodes exceeds the account limit"
+                    + " BATCH_DELETE_LIMIT of %d please attempt to delete fewer then %d nodes";
+            errMsg = String.format(format, doomedNodeCount, batch_delete_limit, batch_delete_limit);
+            validationErrors.add(errMsg);
+        }
+        if (notMyIds.size() > 0) {
+            // Don't even take this request seriously any
+            // ID does not belong to this account
+            format = "Node ids %s are not a part of your loadbalancer";
+            errMsg = String.format(format, StringConverter.integersAsString(notMyIds));
+            validationErrors.add(errMsg);
+        }
+        if (survivingEnabledNodes.size() < 1) {
+            loadBalancerService.setStatus(dlb, LoadBalancerStatus.ACTIVE);
+            errMsg = "delete node operation would result in no Enabled nodes available. You must leave at least one node enabled";
+            validationErrors.add(errMsg);
+        }
+        return validationErrors;
     }
 
     public void setLoadBalancerService(LoadBalancerService loadBalancerService) {
         this.loadBalancerService = loadBalancerService;
     }
-
 }

@@ -105,17 +105,17 @@ public class NodesResource extends CommonDependencyProvider {
 
             org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer apiLb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
             apiLb.getNodes().addAll(nodes.getNodes());
-            LoadBalancer domainLb = dozerMapper.map(apiLb, LoadBalancer.class);
-            domainLb.setId(loadBalancerId);
-            domainLb.setAccountId(accountId);
-            domainLb.setUserName(getUserName(requestHeaders));
+            LoadBalancer newNodesLb = dozerMapper.map(apiLb, LoadBalancer.class);
+            newNodesLb.setId(loadBalancerId);
+            newNodesLb.setAccountId(accountId);
+            newNodesLb.setUserName(getUserName(requestHeaders));
 
             Nodes returnNodes = new Nodes();
-            Set<Node> dbnodes = nodeService.createNodes(domainLb);
+            Set<Node> dbnodes = nodeService.createNodes(newNodesLb);
             for (Node node : dbnodes) {
                 returnNodes.getNodes().add(dozerMapper.map(node, org.openstack.atlas.docs.loadbalancers.api.v1.Node.class));
             }
-            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_NODES, domainLb);
+            asyncService.callAsyncLoadBalancingOperation(Operation.CREATE_NODES, newNodesLb);
             return Response.status(Response.Status.ACCEPTED).entity(returnNodes).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);

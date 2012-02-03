@@ -17,5 +17,5 @@ public final class Constants {
     public static final String OutOfVips = "No available virtual ips. Please contact support.";
     public static final String DEFAULT_ERRORFILE = "global_error.html";
     public static final String DEFAULT_ERROR_MESSAGE = "<html>No suitable nodes.</html>";
-    public static final String NoPrimaryNodeError = "you must have at least one primary node";
+    public static final String NoPrimaryNodeError = "you must have at least one primary node enabled";
 }
