@@ -40,7 +40,7 @@ public class UpdateNodeListener extends BaseListener {
 
         try {
             LOG.info(String.format("Updating nodes for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.setNodes(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getNodes());
+            reverseProxyLoadBalancerService.setNodes(dbLoadBalancer);
             LOG.info(String.format("Successfully updated nodes for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

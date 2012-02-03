@@ -47,7 +47,7 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void setNodes(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> nodes)
+    public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
     public void removeNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes)

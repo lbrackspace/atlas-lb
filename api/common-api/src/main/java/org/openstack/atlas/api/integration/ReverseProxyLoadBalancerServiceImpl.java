@@ -181,10 +181,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void setNodes(Integer lbId, Integer accountId, Set<Node> nodes) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void setNodes(LoadBalancer lb) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerAdapter.setNodes(config, lbId, accountId, nodes);
+            reverseProxyLoadBalancerAdapter.setNodes(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;

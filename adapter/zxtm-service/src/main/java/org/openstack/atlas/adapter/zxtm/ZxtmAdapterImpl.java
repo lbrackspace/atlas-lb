@@ -250,8 +250,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         Set<Node> nodes = lb.getNodes();
         ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(nodes);
         String[] poolNames = new String[]{poolName};
-        
-        LOG.debug(String.format("setNodePriority for pool %s priority=%s Starting....",poolNames[0],znpc));
+
+        LOG.debug(String.format("setNodePriority for pool %s priority=%s Starting....", poolNames[0], znpc));
         ZxtmServiceStubs stubs = getServiceStubs(config);
         stubs.getPoolBinding().setNodesPriorityValue(poolNames, znpc.getPriorityValues());
         if (znpc.hasSecondary()) {
@@ -261,7 +261,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             boolean[] setFalse = new boolean[]{false};
             stubs.getPoolBinding().setPriorityEnabled(poolNames, setFalse);
         }
-        LOG.debug(String.format("setNodePriority for pool %s priority=%s Finished....",poolNames[0],znpc));
+        LOG.debug(String.format("setNodePriority for pool %s priority=%s Finished....", poolNames[0], znpc));
     }
 
     @Override
@@ -1174,8 +1174,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void setNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes)
+    public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        Integer lbId = lb.getId();
+        Integer accountId = lb.getAccountId();
+        Set<Node> nodes = lb.getNodes();
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameBuilder.genVSName(lbId, accountId);
         final String rollBackMessage = "Set nodes request canceled.";
@@ -1207,6 +1210,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 //            setDrainingNodes(config, poolName, drainingApiNodes);
 
             setNodeWeights(config, lbId, accountId, nodes);
+            setNodesPriorities(config, poolName, lb);
         } catch (Exception e) {
             if (e instanceof InvalidInput) {
                 LOG.error(String.format("Error setting node conditions for pool '%s'. All nodes cannot be disabled.", poolName), e);
