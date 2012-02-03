@@ -10,7 +10,6 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.Blacklist;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ByIdOrName;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
 import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.util.StringUtilities;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
@@ -71,24 +70,20 @@ public class BlackListResource extends ManagementDependencyProvider {
 
             for (BlacklistItem item : blitems) {
                 for (int i = blitems.indexOf(item) + 1; i < blitems.size(); i++) {
-                    if (item.getBlacklistType().equals(blitems.get(i).getBlacklistType())
-                            && item.getCidrBlock().equals(blitems.get(i).getCidrBlock())) {
-                        return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "The request contains duplicate entries.");
+                    if (item.getBlacklistType() != null) {
+                        if (item.getBlacklistType().equals(blitems.get(i).getBlacklistType())
+                                && item.getCidrBlock().equals(blitems.get(i).getCidrBlock())) {
+                            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "The request contains duplicate entries.");
+                        }
+                    } else {
+                        if (item.getCidrBlock().equals(blitems.get(i).getCidrBlock())) {
+                            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "The request contains duplicate entries.");
+                        }
                     }
                 }
             }
 
-            List<BlacklistItem> blacklist = blackListService.createBlacklist(blitems);
-            if (!blacklist.isEmpty()) {
-                String retString = "The following CIDR blocks are currently black listed: ";
-                String list[] = new String[blacklist.size()];
-                int index = 0;
-                for (BlacklistItem bli : blacklist) {
-                    list[index++] = bli.getCidrBlock();
-                }
-                retString += StringUtilities.buildDelemtedListFromStringArray(list, ", ");
-                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, retString);
-            }
+            blackListService.createBlacklist(blitems);
 
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception ex) {

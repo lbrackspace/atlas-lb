@@ -70,11 +70,15 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
             if (blist.size() == 1) {
                 for (BlacklistItem bli : blist) {
                     if (item.getBlacklistType() == null) {
-                        blist.add(item);
+                        if (bli.getBlacklistType() == BlacklistType.NODE) {
+                            item.setBlacklistType(BlacklistType.ACCESSLIST);
+                        } else {
+                            item.setBlacklistType(BlacklistType.NODE);
+                        }
+                        goodList.add(item);
                     } else if (item.getBlacklistType().equals(bli.getBlacklistType())) {
                         badList.add(item);
                     }
-                    goodList.add(item);
                 }
             } else if (blist.size() == 2) {
                 badList.add(item);
@@ -90,18 +94,18 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
 
         if (badList.size() == 0) {
             blacklistRepository.saveBlacklist(goodList);
+        } else {
+            String retString = "The following CIDR blocks are currently black listed: ";
+            String retList[] = new String[badList.size()];
+            int index = 0;
+            for (BlacklistItem bli : badList) {
+                retList[index++] = bli.getCidrBlock();
+            }
+            retString += StringUtilities.buildDelemtedListFromStringArray(retList, ", ");
+            throw new BadRequestException(retString);
         }
 
-        String retString = "The following CIDR blocks are currently black listed: ";
-
-        String retList[] = new String[badList.size()];
-        int index = 0;
-        for (BlacklistItem bli : badList) {
-            retList[index++] = bli.getCidrBlock();
-        }
-
-        retString += StringUtilities.buildDelemtedListFromStringArray(retList, ", ");
-        throw new BadRequestException(retString);
+        return new ArrayList<BlacklistItem>();
     }
 
     private BlacklistItem setBlacklistItemFields(BlacklistItem item, BlacklistType type) {
