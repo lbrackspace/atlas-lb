@@ -61,7 +61,19 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
                     public VerifierResult verify(SslTermination ssl) {
                         if ((ssl.getCertificate() != null || ssl.getPrivatekey() != null)) {
                             if (ssl.getCertificate() == null || ssl.getPrivatekey() == null) {
-                            return new VerifierResult(false);
+                                return new VerifierResult(false);
+                            }
+                        }
+                        return new VerifierResult(true);
+                    }
+                }).withMessage("Must supply certificates(s), key and secure port for updating ssl termination cert and or key values.");
+                //If cert/key null and icert !null, other attrs are present
+                must().adhereTo(new Verifier<SslTermination>() {
+                    @Override
+                    public VerifierResult verify(SslTermination ssl) {
+                        if (ssl.getIntermediateCertificate() != null) {
+                            if (ssl.getCertificate() == null || ssl.getPrivatekey() == null) {
+                                return new VerifierResult(false);
                             }
                         }
                         return new VerifierResult(true);

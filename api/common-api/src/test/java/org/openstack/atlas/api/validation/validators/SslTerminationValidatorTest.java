@@ -96,6 +96,15 @@ public class SslTerminationValidatorTest {
         }
 
         @Test
+        public void shouldFailIfCertOrKeyIsNullAndICertIsNot() {
+            sslTermination.setSecurePort(443);
+            sslTermination.setEnabled(true);
+            sslTermination.setSecureTrafficOnly(true);
+            sslTermination.setIntermediateCertificate("blahICert");
+            assertFalse(validator.validate(sslTermination, PUT).passedValidation());
+        }
+
+        @Test
         public void shouldAcceptSecurePortOnly() {
             sslTermination.setSecurePort(443);
             assertTrue(validator.validate(sslTermination, PUT).passedValidation());
