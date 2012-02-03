@@ -46,7 +46,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         if (!SslTerminationHelper.verifyPortSecurePort(dbLoadBalancer, sslTermination, vipPorts, vip6Ports)) {
-            throw new BadRequestException(String.format("Secure port: '%s'  must be unique across loadbalancers " +
+            throw new BadRequestException(String.format("Secure port: '%s'  must be unique " +
                     " Ports taken: '%s'", sslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
         }
 

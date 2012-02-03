@@ -146,38 +146,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
             updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
-//            /* UPDATE REST OF LOADBALANCER CONFIG TODO: move to its own method(s) and call from both*/
-//            if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
-//                //TODO: refactor to take lb only, right now its a pool item and only updates in one place...
-//                //sessionPersistence is a pool item
-//                setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
-//            }
-//
-//            if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
-//                //TODO: refactor to take lb only, right now its a pool item and only updates in one place...
-//                //Healthmonitor is a pool item
-//                updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
-//            }
-//
-//            //VirtualServer items
-//            if (lb.getConnectionLimit() != null) {
-//                updateConnectionThrottle(config, lb);
-//            }
-//
-//            if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
-//                updateConnectionLogging(config, lb);
-//            }
-//
-//            if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
-//                updateAccessList(config, lb);
-//            }
-//
-//            //Added rules for HTTP LB
-//            if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
-//                TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
-//                attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
-//                setDefaultErrorFile(config, lb);
-//            }
+
         } catch (Exception e) {
             if (e instanceof ObjectAlreadyExists) {
                 throw new ObjectAlreadyExists();
@@ -510,9 +479,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         boolean isEnabled = false;
-        if (isSuspended == true) {
+        if (isSuspended) {
             isEnabled = false;
-        } else if (isSuspended == false) {
+        } else if (!isSuspended) {
             isEnabled = true;
         }
 
