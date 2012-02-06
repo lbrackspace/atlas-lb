@@ -479,11 +479,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         boolean isEnabled = false;
-        if (isSuspended) {
-            isEnabled = false;
-        } else if (!isSuspended) {
-            isEnabled = true;
-        }
+        isEnabled = !isSuspended;
 
         try {
             LOG.debug(String.format("Updating suspension to '%s' for virtual server '%s'...", isSuspended, virtualServerName));
