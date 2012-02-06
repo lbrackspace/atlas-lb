@@ -78,6 +78,8 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
                         goodList.add(item);
                     } else if (item.getBlacklistType().equals(bli.getBlacklistType())) {
                         badList.add(item);
+                    } else {
+                        goodList.add(item);
                     }
                 }
             } else if (blist.size() == 2) {

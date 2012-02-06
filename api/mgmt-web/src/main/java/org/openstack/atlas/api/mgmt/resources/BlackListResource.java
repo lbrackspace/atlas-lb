@@ -103,7 +103,8 @@ public class BlackListResource extends ManagementDependencyProvider {
             domainBlackListItem.setId(id);
             blackListService.deleteBlackList(domainBlackListItem);
 
-          /*  EsbRequest req = new EsbRequest();
+            /*
+            EsbRequest req = new EsbRequest();
             req.setBlacklistItem(domainBlackListItem);
 
             OperationResponse response = getManagementEsbService().callLoadBalancingOperation(Operation.DELETE_BLACKLIST_ITEM, req);
@@ -112,7 +113,8 @@ public class BlackListResource extends ManagementDependencyProvider {
                 return Response.status(Response.Status.ACCEPTED).build();
             } else {
                 return ResponseFactory.getErrorResponse(response);
-            } */
+            }
+             */
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
