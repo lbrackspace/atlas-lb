@@ -83,7 +83,11 @@ public final class SslTerminationHelper {
         }
 
         if (queTermination.isSecureTrafficOnly() != null) {
-            dbTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
+            if ((!queTermination.isEnabled() || !dbTermination.isEnabled()) && (queTermination.isSecureTrafficOnly() || dbTermination.isSecureTrafficOnly())) {
+                dbTermination.setSecureTrafficOnly(false);
+            } else {
+                dbTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
+            }
         }
 
         if (queTermination.getSecurePort() != null) {

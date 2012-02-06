@@ -58,10 +58,18 @@
             <a>id</a>
             <b>id</b>
         </field-exclude>
-        <field>
+        <field-exclude>
             <a>privatekey</a>
             <b>privatekey</b>
-        </field>
+        </field-exclude>
+        <field-exclude>
+            <a>certificate</a>
+            <b>certificate</b>
+        </field-exclude>
+        <field-exclude>
+            <a>intermediateCertificate</a>
+            <b>intermediateCertificate</b>
+        </field-exclude>
         <field>
         <a get-method="isEnabled">enabled</a>
         <b get-method="isEnabled">enabled</b>

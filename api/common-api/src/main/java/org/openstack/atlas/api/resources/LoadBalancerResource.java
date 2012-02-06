@@ -5,6 +5,7 @@ import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.api.helpers.LoadBalancerProperties;
@@ -125,10 +126,14 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             return Response.status(Response.Status.BAD_REQUEST).build();
 
         try {
+            org.openstack.atlas.service.domain.entities.LoadBalancer loadBalancer = loadBalancerService.get(id, accountId);
+            if (loadBalancer.getStatus() != LoadBalancerStatus.ACTIVE) {
+                throw new ImmutableEntityException("The load balancer is not available to display statistics.");
+            }
             org.openstack.atlas.docs.loadbalancers.api.v1.Stats stats = dozerMapper.map(reverseProxyLoadBalancerService
                     .getLoadBalancerStats(id, accountId), org.openstack.atlas.docs.loadbalancers.api.v1.Stats.class);
 
-                return Response.status(Response.Status.OK).entity(stats).build();
+            return Response.status(Response.Status.OK).entity(stats).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
