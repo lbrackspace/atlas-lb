@@ -46,7 +46,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         if (!SslTerminationHelper.verifyPortSecurePort(dbLoadBalancer, sslTermination, vipPorts, vip6Ports)) {
-            throw new BadRequestException(String.format("Secure port: '%s'  must be unique across loadbalancers " +
+            throw new BadRequestException(String.format("Secure port: '%s'  must be unique " +
                     " Ports taken: '%s'", sslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
         }
 
@@ -63,6 +63,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
         if (!SslTerminationHelper.modificationStatus(sslTermination, dbLoadBalancer)) {
             //Validate the certifications and key return the list of errors if there are any, otherwise, pass the transport object to async layer...
+            updatedSslTermination = SslTerminationHelper.cleanSSLCertKeyEntries(updatedSslTermination);
             zeusCertFile = ZeusUtil.getCertFile(updatedSslTermination.getPrivatekey(), updatedSslTermination.getCertificate(), updatedSslTermination.getIntermediateCertificate());
             SslTerminationHelper.verifyCertificationCredentials(zeusCertFile);
         }
@@ -89,8 +90,22 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
     @Override
     @Transactional
-    public boolean deleteSslTermination(Integer lid, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
-        return sslTerminationRepository.removeSslTermination(lid, accountId);
+    public boolean deleteSslTermination(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
+        LOG.info("Deleting ssl termination from the database for loadbalancer: " + loadBalancerId);
+        return sslTerminationRepository.removeSslTermination(loadBalancerId, accountId);
+    }
+
+    @Override
+    @Transactional
+    public void pseudoDeleteSslTermination(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
+
+        LOG.debug("Updating the lb status to pending_update");
+        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
+            LOG.warn(message);
+            throw new ImmutableEntityException(message);
+        }
     }
 
     @Override

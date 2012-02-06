@@ -83,7 +83,11 @@ public final class SslTerminationHelper {
         }
 
         if (queTermination.isSecureTrafficOnly() != null) {
-            dbTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
+            if ((!queTermination.isEnabled() || !dbTermination.isEnabled()) && (queTermination.isSecureTrafficOnly() || dbTermination.isSecureTrafficOnly())) {
+                dbTermination.setSecureTrafficOnly(false);
+            } else {
+                dbTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
+            }
         }
 
         if (queTermination.getSecurePort() != null) {
@@ -107,5 +111,34 @@ public final class SslTerminationHelper {
             dbTermination.setPrivatekey(queTermination.getPrivatekey());
         }
         return dbTermination;
+    }
+
+    public static org.openstack.atlas.service.domain.entities.SslTermination cleanSSLCertKeyEntries(org.openstack.atlas.service.domain.entities.SslTermination dirtyTermination) {
+        org.openstack.atlas.service.domain.entities.SslTermination cleanSslTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
+        final String cleanRegex = "(?m)^[ \t]*\r?\n";
+
+        String dirtyKey = dirtyTermination.getPrivatekey();
+        String dirtyCert = dirtyTermination.getCertificate();
+        String dirtyChain = dirtyTermination.getIntermediateCertificate();
+
+        if (dirtyKey != null) {
+            dirtyKey = dirtyKey.replaceAll(cleanRegex, "");
+            cleanSslTermination.setPrivatekey(dirtyKey.trim());
+        }
+        if (dirtyCert != null) {
+            dirtyCert = dirtyCert.replaceAll(cleanRegex, "");
+            cleanSslTermination.setCertificate(dirtyCert.trim());
+        }
+        if (dirtyChain != null) {
+            dirtyChain = dirtyChain.replaceAll(cleanRegex, "");
+            cleanSslTermination.setIntermediateCertificate(dirtyChain.trim());
+        }
+
+        //repackage ssl termination object...
+        cleanSslTermination.setEnabled(dirtyTermination.isEnabled());
+        cleanSslTermination.setSecurePort(dirtyTermination.getSecurePort());
+        cleanSslTermination.setSecureTrafficOnly(dirtyTermination.isSecureTrafficOnly());
+
+        return cleanSslTermination;
     }
 }
