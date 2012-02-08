@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozer.sourceforge.net"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://dozer.sourceforge.net
+          http://dozer.sourceforge.net/schema/beanmapping.xsd">
+
+    <configuration>
+        <stop-on-errors>true</stop-on-errors>
+        <date-format>MM-dd-yyyy HH:mm:ss</date-format>
+        <!-- default dateformat will apply to all class maps unless the class mapping explicitly overrides it -->
+        <wildcard>true</wildcard>
+        <!-- default wildcard policy that will apply to all class maps unless the class mapping explicitly overrides it -->
+        <custom-converters> <!-- these are always bi-directional -->
+            <converter type="org.openstack.atlas.api.mapper.dozer.converter.PersistenceConverter">
+                <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence</class-a>
+                <class-b>org.openstack.atlas.service.domain.entities.SessionPersistence</class-b>
+            </converter>
+            <converter type="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+                <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType</class-a>
+                <class-b>org.openstack.atlas.service.domain.entities.SessionPersistence</class-b>
+            </converter>
+        </custom-converters>
+    </configuration>
+
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.HealthMonitor</class-b>
+        <field-exclude>
+            <a>id</a>
+            <b>id</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>
+            org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.SslTermination</class-b>
+        <field-exclude>
+            <a>id</a>
+            <b>id</b>
+        </field-exclude>
+        <field>
+        <a get-method="isEnabled">enabled</a>
+        <b get-method="isEnabled">enabled</b>
+        </field>
+        <field>
+        <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
+        <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
+        </field>
+    </mapping>
+
+    <mapping map-id="DISPLAY_SSL">
+       <class-a>
+            org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.SslTermination</class-b>
+        <field-exclude>
+            <a>id</a>
+            <b>id</b>
+        </field-exclude>
+        <field-exclude>
+            <a>privatekey</a>
+            <b>privatekey</b>
+        </field-exclude>
+        <field-exclude>
+            <a>certificate</a>
+            <b>certificate</b>
+        </field-exclude>
+        <field-exclude>
+            <a>intermediateCertificate</a>
+            <b>intermediateCertificate</b>
+        </field-exclude>
+        <field>
+        <a get-method="isEnabled">enabled</a>
+        <b get-method="isEnabled">enabled</b>
+        </field>
+        <field>
+        <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
+        <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
+        </field>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.service.domain.pojos.Stats</class-a>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.Stats</class-b>
+        <field>
+            <a>connectTimeOut</a>
+            <b>connectTimeOut</b>
+        </field>
+        <field>
+            <a>connectError</a>
+            <b>connectError</b>
+        </field>
+        <field>
+            <a>connectFailure</a>
+            <b>connectFailure</b>
+        </field>
+        <field>
+            <a>dataTimedOut</a>
+            <b>dataTimedOut</b>
+        </field>
+        <field>
+            <a>keepAliveTimedOut</a>
+            <b>keepAliveTimedOut</b>
+        </field>
+        <field>
+            <a>maxConn</a>
+            <b>maxConn</b>
+        </field>
+        <field-exclude>
+            <a>id</a>
+            <b>id</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping map-id="DELETED_LB" type="one-way" wildcard="false" map-null="false">
+        <class-a>org.openstack.atlas.service.domain.entities.LoadBalancer</class-a>
+        <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.LoadBalancerFactory">
+            org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer
+        </class-b>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>name</a>
+            <b>name</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>status</a>
+            <b>status</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
+            <a>created</a>
+            <b>created</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
+            <a>updated</a>
+            <b>updated</b>
+        </field>
+    </mapping>
+
+    <mapping map-id="LB_NAME_ID_STATUS" type="one-way" wildcard="false" map-null="false">
+        <class-a>org.openstack.atlas.service.domain.entities.LoadBalancer</class-a>
+        <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.LoadBalancerFactory">
+            org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer
+        </class-b>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>name</a>
+            <b>name</b>
+        </field>
+        <field>
+            <a>status</a>
+            <b>status</b>
+        </field>
+    </mapping>
+
+
+    <mapping map-id="SIMPLE_LB" type="one-way" wildcard="false" map-null="false">
+        <class-a>org.openstack.atlas.service.domain.entities.LoadBalancer</class-a>
+        <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.LoadBalancerFactory">
+            org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer
+        </class-b>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>name</a>
+            <b>name</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>status</a>
+            <b>status</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>protocol</a>
+            <b>protocol</b>
+        </field>
+        <field>
+            <a>port</a>
+            <b>port</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>algorithm</a>
+            <b>algorithm</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VirtualIpConverter">
+            <a>virtualIpDozerWrapper</a>
+            <b>virtualIps</b>
+        </field>
+        <!--<field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">-->
+        <!--<a>connectionLogging</a>-->
+        <!--<b>connectionLogging</b>-->
+        <!--</field>-->
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
+            <a>created</a>
+            <b>created</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
+            <a>updated</a>
+            <b>updated</b>
+        </field>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a bean-factory="org.openstack.atlas.api.mapper.dozer.factory.LoadBalancerFactory">
+            org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer
+        </class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.LoadBalancer</class-b>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>algorithm</a>
+            <b>algorithm</b>
+        </field>
+        <field>
+            <a>nodes</a>
+            <b>nodes</b>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Node</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.Node</b-hint>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VirtualIpConverter">
+            <a>virtualIps</a>
+            <b>virtualIpDozerWrapper</b>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.pojos.VirtualIpDozerWrapper</b-hint>
+        </field>
+        <field>
+            <a>connectionThrottle</a>
+            <b>connectionLimit</b>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.ConnectionLimit</b-hint>
+        </field>
+        <field>
+            <a>healthMonitor</a>
+            <b>healthMonitor</b>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.HealthMonitor</b-hint>
+        </field>
+        <field>
+            <a>accessList</a>
+            <b>accessLists</b>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.AccessList</b-hint>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>protocol</a>
+            <b>protocol</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">
+            <a>connectionLogging</a>
+            <b get-method="isConnectionLogging">connectionLogging</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SourceAddressesConverter">
+            <a>sourceAddresses</a>
+            <b>host</b>
+            <a-hint>org.openstack.atlas.service.domain.pojos.SourceAddresses</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.Host</b-hint>
+        </field>
+        <field map-id="DISPLAY_SSL">
+        <a>sslTermination</a>
+        <b>sslTermination</b>
+        <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</a-hint>
+        <b-hint>org.openstack.atlas.service.domain.entities.SslTermination</b-hint>
+        </field>
+        <!--<field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">-->
+        <!--<a>sessionPersistence.persistenceType</a>-->
+        <!--<b>sessionPersistence</b>-->
+        <!--</field>-->
+        <field>
+            <a>cluster</a>
+            <b>host</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
+            <a>created</a>
+            <b>created</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>status</a>
+            <b>status</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
+            <a>updated</a>
+            <b>updated</b>
+        </field>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Node</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.Node</class-b>
+        <field>
+            <a>address</a>
+            <b>ipAddress</b>
+        </field>
+        <field>
+            <a>port</a>
+            <b>port</b>
+        </field>
+        <field>
+            <a>status</a>
+            <b>status</b>
+        </field>
+        <field>
+            <a>weight</a>
+            <b>weight</b>
+        </field>
+        <field>
+            <a>condition</a>
+            <b>condition</b>
+        </field>
+    </mapping>
+
+    <mapping map-null="false" wildcard="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.VirtualIp</class-b>
+        <field>
+            <a>address</a>
+            <b>ipAddress</b>
+        </field>
+        <field>
+            <a>type</a>
+            <b>vipType</b>
+        </field>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+    </mapping>
+
+    <mapping map-null="false" wildcard="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip</class-b>
+        <field>
+            <a>address</a>
+            <b>virtualIp.ipAddress</b>
+        </field>
+        <field>
+            <a>type</a>
+            <b>virtualIp.vipType</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>ipVersion</a>
+            <b>virtualIp</b>
+        </field>
+        <field>
+            <a>id</a>
+            <b>virtualIp.id</b>
+        </field>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.AccessList</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.LoadBalancer</class-b>
+        <field>
+            <a>networkItems</a>
+            <b>accessLists</b>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.AccessList</b-hint>
+        </field>
+    </mapping>
+
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.AccessList</class-b>
+        <field>
+            <a>address</a>
+            <b>ipAddress</b>
+        </field>
+        <!-- ToDo: Fix This Brain Damage
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>ipVersion</a>
+            <b>ipVersion</b>
+        </field>-->
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>type</a>
+            <b>type</b>
+        </field>
+    </mapping>
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Protocol</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.LoadBalancerProtocolObject</class-b>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>name</a>
+            <b>name</b>
+        </field>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.service.domain.pojos.AccountBilling</class-a>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling</class-b>
+        <field>
+            <a>accountId</a>
+            <b>accountId</b>
+        </field>
+        <field>
+            <a>accountUsageRecords</a>
+            <b>accountUsage</b>
+        </field>
+        <field>
+            <a>loadBalancerBillings</a>
+            <b>loadBalancerUsages</b>
+            <a-hint>org.openstack.atlas.service.domain.pojos.LoadBalancerBilling</a-hint>
+            <b-hint>org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage</b-hint>
+        </field>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.service.domain.pojos.LoadBalancerBilling</class-a>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage</class-b>
+        <field>
+            <a>usageRecords</a>
+            <b>loadBalancerUsageRecords</b>
+            <a-hint>org.openstack.atlas.service.domain.entities.Usage</a-hint>
+            <b-hint>org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord</b-hint>
+        </field>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.service.domain.entities.Usage</class-a>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord</class-b>
+        <field>
+            <a>averageConcurrentConnections</a>
+            <b>averageNumConnections</b>
+        </field>
+        <field>
+            <a>numberOfPolls</a>
+            <b>numPolls</b>
+        </field>
+        <!-- Future Profing for JIRA:SITESLB-687
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SslTagConverter">
+            <a>tags</a>
+            <b get-method="isSsl">sslTermination</b>
+        </field>  -->
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VipTypeTagConverter">
+            <a>tags</a>
+            <b>vipType</b>
+        </field>
+    </mapping>
+
+</mappings>

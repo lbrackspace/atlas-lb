@@ -45,6 +45,7 @@
         <property name="virtualIpService" ref="virtualIpService"/>
         <property name="hostService" ref="hostService"/>
         <property name="accountLimitService" ref="accountLimitService"/>
+        <property name="nodeService" ref="nodeService"/>
     </bean>
 
     <bean id="clusterService" class="org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl" parent="baseService" >
@@ -79,6 +80,7 @@
     <bean id="ticketService" class="org.openstack.atlas.service.domain.services.impl.TicketServiceImpl" parent="baseService"/>
     <bean id="suspensionService" class="org.openstack.atlas.service.domain.services.impl.SuspensionServiceImpl" parent="baseService"/>
     <bean id="blackListService" class="org.openstack.atlas.service.domain.services.impl.BlackListServiceImpl" parent="baseService"/>
+    <bean id="sslTerminationService" class="org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl" parent="baseService"/>
 
     <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
