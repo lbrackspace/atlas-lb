@@ -12,7 +12,6 @@ import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
 import org.openstack.atlas.service.domain.util.Constants;
-import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ip.IPv4Cidr;
 import org.openstack.atlas.util.ip.IPv4Cidrs;
 import org.openstack.atlas.util.ip.IPv6Cidr;

@@ -24,7 +24,7 @@ import java.util.Set;
 public class LoadBalancerServiceImplIntegrationTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
+    @ContextConfiguration(locations = {"classpath:db-services-test-bak.xml"})
     @Transactional
     public static class WhenCreatingLoadBalancer {
 
@@ -46,7 +46,7 @@ public class LoadBalancerServiceImplIntegrationTest {
 
             Set<Node> nodes = new HashSet<Node>();
             Node node = new Node();
-            node.setIpAddress("2.2.2.2");
+            node.setIpAddress("198.9.23.94");
             node.setPort(80);
             node.setCondition(NodeCondition.ENABLED);
             nodes.add(node);
@@ -110,7 +110,7 @@ public class LoadBalancerServiceImplIntegrationTest {
 
             //TODO:Move..
         @RunWith(SpringJUnit4ClassRunner.class)
-        @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
+        @ContextConfiguration(locations = {"classpath:db-services-test-bak.xml"})
         @Transactional
         public static class WhenBatchDeletingLoadBalancer {
 

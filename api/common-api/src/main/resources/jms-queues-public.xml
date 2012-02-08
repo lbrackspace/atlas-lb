@@ -86,6 +86,7 @@
         <property name="usageRepository" ref="usageRepository" />
         <property name="loadBalancerUsageRepository" ref="loadBalancerUsageRepository" />
         <property name="loadBalancerUsageEventRepository" ref="loadBalancerUsageEventRepository" />
+        <property name="sslTerminationRepository" ref="sslTerminationRepository" />
     </bean>
 
     <bean id="usageEventHelper" class="org.openstack.atlas.api.async.UsageEventHelper" scope="prototype">

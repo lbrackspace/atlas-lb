@@ -462,6 +462,42 @@ class CidrBlackList(object):
             return "ADD %s to ipv6subnets"%cidr
         return "UNKNOWN ERROR %s"%cidr
 
+class Timer(object):
+    def __init__(self):
+        self.begin   = time.time()
+        self.end   = time.time()
+        self.stored  = 0.0
+        self.stopped = True
+
+    def restart(self):
+        self.reset()
+        self.start()
+        
+
+    def start(self):
+        if not self.stopped:
+            return
+        self.begin = time.time()
+        self.stopped = False
+
+    def stop(self):
+        if self.stopped:
+            return
+        self.end = time.time()
+        self.stored += self.end - self.begin
+        self.stopped = True
+
+    def read(self):
+        if self.stopped:
+             return self.stored
+        now = time.time()
+        total_time = now - self.begin + self.stored
+        return total_time
+
+    def reset(self):
+        self.begin = time.time()
+        self.end   = time.time()
+        self.stored = 0.0
 
 def bi(val):
     return BigInteger("%s"%val)
@@ -1591,7 +1627,6 @@ def newCertificateFile(key_file,crt_file):
     certFile.setPublic_cert(crt_pem)
     return certFile
 
-
 def filterList(listIn,rregxPattern):
     out = []
     list_re = re.compile(rregxPattern,re.IGNORECASE)
@@ -1622,10 +1657,21 @@ def inv_dict(dict_in):
             out[val].append(k)
     return out
 
+def subjStr(subjDict):
+    out = ""
+    subjList = [(k,v) for (k,v) in subjDict.items()]
+    for (k,v) in subjList[:-1]:
+        out += "%s=%s,"%(k,v)
+    (k,v) = subjList[-1]
+    out += "%s=%s"%(k,v)
+    return out
+
+
+
 def buildChain(bits,subjList,**kw):
     out = []
     certainity = kw.pop("certainity",32)
-    days = kw.pop("days",730)
+    days = kw.pop("days",1460)
     days_dec = kw.pop("days_dec",1)
     i = 1
     li = len(subjList)
@@ -1654,15 +1700,13 @@ def buildChain(bits,subjList,**kw):
         i += 1
     return out
 
-def toPem(tupleIn):
-    out = []
-    for entry in tupleIn:
-        if isinstance(entry,RsaPair):
-            bytes = PemUtils.toPem(entry.toJavaSecurityKeyPair())
-        else:
-            bytes = PemUtils.toPem(entry)
-        out.append("%s"%String(bytes,"US-ASCII"))
-    return tuple(out)
+def newCrt(bits,subj,caKey,caCrt,**kw):
+    certainity = kw.pop("certainity",32)
+    key = RSAKeyUtils.genRSAPair(bits,certainity)
+    csr = CsrUtils.newCsr(subj,key,False)
+    crt = CertUtils.signCSR(csr,caKey,caCrt,730,None)
+    return (key,csr,crt)
+
 
 def toPem(obj):
     if isinstance(obj,RsaPair):
@@ -1670,4 +1714,14 @@ def toPem(obj):
     else:
         bytes = PemUtils.toPem(obj)
     return "%s"%String(bytes,"US-ASCII")
+
+def chainToPem(chain):
+    pemChain = []
+    for i in xrange(0,len(chain)):
+        row = {}
+        row["key"] = toPem(chain[i][0])
+        row["csr"] = toPem(chain[i][1])
+        row["crt"] = toPem(chain[i][2])
+        pemChain.append(row)
+    return pemChain
 

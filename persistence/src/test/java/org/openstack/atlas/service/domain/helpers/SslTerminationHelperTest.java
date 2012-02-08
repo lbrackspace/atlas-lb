@@ -25,7 +25,7 @@ import java.util.Set;
 import static org.mockito.Mockito.mock;
 
 @RunWith(Enclosed.class)
-public class SslTerminationHelperImplTest {
+public class SslTerminationHelperTest {
 
     public static class sslTerminationOperations {
         Integer accountId = 1234;
@@ -108,6 +108,43 @@ public class SslTerminationHelperImplTest {
             Assert.assertEquals(ssl1.isSecureTrafficOnly(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).isSecureTrafficOnly());
             Assert.assertEquals(ssl1.isEnabled(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).isEnabled());
             Assert.assertEquals((Object) ssl1.getSecurePort(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).getSecurePort());
+        }
+
+        @Test
+        public void shouldCleanGarbageFromCertKey() throws EntityNotFoundException, BadRequestException {
+            org.openstack.atlas.service.domain.entities.SslTermination sslTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
+            String cleanSTring = "-----BEGIN CERTIFICATE-----\n" +
+                    "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
+                    "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
+                    "dZsGmy48UFF4pBHdhnE8bCAt8KgK3BJb0XqNrUxxI6Jc/Hcl9AfppFIEGw==\n" +
+                    "-----END CERTIFICATE-----";
+
+            sslTermination.setCertificate("\n" +
+                    "-----BEGIN CERTIFICATE-----\n" +
+                    "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
+                    "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
+                    "dZsGmy48UFF4pBHdhnE8bCAt8KgK3BJb0XqNrUxxI6Jc/Hcl9AfppFIEGw==\n" +
+                    "-----END CERTIFICATE-----\n" +
+                    "\n");
+
+            sslTermination.setPrivatekey("\n    \n\n\n          \n\n       " +
+                    "-----BEGIN CERTIFICATE-----\n" +
+                    "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
+                    "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
+                    "dZsGmy48UFF4pBHdhnE8bCAt8KgK3BJb0XqNrUxxI6Jc/Hcl9AfppFIEGw==\n" +
+                    "-----END CERTIFICATE-----\n\n\n\n  " +
+                    "               \n      \n  ");
+
+            sslTermination.setIntermediateCertificate("\n\n-----BEGIN CERTIFICATE-----\n" +
+                    "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
+                    "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
+                    "dZsGmy48UFF4pBHdhnE8bCAt8KgK3BJb0XqNrUxxI6Jc/Hcl9AfppFIEGw==\n" +
+                    "-----END CERTIFICATE-----\n        \n");
+
+            Assert.assertEquals(cleanSTring, SslTerminationHelper.cleanSSLCertKeyEntries(sslTermination).getCertificate());
+            Assert.assertEquals(cleanSTring, SslTerminationHelper.cleanSSLCertKeyEntries(sslTermination).getIntermediateCertificate());
+            Assert.assertEquals(cleanSTring, SslTerminationHelper.cleanSSLCertKeyEntries(sslTermination).getPrivatekey());
+
         }
     }
 }
