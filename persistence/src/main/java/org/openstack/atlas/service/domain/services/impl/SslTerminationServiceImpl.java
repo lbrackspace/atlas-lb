@@ -2,22 +2,27 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.exceptions.*;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
-import org.openstack.atlas.service.domain.services.*;
+import org.openstack.atlas.service.domain.services.SslTerminationService;
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Service
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
@@ -100,11 +105,15 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     public void pseudoDeleteSslTermination(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
 
-        LOG.debug("Updating the lb status to pending_update");
-        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
-            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
-            LOG.warn(message);
-            throw new ImmutableEntityException(message);
+        if (dbLoadBalancer.hasSsl()) {
+            LOG.debug("Updating the lb status to pending_update");
+            if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+                String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
+                LOG.warn(message);
+                throw new ImmutableEntityException(message);
+            }
+        } else {
+            throw new BadRequestException("SSL termination could not be found for the requested loadbalancer.");
         }
     }
 
@@ -116,14 +125,14 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     private String buildPortString(Map<Integer, List<LoadBalancer>> vipPorts, Map<Integer, List<LoadBalancer>> vip6Ports) {
         final List<Integer> uniques = new ArrayList<Integer>();
 
-        for(int i : vipPorts.keySet()) {
+        for (int i : vipPorts.keySet()) {
             if (!uniques.contains(i)) {
                 uniques.add(i);
             }
         }
 
         for (int i : vip6Ports.keySet()) {
-           if (!uniques.contains(i)) {
+            if (!uniques.contains(i)) {
                 uniques.add(i);
             }
         }
