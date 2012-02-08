@@ -49,6 +49,13 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
     @Override
     @Transactional
+    public Set<Node> getAllNodesByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) throws EntityNotFoundException {
+        Set<Node> nodes = nodeRepository.getAllNodesByAccountIdLoadBalancerId(accountId, loadBalancerId);
+        return nodes;
+    }
+
+    @Override
+    @Transactional
     public Node getNodeByAccountIdLoadBalancerIdNodeId(Integer aid, Integer lid, Integer nid) throws EntityNotFoundException, DeletedStatusException {
         Node node;
         node = nodeRepository.getNodeByAccountIdLoadBalancerIdNodeId(loadBalancerRepository.getByIdAndAccountId(lid, aid), nid);
@@ -324,10 +331,12 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         return false;
     }
 
+    @Override
     public NodeMap getNodeMap(Integer accountId, Integer loadbalancerId) {
         return nodeRepository.getNodeMap(accountId, loadbalancerId);
     }
 
+    @Override
     public List<String> prepareForNodesDeletion(Integer accountId, Integer loadBalancerId, List<Integer> ids) throws EntityNotFoundException {
         List<String> validationErrors = new ArrayList<String>();
         String format;
@@ -359,6 +368,13 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             errMsg = "delete node operation would result in no Enabled nodes available. You must leave at least one node enabled";
             validationErrors.add(errMsg);
         }
+        Set<Node> foundNodes = getAllNodesByAccountIdLoadBalancerId(accountId, loadBalancerId);
+        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(foundNodes).removeIds(ids);
+        // Throw a fit if no primary nodes would be left
+        if (!npc.hasPrimary()) {
+            validationErrors.add(Constants.NoPrimaryNodeError);
+        }
+
         return validationErrors;
     }
 

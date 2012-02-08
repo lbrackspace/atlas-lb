@@ -20,6 +20,27 @@ public class NodesPrioritiesContainer {
     private boolean containsPrimary;
     private boolean containsSecondary;
 
+    public NodesPrioritiesContainer removeIds(Collection<Integer> ids){
+        NodesPrioritiesContainer np;
+        Set<Node> superSet = new HashSet<Node>();
+        Set<Node> newSet = new HashSet<Node>();
+        superSet.addAll(this.primary);
+        superSet.addAll(this.secondary);
+        superSet.addAll(this.unknown);
+        
+        // strip out the unwantedIds
+        for(Node node : superSet){
+            Integer id = node.getId();
+            if(ids.contains(id)){
+                continue;
+            }
+            newSet.add(node);
+        }
+
+        np = new NodesPrioritiesContainer(newSet);
+        return np;
+    }
+
     public NodesPrioritiesContainer(Collection<Node>... nodeCollections) {
         primary = new HashSet<Node>();
         secondary = new HashSet<Node>();
