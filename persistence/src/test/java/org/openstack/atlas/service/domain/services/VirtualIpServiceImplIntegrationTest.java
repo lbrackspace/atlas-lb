@@ -4,10 +4,7 @@ import org.junit.*;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Clusters;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.pojos.VirtualIpDozerWrapper;
 import org.openstack.atlas.service.domain.repository.ClusterRepository;
@@ -18,9 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,7 +25,7 @@ public class VirtualIpServiceImplIntegrationTest {
 
     //When creating a loadBalancer test the vip configs
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
+    @ContextConfiguration(locations = {"classpath:db-services-test-bak.xml"})
     @Transactional
     public static class WhenCreatingLoadBalancerAndVerifyingVips {
 
