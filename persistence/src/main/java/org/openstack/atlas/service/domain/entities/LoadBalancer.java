@@ -65,7 +65,7 @@ public class LoadBalancer extends Entity implements Serializable {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private RateLimit rateLimit;
 
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer", fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "loadbalancer", fetch = FetchType.LAZY, optional = false)
     @LazyToOne(LazyToOneOption.NO_PROXY)
     private UserPages userPages;
 
