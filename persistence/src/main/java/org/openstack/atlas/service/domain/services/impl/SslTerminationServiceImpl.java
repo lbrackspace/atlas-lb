@@ -55,6 +55,8 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
                     " Ports taken: '%s'", sslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
         }
 
+
+
         org.openstack.atlas.service.domain.entities.SslTermination dbTermination = null;
         try {
             dbTermination = getSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
@@ -64,17 +66,22 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         //we wont make it here if no dbTermination and no cert/key values.
-        org.openstack.atlas.service.domain.entities.SslTermination updatedSslTermination = SslTerminationHelper.verifyAttributes(sslTermination, dbTermination);
+        dbTermination = SslTerminationHelper.verifyAttributes(sslTermination, dbTermination);
 
-        if (!SslTerminationHelper.modificationStatus(sslTermination, dbLoadBalancer)) {
-            //Validate the certifications and key return the list of errors if there are any, otherwise, pass the transport object to async layer...
-            updatedSslTermination = SslTerminationHelper.cleanSSLCertKeyEntries(updatedSslTermination);
-            zeusCertFile = ZeusUtil.getCertFile(updatedSslTermination.getPrivatekey(), updatedSslTermination.getCertificate(), updatedSslTermination.getIntermediateCertificate());
-            SslTerminationHelper.verifyCertificationCredentials(zeusCertFile);
+        if (dbTermination != null) {
+            if (!SslTerminationHelper.modificationStatus(sslTermination, dbLoadBalancer)) {
+                //Validate the certifications and key return the list of errors if there are any, otherwise, pass the transport object to async layer...
+                SslTerminationHelper.cleanSSLCertKeyEntries(dbTermination);
+                zeusCertFile = ZeusUtil.getCertFile(dbTermination.getPrivatekey(), dbTermination.getCertificate(), dbTermination.getIntermediateCertificate());
+                SslTerminationHelper.verifyCertificationCredentials(zeusCertFile);
+            }
+        } else {
+          //*Should never happen...
+          LOG.error("The ssl termination service layer could not handle the request, thus not producing a proper sslTermination Object causing this failure...");
+          throw new UnprocessableEntityException("There was a problem generating the ssl termination configuration, please contact support...");
         }
 
-
-        LOG.debug("Updating the lb status to pending_update");
+          LOG.debug("Updating the lb status to pending_update");
         if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
@@ -82,10 +89,10 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         LOG.info(String.format("Saving ssl termination to the data base for loadbalancer: '%s'", lbId));
-        sslTerminationRepository.setSslTermination(lbId, updatedSslTermination);
+        sslTerminationRepository.setSslTermination(lbId, dbTermination);
         LOG.info(String.format("Succesfully saved ssl termination to the data base for loadbalancer: '%s'", lbId));
 
-        zeusSslTermination.setSslTermination(updatedSslTermination);
+        zeusSslTermination.setSslTermination(dbTermination);
         if (zeusCertFile != null) {
             zeusSslTermination.setCertIntermediateCert(zeusCertFile.getPublic_cert());
         }
