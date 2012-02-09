@@ -2,7 +2,6 @@ package org.openstack.atlas.service.domain.helpers;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -13,8 +12,6 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.SslTerminationRepository;
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
@@ -127,7 +124,8 @@ public class SslTerminationHelperTest {
                     "-----END CERTIFICATE-----\n" +
                     "\n");
 
-            sslTermination.setPrivatekey("\n    \n\n\n          \n\n       " +
+            sslTermination.setPrivatekey("\n    " +
+                    "\n\n          \n\n       " +
                     "-----BEGIN CERTIFICATE-----\n" +
                     "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
                     "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
@@ -141,9 +139,10 @@ public class SslTerminationHelperTest {
                     "dZsGmy48UFF4pBHdhnE8bCAt8KgK3BJb0XqNrUxxI6Jc/Hcl9AfppFIEGw==\n" +
                     "-----END CERTIFICATE-----\n        \n");
 
-            Assert.assertEquals(cleanSTring, SslTerminationHelper.cleanSSLCertKeyEntries(sslTermination).getCertificate());
-            Assert.assertEquals(cleanSTring, SslTerminationHelper.cleanSSLCertKeyEntries(sslTermination).getIntermediateCertificate());
-            Assert.assertEquals(cleanSTring, SslTerminationHelper.cleanSSLCertKeyEntries(sslTermination).getPrivatekey());
+            SslTerminationHelper.cleanSSLCertKeyEntries(sslTermination);
+            Assert.assertEquals(cleanSTring, sslTermination.getCertificate());
+            Assert.assertEquals(cleanSTring, sslTermination.getIntermediateCertificate());
+            Assert.assertEquals(cleanSTring, sslTermination.getPrivatekey());
 
         }
     }
