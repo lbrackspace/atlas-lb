@@ -917,9 +917,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Removed protection catalog from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
             //Removing the shadow VS
-            LOG.info(String.format("Removing the shadow virtual server..."));
-            deleteVirtualServer(serviceStubs, virtualServerName);
-            LOG.debug(String.format("Successfully removed the shadow virtual server..."));
+            try {
+                LOG.info(String.format("Removing the shadow virtual server..."));
+                deleteVirtualServer(serviceStubs, virtualServerName);
+                LOG.debug(String.format("Successfully removed the shadow virtual server..."));
+            } catch (ObjectDoesNotExist dne) {
+                //Only happens when deleteLoadBalancer calls us
+                LOG.info(String.format("Virtual server %s was not found for removeSslTermination, ignoring...", virtualServerNameNonSecure));
+            }
 
             //Un-suspending non-secure vs
             try {
