@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.BUILD;
@@ -89,6 +90,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             throw new LimitReachedException(String.format("Load balancer limit reached. "
                     + "Limit is set to '%d'. Contact support if you would like to increase your limit.",
                     getLoadBalancerLimit(lb.getAccountId())));
+        }
+
+        // Check if this user has at least one Primary node.
+        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
+        if(!npc.hasPrimary()){
+            throw new BadRequestException(Constants.NoPrimaryNodeError);
         }
 
         //check for blacklisted Nodes

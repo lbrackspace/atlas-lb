@@ -151,7 +151,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     public void updateProtocol(LoadBalancer lb) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerAdapter.updateProtocol(config,lb);
+            reverseProxyLoadBalancerAdapter.updateProtocol(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -181,10 +181,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void setNodes(Integer lbId, Integer accountId, Set<Node> nodes) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void setNodes(LoadBalancer lb) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerAdapter.setNodes(config, lbId, accountId, nodes);
+            reverseProxyLoadBalancerAdapter.setNodes(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -316,7 +316,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void createHostBackup(Host host,
-                                 String backupName) throws RemoteException, MalformedURLException, DecryptException {
+            String backupName) throws RemoteException, MalformedURLException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
         try {
             reverseProxyLoadBalancerAdapter.createHostBackup(config, backupName);
@@ -386,7 +386,8 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     @Override
     public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
-        String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId); Stats lbStats;
+        String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
+        Stats lbStats;
 
         long cal = getInstance().getTimeInMillis();
         lbStats = (Stats) atlasCache.get(key);
@@ -637,6 +638,19 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
         }
+
+    }
+
+    @Override
+    public void setNodesPriorities(String poolName, LoadBalancer lb) throws DecryptException, EntityNotFoundException, MalformedURLException, RemoteException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        try {
+            reverseProxyLoadBalancerAdapter.setNodesPriorities(config, poolName, lb);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+
     }
 
     public void setAtlasCache(AtlasCache atlasCache) {

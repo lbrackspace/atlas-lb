@@ -7,7 +7,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>crypto-tool</artifactId>
-    <name>Openstack :: Atlas :: Common :: Cryoto Tool</name>
+    <name>Openstack :: Atlas :: Common :: Crypto Tool</name>
     <url>http://maven.apache.org</url>
     <packaging>jar</packaging>
 

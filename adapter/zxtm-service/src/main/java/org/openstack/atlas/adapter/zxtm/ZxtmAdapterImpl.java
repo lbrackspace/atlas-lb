@@ -22,6 +22,7 @@ import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 
 import java.rmi.RemoteException;
 import java.util.*;
+import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
 
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.NONE;
 
@@ -60,6 +61,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             createNodePool(config, lb.getId(), lb.getAccountId(), lb.getNodes(), algorithm);
+            setNodesPriorities(config, poolName, lb);
         } catch (Exception e) {
             deleteNodePool(serviceStubs, poolName);
             throw new ZxtmRollBackException(rollBackMessage, e);
@@ -71,7 +73,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{virtualServerName}, new VirtualServerBasicInfo[]{vsInfo});
             LOG.info(String.format("Virtual server '%s' successfully added.", virtualServerName));
         } catch (Exception e) {
-            if (e instanceof ObjectDoesNotExist) throw new ObjectAlreadyExists();
+            if (e instanceof ObjectDoesNotExist) {
+                throw new ObjectAlreadyExists();
+            }
             deleteVirtualServer(serviceStubs, virtualServerName);
             deleteNodePool(serviceStubs, poolName);
             throw new ZxtmRollBackException(rollBackMessage, e);
@@ -199,7 +203,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-
     private void isVSListeningOnAllAddresses(ZxtmServiceStubs serviceStubs, String virtualServerName, String poolName) throws RemoteException, VirtualServerListeningOnAllAddressesException {
         boolean[] isListening = serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(new String[]{virtualServerName});
 
@@ -209,6 +212,25 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             deleteVirtualServer(serviceStubs, virtualServerName);
             throw new VirtualServerListeningOnAllAddressesException(String.format("The Virtual Server %s was found to be listening on all IP addresses.", virtualServerName));
         }
+    }
+
+    @Override
+    public void setNodesPriorities(LoadBalancerEndpointConfiguration config, String poolName, LoadBalancer lb) throws RemoteException {
+        Set<Node> nodes = lb.getNodes();
+        ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(nodes);
+        String[] poolNames = new String[]{poolName};
+
+        LOG.debug(String.format("setNodePriority for pool %s priority=%s Starting....", poolNames[0], znpc));
+        ZxtmServiceStubs stubs = getServiceStubs(config);
+        stubs.getPoolBinding().setNodesPriorityValue(poolNames, znpc.getPriorityValues());
+        if (znpc.hasSecondary()) {
+            boolean[] setTrue = new boolean[]{true};
+            stubs.getPoolBinding().setPriorityEnabled(poolNames, setTrue);
+        } else {
+            boolean[] setFalse = new boolean[]{false};
+            stubs.getPoolBinding().setPriorityEnabled(poolNames, setFalse);
+        }
+        LOG.debug(String.format("setNodePriority for pool %s priority=%s Finished....", poolNames[0], znpc));
     }
 
     @Override
@@ -724,7 +746,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     }
 
-
     private void attachRateLimitRulesToVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
         LOG.debug("Attach rules and enable them on the virtual server.");
         VirtualServerRule rateLimitRule;
@@ -1123,8 +1144,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void setNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes)
+    public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        Integer lbId = lb.getId();
+        Integer accountId = lb.getAccountId();
+        Set<Node> nodes = lb.getNodes();
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameBuilder.genVSName(lbId, accountId);
         final String rollBackMessage = "Set nodes request canceled.";
@@ -1156,6 +1180,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 //            setDrainingNodes(config, poolName, drainingApiNodes);
 
             setNodeWeights(config, lbId, accountId, nodes);
+            setNodesPriorities(config, poolName, lb);
         } catch (Exception e) {
             if (e instanceof InvalidInput) {
                 LOG.error(String.format("Error setting node conditions for pool '%s'. All nodes cannot be disabled.", poolName), e);
@@ -2216,8 +2241,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     private boolean arrayElementSearch(String[] namesArray, String searchName) {
         for (int n = 0; n < namesArray.length; n++) {
-            if (namesArray[n].equals(searchName))
+            if (namesArray[n].equals(searchName)) {
                 return true;
+            }
         }
         return false;
     }

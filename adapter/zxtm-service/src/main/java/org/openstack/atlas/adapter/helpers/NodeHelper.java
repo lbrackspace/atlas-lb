@@ -1,5 +1,6 @@
 package org.openstack.atlas.adapter.helpers;
 
+import com.zxtm.service.client.PoolPriorityValueDefinition;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.util.converters.StringConverter;
 import java.util.ArrayList;
@@ -38,4 +39,6 @@ public class NodeHelper {
         List<Integer> ids = getNodeIds(nodes);
         return StringConverter.integersAsString(ids);
     }
+
+
 }

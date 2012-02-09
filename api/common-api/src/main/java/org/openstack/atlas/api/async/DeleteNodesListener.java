@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.async;
 
+import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -11,6 +12,9 @@ import org.openstack.atlas.util.converters.StringConverter;
 
 import javax.jms.Message;
 import java.util.List;
+import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -46,6 +50,8 @@ public class DeleteNodesListener extends BaseListener {
         try {
             LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in Zeus...", doomedIdsStr, msg.getLoadBalancerId()));
             dbLoadBalancer = nodeService.delNodes(dbLoadBalancer, doomedNodes);
+            Set<Node> survivingNodes = nodeService.getAllNodesByAccountIdLoadBalancerId(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId());
+            reverseProxyLoadBalancerService.setNodesPriorities(ZxtmNameBuilder.genVSName(dbLoadBalancer), dbLoadBalancer);
             reverseProxyLoadBalancerService.removeNodes(msg.getLoadBalancerId(), msg.getAccountId(), doomedNodes);
             LOG.debug(String.format("Successfully removed nodes '[%s]' from load balancer '%d' in Zeus.", doomedIdsStr, msg.getLoadBalancerId()));
         } catch (Exception e) {
