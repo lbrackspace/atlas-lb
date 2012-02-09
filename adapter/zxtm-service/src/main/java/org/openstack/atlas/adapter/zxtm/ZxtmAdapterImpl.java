@@ -317,20 +317,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-    private void deleteTrafficIpGroup(ZxtmServiceStubs serviceStubs, String trafficIpGroupName) throws RemoteException {
+    private void deleteTrafficIpGroup(ZxtmServiceStubs serviceStubs, String trafficIpGroupName) throws RemoteException, InvalidOperation {
         try {
             LOG.debug(String.format("Deleting traffic ip group '%s'...", trafficIpGroupName));
             serviceStubs.getTrafficIpGroupBinding().deleteTrafficIPGroup(new String[]{trafficIpGroupName});
-        } catch (Exception e) {
-            if (e instanceof ObjectDoesNotExist) {
-                LOG.debug(String.format("Traffic ip group '%s' already deleted. Ignoring...", trafficIpGroupName));
-            }
-            if (e instanceof ObjectInUse) {
-                LOG.debug(String.format("Traffic ip group '%s' is in use (i.e. shared). Skipping...", trafficIpGroupName));
-            }
-            if (!(e instanceof ObjectDoesNotExist) && !(e instanceof ObjectInUse)) {
-                LOG.debug(String.format("There was an unknown issues deleting traffic ip group: %s", trafficIpGroupName) + e.getMessage());
-            }
+            LOG.info(String.format("Successfully deleted traffic ip group '%s'...", trafficIpGroupName));
+        } catch (ObjectDoesNotExist odne) {
+            LOG.debug(String.format("Traffic ip group '%s' already deleted. Ignoring...", trafficIpGroupName));
+        } catch (ObjectInUse oiu) {
+            LOG.debug(String.format("Traffic ip group '%s' is in use (i.e. shared). Skipping...", trafficIpGroupName));
         }
 
         //(VERSION 1) D-01942 failed when trying to verify tig, code not needed...
@@ -344,8 +339,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         Integer lbId = lb.getId();
         Integer accountId = lb.getAccountId();
@@ -377,7 +371,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 removeXFFRuleFromVirtualServers(serviceStubs, vsNames); // XFF is only for the HTTP protocol
             }
         } catch (Exception e) {
-            throw new ZxtmRollBackException("Update protocol request canceled.", e);
+            throw new ZxtmRollBackException(String.format("Update protocol request canceled for %s ", virtualServerName), e);
         }
 
 
@@ -392,6 +386,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     }
                 }
             }
+
             if (rateLimitExists) {
                 removeRateLimitRulesFromVirtualServers(serviceStubs, vsNames);
             }
@@ -558,7 +553,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             currentTrafficIpGroups = serviceStubs.getVirtualServerBinding().getListenTrafficIPGroups(vsNames);
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
-                LOG.error("Cannot add virtual ips to virtual server as it does not exist.", e);
+                LOG.error(String.format("Cannot add virtual ips to virtual server %s as it does not exist. %s", virtualServerName, e));
             }
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
@@ -613,7 +608,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 serviceStubs.getTrafficIpGroupBinding().addTrafficManager(new String[]{trafficIpGroup}, new String[][]{failoverTrafficManagers});
                 serviceStubs.getTrafficIpGroupBinding().setPassiveMachine(new String[]{trafficIpGroup}, new String[][]{failoverTrafficManagers});
             } catch (ObjectDoesNotExist e) {
-                LOG.warn(String.format("Traffic ip group '%s' does not exist. It looks like it got deleted. Continuing...", trafficIpGroup));
+                LOG.warn(String.format("Traffic ip group '%s' does not exist. Continuing...", trafficIpGroup));
             }
         }
 

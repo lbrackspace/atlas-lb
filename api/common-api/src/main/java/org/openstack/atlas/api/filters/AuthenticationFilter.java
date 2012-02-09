@@ -1,18 +1,20 @@
 package org.openstack.atlas.api.filters;
 
-import org.openstack.atlas.util.simplecache.CacheEntry;
-import org.openstack.atlas.docs.loadbalancers.api.v1.faults.LoadBalancerFault;
-import org.openstack.atlas.api.auth.AuthInfo;
-import org.openstack.atlas.api.auth.AuthTokenValidator;
-import org.openstack.atlas.api.exceptions.MalformedUrlException;
-import org.openstack.atlas.api.filters.wrappers.HeadersRequestWrapper;
-import org.openstack.atlas.api.helpers.UrlAccountIdExtractor;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
+import org.openstack.atlas.api.auth.AuthInfo;
+import org.openstack.atlas.api.auth.AuthTokenValidator;
+import org.openstack.atlas.api.exceptions.MalformedUrlException;
+import org.openstack.atlas.api.filters.wrappers.HeadersRequestWrapper;
+import org.openstack.atlas.api.helpers.UrlAccountIdExtractor;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.LoadBalancerFault;
+import org.openstack.atlas.util.simplecache.CacheEntry;
+import org.openstack.atlas.util.simplecache.SimpleCache;
+import org.openstack.client.keystone.KeyStoneException;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -22,12 +24,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.IOException;
 
-import org.openstack.atlas.util.simplecache.SimpleCache;
-import org.openstack.client.keystone.KeyStoneException;
-
-import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtendedStackTrace;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtendedStackTrace;
 
 public class AuthenticationFilter implements Filter {
     private final Log LOG = LogFactory.getLog(AuthenticationFilter.class);
@@ -78,29 +77,30 @@ public class AuthenticationFilter implements Filter {
             }
 
             try {
-                LOG.debug("Before calling validate ...");
+                LOG.debug(String.format("Before calling validate on account: %s with token: %s", accountId, authToken));
                 String accountStr = String.format("%d", accountId);
                 CacheEntry<AuthInfo> ce = userCache.getEntry(accountStr);
                 AuthInfo authInfo = null;
 
                 if (ce == null || ce.isExpired()) {
                     userCache.remove(accountStr);
-                    LOG.debug(String.format("calling auth server"));
                 } else {
                     authInfo = ce.getVal();
                     LOG.debug(String.format("Cache hit %s expires in %d secs", accountStr, ce.expiresIn()));
                 }
 
                 if (authInfo == null || !authInfo.getAuthToken().equals(authToken)) {
+                    LOG.info(String.format("Attempting to contact the auth service for account %s with token: %s", accountId, authToken));
                     username = authTokenValidator.validate(accountId, authToken).getUserId();
                     if (username == null) {
                         sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                         return;
                     }
 
+                    LOG.info(String.format("Successfully retrieved users info from the auth service for account: %s with token: %s returned username: %s", accountId, authToken, username));
                     authInfo = new AuthInfo(username, authToken);
 
-                    LOG.debug(String.format("insert %s into userCache", accountStr));
+                    LOG.debug(String.format("insert %s-%s-%s into userCache", accountStr, authToken, username));
                     userCache.put(accountStr, authInfo);
 
                 } else {
@@ -109,12 +109,12 @@ public class AuthenticationFilter implements Filter {
 
             } catch (Exception e) {
                 if (e instanceof KeyStoneException) {
-                    LOG.error(String.format("Error while authenticating user:%s\n", e.getMessage()));
+                    LOG.error(String.format("Error while authenticating user %s-%s-%s:%s\n", accountId, authToken, username, e.getMessage()));
                     sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                     return;
                 } else {
                     String exceptMsg = getExtendedStackTrace(e);
-                    LOG.error(String.format("Error while authenticating user:%s\n", exceptMsg));
+                    LOG.error(String.format("Error while authenticating user %s-%s-%s:%s\n", accountId, authToken, username, exceptMsg));
                     httpServletResponse.sendError(500, e.getMessage());
                     return;
                 }
@@ -125,7 +125,7 @@ public class AuthenticationFilter implements Filter {
             enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, username);
 
             try {
-                LOG.info("Request successfully authenticated, passing control to the servlet. Account: " + accountId);
+                LOG.info(String.format("Request successfully authenticated, passing control to the servlet. Account: %s Token: %s Username: %s", accountId, authToken, username));
                 filterChain.doFilter(enhancedHttpRequest, servletResponse);
                 return;
             } catch (RuntimeException e) {
