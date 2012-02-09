@@ -14,7 +14,8 @@ import org.openstack.atlas.util.ca.CertUtils as CertUtils
 import org.openstack.atlas.util.ca.CsrUtils as CsrUtils
 import org.openstack.atlas.util.ca.RSAKeyUtils as RSAKeyUtils
 
-
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer as NodesPrioritiesContainer
+import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer as ZeusNodePriorityContainer
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs as ZxtmServiceStubs
 import java.net.URL as URL
 import com.zxtm.service.client.CertificateFiles as CertificateFiles
@@ -26,7 +27,8 @@ import org.hexp.hibernateexp.util.HashUtil as HashUtil
 import org.hexp.hibernateexp.util.HibernateUtil as HibernateUtil
 import org.hexp.hibernateexp.HuApp as HuApp
 
-import org.openstack.atlas.service.domain.entities.VirtualIp as VirtualIp
+import org.openstack.atlas.service.domain.entities.UserPages as UserPages
+import org.openstack.atlas.service.domain.entities.NodeType as NodeType
 import org.openstack.atlas.service.domain.entities.VirtualIpv6 as VirtualIpv6
 import org.openstack.atlas.service.domain.entities.VirtualIpType as VirtualIpType
 import org.openstack.atlas.service.domain.entities.Cluster as Cluster
@@ -106,6 +108,7 @@ import org.openstack.atlas.util.converters.DateTimeConverters as DateTimeConvert
 import java.util.ArrayList as ArrayList
 import java.util.List as List
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfInts as ListOfInts
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus as ClusterStatus
 
 import time
 import datetime
@@ -122,12 +125,16 @@ import cPickle
 
 def printf(format,*args): sys.stdout.write(format%args)
 
+NPC = NodesPrioritiesContainer
+ZNPC = ZeusNodePriorityContainer
+
 SEEDFILE = "util.seed"
 
 RsaConst.init();
 
 if os.path.isfile(SEEDFILE):
-    aes = Aes(FileUtils.readFileToBytes(SEEDFILE))
+    seed = FileUtils.readFileToBytes(SEEDFILE)
+    aes = Aes(seed)
 else:
     printf("Don't forget to seed a key via ./seedKey\n")
     sys.stdout.flush()
@@ -462,6 +469,42 @@ class CidrBlackList(object):
             return "ADD %s to ipv6subnets"%cidr
         return "UNKNOWN ERROR %s"%cidr
 
+class Timer(object):
+    def __init__(self):
+        self.begin   = time.time()
+        self.end   = time.time()
+        self.stored  = 0.0
+        self.stopped = True
+
+    def restart(self):
+        self.reset()
+        self.start()
+        
+
+    def start(self):
+        if not self.stopped:
+            return
+        self.begin = time.time()
+        self.stopped = False
+
+    def stop(self):
+        if self.stopped:
+            return
+        self.end = time.time()
+        self.stored += self.end - self.begin
+        self.stopped = True
+
+    def read(self):
+        if self.stopped:
+             return self.stored
+        now = time.time()
+        total_time = now - self.begin + self.stored
+        return total_time
+
+    def reset(self):
+        self.begin = time.time()
+        self.end   = time.time()
+        self.stored = 0.0
 
 def bi(val):
     return BigInteger("%s"%val)
@@ -890,6 +933,7 @@ def newClusters(names,ds="DFW"):
         kw["DataCenter"]=DataCenter.valueOf(ds)
         kw["Password"]="***"
         kw["Username"]="wtf"
+        kw["Status"] = ClusterStatus.ACTIVE
         out.append(newObj(Cluster,**kw))
     return out  
 
@@ -897,6 +941,7 @@ def newHost(cluster):
     out = newObj(Host,Name="H1",Id=1,HostStatus=HostStatus.values()[0],
                  Cluster=cluster,CoreDeviceId="1",MaxConcurrentConnections=9,
                  ManagementIp="127.0.0.1")
+    out.setEndpoint("http://127.0.0.1")
     return out
 
 def newRateProfile():
@@ -926,7 +971,7 @@ def linkConnectionLimits2LoadBalancer(cls):
         app.saveOrUpdate(lb)
 
 
-def newLoadBalancers(accountId,num,hosts,rateprofile):
+def newLoadBalancers(accountId,num,hosts):
     today = Calendar.getInstance()
     out = []
     for i in xrange(0,num):
@@ -943,12 +988,10 @@ def newLoadBalancers(accountId,num,hosts,rateprofile):
         lb.setCreated(today)
         lb.setProtocol(rnd.choice(LoadBalancerProtocol.values()))
         lb.setSessionPersistence(rnd.choice(SessionPersistence.values()))
-        lb.setStatus(rnd.choice(LoadBalancerStatus.values()))
-        if not rateprofile:
-            rps = app.getList("from LoadBalancerRateProfile")
-            lb.setLoadBalancerRateProfile(rps[0])
-        else:
-            lb.setLoadBalancerRateProfile(rateprofile)
+        lb.setStatus(LoadBalancerStatus.ACTIVE)
+        up = UserPages()
+        up.setErrorpage("<html>Error</html>")
+        lb.setUserPages(up)
         out.append(lb)
     return out
 
@@ -1001,6 +1044,7 @@ def newNodes(lbs,num):
             n.setPort(80)
             n.setWeight(ri(0,1000))
             n.setStatus(rnd.choice(NodeStatus.values()))
+            n.setType(rnd.choice(NodeType.values()))
             out.append(n)
     return out
 
@@ -1591,7 +1635,6 @@ def newCertificateFile(key_file,crt_file):
     certFile.setPublic_cert(crt_pem)
     return certFile
 
-
 def filterList(listIn,rregxPattern):
     out = []
     list_re = re.compile(rregxPattern,re.IGNORECASE)
@@ -1622,10 +1665,21 @@ def inv_dict(dict_in):
             out[val].append(k)
     return out
 
+def subjStr(subjDict):
+    out = ""
+    subjList = [(k,v) for (k,v) in subjDict.items()]
+    for (k,v) in subjList[:-1]:
+        out += "%s=%s,"%(k,v)
+    (k,v) = subjList[-1]
+    out += "%s=%s"%(k,v)
+    return out
+
+
+
 def buildChain(bits,subjList,**kw):
     out = []
     certainity = kw.pop("certainity",32)
-    days = kw.pop("days",730)
+    days = kw.pop("days",1460)
     days_dec = kw.pop("days_dec",1)
     i = 1
     li = len(subjList)
@@ -1654,15 +1708,13 @@ def buildChain(bits,subjList,**kw):
         i += 1
     return out
 
-def toPem(tupleIn):
-    out = []
-    for entry in tupleIn:
-        if isinstance(entry,RsaPair):
-            bytes = PemUtils.toPem(entry.toJavaSecurityKeyPair())
-        else:
-            bytes = PemUtils.toPem(entry)
-        out.append("%s"%String(bytes,"US-ASCII"))
-    return tuple(out)
+def newCrt(bits,subj,caKey,caCrt,**kw):
+    certainity = kw.pop("certainity",32)
+    key = RSAKeyUtils.genRSAPair(bits,certainity)
+    csr = CsrUtils.newCsr(subj,key,False)
+    crt = CertUtils.signCSR(csr,caKey,caCrt,730,None)
+    return (key,csr,crt)
+
 
 def toPem(obj):
     if isinstance(obj,RsaPair):
@@ -1670,4 +1722,14 @@ def toPem(obj):
     else:
         bytes = PemUtils.toPem(obj)
     return "%s"%String(bytes,"US-ASCII")
+
+def chainToPem(chain):
+    pemChain = []
+    for i in xrange(0,len(chain)):
+        row = {}
+        row["key"] = toPem(chain[i][0])
+        row["csr"] = toPem(chain[i][1])
+        row["crt"] = toPem(chain[i][2])
+        pemChain.append(row)
+    return pemChain
 

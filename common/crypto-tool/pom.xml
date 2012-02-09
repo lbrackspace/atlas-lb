@@ -3,11 +3,11 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>ca-parent</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.9-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>crypto-tool</artifactId>
-    <name>Openstack :: Atlas :: Common :: Cryoto Tool</name>
+    <name>Openstack :: Atlas :: Common :: Crypto Tool</name>
     <url>http://maven.apache.org</url>
     <packaging>jar</packaging>
 

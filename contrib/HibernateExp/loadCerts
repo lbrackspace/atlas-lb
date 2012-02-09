@@ -1,18 +1,18 @@
 #!/usr/bin/env jython
-
 import org.hexp.hibernateexp.util.SslNonsense.SecurityBorker as SecurityBorker
 import util
-util.setConfig("stag.json",skipDB=True)
+util.setConfig("stag.json",skipDb=True)
 from util import *
 import com.zxtm.service.client.CertificateFiles as CertificateFiles
 import traceback
-import xmlrpclib
 import random
 import time
 import copy
 import sys
 import os
 import re
+
+CPICKLE_FILE = "certs.db"
 
 def printf(format,*args): sys.stdout.write(format%args)
 
@@ -22,45 +22,74 @@ def fprintf(fp,format,*args):
     fp.write(format%args)
     fp.flush()
 
-def genCf(name):
-    subj = copy.deepcopy(base_subj)
+def genCf(name,base_subj,chainCat,caKey,caCrt):
+    subj = {}
+    subj.update(base_subj)
     subj["CN"]="%s.%s"%(name,"rackexp.org")
-    subj["OU"]="%s Unit"%name
-    r = s.genCrt(cred,1024,subj)
-    if r["error"]:
-        printf("Error generating crt")
-    crt = r["crt"]
-    key = r["key"]
-    crt += chain #Slap this cert at the top of the chain
+    (key,csr,crt) = newCrt(4096,subjStr(subj),caKey,caCrt,certainity=13)
+    keyPem = toPem(key)
+    csrPem = toPem(csr)
+    crtPem = toPem(crt)
+    zcf = ZeusUtil.getCertFile(keyPem,crtPem,chainCat)
+    errors = []
+    for err in zcf.getErrorList():
+        errors.append(err)
     cf = CertificateFiles()
-    cf.setPrivate_key(key)
-    cf.setPublic_cert(crt)
-    return cf
-
-chain = open("./chain.crt").read()
-
+    cf.setPrivate_key(zcf.getPrivate_key())
+    cf.setPublic_cert(zcf.getPublic_cert())
+    cfd = {}
+    cfd["key"] = keyPem;
+    cfd["csr"] = csrPem;
+    cfd["crt"] = crtPem;
+    cfd["errors"] = errors
+    cfd["zkey"] = zcf.getPrivate_key()
+    cfd["zcrt"] = zcf.getPublic_cert()
+    cfd["cf"] = cf
+    return cfd
 
 SecurityBorker.bork() #Disables PKIX validation
 
-cred={"user":"causr","passwd":"capasswd"}
-url = "https://127.0.0.1:9876"
-
-s = xmlrpclib.ServerProxy(url)
-
-base_subj = {}
-base_subj["C"]="US"
-base_subj["ST"]="Texas"
-base_subj["L"]="San Antonio"
-base_subj["O"]="RackExp"
+baseSubj = {
+         "C":   "US",
+         "ST":  "Texas",
+         "L":   "San Antonio",
+         "O":   "RackExp",
+         "OU":  "RackExp Organization",
+         }
 
 name_prots = {}
+
+printf("Building chain\n")
+caSubjects = []
+for i in xrange(1,4):
+    subj = dict(baseSubj)
+    subj["CN"] = "CA %i for Lbaas"%i
+    caSubjects.append(subjStr(subj))
+    
+
+chain = buildChain(4096,caSubjects,log=sys.stdout,certainity=13)
+chain.reverse()
+
+caKey = chain[0][0]
+caCsr = chain[0][1]
+caCrt = chain[0][2]
+
+zresults = {}
+certs = {}
+certs["ca"] = [toPem(caKey),toPem(caCsr),toPem(caCrt)]
+certs["chain"] = chainToPem(chain)
+certs["zresults"] = zresults
+chainCat = ""
+
+for r in certs["chain"]:
+    chainCat += r["crt"]
 
 vnames = stubs.vs.getVirtualServerNames()
 prots = stubs.vs.getProtocol(vnames)
 for i in xrange(0,len(vnames)):
     name_prots[vnames[i]]=prots[i].toString()
 
-vsname_re = re.compile("^([0-9])+_([0-9])+$")
+vsname_re = re.compile("^([0-9]+)_([0-9]+)$")
 
 def isPropVsAndHttp(k,v):
     if not vsname_re.match(k):
@@ -71,6 +100,7 @@ def isPropVsAndHttp(k,v):
         return True
 
 httpVsList = []
+
 
 for (k,v) in name_prots.items():
     if not isPropVsAndHttp(k,v):
@@ -88,19 +118,41 @@ last_i = len(httpVsList)
 i = 0
 
 secs = 3.0
+timer = Timer()
 for name in httpVsList:
+    zr = {}
+    zresults[name] = zr
+    save_cpickle(CPICKLE_FILE,certs)
     i += 1
+    zr["errors"] = []
     fmt = "Adding cert %i of %i for %s\n"
+    m = vsname_re.match(name)
+    if not m:
+        msg = "%s isn't an lb I recognize\n"%(name)
+        zr["errors"].append(msg)
+        fprintf(lp,msg)
+        continue
+    host = "n%s"%(m.group(2))
+    fprintf(lp,"Generating cert for %s\n",name)
+    timer.reset()
+    cfd  = genCf(host,baseSubj,chainCat,caKey,caCrt)
+    cf = cfd["cf"]
+    cfd.pop("cf")
+    zr["cf"] = cfd
+    zr["keygentime"] = timer.read()
     args = (i,last_i,name)
     fprintf(lp,fmt,*args)
-    cf = genCf(name)
     fprintf(lp,"Calling zues importCertificate\n")
     try:
+        timer.restart()
         stubs.cert.importCertificate([name],[cf])
-        fprintf(lp,"sleeping for %f seconds\n",secs)
-        time.sleep(secs)
+        zr["certimporttime"] = timer.read()
+        timer.reset()
         stubs.vs.setSSLCertificate([name],[name])
+        zr["setSSLCertTime"] = timer.read()
+        timer.reset()
         stubs.vs.setSSLDecrypt([name],[True])
+        zr["setSSLDecryptTime"] = timer.read()
     except:
         (t,v,st) = sys.exc_info()
         msg = traceback.format_exception(t,v,st)
@@ -109,8 +161,10 @@ for name in httpVsList:
         for m in msg:
             lp.write(m)
             sys.stdout.write(m)
+            zr["errors"].append(m)
         lp.flush()
         sys.stdout.flush()
+        save_cpickle(CPICKLE_FILE,certs)
         continue
     fprintf(lp,"Import complete for %s\n",name)
     msg = "%d of %d"%(i,last_i)

@@ -11,6 +11,8 @@ import java.util.Set;
 
 public interface NodeService {
 
+    public Set<Node> getAllNodesByAccountIdLoadBalancerId(Integer accountId,Integer loadBalancerId) throws EntityNotFoundException;
+
     public Set<Node> getNodesByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId, Integer... p) throws EntityNotFoundException, DeletedStatusException;
 
     public Node getNodeByAccountIdLoadBalancerIdNodeId(Integer accountId, Integer loadBalancerId, Integer nodeId) throws EntityNotFoundException, DeletedStatusException;

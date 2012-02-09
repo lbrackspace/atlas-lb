@@ -54,6 +54,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);
             NodesHelper.setNodesToStatus(dbLoadBalancer, OFFLINE);
+
             loadBalancerService.update(dbLoadBalancer);
             String alertDescription = String.format("An error occurred while creating loadbalancer '%d' in Zeus.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);

@@ -1,0 +1,24 @@
+#!/usr/bin/env jython
+
+import util
+
+
+certs = util.load_cpickle("certs.db")
+
+o = {}
+o["ca"] = certs["ca"]
+o["chain"] = certs["chain"]
+o["zresults"]=[]
+keys = certs["zresults"].keys()
+keys.sort()
+
+for k in keys:
+    if certs["zresults"][k].has_key("cf"):
+        j = certs["zresults"][k]["cf"].pop("csr",None)
+        j = certs["zresults"][k]["cf"].pop("crt",None)
+        j = certs["zresults"][k]["cf"].pop("key",None)
+        j = certs["zresults"][k]["cf"].pop("zcrt",None)
+        j = certs["zresults"][k]["cf"].pop("zkey",None)
+    o["zresults"].append((k,certs["zresults"][k]))
+
+util.save_json("certs.json",o)
