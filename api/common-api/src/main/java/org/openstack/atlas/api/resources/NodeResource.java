@@ -1,5 +1,7 @@
 package org.openstack.atlas.api.resources;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.operations.Operation;
@@ -10,7 +12,7 @@ import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.apache.abdera.model.Feed;
-
+import org.openstack.atlas.service.domain.util.Constants;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
@@ -18,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
 
 import static javax.ws.rs.core.MediaType.*;
 
@@ -63,7 +66,9 @@ public class NodeResource extends CommonDependencyProvider {
             LoadBalancer domainLb = dozerMapper.map(apiLb, LoadBalancer.class);
             domainLb.setId(loadBalancerId);
             domainLb.setAccountId(accountId);
-            if(requestHeaders != null) domainLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
+            if (requestHeaders != null) {
+                domainLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
+            }
 
             LoadBalancer dbLb = nodeService.updateNode(domainLb);
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_NODE, dbLb);
@@ -76,17 +81,28 @@ public class NodeResource extends CommonDependencyProvider {
     @DELETE
     public Response deleteNode() {
         try {
-            LoadBalancer domainLb = new LoadBalancer();
+            LoadBalancer msgLb = new LoadBalancer();
             Set<org.openstack.atlas.service.domain.entities.Node> nodes = new HashSet<org.openstack.atlas.service.domain.entities.Node>();
             org.openstack.atlas.service.domain.entities.Node node = new org.openstack.atlas.service.domain.entities.Node();
             node.setId(id);
             nodes.add(node);
-            domainLb.setNodes(nodes);
-            domainLb.setId(loadBalancerId);
-            domainLb.setAccountId(accountId);
-            if(requestHeaders != null) domainLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
-
-            LoadBalancer loadBalancer = nodeService.deleteNode(domainLb);
+            msgLb.setNodes(nodes);
+            msgLb.setId(loadBalancerId);
+            msgLb.setAccountId(accountId);
+            if (requestHeaders != null) {
+                msgLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
+            }
+            Set<org.openstack.atlas.service.domain.entities.Node> foundNodes;
+            foundNodes = nodeService.getAllNodesByAccountIdLoadBalancerId(accountId, loadBalancerId);
+            Set<Integer> removeIds = new HashSet<Integer>();
+            removeIds.add(id);
+            NodesPrioritiesContainer npc = new NodesPrioritiesContainer(foundNodes).removeIds(removeIds);
+            if(!npc.hasPrimary()){
+                 List<String> validationErrors = new ArrayList<String>();
+                 validationErrors.add(Constants.NoPrimaryNodeError);
+                 return getValidationFaultResponse(validationErrors);
+            }
+            LoadBalancer loadBalancer = nodeService.deleteNode(msgLb);
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_NODE, loadBalancer);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
