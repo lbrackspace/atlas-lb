@@ -311,6 +311,10 @@
             <a>condition</a>
             <b>condition</b>
         </field>
+        <field>
+            <a>type</a>
+            <b>type</b>
+        </field>
     </mapping>
 
     <mapping map-null="false" wildcard="false">

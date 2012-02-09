@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.async;
 
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
@@ -46,6 +47,7 @@ public class DeleteNodeListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Removing node '%d' from load balancer '%d' in Zeus...", nodeToDelete.getId(), queueLb.getId()));
+            reverseProxyLoadBalancerService.setNodesPriorities(ZxtmNameBuilder.genVSName(dbLoadBalancer), dbLoadBalancer);
             reverseProxyLoadBalancerService.removeNode(queueLb.getId(), queueLb.getAccountId(), nodeToDelete);
             LOG.debug(String.format("Successfully removed node '%d' from load balancer '%d' in Zeus.", nodeToDelete.getId(), queueLb.getId()));
         } catch (Exception e) {
