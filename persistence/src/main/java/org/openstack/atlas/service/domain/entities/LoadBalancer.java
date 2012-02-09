@@ -69,7 +69,7 @@ public class LoadBalancer extends Entity implements Serializable {
     @LazyToOne(LazyToOneOption.NO_PROXY)
     private UserPages userPages;
 
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private SslTermination sslTermination;
 
     @Temporal(TemporalType.TIMESTAMP)

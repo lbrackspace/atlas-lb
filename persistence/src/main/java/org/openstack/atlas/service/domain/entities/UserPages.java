@@ -1,10 +1,10 @@
 package org.openstack.atlas.service.domain.entities;
 
-import javax.persistence.*;
-import javax.persistence.Table;
-import java.io.Serializable;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 
-import org.hibernate.annotations.*;
+import javax.persistence.*;
+import java.io.Serializable;
 
 @javax.persistence.Entity
 @Table(name = "user_pages")

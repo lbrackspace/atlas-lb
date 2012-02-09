@@ -12,13 +12,10 @@ import org.openstack.atlas.service.domain.operations.OperationResponse;
 
 import javax.ws.rs.core.Response;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.mockito.Mockito.mock;
 
-@RunWith(Enclosed.class)
 @Ignore
+@RunWith(Enclosed.class)
 public class SslTerminationResourceTest {
 
     public static class createSsl {
@@ -42,22 +39,10 @@ public class SslTerminationResourceTest {
 
         @Test
         public void shouldReturn500WhenExecutedOkayisFalse() throws Exception {
-            operationResponse.setExecutedOkay(false);            
-            Response resp = sslTermResource.createSsl(null);
-            Assert.assertEquals(500, resp.getStatus());
-        }
-
-        @Test
-        public void shouldReturn200WhenEsbIsNormal() throws Exception {
-            Response resp = sslTermResource.createSsl(null);
-            Assert.assertEquals(200, resp.getStatus());
-        }
-
-        @Test
-        public void shouldReturn500OnEsbReturningNull() throws Exception {
+            operationResponse.setExecutedOkay(false);
             Response resp = sslTermResource.createSsl(null);
             Assert.assertEquals(500, resp.getStatus());
         }
     }
-
 }
+
