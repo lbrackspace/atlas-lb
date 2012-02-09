@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.jms.Message;
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
@@ -40,7 +41,9 @@ public class UpdateNodeListener extends BaseListener {
 
         try {
             LOG.info(String.format("Updating nodes for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+            String poolName = ZxtmNameBuilder.genVSName(dbLoadBalancer);
             reverseProxyLoadBalancerService.setNodes(dbLoadBalancer);
+            reverseProxyLoadBalancerService.setNodesPriorities(poolName, dbLoadBalancer);
             LOG.info(String.format("Successfully updated nodes for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

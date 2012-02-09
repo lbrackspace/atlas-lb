@@ -141,29 +141,32 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
     @Override
     @Transactional
-    public LoadBalancer updateNode(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
-        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
+    public LoadBalancer updateNode(LoadBalancer msgLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
+        LoadBalancer oldLbNodes = loadBalancerRepository.getByIdAndAccountId(msgLb.getId(), msgLb.getAccountId());
 
-        Node nodeToUpdate = loadBalancer.getNodes().iterator().next();
-        if (!loadBalancerContainsNode(dbLoadBalancer, nodeToUpdate)) {
+        Node nodeToUpdate = msgLb.getNodes().iterator().next();
+        if (!loadBalancerContainsNode(oldLbNodes, nodeToUpdate)) {
             LOG.warn("Node to update not found. Sending response to client...");
             throw new EntityNotFoundException(String.format("Node with id #%d not found for loadbalancer #%d", nodeToUpdate.getId(),
-                    loadBalancer.getId()));
+                    msgLb.getId()));
         }
 
-        isLbActive(dbLoadBalancer);
+        isLbActive(oldLbNodes);
 
-        Node nodeBeingUpdated = loadBalancer.getNodes().iterator().next();
+        Node nodeBeingUpdated = msgLb.getNodes().iterator().next();
         LOG.debug("Verifying that we have an at least one active node...");
-        if (!activeNodeCheck(dbLoadBalancer, nodeBeingUpdated)) {
+        if (!activeNodeCheck(oldLbNodes, nodeBeingUpdated)) {
             LOG.warn("No active nodes found! Sending failure response back to client...");
             throw new UnprocessableEntityException("One or more nodes must remain ENABLED.");
         }
 
-        LOG.debug("Nodes on dbLoadbalancer: " + dbLoadBalancer.getNodes().size());
-        for (Node n : dbLoadBalancer.getNodes()) {
+        LOG.debug("Nodes on dbLoadbalancer: " + oldLbNodes.getNodes().size());
+        for (Node n : oldLbNodes.getNodes()) {
             if (n.getId().equals(nodeToUpdate.getId())) {
                 LOG.info("Node to be updated found: " + n.getId());
+                if (nodeToUpdate.getType() != null) {
+                    n.setType(nodeToUpdate.getType());
+                }
                 if (nodeToUpdate.getCondition() != null) {
                     n.setCondition(nodeToUpdate.getCondition());
                 }
@@ -183,13 +186,16 @@ public class NodeServiceImpl extends BaseService implements NodeService {
                 break;
             }
         }
-
+        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldLbNodes.getNodes());
+        if (!npc.hasPrimary()) {
+            throw new UnprocessableEntityException(Constants.NoPrimaryNodeError);
+        }
         LOG.debug("Updating the lb status to pending_update");
-        dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
-        dbLoadBalancer.setUserName(loadBalancer.getUserName());
+        oldLbNodes.setStatus(LoadBalancerStatus.PENDING_UPDATE);
+        oldLbNodes.setUserName(msgLb.getUserName());
 
-        nodeRepository.update(dbLoadBalancer);
-        return dbLoadBalancer;
+        nodeRepository.update(oldLbNodes);
+        return oldLbNodes;
     }
 
     @Override
