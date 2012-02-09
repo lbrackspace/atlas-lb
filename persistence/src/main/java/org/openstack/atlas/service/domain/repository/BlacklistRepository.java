@@ -1,9 +1,13 @@
 package org.openstack.atlas.service.domain.repository;
 
+import com.sun.jdi.InternalException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
+import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.util.ip.IPv6Cidr;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +57,17 @@ public class BlacklistRepository {
     public Map<String, List<BlacklistItem>> getBlacklistItemsCidrHashMap(List<BlacklistItem> list) {
         List<String> cidrBlocks = new ArrayList<String>();
         for (BlacklistItem item : list) {
-            cidrBlocks.add(item.getCidrBlock());
+            // Move this logic to the "toHashMap" function
+            if (item.getIpVersion() == IpVersion.IPV6) {
+                try {
+                    cidrBlocks.add(new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock()));
+                } catch (IPStringConversionException e) {
+                    LOG.error("Attempt to expand IPv6 string from CidrBlock " + item.getCidrBlock() + ": " + e.getMessage());
+                    throw new InternalException();
+                }
+            } else {
+                cidrBlocks.add(item.getCidrBlock());
+            }
         }
         String query = "SELECT b FROM BlacklistItem b WHERE b.cidrBlock in (:cidrBlocks)";
 

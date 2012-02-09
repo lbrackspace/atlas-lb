@@ -9,7 +9,9 @@ import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Blacklist;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ByIdOrName;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
+import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.util.ip.IPv6Cidr;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
@@ -76,8 +78,14 @@ public class BlackListResource extends ManagementDependencyProvider {
                             return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "The request contains duplicate entries.");
                         }
                     } else {
-                        if (item.getCidrBlock().equals(blitems.get(i).getCidrBlock())) {
-                            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "The request contains duplicate entries.");
+                        if (item.getIpVersion() == IpVersion.IPV6) {
+                            if (new IPv6Cidr(blitems.get(i).getCidrBlock()).matches(new IPv6Cidr(item.getCidrBlock()))) {
+                                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "The request contains duplicate entries.");
+                            }
+                        } else {
+                            if (blitems.get(i).getCidrBlock().equals(item.getCidrBlock())) {
+                                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "The request contains duplicate entries.");
+                            }
                         }
                     }
                 }

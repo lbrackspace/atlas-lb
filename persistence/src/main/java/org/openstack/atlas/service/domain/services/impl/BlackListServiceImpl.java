@@ -9,6 +9,7 @@ import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.BlackListService;
 import org.openstack.atlas.service.domain.util.StringUtilities;
+import org.openstack.atlas.util.ip.IPv6Cidr;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,8 +63,14 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
         List<String> cidrs = new ArrayList<String>();
 
         for (BlacklistItem item : list) {
-            if (map.get(item.getCidrBlock()) != null) {
-                blist = map.get(item.getCidrBlock());
+            String cidrBlock;
+            try {
+                cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
+            } catch (IPStringConversionException e) {
+                throw new BadRequestException(item.getCidrBlock() + " is not valid.");
+            }
+            if (map.get(cidrBlock) != null) {
+                blist = map.get(cidrBlock);
             } else {
                 blist = new ArrayList<BlacklistItem>();
             }
