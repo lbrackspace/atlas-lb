@@ -111,7 +111,7 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
     }
 
     private void writeJsonArrayWithFieldName(JsonGenerator jgen, List propList, boolean writeWhenNullOrEmpty, String fieldName) throws IOException {
-        if (writeWhenNullOrEmpty) jgen.writeFieldName(fieldName);
+        if (writeWhenNullOrEmpty || !propList.isEmpty()) jgen.writeFieldName(fieldName);
         writeJsonArray(jgen, propList, writeWhenNullOrEmpty);
     }
 
