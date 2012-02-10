@@ -1,0 +1,10 @@
+Package: [[artifactId]]
+Version: [[version]]
+Section: libs
+Priority: optional
+Architecture: all
+Depends: rs-glassfish, libmysql-java, rs-lbaas-activemq
+Maintainer: Carlos D. Garza <carlos.garza@rackspace.com>
+Description: rsa jar file for atlass glassfish
+    atlas-ca-rsa jar Package for atlas glassfish
+Distribution: development

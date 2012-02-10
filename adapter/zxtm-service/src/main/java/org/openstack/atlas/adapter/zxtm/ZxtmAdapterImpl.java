@@ -322,10 +322,17 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Deleting traffic ip group '%s'...", trafficIpGroupName));
             serviceStubs.getTrafficIpGroupBinding().deleteTrafficIPGroup(new String[]{trafficIpGroupName});
             LOG.info(String.format("Successfully deleted traffic ip group '%s'...", trafficIpGroupName));
-        } catch (ObjectDoesNotExist odne) {
-            LOG.debug(String.format("Traffic ip group '%s' already deleted. Ignoring...", trafficIpGroupName));
-        } catch (ObjectInUse oiu) {
-            LOG.debug(String.format("Traffic ip group '%s' is in use (i.e. shared). Skipping...", trafficIpGroupName));
+
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+                LOG.debug(String.format("Traffic ip group '%s' already deleted. Ignoring...", trafficIpGroupName));
+            }
+            if (e instanceof ObjectInUse) {
+                LOG.debug(String.format("Traffic ip group '%s' is in use (i.e. shared). Skipping...", trafficIpGroupName));
+            }
+            if (!(e instanceof ObjectDoesNotExist) && !(e instanceof ObjectInUse)) {
+                LOG.debug(String.format("There was an unknown issues deleting traffic ip group: %s", trafficIpGroupName) + e.getMessage());
+            }
         }
 
         //(VERSION 1) D-01942 failed when trying to verify tig, code not needed...
