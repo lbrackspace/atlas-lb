@@ -299,6 +299,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         try {
             LOG.debug(String.format("Deleting traffic ip group '%s'...", trafficIpGroupName));
             serviceStubs.getTrafficIpGroupBinding().deleteTrafficIPGroup(new String[]{trafficIpGroupName});
+            LOG.info(String.format("Successfully deleted traffic ip group '%s'...", trafficIpGroupName));
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.debug(String.format("Traffic ip group '%s' already deleted. Ignoring...", trafficIpGroupName));
