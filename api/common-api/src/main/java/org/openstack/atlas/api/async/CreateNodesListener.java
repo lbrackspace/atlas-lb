@@ -43,7 +43,7 @@ public class CreateNodesListener extends BaseListener {
         
         try {
             LOG.debug("Setting nodes in Zeus...");
-            reverseProxyLoadBalancerService.setNodes(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getNodes());
+            reverseProxyLoadBalancerService.setNodes(dbLoadBalancer);
             LOG.debug("Nodes successfully set.");
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

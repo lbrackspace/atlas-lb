@@ -149,7 +149,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         lb.getNodes().add(node4);
         lb.getNodes().add(node5);
 
-        zxtmAdapter.setNodes(config, lb.getId(), lb.getAccountId(), lb.getNodes());
+        zxtmAdapter.setNodes(config, lb);
 
         String node1ZeusString = IpHelper.createZeusIpString(node1.getIpAddress(), node1.getPort());
         String node2ZeusString = IpHelper.createZeusIpString(node2.getIpAddress(), node2.getPort());
@@ -195,7 +195,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         // Remove so later tests aren't affected
         lb.getNodes().remove(node3);
         lb.getNodes().remove(node4);
-        zxtmAdapter.setNodes(config, lb.getId(), lb.getAccountId(), lb.getNodes());
+        zxtmAdapter.setNodes(config, lb);
     }
 
     private void updateNodeConditionsToEnabled() throws Exception {
@@ -203,7 +203,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
             node.setCondition(ENABLED);
         }
 
-        zxtmAdapter.setNodes(config, lb.getId(), lb.getAccountId(), lb.getNodes());
+        zxtmAdapter.setNodes(config, lb);
 
         assertThatAllNodesAreEnabled();
     }
@@ -228,7 +228,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
         try {
             assertThatAllNodesAreEnabled();
-            zxtmAdapter.setNodes(config, lb.getId(), lb.getAccountId(), lb.getNodes());
+            zxtmAdapter.setNodes(config, lb);
         } catch (Exception e) {
             if (e instanceof ZxtmRollBackException) assertThatAllNodesAreEnabled();
             else Assert.fail("Expected a ZxtmRollBackException.");
@@ -240,7 +240,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
             node.setCondition(DRAINING);
         }
 
-        zxtmAdapter.setNodes(config, lb.getId(), lb.getAccountId(), lb.getNodes());
+        zxtmAdapter.setNodes(config, lb);
 
         final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
         Assert.assertEquals(1, enabledNodes.length);

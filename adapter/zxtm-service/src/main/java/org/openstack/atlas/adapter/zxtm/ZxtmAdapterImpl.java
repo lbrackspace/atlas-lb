@@ -22,6 +22,7 @@ import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 
 import java.rmi.RemoteException;
 import java.util.*;
+import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
 
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.NONE;
 
@@ -60,6 +61,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             createNodePool(config, lb.getId(), lb.getAccountId(), lb.getNodes(), algorithm);
+            setNodesPriorities(config, poolName, lb);
         } catch (Exception e) {
             deleteNodePool(serviceStubs, poolName);
             throw new ZxtmRollBackException(rollBackMessage, e);
@@ -71,7 +73,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{virtualServerName}, new VirtualServerBasicInfo[]{vsInfo});
             LOG.info(String.format("Virtual server '%s' successfully added.", virtualServerName));
         } catch (Exception e) {
-            if (e instanceof ObjectDoesNotExist) throw new ObjectAlreadyExists();
+            if (e instanceof ObjectDoesNotExist) {
+                throw new ObjectAlreadyExists();
+            }
             deleteVirtualServer(serviceStubs, virtualServerName);
             deleteNodePool(serviceStubs, poolName);
             throw new ZxtmRollBackException(rollBackMessage, e);
@@ -199,7 +203,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-
     private void isVSListeningOnAllAddresses(ZxtmServiceStubs serviceStubs, String virtualServerName, String poolName) throws RemoteException, VirtualServerListeningOnAllAddressesException {
         boolean[] isListening = serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(new String[]{virtualServerName});
 
@@ -209,6 +212,25 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             deleteVirtualServer(serviceStubs, virtualServerName);
             throw new VirtualServerListeningOnAllAddressesException(String.format("The Virtual Server %s was found to be listening on all IP addresses.", virtualServerName));
         }
+    }
+
+    @Override
+    public void setNodesPriorities(LoadBalancerEndpointConfiguration config, String poolName, LoadBalancer lb) throws RemoteException {
+        Set<Node> nodes = lb.getNodes();
+        ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(nodes);
+        String[] poolNames = new String[]{poolName};
+
+        LOG.debug(String.format("setNodePriority for pool %s priority=%s Starting....", poolNames[0], znpc));
+        ZxtmServiceStubs stubs = getServiceStubs(config);
+        stubs.getPoolBinding().setNodesPriorityValue(poolNames, znpc.getPriorityValues());
+        if (znpc.hasSecondary()) {
+            boolean[] setTrue = new boolean[]{true};
+            stubs.getPoolBinding().setPriorityEnabled(poolNames, setTrue);
+        } else {
+            boolean[] setFalse = new boolean[]{false};
+            stubs.getPoolBinding().setPriorityEnabled(poolNames, setFalse);
+        }
+        LOG.debug(String.format("setNodePriority for pool %s priority=%s Finished....", poolNames[0], znpc));
     }
 
     @Override
@@ -295,10 +317,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-    private void deleteTrafficIpGroup(ZxtmServiceStubs serviceStubs, String trafficIpGroupName) throws RemoteException {
+    private void deleteTrafficIpGroup(ZxtmServiceStubs serviceStubs, String trafficIpGroupName) throws RemoteException, InvalidOperation {
         try {
             LOG.debug(String.format("Deleting traffic ip group '%s'...", trafficIpGroupName));
             serviceStubs.getTrafficIpGroupBinding().deleteTrafficIPGroup(new String[]{trafficIpGroupName});
+            LOG.info(String.format("Successfully deleted traffic ip group '%s'...", trafficIpGroupName));
+
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.debug(String.format("Traffic ip group '%s' already deleted. Ignoring...", trafficIpGroupName));
@@ -322,8 +346,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         Integer lbId = lb.getId();
         Integer accountId = lb.getAccountId();
@@ -355,7 +378,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 removeXFFRuleFromVirtualServers(serviceStubs, vsNames); // XFF is only for the HTTP protocol
             }
         } catch (Exception e) {
-            throw new ZxtmRollBackException("Update protocol request canceled.", e);
+            throw new ZxtmRollBackException(String.format("Update protocol request canceled for %s ", virtualServerName), e);
         }
 
 
@@ -370,6 +393,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     }
                 }
             }
+
             if (rateLimitExists) {
                 removeRateLimitRulesFromVirtualServers(serviceStubs, vsNames);
             }
@@ -536,7 +560,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             currentTrafficIpGroups = serviceStubs.getVirtualServerBinding().getListenTrafficIPGroups(vsNames);
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
-                LOG.error("Cannot add virtual ips to virtual server as it does not exist.", e);
+                LOG.error(String.format("Cannot add virtual ips to virtual server %s as it does not exist. %s", virtualServerName, e));
             }
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
@@ -591,7 +615,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 serviceStubs.getTrafficIpGroupBinding().addTrafficManager(new String[]{trafficIpGroup}, new String[][]{failoverTrafficManagers});
                 serviceStubs.getTrafficIpGroupBinding().setPassiveMachine(new String[]{trafficIpGroup}, new String[][]{failoverTrafficManagers});
             } catch (ObjectDoesNotExist e) {
-                LOG.warn(String.format("Traffic ip group '%s' does not exist. It looks like it got deleted. Continuing...", trafficIpGroup));
+                LOG.warn(String.format("Traffic ip group '%s' does not exist. Continuing...", trafficIpGroup));
             }
         }
 
@@ -723,7 +747,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
     }
-
 
     private void attachRateLimitRulesToVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
         LOG.debug("Attach rules and enable them on the virtual server.");
@@ -917,9 +940,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Removed protection catalog from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
             //Removing the shadow VS
-            LOG.info(String.format("Removing the shadow virtual server..."));
-            deleteVirtualServer(serviceStubs, virtualServerName);
-            LOG.debug(String.format("Successfully removed the shadow virtual server..."));
+            try {
+                LOG.info(String.format("Removing the shadow virtual server..."));
+                deleteVirtualServer(serviceStubs, virtualServerName);
+                LOG.debug(String.format("Successfully removed the shadow virtual server..."));
+            } catch (ObjectDoesNotExist dne) {
+                //Only happens when deleteLoadBalancer calls us
+                LOG.info(String.format("Virtual server %s was not found for removeSslTermination, ignoring...", virtualServerNameNonSecure));
+            }
 
             //Un-suspending non-secure vs
             try {
@@ -1118,8 +1146,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void setNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes)
+    public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        Integer lbId = lb.getId();
+        Integer accountId = lb.getAccountId();
+        Set<Node> nodes = lb.getNodes();
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameBuilder.genVSName(lbId, accountId);
         final String rollBackMessage = "Set nodes request canceled.";
@@ -1151,6 +1182,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 //            setDrainingNodes(config, poolName, drainingApiNodes);
 
             setNodeWeights(config, lbId, accountId, nodes);
+            setNodesPriorities(config, poolName, lb);
         } catch (Exception e) {
             if (e instanceof InvalidInput) {
                 LOG.error(String.format("Error setting node conditions for pool '%s'. All nodes cannot be disabled.", poolName), e);
@@ -2211,8 +2243,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     private boolean arrayElementSearch(String[] namesArray, String searchName) {
         for (int n = 0; n < namesArray.length; n++) {
-            if (namesArray[n].equals(searchName))
+            if (namesArray[n].equals(searchName)) {
                 return true;
+            }
         }
         return false;
     }
