@@ -1,5 +1,8 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import com.sun.jdi.InternalException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
@@ -12,6 +15,7 @@ import org.openstack.atlas.service.domain.entities.BlacklistItem;
 import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.util.ip.IPv6Cidr;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
@@ -26,6 +30,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
 public class BlackListResource extends ManagementDependencyProvider {
+    final Log LOG = LogFactory.getLog(BlackListResource.class);
     private LoadBalancerResource loadBalancerResource;
     private HttpHeaders requestHeaders;
     private int id;
@@ -72,21 +77,9 @@ public class BlackListResource extends ManagementDependencyProvider {
 
             for (BlacklistItem item : blitems) {
                 for (int i = blitems.indexOf(item) + 1; i < blitems.size(); i++) {
-                    if (item.getBlacklistType() != null) {
-                        if (item.getBlacklistType().equals(blitems.get(i).getBlacklistType())
-                                && item.getCidrBlock().equals(blitems.get(i).getCidrBlock())) {
-                            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "The request contains duplicate entries.");
-                        }
-                    } else {
-                        if (item.getIpVersion() == IpVersion.IPV6) {
-                            if (new IPv6Cidr(blitems.get(i).getCidrBlock()).matches(new IPv6Cidr(item.getCidrBlock()))) {
-                                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "The request contains duplicate entries.");
-                            }
-                        } else {
-                            if (blitems.get(i).getCidrBlock().equals(item.getCidrBlock())) {
-                                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "The request contains duplicate entries.");
-                            }
-                        }
+                    BlacklistItem item2 = blitems.get(i);
+                    if (sameBlacklistItems(item, item2)) {
+                        return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Duplicate entries in request.");
                     }
                 }
             }
@@ -148,6 +141,46 @@ public class BlackListResource extends ManagementDependencyProvider {
             bion.setName("true");
         }
         return Response.status(200).entity(bion).build();
+    }
+
+    private Boolean sameBlacklistItems (BlacklistItem item, BlacklistItem item2) {
+        String cidrBlock = "";
+        String cidrBlock2 = "";
+        Boolean sameCidr = false;
+
+        if (item.getIpVersion().equals(IpVersion.IPV6)) {
+            try {
+                cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
+            } catch (IPStringConversionException e) {
+                LOG.error("Attempt to expand IPv6 string from CidrBlock " + item.getCidrBlock() + ": " + e.getMessage());
+                throw new InternalException();
+            }
+        }
+
+        if (item2.getIpVersion().equals(IpVersion.IPV6)) {
+            try {
+                cidrBlock2 = new IPv6Cidr().getExpandedIPv6Cidr(item2.getCidrBlock());
+            } catch (IPStringConversionException e) {
+                LOG.error("Attempt to expand IPv6 string from CidrBlock " + item2.getCidrBlock() + ": " + e.getMessage());
+                throw new InternalException();
+            }
+        }
+
+        if (item.getIpVersion().equals(IpVersion.IPV6) && item.getIpVersion().equals(item2.getIpVersion())) {
+            if (cidrBlock.equals(cidrBlock2)) {
+                sameCidr = true;
+            }
+        } else {
+            if (item.getCidrBlock().endsWith(item2.getCidrBlock())) {
+                sameCidr = true;
+            }
+        }
+
+        if (item.getBlacklistType() == null || item2.getBlacklistType() == null) {
+            return sameCidr;
+        } else {
+            return item.getBlacklistType().equals(item2.getBlacklistType()) && sameCidr;
+        }
     }
 
     public void setId(int id) {

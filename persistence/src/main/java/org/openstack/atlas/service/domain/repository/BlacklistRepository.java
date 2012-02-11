@@ -55,33 +55,29 @@ public class BlacklistRepository {
     }
 
     public Map<String, List<BlacklistItem>> getBlacklistItemsCidrHashMap(List<BlacklistItem> list) {
-        List<String> cidrBlocks = new ArrayList<String>();
+        return toHashMap(entityManager.createQuery("SELECT b FROM BlacklistItem b").getResultList());
+    }
+
+    private Map<String, List<BlacklistItem>> toHashMap(List<BlacklistItem> list) {
+        Map<String, List<BlacklistItem>> map = new HashMap<String, List<BlacklistItem>>();
+        String cidrBlock;
+
         for (BlacklistItem item : list) {
-            // Move this logic to the "toHashMap" function
             if (item.getIpVersion() == IpVersion.IPV6) {
                 try {
-                    cidrBlocks.add(new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock()));
+                    cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
                 } catch (IPStringConversionException e) {
                     LOG.error("Attempt to expand IPv6 string from CidrBlock " + item.getCidrBlock() + ": " + e.getMessage());
                     throw new InternalException();
                 }
             } else {
-                cidrBlocks.add(item.getCidrBlock());
+                cidrBlock = item.getCidrBlock();
             }
-        }
-        String query = "SELECT b FROM BlacklistItem b WHERE b.cidrBlock in (:cidrBlocks)";
-
-        return toHashMap(entityManager.createQuery(query).setParameter("cidrBlocks", cidrBlocks).getResultList());
-    }
-
-    private Map<String, List<BlacklistItem>> toHashMap(List<BlacklistItem> list) {
-        Map<String, List<BlacklistItem>> map = new HashMap<String, List<BlacklistItem>>();
-
-        for (BlacklistItem item : list) {
-            if (!map.containsKey(item.getCidrBlock())) {
-                map.put(item.getCidrBlock(), new ArrayList<BlacklistItem>());
+            
+            if (!map.containsKey(cidrBlock)) {
+                map.put(cidrBlock, new ArrayList<BlacklistItem>());
             }
-            map.get(item.getCidrBlock()).add(item);
+            map.get(cidrBlock).add(item);
         }
         return map;
     }

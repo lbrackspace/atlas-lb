@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
 import org.openstack.atlas.service.domain.entities.BlacklistType;
+import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -60,16 +61,20 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
         List<BlacklistItem> goodList = new ArrayList<BlacklistItem>();
         List<BlacklistItem> badList = new ArrayList<BlacklistItem>();
         List<BlacklistItem> blist;
-        List<String> cidrs = new ArrayList<String>();
+        String cidrBlock;
 
         for (BlacklistItem item : list) {
-            String cidrBlock;
-            try {
-                cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
-            } catch (IPStringConversionException e) {
-                throw new BadRequestException(item.getCidrBlock() + " is not valid.");
+            if (item.getIpVersion().equals(IpVersion.IPV6)) {
+                try {
+                    cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
+                } catch (IPStringConversionException e) {
+                    throw new BadRequestException(item.getCidrBlock() + " is not valid.");
+                }
+            } else {
+                cidrBlock = item.getCidrBlock();
             }
-            if (map.get(cidrBlock) != null) {
+
+            if (map.containsKey(cidrBlock)) {
                 blist = map.get(cidrBlock);
             } else {
                 blist = new ArrayList<BlacklistItem>();
