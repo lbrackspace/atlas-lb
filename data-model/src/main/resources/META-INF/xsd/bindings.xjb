@@ -64,6 +64,9 @@
         <bindings scd="~tns:node">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Node"/>
         </bindings>
+        <bindings scd="~tns:node">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.NodeType"/>
+        </bindings>
         <bindings scd="~tns:protocols">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Protocols"/>
         </bindings>

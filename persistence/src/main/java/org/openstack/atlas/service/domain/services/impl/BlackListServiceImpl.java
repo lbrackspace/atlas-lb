@@ -4,9 +4,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
 import org.openstack.atlas.service.domain.entities.BlacklistType;
+import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.BlackListService;
+import org.openstack.atlas.service.domain.util.StringUtilities;
+import org.openstack.atlas.util.ip.IPv6Cidr;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,26 +56,43 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
 
     @Override
     @Transactional
-    public List<BlacklistItem> createBlacklist(List<BlacklistItem> list) {
+    public List<BlacklistItem> createBlacklist(List<BlacklistItem> list) throws BadRequestException {
         Map<String, List<BlacklistItem>> map = blacklistRepository.getBlacklistItemsCidrHashMap(list);
         List<BlacklistItem> goodList = new ArrayList<BlacklistItem>();
         List<BlacklistItem> badList = new ArrayList<BlacklistItem>();
         List<BlacklistItem> blist;
+        String cidrBlock;
 
         for (BlacklistItem item : list) {
-            if (map.get(item.getCidrBlock()) != null) {
-                blist = map.get(item.getCidrBlock());
+            if (item.getIpVersion().equals(IpVersion.IPV6)) {
+                try {
+                    cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
+                } catch (IPStringConversionException e) {
+                    throw new BadRequestException(item.getCidrBlock() + " is not valid.");
+                }
+            } else {
+                cidrBlock = item.getCidrBlock();
+            }
+
+            if (map.containsKey(cidrBlock)) {
+                blist = map.get(cidrBlock);
             } else {
                 blist = new ArrayList<BlacklistItem>();
             }
             if (blist.size() == 1) {
                 for (BlacklistItem bli : blist) {
                     if (item.getBlacklistType() == null) {
-                        blist.add(item);
+                        if (bli.getBlacklistType() == BlacklistType.NODE) {
+                            item.setBlacklistType(BlacklistType.ACCESSLIST);
+                        } else {
+                            item.setBlacklistType(BlacklistType.NODE);
+                        }
+                        goodList.add(item);
                     } else if (item.getBlacklistType().equals(bli.getBlacklistType())) {
                         badList.add(item);
+                    } else {
+                        goodList.add(item);
                     }
-                    goodList.add(item);
                 }
             } else if (blist.size() == 2) {
                 badList.add(item);
@@ -87,9 +108,18 @@ public class BlackListServiceImpl extends BaseService implements BlackListServic
 
         if (badList.size() == 0) {
             blacklistRepository.saveBlacklist(goodList);
+        } else {
+            String retString = "The following CIDR blocks are currently black listed: ";
+            String retList[] = new String[badList.size()];
+            int index = 0;
+            for (BlacklistItem bli : badList) {
+                retList[index++] = bli.getCidrBlock();
+            }
+            retString += StringUtilities.buildDelemtedListFromStringArray(retList, ", ");
+            throw new BadRequestException(retString);
         }
 
-        return badList;
+        return new ArrayList<BlacklistItem>();
     }
 
     private BlacklistItem setBlacklistItemFields(BlacklistItem item, BlacklistType type) {

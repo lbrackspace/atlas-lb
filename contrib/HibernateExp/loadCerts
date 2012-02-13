@@ -89,7 +89,7 @@ prots = stubs.vs.getProtocol(vnames)
 for i in xrange(0,len(vnames)):
     name_prots[vnames[i]]=prots[i].toString()
 
-vsname_re = re.compile("^([0-9])+_([0-9])+$")
+vsname_re = re.compile("^([0-9]+)_([0-9]+)$")
 
 def isPropVsAndHttp(k,v):
     if not vsname_re.match(k):

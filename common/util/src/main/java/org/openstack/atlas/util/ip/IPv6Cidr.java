@@ -1,9 +1,8 @@
 package org.openstack.atlas.util.ip;
 
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
-import org.openstack.atlas.util.ip.exception.IPException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
-import java.math.BigInteger;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -85,6 +84,11 @@ public class IPv6Cidr {
             }
         }
         return true;
+    }
+
+    public String getExpandedIPv6Cidr(String cidr) throws IPStringConversionException {
+        String block = cidr.substring(cidr.indexOf("/"));
+        return new IPv6(cidr.substring(0, cidr.indexOf("/"))).expand() + block;
     }
 
     public String getCidr() {

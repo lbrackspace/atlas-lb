@@ -5,9 +5,9 @@ import java.util.Collection;
 import java.util.List;
 
 public class StringConverter {
-
+    private static final int SB_INIT_SIZE = 4096;
     public static String commaSeperatedStringList(List<String> strList) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder(SB_INIT_SIZE);
         int i;
         for (i = 0; i < strList.size(); i++) {
             sb.append(strList.get(i));
@@ -20,11 +20,11 @@ public class StringConverter {
 
     public static String getExtendedStackTrace(Throwable ti) {
         Throwable t;
-        StringBuffer sb;
+        StringBuilder sb;
         Exception currEx;
         String msg;
 
-        sb = new StringBuffer();
+        sb = new StringBuilder(SB_INIT_SIZE);
         t = ti;
         while (t != null) {
             if (t instanceof Exception) {
@@ -38,7 +38,7 @@ public class StringConverter {
     }
 
     public static String getStackTrace(Exception ex) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder(SB_INIT_SIZE);
         sb.append(String.format("Exception: %s:%s\n", ex.getMessage(), ex.getClass().getName()));
         for (StackTraceElement se : ex.getStackTrace()) {
             sb.append(String.format("%s\n", se.toString()));
@@ -52,7 +52,7 @@ public class StringConverter {
     }
 
     public static String integersAsString(List<Integer> ids) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder(SB_INIT_SIZE);
         for (int i = 0; i < ids.size(); i++) {
             sb.append(String.format("%d", ids.get(i)));
             if (i >= ids.size() - 1) {
