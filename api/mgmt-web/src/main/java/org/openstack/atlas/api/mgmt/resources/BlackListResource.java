@@ -1,5 +1,8 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import com.sun.jdi.InternalException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
@@ -9,8 +12,10 @@ import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Blacklist;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ByIdOrName;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
+import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.util.StringUtilities;
+import org.openstack.atlas.util.ip.IPv6Cidr;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
@@ -25,6 +30,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
 public class BlackListResource extends ManagementDependencyProvider {
+    final Log LOG = LogFactory.getLog(BlackListResource.class);
     private LoadBalancerResource loadBalancerResource;
     private HttpHeaders requestHeaders;
     private int id;
@@ -69,28 +75,17 @@ public class BlackListResource extends ManagementDependencyProvider {
                 blitems.add(dozerMapper.map(bli, BlacklistItem.class));
             }
 
-            List<BlacklistItem> blacklist = blackListService.createBlacklist(blitems);
-            if (!blacklist.isEmpty()) {
-                String retString = "The following CIDR blocks are currently black listed: ";
-                String list[] = new String[blacklist.size()];
-                int index = 0;
-                for (BlacklistItem bli : blacklist) {
-                    list[index++] = bli.getCidrBlock();
+            for (BlacklistItem item : blitems) {
+                for (int i = blitems.indexOf(item) + 1; i < blitems.size(); i++) {
+                    BlacklistItem item2 = blitems.get(i);
+                    if (sameBlacklistItems(item, item2)) {
+                        return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Duplicate entries in request.");
+                    }
                 }
-                retString += StringUtilities.buildDelemtedListFromStringArray(list, ", ");
-                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, retString);
             }
 
+            blackListService.createBlacklist(blitems);
 
-          /*  EsbRequest req = new EsbRequest();
-            req.setBlacklistItems(blitems);
-            OperationResponse response = getManagementEsbService().callLoadBalancingOperation(Operation.CREATE_BLACKLIST_ITEM, req);
-
-            if (response.isExecutedOkay()) {
-                return Response.status(Response.Status.ACCEPTED).build();
-            } else {
-                return ResponseFactory.getErrorResponse(response);
-            } */
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
@@ -109,7 +104,8 @@ public class BlackListResource extends ManagementDependencyProvider {
             domainBlackListItem.setId(id);
             blackListService.deleteBlackList(domainBlackListItem);
 
-          /*  EsbRequest req = new EsbRequest();
+            /*
+            EsbRequest req = new EsbRequest();
             req.setBlacklistItem(domainBlackListItem);
 
             OperationResponse response = getManagementEsbService().callLoadBalancingOperation(Operation.DELETE_BLACKLIST_ITEM, req);
@@ -118,7 +114,8 @@ public class BlackListResource extends ManagementDependencyProvider {
                 return Response.status(Response.Status.ACCEPTED).build();
             } else {
                 return ResponseFactory.getErrorResponse(response);
-            } */
+            }
+             */
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
@@ -144,6 +141,46 @@ public class BlackListResource extends ManagementDependencyProvider {
             bion.setName("true");
         }
         return Response.status(200).entity(bion).build();
+    }
+
+    private Boolean sameBlacklistItems (BlacklistItem item, BlacklistItem item2) {
+        String cidrBlock = "";
+        String cidrBlock2 = "";
+        Boolean sameCidr = false;
+
+        if (item.getIpVersion().equals(IpVersion.IPV6)) {
+            try {
+                cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
+            } catch (IPStringConversionException e) {
+                LOG.error("Attempt to expand IPv6 string from CidrBlock " + item.getCidrBlock() + ": " + e.getMessage());
+                throw new InternalException();
+            }
+        }
+
+        if (item2.getIpVersion().equals(IpVersion.IPV6)) {
+            try {
+                cidrBlock2 = new IPv6Cidr().getExpandedIPv6Cidr(item2.getCidrBlock());
+            } catch (IPStringConversionException e) {
+                LOG.error("Attempt to expand IPv6 string from CidrBlock " + item2.getCidrBlock() + ": " + e.getMessage());
+                throw new InternalException();
+            }
+        }
+
+        if (item.getIpVersion().equals(IpVersion.IPV6) && item.getIpVersion().equals(item2.getIpVersion())) {
+            if (cidrBlock.equals(cidrBlock2)) {
+                sameCidr = true;
+            }
+        } else {
+            if (item.getCidrBlock().endsWith(item2.getCidrBlock())) {
+                sameCidr = true;
+            }
+        }
+
+        if (item.getBlacklistType() == null || item2.getBlacklistType() == null) {
+            return sameCidr;
+        } else {
+            return item.getBlacklistType().equals(item2.getBlacklistType()) && sameCidr;
+        }
     }
 
     public void setId(int id) {
