@@ -7,7 +7,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @javax.persistence.Entity
-@Table(name = "meta")
+@Table(name = "lb_meta_data")
 public class Meta extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 

@@ -3,8 +3,8 @@ use `loadbalancing`;
 -- ----------------------------
 --  Table structure for `meta`
 -- ----------------------------
-DROP TABLE IF EXISTS `meta`;
-CREATE TABLE `meta` (
+DROP TABLE IF EXISTS `lb_meta_data`;
+CREATE TABLE `lb_meta_data` (
   `id` int(11) NOT NULL auto_increment,
   `key` varchar(32) default NULL,
   `value` varchar(256) default NULL,
