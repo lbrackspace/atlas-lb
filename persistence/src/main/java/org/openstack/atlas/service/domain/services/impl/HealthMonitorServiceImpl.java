@@ -60,6 +60,9 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
     @Override
     public void verifyMonitorProtocol(HealthMonitor requestMonitor, LoadBalancer dbLoadBalancer, HealthMonitor dbMonitor) throws BadRequestException {
         if (requestMonitor.getType() != null) {
+            if (dbLoadBalancer.getProtocol().equals(LoadBalancerProtocol.DNS_UDP) || dbLoadBalancer.getProtocol().equals(LoadBalancerProtocol.UDP) || dbLoadBalancer.getProtocol().equals(LoadBalancerProtocol.UDP_STREAM)) {
+                throw new BadRequestException("Protocol UDP, UDP_STREAM and DNS_UDP are not allowed with health monitors. ");
+            }
             if (requestMonitor.getType().equals(HealthMonitorType.HTTP)) {
                 if (!(dbLoadBalancer.getProtocol().name().equals(LoadBalancerProtocol.HTTP.name()))) {
                     throw new BadRequestException("Cannot update Health Monitor to Type HTTP because load balancer protocol is " + dbLoadBalancer.getProtocol().name());
