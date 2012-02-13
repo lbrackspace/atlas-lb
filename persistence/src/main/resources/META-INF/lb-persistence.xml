@@ -48,6 +48,7 @@
         <class>org.openstack.atlas.service.domain.entities.UserPages</class>
         <class>org.openstack.atlas.service.domain.entities.SslTermination</class>
         <class>org.openstack.atlas.service.domain.entities.Defaults</class>
+        <class>org.openstack.atlas.service.domain.entities.Meta</class>
 
         <class>org.openstack.atlas.service.domain.events.entities.Event</class>
         <class>org.openstack.atlas.service.domain.events.entities.Alert</class>
