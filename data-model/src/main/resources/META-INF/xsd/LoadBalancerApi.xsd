@@ -124,7 +124,7 @@
         <xsd:attribute name="condition" type="tns:nodeCondition"/>
         <xsd:attribute name="status" type="tns:nodeStatus"/>
         <xsd:attribute name="weight" type="xsd:int"/>
-        <xsd:attribute name="type" type="tns:nodeType" />
+        <xsd:attribute name="type" type="tns:nodeType"/>
     </xsd:complexType>
 
     <xsd:simpleType name="nodeType">
@@ -267,7 +267,8 @@
     <xsd:element name="loadBalancerUsage" type="tns:loadBalancerUsage"/>
     <xsd:complexType name="loadBalancerUsage">
         <xsd:sequence>
-            <xsd:element name="loadBalancerUsageRecord" type="tns:loadBalancerUsageRecord" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="loadBalancerUsageRecord" type="tns:loadBalancerUsageRecord" minOccurs="0"
+                         maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="loadBalancerId" type="xsd:int"/>
         <xsd:attribute name="loadBalancerName" type="xsd:string"/>
@@ -298,7 +299,7 @@
     <xsd:element name="limitTypes" type="tns:limitTypes"/>
     <xsd:complexType name="limitTypes">
         <xsd:sequence>
-            <xsd:element name="limitType" type="tns:limitType" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element name="limitType" type="tns:limitType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -349,4 +350,21 @@
         <xsd:attribute name="securePort" type="xsd:int"/>
         <xsd:attribute name="secureTrafficOnly" type="xsd:boolean"/>
     </xsd:complexType>
+
+    <xsd:element name="metadata" type="tns:metadata"/>
+    <xsd:complexType name="metadata">
+        <xsd:sequence>
+            <xsd:element name="meta" minOccurs="1" maxOccurs="unbounded" type="tns:meta"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="meta" type="tns:meta"/>
+    <xsd:complexType name="meta">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="key" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
 </xsd:schema>
