@@ -75,7 +75,7 @@ public interface ReverseProxyLoadBalancerService {
 
     void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
 
-    void setErrorFile(Integer lid,Integer aid,String content) throws Exception,DecryptException, MalformedURLException;
+    void setErrorFile(LoadBalancer loadBalancer, String content) throws Exception,DecryptException, MalformedURLException;
 
     int getTotalCurrentConnectionsForHost(Host host) throws Exception;
 

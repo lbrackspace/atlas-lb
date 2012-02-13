@@ -78,35 +78,31 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         try {
-            addVirtualIps(config, lb);
+            addVirtualIps(config, lb, virtualServerName);
             //Verify that the server is not listening to all addresses, zeus does this by default and is an unwanted behaviour.
             isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
-            updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
 //            /* UPDATE REST OF LOADBALANCER CONFIG */
 //            if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
 //                //sessionPersistence is a pool item
 //                setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
 //            }
-//
 //            if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
 //                //Healthmonitor is a pool item
 //                updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
 //            }
-//
 //            //VirtualServer items
 //            if (lb.getConnectionLimit() != null) {
 //                updateConnectionThrottle(config, lb);
 //            }
-//
 //            if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
 //                updateConnectionLogging(config, lb);
 //            }
-//
 //            if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
 //                updateAccessList(config, lb);
 //            }
+            updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
 
             //Added rules for HTTP LB
             if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
@@ -139,13 +135,29 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.info(String.format("Virtual server '%s' successfully added.", virtualServerName));
 
         try {
-            addVirtualIps(config, lb);
+            addVirtualIps(config, lb, virtualServerName);
 
             //Verify that the server is not listening to all addresses, zeus does this by default and is an unwanted behaviour.
             isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
             updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
+
+            if (lb.getRateLimit() != null) {
+                setRateLimit(config, virtualServerName, lb.getRateLimit());
+            }
+
+            //Added rules for HTTP LB
+        if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+            TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
+            attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
+            String[] errorFile = serviceStubs.getVirtualServerBinding().getErrorFile(new String[]{poolName});
+            if (!errorFile[0].equals("")) {
+                setErrorFile(config, virtualServerName, errorFile[0]);
+            } else {
+                setDefaultErrorFile(config, virtualServerName);
+            }
+        }
 
         } catch (Exception e) {
             if (e instanceof ObjectAlreadyExists) {
@@ -156,11 +168,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 throw new ZxtmRollBackException(rollBackMessage, e);
             }
         }
-
-        if (arrayElementSearch(serviceStubs.getZxtmRateCatalogService().getRateNames(), poolName)) {
-            setRateLimit(config, lb, lb.getRateLimit());
-        }
-
         LOG.info(String.format("Secure virtual server '%s' successfully created.", virtualServerName));
     }
 
@@ -190,13 +197,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
             updateAccessList(config, lb);
         }
-
-        //Added rules for HTTP LB
-        if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
-            TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
-            attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
-            setDefaultErrorFile(config, lb);
-        }
     }
 
 
@@ -221,11 +221,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         LOG.debug(String.format("Deleting load balancer '%s'...", virtualServerName));
 
+        removeAndSetDefaultErrorFile(config, loadBalancer);
         //If present, remove the secure virtual server
         if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
             removeSslTermination(config, loadBalancer);
         }
-        removeAndSetDefaultErrorFile(config, loadBalancer);
         deleteRateLimit(config, loadBalancer);
         deleteVirtualServer(serviceStubs, virtualServerName);
         deleteNodePool(serviceStubs, poolName);
@@ -515,14 +515,16 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String virtualServerName = ZxtmNameBuilder.genVSName(lb);
-        String[] vsNames;
+        addVirtualIps(config, lb, ZxtmNameBuilder.genVSName(lb));
         if (lb.hasSsl()) {
-            vsNames = new String[]{virtualServerName, ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId())};
-        } else {
-            vsNames = new String[]{virtualServerName};
+            addVirtualIps(config, lb, ZxtmNameBuilder.genVSName(lb));
         }
+    }
+
+    public void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer lb, String vsName)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
 
         String[] failoverTrafficManagers = config.getFailoverTrafficManagerNames().toArray(new String[config.getFailoverTrafficManagerNames().size()]);
         final String rollBackMessage = "Add virtual ips request canceled.";
@@ -530,11 +532,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         List<String> updatedTrafficIpGroups = new ArrayList<String>();
         List<String> newTrafficIpGroups = new ArrayList<String>();
 
-        LOG.debug(String.format("Adding virtual ips for virtual server '%s'...", virtualServerName));
+        LOG.debug(String.format("Adding virtual ips for virtual server '%s'...", vsName));
 
         try {
             // Obtain traffic groups currently associated with the virtual server
-            currentTrafficIpGroups = serviceStubs.getVirtualServerBinding().getListenTrafficIPGroups(vsNames);
+            currentTrafficIpGroups = serviceStubs.getVirtualServerBinding().getListenTrafficIPGroups(new String[]{vsName});
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.error("Cannot add virtual ips to virtual server as it does not exist.", e);
@@ -571,10 +573,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             // Define the virtual server to listen on for every traffic ip group
-            for (String name : vsNames) {
-                serviceStubs.getVirtualServerBinding().setListenTrafficIPGroups(new String[]{name},
-                        new String[][]{Arrays.copyOf(updatedTrafficIpGroups.toArray(), updatedTrafficIpGroups.size(), String[].class)});
-            }
+                serviceStubs.getVirtualServerBinding().setListenTrafficIPGroups(new String[]{vsName}, new String[][]{Arrays.copyOf(updatedTrafficIpGroups.toArray(), updatedTrafficIpGroups.size(), String[].class)});
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.error("Cannot add virtual ips to virtual server as it does not exist.", e);
@@ -596,7 +595,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
         }
 
-        LOG.info(String.format("Virtual ips successfully added for virtual server '%s'...", virtualServerName));
+        LOG.info(String.format("Virtual ips successfully added for virtual server '%s'...", vsName));
     }
 
     /*
@@ -688,41 +687,30 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
-        final String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
-        UnsignedInt maxRequestsPerSecond = new UnsignedInt(rateLimit.getMaxRequestsPerSecond());
-        String[] vsNames;
-        UnsignedInt[] mrps;
-        if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
-            if (!arrayElementSearch(serviceStubs.getZxtmRateCatalogService().getRateNames(), virtualServerName)) {
-                vsNames = new String[]{virtualServerName, virtualSecureServerName};
-                mrps = new UnsignedInt[]{maxRequestsPerSecond, maxRequestsPerSecond};
-            } else {
-                vsNames = new String[]{virtualSecureServerName};
-                mrps = new UnsignedInt[]{maxRequestsPerSecond};
-            }
-        } else {
-            vsNames = new String[]{virtualServerName};
-            mrps = new UnsignedInt[]{maxRequestsPerSecond};
+        setRateLimit(config, ZxtmNameBuilder.genVSName(loadBalancer), rateLimit);
+        if (loadBalancer.hasSsl()) {
+            setRateLimit(config, ZxtmNameBuilder.genSslVSName(loadBalancer), rateLimit);
         }
+    }
+
+    public void setRateLimit(LoadBalancerEndpointConfiguration config, String vsName, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         try {
-            LOG.debug(String.format("Adding a rate limit to load balancer...'%s'...", loadBalancer.getId()));
-            serviceStubs.getZxtmRateCatalogService().addRate(vsNames);
-            serviceStubs.getZxtmRateCatalogService().setMaxRatePerSecond(vsNames, mrps);
+            LOG.debug(String.format("Adding a rate limit to load balancer...'%s'...", vsName));
+            serviceStubs.getZxtmRateCatalogService().addRate(new String[]{vsName});
+            serviceStubs.getZxtmRateCatalogService().setMaxRatePerSecond(new String[]{vsName}, new UnsignedInt[]{new UnsignedInt(rateLimit.getMaxRequestsPerSecond())});
             LOG.info("Successfully added a rate limit to the rate limit pool.");
 
             TrafficScriptHelper.addRateLimitScriptsIfNeeded(serviceStubs);
-            attachRateLimitRulesToVirtualServers(serviceStubs, vsNames);
+            attachRateLimitRulesToVirtualServers(serviceStubs, new String[]{vsName});
 
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
-                LOG.error(String.format("Cannot add rate limit for virtual server '%s' as it does not exist.", virtualServerName));
+                LOG.error(String.format("Cannot add rate limit for virtual server '%s' as it does not exist.", vsName));
             }
             throw new ZxtmRollBackException("Add rate limit request canceled.", e);
         }
-
     }
 
 
@@ -896,24 +884,24 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
 
             //Removing connectionThrottle from shadow server
-            LOG.info(String.format("Removing a connectionThrottle from load balancer...'%s'...", loadBalancer.getId()));
+            LOG.info(String.format("Removing connectionThrottle from load balancer...'%s'...", loadBalancer.getId()));
             zeroOutConnectionThrottleConfig(conf, loadBalancer);
             updateConnectionThrottle(conf, loadBalancer, virtualServerName);
             LOG.debug(String.format("Remove connectionThrottle from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
             //Removing connectionLogging from shadow server
-            LOG.info(String.format("Removing a connectionLogging from load balancer...'%s'...", loadBalancer.getId()));
+            LOG.info(String.format("Removing connectionLogging from load balancer...'%s'...", loadBalancer.getId()));
             loadBalancer.setConnectionLogging(false);
             updateConnectionLogging(conf, loadBalancer, virtualServerName);
             LOG.debug(String.format("Remove connectionLogging from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
             //Removing accessList from shadow server
-            LOG.info(String.format("Removing a accessList from load balancer...'%s'...", loadBalancer.getId()));
+            LOG.info(String.format("Removing accessList from load balancer...'%s'...", loadBalancer.getId()));
             deleteAccessList(conf, virtualServerName);
             LOG.debug(String.format("Remove accessList from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
             //Removing protectionCatalog from shadow server
-            LOG.info(String.format("Removing a protection catalog from load balancer...'%s'...", loadBalancer.getId()));
+            LOG.info(String.format("Removing protection catalog from load balancer...'%s'...", loadBalancer.getId()));
             deleteProtectionCatalog(serviceStubs, virtualServerName);
             LOG.debug(String.format("Removed protection catalog from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
@@ -971,7 +959,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     // upload the file then set the Errorpage.
     @Override
-    public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content) throws RemoteException {
+    public void setErrorFile(LoadBalancerEndpointConfiguration conf, LoadBalancer loadbalancer, String content) throws RemoteException, InsufficientRequestException {
+        setErrorFile(conf, ZxtmNameBuilder.genVSName(loadbalancer), content);
+        if (loadbalancer.hasSsl()) {
+            setErrorFile(conf, ZxtmNameBuilder.genSslVSName(loadbalancer), content);
+        }
+    }
+
+    public void setErrorFile(LoadBalancerEndpointConfiguration conf, String vsName, String content) throws RemoteException {
         String[] vsNames = new String[1];
         String[] errorFiles = new String[1];
 
@@ -979,26 +974,23 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ConfExtraBindingStub extraService = serviceStubs.getZxtmConfExtraBinding();
         VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
 
+        String errorFileName = getErrorFileName(vsName);
         try {
-            String errorFileName = getErrorFileName(loadbalancerId, accountId);
+            LOG.debug(String.format("Attempting to upload the error file: %s for: %s", errorFileName, vsName));
+            extraService.writeFile(new String[]{errorFileName}, new String[]{content});
+            LOG.info(String.format("Successfully uploaded the error file: %s for: %s...", errorFileName, vsName));
 
-            LOG.debug("Attempting to upload the error file...");
-            extraService.writeFile(new String[]{errorFileName}, new String[]{content.toString()});
-            LOG.info(String.format("Successfully uploaded the error file for: %s_%s...", accountId, loadbalancerId));
-
-            vsNames[0] = String.format("%d_%d", accountId, loadbalancerId);
+            vsNames[0] = String.format("%s", vsName);
             errorFiles[0] = errorFileName;
 
             LOG.debug("Attempting to set the error file...");
             virtualServerService.setErrorFile(vsNames, errorFiles);
-            LOG.info(String.format("Successfully set the error file for: %s_%s...", accountId, loadbalancerId));
-        } catch (AxisFault af) {
-            if (af instanceof InvalidInput) {
-                //Couldn't find a custom 'default' error file...
-                errorFiles[1] = "Default";
-                virtualServerService.setErrorFile(vsNames, errorFiles);
+            LOG.info(String.format("Successfully set the error file for: %s...", vsName));
+        } catch (InvalidInput ip) {
+            //Couldn't find a custom 'default' error file...
+            LOG.error(String.format("Ther Error file: %s could not be set for: %s", errorFileName, vsName));
+            virtualServerService.setErrorFile(vsNames, new String[]{Constants.DEFAULT_ERRORFILE});
 
-            }
         }
     }
 
@@ -1023,80 +1015,97 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, RemoteException {
+        setDefaultErrorFile(config, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (loadBalancer.hasSsl()) {
+            setDefaultErrorFile(config, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        }
+    }
+
+    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, String vsName) throws InsufficientRequestException, RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId());
-        LOG.debug(String.format("Attempting to set the default error file for: %s_%s", loadBalancer.getId(), loadBalancer.getAccountId()));
+        LOG.debug(String.format("Attempting to set the default error file for: %s", vsName));
         //TODO: uncomment when zeus performance issues are resolved... (VERSION 1) TK-12805
-//        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{virtualServerName}, new String[]{Constants.DEFAULT_ERRORFILE});
-        LOG.info(String.format("Successfully set the default error file for: %s_%s", loadBalancer.getId(), loadBalancer.getAccountId()));
+//        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{vsName}, new String[]{Constants.DEFAULT_ERRORFILE});
+        LOG.info(String.format("Successfully set the default error file for: %s", vsName));
 
     }
 
     @Override
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws AxisFault, InsufficientRequestException {
+        deleteErrorFile(config, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (loadBalancer.hasSsl()) {
+            deleteErrorFile(config, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        }
+    }
+
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, String vsName) throws AxisFault, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
-        String fileToDelete = getErrorFileName(loadBalancer.getId(), loadBalancer.getAccountId());
+        String fileToDelete = getErrorFileName(vsName);
         try {
-            LOG.debug(String.format("Attempting to delete a custom error file for: %s%s", loadBalancer.getAccountId(), loadBalancer.getId()));
-            serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{ZxtmNameBuilder.genVSName(loadBalancer)}, new String[]{null});
+            LOG.debug(String.format("Attempting to delete a custom error file for: %s", vsName));
+            serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{vsName}, new String[]{null});
             serviceStubs.getZxtmConfExtraBinding().deleteFile(new String[]{fileToDelete});
-            LOG.info(String.format("Successfully deleted a custom error file for: %s%s", loadBalancer.getAccountId(), loadBalancer.getId()));
+            LOG.info(String.format("Successfully deleted a custom error file for: %s", vsName));
         } catch (RemoteException e) {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.warn(String.format("Cannot delete custom error page as, %s, it does not exist. Ignoring...", fileToDelete));
             }
         } catch (Exception ex) {
-            LOG.error(String.format("Exception: ", ex));
+            LOG.error(String.format("There was a unexpected error deleting the error file for: %s Exception: %s", vsName, ex.getMessage()));
         }
     }
 
     @Override
     public void deleteRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
-        final String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
-
-        String[] vsNames;
-        if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
-            vsNames = new String[]{virtualServerName, virtualSecureServerName};
-        } else {
-            vsNames = new String[]{virtualServerName};
+        deleteRateLimit(config, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (loadBalancer.hasSsl()) {
+            deleteRateLimit(config, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
+    }
+
+    public void deleteRateLimit(LoadBalancerEndpointConfiguration config, String vsName) throws RemoteException, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         try {
-            removeRateLimitRulesFromVirtualServers(serviceStubs, vsNames);
+            removeRateLimitRulesFromVirtualServers(serviceStubs, new String[]{vsName});
 
-            LOG.debug(String.format("Removing a rate limit from load balancer...'%s'...", loadBalancer.getId()));
-            serviceStubs.getZxtmRateCatalogService().deleteRate(vsNames);
+            LOG.debug(String.format("Removing a rate limit from load balancer...'%s'...", vsName));
+            serviceStubs.getZxtmRateCatalogService().deleteRate(new String[]{vsName});
             LOG.info("Successfully removed a rate limit from the rate limit pool.");
             LOG.info("Rules detached from the VS, delete rate limit sucessfully completed.");
 
         } catch (RemoteException e) {
             if (e instanceof ObjectDoesNotExist) {
-                LOG.warn(String.format("Cannot delete rate limit for virtual server '%s' as it does not exist. Ignoring...", virtualServerName));
+                LOG.warn(String.format("Cannot delete rate limit for virtual server '%s' as it does not exist. Ignoring...", vsName));
             }
             if (e instanceof ObjectInUse) {
-                LOG.warn(String.format("Cannot delete rate limit for virtual server '%s' as it is in use. Ignoring...", virtualServerName));
+                LOG.warn(String.format("Cannot delete rate limit for virtual server '%s' as it is in use. Ignoring...", vsName));
             }
         }
     }
 
     @Override
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
+        updateRateLimit(config, ZxtmNameBuilder.genVSName(loadBalancer), rateLimit);
+        if (loadBalancer.hasSsl()) {
+            updateRateLimit(config, ZxtmNameBuilder.genSslVSName(loadBalancer), rateLimit);
+        }
+    }
+
+    public void updateRateLimit(LoadBalancerEndpointConfiguration config, String vsName, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
 
         try {
-            LOG.debug(String.format("Removing the current rate limit from load balancer...'%s'...", loadBalancer.getId()));
-            deleteRateLimit(config, loadBalancer);
+            LOG.debug(String.format("Removing the current rate limit from load balancer...'%s'...", vsName));
+            deleteRateLimit(config, vsName);
             LOG.info("Successfully removed a rate limit from the rate limit pool.");
             LOG.debug("Attaching new rate limit to the virtual server.");
-            setRateLimit(config, loadBalancer, rateLimit);
+            setRateLimit(config, vsName, rateLimit);
             LOG.info("Rules attached to the VS, update rate limit sucessfully completed.");
 
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
-                LOG.error(String.format("Cannot update rate limit for virtual server '%s' as it does not exist.", virtualServerName));
+                LOG.error(String.format("Cannot update rate limit for virtual server '%s' as it does not exist.", vsName));
             }
             throw new ZxtmRollBackException("Update rate limit request canceled.", e);
         }
@@ -1416,22 +1425,26 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
 
-        Integer lbId = loadBalancer.getId();
-        Integer accountId = loadBalancer.getAccountId();
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
-        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
-        String[] vsNames;
-
-        if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
-            vsNames = new String[]{virtualServerName, virtualSecureServerName};
-        } else {
-            vsNames = new String[]{virtualServerName};
+        updateConnectionThrottle(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (loadBalancer.hasSsl()) {
+            updateConnectionThrottle(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
-
-        for (String vsName : vsNames) {
-            updateConnectionThrottle(config, loadBalancer, vsName);
-        }
+//        Integer lbId = loadBalancer.getId();
+//        Integer accountId = loadBalancer.getAccountId();
+//        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+//        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
+//        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+//        String[] vsNames;
+//
+//        if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
+//            vsNames = new String[]{virtualServerName, virtualSecureServerName};
+//        } else {
+//            vsNames = new String[]{virtualServerName};
+//        }
+//
+//        for (String vsName : vsNames) {
+//            updateConnectionThrottle(config, loadBalancer, vsName);
+//        }
     }
 
     private void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String virtualServerName) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
@@ -1439,7 +1452,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         Integer accountId = loadBalancer.getAccountId();
         ConnectionLimit throttle = loadBalancer.getConnectionLimit();
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
 
         String protectionClassName = virtualServerName;
         String rollBackMessage = "Update connection throttle request canceled.";
@@ -1476,7 +1488,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
-                LOG.error(String.format("Protection class '%s' or '%s' does not exist. Cannot update connection throttling.", protectionClassName, virtualSecureServerName));
+                LOG.error(String.format("Protection class '%s' does not exist. Cannot update connection throttling.", protectionClassName));
             }
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
@@ -1487,34 +1499,43 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
-        final String protectionClassName = poolName;
+        deleteConnectionThrottle(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+    }
+
+    public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+
         final String rollBackMessage = "Delete connection throttle request canceled.";
 
-        LOG.debug(String.format("Deleting connection throttle for node pool '%s'...", poolName));
+        LOG.debug(String.format("Deleting connection throttle for loadbalancer '%s'...", vsName));
 
         try {
             zeroOutConnectionThrottleConfig(config, loadBalancer);
             updateConnectionThrottle(config, loadBalancer);
-            LOG.info(String.format("Successfully zeroed out connection throttle settings for protection class '%s'.", protectionClassName));
+            LOG.info(String.format("Successfully zeroed out connection throttle settings for protection class '%s'.", vsName));
         } catch (ZxtmRollBackException zre) {
             throw new ZxtmRollBackException(rollBackMessage, zre);
         }
 
-        LOG.info(String.format("Successfully deleted connection throttle for node pool '%s'.", poolName));
+        LOG.info(String.format("Successfully deleted connection throttle for loadbalancer '%s'.", vsName));
     }
 
     private void zeroOutConnectionThrottleConfig(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        final String protectionClassName = ZxtmNameBuilder.genVSName(loadBalancer);
+       zeroOutConnectionThrottleConfig(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+       if (loadBalancer.hasSsl()) {
+           zeroOutConnectionThrottleConfig(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
+       }
+    }
 
-        LOG.debug(String.format("Zeroing out connection throttle settings for protection class '%s'.", protectionClassName));
+    private void zeroOutConnectionThrottleConfig(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        LOG.debug(String.format("Zeroing out connection throttle settings for protection class '%s'.", vsName));
 
         ConnectionLimit throttle = new ConnectionLimit();
         throttle.setMaxConnectionRate(0);
         throttle.setMaxConnections(0);
         throttle.setMinConnections(0);
         throttle.setRateInterval(0);
+        loadBalancer.setConnectionLimit(throttle);
     }
 
     // TODO: Rollback properly
@@ -1594,21 +1615,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException {
-        Integer lbId = loadBalancer.getId();
-        Integer accountId = loadBalancer.getAccountId();
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        String protectionClassName = ZxtmNameBuilder.genVSName(lbId, accountId);
-        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
-
-        String[] protectionClasNames;
-        if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
-            protectionClasNames = new String[]{protectionClassName, virtualSecureServerName};
-        } else {
-            protectionClasNames = new String[]{protectionClassName};
-        }
-
-        for (String pcName : protectionClasNames) {
-            updateAccessList(config, loadBalancer, pcName);
+        updateAccessList(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (loadBalancer.hasSsl()) {
+            updateAccessList(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
     }
 
@@ -1653,28 +1662,29 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId)
             throws RemoteException, InsufficientRequestException {
-        final String poolName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        final String protectionClassName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        final String secureProtectionClassName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
 
-        deleteAccessList(config, poolName);
+        deleteAccessList(config, protectionClassName);
+        deleteAccessList(config, secureProtectionClassName);
     }
 
-    private void deleteAccessList(LoadBalancerEndpointConfiguration config, String poolName)
+    private void deleteAccessList(LoadBalancerEndpointConfiguration config, String protectionClassName)
             throws RemoteException, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         try {
-            // TODO: Do we really need to remove addresses first or can we just call deleteProtection()?
-            String[][] allowList = serviceStubs.getProtectionBinding().getAllowedAddresses(new String[]{poolName});
-            String[][] bannedList = serviceStubs.getProtectionBinding().getBannedAddresses(new String[]{poolName});
-            serviceStubs.getProtectionBinding().removeAllowedAddresses(new String[]{poolName}, allowList);
-            serviceStubs.getProtectionBinding().removeBannedAddresses(new String[]{poolName}, bannedList);
+            String[][] allowList = serviceStubs.getProtectionBinding().getAllowedAddresses(new String[]{protectionClassName});
+            String[][] bannedList = serviceStubs.getProtectionBinding().getBannedAddresses(new String[]{protectionClassName});
+            serviceStubs.getProtectionBinding().removeAllowedAddresses(new String[]{protectionClassName}, allowList);
+            serviceStubs.getProtectionBinding().removeBannedAddresses(new String[]{protectionClassName}, bannedList);
             //Shouldnt delete this until server is going away, connection throttle needs it, and removing it before theres a connection throttle means
             //updateAccessListFails... should delete when removing the virtual server leave the protectionClass in place until then...
 //            serviceStubs.getProtectionBinding().deleteProtection(new String[]{poolName});
         } catch (ObjectDoesNotExist odne) {
-            LOG.warn(String.format("Protection class '%s' already deleted.", poolName));
+            LOG.warn(String.format("Protection class '%s' already deleted.", protectionClassName));
         } catch (ObjectInUse oiu) {
-            LOG.warn(String.format("Protection class '%s' is currently in use. Cannot delete.", poolName));
+            LOG.warn(String.format("Protection class '%s' is currently in use. Cannot delete.", protectionClassName));
         }
     }
 
@@ -2212,6 +2222,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     private String getErrorFileName(Integer loadbalancerId, Integer accountId) {
         String msg = String.format("%d_%d_error.html", accountId, loadbalancerId);
+        return msg;
+    }
+
+    private String getErrorFileName(String vsName) {
+        String msg = String.format("%s_error.html", vsName);
         return msg;
     }
 
