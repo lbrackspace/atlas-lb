@@ -193,6 +193,10 @@
             <a>virtualIpDozerWrapper</a>
             <b>virtualIps</b>
         </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CollectionCountConverter">
+            <a>nodes</a>
+            <b>nodeCount</b>
+        </field>
         <!--<field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">-->
         <!--<a>connectionLogging</a>-->
         <!--<b>connectionLogging</b>-->

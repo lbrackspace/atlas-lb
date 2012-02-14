@@ -42,6 +42,16 @@ public final class ZxtmNameBuilder {
         return genVSName(lb.getId(), lb.getAccountId());
     }
 
+    public static String genSslVSName(LoadBalancer lb) throws InsufficientRequestException {
+        if (lb.getAccountId() == null)
+            throw new InsufficientRequestException(
+                    "Missing account id for load balancer.");
+        if (lb.getId() == null)
+            throw new InsufficientRequestException(
+                    "Missing id for load balancer.");
+        return genSslVSName(lb.getId(), lb.getAccountId());
+    }
+
     public static Set<String> generateNamesWithAccountIdAndLoadBalancerId(Set<LoadBalancer> loadBalancers) throws InsufficientRequestException {
         Set<String> generatedNames = new HashSet<String>();
         for (LoadBalancer loadBalancer : loadBalancers) {

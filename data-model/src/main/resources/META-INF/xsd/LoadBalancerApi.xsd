@@ -42,6 +42,7 @@
         <xsd:attribute name="port" type="xsd:int"/>
         <xsd:attribute name="status" type="xsd:string"/>
         <xsd:attribute name="isSticky" type="xsd:boolean"/>
+        <xsd:attribute name="nodeCount" type="xsd:int"/>
     </xsd:complexType>
 
     <xsd:element name="sourceAddresses" type="tns:sourceAddresses"/>
