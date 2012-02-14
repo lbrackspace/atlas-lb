@@ -9,10 +9,7 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.VirtualServerListeningOnAllAddressesException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
-import org.openstack.atlas.adapter.helpers.IpHelper;
-import org.openstack.atlas.adapter.helpers.NodeHelper;
-import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.helpers.*;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.*;
@@ -22,7 +19,6 @@ import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 
 import java.rmi.RemoteException;
 import java.util.*;
-import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
 
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.NONE;
 
@@ -562,7 +558,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             currentTrafficIpGroups = serviceStubs.getVirtualServerBinding().getListenTrafficIPGroups(new String[]{vsName});
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
-                LOG.error(String.format("Cannot add virtual ips to virtual server %s as it does not exist. %s", virtualServerName, e));
+                LOG.error(String.format("Cannot add virtual ips to virtual server %s as it does not exist. %s", vsName, e));
             }
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
