@@ -1,7 +1,7 @@
 package org.openstack.atlas.scheduler;
 
+import org.openstack.atlas.scheduler.execution.MapReduceAggregateLogsJobExecution;
 import org.openstack.atlas.scheduler.execution.QuartzExecutable;
-import org.openstack.atlas.scheduler.execution.SplitLoadBalancerLogsJobExecution;
 import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.tools.HadoopRunner;
 import org.apache.commons.logging.Log;
@@ -10,14 +10,14 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Required;
 
-public class SplitLoadBalancerLogsJob extends BaseMapreduceJob {
+public class MapReduceAggregateLogsJob extends BaseMapreduceJob {
 
-    private static Log LOG = LogFactory.getLog(SplitLoadBalancerLogsJob.class);
+    private static Log LOG = LogFactory.getLog(MapReduceAggregateLogsJob.class);
 
     private QuartzExecutable execution;
 
     @Required
-    public void setSplitLoadBalancerLogsJobExecution(SplitLoadBalancerLogsJobExecution execution) {
+    public void setOrderLoadBalancerLogsJobExecution(MapReduceAggregateLogsJobExecution execution) {
         this.execution = execution;
     }
 

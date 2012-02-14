@@ -61,9 +61,9 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
                          String accountId = getAccount(key.toString());
                          String loadbalancerId = getLoadBalancerId(key.toString());
 
-                         String cacheLocation = utils.getCacheDir() + "/" + runner.getInputString() + "/" + accountId;
+                         String cacheLocation = utils.getCacheDir() + "/" + runner.getRawlogsFileTime() + "/" + accountId;
                          new File(cacheLocation).mkdirs();
-                         String filename = getFileName(loadbalancerId, runner.getRawlogsFileDate());
+                         String filename = getFileName(loadbalancerId, runner.getRawlogsFileTime());
 
                          String cacheLocationAndFile = cacheLocation + "/" + filename;
 
@@ -84,6 +84,8 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
 
                      reader.close();
                      utils.deleteLocalFile(local);
+
+
 
                  }
 
