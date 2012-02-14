@@ -158,8 +158,8 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws AxisFault, InsufficientRequestException;
 
-    public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content)
-            throws RemoteException;
+    public void setErrorFile(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, String content)
+            throws RemoteException, InsufficientRequestException;
 
     public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
