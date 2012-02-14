@@ -26,6 +26,10 @@ public class ZxtmConversionUtils {
 		mapper.put(LoadBalancerProtocol.POP3, VirtualServerProtocol.pop3);
 		mapper.put(LoadBalancerProtocol.POP3S, VirtualServerProtocol.pop3s);
 		mapper.put(LoadBalancerProtocol.SMTP, VirtualServerProtocol.smtp);
+		mapper.put(LoadBalancerProtocol.DNS_TCP, VirtualServerProtocol.dns_tcp);
+		mapper.put(LoadBalancerProtocol.DNS_UDP, VirtualServerProtocol.dns);
+		mapper.put(LoadBalancerProtocol.UDP_STREAM, VirtualServerProtocol.udpstreaming);
+		mapper.put(LoadBalancerProtocol.UDP, VirtualServerProtocol.udp);
 
 		return (VirtualServerProtocol) mapper.get(Protocol);
 	}

@@ -7,28 +7,20 @@
                            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
     <bean id="entityManagerFactory2" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-        <property name="persistenceXmlLocation" value="usage-persistence.xml"/>
+        <property name="persistenceXmlLocation" value="classpath:META-INF/usage-persistence-test.xml"/>
         <property name="persistenceUnitName" value="loadbalancingUsage"/>
-        <property name="dataSource" ref="usageDataSource"/>
     </bean>
 
     <bean id="transactionManager2" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory2"/>
-        <property name="dataSource" ref="usageDataSource"/>
         <qualifier value="usage"/>
     </bean>
-
-    <bean id="usageDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
- 		<property name="driverClassName" value="com.mysql.jdbc.Driver"/>
- 		<property name="url" value="jdbc:mysql://url:3306/loadbalancing_usage"/>
- 		<property name="username" value="username"/>
- 		<property name="password" value="password"/>
- 	</bean>
 
     <tx:annotation-driven/>
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
-    <bean id="usageRepository" class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository" depends-on="entityManagerFactory2"/>
-    <bean id="usageEventRepository" class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository" depends-on="entityManagerFactory2"/>
+    <bean id="loadBalancerUsageRepository" class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository" depends-on="entityManagerFactory2" />
+    <bean id="loadBalancerUsageEventRepository" class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository" depends-on="entityManagerFactory2" />
+    <bean id="hostUsageRepository" class="org.openstack.atlas.service.domain.usage.repository.HostUsageRepository" depends-on="entityManagerFactory2"/>
 
 </beans>
