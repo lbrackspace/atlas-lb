@@ -152,7 +152,7 @@ public class BlackListResource extends ManagementDependencyProvider {
                 cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
             } catch (IPStringConversionException e) {
                 LOG.error("Attempt to expand IPv6 string from CidrBlock " + item.getCidrBlock() + ": " + e.getMessage());
-                throw new RuntimeException(e);
+                throw new IllegalArgumentException(e);
             }
         }
 
@@ -161,7 +161,7 @@ public class BlackListResource extends ManagementDependencyProvider {
                 cidrBlock2 = new IPv6Cidr().getExpandedIPv6Cidr(item2.getCidrBlock());
             } catch (IPStringConversionException e) {
                 LOG.error("Attempt to expand IPv6 string from CidrBlock " + item2.getCidrBlock() + ": " + e.getMessage());
-                throw new RuntimeException(e);
+                throw new IllegalArgumentException(e);
             }
         }
 

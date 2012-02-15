@@ -67,7 +67,7 @@ public class BlacklistRepository {
                     cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
                 } catch (IPStringConversionException e) {
                     LOG.error("Attempt to expand IPv6 string from CidrBlock " + item.getCidrBlock() + ": " + e.getMessage());
-                    throw new RuntimeException(e);
+                    throw new IllegalArgumentException(e);
                 }
             } else {
                 cidrBlock = item.getCidrBlock();
