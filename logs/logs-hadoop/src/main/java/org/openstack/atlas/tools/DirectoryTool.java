@@ -31,9 +31,7 @@ public abstract class DirectoryTool implements HadoopTool {
 
     private HadoopRunner runner;
 
-    @SuppressWarnings("deprecation")
     public RUN_STATES executeHadoopRun() throws IOException {
-        // setSpecialConfigurations(conf);
         setSpecialConfigurations(conf, runner);
         if (conf.getJobConf().getJobName() != null) {
             conf.getJobConf().setJobName(conf.getJobConf().getJobName() + ":" + runner.getInputString());
@@ -57,8 +55,7 @@ public abstract class DirectoryTool implements HadoopTool {
     public String getInputDirectory() {
         Path[] inputPaths = FileInputFormat.getInputPaths(conf.getJobConf());
         if (inputPaths.length == 0) {
-            throw new RuntimeException(
-                    "No input path defined. this should not happen. please setup the hadoop run first.");
+            throw new RuntimeException("No input path defined. this should not happen. please setup the hadoop run first.");
         }
         return inputPaths[0].toUri().getPath();
     }
@@ -80,16 +77,13 @@ public abstract class DirectoryTool implements HadoopTool {
         this.fileSystemUtils = fileSystemUtils;
     }
 
-    @Deprecated
     public void setupHadoopRun(String setupDir) {
         this.inputDir = setupDir;
         localFiles.clear();
         conf = new HadoopConfiguration();
         conf.setJobConf(createJobConf(conf.getConfiguration()));
         LOG.info("Composite Configuration: " + compositeConfiguration);
-        /*if (!compositeConfiguration.getString(LbLogsConfigurationKeys.job_jar_path).isEmpty()) {
-            conf.getJobConf().setJar(compositeConfiguration.getString(LbLogsConfigurationKeys.job_jar_path));
-        }*/
+
         String jarPath = findPathJar(DirectoryTool.class);
         if (jarPath != null) {
             if (new File(jarPath).exists()) {
@@ -108,13 +102,6 @@ public abstract class DirectoryTool implements HadoopTool {
         conf.setJobConf(createJobConf(conf.getConfiguration()));
 
         if (runner.getJobJarPath() == null) {
-
-            /*if (!compositeConfiguration.getString(LbLogsConfigurationKeys.job_jar_path).isEmpty()) {
-
-                if (new File(compositeConfiguration.getString(LbLogsConfigurationKeys.job_jar_path)).exists()) {
-                    conf.getJobConf().setJar(compositeConfiguration.getString(LbLogsConfigurationKeys.job_jar_path));
-                }
-            }*/
 
             String jarPath = findPathJar(DirectoryTool.class);
             if (jarPath != null) {
@@ -140,15 +127,9 @@ public abstract class DirectoryTool implements HadoopTool {
         createInputDir();
     }
 
-    /**
-     * Do any special stuff after the mapreduce job is run.
-     */
     protected void afterJobRun() {
     }
 
-    /**
-     * Do any special stuff before the mapreduce job is run.
-     */
     protected void beforeJobRun() {
     }
 
@@ -168,11 +149,6 @@ public abstract class DirectoryTool implements HadoopTool {
 
     protected abstract Class<? extends Mapper> getMapperClass();
 
-    /**
-     * Override this guy to specify a special prefix for the output folder.
-     *
-     * @return
-     */
     protected String getOutputFolderPrefix() {
         return "";
     }
@@ -180,18 +156,13 @@ public abstract class DirectoryTool implements HadoopTool {
     protected abstract Class<? extends Reducer> getReducerClass();
 
     protected abstract void setSpecialConfigurations(HadoopConfiguration specialConfigurations,
-                                                     HadoopRunner localRunner)
-            throws IOException;
+                                                     HadoopRunner localRunner) throws IOException;
 
-    @SuppressWarnings("deprecation")
     private void createInputDir() {
         FileInputFormat.setInputPaths(conf.getJobConf(), new Path(getLocalInputDir()));
         FileOutputFormat.setOutputPath(conf.getJobConf(), new Path(createOutputDir()));
         conf.getJobConf().set("hadoop.job.history.user.location", createHistoryOutputDir());
     }
-
-    // Some nonthread safe goofiness in the hadoop stuff w/ Iterators and ConcurrentModificatinExceptions.
-    // This is a problem when >1 job is scheduled concurrently on a machine (like the urchin jobs)
 
     private synchronized JobConf createJobConf(Configuration jobConf) {
         JobConf j = new JobConf(jobConf);

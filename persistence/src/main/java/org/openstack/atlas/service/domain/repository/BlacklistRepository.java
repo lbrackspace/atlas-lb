@@ -1,6 +1,5 @@
 package org.openstack.atlas.service.domain.repository;
 
-import com.sun.jdi.InternalException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
@@ -68,7 +67,7 @@ public class BlacklistRepository {
                     cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
                 } catch (IPStringConversionException e) {
                     LOG.error("Attempt to expand IPv6 string from CidrBlock " + item.getCidrBlock() + ": " + e.getMessage());
-                    throw new InternalException();
+                    throw new IllegalArgumentException(e);
                 }
             } else {
                 cidrBlock = item.getCidrBlock();

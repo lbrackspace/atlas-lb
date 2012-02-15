@@ -85,7 +85,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entities.SslTermination sslTermination = sslTerminationService.getSslTermination(loadBalancerId, accountId);
             SslTermination returnTermination = dozerMapper.map(sslTermination, SslTermination.class);
 
-            return Response.status(Response.Status.ACCEPTED).entity(returnTermination).build();
+            return Response.status(Response.Status.OK).entity(returnTermination).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

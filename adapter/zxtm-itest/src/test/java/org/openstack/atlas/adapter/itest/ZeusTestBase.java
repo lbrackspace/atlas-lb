@@ -3,7 +3,6 @@ package org.openstack.atlas.adapter.itest;
 import com.zxtm.service.client.*;
 import org.apache.axis.AxisFault;
 import org.junit.Assert;
-import org.omg.CORBA.DynAnyPackage.Invalid;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
@@ -131,6 +130,10 @@ public class ZeusTestBase {
 
     protected static String protectionClassName() throws InsufficientRequestException {
         return ZxtmNameBuilder.genVSName(lb);
+    }
+
+    protected static String secureProtectionClassName() throws InsufficientRequestException {
+        return ZxtmNameBuilder.genSslVSName(lb);
     }
 
     protected static String trafficIpGroupName(VirtualIp vip) throws InsufficientRequestException {

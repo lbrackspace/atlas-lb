@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import com.sun.jdi.InternalException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
@@ -153,7 +152,7 @@ public class BlackListResource extends ManagementDependencyProvider {
                 cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
             } catch (IPStringConversionException e) {
                 LOG.error("Attempt to expand IPv6 string from CidrBlock " + item.getCidrBlock() + ": " + e.getMessage());
-                throw new InternalException();
+                throw new IllegalArgumentException(e);
             }
         }
 
@@ -162,7 +161,7 @@ public class BlackListResource extends ManagementDependencyProvider {
                 cidrBlock2 = new IPv6Cidr().getExpandedIPv6Cidr(item2.getCidrBlock());
             } catch (IPStringConversionException e) {
                 LOG.error("Attempt to expand IPv6 string from CidrBlock " + item2.getCidrBlock() + ": " + e.getMessage());
-                throw new InternalException();
+                throw new IllegalArgumentException(e);
             }
         }
 
