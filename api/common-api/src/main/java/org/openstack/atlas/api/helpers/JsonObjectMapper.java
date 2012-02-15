@@ -1,37 +1,24 @@
 package org.openstack.atlas.api.helpers;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
-import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
-import org.openstack.atlas.api.helpers.JsonSerializer.ObjectWrapperSerializer;
-import org.openstack.atlas.api.helpers.JsonDeserializer.ObjectWrapperDeserializer;
-import org.openstack.atlas.api.helpers.JsonDeserializer.PropertyListDeserializer;
-import org.openstack.atlas.api.helpers.JsonSerializer.PropertyCollectionSerializer;
-import org.openstack.atlas.api.helpers.JsonSerializer.DateTimeSerializer;
-import org.openstack.atlas.api.helpers.JsonDeserializer.DateTimeDeserializer;
-
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.ser.CustomSerializerFactory;
 import org.codehaus.jackson.map.deser.CustomDeserializerFactory;
-import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
-import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
-import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Updated;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
+import org.codehaus.jackson.map.ser.CustomSerializerFactory;
+import org.openstack.atlas.api.helpers.JsonDeserializer.DateTimeDeserializer;
 import org.openstack.atlas.api.helpers.JsonDeserializer.DeserializerProviderBuilder;
+import org.openstack.atlas.api.helpers.JsonDeserializer.ObjectWrapperDeserializer;
+import org.openstack.atlas.api.helpers.JsonDeserializer.PropertyListDeserializer;
+import org.openstack.atlas.api.helpers.JsonSerializer.DateTimeSerializer;
+import org.openstack.atlas.api.helpers.JsonSerializer.ObjectWrapperSerializer;
+import org.openstack.atlas.api.helpers.JsonSerializer.PropertyCollectionSerializer;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 
 public class JsonObjectMapper extends ObjectMapper {
 
@@ -52,7 +39,7 @@ public class JsonObjectMapper extends ObjectMapper {
         Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class,
             ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
-            Errorpage.class, SslTermination.class};
+            Errorpage.class, SslTermination.class, Host.class};
 
 
         for (Class wrapperClass : serializerWrapperClasses) {

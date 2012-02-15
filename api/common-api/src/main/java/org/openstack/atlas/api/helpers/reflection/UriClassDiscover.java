@@ -1,8 +1,9 @@
 package org.openstack.atlas.api.helpers.reflection;
 
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class UriClassDiscover {
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/loadbalancer(\\.json|\\.xml)?/?$", LoadBalancer.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/updated(\\.json|\\.xml)?/?$", Updated.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/ssltermination(\\.json|\\.xml)?/?$", SslTermination.class));
+        getrList().add(new REFCN(".*/management/hosts(\\.json|\\.xml)?/?$", Host.class));
     }
 
     public static Class getClassForUri(String uri) {

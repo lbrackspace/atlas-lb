@@ -5,8 +5,9 @@
 package org.openstack.atlas.api.helpers;
 
 import org.junit.*;
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.api.resources.StubResource;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 
 import java.io.IOException;
 
@@ -171,6 +172,15 @@ public class JsonObjectMapperTest {
         Assert.assertEquals(new Integer(80), node1.getPort());
         Assert.assertEquals(new Integer(443), node2.getPort());
 
+    }
+
+    @Test
+    public void shouldCreateHost() throws IOException {
+        String input = "{\"host\": {\"name\": \"someName\",\"zone\": \"B\",\"type\": \"FAILOVER\",\"managementIp\": \"12.34.56.78\",\"trafficManagerName\": \"zues01.blah.blah\",\"clusterId\": 1,\"maxConcurrentConnections\": 5,\"coreDeviceId\": \"SomeCoreDevice\",\"managementSoapInterface\": \"https://SomeSoapNode.com:9090\",\"soapEndpointActive\": \"true\",\"ipv4Servicenet\": \"10.2.2.80\",\"ipv4Public\": \"172.11.11.110\"}}";
+
+        Host host;
+        host = mapper.readValue(input, Host.class);
+        nop();
     }
 
     @Test
