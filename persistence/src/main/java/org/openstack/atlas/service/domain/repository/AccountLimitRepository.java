@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -47,7 +48,7 @@ public class AccountLimitRepository {
         return entityManager.createQuery(criteria).getSingleResult();
     }
 
-    public AccountLimit getByAccountIdAndType(Integer accountId, LimitType type) {
+    public AccountLimit getByAccountIdAndType(Integer accountId, LimitType type) throws NoResultException {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<AccountLimit> criteria = builder.createQuery(AccountLimit.class);
         Root<AccountLimit> accountLimitRoot = criteria.from(AccountLimit.class);
