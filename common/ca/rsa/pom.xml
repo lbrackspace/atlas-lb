@@ -24,7 +24,7 @@
         <dependency>
             <groupId>org.openstack.atlas</groupId>
             <artifactId>atlas-ca-bc</artifactId>
-            <version>1.10.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
     <build>
