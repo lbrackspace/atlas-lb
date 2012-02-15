@@ -18,9 +18,11 @@ import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import static javax.ws.rs.core.MediaType.*;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
 public class SslTerminationResource extends CommonDependencyProvider {
 
@@ -53,7 +55,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
             SslTermination returnTermination = dozerMapper.map(zeusSslTermination.getSslTermination(), SslTermination.class);
 
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_SSL_TERMINATION, dataContainer);
-            return Response.status(Response.Status.ACCEPTED).build();
+            return Response.status(Response.Status.ACCEPTED).entity(returnTermination).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
@@ -62,7 +64,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @DELETE
     public Response removeSsl() {
         try {
-            sslTerminationService.getSslTermination(loadBalancerId, accountId);
+            sslTerminationService.pseudoDeleteSslTermination(loadBalancerId, accountId);
 
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setAccountId(accountId);
@@ -71,6 +73,19 @@ public class SslTerminationResource extends CommonDependencyProvider {
 
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_SSL_TERMINATION, dataContainer);
             return Response.status(Response.Status.ACCEPTED).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @GET
+    @Produces({APPLICATION_XML, APPLICATION_JSON})
+    public Response getSsl() {
+        try {
+            org.openstack.atlas.service.domain.entities.SslTermination sslTermination = sslTerminationService.getSslTermination(loadBalancerId, accountId);
+            SslTermination returnTermination = dozerMapper.map(sslTermination, SslTermination.class);
+
+            return Response.status(Response.Status.OK).entity(returnTermination).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

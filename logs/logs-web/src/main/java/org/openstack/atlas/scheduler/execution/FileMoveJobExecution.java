@@ -1,22 +1,20 @@
 package org.openstack.atlas.scheduler.execution;
 
 import com.hadoop.compression.lzo.LzoIndexer;
-import org.openstack.atlas.mapreduce.LbStatsTool;
-import org.openstack.atlas.scheduler.ArchiveLoadBalancerLogsJob;
-import org.openstack.atlas.scheduler.JobScheduler;
-import org.openstack.atlas.service.domain.entities.JobName;
-import org.openstack.atlas.service.domain.entities.JobState;
-import org.openstack.atlas.service.domain.entities.JobStateVal;
-import org.openstack.atlas.exception.ExecutionException;
-import org.openstack.atlas.exception.SchedulingException;
-import org.openstack.atlas.scheduler.OrderLoadBalancerLogsJob;
-import org.openstack.atlas.tools.HadoopConfiguration;
-import org.openstack.atlas.tools.HadoopRunner;
-import org.openstack.atlas.tools.HadoopTool;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.openstack.atlas.exception.ExecutionException;
+import org.openstack.atlas.exception.SchedulingException;
+import org.openstack.atlas.mapreduce.LbStatsTool;
+import org.openstack.atlas.scheduler.JobScheduler;
+import org.openstack.atlas.scheduler.MapReduceAggregateLogsJob;
+import org.openstack.atlas.service.domain.entities.JobName;
+import org.openstack.atlas.service.domain.entities.JobState;
+import org.openstack.atlas.service.domain.entities.JobStateVal;
+import org.openstack.atlas.tools.HadoopConfiguration;
+import org.openstack.atlas.tools.HadoopRunner;
+import org.openstack.atlas.tools.HadoopTool;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.io.File;
@@ -26,12 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-/**
- * In charge of moving files given to it onto the dfs, and scheduling jobs for
- * cloud files, stats and CC's. It creates a state for the filemove, and a state
- * for each file move to track all files moved to the dfs.
- *
- */
 public class FileMoveJobExecution extends LoggableJobExecution implements QuartzExecutable {
 
     private static final Log LOG = LogFactory.getLog(FileMoveJobExecution.class);
@@ -49,20 +41,12 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         jobScheduler = scheduler;
         String runTime = runner.getInputString();
 
-        JobState state = createJob(JobName.FILECOPY_PARENT, runTime);
-        LOG.info("setting filemove run up for " + runTime);
-
         hadoopTool.setupHadoopRun(runTime);
-        List<String> localInputFiles;
 
         try {
-            localInputFiles = getLocalInputFiles(runner);
+            List<String> localInputFiles = getLocalInputFiles(runner);
 
-            // this is done so that any other watchdog runs will not pick up the
-            // files. They may take a while before they make it onto the DFS,
-            // especially if its a bunch of large files being uploaded.
             Map<String, JobState> fastValues = createStateForMovingFiles(runTime, localInputFiles);
-
             for (String filename : localInputFiles) {
                 if (filename.endsWith(".lzo")) {
                     runner.setLzoInput(true);
@@ -72,41 +56,20 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
             moveFilesOntoDFS(runner, fastValues);
             deleteIfFinished(fastValues);
 
-
-//            scheduleMoveToCloudFiles(runner);
-            scheduleFqdnJob(runner);
+            scheduleMapReduceAggregateLogsJob(runner);
 
         } catch (Exception e) {
             LOG.error(e);
-            failJob(state);
             throw new ExecutionException(e);
         }
-        finishJob(state);
     }
 
     @Required
-    private void scheduleFqdnJob(HadoopRunner runner) throws SchedulingException {
-        jobScheduler.scheduleJob(OrderLoadBalancerLogsJob.class, runner);
+    private void scheduleMapReduceAggregateLogsJob(HadoopRunner runner) throws SchedulingException {
+        jobScheduler.scheduleJob(MapReduceAggregateLogsJob.class, runner);
     }
 
-    private void scheduleMoveToCloudFiles(HadoopRunner runner)
-            throws SchedulingException {
-        String jobName;
-
-        if (runner.getFileMoveInput() != null) {
-            jobName = runner.getFileMoveInput();
-
-        } else if (runner.getInputForMultiPathJobs() != null) {
-            List files = (List) runner.getInputForMultiPathJobs();
-            jobName = StringUtils.join(files, ",");
-
-        } else {
-            throw new SchedulingException("Could not find files to schedule");
-        }
-
-        jobScheduler.scheduleJob(jobName + ":" + runner.getInputString(), ArchiveLoadBalancerLogsJob.class, runner);
-    }
-
+    @Required
     public void setLbStatsTool(LbStatsTool lbStatsTool) {
         this.hadoopTool = lbStatsTool;
     }
@@ -129,10 +92,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         } else if (runner.getInputForMultiPathJobs() != null) {
             localInputFiles = runner.getInputForMultiPathJobs();
         } else {
-            // This is bad, we will error out. This job should never be
-            // scheduled without a input file.
-            throw new Exception(
-                    "Could not find any files for the copy. This job was fired without a indicator as to what files to run.");
+            throw new Exception("Could not find any files for the copy. This job was fired without a indicator as to what files to run.");
         }
         return localInputFiles;
     }
@@ -141,9 +101,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         for (Entry<String, JobState> inputEntry : fastValues.entrySet()) {
             if (inputEntry.getValue().getState() == JobStateVal.FINISHED) {
                 new File(inputEntry.getKey()).delete();
-                // also delete from the 2ndary store (somewhat nasty hack cuz the way the 2ndary node is set up)
                 try {
-                    // fileformat zxtm-2010-04-01-110101
                     String filename = inputEntry.getKey().substring(inputEntry.getKey().lastIndexOf("/") + 1);
 
                     // remove the seconds cuz it takes a few to write the logs sometimes
@@ -197,7 +155,6 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
                 offset++;
 
                 finishJob(state);
-                //scheduleSplitJob(runner, placedFile);
 
             } catch (Exception e) {
                 LOG.error(e);

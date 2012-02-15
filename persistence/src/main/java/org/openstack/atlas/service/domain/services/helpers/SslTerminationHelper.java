@@ -83,7 +83,11 @@ public final class SslTerminationHelper {
         }
 
         if (queTermination.isSecureTrafficOnly() != null) {
-            dbTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
+            if ((queTermination.isEnabled() != null && !queTermination.isEnabled()) || (!dbTermination.isEnabled()) && (queTermination.isSecureTrafficOnly() || dbTermination.isSecureTrafficOnly())) {
+                dbTermination.setSecureTrafficOnly(false);
+            } else {
+                dbTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
+            }
         }
 
         if (queTermination.getSecurePort() != null) {
@@ -106,6 +110,30 @@ public final class SslTerminationHelper {
         if (queTermination.getPrivatekey() != null) {
             dbTermination.setPrivatekey(queTermination.getPrivatekey());
         }
+
         return dbTermination;
+    }
+
+    public static void cleanSSLCertKeyEntries(org.openstack.atlas.service.domain.entities.SslTermination sslTermination) {
+        final String cleanRegex = "(?m)^[ \t]*\r?\n";
+
+        String dirtyKey = sslTermination.getPrivatekey();
+        String dirtyCert = sslTermination.getCertificate();
+        String dirtyChain = sslTermination.getIntermediateCertificate();
+
+        if (dirtyKey != null) {
+            dirtyKey = dirtyKey.replaceAll(cleanRegex, "");
+            sslTermination.setPrivatekey(dirtyKey.trim());
+        }
+
+        if (dirtyCert != null) {
+            dirtyCert = dirtyCert.replaceAll(cleanRegex, "");
+            sslTermination.setCertificate(dirtyCert.trim());
+        }
+
+        if (dirtyChain != null) {
+            dirtyChain = dirtyChain.replaceAll(cleanRegex, "");
+            sslTermination.setIntermediateCertificate(dirtyChain.trim());
+        }
     }
 }

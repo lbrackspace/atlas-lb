@@ -1,6 +1,5 @@
 package org.openstack.atlas.mapreduce;
 
-import org.openstack.atlas.constants.Constants;
 import org.openstack.atlas.io.FileBytesWritable;
 import org.openstack.atlas.io.LbLogsAccountDateKey;
 import org.openstack.atlas.io.LbLogsWritable;
@@ -14,6 +13,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
+import org.openstack.atlas.util.Constants;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,7 +24,6 @@ public class LbStatsReducer implements Reducer<LbLogsAccountDateKey, LbLogsWrita
     
     private static String fileDate;
     private static final Log LOG = LogFactory.getLog(LbStatsReducer.class);
-    public static final String DATE_FAKE = new StringBuffer("").toString();
     private static ZipArchiveOutputStream stream = null;
 
     public void close() throws IOException {
@@ -36,7 +35,7 @@ public class LbStatsReducer implements Reducer<LbLogsAccountDateKey, LbLogsWrita
     }
 
     public void configure(JobConf job) {
-        fileDate = job.get(Constants.Rawlogs.FILEDATE).replaceAll(" ", "_");
+        fileDate = job.get(Constants.FILEDATE).replaceAll(" ", "_");
     }
 
     private static String currentAccountId;
@@ -46,7 +45,6 @@ public class LbStatsReducer implements Reducer<LbLogsAccountDateKey, LbLogsWrita
     public void reduce(LbLogsAccountDateKey key, Iterator<LbLogsWritable> values,
                        OutputCollector<Text, FileBytesWritable> output, Reporter reporter) throws IOException {
 
-//        LOG.info("Preparing to process " + key);
         if (this.output == null ){
             this.output = output;
         }

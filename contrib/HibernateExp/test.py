@@ -5,49 +5,64 @@ import util
 util.setConfig("local.json")
 from util import *
 
-certNames = stubs.cert.getCertificateNames()
-certs = {}
-certsRaw = {}
 
-#stubs.cert.deleteCertificate(["test"])
+begin()
+lb = qq("SELECT l FROM LoadBalancer l where l.id=38899")[0]
+lb.getNodes()
+commit()
 
-i = 0
-for certInfo in stubs.cert.getCertificateInfo(certNames):
-    certs[certNames[i]] = certInfo
-    i += 1
-
-i = 0
-for rawCert in stubs.cert.getRawCertificate(certNames):
-    certsRaw[certNames[i]] = rawCert
-    i += 1
-
+begin()
+c = qq("SELECT c FROM Cluster c where c.id=1")[0]
+h = qq("SELECT h FROM Host h where h.id=1")[0]
+lbs = newLoadBalancers(999999,20000,[h])
+nodes = newNodes(lbs,ri(1,10))
+saveList(nodes)
+saveList(lbs)
+commit()
 
 
 
-#create new cert and Key and save  through zeus
-key_file = "smurf.key"
-crt_file = "smurf.crt"
-name = "smurfette.smurfvilliage.com"
-key = open(key_file,"r").read()
-crt = open(crt_file,"r").read()
+#create a bunch of stuff
+while True:
+    begin()
+    c = qq("SELECT c FROM Cluster c where c.id=1")[0]
+    h = qq("SELECT h FROM Host h where h.id=1")[0]
+    lbs = newLoadBalancers(aid,5,[h])
+    n = ri(1,10)
+    nodes = newNodes(lbs,n)
+    saveList(nodes)
+    saveList(lbs)
+    commit()
 
-#not sure why zeus named this class plural since its singular
-cf = CertificateFiles()# In java its CertificateFiles cf = new CertificateFiles()
-cf.setPrivate_key(key)
-cf.setPublic_cert(crt)
+begin()
+txin(lbs)
+txin(nodes)
 
-#save it in zeus
-stubs.cert.importCertificate([name],[cf])
-#Don't forget stubs.cert is an initialized CatalogSSLCertificatesBindingStub obj
-
+begin()
+lb = qq("SELECT l from LoadBalancer l where id=790")[0]
+nodes = qq("SELECT n from Node n where n.loadbalancer.id=790")
 
 
-baseSubj = "C=US,ST=Texas,L=Texas,O=RackSpace Hosting"
-subjs = []
-chainPems = []
-for i in xrange(1,10):
-    subjs.append("%s,OU=RackExp CA%i,CN=ca%i.rackexp.org"%(baseSubj,i,i))
+oldPri = ZNPC(nodes)
 
+newPri = ZNPC(nodes)
+
+
+ZNPC.getAction(oldPri,newPri)
+
+poolName = "%s_%s"%(lb.getAccountId(),lb.getId())
+
+stubs.p.setNodesPriorityValue(["354934_790"],newPri.getPriorityValues())
+
+
+
+stubs.p.setPriorityEnabled([poolName],[True])
+
+attempted HQL version of MySQLQuery:
+
+select count(*) as nodes,loadbalancer_id from node 
+     where loadbalancer_id in (select id from loadbalancer where account_id = 354934) 
+         group by loadbalancer_id;
 
 
 

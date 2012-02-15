@@ -12,10 +12,8 @@ public interface HadoopTool {
 
     String getOutputDirectory();
 
-    @Deprecated
     void setupHadoopRun(String inputFolder);
 
-    @Deprecated
     void setupHadoopRun(String inputFolder, String jobJarPath);
 
     void setupHadoopRun(HadoopRunner runner);

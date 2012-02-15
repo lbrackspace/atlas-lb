@@ -58,10 +58,18 @@
             <a>id</a>
             <b>id</b>
         </field-exclude>
-        <field>
+        <field-exclude>
             <a>privatekey</a>
             <b>privatekey</b>
-        </field>
+        </field-exclude>
+        <field-exclude>
+            <a>certificate</a>
+            <b>certificate</b>
+        </field-exclude>
+        <field-exclude>
+            <a>intermediateCertificate</a>
+            <b>intermediateCertificate</b>
+        </field-exclude>
         <field>
         <a get-method="isEnabled">enabled</a>
         <b get-method="isEnabled">enabled</b>
@@ -185,6 +193,10 @@
             <a>virtualIpDozerWrapper</a>
             <b>virtualIps</b>
         </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CollectionCountConverter">
+            <a>nodes</a>
+            <b>nodeCount</b>
+        </field>
         <!--<field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">-->
         <!--<a>connectionLogging</a>-->
         <!--<b>connectionLogging</b>-->
@@ -302,6 +314,10 @@
         <field>
             <a>condition</a>
             <b>condition</b>
+        </field>
+        <field>
+            <a>type</a>
+            <b>type</b>
         </field>
     </mapping>
 

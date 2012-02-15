@@ -35,7 +35,7 @@ public interface ReverseProxyLoadBalancerService {
 
     void updateConnectionLogging(LoadBalancer lb) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
 
-    void setNodes(Integer id, Integer accountId, Set<Node> nodes) throws Exception;
+    void setNodes(LoadBalancer lb) throws Exception;
 
     void removeNode(Integer id, Integer accountId, Node node) throws Exception;
 
@@ -75,7 +75,7 @@ public interface ReverseProxyLoadBalancerService {
 
     void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
 
-    void setErrorFile(Integer lid,Integer aid,String content) throws Exception,DecryptException, MalformedURLException;
+    void setErrorFile(LoadBalancer loadBalancer, String content) throws Exception,DecryptException, MalformedURLException;
 
     int getTotalCurrentConnectionsForHost(Host host) throws Exception;
 
@@ -112,4 +112,6 @@ public interface ReverseProxyLoadBalancerService {
     public void removeSslTermination(LoadBalancer lb) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, ZxtmRollBackException;
 
     public void enableDisableSslTermination(LoadBalancer loadBalancer, boolean isSslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, ZxtmRollBackException;
+
+    public void setNodesPriorities(String poolName, LoadBalancer lb) throws DecryptException, EntityNotFoundException, MalformedURLException, RemoteException;
 }

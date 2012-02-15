@@ -1,12 +1,11 @@
 package com.mosso.mapreduce;
 
 import org.openstack.atlas.util.FileSystemUtils;
-import org.openstack.atlas.test.BaseHadoopTest;
 import org.junit.Ignore;
 import org.junit.Test;
 
 @Ignore
-public class DirectoryToolTest extends BaseHadoopTest {
+public class DirectoryToolTest {
 
     private FakeDirectoryTool tool;
 

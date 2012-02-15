@@ -137,7 +137,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `cluster` WRITE;
 /*!40000 ALTER TABLE `cluster` DISABLE KEYS */;
-INSERT INTO `cluster` VALUES (1,'Cluster Delta','My Cluster','lbaas_dev','1972d851ab4605cd124562bb38704d9e','DFW','fd24:f480:ce44:91bc::/64');
+INSERT INTO `cluster` VALUES (1,'Cluster Delta','My Cluster','lbaas_dev','1972d851ab4605cd124562bb38704d9e','DFW','fd24:f480:ce44:91bc::/64', 'ACTIVE');
 /*!40000 ALTER TABLE `cluster` ENABLE KEYS */;
 UNLOCK TABLES;
 

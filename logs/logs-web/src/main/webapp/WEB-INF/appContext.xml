@@ -15,7 +15,7 @@
     <bean id="controllerHandlerAdapter" class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>
 
     <bean id="cloudFilesDao" class="org.openstack.atlas.cloudfiles.CloudFilesDaoImpl"/>
-    <bean id="logDateFormat" class="org.openstack.atlas.data.LogDateFormat"/>
+    <bean id="logDateFormat" class="org.openstack.atlas.util.LogDateFormat"/>
 
     <bean id="fileSystemUtils" class="org.openstack.atlas.util.FileSystemUtils"/>
 
@@ -36,10 +36,10 @@
 
         <property name="schedulerContextAsMap">
             <map>
-               <entry key="stateDao">
-                   <ref bean="stateDao"/>
+               <entry key="jobStateRepository">
+                   <ref bean="jobStateRepository"/>
                </entry>
-                
+
                <entry key="logDateFormat">
                    <ref bean="logDateFormat"/>
                </entry>
@@ -56,9 +56,6 @@
                    <ref bean="fileWatchdogJobExecution"/>
                </entry>
 
-               <entry key="fileAssembleJobExecution">
-                   <ref bean="fileAssembleJobExecution"/>
-               </entry>
                <entry key="fileMoveJobExecution">
                    <ref bean="fileMoveJobExecution"/>
                </entry>
@@ -77,6 +74,7 @@
         <property name="triggers">
             <list>
                 <ref bean="runFileWatchdogTrigger"/>
+                <ref bean="runSystemCleanupTrigger"/>
             </list>
         </property>
     </bean>
@@ -96,24 +94,39 @@
         <property name="cronExpression" value="${job.repeat.interval}" />
     </bean>
 
+    <bean name="systemCleanupJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="org.openstack.atlas.scheduler.SystemCleanupJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="fileSystemUtils" value-ref="fileSystemUtils"/>
+                <entry key="jobStateService" value-ref="jobStateService"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="runSystemCleanupTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="systemCleanupJob"/>
+        <!--<property name="startDelay" value="300"/>-->
+        <!--<property name="repeatInterval" value="${job.repeat.interval}"/>-->
+        <property name="cronExpression" value="0 0 0 * *  ?" />
+        <!--<property name="cronExpression" value="0 0/5 * * * ?" />-->
+    </bean>
+
     <bean id="jobScheduler" class="org.openstack.atlas.scheduler.JobScheduler">
         <property name="schedulerFactoryBean" ref="schedulerFactoryBean"/>
     </bean>
 
-    <bean id="loggableJobExecution"
-          class="org.openstack.atlas.scheduler.execution.LoggableJobExecution">
-        <property name="stateDao" ref="stateDao"/>
+    <bean id="loggableJobExecution" class="org.openstack.atlas.scheduler.execution.LoggableJobExecution">
+        <property name="jobStateRepository" ref="jobStateRepository"/>
         <property name="conf" ref="conf"/>
         <property name="fileSystemUtils" ref="fileSystemUtils"/>
     </bean>
     <bean id="fileWatchdogJobExecution"
           class="org.openstack.atlas.scheduler.execution.FileWatchdogJobExecution"/>
-    <bean id="fileAssembleJobExecution"
-          class="org.openstack.atlas.scheduler.execution.FileAssembleJobExecution"/>
     <bean id="fileMoveJobExecution"
           class="org.openstack.atlas.scheduler.execution.FileMoveJobExecution"/>
     <bean id="orderLoadBalancerLogsJobExecution"
-          class="org.openstack.atlas.scheduler.execution.OrderLoadBalancerLogsJobExecution"/>
+          class="org.openstack.atlas.scheduler.execution.MapReduceAggregateLogsJobExecution"/>
     <bean id="splitLoadBalancerLogsJobExecution"
           class="org.openstack.atlas.scheduler.execution.SplitLoadBalancerLogsJobExecution"/>
     <bean id="archiveLoadBalancerLogsJobExecution"
@@ -139,8 +152,12 @@
           class="org.openstack.atlas.service.domain.repository.LoadBalancerRepository"
           scope="prototype"/>
 
-    <bean id="stateDao"
+    <bean id="jobStateRepository"
           class="org.openstack.atlas.service.domain.repository.JobStateRepository"
           scope="prototype"/>
 
+    <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl" parent="baseService"/>
+    <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
+        <property name="jobStateRepository" ref="jobStateRepository" />
+    </bean>
 </beans>

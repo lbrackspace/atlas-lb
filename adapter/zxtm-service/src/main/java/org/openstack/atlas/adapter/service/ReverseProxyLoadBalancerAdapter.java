@@ -47,7 +47,7 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
-    public void setNodes(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> nodes)
+    public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
     public void removeNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes)
@@ -158,8 +158,8 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws AxisFault, InsufficientRequestException;
 
-    public void setErrorFile(LoadBalancerEndpointConfiguration conf, Integer loadbalancerId, Integer accountId, String content)
-            throws RemoteException;
+    public void setErrorFile(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, String content)
+            throws RemoteException, InsufficientRequestException;
 
     public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
@@ -169,4 +169,6 @@ public interface ReverseProxyLoadBalancerAdapter {
 
     public void enableDisableSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, boolean isSslTermination)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+
+    public void setNodesPriorities(LoadBalancerEndpointConfiguration config, String poolName, LoadBalancer lb) throws RemoteException;
 }

@@ -25,7 +25,7 @@ import org.junit.Ignore;
 public class ClusterServiceImplIntegrationTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations={"classpath:db-services-test.xml"})
+    @ContextConfiguration(locations={"classpath:db-services-test-bak.xml"})
     @Transactional
     public static class WhenAddingCluster {
 

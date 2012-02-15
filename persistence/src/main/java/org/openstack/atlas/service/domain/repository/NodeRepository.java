@@ -39,12 +39,12 @@ public class NodeRepository {
         return newNodes;
     }
 
- public LoadBalancer delNodes(LoadBalancer lb, Collection<Node> nodes) {
+    public LoadBalancer delNodes(LoadBalancer lb, Collection<Node> nodes) {
         NodeMap nodeMap = new NodeMap(nodes);
         Set<Node> lbNodes = new HashSet<Node>(lb.getNodes());
-        for(Node node : lbNodes){
+        for (Node node : lbNodes) {
             Integer nodeId = node.getId();
-            if(nodeMap.containsKey(nodeId)){
+            if (nodeMap.containsKey(nodeId)) {
                 lb.getNodes().remove(node);
             }
         }
@@ -79,7 +79,6 @@ public class NodeRepository {
         return nodeMap;
     }
 
-
     public List<Node> getNodesByIds(Collection<Integer> ids) {
         List<Node> doomedNodes = new ArrayList<Node>();
         String nodeIdsStr = StringConverter.integersAsString(ids);
@@ -112,11 +111,7 @@ public class NodeRepository {
 
     public Node getNodeByLoadBalancerIdIpAddressAndPort(Integer lbId, String ipAddress, Integer port) throws EntityNotFoundException {
         try {
-            return (Node) entityManager.createQuery("from Node n where n.loadbalancer.id = :loadbalancerId and n.ipAddress = :ipAddress and n.port = :port")
-                    .setParameter("loadbalancerId", lbId)
-                    .setParameter("ipAddress", ipAddress)
-                    .setParameter("port", port)
-                    .getSingleResult();
+            return (Node) entityManager.createQuery("from Node n where n.loadbalancer.id = :loadbalancerId and n.ipAddress = :ipAddress and n.port = :port").setParameter("loadbalancerId", lbId).setParameter("ipAddress", ipAddress).setParameter("port", port).getSingleResult();
         } catch (Exception e) {
             throw new EntityNotFoundException(e);
         }
@@ -135,6 +130,30 @@ public class NodeRepository {
             }
         }
         throw new EntityNotFoundException("Node not found");
+    }
+
+    // Small check for existence
+    public boolean isLoadBalancerbyAccountIdLoadBalancerId(Integer aid, Integer lid) {
+        String qStr;
+        qStr = "SELECT l.id from LoadBalancer l";
+        qStr += "    where l.accountId=:aid and l.id=:lid";
+        List<Object> results = entityManager.createQuery(qStr).setParameter("aid", aid).setParameter("lid", lid).getResultList();
+        if(results.size()<=0) {
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    // Get all Nodes regardless of weight status etc
+    public Set<Node> getAllNodesByAccountIdLoadBalancerId(Integer aid, Integer lid) throws EntityNotFoundException {
+        if(!isLoadBalancerbyAccountIdLoadBalancerId(aid, lid)){
+            throw new EntityNotFoundException(String.format("Loadbalancer %d not found for account %d",lid,aid));
+        }
+        String qStr = "SELECT n FROM Node n where n.loadbalancer.id = :lid";
+        List<Node> nodesList = entityManager.createQuery(qStr).setParameter("lid", lid).getResultList();
+        Set<Node> nodes = new HashSet<Node>(nodesList);
+        return nodes;
     }
 
     public Set<Node> getNodesByAccountIdLoadBalancerId(LoadBalancer loadBalancer,
