@@ -354,4 +354,17 @@
         <xsd:attribute name="securePort" type="xsd:int"/>
         <xsd:attribute name="secureTrafficOnly" type="xsd:boolean"/>
     </xsd:complexType>
+
+    <xsd:element name="allowedDomains" type="tns:allowedDomains"/>
+    <xsd:complexType name="allowedDomains">
+        <xsd:sequence>
+            <xsd:element name="allowedDomain" minOccurs="0" maxOccurs="unbounded" type="tns:allowedDomain"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="allowedDomain">
+        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+
 </xsd:schema>
