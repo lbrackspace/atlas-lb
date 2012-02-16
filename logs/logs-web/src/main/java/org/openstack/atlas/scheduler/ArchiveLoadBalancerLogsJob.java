@@ -23,9 +23,9 @@ public class ArchiveLoadBalancerLogsJob extends BaseMapreduceJob {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+        HadoopRunner runner = getRunner(context);
+        LOG.info("running " + getClass() + " on " + runner.getRunTime() + " for logFileDate: " + runner.getRawlogsFileTime());
         try {
-            HadoopRunner runner = HadoopRunner.createRunnerFromValues(context.getJobDetail().getJobDataMap());
-            LOG.info("setting up ArchiveLoadBalancerLogsJob for " + runner.getInputString());
             execution.execute(createSchedulerInstance(context), runner);
         } catch (ExecutionException e) {
             throw new JobExecutionException(e);

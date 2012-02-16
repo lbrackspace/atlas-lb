@@ -86,7 +86,7 @@ public final class SslTerminationHelper {
         }
 
         if (queTermination.isSecureTrafficOnly() != null) {
-            if ((!queTermination.isEnabled() || !dbTermination.isEnabled()) && (queTermination.isSecureTrafficOnly() || dbTermination.isSecureTrafficOnly())) {
+            if ((queTermination.isEnabled() != null && !queTermination.isEnabled()) || (!dbTermination.isEnabled()) && (queTermination.isSecureTrafficOnly() || dbTermination.isSecureTrafficOnly())) {
                 dbTermination.setSecureTrafficOnly(false);
             } else {
                 dbTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());

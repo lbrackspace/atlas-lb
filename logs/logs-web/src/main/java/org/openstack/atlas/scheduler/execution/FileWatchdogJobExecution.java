@@ -1,61 +1,65 @@
 package org.openstack.atlas.scheduler.execution;
 
-import org.openstack.atlas.scheduler.FileAssembleJob;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.exception.ExecutionException;
+import org.openstack.atlas.exception.SchedulingException;
+import org.openstack.atlas.scheduler.FileMoveJob;
 import org.openstack.atlas.scheduler.JobScheduler;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
-import org.openstack.atlas.exception.ExecutionException;
-import org.openstack.atlas.exception.SchedulingException;
 import org.openstack.atlas.tools.HadoopRunner;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.util.LogFileUtil;
 
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
 public class FileWatchdogJobExecution extends LoggableJobExecution implements QuartzExecutable {
-     private static final Log LOG = LogFactory.getLog(FileWatchdogJobExecution.class);
+    private static final Log LOG = LogFactory.getLog(FileWatchdogJobExecution.class);
 
     public void execute(JobScheduler scheduler, HadoopRunner runner) throws ExecutionException {
-        LOG.info("Job started at " + Calendar.getInstance().getTime());
         List<String> localInputFiles = utils.getLocalInputFiles();
+
         List<String> scheduledFilesToRun = new LinkedList<String>();
-
-        // Check to see if any filemoves have been issued for these files.
-        LOG.debug("checking for files " + localInputFiles);
-
         for (String inputFile : localInputFiles) {
-            List states = stateDao.getEntriesLike(JobName.FILECOPY, inputFile);
+            List states = jobStateRepository.getEntriesLike(JobName.FILECOPY, inputFile);
             if (states.isEmpty()) {
-                // it does not exist, so schedule it.
                 scheduledFilesToRun.add(inputFile);
             }
         }
 
-        if (scheduledFilesToRun.isEmpty()) {
-            // assume that we have no scheduled files to move.
+        if (scheduledFilesToRun.size() == 1) {
+            //eg. /var/log/zxtm/rotated/2012021017-access_log.aggregated
+            String logFileDate = LogFileUtil.getDateStringFromFileName(scheduledFilesToRun.get(0));
+            runner.setRawlogsFileTime(logFileDate);
+            runner.setInputString(runner.getRawlogsFileTime());
+        } else if (scheduledFilesToRun.size() >= 1) {
+            String newestFile = LogFileUtil.getNewestFile(scheduledFilesToRun);
+            String logFileDate = LogFileUtil.getDateStringFromFileName(newestFile);
+            runner.setRawlogsFileTime(logFileDate);
+            runner.setInputString(runner.getRawlogsFileTime());
+            scheduledFilesToRun.clear();
+            scheduledFilesToRun.add(newestFile);
+        } else if(scheduledFilesToRun.isEmpty()) {
             LOG.info("Could not find any files that are not already scheduled. returning.");
             return;
-        } else {
-            JobState state = stateDao.create(JobName.WATCHDOG, runner.getInputString());
-
-            // now that we have a list of files, schedule them.
-            String jobName = "fileAssemble" + runner.getInputString();
-            runner.setInputForMultiPathJobs(scheduledFilesToRun);
-
-            try {
-                scheduler.scheduleJob(FileAssembleJob.class, runner);
-            } catch (SchedulingException e) {
-                LOG.error(e);
-                state.setState(JobStateVal.FAILED);
-                stateDao.update(state);
-                throw new ExecutionException(e);
-            }
-
-            finishJob(state);
         }
 
+        String inputString = runner.getInputString();
+        JobState state = createJob(JobName.WATCHDOG, inputString);
+        runner.setInputForMultiPathJobs(scheduledFilesToRun);
+
+        try {
+            String jobName = "fileMove:" + runner.getInputString();
+            scheduler.scheduleJob(jobName, FileMoveJob.class, runner);
+        } catch (SchedulingException e) {
+            LOG.error(e);
+            state.setState(JobStateVal.FAILED);
+            jobStateRepository.update(state);
+            throw new ExecutionException(e);
+        }
+
+        finishJob(state);
     }
 }

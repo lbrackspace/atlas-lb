@@ -6,8 +6,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Errorpage;
 
-import java.util.List;
-
 public class GlobalErrorFileIntegrationTest extends ZeusTestBase {
 
     @BeforeClass
@@ -34,7 +32,7 @@ public class GlobalErrorFileIntegrationTest extends ZeusTestBase {
             Errorpage errorpage = new Errorpage();
             errorpage.setContent(content);
 
-            zxtmAdapter.setErrorFile(config, lb.getId(), lb.getAccountId(), content);
+            zxtmAdapter.setErrorFile(config, lb, content);
 
             String[] errorFile = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()});
             boolean doesExist = false;

@@ -11,17 +11,6 @@ import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 
-import java.util.Map;
-
-/**
- * Moves a single file or a set of files onto the DFS and schedules a run based
- * on the inputDir timestamp.
- * <p/>
- * Data needed in jobMap is one of * COPY_ALL_FILES - List of String names *
- * COPY_SINGLE_FILE - single String name
- *
- *
- */
 public class FileMoveJob extends BaseMapreduceJob implements StatefulJob {
     private static final Log LOG = LogFactory.getLog(FileMoveJob.class);
 
@@ -34,14 +23,10 @@ public class FileMoveJob extends BaseMapreduceJob implements StatefulJob {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+        HadoopRunner runner = getRunner(context);
+        LOG.info("running " + getClass() + " on " + runner.getRunTime() + " for logFileDate: " + runner.getRawlogsFileTime());
 
-        String runTime = getRuntime(context);
-        LOG.info("running " + getClass() + " on " + runTime);
-
-        Map data = context.getJobDetail().getJobDataMap();
-        HadoopRunner runner = HadoopRunner.createRunnerFromValues(data);
         try {
-
             fileMoveJobExecution.execute(createSchedulerInstance(context), runner);
         } catch (ExecutionException e) {
             throw new JobExecutionException(e);

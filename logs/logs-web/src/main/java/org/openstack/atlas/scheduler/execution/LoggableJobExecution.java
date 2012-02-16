@@ -7,40 +7,37 @@ import org.openstack.atlas.service.domain.repository.JobStateRepository;
 import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.util.DateTime;
 import org.openstack.atlas.util.FileSystemUtils;
+import org.springframework.beans.factory.annotation.Required;
 
 public class LoggableJobExecution {
-    protected JobStateRepository stateDao;
+    protected JobStateRepository jobStateRepository;
     protected FileSystemUtils utils;
     protected org.openstack.atlas.cfg.Configuration conf;
 
     protected JobState createJob(JobName val, String jobInput) {
-        return stateDao.create(val, jobInput);
+        return jobStateRepository.create(val, jobInput);
     }
 
     protected void setJobState(JobStateVal val, JobState state) {
         state.setState(val);
-        stateDao.update(state);
+        jobStateRepository.update(state);
     }
 
     protected void finishJob(JobState state) {
         state.setState(JobStateVal.FINISHED);
         state.setEndTime(new DateTime().getCalendar());
-        stateDao.update(state);
+        jobStateRepository.update(state);
     }
 
     protected void deleteJob(JobState state) {
         state.setState(JobStateVal.DELETED);
-        stateDao.update(state);
+        jobStateRepository.update(state);
     }
 
     protected void failJob(JobState state) {
         state.setState(JobStateVal.FAILED);
         state.setEndTime(new DateTime().getCalendar());
-        stateDao.update(state);
-    }
-
-    public final void setStateDao(JobStateRepository stateDao) {
-        this.stateDao = stateDao;
+        jobStateRepository.update(state);
     }
 
     public DirectoryTool createTool(Class jobclass) throws Exception {
@@ -50,11 +47,18 @@ public class LoggableJobExecution {
         return d;
     }
 
-    public final void setConf(org.openstack.atlas.cfg.Configuration conf) {
+    @Required
+    public void setJobStateRepository(JobStateRepository jobStateRepository) {
+        this.jobStateRepository = jobStateRepository;
+    }
+    @Required
+
+    public void setConf(org.openstack.atlas.cfg.Configuration conf) {
         this.conf = conf;
     }
 
-    public final void setFileSystemUtils(FileSystemUtils fileSystemUtils) {
+    @Required
+    public void setFileSystemUtils(FileSystemUtils fileSystemUtils) {
         this.utils = fileSystemUtils;
     }
 }

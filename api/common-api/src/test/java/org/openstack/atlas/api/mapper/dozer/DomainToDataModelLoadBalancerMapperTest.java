@@ -424,6 +424,68 @@ public class DomainToDataModelLoadBalancerMapperTest {
         }
     }
 
+    public static class When_mapping_a_hydrated_domain_loadbalancer_to_a_simple_datamodel_loadbalancer {
+
+        private DozerBeanMapper mapper;
+        private LoadBalancer loadBalancer;
+        private org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer dataModelLb;
+
+        @Before
+        public void setUp() {
+            mapper = MapperBuilder.getConfiguredMapper(publicDozerConfigFile);
+            loadBalancer = createHydratedLoadbalancer();
+
+            loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+            dataModelLb = mapper.map(loadBalancer, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB");
+        }
+
+        @Test
+        public void shouldMapCorrectlyWhenGivenAFullyHydratedLoadbalancer() {
+            Assert.assertEquals(new Integer(100), dataModelLb.getId());
+            Assert.assertEquals("LB 1", dataModelLb.getName());
+            Assert.assertEquals(LoadBalancerStatus.ACTIVE.name(), dataModelLb.getStatus());
+            Assert.assertEquals("WEIGHTED_ROUND_ROBIN", dataModelLb.getAlgorithm());
+            Assert.assertEquals("IMAPv4", dataModelLb.getProtocol());
+            Assert.assertEquals(new Integer(9999), dataModelLb.getPort());
+            Assert.assertNotNull(dataModelLb.getCreated());
+            Assert.assertNotNull(dataModelLb.getUpdated());
+            Assert.assertNull(dataModelLb.getCluster());
+            Assert.assertNull(dataModelLb.getConnectionThrottle());
+            Assert.assertNull(dataModelLb.getHealthMonitor());
+            Assert.assertNull(dataModelLb.getSessionPersistence());
+        }
+
+        @Test(expected = org.dozer.MappingException.class)
+        public void shouldThrowExceptionWhenMappingFromDataModelToDomainModel() {
+            mapper.map(dataModelLb, LoadBalancer.class, "SIMPLE_LB");
+        }
+
+        @Test
+        public void shouldMapNodeCountWhenNodesAreAvailable() {
+            Assert.assertEquals(loadBalancer.getNodes().size(), dataModelLb.getNodeCount().intValue());
+        }
+
+        @Test
+        public void shouldNotMapFieldWhenTheyAreNull() {
+            loadBalancer.setId(null);
+            loadBalancer.setName(null);
+            dataModelLb = mapper.map(loadBalancer, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB");
+
+            Assert.assertNull(dataModelLb.getId());
+            Assert.assertNull(dataModelLb.getName());
+        }
+
+        @Test
+        public void should_not_fail_when_domain_loadbalancer_is_empty() {
+            loadBalancer = new LoadBalancer();
+            try {
+                dataModelLb = mapper.map(loadBalancer, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB");
+            } catch (Exception e) {
+                Assert.fail("Empty domain load balancer caused this exception");
+            }
+        }
+    }
+
     public static class When_mapping_a_deleted_domain_loadbalancer_to_a_simple_datamodel_loadbalancer {
 
         private DozerBeanMapper mapper;

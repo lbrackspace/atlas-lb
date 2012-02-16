@@ -14,8 +14,6 @@ public class JobScheduler {
 
     private Scheduler stdScheduler;
 
-    //private XmlRpcJobClient xmlRpcJobClient;
-
     private Random random = new Random();
 
     public JobScheduler() {
@@ -47,27 +45,8 @@ public class JobScheduler {
     }
 
     public void scheduleJob(Class jobClass, HadoopRunner runner) throws SchedulingException {
-        //the formatting of now() time will allow for uniqueness in the Quartz DB.
-
-
         scheduleJob(createJobName(jobClass, runner), jobClass, runner.createMapOutputOfValues());
     }
-
-    /*public void scheduleRemoteJob(String uniqueJobName, Class jobClass, Map data) throws XmlRpcException {
-        xmlRpcJobClient.scheduleRemoteJob(uniqueJobName, jobClass, data);
-    }
-
-    public void scheduleRemoteJob(Class jobClass, HadoopRunner runner) throws XmlRpcException {
-        xmlRpcJobClient.scheduleRemoteJob(createJobName(jobClass, runner), jobClass, runner.createMapOutputOfValues());
-    }
-
-    public void scheduleRemoteJob(String uniqueJobName, Class jobClass, HadoopRunner runner) throws XmlRpcException {
-        xmlRpcJobClient.scheduleRemoteJob(uniqueJobName, jobClass, runner.createMapOutputOfValues());
-    }
-
-    public void setXmlRpcJobClient(XmlRpcJobClient xmlRpcJobClient) {
-        this.xmlRpcJobClient = xmlRpcJobClient;
-    }*/
 
     public void setSchedulerFactoryBean(Scheduler schedulerFactoryBean) {
         this.stdScheduler = schedulerFactoryBean;

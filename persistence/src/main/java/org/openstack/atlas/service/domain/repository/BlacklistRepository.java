@@ -3,7 +3,10 @@ package org.openstack.atlas.service.domain.repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
+import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.util.ip.IPv6Cidr;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,23 +54,29 @@ public class BlacklistRepository {
     }
 
     public Map<String, List<BlacklistItem>> getBlacklistItemsCidrHashMap(List<BlacklistItem> list) {
-        List<String> cidrBlocks = new ArrayList<String>();
-        for (BlacklistItem item : list) {
-            cidrBlocks.add(item.getCidrBlock());
-        }
-        String query = "SELECT b FROM BlacklistItem b WHERE b.cidrBlock in (:cidrBlocks)";
-
-        return toHashMap(entityManager.createQuery(query).setParameter("cidrBlocks", cidrBlocks).getResultList());
+        return toHashMap(entityManager.createQuery("SELECT b FROM BlacklistItem b").getResultList());
     }
 
     private Map<String, List<BlacklistItem>> toHashMap(List<BlacklistItem> list) {
         Map<String, List<BlacklistItem>> map = new HashMap<String, List<BlacklistItem>>();
+        String cidrBlock;
 
         for (BlacklistItem item : list) {
-            if (!map.containsKey(item.getCidrBlock())) {
-                map.put(item.getCidrBlock(), new ArrayList<BlacklistItem>());
+            if (item.getIpVersion() == IpVersion.IPV6) {
+                try {
+                    cidrBlock = new IPv6Cidr().getExpandedIPv6Cidr(item.getCidrBlock());
+                } catch (IPStringConversionException e) {
+                    LOG.error("Attempt to expand IPv6 string from CidrBlock " + item.getCidrBlock() + ": " + e.getMessage());
+                    throw new IllegalArgumentException(e);
+                }
+            } else {
+                cidrBlock = item.getCidrBlock();
             }
-            map.get(item.getCidrBlock()).add(item);
+            
+            if (!map.containsKey(cidrBlock)) {
+                map.put(cidrBlock, new ArrayList<BlacklistItem>());
+            }
+            map.get(cidrBlock).add(item);
         }
         return map;
     }
