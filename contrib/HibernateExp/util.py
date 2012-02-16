@@ -28,6 +28,7 @@ import org.hexp.hibernateexp.util.HibernateUtil as HibernateUtil
 import org.hexp.hibernateexp.HuApp as HuApp
 
 import org.openstack.atlas.service.domain.entities.UserPages as UserPages
+import org.openstack.atlas.service.domain.entities.AllowedDomains as AllowedDomains
 import org.openstack.atlas.service.domain.entities.NodeType as NodeType
 import org.openstack.atlas.service.domain.entities.VirtualIpv6 as VirtualIpv6
 import org.openstack.atlas.service.domain.entities.VirtualIpType as VirtualIpType
@@ -718,6 +719,22 @@ def setrndobjattr(list_in,k,choices):
        attr(rnd.choice(choices))
        out.append(obj)
     return out
+
+
+def delList(list_in):
+    failed_objs = 0
+    session = app.getSession()
+    for obj in list_in:
+        try:
+            session.delete(obj)
+        except:
+            try:
+                printf("rejected %s\nerror:%s\n",obj,traceback.format_exc())
+            except:
+                continue
+            failed_objs += 1
+    if failed_objs > 0:
+        printf("Rejected %i objects during delete\n",failed_objs)
 
 def saveList(list_in):
     failed_objs = 0
