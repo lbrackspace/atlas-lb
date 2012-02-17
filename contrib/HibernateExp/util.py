@@ -28,7 +28,7 @@ import org.hexp.hibernateexp.util.HibernateUtil as HibernateUtil
 import org.hexp.hibernateexp.HuApp as HuApp
 
 import org.openstack.atlas.service.domain.entities.UserPages as UserPages
-import org.openstack.atlas.service.domain.entities.AllowedDomains as AllowedDomains
+import org.openstack.atlas.service.domain.entities.AllowedDomain as AllowedDomains
 import org.openstack.atlas.service.domain.entities.NodeType as NodeType
 import org.openstack.atlas.service.domain.entities.VirtualIpv6 as VirtualIpv6
 import org.openstack.atlas.service.domain.entities.VirtualIpType as VirtualIpType

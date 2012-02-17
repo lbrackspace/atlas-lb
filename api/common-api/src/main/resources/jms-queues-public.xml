@@ -68,6 +68,7 @@
     <bean id="blackListService" class="org.openstack.atlas.service.domain.services.impl.BlackListServiceImpl" parent="baseService"/>
     <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl" parent="baseService"/>
     <bean id="sslTerminationService" class="org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl" parent="baseService"/>
+    <bean id="allowedDomainsService" class="org.openstack.atlas.service.domain.services.impl.AllowedDomainsServiceImpl" parent="baseService"/>
 
     <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
@@ -87,6 +88,7 @@
         <property name="loadBalancerUsageRepository" ref="loadBalancerUsageRepository" />
         <property name="loadBalancerUsageEventRepository" ref="loadBalancerUsageEventRepository" />
         <property name="sslTerminationRepository" ref="sslTerminationRepository" />
+        <property name="allowedDomainsRepository" ref="allowedDomainsRepository" />
     </bean>
 
     <bean id="usageEventHelper" class="org.openstack.atlas.api.async.UsageEventHelper" scope="prototype">

@@ -76,7 +76,7 @@
     <bean id="managementDependencyProvider"
           class="org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider"
           scope="request">
-        <property name="configuration" ref="configuration" />
+        <property name="configuration" ref="configuration"/>
         <property name="mossoAuthConfig" ref="mossoAuthConfig"/>
         <property name="alertService" ref="alertService"/>
         <property name="requestStateContainer" ref="requestStateContainer"/>
@@ -89,9 +89,12 @@
         <property name="hostService" ref="hostService"/>
         <property name="rateLimitingService" ref="rateLimitingService"/>
         <property name="notificationService" ref="notificationService"/>
+        <property name="allowedDomainsService" ref="allowedDomainsService"/>
         <property name="callbackService" ref="callbackService"/>
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
+
         <property name="dozerMapper" ref="dozerManagementBeanMapper"/>
+
         <property name="clusterRepository" ref="clusterRepository"/>
         <property name="hostRepository" ref="hostRepository"/>
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
@@ -104,13 +107,12 @@
         <property name="jobStateService" ref="jobStateService"/>
         <property name="groupRepository" ref="groupRepository"/>
         <property name="eventRepository" ref="eventRepository"/>
-
         <property name="accountLimitRepository" ref="accountLimitRepository"/>
         <property name="accountUsageRepository" ref="accountUsageRepository"/>
         <property name="usageRepository" ref="usageRepository"/>
         <property name="hostUsageRepository" ref="hostUsageRepository"/>
-
         <property name="blacklistRepository" ref="blacklistRepository"/>
+        <property name="allowedDomainsRepository" ref="allowedDomainsRepository"/>
     </bean>
     <bean id="loadBalancingManagementImpl"
           class="org.openstack.atlas.api.mgmt.resources.RootResource"
@@ -122,6 +124,18 @@
             <bean class="org.openstack.atlas.api.mgmt.resources.ManagementResource"
                   parent="managementDependencyProvider"
                   scope="request">
+                <property name="allowedDomainsResource">
+                    <bean class="org.openstack.atlas.api.mgmt.resources.AllowedDomainsResource"
+                          parent="managementDependencyProvider"
+                          scope="request">
+                        <property name="allowedDomainResource">
+                            <bean class="org.openstack.atlas.api.mgmt.resources.AllowedDomainResource"
+                                  parent="managementDependencyProvider"
+                                  scope="request">
+                            </bean>
+                        </property>
+                    </bean>
+                </property>
                 <property name="auditResource">
                     <bean id="auditResource"
                           class="org.openstack.atlas.api.mgmt.resources.AuditResource"
@@ -191,7 +205,7 @@
                                   parent="managementDependencyProvider"
                                   scope="request">
                                 <property name="virtualIpsResource" ref="mgmtVirtualIpsResource"/>
-                                <property name="errorpageResource"  ref="mgmtErrorPageResource"/>
+                                <property name="errorpageResource" ref="mgmtErrorPageResource"/>
 
 
                             </bean>
@@ -219,7 +233,7 @@
     <bean id="healthCheckResource"
           class="org.openstack.atlas.api.mgmt.resources.HealthCheckResource"
           parent="managementDependencyProvider"
-          scope="request" />
+          scope="request"/>
     <bean id="blackListResource"
           class="org.openstack.atlas.api.mgmt.resources.BlackListResource"
           parent="managementDependencyProvider"
@@ -262,8 +276,8 @@
     </bean>
     <bean id="mgmtErrorPageResource"
           class="org.openstack.atlas.api.mgmt.resources.ErrorpageResource"
-                parent="managementDependencyProvider"
-                scope="request"/>
+          parent="managementDependencyProvider"
+          scope="request"/>
 
     <bean name="mgmtVirtualIpsResource"
           class="org.openstack.atlas.api.mgmt.resources.VirtualIpsResource"

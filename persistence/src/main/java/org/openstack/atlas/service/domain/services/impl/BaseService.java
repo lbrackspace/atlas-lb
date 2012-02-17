@@ -47,6 +47,7 @@ public class BaseService {
     protected UsageRepository usageRepository;
     protected LoadBalancerUsageRepository loadBalancerUsageRepository;
     protected LoadBalancerUsageEventRepository loadBalancerUsageEventRepository;
+    protected AllowedDomainsRepository allowedDomainsRepository;
 
     static {
         org.openstack.atlas.util.ca.primitives.RsaConst.init();
@@ -114,6 +115,10 @@ public class BaseService {
 
     public void setLoadBalancerUsageEventRepository(LoadBalancerUsageEventRepository loadBalancerUsageEventRepository) {
         this.loadBalancerUsageEventRepository = loadBalancerUsageEventRepository;
+    }
+
+    public void setAllowedDomainsRepository(AllowedDomainsRepository allowedDomainsRepository) {
+        this.allowedDomainsRepository = allowedDomainsRepository;
     }
 
     public void isLbActive(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException {

@@ -44,6 +44,8 @@ public class ManagementDependencyProvider {
     protected UsageRepository usageRepository;
     protected HostUsageRepository hostUsageRepository;
     protected BlacklistRepository blacklistRepository;
+    protected AllowedDomainsRepository allowedDomainsRepository;
+
     protected TicketService ticketService;
     protected AccountLimitService accountLimitService;
     protected LoadBalancerService loadBalancerService;
@@ -59,6 +61,7 @@ public class ManagementDependencyProvider {
     protected SuspensionService suspensionService;
     protected ClusterService clusterService;
     protected JobStateService jobStateService;
+    protected AllowedDomainsService allowedDomainsService;
     protected Configuration configuration;
 
     public static String getStackTraceMessage(Exception e) {
@@ -268,6 +271,14 @@ public class ManagementDependencyProvider {
 
     public void setBlacklistRepository(BlacklistRepository blacklistRepository) {
         this.blacklistRepository = blacklistRepository;
+    }
+
+    public void setAllowedDomainsService(AllowedDomainsService allowedDomainsService) {
+        this.allowedDomainsService = allowedDomainsService;
+    }
+
+    public void setAllowedDomainsRepository(AllowedDomainsRepository allowedDomainsRepository) {
+        this.allowedDomainsRepository = allowedDomainsRepository;
     }
 
     public Set<String> getLDAPGroups() {

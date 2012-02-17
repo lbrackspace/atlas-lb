@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.resources;
 
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
+import org.openstack.atlas.api.resources.providers.RequestStateContainer;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -8,7 +9,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-import org.openstack.atlas.api.resources.providers.RequestStateContainer;
 
 @Path("{id: [-+]?[0-9][0-9]*}")
 public class RootResource extends CommonDependencyProvider {
@@ -25,6 +25,7 @@ public class RootResource extends CommonDependencyProvider {
     @PathParam("id")
     private Integer accountId;
     private LoadBalancersResource loadBalancersResource;
+    private AllowedDomainsResource allowedDomainsResource;
     private ThrowResource throwResource; // Yes for testing
 
     @Path("loadbalancers")
@@ -40,6 +41,11 @@ public class RootResource extends CommonDependencyProvider {
     @Path("throw")
     public ThrowResource retrieveThrowResource() {
         return throwResource;
+    }
+
+    @Path("alloweddomains")
+    public AllowedDomainsResource retrieveAllowedDomainsResource() {
+        return allowedDomainsResource;
     }
 
     public void setLoadBalancersResource(LoadBalancersResource loadBalancersResource) {

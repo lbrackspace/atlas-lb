@@ -1,24 +1,22 @@
 package org.openstack.atlas.api.resources.providers;
 
-import java.util.ArrayList;
-
-import net.spy.memcached.MemcachedClient;
+import org.dozer.DozerBeanMapper;
+import org.openstack.atlas.api.atom.AtomFeedAdapter;
+import org.openstack.atlas.api.config.RestApiConfiguration;
+import org.openstack.atlas.api.faults.HttpResponseBuilder;
+import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
+import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.*;
-import org.openstack.atlas.api.atom.AtomFeedAdapter;
-import org.openstack.atlas.api.faults.HttpResponseBuilder;
-import org.openstack.atlas.api.integration.AsyncService;
-import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.dozer.DozerBeanMapper;
-import org.openstack.atlas.api.config.RestApiConfiguration;
 
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
-import javax.ws.rs.core.HttpHeaders;
 
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class CommonDependencyProvider {
@@ -45,6 +43,7 @@ public class CommonDependencyProvider {
     protected UsageService usageService;
     protected ProtocolsService protocolsService;
     protected SslTerminationService sslTerminationService;
+    protected AllowedDomainsService allowedDomainsService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
 
     public ReverseProxyLoadBalancerService getReverseProxyLoadBalancerService() {
@@ -121,6 +120,10 @@ public class CommonDependencyProvider {
 
     public void setSslTerminationService(SslTerminationService sslTerminationService) {
         this.sslTerminationService = sslTerminationService;
+    }
+
+    public void setAllowedDomainsService(AllowedDomainsService allowedDomainsService) {
+        this.allowedDomainsService = allowedDomainsService;
     }
 
     public String getUserName(HttpHeaders headers){
