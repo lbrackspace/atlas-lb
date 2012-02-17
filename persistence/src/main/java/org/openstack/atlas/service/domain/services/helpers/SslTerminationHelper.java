@@ -37,6 +37,9 @@ public final class SslTerminationHelper {
                 || protocol == LoadBalancerProtocol.LDAPS || protocol == LoadBalancerProtocol.POP3S) {
             throw new BadRequestException("Can not create ssl termination on a load balancer using a secure protocol.");
         }
+        if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.DNS_UDP) || loadBalancer.getProtocol().equals(LoadBalancerProtocol.UDP) || loadBalancer.getProtocol().equals(LoadBalancerProtocol.UDP_STREAM)) {
+            throw new BadRequestException("Protocol UDP, UDP_STREAM and DNS_UDP cannot be configured with ssl termination. ");
+        }
         return true;
     }
 

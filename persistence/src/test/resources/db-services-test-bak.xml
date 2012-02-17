@@ -17,7 +17,7 @@
     </bean>
 
     <bean id="entityManagerFactory1" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-        <property name="persistenceXmlLocation" value="lb-persistence.xml"/>
+        <property name="persistenceXmlLocation" value="lb-persistence-test.xml"/>
         <property name="persistenceUnitName" value="loadbalancing"/>
         <property name="dataSource" ref="loadbalancingDataSource"/>
     </bean>

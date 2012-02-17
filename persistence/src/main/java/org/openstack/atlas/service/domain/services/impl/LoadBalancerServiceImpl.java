@@ -3,21 +3,13 @@ package org.openstack.atlas.service.domain.services.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.entities.HealthMonitorType;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.NodeStatus;
-import org.openstack.atlas.service.domain.entities.SessionPersistence;
-import org.openstack.atlas.service.domain.entities.SslTermination;
-import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
 import org.openstack.atlas.service.domain.services.*;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
-import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
@@ -28,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.BUILD;
@@ -515,6 +506,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private void verifyProtocolAndHealthMonitorType(LoadBalancer queueLb) throws ProtocolHealthMonitorMismatchException {
         if (queueLb.getHealthMonitor() != null) {
             LOG.info("Health Monitor detected. Verifying that the load balancer's protocol matches the monitor type.");
+            if (queueLb.getProtocol().equals(LoadBalancerProtocol.DNS_UDP) || queueLb.getProtocol().equals(LoadBalancerProtocol.UDP) || queueLb.getProtocol().equals(LoadBalancerProtocol.UDP_STREAM)) {
+                throw new ProtocolHealthMonitorMismatchException("Protocol UDP, UDP_STREAM and DNS_UDP are not allowed with health monitors. ");
+            }
+
             if (queueLb.getHealthMonitor().getType() != null) {
                 if (queueLb.getHealthMonitor().getType().name().equals(HealthMonitorType.HTTP.name())) {
                     if (!(queueLb.getProtocol().equals(LoadBalancerProtocol.HTTP))) {

@@ -517,6 +517,11 @@
             <b>clusterIpv6Cidr</b>
         </field>
 
+        <field>
+            <a>status</a>
+            <b>status</b>
+        </field>
+
     </mapping>
 
     <mapping map-null="false">
