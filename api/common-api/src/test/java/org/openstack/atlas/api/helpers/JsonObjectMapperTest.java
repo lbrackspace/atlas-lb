@@ -7,6 +7,8 @@ package org.openstack.atlas.api.helpers;
 import org.junit.*;
 import org.openstack.atlas.api.resources.StubResource;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostType;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Zone;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 
 import java.io.IOException;
@@ -180,6 +182,18 @@ public class JsonObjectMapperTest {
 
         Host host;
         host = mapper.readValue(input, Host.class);
+        Assert.assertEquals(host.getZone(), Zone.B);
+        Assert.assertEquals(host.getName(), "someName");
+        Assert.assertEquals(host.getType(), HostType.FAILOVER);
+        Assert.assertEquals(host.getManagementIp(), "12.34.56.78");
+        Assert.assertEquals(host.getTrafficManagerName(), "zues01.blah.blah");
+        Assert.assertEquals(host.getMaxConcurrentConnections(), new Integer(5));
+        Assert.assertEquals(host.getManagementSoapInterface(), "https://SomeSoapNode.com:9090");
+        Assert.assertEquals(host.isSoapEndpointActive(), true);
+        Assert.assertEquals(host.getIpv4Servicenet(), "10.2.2.80");
+        Assert.assertEquals(host.getCoreDeviceId(), "SomeCoreDevice");
+        Assert.assertEquals(host.getIpv4Public(), "172.11.11.110");
+        Assert.assertEquals(host.getClusterId(), new Integer(1));
         nop();
     }
 
