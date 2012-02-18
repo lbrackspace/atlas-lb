@@ -37,6 +37,7 @@ public class CommonDependencyProvider {
     protected ConnectionLoggingService connectionLoggingService;
     protected ConnectionThrottleService connectionThrottleService;
     protected VirtualIpService virtualIpService;
+    protected MetadataService metadataService;
     protected NodeService nodeService;
     protected SessionPersistenceService sessionPersistenceService;
     protected AccountLimitService accountLimitService;

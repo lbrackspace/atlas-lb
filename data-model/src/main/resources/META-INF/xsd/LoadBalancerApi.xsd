@@ -23,6 +23,7 @@
         <xsd:sequence>
             <xsd:element name="virtualIps" type="tns:virtualIps" minOccurs="0"/>
             <xsd:element name="nodes" type="tns:nodes" minOccurs="0"/>
+            <xsd:element name="metadata" type="tns:metadata" minOccurs="0"/>
             <xsd:element name="loadBalancerUsage" type="tns:loadBalancerUsage" minOccurs="0"/>
             <xsd:element name="sessionPersistence" type="tns:sessionPersistence" minOccurs="0"/>
             <xsd:element name="healthMonitor" type="tns:healthMonitor" minOccurs="0"/>
@@ -363,6 +364,7 @@
     <xsd:complexType name="meta">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
+                <xsd:attribute name="id" type="xsd:int"/>
                 <xsd:attribute name="key" type="xsd:string"/>
             </xsd:extension>
         </xsd:simpleContent>

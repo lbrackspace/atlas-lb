@@ -119,7 +119,6 @@ public class NodesResource extends CommonDependencyProvider {
             return Response.status(Response.Status.ACCEPTED).entity(returnNodes).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
-
         }
     }
 

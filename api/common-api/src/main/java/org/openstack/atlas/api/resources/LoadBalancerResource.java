@@ -18,6 +18,7 @@ import org.apache.abdera.model.Feed;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.faces.view.facelets.Metadata;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
@@ -34,6 +35,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     private AccessListResource accessListResource;
     private ConnectionLoggingResource connectionLoggingResource;
     private HealthMonitorResource healthMonitorResource;
+    private MetadataResource metadataResource;
     private NodesResource nodesResource;
     private SessionPersistenceResource sessionPersistenceResource;
     private ConnectionThrottleResource connectionThrottleResource;
@@ -154,12 +156,35 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         return connectionLoggingResource;
     }
 
+    @Path("connectionthrottle")
+    public ConnectionThrottleResource retrieveConnectionThrottleResource() {
+        connectionThrottleResource.setRequestHeaders(requestHeaders);
+        connectionThrottleResource.setAccountId(accountId);
+        connectionThrottleResource.setLoadBalancerId(id);
+        return connectionThrottleResource;
+    }
+
+    @Path("errorpage")
+    public ErrorpageResource retrieveErrorpageResource() {
+        errorpageResource.setAccountId(accountId);
+        errorpageResource.setLoadBalancerId(id);
+        return errorpageResource;
+    }
+
     @Path("healthmonitor")
     public HealthMonitorResource retrieveHealthMonitorResource() {
         healthMonitorResource.setRequestHeaders(requestHeaders);
         healthMonitorResource.setAccountId(accountId);
         healthMonitorResource.setLoadBalancerId(id);
         return healthMonitorResource;
+    }
+
+    @Path("metadata")
+    public MetadataResource retrieveMetadataResource() {
+        metadataResource.setRequestHeaders(requestHeaders);
+        metadataResource.setAccountId(accountId);
+        metadataResource.setLoadBalancerId(id);
+        return metadataResource;
     }
 
     @Path("nodes")
@@ -178,20 +203,11 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         return sessionPersistenceResource;
     }
 
-    @Path("connectionthrottle")
-    public ConnectionThrottleResource retrieveConnectionThrottleResource() {
-        connectionThrottleResource.setRequestHeaders(requestHeaders);
-        connectionThrottleResource.setAccountId(accountId);
-        connectionThrottleResource.setLoadBalancerId(id);
-        return connectionThrottleResource;
-    }
-
-    @Path("virtualips")
-    public VirtualIpsResource retrieveVirtualIpsResource() {
-        virtualIpsResource.setRequestHeaders(requestHeaders);
-        virtualIpsResource.setAccountId(accountId);
-        virtualIpsResource.setLoadBalancerId(id);
-        return virtualIpsResource;
+    @Path("ssltermination")
+    public SslTerminationResource retrieveSslResource() {
+        sslTerminationResource.setAccountId(accountId);
+        sslTerminationResource.setLoadBalancerId(id);
+        return sslTerminationResource;
     }
 
     @Path("usage")
@@ -201,18 +217,12 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         return usageResource;
     }
 
-    @Path("errorpage")
-    public ErrorpageResource retrieveErrorpageResource() {
-        errorpageResource.setAccountId(accountId);
-        errorpageResource.setLoadBalancerId(id);
-        return errorpageResource;
-    }
-
-    @Path("ssltermination")
-    public SslTerminationResource retrieveSslResource() {
-        sslTerminationResource.setAccountId(accountId);
-        sslTerminationResource.setLoadBalancerId(id);
-        return sslTerminationResource;
+    @Path("virtualips")
+    public VirtualIpsResource retrieveVirtualIpsResource() {
+        virtualIpsResource.setRequestHeaders(requestHeaders);
+        virtualIpsResource.setAccountId(accountId);
+        virtualIpsResource.setLoadBalancerId(id);
+        return virtualIpsResource;
     }
 
     private Response getFeedResponse(Integer page) {
