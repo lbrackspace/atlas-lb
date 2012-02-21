@@ -71,4 +71,8 @@ public class RootResource extends CommonDependencyProvider {
     public void setOrigContainer(RequestStateContainer origContainer) {
         this.origContainer = origContainer;
     }
+
+    public void setAllowedDomainsResource(AllowedDomainsResource allowedDomainsResource) {
+        this.allowedDomainsResource = allowedDomainsResource;
+    }
 }

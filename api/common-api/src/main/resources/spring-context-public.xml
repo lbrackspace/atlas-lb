@@ -58,6 +58,7 @@
         <property name="virtualIpService" ref="virtualIpService"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="accessListService" ref="accessListService"/>
+        <property name="allowedDomainsService" ref="allowedDomainsService"/>
         <property name="usageService" ref="usageService"/>
         <property name="accountLimitService" ref="accountLimitService"/>
         <property name="requestStateContainer" ref="requestStateContainer"/>
@@ -92,6 +93,11 @@
             <bean class="org.openstack.atlas.api.resources.ThrowResource"
                   parent="commonDependencyProvider"
                   scope="request"/>
+        </property>
+        <property name="allowedDomainsResource">
+            <bean  class="org.openstack.atlas.api.resources.AllowedDomainsResource"
+                   parent="commonDependencyProvider"
+                   scope="request" />
         </property>
         <property name="loadBalancersResource">
             <bean class="org.openstack.atlas.api.resources.LoadBalancersResource"
