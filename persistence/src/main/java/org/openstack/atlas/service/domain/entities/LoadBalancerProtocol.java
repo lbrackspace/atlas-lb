@@ -15,7 +15,11 @@ public enum LoadBalancerProtocol implements Serializable {
     HTTPS,
     IMAPS,
     POP3S,
-    LDAPS;
+    LDAPS,
+    DNS_UDP,
+    DNS_TCP,
+    UDP_STREAM,
+    UDP;
 
     private final static long serialVersionUID = 532512316L;
 }

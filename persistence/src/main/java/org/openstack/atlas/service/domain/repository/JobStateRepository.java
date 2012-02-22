@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.*;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 @Transactional
@@ -132,6 +133,7 @@ public class JobStateRepository {
         s.setState(JobStateVal.CREATED);
         s.setJobName(jobName);
         s.setInputPath(inputPath);
+        s.setStartTime(Calendar.getInstance());
         entityManager.persist(s);
         return s;
     }
@@ -142,6 +144,17 @@ public class JobStateRepository {
 
     public void delete(JobState jobState) {
         entityManager.remove(jobState);
+    }
+
+    public void deleteByNamesOlderThanNDays(List<JobName> jobNames, int days) {
+        Calendar timestamp = Calendar.getInstance();
+        timestamp.add(Calendar.DATE, -days);
+
+        Query query = entityManager.createQuery("DELETE JobState s WHERE s.endTime < :timestamp AND s.jobName IN (:jobNames)")
+                .setParameter("timestamp", timestamp, TemporalType.TIMESTAMP)
+                .setParameter("jobNames", jobNames);
+        int numRowsDeleted = query.executeUpdate();
+        LOG.info(String.format("Deleted %d rows with endTime before %s", numRowsDeleted, timestamp.getTime()));
     }
 
     private JobState logAndThrowException() throws EntityNotFoundException {

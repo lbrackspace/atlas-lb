@@ -9,11 +9,14 @@ import java.util.List;
 
 public interface JobStateService {
 
-    public JobState getById(Integer id) throws EntityNotFoundException;
+    JobState getById(Integer id) throws EntityNotFoundException;
 
-    public List<JobState> getAll(Integer offset, Integer limit, Integer marker);
+    List<JobState> getAll(Integer offset, Integer limit, Integer marker);
 
-    public List<JobState> getByState(String state, Integer... p);
+    List<JobState> getByState(String state, Integer... p);
 
-    public JobState updateJobState(JobName jobName, JobStateVal jobStateVal);
+    JobState updateJobState(JobName jobName, JobStateVal jobStateVal);
+
+    void deleteOldLoggingStates();
+
 }

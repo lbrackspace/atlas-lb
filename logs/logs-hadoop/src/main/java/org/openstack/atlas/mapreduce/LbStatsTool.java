@@ -1,7 +1,6 @@
 package org.openstack.atlas.mapreduce;
 
 import com.hadoop.mapred.DeprecatedLzoTextInputFormat;
-import org.openstack.atlas.constants.Constants;
 import org.openstack.atlas.io.*;
 import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.tools.HadoopConfiguration;
@@ -12,6 +11,7 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.openstack.atlas.util.Constants;
 
 import java.io.IOException;
 import java.util.List;
@@ -56,7 +56,7 @@ public class LbStatsTool extends DirectoryTool {
         
         SequenceFileOutputFormat.setOutputCompressionType(specialConfigurations.getJobConf(), SequenceFile.CompressionType.BLOCK);
 
-        specialConfigurations.getJobConf().set(Constants.Rawlogs.FILEDATE, localRunner.getRawlogsFileDate());
+        specialConfigurations.getJobConf().set(Constants.FILEDATE, localRunner.getRawlogsFileTime());
         
     }
 

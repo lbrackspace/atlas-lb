@@ -7,6 +7,7 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.JobStateService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -44,5 +45,19 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
         if (jobStateVal.equals(JobStateVal.FINISHED)) jobState.setEndTime(Calendar.getInstance());
         jobStateRepository.update(jobState);
         return jobState;
+    }
+
+    public void deleteOldLoggingStates() {
+        List<JobName> jobNames = new ArrayList<JobName>();
+        jobNames.add(JobName.WATCHDOG);
+        jobNames.add(JobName.FILEASSEMBLE);
+        jobNames.add(JobName.FILECOPY_PARENT);
+        jobNames.add(JobName.FILECOPY);
+        jobNames.add(JobName.MAPREDUCE);
+        jobNames.add(JobName.FILES_SPLIT);
+        jobNames.add(JobName.LOG_FILE_CF_UPLOAD);
+        jobNames.add(JobName.ARCHIVE);
+
+        jobStateRepository.deleteByNamesOlderThanNDays(jobNames, 30);
     }
 }

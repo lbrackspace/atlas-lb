@@ -5,7 +5,7 @@
     <name>Openstack :: Atlas :: Parent</name>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-parent</artifactId>
-    <version>1.10.0-SNAPSHOT</version>
+    <version>1.10.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
 
@@ -69,7 +69,7 @@
                 </plugin>
 
             </plugins>
-        
+
 	</pluginManagement>
     </build>
 
@@ -77,7 +77,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <camel.version>2.5.0</camel.version>
         <spring.version>3.0.4.RELEASE</spring.version>
-        <cxf.version>2.3.1</cxf.version>
+        <cxf.version>2.5.1</cxf.version>
         <com.zxtm.service.version>1.1.0</com.zxtm.service.version>
         <com.rackspace.cloud.lb.zxtmadapter.version>${project.version}</com.rackspace.cloud.lb.zxtmadapter.version>
         <mockito.version>1.8.5</mockito.version>
@@ -146,70 +146,10 @@
                 </exclusions>
             </dependency>
 
-            <!-- <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>configuration</artifactId>
-                <version>${project.version}</version>
-            </dependency>-->
-
-            <!--<dependency>
-                <groupId>org.openstack.atlas.shared</groupId>
-                <artifactId>atlas-shared-data-model</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.openstack.atlas.shared</groupId>
-                <artifactId>atlas-shared-domain</artifactId>
-                <version>${project.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-context</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-tx</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-orm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-aop</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.openstack.atlas.shared</groupId>
-                <artifactId>atlas-shared-util</artifactId>
-                <version>${project.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.openstack.atlas.adapter</groupId>
-                <artifactId>atlas-adapter-service</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.openstack.atlas.adapter</groupId>
-                <artifactId>atlas-zxtm-stubs</artifactId>
-                <version>${project.version}</version>
-            </dependency>
--->
             <dependency>
                 <groupId>net.sf.dozer</groupId>
                 <artifactId>dozer</artifactId>
-                <version>5.2.2</version>
+                <version>5.3.2</version>
             </dependency>
 
             <dependency>
@@ -367,22 +307,15 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-jms</artifactId>
-                <version>${camel.version}</version>
+                <groupId>org.apache.cxf</groupId>
+                    <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+                <version>${cxf.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.camel</groupId>
-                <artifactId>camel-cxf</artifactId>
+                <artifactId>camel-jms</artifactId>
                 <version>${camel.version}</version>
-
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-web</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

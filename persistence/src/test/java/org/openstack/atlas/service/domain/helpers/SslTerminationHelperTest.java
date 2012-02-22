@@ -97,6 +97,30 @@ public class SslTerminationHelperTest {
             Assert.assertFalse(SslTerminationHelper.modificationStatus(ssl1, lb));
         }
 
+        @Test(expected = BadRequestException.class)
+        public void shouldFailIfProtocolNotValidDNSUDP() throws EntityNotFoundException, BadRequestException {
+            lb.setProtocol(LoadBalancerProtocol.DNS_UDP);
+            Assert.assertFalse(SslTerminationHelper.isProtocolSecure(lb));
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldFailIfProtocolNotValidUDP() throws EntityNotFoundException, BadRequestException {
+            lb.setProtocol(LoadBalancerProtocol.UDP);
+            Assert.assertFalse(SslTerminationHelper.isProtocolSecure(lb));
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldFailIfProtocolNotValidUDPSTREAM() throws EntityNotFoundException, BadRequestException {
+            lb.setProtocol(LoadBalancerProtocol.UDP_STREAM);
+            Assert.assertFalse(SslTerminationHelper.isProtocolSecure(lb));
+        }
+
+        @Test
+        public void shouldPassWithDNSTCPProtocol() throws EntityNotFoundException, BadRequestException {
+            lb.setProtocol(LoadBalancerProtocol.DNS_TCP);
+            Assert.assertTrue(SslTerminationHelper.isProtocolSecure(lb));
+        }
+
         @Test
         public void shouldMapUpdatedAttributes() throws EntityNotFoundException, BadRequestException {
             org.openstack.atlas.service.domain.entities.SslTermination sslTermination = new org.openstack.atlas.service.domain.entities.SslTermination();

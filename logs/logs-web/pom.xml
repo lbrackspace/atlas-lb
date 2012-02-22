@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.10.0-SNAPSHOT</version>
+        <version>1.10.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-logs-web</artifactId>
@@ -16,17 +16,6 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>atlas-logs-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>atlas-logs-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>atlas-logs-hadoop</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -34,6 +23,11 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>atlas-persistence</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openstack.client.keystone</groupId>
+            <artifactId>java-keystone</artifactId>
+            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>org.springmodules</groupId>

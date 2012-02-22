@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 public class SplitLoadBalancerLogsJob extends BaseMapreduceJob {
 
-    private static Log log = LogFactory.getLog(SplitLoadBalancerLogsJob.class);
+    private static Log LOG = LogFactory.getLog(SplitLoadBalancerLogsJob.class);
 
     private QuartzExecutable execution;
 
@@ -24,7 +24,7 @@ public class SplitLoadBalancerLogsJob extends BaseMapreduceJob {
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         HadoopRunner runner = getRunner(context);
-        log.info("setting up SplitLoadBalancerLogsJob run up for " + runner.getInputString());
+        LOG.info("running " + getClass() + " on " + runner.getRunTime() + " for logFileDate: " + runner.getRawlogsFileTime());
 
         try {
             execution.execute(createSchedulerInstance(context), runner);

@@ -73,12 +73,11 @@ public class UsageRollupMerger {
             Tier.Level usageToMergeTier = Tier.calculateTierLevel(usageRecordToMerge.getAverageConcurrentConnections());
             Tier.Level currUsageTier = Tier.calculateTierLevel(latestCustomerFacingRecord.getAverageConcurrentConnections());
 
-            if (
-                    ((latestCustomerFacingRecord.getEventType() == null && usageRecordToMerge.getEventType() == null)
-                    || (latestCustomerFacingRecord.getEventType() != null && usageRecordToMerge.getEventType() == null))
-                    && usageRecordToMerge.getTags().equals(latestCustomerFacingRecord.getTags())
-                    && usageRecordToMerge.getNumVips().equals(latestCustomerFacingRecord.getNumVips())
-                    && usageToMergeTier.equals(currUsageTier)) {
+            if (((latestCustomerFacingRecord.getEventType() == null && usageRecordToMerge.getEventType() == null)
+                  || (latestCustomerFacingRecord.getEventType() != null && usageRecordToMerge.getEventType() == null))
+                  && usageRecordToMerge.getTags().equals(latestCustomerFacingRecord.getTags())
+                  && usageRecordToMerge.getNumVips().equals(latestCustomerFacingRecord.getNumVips())
+                  && usageToMergeTier.equals(currUsageTier)) {
                 // Merge records if tags, vips and tier are the same and eventsType are both null or first is not null and second is
                 Double currUsageCcs = latestCustomerFacingRecord.getAverageConcurrentConnections();
                 Integer currUsagePolls = latestCustomerFacingRecord.getNumberOfPolls();
@@ -103,6 +102,7 @@ public class UsageRollupMerger {
                 lb.setId(usageRecordToMerge.getLoadbalancerId());
                 lb.setAccountId(usageRecordToMerge.getAccountId());
                 latestCustomerFacingRecord.setLoadbalancer(lb);
+                latestCustomerFacingRecord.setAccountId(usageRecordToMerge.getAccountId());
                 latestCustomerFacingRecord.setAverageConcurrentConnections(usageRecordToMerge.getAverageConcurrentConnections());
                 latestCustomerFacingRecord.setIncomingTransfer(usageRecordToMerge.getCumulativeBandwidthBytesIn());
                 latestCustomerFacingRecord.setOutgoingTransfer(usageRecordToMerge.getCumulativeBandwidthBytesOut());
@@ -123,6 +123,7 @@ public class UsageRollupMerger {
 
     private Usage createNullUsageRecord() {
         Usage currUsageRecord = new Usage();
+        currUsageRecord.setAccountId(null);
         currUsageRecord.setAverageConcurrentConnections(null);
         currUsageRecord.setIncomingTransfer(null);
         currUsageRecord.setOutgoingTransfer(null);

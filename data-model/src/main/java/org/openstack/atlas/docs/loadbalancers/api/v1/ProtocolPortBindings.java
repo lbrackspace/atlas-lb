@@ -27,6 +27,10 @@ public final class ProtocolPortBindings {
         protocolPortMap.put("HTTP",80);
         protocolPortMap.put("TCP",0);
         protocolPortMap.put("LDAPS",636);
+        protocolPortMap.put("DNS_TCP",53);
+        protocolPortMap.put("DNS_UDP",53);
+        protocolPortMap.put("UDP",0);
+        protocolPortMap.put("UDP_STREAM",0);
 
         keys = new ArrayList<String>();
         protocols = new Protocols();

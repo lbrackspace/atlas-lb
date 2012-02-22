@@ -1,14 +1,17 @@
 package org.openstack.atlas.service.domain.services.impl;
 
-import org.openstack.atlas.service.domain.entities.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.AccountLimit;
+import org.openstack.atlas.service.domain.entities.AccountLimitType;
+import org.openstack.atlas.service.domain.entities.LimitType;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.AllAbsoluteLimits;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
+import javax.persistence.NoResultException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,12 +27,14 @@ public class AccountLimitServiceImpl extends BaseService implements AccountLimit
 
     @Override
     public void save(AccountLimit accountLimit) throws BadRequestException {
-        AccountLimit dbLimit = accountLimitRepository.getByAccountIdAndType(accountLimit.getAccountId(), accountLimit.getLimitType());
-        if (dbLimit != null) {
-            throw new BadRequestException("A limit for the Limit Type " + dbLimit.getLimitType().getName().toString() + " already exists for the account id " + dbLimit.getAccountId());
+        try {
+            AccountLimit dbLimit = accountLimitRepository.getByAccountIdAndType(accountLimit.getAccountId(), accountLimit.getLimitType());
+            if (dbLimit != null) {
+                throw new BadRequestException("A limit for the Limit Type " + dbLimit.getLimitType().getName().toString() + " already exists for the account id " + dbLimit.getAccountId());
+            }
+        } catch (NoResultException nre) {
+            accountLimitRepository.save(accountLimit);
         }
-
-        accountLimitRepository.save(accountLimit);
     }
 
     @Override
