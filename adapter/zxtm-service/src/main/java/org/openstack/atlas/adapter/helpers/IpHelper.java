@@ -16,6 +16,8 @@ public class IpHelper {
         }
         if (IPUtils.isValidIpv4String(ipAddress)) return String.format("%s:%d", ipAddress, port);
         if (IPUtils.isValidIpv6String(ipAddress)) return String.format("[%s]:%d", ipAddress, port);
+        //Either do like this, or a bunch of if else...
+        if (ipAddress.matches(".*[a-zA-Z]+.*")) return String.format("%s:%d", ipAddress, port);
         errMsg = String.format("Cannot create string for ip address and port. %s",ipMsg);
         throw new RuntimeException(errMsg);
     }

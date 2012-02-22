@@ -100,6 +100,14 @@ public class NodesResource extends CommonDependencyProvider {
             return getValidationFaultResponse(result);
         }
 
+        for (org.openstack.atlas.docs.loadbalancers.api.v1.Node node : nodes.getNodes())
+            if (node.getAddress().matches(".*[a-zA-Z]+.*")) {
+                if (!allowedDomainsService.hasHost(node.getAddress())) {
+                    return ResponseFactory.getErrorResponse(new BadRequestException(String.format("The domain %s is not allowed, " +
+                            "please verify against baseUri/{accountId}/alloweddomains for allowed domains", node.getAddress())), null, null);
+                }
+            }
+
         try {
             loadBalancerService.get(loadBalancerId, accountId);
 
