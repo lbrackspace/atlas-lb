@@ -1,17 +1,17 @@
 package org.openstack.atlas.service.domain.services;
 
-import org.openstack.atlas.service.domain.entities.AllowedDomain;
-
-import java.util.List;
+import java.util.Set;
 
 public interface AllowedDomainsService {
 
-    public List<AllowedDomain> getAllowedDomains();
+    public Set<String> getAllowedDomains();
 
-    public AllowedDomain getAllowedDomainById(int id);
+    public boolean add(String name);
 
-    public void createAllowedDomain(List<AllowedDomain> allowedDomain);
+    public boolean remove(String name);
 
-    public void deleteAllowedDomain(AllowedDomain allowedDomainId);
+    public Set<String> matches(String name);
+
+    public boolean hasHost(String name);
 
 }

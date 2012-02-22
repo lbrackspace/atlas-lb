@@ -362,8 +362,8 @@
         </xsd:sequence>
     </xsd:complexType>
 
+    <xsd:element name="allowedDomain" type="tns:allowedDomain"/>
     <xsd:complexType name="allowedDomain">
-        <xsd:attribute name="id" type="xsd:int"/>
         <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>
 

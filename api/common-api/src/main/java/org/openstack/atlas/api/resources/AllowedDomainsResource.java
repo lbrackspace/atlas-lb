@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.resources;
 
+import java.util.ArrayList;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
@@ -17,15 +18,16 @@ public class AllowedDomainsResource extends CommonDependencyProvider {
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retireveAllowedDomains() {
-
-        List<org.openstack.atlas.service.domain.entities.AllowedDomain> allowedDomains = null;
-        AllowedDomains rDomains = new AllowedDomains();
+        AllowedDomains rads = new AllowedDomains();
+        List<String> ads;
         try {
-            allowedDomains = allowedDomainsService.getAllowedDomains();
-            for (org.openstack.atlas.service.domain.entities.AllowedDomain allowedDomain : allowedDomains) {
-                rDomains.getAllowedDomains().add(dozerMapper.map(allowedDomain, AllowedDomain.class));
+            ads = new ArrayList<String>(allowedDomainsService.getAllowedDomains());
+            for(String name : ads){
+                AllowedDomain ad = new AllowedDomain();
+                ad.setName(name);
+                rads.getAllowedDomains().add(ad);
             }
-            return Response.status(200).entity(rDomains).build();
+            return Response.status(200).entity(rads).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

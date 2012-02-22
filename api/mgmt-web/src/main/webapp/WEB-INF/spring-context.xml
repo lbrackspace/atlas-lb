@@ -127,14 +127,7 @@
                 <property name="allowedDomainsResource">
                     <bean class="org.openstack.atlas.api.mgmt.resources.AllowedDomainsResource"
                           parent="managementDependencyProvider"
-                          scope="request">
-                        <property name="allowedDomainResource">
-                            <bean class="org.openstack.atlas.api.mgmt.resources.AllowedDomainResource"
-                                  parent="managementDependencyProvider"
-                                  scope="request">
-                            </bean>
-                        </property>
-                    </bean>
+                          scope="request"/>
                 </property>
                 <property name="auditResource">
                     <bean id="auditResource"
