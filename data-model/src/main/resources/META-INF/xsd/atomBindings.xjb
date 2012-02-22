@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<bindings version="2.1" xmlns="http://java.sun.com/xml/ns/jaxb">
+
+    <bindings scd="x-schema::tns" xmlns:tns="http://www.w3.org/2005/Atom">
+        <schemaBindings map="true"/>
+
+        <!--Bindings for classes-->
+        <bindings scd="~tns:categoryType">
+            <class ref="org.w3.atom.CategoryType"/>
+        </bindings>
+        <bindings scd="~tns:contentType">
+            <class ref="org.w3.atom.ContentType"/>
+        </bindings>
+        <bindings scd="~tns:dateTimeType">
+            <class ref="org.w3.atom.DateTimeType"/>
+        </bindings>
+        <bindings scd="~tns:entryType">
+            <class ref="org.w3.atom.Entry"/>
+        </bindings>
+        <bindings scd="~tns:feedType">
+            <class ref="org.w3.atom.Feed"/>
+        </bindings>
+        <bindings scd="~tns:generatorType">
+            <class ref="org.w3.atom.GeneratorType"/>
+        </bindings>
+        <bindings scd="~tns:iconType">
+            <class ref="org.w3.atom.IconType"/>
+        </bindings>
+        <bindings scd="~tns:idType">
+            <class ref="org.w3.atom.IdType"/>
+        </bindings>
+        <bindings scd="~tns:linkType">
+            <class ref="org.w3.atom.Link"/>
+        </bindings>
+        <bindings scd="~tns:logoType">
+            <class ref="org.w3.atom.LogoType"/>
+        </bindings>
+        <bindings scd="~tns:personType">
+            <class ref="org.w3.atom.PersonType"/>
+        </bindings>
+        <bindings scd="~tns:sourceType">
+            <class ref="org.w3.atom.SourceType"/>
+        </bindings>
+        <bindings scd="~tns:textType">
+            <class ref="org.w3.atom.TextType"/>
+        </bindings>
+        <bindings scd="~tns:uriType">
+            <class ref="org.w3.atom.UriType"/>
+        </bindings>
+    </bindings>
+</bindings>
+

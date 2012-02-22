@@ -1310,4 +1310,39 @@ public class LoadBalancerRepository {
         }
         return loadbalancers;
     }
+
+    public List<LoadBalancer> getLoadBalancersActiveInRange(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancer> criteria = builder.createQuery(LoadBalancer.class);
+        Root<LoadBalancer> lbRoot = criteria.from(LoadBalancer.class);
+
+        Predicate hasAccountId = builder.equal(lbRoot.get(LoadBalancer_.accountId), accountId);
+        Predicate createdBetweenDates = builder.between(lbRoot.get(LoadBalancer_.created), startTime, endTime);
+        Predicate updatedBetweenDates = builder.between(lbRoot.get(LoadBalancer_.updated), startTime, endTime);
+
+        criteria.select(lbRoot);
+        criteria.where(builder.and(hasAccountId, builder.or(createdBetweenDates, updatedBetweenDates)));
+        return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit+1).getResultList();
+    }
+
+    public Map<Integer, Integer> getAccountIdMapForUsageRecords(List<Usage> rawLoadBalancerUsageList) {
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        Set<Integer> loadBalancerIds = new HashSet<Integer>();
+
+        for (Usage usage : rawLoadBalancerUsageList) {
+            loadBalancerIds.add(usage.getLoadbalancer().getId());
+        }
+
+        Query query = entityManager.createQuery("SELECT l.accountId, l.id FROM LoadBalancer l where l.id in (:idList)")
+                .setParameter("idList", loadBalancerIds);
+        final List<Object[]> resultList = query.getResultList();
+
+        for (Object[] row : resultList) {
+            Integer accountId = (Integer) row[0];
+            Integer loadBalancerId = (Integer) row[1];
+            map.put(loadBalancerId, accountId);
+        }
+
+        return map;
+    }
 }

@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.10.0-SNAPSHOT</version>
+        <version>1.11.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-data-model</artifactId>
@@ -46,6 +46,24 @@
                 </dependencies>
                 <executions>
                     <execution>
+                        <id>generate-atom-sources</id>
+                        <configuration>
+                            <staleFile>target/atom.staleFile</staleFile>
+                            <extension>true</extension>
+                            <schemaDirectory>
+                                ${basedir}/src/main/resources/META-INF/xsd
+                            </schemaDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <schemaFiles>atom.xsd</schemaFiles>
+                            <packageName>org.w3.atom</packageName>
+                            <!--<arguments>-Xcollection-setter-injector</arguments>-->
+                            <arguments>-Xxew -setters</arguments>
+                        </configuration>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
+                    <execution>
                         <id>generate-load-balancer-api-sources</id>
                         <configuration>
                             <staleFile>target/lb.staleFile</staleFile>
@@ -58,6 +76,8 @@
                             <packageName>org.openstack.atlas.docs.loadbalancers.api.v1</packageName>
                             <!--<arguments>-Xcollection-setter-injector</arguments>-->
                             <arguments>-Xxew -setters</arguments>
+                            <bindingDirectory>${basedir}/src/main/resources/META-INF/xsd</bindingDirectory>
+                            <bindingFiles>atomBindings.xjb</bindingFiles>
                         </configuration>
                         <goals>
                             <goal>xjc</goal>
@@ -94,7 +114,7 @@
                             <!--<arguments>-Xcollection-setter-injector</arguments>-->
                             <arguments>-Xxew -setters</arguments>
                             <bindingDirectory>${basedir}/src/main/resources/META-INF/xsd</bindingDirectory>
-                            <bindingFiles>bindings.xjb</bindingFiles>
+                            <bindingFiles>atomBindings.xjb,bindings.xjb</bindingFiles>
                         </configuration>
                         <goals>
                             <goal>xjc</goal>

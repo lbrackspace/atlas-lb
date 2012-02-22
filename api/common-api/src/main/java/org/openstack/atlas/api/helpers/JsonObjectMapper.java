@@ -16,6 +16,7 @@ import org.openstack.atlas.api.helpers.JsonSerializer.PropertyCollectionSerializ
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+import org.w3.atom.Link;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -34,12 +35,12 @@ public class JsonObjectMapper extends ObjectMapper {
 
         Class[] serializerWrapperClasses = new Class[]{HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class,
-            Node.class, RateLimit.class, Errorpage.class,SslTermination.class};
+            Node.class, RateLimit.class, Errorpage.class,SslTermination.class, Link.class};
 
         Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class,
             ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
-            Errorpage.class, SslTermination.class, Host.class};
+            Errorpage.class, SslTermination.class, Host.class, Link.class};
 
 
         for (Class wrapperClass : serializerWrapperClasses) {
@@ -56,12 +57,11 @@ public class JsonObjectMapper extends ObjectMapper {
         // use the clean collections serializer, which will ensure proper JSON
         // formatting.
 
-
         // Load balancer is a bit of a special case since we want loadbalancer
         // wrapped, but none of the collections within loadbalancer.
 
         csf.addSpecificMapping(LoadBalancer.class, new ObjectWrapperSerializer(this.getSerializationConfig(), LoadBalancer.class));
-        csf.addSpecificMapping(LoadBalancers.class, new PropertyCollectionSerializer(serConf, LoadBalancers.class, "getLoadBalancers"));
+        csf.addSpecificMapping(LoadBalancers.class, new PropertyCollectionSerializer(serConf, LoadBalancers.class, "getLoadBalancers", true));
 
         csf.addSpecificMapping(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems"));
         csf.addSpecificMapping(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes"));

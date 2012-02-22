@@ -1,4 +1,4 @@
-  use loadbalancing;
+use loadbalancing;
 
 ALTER TABLE `lb_ssl` DROP INDEX `uk_lb_id`;
 
