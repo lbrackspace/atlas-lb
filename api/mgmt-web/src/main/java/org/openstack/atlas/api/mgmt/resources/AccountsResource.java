@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.api.helpers.CalendarHelper;
 import org.openstack.atlas.api.helpers.PaginationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
@@ -18,8 +17,6 @@ import javax.ws.rs.core.Response;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
-
-import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
 
 import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
 
