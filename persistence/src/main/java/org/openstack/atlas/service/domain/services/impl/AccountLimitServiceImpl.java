@@ -39,7 +39,13 @@ public class AccountLimitServiceImpl extends BaseService implements AccountLimit
 
     @Override
     public void delete(AccountLimit accountLimit) throws EntityNotFoundException {
-        AccountLimit dbLimit = accountLimitRepository.getById(accountLimit.getId());
+        AccountLimit dbLimit;
+        try {
+            dbLimit = accountLimitRepository.getById(accountLimit.getId());
+        } catch (Exception e) {
+            String errorMessage = "There is no absolute limit with id = " + accountLimit.getId();
+            throw new EntityNotFoundException(errorMessage);
+        }
         if (!accountLimit.getAccountId().equals(dbLimit.getAccountId())) {
             String errMsg = String.format("Cannot access accountLimit {id=%d}", accountLimit.getId());
             throw new EntityNotFoundException(errMsg);
@@ -49,7 +55,13 @@ public class AccountLimitServiceImpl extends BaseService implements AccountLimit
 
     @Override
     public AccountLimit update(AccountLimit accountLimit) throws EntityNotFoundException {
-        AccountLimit dbLimit = accountLimitRepository.getById(accountLimit.getId());
+        AccountLimit dbLimit;
+        try {
+            dbLimit = accountLimitRepository.getById(accountLimit.getId());
+        } catch (Exception e) {
+            String errorMessage = "There is no absolute limit with id = " + accountLimit.getId();
+            throw new EntityNotFoundException(errorMessage);
+        }
         if (!accountLimit.getAccountId().equals(dbLimit.getAccountId())) {
             String errMsg = String.format("Cannot access accountLimit {id=%d}", accountLimit.getId());
             throw new EntityNotFoundException(errMsg);
