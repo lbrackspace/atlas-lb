@@ -54,7 +54,7 @@
                                 ${basedir}/src/main/resources/META-INF/xsd
                             </schemaDirectory>
                             <clearOutputDir>false</clearOutputDir>
-                            <schemaFiles>Atom.xsd</schemaFiles>
+                            <schemaFiles>atom.xsd</schemaFiles>
                             <packageName>org.w3.atom</packageName>
                             <!--<arguments>-Xcollection-setter-injector</arguments>-->
                             <arguments>-Xxew -setters</arguments>
