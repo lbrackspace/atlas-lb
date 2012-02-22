@@ -17,12 +17,12 @@ import java.util.Calendar;
 
 public class DailyDeletionJob extends Job {
     private final Log LOG = LogFactory.getLog(DailyDeletionJob.class);
-    private LoadBalancerUsageRepository usageRepository;
+    private LoadBalancerUsageRepository hourlyUsageRepository;
     private HostUsageRepository hostUsageRepository;
 
     @Required
-    public void setUsageRepository(LoadBalancerUsageRepository usageRepository) {
-        this.usageRepository = usageRepository;
+    public void setHourlyUsageRepository(LoadBalancerUsageRepository hourlyUsageRepository) {
+        this.hourlyUsageRepository = hourlyUsageRepository;
     }
 
     @Required
@@ -55,7 +55,7 @@ public class DailyDeletionJob extends Job {
 
     private void deleteLoadBalancerUsageRecords() {
         LOG.info("Deleting old loadbalancer usage records...");
-        usageRepository.deleteOldRecords();
+        hourlyUsageRepository.deleteOldRecords();
         LOG.info("Completed deleting old loadbalancer usage records.");
     }
 

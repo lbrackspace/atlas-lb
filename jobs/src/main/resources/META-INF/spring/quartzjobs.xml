@@ -37,7 +37,7 @@
                 <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
                 <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
                 <entry key="hostRepository" value-ref="hostRepository"/>
-                <entry key="usageRepository" value-ref="usageRepository"/>
+                <entry key="hourlyUsageRepository" value-ref="hourlyUsageRepository"/>
                 <entry key="usageEventRepository" value-ref="usageEventRepository"/>
                 <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
@@ -97,7 +97,7 @@
                   value="org.openstack.atlas.usage.jobs.LoadBalancerUsageRollupJob"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="pollingUsageRepository" value-ref="usageRepository"/>
+                <entry key="pollingUsageRepository" value-ref="hourlyUsageRepository"/>
                 <entry key="rollUpUsageRepository" value-ref="rollupUsageRepository"/>
                 <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
@@ -117,7 +117,7 @@
         value="org.openstack.atlas.jobs.DailyDeletionJob"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="usageRepository" value-ref="usageRepository"/>
+                <entry key="hourlyUsageRepository" value-ref="hourlyUsageRepository"/>
                 <entry key="hostUsageRepository" value-ref="hostUsageRepository"/>
                 <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>

@@ -40,7 +40,7 @@
     </bean>
 
     <!-- Repo's go here, they MUST be prototype, they are not thread safe -->
-    <bean id="usageRepository" class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository"
+    <bean id="hourlyUsageRepository" class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository"
           scope="prototype"/>
     <bean id="usageEventRepository"
           class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository"

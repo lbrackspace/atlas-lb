@@ -33,7 +33,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
     LoadBalancerRepository loadBalancerRepository;
     private HostRepository hostRepository;
-    private LoadBalancerUsageRepository usageRepository;
+    private LoadBalancerUsageRepository hourlyUsageRepository;
     private LoadBalancerUsageEventRepository usageEventRepository;
     private final int BATCH_SIZE = 100;
 
@@ -53,8 +53,8 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
     }
 
     @Required
-    public void setUsageRepository(LoadBalancerUsageRepository usageRepository) {
-        this.usageRepository = usageRepository;
+    public void setHourlyUsageRepository(LoadBalancerUsageRepository hourlyUsageRepository) {
+        this.hourlyUsageRepository = hourlyUsageRepository;
     }
 
     @Required
@@ -76,7 +76,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
 
         for (LoadBalancerUsageEvent usageEventEntry : usageEventEntries) {
             UsageEvent usageEvent = UsageEvent.valueOf(usageEventEntry.getEventType());
-            LoadBalancerUsage recentUsage = usageRepository.getMostRecentUsageForLoadBalancer(usageEventEntry.getLoadbalancerId());
+            LoadBalancerUsage recentUsage = hourlyUsageRepository.getMostRecentUsageForLoadBalancer(usageEventEntry.getLoadbalancerId());
             int updatedTags = getTags(usageEventEntry.getAccountId(), usageEventEntry.getLoadbalancerId(), usageEvent, recentUsage);
 
             Calendar eventTime;
@@ -99,7 +99,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
             newUsages.add(newUsage);
         }
 
-        if (!newUsages.isEmpty()) usageRepository.batchCreate(newUsages);
+        if (!newUsages.isEmpty()) hourlyUsageRepository.batchCreate(newUsages);
 
         try {
             BatchAction<LoadBalancerUsageEvent> deleteEventUsagesAction = new BatchAction<LoadBalancerUsageEvent>() {
@@ -164,7 +164,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
         }
 
         for (final Host host : hosts) {
-            LoadBalancerUsagePollerThread thread = new LoadBalancerUsagePollerThread(loadBalancerRepository, host.getName() + "-poller-thread", host, reverseProxyLoadBalancerAdapter, hostRepository, usageRepository);
+            LoadBalancerUsagePollerThread thread = new LoadBalancerUsagePollerThread(loadBalancerRepository, host.getName() + "-poller-thread", host, reverseProxyLoadBalancerAdapter, hostRepository, hourlyUsageRepository);
             threads.add(thread);
             thread.start();
         }
