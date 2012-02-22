@@ -1,6 +1,14 @@
 package org.openstack.atlas.api.resources;
 
 
+import org.apache.abdera.model.Feed;
+import org.openstack.atlas.api.helpers.PaginationHelper;
+import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.api.mapper.DomainToRestModel;
+import org.openstack.atlas.api.repository.ValidatorRepository;
+import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
+import org.openstack.atlas.api.validation.context.HttpRequestType;
+import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LimitTypes;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Limits;
@@ -10,26 +18,20 @@ import org.openstack.atlas.service.domain.entities.LimitType;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
-import org.openstack.atlas.api.helpers.ResponseFactory;
-import org.openstack.atlas.api.mapper.DomainToRestModel;
-import org.openstack.atlas.api.repository.ValidatorRepository;
-import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
-import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.util.converters.exceptions.ConverterException;
-import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.apache.abdera.model.Feed;
+import org.w3.atom.Link;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.util.*;
 
+import static javax.ws.rs.core.MediaType.*;
+import static org.openstack.atlas.api.atom.FeedType.PARENT_FEED;
 import static org.openstack.atlas.service.domain.operations.Operation.BATCH_DELETE_LOADBALANCER;
 import static org.openstack.atlas.service.domain.operations.Operation.CREATE_LOADBALANCER;
 import static org.openstack.atlas.service.domain.util.Constants.NUM_DAYS_OF_USAGE;
-import static org.openstack.atlas.api.atom.FeedType.PARENT_FEED;
 import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
-import static javax.ws.rs.core.MediaType.*;
 
 public class LoadBalancersResource extends CommonDependencyProvider {
 
@@ -152,6 +154,55 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         }
     }
 
+    @GET
+    @Path("billable")
+    public Response retrieveBillableLoadBalancers(@QueryParam("startTime") String startTimeParam, @QueryParam("endTime") String endTimeParam, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
+        Calendar startTime;
+        Calendar endTime;
+        List<org.openstack.atlas.service.domain.entities.LoadBalancer> domainLbs;
+        org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers dataModelLbs = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers();
+
+        if (startTimeParam == null || endTimeParam == null) {
+            final String badRequestMessage = "'startTime' and 'endTime' query parameters are required";
+            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, badRequestMessage);
+        } else {
+            try {
+                startTime = isoTocal(startTimeParam);
+                endTime = isoTocal(endTimeParam);
+            } catch (ConverterException ex) {
+                final String badRequestMessage = "Date parameters must follow ISO-8601 format";
+                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, badRequestMessage);
+            }
+        }
+
+        try {
+            limit = PaginationHelper.determinePageLimit(limit);
+            offset = PaginationHelper.determinePageOffset(offset);
+            domainLbs = loadBalancerService.getLoadBalancersWithUsage(accountId, startTime, endTime, offset, limit);
+
+            for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
+                dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB"));
+            }
+
+            if (dataModelLbs.getLoadBalancers().size() > limit) {
+                String relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, PaginationHelper.calculateNextOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri);
+                dataModelLbs.getLinks().add(nextLink);
+                dataModelLbs.getLoadBalancers().remove(limit.intValue()); // Remove limit+1 item
+            }
+
+            if (offset > 0) {
+                String relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri);
+                dataModelLbs.getLinks().add(nextLink);
+            }
+
+            return Response.status(200).entity(dataModelLbs).build();
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }
+    }
+
     @DELETE
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response deleteLoadbalancer(@QueryParam("id") Set<Integer> loadBalancerIds) {
@@ -212,7 +263,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
     @GET
     @Path("limittypes")
-    public Response getAllLimitTypes(){
+    public Response getAllLimitTypes() {
         List<LimitType> allLimites = accountLimitService.getAllLimitTypes();
         LimitTypes rLimitTypes = DomainToRestModel.LimitTypeList2LimitType(allLimites);
         return Response.status(200).entity(rLimitTypes).build();
@@ -220,8 +271,8 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
     @GET
     @Path("absolutelimits")
-    public Response getAllLimitsForAccount(){
-        Map<String,Integer> accountLimits = accountLimitService.getAllLimitsForAccount(accountId);
+    public Response getAllLimitsForAccount() {
+        Map<String, Integer> accountLimits = accountLimitService.getAllLimitsForAccount(accountId);
         Limits rLimits = DomainToRestModel.AccountLimitMap2Limits(accountLimits);
         return Response.status(200).entity(rLimits).build();
     }

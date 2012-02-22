@@ -820,4 +820,9 @@
         </field>
     </mapping>
 
+    <mapping map-id="ACCOUNT_USAGE" type="one-way" map-null="false">
+        <class-a>org.openstack.atlas.service.domain.entities.AccountUsage</class-a>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountUsageRecord</class-b>
+    </mapping>
+
 </mappings>

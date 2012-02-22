@@ -8,6 +8,7 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIps;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
 
 import java.text.ParseException;
 import java.util.Calendar;

@@ -17,68 +17,70 @@ import java.util.List;
 
 public interface LoadBalancerService {
 
-    public LoadBalancer get(Integer id) throws EntityNotFoundException;
+    LoadBalancer get(Integer id) throws EntityNotFoundException;
 
-    public LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException;
+    LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException;
 
-    public List<AccountLoadBalancer> getAccountLoadBalancers(Integer accountId);
+    List<AccountLoadBalancer> getAccountLoadBalancers(Integer accountId);
 
-    public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId, String status, LbQueryStatus qs, Calendar changedCal, Integer offset, Integer limit, Integer marker) throws BadRequestException;
+    List<LoadBalancer> getLoadbalancersGeneric(Integer accountId, String status, LbQueryStatus qs, Calendar changedCal, Integer offset, Integer limit, Integer marker) throws BadRequestException;
 
-    public AccountBilling getAccountBilling(Integer accountId, Calendar startTime, Calendar endTime) throws EntityNotFoundException;
+    AccountBilling getAccountBilling(Integer accountId, Calendar startTime, Calendar endTime) throws EntityNotFoundException;
 
-    public LoadBalancer update(LoadBalancer lb) throws Exception;
+    LoadBalancer update(LoadBalancer lb) throws Exception;
 
-    public LoadBalancer create(LoadBalancer requestLb) throws Exception;
+    LoadBalancer create(LoadBalancer requestLb) throws Exception;
 
-    public LoadBalancer prepareForUpdate(LoadBalancer loadBalancer) throws Exception;
+    LoadBalancer prepareForUpdate(LoadBalancer loadBalancer) throws Exception;
 
-    public void prepareForDelete(LoadBalancer lb) throws Exception;
+    void prepareForDelete(LoadBalancer lb) throws Exception;
 
-    public LoadBalancer pseudoDelete(LoadBalancer lb) throws Exception;
+    LoadBalancer pseudoDelete(LoadBalancer lb) throws Exception;
 
-    public SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException;
+    SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException;
 
     /* Mutable method */
-    public void addDefaultValues(LoadBalancer loadBalancer);
+    void addDefaultValues(LoadBalancer loadBalancer);
 
-    public Boolean isLoadBalancerLimitReached(Integer accountId);
+    Boolean isLoadBalancerLimitReached(Integer accountId);
     
-    public Integer getLoadBalancerLimit(Integer accountId) throws EntityNotFoundException;
+    Integer getLoadBalancerLimit(Integer accountId) throws EntityNotFoundException;
 
-    public void setStatus(LoadBalancer lb, LoadBalancerStatus status);
+    void setStatus(LoadBalancer lb, LoadBalancerStatus status);
 
-    public Suspension createSuspension(LoadBalancer loadBalancer, Suspension suspension);
+    Suspension createSuspension(LoadBalancer loadBalancer, Suspension suspension);
 
-    public void removeSuspension(int loadbalancerId);
+    void removeSuspension(int loadbalancerId);
 
-    public List<LoadBalancer> reassignLoadBalancerHost(List<LoadBalancer> lbs) throws Exception, BadRequestException;
+    List<LoadBalancer> reassignLoadBalancerHost(List<LoadBalancer> lbs) throws Exception, BadRequestException;
 
-    public void updateLoadBalancers(List<LoadBalancer> lbs) throws Exception;
+    void updateLoadBalancers(List<LoadBalancer> lbs) throws Exception;
 
-    public void setLoadBalancerAttrs(LoadBalancer lb) throws EntityNotFoundException;
+    void setLoadBalancerAttrs(LoadBalancer lb) throws EntityNotFoundException;
 
-    public LoadBalancer prepareMgmtLoadBalancerDeletion(LoadBalancer loadBalancer, LoadBalancerStatus lbstatus) throws EntityNotFoundException, UnprocessableEntityException;
+    LoadBalancer prepareMgmtLoadBalancerDeletion(LoadBalancer loadBalancer, LoadBalancerStatus lbstatus) throws EntityNotFoundException, UnprocessableEntityException;
 
-    public List<LoadBalancer> getLoadBalancersForAudit(String status, Calendar changedSince) throws Exception;
+    List<LoadBalancer> getLoadBalancersForAudit(String status, Calendar changedSince) throws Exception;
 
-    public void setStatus(Integer accoundId,Integer loadbalancerId,LoadBalancerStatus status) throws EntityNotFoundException;
+    void setStatus(Integer accoundId,Integer loadbalancerId,LoadBalancerStatus status) throws EntityNotFoundException;
 
-    public void prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws EntityNotFoundException, BadRequestException;
+    void prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws EntityNotFoundException, BadRequestException;
 
-    public boolean testAndSetStatusPending(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException;   
+    boolean testAndSetStatusPending(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException;   
 
-    public UserPages getUserPages(Integer id,Integer accountId) throws EntityNotFoundException;
+    UserPages getUserPages(Integer id,Integer accountId) throws EntityNotFoundException;
 
-    public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException;
+    String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException;
 
-    public String getDefaultErrorPage() throws ObjectNotFoundException, EntityNotFoundException;
+    String getDefaultErrorPage() throws ObjectNotFoundException, EntityNotFoundException;
 
-    public boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException;
+    boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException;
 
-    public boolean setDefaultErrorPage(String content) throws EntityNotFoundException;
+    boolean setDefaultErrorPage(String content) throws EntityNotFoundException;
 
-    public boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException;
+    boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException;
 
-    public List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId);
+    List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId);
+
+    List<LoadBalancer> getLoadBalancersWithUsage(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit);
 }

@@ -1,18 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:cxf="http://camel.apache.org/schema/cxf"
        xmlns:jaxrs="http://cxf.apache.org/jaxrs"
-       xmlns:camel="http://camel.apache.org/schema/spring"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-       http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
-       http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
-       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
-       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
-       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+       http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
 
     <import resource="classpath:spring-context-public.xml"/>
 
@@ -26,6 +18,7 @@
             <entry key="atom" value="application/atom+xml"/>
         </jaxrs:extensionMappings>
         <jaxrs:providers>
+            <ref bean="jaxbProvider"/>
             <ref bean="jsonProvider"/>
             <ref bean="atomProvider"/>
         </jaxrs:providers>

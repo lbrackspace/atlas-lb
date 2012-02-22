@@ -19,6 +19,7 @@
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
     <bean id="accountUsageRepository" class="org.openstack.atlas.service.domain.repository.AccountUsageRepository" depends-on="entityManagerFactory1"/>
+    <bean id="loadBalancerUsageRepository" class="org.openstack.atlas.service.domain.repository.UsageRepository" depends-on="entityManagerFactory1"/>
     <bean id="virtualIpv6Repository"  class="org.openstack.atlas.service.domain.repository.VirtualIpv6Repository" depends-on="entityManagerFactory1"/>
     <bean id="alertRepository" class="org.openstack.atlas.service.domain.events.repository.AlertRepository" depends-on="entityManagerFactory1"/>
     <bean id="blacklistRepository" class="org.openstack.atlas.service.domain.repository.BlacklistRepository" depends-on="entityManagerFactory1"/>
