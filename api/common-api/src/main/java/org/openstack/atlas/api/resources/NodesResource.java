@@ -2,7 +2,6 @@ package org.openstack.atlas.api.resources;
 
 import org.apache.abdera.model.Feed;
 import org.openstack.atlas.api.atom.FeedType;
-import org.openstack.atlas.api.helpers.DomainVerificationHelper;
 import org.openstack.atlas.api.helpers.LoadBalancerProperties;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.repository.ValidatorRepository;
@@ -101,24 +100,14 @@ public class NodesResource extends CommonDependencyProvider {
             return getValidationFaultResponse(result);
         }
 
-        for (org.openstack.atlas.docs.loadbalancers.api.v1.Node node : nodes.getNodes()) {
-            if (node.getAddress().matches(".*[a-zA-Z]+.*")) {
-                if (!allowedDomainsService.hasHost(node.getAddress())) {
-                    return ResponseFactory.getErrorResponse(new BadRequestException(String.format("The domain %s is not allowed, " +
-                            "please verify against baseUri/{accountId}/alloweddomains for allowed domains", node.getAddress())), null, null);
-                }
-
-                if (!DomainVerificationHelper.verifyDomain(node)) {
-                    return ResponseFactory.getErrorResponse(new BadRequestException(String.format("Look up for %s failed, " +
-                            "please provide valid domains", node.getAddress())), null, null);
-                }
-            }
-        }
-
-
         try {
+            List<String> errors;
+            List<org.openstack.atlas.docs.loadbalancers.api.v1.Node> nodesList = nodes.getNodes();
+            errors = verifyNodeDomains(nodesList);
+            if(errors.size()>0){
+                return getValidationFaultResponse(errors);
+            }
             loadBalancerService.get(loadBalancerId, accountId);
-
             org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer apiLb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
             apiLb.getNodes().addAll(nodes.getNodes());
             LoadBalancer newNodesLb = dozerMapper.map(apiLb, LoadBalancer.class);
