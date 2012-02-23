@@ -282,7 +282,6 @@ public class DataModelToDomainLoadBalancerMapperTest {
             loadBalancer.setStatus("SUSPENDED");
         }
 
-        @Ignore // TODO : Temporary mitigation for SITESLB-1519
         @Test
         public void should_map_the_virtual_across_the_two_load_balancers_with_type_only() {
             VirtualIp virtualIp1 = new VirtualIp();

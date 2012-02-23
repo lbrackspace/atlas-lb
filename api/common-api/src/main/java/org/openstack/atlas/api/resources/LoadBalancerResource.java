@@ -252,6 +252,10 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         this.healthMonitorResource = healthMonitorResource;
     }
 
+    public void setMetadataResource(MetadataResource metadataResource) {
+        this.metadataResource = metadataResource;
+    }
+
     public void setNodesResource(NodesResource nodesResource) {
         this.nodesResource = nodesResource;
     }

@@ -1,5 +1,7 @@
 use `loadbalancing`;
 
+INSERT INTO `limit_type` VALUES ('LOADBALANCER_META_LIMIT',25,'Max number of metadata items for a load balancer');
+
 -- ----------------------------
 --  Table structure for `meta`
 -- ----------------------------

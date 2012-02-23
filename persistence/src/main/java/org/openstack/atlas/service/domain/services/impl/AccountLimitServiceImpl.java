@@ -73,7 +73,15 @@ public class AccountLimitServiceImpl extends BaseService implements AccountLimit
             }
         }
 
-        LimitType resultLimitType = accountLimitRepository.getLimitType(accountLimitType);
+        LimitType resultLimitType;
+        try {
+            resultLimitType = accountLimitRepository.getLimitType(accountLimitType);
+        } catch (Exception e) {
+            String message = String.format("No limit type found for '%s'", accountLimitType.name());
+            LOG.error(message, e);
+            throw new EntityNotFoundException(message);
+        }
+
         if (resultLimitType == null) {
             String message = String.format("No limit type found for '%s'", accountLimitType.name());
             LOG.error(message);

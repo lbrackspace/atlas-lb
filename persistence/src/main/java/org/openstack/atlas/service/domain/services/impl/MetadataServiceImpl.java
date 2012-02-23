@@ -54,7 +54,9 @@ public class MetadataServiceImpl extends BaseService implements MetadataService 
         LOG.debug(String.format("Current number of metadata items for loadbalancer '%d': %d", loadBalancerId, oldLb.getMetadata().size()));
         LOG.debug(String.format("Number of new metadata items to be added: %d", metas.size()));
 
-        return metadataRepository.addMetas(oldLb, metas);
+        final Set<Meta> metaSet = metadataRepository.addMetas(oldLb, metas);
+        LOG.debug(String.format("Successfully added %d metadata items for loadbalancer '%d'", metaSet.size(), loadBalancerId));
+        return metaSet;
     }
 
     private boolean detectDuplicateMetadata(Collection<Meta> metadata1, Collection<Meta> metadata2) {

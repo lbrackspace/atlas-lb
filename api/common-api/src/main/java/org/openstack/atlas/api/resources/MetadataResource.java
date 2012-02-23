@@ -30,7 +30,6 @@ public class MetadataResource extends CommonDependencyProvider {
     private Integer accountId;
     private Integer loadBalancerId;
 
-
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createMetadata(Metadata metadata) {

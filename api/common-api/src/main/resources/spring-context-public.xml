@@ -56,6 +56,7 @@
         <property name="algorithmsService" ref="algorithmService"/>
         <property name="protocolsService" ref="protocolsService"/>
         <property name="virtualIpService" ref="virtualIpService"/>
+        <property name="metadataService" ref="metadataService"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="accessListService" ref="accessListService"/>
         <property name="usageService" ref="usageService"/>
@@ -115,6 +116,7 @@
                         <property name="virtualIpsResource" ref="virtualIpsResource"/>
                         <property name="connectionThrottleResource" ref="connectionThrottleResource"/>
                         <property name="healthMonitorResource" ref="healthMonitorResource"/>
+                        <property name="metadataResource" ref="metadataResource"/>
                         <property name="usageResource" ref="usageResource"/>
                         <property name="errorpageResource" ref="errorpageResource"/>
                         <property name="sslTerminationResource" ref="sslTerminationResource"/>
@@ -190,6 +192,10 @@
           scope="request"/>
     <bean name="healthMonitorResource"
           class="org.openstack.atlas.api.resources.HealthMonitorResource"
+          parent="commonDependencyProvider"
+          scope="request"/>
+    <bean name="metadataResource"
+          class="org.openstack.atlas.api.resources.MetadataResource"
           parent="commonDependencyProvider"
           scope="request"/>
     <bean id="connectionThrottleResource"

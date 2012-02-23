@@ -48,6 +48,9 @@
     <bean id="virtualIpService" class="org.openstack.atlas.service.domain.services.impl.VirtualIpServiceImpl" parent="baseService">
         <property name="accountLimitService" ref="accountLimitService"/>
     </bean>
+    <bean id="metadataService" class="org.openstack.atlas.service.domain.services.impl.MetadataServiceImpl" parent="baseService">
+        <property name="accountLimitService" ref="accountLimitService"/>
+    </bean>
     <bean id="accessListService" class="org.openstack.atlas.service.domain.services.impl.AccessListServiceImpl" parent="baseService">
         <property name="accountLimitService" ref="accountLimitService"/>
     </bean>

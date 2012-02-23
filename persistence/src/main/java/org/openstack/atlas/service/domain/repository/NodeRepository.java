@@ -24,7 +24,6 @@ public class NodeRepository {
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;/**/
 
-
     public Set<Node> addNodes(LoadBalancer loadBalancer, Collection<Node> nodes) {
         Set<Node> newNodes = new HashSet<Node>();
 

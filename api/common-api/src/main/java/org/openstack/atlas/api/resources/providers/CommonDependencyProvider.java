@@ -92,6 +92,10 @@ public class CommonDependencyProvider {
         this.virtualIpService = virtualIpService;
     }
 
+    public void setMetadataService(MetadataService metadataService) {
+        this.metadataService = metadataService;
+    }
+
     public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }

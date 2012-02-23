@@ -12,13 +12,13 @@ public class Meta extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @ManyToOne
-    @JoinColumn(name = "loadbalancer_id")
+    @JoinColumn(name = "`loadbalancer_id`")
     private LoadBalancer loadbalancer;
 
-    @Column(name = "key", length = 32)
+    @Column(name = "`key`", length = 32)
     private String key;
 
-    @Column(name = "value", length = 256)
+    @Column(name = "`value`", length = 256)
     private String value;
 
     public LoadBalancer getLoadbalancer() {

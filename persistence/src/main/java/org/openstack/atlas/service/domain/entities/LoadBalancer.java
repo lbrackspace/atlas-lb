@@ -276,6 +276,11 @@ public class LoadBalancer extends Entity implements Serializable {
         nodes.add(node);
     }
 
+    public void addMeta(Meta meta) {
+        meta.setLoadbalancer(this);
+        metadata.add(meta);
+    }
+
     public boolean isSticky() {
         return isSticky;
     }
