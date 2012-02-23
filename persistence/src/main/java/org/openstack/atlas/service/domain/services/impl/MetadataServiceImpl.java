@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -56,6 +57,18 @@ public class MetadataServiceImpl extends BaseService implements MetadataService 
 
         final Set<Meta> metaSet = metadataRepository.addMetas(oldLb, metas);
         LOG.debug(String.format("Successfully added %d metadata items for loadbalancer '%d'", metaSet.size(), loadBalancerId));
+        return metaSet;
+    }
+
+    @Override
+    public Set<Meta> getMetadataByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) throws EntityNotFoundException {
+        final List<Meta> metadataByAccountIdLoadBalancerId = metadataRepository.getMetadataByAccountIdLoadBalancerId(accountId, loadBalancerId);
+        Set<Meta> metaSet = new HashSet<Meta>();
+
+        for (Meta meta : metadataByAccountIdLoadBalancerId) {
+            metaSet.add(meta);
+        }
+        
         return metaSet;
     }
 

@@ -2,17 +2,17 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.Meta;
+import org.openstack.atlas.service.domain.entities.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.*;
 
 @Repository
 @Transactional
@@ -33,5 +33,21 @@ public class MetadataRepository {
         loadBalancer = entityManager.merge(loadBalancer);
         entityManager.flush();
         return newMetas;
+    }
+
+    public List<Meta> getMetadataByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Meta> criteria = builder.createQuery(Meta.class);
+        Root<Meta> metaRoot = criteria.from(Meta.class);
+
+        LoadBalancer lb = new LoadBalancer();
+        lb.setId(loadBalancerId);
+        lb.setAccountId(accountId);
+
+        Predicate belongsToLoadBalancer = builder.equal(metaRoot.get(Meta_.loadbalancer), lb);
+
+        criteria.select(metaRoot);
+        criteria.where(belongsToLoadBalancer);
+        return entityManager.createQuery(criteria).getResultList();
     }
 }
