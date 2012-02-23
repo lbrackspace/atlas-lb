@@ -107,7 +107,7 @@
 
         <property name="accountLimitRepository" ref="accountLimitRepository"/>
         <property name="accountUsageRepository" ref="accountUsageRepository"/>
-        <property name="usageRepository" ref="loadBalancerUsageRepository"/>
+        <property name="usageRepository" ref="usageRepository"/>
         <property name="hostUsageRepository" ref="hostUsageRepository"/>
 
         <property name="blacklistRepository" ref="blacklistRepository"/>
