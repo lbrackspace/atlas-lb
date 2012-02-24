@@ -18,3 +18,4 @@ CREATE TABLE `lb_meta_data` (
   CONSTRAINT `meta_ibfk_1` FOREIGN KEY (`loadbalancer_id`) REFERENCES `loadbalancer` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+update `meta` set `meta_value` = '37' where `meta_key`='version';
