@@ -30,9 +30,11 @@
     <bean id="loadBalancerRepository" class="org.openstack.atlas.service.domain.repository.LoadBalancerRepository" depends-on="entityManagerFactory1"/>
     <bean id="accountLimitRepository" class="org.openstack.atlas.service.domain.repository.AccountLimitRepository" depends-on="entityManagerFactory1"/>
     <bean id="virtualIpRepository" class="org.openstack.atlas.service.domain.repository.VirtualIpRepository" depends-on="entityManagerFactory1"/>
+    <bean id="metadataRepository" class="org.openstack.atlas.service.domain.repository.MetadataRepository" depends-on="entityManagerFactory1"/>
     <bean id="nodeRepository" class="org.openstack.atlas.service.domain.repository.NodeRepository" depends-on="entityManagerFactory1"/>
     <bean id="rateLimitRepository" class="org.openstack.atlas.service.domain.repository.RateLimitRepository" depends-on="entityManagerFactory1" />
     <bean id="jobStateRepository" class="org.openstack.atlas.service.domain.repository.JobStateRepository" depends-on="entityManagerFactory1" />
     <bean id="sslTerminationRepository" class="org.openstack.atlas.service.domain.repository.SslTerminationRepository" depends-on="entityManagerFactory1" />
     <bean id="usageRepository" class="org.openstack.atlas.service.domain.repository.UsageRepository" depends-on="entityManagerFactory1" />
+    <bean id="allowedDomainsRepository" class="org.openstack.atlas.service.domain.repository.AllowedDomainsRepository" depends-on="entityManagerFactory1" />
 </beans>

@@ -40,6 +40,7 @@ public class BaseService {
     protected AlertRepository alertRepository;
     protected GroupRepository groupRepository;
     protected ClusterRepository clusterRepository;
+    protected MetadataRepository metadataRepository;
     protected NodeRepository nodeRepository;
     protected RateLimitRepository rateLimitRepository;
     protected JobStateRepository jobStateRepository;
@@ -47,6 +48,7 @@ public class BaseService {
     protected UsageRepository usageRepository;
     protected LoadBalancerUsageRepository loadBalancerUsageRepository;
     protected LoadBalancerUsageEventRepository loadBalancerUsageEventRepository;
+    protected AllowedDomainsRepository allowedDomainsRepository;
 
     static {
         org.openstack.atlas.util.ca.primitives.RsaConst.init();
@@ -54,6 +56,10 @@ public class BaseService {
 
     public void setRateLimitRepository(RateLimitRepository rateLimitRepository) {
         this.rateLimitRepository = rateLimitRepository;
+    }
+
+    public void setMetadataRepository(MetadataRepository metadataRepository) {
+        this.metadataRepository = metadataRepository;
     }
 
     public void setNodeRepository(NodeRepository nodeRepository) {
@@ -114,6 +120,10 @@ public class BaseService {
 
     public void setLoadBalancerUsageEventRepository(LoadBalancerUsageEventRepository loadBalancerUsageEventRepository) {
         this.loadBalancerUsageEventRepository = loadBalancerUsageEventRepository;
+    }
+
+    public void setAllowedDomainsRepository(AllowedDomainsRepository allowedDomainsRepository) {
+        this.allowedDomainsRepository = allowedDomainsRepository;
     }
 
     public void isLbActive(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException {

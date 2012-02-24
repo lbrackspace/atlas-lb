@@ -48,6 +48,9 @@
     <bean id="virtualIpService" class="org.openstack.atlas.service.domain.services.impl.VirtualIpServiceImpl" parent="baseService">
         <property name="accountLimitService" ref="accountLimitService"/>
     </bean>
+    <bean id="metadataService" class="org.openstack.atlas.service.domain.services.impl.MetadataServiceImpl" parent="baseService">
+        <property name="accountLimitService" ref="accountLimitService"/>
+    </bean>
     <bean id="accessListService" class="org.openstack.atlas.service.domain.services.impl.AccessListServiceImpl" parent="baseService">
         <property name="accountLimitService" ref="accountLimitService"/>
     </bean>
@@ -68,6 +71,7 @@
     <bean id="blackListService" class="org.openstack.atlas.service.domain.services.impl.BlackListServiceImpl" parent="baseService"/>
     <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl" parent="baseService"/>
     <bean id="sslTerminationService" class="org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl" parent="baseService"/>
+    <bean id="allowedDomainsService" class="org.openstack.atlas.service.domain.services.impl.AllowedDomainsServiceImpl" parent="baseService"/>
 
     <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
@@ -80,6 +84,7 @@
         <property name="blacklistRepository" ref="blacklistRepository"/>
         <property name="groupRepository" ref="groupRepository" />
         <property name="clusterRepository" ref="clusterRepository" />
+        <property name="metadataRepository" ref="metadataRepository" />
         <property name="nodeRepository" ref="nodeRepository" />
         <property name="rateLimitRepository" ref="rateLimitRepository" />
         <property name="jobStateRepository" ref="jobStateRepository" />
@@ -87,6 +92,7 @@
         <property name="loadBalancerUsageRepository" ref="loadBalancerUsageRepository" />
         <property name="loadBalancerUsageEventRepository" ref="loadBalancerUsageEventRepository" />
         <property name="sslTerminationRepository" ref="sslTerminationRepository" />
+        <property name="allowedDomainsRepository" ref="allowedDomainsRepository" />
     </bean>
 
     <bean id="usageEventHelper" class="org.openstack.atlas.api.async.UsageEventHelper" scope="prototype">

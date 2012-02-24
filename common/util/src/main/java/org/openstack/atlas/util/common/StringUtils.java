@@ -1,4 +1,4 @@
-package org.openstack.atlas.util.crypto;
+package org.openstack.atlas.util.common;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;

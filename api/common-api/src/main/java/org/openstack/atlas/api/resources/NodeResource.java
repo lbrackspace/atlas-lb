@@ -26,7 +26,7 @@ import static javax.ws.rs.core.MediaType.*;
 
 public class NodeResource extends CommonDependencyProvider {
 
-    private int id;
+    private Integer id;
     private Integer accountId;
     private Integer loadBalancerId;
     private HttpHeaders requestHeaders;
@@ -130,11 +130,11 @@ public class NodeResource extends CommonDependencyProvider {
         return Response.status(200).entity(feed).build();
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 

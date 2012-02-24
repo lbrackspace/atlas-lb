@@ -28,6 +28,7 @@ import org.hexp.hibernateexp.util.HibernateUtil as HibernateUtil
 import org.hexp.hibernateexp.HuApp as HuApp
 
 import org.openstack.atlas.service.domain.entities.UserPages as UserPages
+import org.openstack.atlas.service.domain.entities.AllowedDomain as AllowedDomain
 import org.openstack.atlas.service.domain.entities.NodeType as NodeType
 import org.openstack.atlas.service.domain.entities.VirtualIpv6 as VirtualIpv6
 import org.openstack.atlas.service.domain.entities.VirtualIpType as VirtualIpType
@@ -208,6 +209,14 @@ class ZeusTest(object):
         self.tg_names = None
         self.vs_tg = None
         self.vips = None
+        self.pool_names = None
+
+    def clear(self):
+        self.vs_names = None
+        self.tg_names = None
+        self.vs_tg = None
+        self.vips = None
+        self.pool_names = None
 
     def getInfo(self):
         o = {}
@@ -219,16 +228,12 @@ class ZeusTest(object):
         o["ip_vs"] = inv_dict(o["vs_ip"])
         return o
 
-    def clear(self):
-        self.vs_names = None
-        self.tg_names = None
-        self.vs_tg = None
-        self.vips = None
-
-    def getCrtNames(self):
-        names = [n for n in self.stubs.cert.getCertificateNames()]
-        names.sort()
-        return names
+    def getPoolNames(self):
+        if self.pool_names != None:
+            return self.pool_names
+        self.pool_names = [pn for pn in self.stubs.p.getPoolNames()]
+        self.pool_names.sort()
+        return self.pool_names
 
     def getVsNames(self):
         if self.vs_names != None:
@@ -291,6 +296,10 @@ class ZeusTest(object):
                         out[vs_name].append(ip)
         return out
 
+    def getCrtNames(self):
+        names = [n for n in self.stubs.cert.getCertificateNames()]
+        names.sort()
+        return names
                         
 
         
@@ -718,6 +727,22 @@ def setrndobjattr(list_in,k,choices):
        attr(rnd.choice(choices))
        out.append(obj)
     return out
+
+
+def delList(list_in):
+    failed_objs = 0
+    session = app.getSession()
+    for obj in list_in:
+        try:
+            session.delete(obj)
+        except:
+            try:
+                printf("rejected %s\nerror:%s\n",obj,traceback.format_exc())
+            except:
+                continue
+            failed_objs += 1
+    if failed_objs > 0:
+        printf("Rejected %i objects during delete\n",failed_objs)
 
 def saveList(list_in):
     failed_objs = 0

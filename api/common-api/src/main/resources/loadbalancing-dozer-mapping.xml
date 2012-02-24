@@ -221,6 +221,12 @@
             <b>algorithm</b>
         </field>
         <field>
+            <a>metadata</a>
+            <b>metadata</b>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.Meta</b-hint>
+        </field>
+        <field>
             <a>nodes</a>
             <b>nodes</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Node</a-hint>
@@ -293,31 +299,16 @@
     </mapping>
 
     <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.Meta</class-b>
+    </mapping>
+
+    <mapping map-null="false">
         <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Node</class-a>
         <class-b>org.openstack.atlas.service.domain.entities.Node</class-b>
         <field>
             <a>address</a>
             <b>ipAddress</b>
-        </field>
-        <field>
-            <a>port</a>
-            <b>port</b>
-        </field>
-        <field>
-            <a>status</a>
-            <b>status</b>
-        </field>
-        <field>
-            <a>weight</a>
-            <b>weight</b>
-        </field>
-        <field>
-            <a>condition</a>
-            <b>condition</b>
-        </field>
-        <field>
-            <a>type</a>
-            <b>type</b>
         </field>
     </mapping>
 

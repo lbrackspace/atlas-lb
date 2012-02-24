@@ -3,7 +3,6 @@ package org.openstack.atlas.api.mgmt.resources;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 
 public class ManagementResource extends ManagementDependencyProvider {
 
@@ -23,6 +22,7 @@ public class ManagementResource extends ManagementDependencyProvider {
     private AuditResource auditResource;
     private BlackListResource blackListResource;
     private HealthCheckResource healthCheckResource;
+    private AllowedDomainsResource allowedDomainsResource;
 
     @Path("accounts")
     public AccountsResource retrieveAccountsResource() {
@@ -99,6 +99,11 @@ public class ManagementResource extends ManagementDependencyProvider {
         return healthCheckResource;
     }
 
+    @Path("alloweddomains")
+    public AllowedDomainsResource retrieveAllowedDomainsResource() {
+        return allowedDomainsResource;
+    }
+
     public void setHealthCheckResource(HealthCheckResource healthCheckResource) {
         this.healthCheckResource = healthCheckResource;
     }
@@ -165,5 +170,9 @@ public class ManagementResource extends ManagementDependencyProvider {
 
     public void setJobsResource(JobsResource jobsResource) {
         this.jobsResource = jobsResource;
+    }
+
+    public void setAllowedDomainsResource(AllowedDomainsResource allowedDomainsResource) {
+        this.allowedDomainsResource = allowedDomainsResource;
     }
 }

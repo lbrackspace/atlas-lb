@@ -1,24 +1,28 @@
 package org.openstack.atlas.api.resources.providers;
 
-import java.util.ArrayList;
-
-import net.spy.memcached.MemcachedClient;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
-import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
-import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.services.*;
+import org.dozer.DozerBeanMapper;
 import org.openstack.atlas.api.atom.AtomFeedAdapter;
+import org.openstack.atlas.api.config.RestApiConfiguration;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.integration.AsyncService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.dozer.DozerBeanMapper;
-import org.openstack.atlas.api.config.RestApiConfiguration;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.services.*;
 
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import javax.ws.rs.core.HttpHeaders;
+import javax.naming.NamingException;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.ServiceUnavailableException;
+import org.openstack.atlas.util.ip.DnsUtil;
 
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class CommonDependencyProvider {
@@ -37,6 +41,7 @@ public class CommonDependencyProvider {
     protected ConnectionLoggingService connectionLoggingService;
     protected ConnectionThrottleService connectionThrottleService;
     protected VirtualIpService virtualIpService;
+    protected MetadataService metadataService;
     protected NodeService nodeService;
     protected SessionPersistenceService sessionPersistenceService;
     protected AccountLimitService accountLimitService;
@@ -45,6 +50,7 @@ public class CommonDependencyProvider {
     protected UsageService usageService;
     protected ProtocolsService protocolsService;
     protected SslTerminationService sslTerminationService;
+    protected AllowedDomainsService allowedDomainsService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
 
     public ReverseProxyLoadBalancerService getReverseProxyLoadBalancerService() {
@@ -91,6 +97,10 @@ public class CommonDependencyProvider {
         this.virtualIpService = virtualIpService;
     }
 
+    public void setMetadataService(MetadataService metadataService) {
+        this.metadataService = metadataService;
+    }
+
     public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
@@ -123,12 +133,16 @@ public class CommonDependencyProvider {
         this.sslTerminationService = sslTerminationService;
     }
 
-    public String getUserName(HttpHeaders headers){
-        if(headers == null || headers.getRequestHeader(USERHEADERNAME).size()<1){
+    public void setAllowedDomainsService(AllowedDomainsService allowedDomainsService) {
+        this.allowedDomainsService = allowedDomainsService;
+    }
+
+    public String getUserName(HttpHeaders headers) {
+        if (headers == null || headers.getRequestHeader(USERHEADERNAME).size() < 1) {
             return NOBODY;
         }
         String userName = headers.getRequestHeader(USERHEADERNAME).get(0);
-        if(userName == null){
+        if (userName == null) {
             return NOBODY;
         }
         return userName;
@@ -155,7 +169,7 @@ public class CommonDependencyProvider {
         return vresp;
     }
 
-    public Response getValidationFaultResponse(String errorStr){
+    public Response getValidationFaultResponse(String errorStr) {
         List<String> errorStrs = new ArrayList<String>();
         errorStrs.add(errorStr);
         return getValidationFaultResponse(errorStrs);
@@ -183,5 +197,42 @@ public class CommonDependencyProvider {
 
     public RestApiConfiguration getRestApiConfiguration() {
         return restApiConfiguration;
+    }
+
+    public List<String> verifyNodeDomains(Collection<Node> nodes){
+        String fmt;
+        String msg;
+        List<String> foundIps;
+        List<String> errors = new ArrayList<String>();
+        for (Node node : nodes) {
+            String address = node.getAddress();
+            if (address.matches(".*[a-zA-Z]+.*")) {
+                if (!allowedDomainsService.hasHost(node.getAddress())) {
+                    fmt = "The domain %s is not allowed, please verify against baseUri/{accountId}/alloweddomains";
+                    fmt += "for allowed domains";
+                    msg = String.format(fmt, address);
+                    errors.add(msg);
+                    
+                }
+                try {
+                    foundIps = DnsUtil.lookup(address, "A", "AAAA");
+                } catch (NamingException ne) {
+                    fmt = "Unable to resolve host %s could not add node at this time";
+                    msg = String.format(fmt,address);
+                    throw new ServiceUnavailableException(msg,ne);
+                }
+                if(foundIps.isEmpty()){
+                    fmt = "domain %s had no A or AAAA records. Can not add node. domain must have only 1 A or AAAA record";
+                    msg = String.format(fmt,address);
+                    errors.add(msg);
+                }else if(foundIps.size()>1){
+                    fmt = "domain %s has %d A or AAAA records";
+                    msg = String.format(fmt,address,foundIps.size());
+                    errors.add(msg);
+                }
+            }
+
+        }
+        return errors;
     }
 }

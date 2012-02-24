@@ -9,6 +9,7 @@ public final class Constants {
     public static final int MIN_ACCOUNTS_PER_VIP = 1;
     public static final int MAX_ERRORPAGE_CONTENT_LENGTH = 1024 * 64;
     public static final String LoadBalancerNotFound = "Load balancer not found";
+    public static final String MetaNotFound = "Meta data item not found";
     public static final String ErrorPageNotFound = "Error Page not found";
     public static final String SslTerminationNotFound = "SSL termination not found for requested load balancer.";
     public static final String JobNotFound = "Job not found";

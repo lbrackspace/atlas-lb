@@ -1,0 +1,25 @@
+#!/usr/bin/env jython
+
+import org.openstack.atlas.util.ip.DnsUtil as DnsUtil
+import sys
+import os
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def usage(prog):
+    printf("usage is %s <hostName>\n",prog)
+    printf("\n")
+    printf("Just does a DNS lookup\n")
+
+
+if __name__ == "__main__":
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<2:
+        usage(prog)
+        sys.exit()
+    fqdn = sys.argv[1]
+    records = DnsUtil.lookup(fqdn,["A","AAAA"])
+    printf("A records for %s\n",fqdn)
+    for r in records:
+        printf("    %s\n",r)
+
