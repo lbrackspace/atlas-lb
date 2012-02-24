@@ -13,6 +13,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitorType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeStatus;
@@ -54,6 +55,21 @@ public class DataModelToDomainLoadBalancerMapperTest {
             ConnectionLogging conLog = new ConnectionLogging();
             conLog.setEnabled(true);
             loadBalancer.setConnectionLogging(conLog);
+
+            Meta meta1 = new Meta();
+            meta1.setId(4100);
+            meta1.setKey("metaKey1");
+            meta1.setValue("metaValue1");
+
+            Meta meta2 = new Meta();
+            meta2.setId(4101);
+            meta2.setKey("metaKey2");
+            meta2.setValue("metaValue2");
+
+            final Metadata metadata = new Metadata();
+            metadata.getMetas().add(meta1);
+            metadata.getMetas().add(meta2);
+            loadBalancer.getMetadata().addAll(metadata.getMetas());
 
             Node node1 = new Node();
             node1.setId(4100);
@@ -147,17 +163,29 @@ public class DataModelToDomainLoadBalancerMapperTest {
         }
 
         @Test
+        public void should_map_metadata_across_the_two_load_balancers_and_the_properties_of_individual_meta() {
+            Assert.assertEquals(2, domainLoadBalancer.getMetadata().size());
+
+            for (org.openstack.atlas.service.domain.entities.Meta meta : domainLoadBalancer.getMetadata()) {
+                if (!(meta.getId() == 4100 || meta.getId() == 4101))
+                    Assert.fail("Did not map the id of the meta correctly");
+                if (!(meta.getKey().equals("metaKey1") || meta.getKey().equals("metaKey2")))
+                    Assert.fail("Did not map the key of the meta correctly");
+                if (!(meta.getValue().equals("metaValue1") || meta.getValue().equals("metaValue2")))
+                    Assert.fail("Did not map the value of the meta correctly");
+            }
+        }
+
+        @Test
         public void should_map_the_node_list_across_the_two_load_balancers_and_the_properties_of_individual_nodes() {
             Assert.assertEquals(2, domainLoadBalancer.getNodes().size());
 
-            for (org.openstack.atlas.service.domain.entities.Node node : domainLoadBalancer
-                    .getNodes()) {
+            for (org.openstack.atlas.service.domain.entities.Node node : domainLoadBalancer.getNodes()) {
                 if (!(node.getId() == 4100 || node.getId() == 4101))
                     Assert.fail("Did not map the id of the node correctly");
                 if (!(node.getPort() == 80 || node.getPort() == 85))
                     Assert.fail("Did not map the port of the node correctly");
-                if (!(node.getIpAddress().equals("10.1.1.1") || node
-                        .getIpAddress().equals("10.1.1.2")))
+                if (!(node.getIpAddress().equals("10.1.1.1") || node.getIpAddress().equals("10.1.1.2")))
                     Assert.fail("Did not map the ipAddress of the node correctly");
                 if (!(node
                         .getCondition()
@@ -254,7 +282,6 @@ public class DataModelToDomainLoadBalancerMapperTest {
             loadBalancer.setStatus("SUSPENDED");
         }
 
-        @Ignore // TODO : Temporary mitigation for SITESLB-1519
         @Test
         public void should_map_the_virtual_across_the_two_load_balancers_with_type_only() {
             VirtualIp virtualIp1 = new VirtualIp();
