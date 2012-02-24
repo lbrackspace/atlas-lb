@@ -79,4 +79,27 @@ public class MetadataRepository {
 
         return resultList.get(0);
     }
+
+    public void deleteMeta(LoadBalancer loadBalancer, Integer id) throws EntityNotFoundException {
+        Set<Meta> dbMetadata = new HashSet<Meta>(loadBalancer.getMetadata());
+        Boolean removed = false;
+
+        for (Meta meta : dbMetadata) {
+            Integer metaId = meta.getId();
+            if (metaId.equals(id)) {
+                loadBalancer.getMetadata().remove(meta);
+                removed = true;
+            }
+        }
+
+        if (!removed) {
+            String message = Constants.MetaNotFound;
+            LOG.warn(message);
+            throw new EntityNotFoundException(message);
+        }
+
+        loadBalancer.setUpdated(Calendar.getInstance());
+        loadBalancer = entityManager.merge(loadBalancer);
+        entityManager.flush();
+    }
 }

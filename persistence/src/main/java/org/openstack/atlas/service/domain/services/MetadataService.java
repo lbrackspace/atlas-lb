@@ -15,4 +15,6 @@ public interface MetadataService {
     Set<Meta> getMetadataByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) throws EntityNotFoundException;
 
     Meta getMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException;
+
+    void deleteMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException;
 }

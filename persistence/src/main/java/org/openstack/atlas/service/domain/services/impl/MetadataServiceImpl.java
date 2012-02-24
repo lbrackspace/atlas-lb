@@ -77,6 +77,12 @@ public class MetadataServiceImpl extends BaseService implements MetadataService 
         return metadataRepository.getMeta(accountId, loadBalancerId, id);
     }
 
+    @Override
+    public void deleteMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
+        metadataRepository.deleteMeta(dbLoadBalancer, id);
+    }
+
     private boolean detectDuplicateMetadata(Collection<Meta> metadata1, Collection<Meta> metadata2) {
         Set<String> keys = new HashSet<String>();
 
