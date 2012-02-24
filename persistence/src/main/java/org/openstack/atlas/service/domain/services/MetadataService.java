@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services;
 
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Meta;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -17,4 +18,6 @@ public interface MetadataService {
     Meta getMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException;
 
     void deleteMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException;
+
+    void updateMeta(LoadBalancer domainLb) throws EntityNotFoundException;
 }

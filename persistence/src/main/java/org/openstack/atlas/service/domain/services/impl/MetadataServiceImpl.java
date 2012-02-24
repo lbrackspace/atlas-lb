@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.AccountLimitType;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Meta;
+import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
@@ -81,6 +82,42 @@ public class MetadataServiceImpl extends BaseService implements MetadataService 
     public void deleteMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
         metadataRepository.deleteMeta(dbLoadBalancer, id);
+    }
+
+    @Override
+    public void updateMeta(LoadBalancer msgLb) throws EntityNotFoundException {
+        LoadBalancer currentLb = loadBalancerRepository.getByIdAndAccountId(msgLb.getId(), msgLb.getAccountId());
+
+        Meta metaToUpdate = msgLb.getMetadata().iterator().next();
+        if (!loadBalancerContainsMeta(currentLb, metaToUpdate)) {
+            LOG.warn("Meta to update not found. Sending response to client...");
+            throw new EntityNotFoundException(String.format("Meta data item with id #%d not found for loadbalancer #%d", metaToUpdate.getId(), msgLb.getId()));
+        }
+
+        LOG.debug("Meta on dbLoadbalancer: " + currentLb.getMetadata().size());
+        for (Meta meta : currentLb.getMetadata()) {
+            if (meta.getId().equals(metaToUpdate.getId())) {
+                LOG.info("Meta to be updated found: " + meta.getId());
+                if (metaToUpdate.getKey() != null) {
+                    meta.setKey(metaToUpdate.getKey());
+                }
+                if (metaToUpdate.getValue() != null) {
+                    meta.setValue(metaToUpdate.getValue());
+                }
+                break;
+            }
+        }
+
+        metadataRepository.update(currentLb);
+    }
+
+    private boolean loadBalancerContainsMeta(LoadBalancer lb, Meta meta) {
+        for (Meta m : lb.getMetadata()) {
+            if (m.getId().equals(meta.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean detectDuplicateMetadata(Collection<Meta> metadata1, Collection<Meta> metadata2) {

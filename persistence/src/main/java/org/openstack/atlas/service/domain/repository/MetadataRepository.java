@@ -2,9 +2,7 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.Meta;
-import org.openstack.atlas.service.domain.entities.Meta_;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.springframework.stereotype.Repository;
@@ -101,5 +99,24 @@ public class MetadataRepository {
         loadBalancer.setUpdated(Calendar.getInstance());
         loadBalancer = entityManager.merge(loadBalancer);
         entityManager.flush();
+    }
+
+    public LoadBalancer update(LoadBalancer loadBalancer) {
+        final Set<LoadBalancerJoinVip> lbJoinVipsToLink = loadBalancer.getLoadBalancerJoinVipSet();
+        loadBalancer.setLoadBalancerJoinVipSet(null);
+
+        loadBalancer.setUpdated(Calendar.getInstance());
+        loadBalancer = entityManager.merge(loadBalancer);
+
+        // Now attach loadbalancer to vips
+        for (LoadBalancerJoinVip lbJoinVipToLink : lbJoinVipsToLink) {
+            VirtualIp virtualIp = entityManager.find(VirtualIp.class, lbJoinVipToLink.getVirtualIp().getId());
+            LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip(loadBalancer.getPort(), loadBalancer, virtualIp);
+            entityManager.merge(loadBalancerJoinVip);
+            entityManager.merge(lbJoinVipToLink.getVirtualIp());
+        }
+
+        entityManager.flush();
+        return loadBalancer;
     }
 }
