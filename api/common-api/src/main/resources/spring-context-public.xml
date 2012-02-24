@@ -197,7 +197,13 @@
     <bean name="metadataResource"
           class="org.openstack.atlas.api.resources.MetadataResource"
           parent="commonDependencyProvider"
-          scope="request"/>
+          scope="request">
+        <property name="metaResource">
+            <bean class="org.openstack.atlas.api.resources.MetaResource"
+                  parent="commonDependencyProvider"
+                  scope="request"/>
+        </property>
+    </bean>
     <bean id="connectionThrottleResource"
           class="org.openstack.atlas.api.resources.ConnectionThrottleResource"
           parent="commonDependencyProvider"

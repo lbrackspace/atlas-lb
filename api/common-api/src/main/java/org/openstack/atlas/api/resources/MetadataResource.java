@@ -13,10 +13,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.service.domain.entities.Meta;
 import org.openstack.atlas.service.domain.entities.Node;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -29,6 +26,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
 public class MetadataResource extends CommonDependencyProvider {
     private final Log LOG = LogFactory.getLog(MetadataResource.class);
+    private MetaResource metaResource;
     private HttpHeaders requestHeaders;
     private Integer accountId;
     private Integer loadBalancerId;
@@ -57,7 +55,7 @@ public class MetadataResource extends CommonDependencyProvider {
                 returnMetadata.getMetas().add(dozerMapper.map(meta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class));
             }
 
-            return Response.status(Response.Status.ACCEPTED).entity(returnMetadata).build();
+            return Response.status(Response.Status.OK).entity(returnMetadata).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
@@ -73,10 +71,23 @@ public class MetadataResource extends CommonDependencyProvider {
             for (org.openstack.atlas.service.domain.entities.Meta domainMeta : domainMetaSet) {
                 returnMetadata.getMetas().add(dozerMapper.map(domainMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class));
             }
-            return Response.status(200).entity(returnMetadata).build();
+            return Response.status(Response.Status.OK).entity(returnMetadata).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
+    }
+
+    @Path("{id: [-+]?[1-9][0-9]*}")
+    public MetaResource retrieveNodeResource(@PathParam("id") int id) {
+        metaResource.setRequestHeaders(requestHeaders);
+        metaResource.setId(id);
+        metaResource.setAccountId(accountId);
+        metaResource.setLoadBalancerId(loadBalancerId);
+        return metaResource;
+    }
+
+    public void setMetaResource(MetaResource metaResource) {
+        this.metaResource = metaResource;
     }
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {

@@ -2,7 +2,11 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.Meta;
+import org.openstack.atlas.service.domain.entities.Meta_;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,5 +53,30 @@ public class MetadataRepository {
         criteria.select(metaRoot);
         criteria.where(belongsToLoadBalancer);
         return entityManager.createQuery(criteria).getResultList();
+    }
+
+    public Meta getMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Meta> criteria = builder.createQuery(Meta.class);
+        Root<Meta> metaRoot = criteria.from(Meta.class);
+
+        LoadBalancer lb = new LoadBalancer();
+        lb.setId(loadBalancerId);
+        lb.setAccountId(accountId);
+
+        Predicate belongsToLoadBalancer = builder.equal(metaRoot.get(Meta_.loadbalancer), lb);
+        Predicate hasId = builder.equal(metaRoot.get(Meta_.id), id);
+
+        criteria.select(metaRoot);
+        criteria.where(builder.and(belongsToLoadBalancer, hasId));
+        final List<Meta> resultList = entityManager.createQuery(criteria).getResultList();
+
+        if (resultList.isEmpty()) {
+            String message = Constants.MetaNotFound;
+            LOG.warn(message);
+            throw new EntityNotFoundException(message);
+        }
+
+        return resultList.get(0);
     }
 }
