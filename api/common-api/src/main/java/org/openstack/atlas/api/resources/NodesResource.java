@@ -101,8 +101,13 @@ public class NodesResource extends CommonDependencyProvider {
         }
 
         try {
+            List<String> errors;
+            List<org.openstack.atlas.docs.loadbalancers.api.v1.Node> nodesList = nodes.getNodes();
+            errors = verifyNodeDomains(nodesList);
+            if(errors.size()>0){
+                return getValidationFaultResponse(errors);
+            }
             loadBalancerService.get(loadBalancerId, accountId);
-
             org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer apiLb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
             apiLb.getNodes().addAll(nodes.getNodes());
             LoadBalancer newNodesLb = dozerMapper.map(apiLb, LoadBalancer.class);
@@ -119,7 +124,6 @@ public class NodesResource extends CommonDependencyProvider {
             return Response.status(Response.Status.ACCEPTED).entity(returnNodes).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
-
         }
     }
 

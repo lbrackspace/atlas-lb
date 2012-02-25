@@ -25,6 +25,7 @@
         <xsd:sequence>
             <xsd:element name="virtualIps" type="tns:virtualIps" minOccurs="0"/>
             <xsd:element name="nodes" type="tns:nodes" minOccurs="0"/>
+            <xsd:element name="metadata" type="tns:metadata" minOccurs="0"/>
             <xsd:element name="loadBalancerUsage" type="tns:loadBalancerUsage" minOccurs="0"/>
             <xsd:element name="sessionPersistence" type="tns:sessionPersistence" minOccurs="0"/>
             <xsd:element name="healthMonitor" type="tns:healthMonitor" minOccurs="0"/>
@@ -127,7 +128,7 @@
         <xsd:attribute name="condition" type="tns:nodeCondition"/>
         <xsd:attribute name="status" type="tns:nodeStatus"/>
         <xsd:attribute name="weight" type="xsd:int"/>
-        <xsd:attribute name="type" type="tns:nodeType" />
+        <xsd:attribute name="type" type="tns:nodeType"/>
     </xsd:complexType>
 
     <xsd:simpleType name="nodeType">
@@ -271,7 +272,8 @@
     <xsd:element name="loadBalancerUsage" type="tns:loadBalancerUsage"/>
     <xsd:complexType name="loadBalancerUsage">
         <xsd:sequence>
-            <xsd:element name="loadBalancerUsageRecord" type="tns:loadBalancerUsageRecord" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="loadBalancerUsageRecord" type="tns:loadBalancerUsageRecord" minOccurs="0"
+                         maxOccurs="unbounded"/>
             <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="loadBalancerId" type="xsd:int"/>
@@ -303,7 +305,7 @@
     <xsd:element name="limitTypes" type="tns:limitTypes"/>
     <xsd:complexType name="limitTypes">
         <xsd:sequence>
-            <xsd:element name="limitType" type="tns:limitType" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element name="limitType" type="tns:limitType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -354,4 +356,34 @@
         <xsd:attribute name="securePort" type="xsd:int"/>
         <xsd:attribute name="secureTrafficOnly" type="xsd:boolean"/>
     </xsd:complexType>
+
+    <xsd:element name="allowedDomains" type="tns:allowedDomains"/>
+    <xsd:complexType name="allowedDomains">
+        <xsd:sequence>
+            <xsd:element name="allowedDomain" minOccurs="0" maxOccurs="unbounded" type="tns:allowedDomain"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="allowedDomain" type="tns:allowedDomain"/>
+    <xsd:complexType name="allowedDomain">
+        <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:element name="metadata" type="tns:metadata"/>
+    <xsd:complexType name="metadata">
+        <xsd:sequence>
+            <xsd:element name="meta" minOccurs="1" maxOccurs="unbounded" type="tns:meta"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="meta" type="tns:meta"/>
+    <xsd:complexType name="meta">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="id" type="xsd:int"/>
+                <xsd:attribute name="key" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
 </xsd:schema>

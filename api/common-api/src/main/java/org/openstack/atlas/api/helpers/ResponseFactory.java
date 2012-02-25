@@ -1,5 +1,9 @@
 package org.openstack.atlas.api.helpers;
 
+import java.util.ArrayList;
+import org.openstack.atlas.api.faults.HttpResponseBuilder;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
+import java.util.List;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Operationsuccess;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.GeneralFault;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.LbaasFault;
@@ -12,13 +16,15 @@ import javax.ws.rs.core.Response.Status;
 
 import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtendedStackTrace;
 
-
 public class ResponseFactory {
+
+    private static final String VFAIL = "Validation Failure";
     private static final Log LOG = LogFactory.getLog(ResponseFactory.class);
 
     public static Response getSuccessfulResponse(String message) {
         return getSuccessResponse(message, 200);
     }
+
 
     public static Response getResponseWithStatus(Response.Status status, String message) {
         LbaasFault lbaasFault = new GeneralFault();
@@ -27,7 +33,23 @@ public class ResponseFactory {
         return Response.status(status).entity(lbaasFault).build();
     }
 
-     public static Response getResponseWithStatus(Response.Status status, String message,String details) {
+    public static Response getResponseWithStatus(int  status, String message) {
+        LbaasFault lbaasFault = new GeneralFault();
+        lbaasFault.setCode(status);
+        lbaasFault.setMessage(message);
+        return Response.status(status).entity(lbaasFault).build();
+    }
+
+    public static Response getResponseWithStatus(int status, String message, String details) {
+        LbaasFault lbaasFault = new GeneralFault();
+        lbaasFault.setCode(status);
+        lbaasFault.setMessage(message);
+        lbaasFault.setDetails(details);
+        return Response.status(status).entity(lbaasFault).build();
+    }
+
+
+    public static Response getResponseWithStatus(Response.Status status, String message, String details) {
         LbaasFault lbaasFault = new GeneralFault();
         lbaasFault.setCode(status.getStatusCode());
         lbaasFault.setMessage(message);
@@ -77,4 +99,17 @@ public class ResponseFactory {
         return resp;
     }
 
+    public static Response getValidationFaultResponse(String errorStr) {
+        List<String> errorStrs = new ArrayList<String>();
+        errorStrs.add(errorStr);
+        return getValidationFaultResponse(errorStrs);
+    }
+
+    public static Response getValidationFaultResponse(List<String> errorStrs) {
+        BadRequest badreq;
+        int status = 400;
+        badreq = HttpResponseBuilder.buildBadRequestResponse(VFAIL, errorStrs);
+        Response resp = Response.status(status).entity(badreq).build();
+        return resp;
+    }
 }

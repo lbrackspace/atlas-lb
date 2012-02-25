@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.mgmt.resources;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 
 import javax.ws.rs.Consumes;
@@ -57,6 +58,13 @@ public class BounceResource extends ManagementDependencyProvider {
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response echoVirtualIp(VirtualIp virtualIp) {
         Response resp = Response.status(200).entity(virtualIp).build();
+        return resp;
+    }
+    @POST
+    @Path("alloweddomain")
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response echoAllowedDomain(AllowedDomain ad){
+        Response resp = Response.status(200).entity(ad).build();
         return resp;
     }
 

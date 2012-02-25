@@ -35,6 +35,10 @@ public class LoadBalancer extends Entity implements Serializable {
     @OrderBy("id")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<AccessList> accessLists = new HashSet<AccessList>();
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
+    @OrderBy("id")
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    private Set<Meta> metadata = new HashSet<Meta>();
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "host_id", nullable = true)
     private Host host;
@@ -144,6 +148,14 @@ public class LoadBalancer extends Entity implements Serializable {
 
     public void setAccessLists(Set<AccessList> accessLists) {
         this.accessLists = accessLists;
+    }
+
+    public Set<Meta> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Set<Meta> metadata) {
+        this.metadata = metadata;
     }
 
     public Host getHost() {
@@ -262,6 +274,11 @@ public class LoadBalancer extends Entity implements Serializable {
     public void addNode(Node node) {
         node.setLoadbalancer(this);
         nodes.add(node);
+    }
+
+    public void addMeta(Meta meta) {
+        meta.setLoadbalancer(this);
+        metadata.add(meta);
     }
 
     public boolean isSticky() {

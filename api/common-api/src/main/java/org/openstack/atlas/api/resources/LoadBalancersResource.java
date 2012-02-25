@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.resources;
 
-
 import org.apache.abdera.model.Feed;
 import org.openstack.atlas.api.helpers.PaginationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
@@ -13,6 +12,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LimitTypes;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Limits;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.service.domain.entities.AccountLimitType;
 import org.openstack.atlas.service.domain.entities.LimitType;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
@@ -100,6 +100,11 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         }
 
         try {
+            List<Node> nodes = loadBalancer.getNodes();
+            List<String> errors = verifyNodeDomains(nodes);
+            if(errors.size()>0){
+                return getValidationFaultResponse(errors);
+            }
             org.openstack.atlas.service.domain.entities.LoadBalancer domainLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             domainLb.setAccountId(accountId);
             if (requestHeaders != null) {

@@ -1,9 +1,23 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfInts;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.UserRole;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LdapGroup;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LdapInfo;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ByIdOrName;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Ticket;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Zone;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostType;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostStatus;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostsubnet;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import org.openstack.atlas.api.helpers.ResponseFactory;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.api.mgmt.helpers.StubFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
@@ -146,5 +160,14 @@ public class StubResource extends ManagementDependencyProvider {
             listOfInts.getInts().add(accountId);
         }
         return Response.status(200).entity(listOfInts).build();
+    }
+
+    @GET
+    @Path("alloweddomain")
+    public Response getAllowedDomain(){
+        AllowedDomain ad = new AllowedDomain();
+        ad.setName("somedomain.org");
+        return Response.status(200).entity(ad).build();
+
     }
 }

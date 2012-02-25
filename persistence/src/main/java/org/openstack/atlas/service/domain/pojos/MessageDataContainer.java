@@ -1,9 +1,11 @@
 package org.openstack.atlas.service.domain.pojos;
 
+import org.openstack.atlas.service.domain.entities.Meta;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class MessageDataContainer implements Serializable {
@@ -19,6 +21,7 @@ public class MessageDataContainer implements Serializable {
     private List<Integer> newVipIds;
     private List<Integer> newNodeIds;
     private ZeusSslTermination zeusSslTermination;
+    private Collection<Meta> metadata;
     //for batch deletes
     private List<Integer> ids;
 
@@ -117,5 +120,16 @@ public class MessageDataContainer implements Serializable {
 
     public void setZeusSslTermination(ZeusSslTermination zeusSslTermination) {
         this.zeusSslTermination = zeusSslTermination;
+    }
+
+    public Collection<Meta> getMetadata() {
+        if(metadata == null) {
+            metadata = new ArrayList<Meta>();
+        }
+        return metadata;
+    }
+
+    public void setMetadata(Collection<Meta> metadata) {
+        this.metadata = metadata;
     }
 }

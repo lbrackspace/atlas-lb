@@ -62,9 +62,10 @@ public class NodeValidatorTest {
 
         @Test
         public void shouldRejectInvalidIPv6Address() {
+            //Will now be validated against domain node verification, characters are expected now...
             node.setAddress("2001:0db8:85a3:0000:0000:8a2e:0370:7334:::");
             ValidatorResult result = validator.validate(node, POST);
-            assertFalse(result.passedValidation());
+            assertTrue(result.passedValidation());
         }
 
         @Test
@@ -76,16 +77,17 @@ public class NodeValidatorTest {
 
         @Test
         public void shouldRejectIpv4CidrAddress() {
-            node.setAddress("123.123.123.123/24");
+            //Will now be validated against domain node verification, characters are expected now...
             ValidatorResult result = validator.validate(node, POST);
-            assertFalse(result.passedValidation());
+            assertTrue(result.passedValidation());
         }
 
         @Test
         public void shouldRejectIpv6CidrAddress() {
+            //Will now be validated against domain node verification, characters are expected now...
             node.setAddress("ffff:ffff:ffff:ffff::/64");
             ValidatorResult result = validator.validate(node, POST);
-            assertFalse(result.passedValidation());
+            assertTrue(result.passedValidation());
         }
 
         @Test

@@ -56,8 +56,10 @@
         <property name="algorithmsService" ref="algorithmService"/>
         <property name="protocolsService" ref="protocolsService"/>
         <property name="virtualIpService" ref="virtualIpService"/>
+        <property name="metadataService" ref="metadataService"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="accessListService" ref="accessListService"/>
+        <property name="allowedDomainsService" ref="allowedDomainsService"/>
         <property name="usageService" ref="usageService"/>
         <property name="accountLimitService" ref="accountLimitService"/>
         <property name="requestStateContainer" ref="requestStateContainer"/>
@@ -93,6 +95,11 @@
                   parent="commonDependencyProvider"
                   scope="request"/>
         </property>
+        <property name="allowedDomainsResource">
+            <bean  class="org.openstack.atlas.api.resources.AllowedDomainsResource"
+                   parent="commonDependencyProvider"
+                   scope="request" />
+        </property>
         <property name="loadBalancersResource">
             <bean class="org.openstack.atlas.api.resources.LoadBalancersResource"
                   parent="commonDependencyProvider"
@@ -115,6 +122,7 @@
                         <property name="virtualIpsResource" ref="virtualIpsResource"/>
                         <property name="connectionThrottleResource" ref="connectionThrottleResource"/>
                         <property name="healthMonitorResource" ref="healthMonitorResource"/>
+                        <property name="metadataResource" ref="metadataResource"/>
                         <property name="usageResource" ref="usageResource"/>
                         <property name="errorpageResource" ref="errorpageResource"/>
                         <property name="sslTerminationResource" ref="sslTerminationResource"/>
@@ -192,6 +200,16 @@
           class="org.openstack.atlas.api.resources.HealthMonitorResource"
           parent="commonDependencyProvider"
           scope="request"/>
+    <bean name="metadataResource"
+          class="org.openstack.atlas.api.resources.MetadataResource"
+          parent="commonDependencyProvider"
+          scope="request">
+        <property name="metaResource">
+            <bean class="org.openstack.atlas.api.resources.MetaResource"
+                  parent="commonDependencyProvider"
+                  scope="request"/>
+        </property>
+    </bean>
     <bean id="connectionThrottleResource"
           class="org.openstack.atlas.api.resources.ConnectionThrottleResource"
           parent="commonDependencyProvider"

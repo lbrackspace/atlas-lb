@@ -10,6 +10,7 @@ import org.openstack.atlas.service.domain.entities.HealthMonitorType;
 import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.Meta;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeCondition;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
@@ -167,6 +168,24 @@ public class DomainToDataModelLoadBalancerMapperTest {
             Assert.assertTrue(dataModelLoadBalancer.getStatus().equals("PENDING_UPDATE"));
             Assert.assertTrue(dataModelLoadBalancer.getProtocol().equals("IMAPv4"));
             Assert.assertTrue(dataModelLoadBalancer.getAlgorithm().equals("WEIGHTED_ROUND_ROBIN"));
+        }
+
+        @Test
+        public void should_map_metadata_and_its_properties() {
+            final List<org.openstack.atlas.docs.loadbalancers.api.v1.Meta> list = dataModelLoadBalancer.getMetadata();
+            Assert.assertEquals(2, list.size());
+
+            for (org.openstack.atlas.docs.loadbalancers.api.v1.Meta meta : list) {
+                if (!(meta.getId() == 991 || meta.getId() == 992)) {
+                    Assert.fail();
+                }
+                if (!(meta.getKey().equals("metaKey1") || meta.getKey().equals("metaKey2"))) {
+                    Assert.fail();
+                }
+                if (!(meta.getValue().equals("metaValue1") || meta.getValue().equals("metaValue2"))) {
+                    Assert.fail();
+                }
+            }
         }
 
         @Test
@@ -555,6 +574,19 @@ public class DomainToDataModelLoadBalancerMapperTest {
         loadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
         loadBalancer.setProtocol(LoadBalancerProtocol.IMAPv4);
         loadBalancer.setConnectionLogging(true);
+
+        final Set<Meta> metaData = new HashSet<Meta>();
+        final Meta meta1 = new Meta();
+        meta1.setId(991);
+        meta1.setKey("metaKey1");
+        meta1.setValue("metaValue1");
+        metaData.add(meta1);
+        final Meta meta2 = new Meta();
+        meta2.setId(992);
+        meta2.setKey("metaKey2");
+        meta2.setValue("metaValue2");
+        metaData.add(meta2);
+        loadBalancer.setMetadata(metaData);
 
         final Set<Node> hashSet = new HashSet<Node>();
         final Node node1 = new Node();

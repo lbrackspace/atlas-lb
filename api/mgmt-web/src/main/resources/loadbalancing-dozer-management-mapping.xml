@@ -266,6 +266,12 @@
         </class-a>
         <class-b>org.openstack.atlas.service.domain.entities.LoadBalancer</class-b>
         <field>
+            <a>metadata</a>
+            <b>metadata</b>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.Meta</b-hint>
+        </field>
+        <field>
             <a>nodes</a>
             <b>nodes</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Node</a-hint>
@@ -354,6 +360,11 @@
     <mapping map-null="false">
         <class-a>org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountInHost</class-a>
         <class-b>org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHostId</class-b>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.Meta</class-b>
     </mapping>
 
     <mapping map-null="false">
