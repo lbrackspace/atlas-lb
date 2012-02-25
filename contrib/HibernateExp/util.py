@@ -27,59 +27,10 @@ import org.hexp.hibernateexp.util.HashUtil as HashUtil
 import org.hexp.hibernateexp.util.HibernateUtil as HibernateUtil
 import org.hexp.hibernateexp.HuApp as HuApp
 
-import org.openstack.atlas.service.domain.entities.UserPages as UserPages
-import org.openstack.atlas.service.domain.entities.AllowedDomain as AllowedDomain
-import org.openstack.atlas.service.domain.entities.NodeType as NodeType
-import org.openstack.atlas.service.domain.entities.VirtualIpv6 as VirtualIpv6
-import org.openstack.atlas.service.domain.entities.VirtualIpType as VirtualIpType
-import org.openstack.atlas.service.domain.entities.Cluster as Cluster
-import org.openstack.atlas.service.domain.entities.DataCenter as DataCenter
-import org.openstack.atlas.service.domain.entities.IpVersion as IpVersion
-import org.openstack.atlas.service.domain.entities.LoadBalancer as LoadBalancer
-import org.openstack.atlas.service.domain.entities.AccessList as AccessList
-import org.openstack.atlas.service.domain.entities.AccessListType as AccessListType
-import org.openstack.atlas.service.domain.entities.HealthMonitor as HealthMonitor
-import org.openstack.atlas.service.domain.entities.HealthMonitorType as HealthMonitorType
-import org.openstack.atlas.service.domain.entities.Node as Node
-import org.openstack.atlas.service.domain.entities.NodeStatus as NodeStatus
-import org.openstack.atlas.service.domain.entities.Host as Host
-import org.openstack.atlas.service.domain.entities.Backup as Backup
-import org.openstack.atlas.service.domain.entities.Usage as Usage
-import org.openstack.atlas.service.domain.entities.HostStatus as HostStatus
-import org.openstack.atlas.service.domain.entities.NodeCondition as NodeCondition
-import org.openstack.atlas.service.domain.entities.NodeStatus as NodeStatus
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6 as LoadBalancerJoinVip6
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip as LoadBalancerJoinVip
-import org.openstack.atlas.service.domain.entities.ConnectionLimit as ConnectionLimit
-import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm as LBA
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus as LBS
-import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol as LBP
-import org.openstack.atlas.service.domain.entities.LoadBalancerProtocolObject as LoadBalancerProtocolObject
-import org.openstack.atlas.service.domain.entities.SessionPersistence as SessionPersistence
-import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithmObject as LoadBalancerAlgorithmObject
-import org.openstack.atlas.service.domain.entities.Account as Account
 import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet as IPv4ToolSet
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException as IPStringConversionException
 import org.openstack.atlas.lb.helpers.ipstring.IPv4Range as IPv4Range
 import org.openstack.atlas.lb.helpers.ipstring.IPv4Ranges as IPv4Ranges
-import org.openstack.atlas.service.domain.events.entities.Event as Event
-import org.openstack.atlas.service.domain.events.entities.Alert as Alert
-import org.openstack.atlas.service.domain.events.entities.AlertStatus as AlertStatus
-import org.openstack.atlas.service.domain.events.entities.AccessListEvent as AccessListEvent
-import org.openstack.atlas.service.domain.events.entities.ConnectionLimitEvent as ConnectionLimitEvent
-import org.openstack.atlas.service.domain.events.entities.HealthMonitorEvent as HealthMonitorEvent
-import org.openstack.atlas.service.domain.events.entities.LoadBalancerEvent as LoadBalancerEvent
-import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent as LoadBalancerServiceEvent
-import org.openstack.atlas.service.domain.events.entities.NodeEvent as NodeEvent
-import org.openstack.atlas.service.domain.events.entities.VirtualIpEvent as VirtualIpEvent
-import org.openstack.atlas.service.domain.events.entities.SessionPersistenceEvent as SessionPersistenceEvent
-import org.openstack.atlas.service.domain.entities.Entity as Entity
-import org.openstack.atlas.service.domain.entities.JobState as State
-import org.openstack.atlas.service.domain.entities.RateLimit as RateLimit
-import org.openstack.atlas.service.domain.entities.AccountLimit as AccountLimit
-import org.openstack.atlas.service.domain.entities.LimitType as LimitType
-import org.openstack.atlas.service.domain.entities.UserPages as UserPages
-
 
 import org.openstack.atlas.util.ip.IPUtils   as IPUtils
 import org.openstack.atlas.util.ip.IPv6      as IPv6
@@ -88,6 +39,8 @@ import org.openstack.atlas.util.ip.IPv6Cidr  as IPv6Cidr
 import org.openstack.atlas.util.ip.IPv4Cidrs as IPv4Cidrs
 import org.openstack.atlas.util.ip.IPv4Cidr  as IPv4Cidr
 import org.openstack.atlas.util.ip.IPv4      as IPv4
+
+from lbentities import *
 
 bigInteger2IPv6 = IPv6.bigInteger2IPv6
 
@@ -176,9 +129,6 @@ ipv4BlocksToIpStrings = IPv4ToolSet.ipv4BlocksToIpStrings
 
 n = netcidr.NetCidr()
 
-LoadBalancerAlgorithm = LBA
-LoadBalancerProtocol = LBP
-LoadBalancerStatus = LBS
 rnow = Calendar.getInstance()
 
 rnd = random.Random()
