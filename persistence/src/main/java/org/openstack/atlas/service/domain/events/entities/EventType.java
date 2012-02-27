@@ -3,8 +3,11 @@ package org.openstack.atlas.service.domain.events.entities;
 import java.io.Serializable;
 
 public enum EventType implements Serializable {
+    BUILD_LOADBALANCER,
     CREATE_LOADBALANCER,
+    PENDING_UPDATE_LOADBALANCER,
     UPDATE_LOADBALANCER,
+    PENDING_DELETE_LOADBALANCER,
     DELETE_LOADBALANCER,
     CREATE_NODE,
     UPDATE_NODE,
