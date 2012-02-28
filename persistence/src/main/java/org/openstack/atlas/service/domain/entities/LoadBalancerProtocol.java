@@ -6,6 +6,7 @@ public enum LoadBalancerProtocol implements Serializable {
     HTTP,
     FTP,
     TCP,
+    TCP_CLIENT_FIRST,
     IMAPv2,
     IMAPv3,
     IMAPv4,

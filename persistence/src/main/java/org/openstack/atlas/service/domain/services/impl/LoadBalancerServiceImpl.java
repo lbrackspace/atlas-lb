@@ -526,7 +526,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
 
     private void verifyTCPProtocolandPort(LoadBalancer queueLb) throws TCPProtocolUnknownPortException {
-        if (queueLb.getProtocol() != null && (queueLb.getProtocol().equals(LoadBalancerProtocol.TCP))) {
+        if (queueLb.getProtocol() != null && (queueLb.getProtocol().equals(LoadBalancerProtocol.TCP) || queueLb.getProtocol().equals(LoadBalancerProtocol.TCP_CLIENT_FIRST))) {
             LOG.info("TCP Protocol detected. Port must exists");
             if (queueLb.getPort() == null) {
                 throw new TCPProtocolUnknownPortException("Must Provide port for TCP Protocol.");
