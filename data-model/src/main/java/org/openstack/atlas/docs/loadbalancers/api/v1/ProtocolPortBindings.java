@@ -26,6 +26,7 @@ public final class ProtocolPortBindings {
         protocolPortMap.put("LDAP",389);
         protocolPortMap.put("HTTP",80);
         protocolPortMap.put("TCP",0);
+        protocolPortMap.put("TCP_CLIENT_FIRST",0);
         protocolPortMap.put("LDAPS",636);
         protocolPortMap.put("DNS_TCP",53);
         protocolPortMap.put("DNS_UDP",53);

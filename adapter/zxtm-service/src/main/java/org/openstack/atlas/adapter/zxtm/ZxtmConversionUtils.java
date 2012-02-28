@@ -18,6 +18,7 @@ public class ZxtmConversionUtils {
 		mapper.put(LoadBalancerProtocol.FTP, VirtualServerProtocol.ftp);
 		mapper.put(LoadBalancerProtocol.IMAPv4, VirtualServerProtocol.imapv4);
         mapper.put(LoadBalancerProtocol.TCP, VirtualServerProtocol.server_first);
+        mapper.put(LoadBalancerProtocol.TCP_CLIENT_FIRST, VirtualServerProtocol.client_first);
         mapper.put(LoadBalancerProtocol.IMAPv2, VirtualServerProtocol.imapv2);
         mapper.put(LoadBalancerProtocol.IMAPv3, VirtualServerProtocol.imapv3);
 		mapper.put(LoadBalancerProtocol.IMAPS, VirtualServerProtocol.imaps);
