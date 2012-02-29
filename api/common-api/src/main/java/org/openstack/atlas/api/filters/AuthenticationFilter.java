@@ -109,7 +109,8 @@ public class AuthenticationFilter implements Filter {
 
             } catch (Exception e) {
                 if (e instanceof KeyStoneException) {
-                    LOG.error(String.format("Error while authenticating user %s-%s-%s:%s\n", accountId, authToken, username, e.getMessage()));
+                    String exceptMsg = getExtendedStackTrace(e);
+                    LOG.error(String.format("Error while authenticating user %s-%s-%s:%s\n", accountId, authToken, username, exceptMsg));
                     sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                     return;
                 } else {
