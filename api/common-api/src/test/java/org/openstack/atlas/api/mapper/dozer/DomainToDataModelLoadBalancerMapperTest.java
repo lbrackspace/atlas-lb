@@ -171,6 +171,13 @@ public class DomainToDataModelLoadBalancerMapperTest {
         }
 
         @Test
+        public void should_map_metadata_to_null_if_null() {
+            loadBalancer.setMetadata(null);
+            dataModelLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class);
+            Assert.assertNull(dataModelLoadBalancer.getMetadata());
+        }
+
+        @Test
         public void should_map_metadata_and_its_properties() {
             final List<org.openstack.atlas.docs.loadbalancers.api.v1.Meta> list = dataModelLoadBalancer.getMetadata();
             Assert.assertEquals(2, list.size());
