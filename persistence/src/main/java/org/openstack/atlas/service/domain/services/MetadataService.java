@@ -8,6 +8,7 @@ import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public interface MetadataService {
@@ -20,4 +21,8 @@ public interface MetadataService {
     void deleteMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException;
 
     void updateMeta(LoadBalancer domainLb) throws EntityNotFoundException;
+
+    List<String> prepareForMetadataDeletion(Integer accountId, Integer loadBalancerId, List<Integer> ids) throws EntityNotFoundException;
+
+    LoadBalancer deleteMetadata(LoadBalancer lb, Collection<Integer> ids) throws EntityNotFoundException;
 }
