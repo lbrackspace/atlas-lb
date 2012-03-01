@@ -56,7 +56,7 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         try {
             propList = (List) ClassReflectionTools.invokeGetter(value, getterName);
         } catch (ClassReflectionToolsException ex) {
-            String format = "Error Failed to dynamicly invoke %s.%s() during serialization of %s";
+            String format = "Error Failed to dynamically invoke %s.%s() during serialization of %s";
             String errMsg = String.format(format, valClassName, getterName, value.toString());
             throw new org.codehaus.jackson.JsonGenerationException(errMsg, ex);
         }
@@ -67,9 +67,10 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         if (this.wrapperFieldName != null) {
             jgen.writeStartObject();
             jgen.writeFieldName(this.wrapperFieldName);
+            writeJsonArray(jgen, propList, true);
+        } else {
+            writeJsonArray(jgen, propList, false);
         }
-
-        writeJsonArray(jgen, propList, false);
 
         if (hasLinks) {
             writeLinks(value, jgen, valClassName);
