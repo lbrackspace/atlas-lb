@@ -53,6 +53,7 @@ public class AuthenticationFilter implements Filter {
 
             String MISSING_TOKEN_MESSAGE = "Missing authentication token.";
             String INVALID_TOKEN_MESSAGE = "Invalid authentication token. Please renew";
+            String AUTH_FAULT_MESSAGE = "There was an error while authenticating, please contact support.";
             String authToken = httpServletRequest.getHeader("X-AUTH-TOKEN");
             Integer accountId;
             String username = null;
@@ -106,18 +107,22 @@ public class AuthenticationFilter implements Filter {
                 } else {
                     username = authInfo.getUserName();
                 }
-
-            } catch (Exception e) {
-                if (e instanceof KeyStoneException) {
-                    LOG.error(String.format("Error while authenticating user %s-%s-%s:%s\n", accountId, authToken, username, e.getMessage()));
+            } catch (KeyStoneException kex) {
+               String exceptMsg = getExtendedStackTrace(kex);
+               if (kex.code == 401 || kex.code == 404) {
+                    LOG.error(String.format("Error while authenticating user %s-%s-%s: ERROR CODE: %d Message: %s Full-Stack: %s\n", accountId, authToken, username, kex.code, kex.message, exceptMsg));
                     sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                     return;
-                } else {
+               } else {
+                    LOG.error(String.format("Error while authenticating user %s-%s-%s: ERROR CODE: %d Message: %s Details: %s Full-Stack: %s\n", accountId, authToken, username, kex.code, kex.message, kex.details, exceptMsg));
+                    sendUnauthorizedResponse(httpServletRequest, httpServletResponse, AUTH_FAULT_MESSAGE);
+                    return;
+               }
+            } catch (Exception e) {
                     String exceptMsg = getExtendedStackTrace(e);
                     LOG.error(String.format("Error while authenticating user %s-%s-%s:%s\n", accountId, authToken, username, exceptMsg));
                     httpServletResponse.sendError(500, e.getMessage());
                     return;
-                }
             }
 
             HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);

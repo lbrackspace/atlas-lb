@@ -24,6 +24,13 @@ import java.util.*;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.BUILD;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DELETED;
+import static org.openstack.atlas.service.domain.events.entities.CategoryType.CREATE;
+import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
+import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
+import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
+import static org.openstack.atlas.service.domain.events.entities.EventType.BUILD_LOADBALANCER;
+import static org.openstack.atlas.service.domain.events.entities.EventType.PENDING_UPDATE_LOADBALANCER;
+import static org.openstack.atlas.service.domain.events.entities.EventType.PENDING_DELETE_LOADBALANCER;
 
 @Service
 public class LoadBalancerServiceImpl extends BaseService implements LoadBalancerService {
@@ -116,30 +123,30 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             setHostForNewLoadBalancer(lb);
             setVipConfigForLoadBalancer(lb);
         } catch (UniqueLbPortViolationException e) {
-            LOG.debug("The port of the new LB is the same as the LB to which you wish to share a virtual ip.");
+            LOG.warn("The port of the new LB is the same as the LB to which you wish to share a virtual ip.");
             throw e;
         } catch (AccountMismatchException e) {
-            LOG.debug("The accounts do not match for the requested shared virtual ip.");
+            LOG.warn("The accounts do not match for the requested shared virtual ip.");
             throw e;
         } catch (BadRequestException e) {
-            LOG.debug("Protocol must be HTTP for session persistence.");
+            LOG.warn("Protocol must be HTTP for session persistence.");
             throw e;
         } catch (ProtocolHealthMonitorMismatchException e) {
-            LOG.debug("Protocol type of HTTP/HTTPS must match Health Monitor Type of HTTP/HTTPS.");
+            LOG.warn("Protocol type of HTTP/HTTPS must match Health Monitor Type of HTTP/HTTPS.");
             throw e;
         } catch (TCPProtocolUnknownPortException e) {
-            LOG.debug("Port must be supplied for TCP Protocol.");
+            LOG.warn("Port must be supplied for TCP Protocol.");
             throw e;
         } catch (UnprocessableEntityException e) {
-            LOG.debug("There is an error regarding the virtual IP hosts, with a shared virtual IP the LoadBalancers must reside within the same cluster.");
+            LOG.warn("There is an error regarding the virtual IP hosts, with a shared virtual IP the LoadBalancers must reside within the same cluster.");
             throw e;
         } catch (OutOfVipsException e) {
-            LOG.error("Out of virtual ips! Sending error response to client...");
+            LOG.warn("Out of virtual ips! Sending error response to client...");
             String errorMessage = e.getMessage();
             notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), errorMessage);
             throw e;
         } catch (IllegalArgumentException e) {
-            LOG.error("Virtual Ip could not be processed....");
+            LOG.warn("Virtual Ip could not be processed....");
             String errorMessage = e.getMessage();
             notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), errorMessage);
             throw e;
@@ -148,6 +155,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         LoadBalancer dbLoadBalancer = loadBalancerRepository.create(lb);
         dbLoadBalancer.setUserName(lb.getUserName());
         joinIpv6OnLoadBalancer(dbLoadBalancer);
+
+        // Add atom entry
+        String atomTitle = "Load Balancer in build status";
+        String atomSummary = "Load balancer in build status";
+        notificationService.saveLoadBalancerEvent(lb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, BUILD_LOADBALANCER, CREATE, INFO);
+
         return dbLoadBalancer;
     }
 
@@ -260,6 +273,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
         LOG.debug("Updated the loadbalancer in DB. Now sending response back.");
 
+        // Add atom entry
+        String atomTitle = "Load Balancer in pending update status";
+        String atomSummary = "Load balancer in pending update status";
+        notificationService.saveLoadBalancerEvent(loadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, PENDING_UPDATE_LOADBALANCER, UPDATE, INFO);
+
         // TODO: Sending db loadbalancer causes everything to update. Tweek for performance
         LOG.debug("Leaving " + getClass());
         return dbLoadBalancer;
@@ -360,6 +378,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         dbLb = loadBalancerRepository.update(dbLb);
         dbLb.setUserName(loadBalancer.getUserName());
+
+        // Add atom entry
+        String atomTitle = "Load Balancer in pending delete status";
+        String atomSummary = "Load balancer in pending delete status";
+        notificationService.saveLoadBalancerEvent(loadBalancer.getUserName(), loadBalancer.getAccountId(), loadBalancer.getId(), atomTitle, atomSummary, PENDING_DELETE_LOADBALANCER, DELETE, INFO);
+
         LOG.debug("Leaving " + getClass());
         return dbLb;
     }
@@ -387,15 +411,18 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     public void prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws BadRequestException {
         List<Integer> badLbIds = new ArrayList<Integer>();
         List<Integer> badLbStatusIds = new ArrayList<Integer>();
-        List<LoadBalancer> loadBalancersToDelete = new ArrayList<LoadBalancer>();
         for (int lbIdToDelete : loadBalancerIds) {
             try {
                 LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbIdToDelete, accountId);
                 if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE, false)) {
                     LOG.warn(StringHelper.immutableLoadBalancer(dbLoadBalancer));
                     badLbStatusIds.add(lbIdToDelete);
+                } else {
+                    // Add atom entry
+                    String atomTitle = "Load Balancer in pending delete status";
+                    String atomSummary = "Load balancer in pending delete status";
+                    notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, PENDING_DELETE_LOADBALANCER, DELETE, INFO);
                 }
-                loadBalancersToDelete.add(dbLoadBalancer);
             } catch (Exception e) {
                 badLbIds.add(lbIdToDelete);
             }
@@ -526,7 +553,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
 
     private void verifyTCPProtocolandPort(LoadBalancer queueLb) throws TCPProtocolUnknownPortException {
-        if (queueLb.getProtocol() != null && (queueLb.getProtocol().equals(LoadBalancerProtocol.TCP))) {
+        if (queueLb.getProtocol() != null && (queueLb.getProtocol().equals(LoadBalancerProtocol.TCP) || queueLb.getProtocol().equals(LoadBalancerProtocol.TCP_CLIENT_FIRST))) {
             LOG.info("TCP Protocol detected. Port must exists");
             if (queueLb.getPort() == null) {
                 throw new TCPProtocolUnknownPortException("Must Provide port for TCP Protocol.");

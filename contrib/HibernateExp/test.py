@@ -2,19 +2,20 @@
 	
 import com.zxtm.service.client.CertificateFiles as CertificateFiles
 import util
-util.setConfig("slice.json")
+util.setConfig("ndev.json")
 from util import *
 
 begin()
-nds = qq("SELECT ad from AllowedDomains ad")
 
+q  = "SELECT lbe from LoadBalancerServiceEvent lbe"
+q += "     WHERE lbe.author = 'dead2hill' ORDER BY lbe.created ASC"
 
+startTime = isoTocal("2012-02-02T11:35:00")
+endTimee  = isoTocal("2012-02-02T11:50:00")
 
-ro = AllowedDomains()
-ro.setName("rackexp.org")
-vn = AllowedDomains()
-vn.setName("viralnotes.com")
-tn = AllowedDomains()
-tn.setName("thesenotions.com")
+res = qq(q)
 
-saveList([ro,vn,tn])
+bunkQ  = "SELECT lbe FROM LoadBalancerServiceEvent lbe WHERE lbe.author ="
+bunkQ += ":author AND lbe.created BETWEEN :startDate AND :endDate"
+bunkO += " ORDER BY lbe.created ASC"
+
