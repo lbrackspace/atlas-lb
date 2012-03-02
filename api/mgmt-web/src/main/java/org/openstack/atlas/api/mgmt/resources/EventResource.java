@@ -49,14 +49,22 @@ public class EventResource extends ManagementDependencyProvider {
             startCal = Calendar.getInstance();
             startCal.add(Calendar.MONTH, -4);
         } else {
-            startCal = isoTocal(startDate);
+            try {
+                startCal = isoTocal(startDate);
+            } catch (Exception e) {
+                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Must specify startDate in the following format:  YYYY-MM-DDThh:mm:ss");
+            }
         }
 
         Calendar endCal;
         if (endDate == null) {
             endCal = Calendar.getInstance();
         } else {
-            endCal = isoTocal(endDate);
+            try {
+                endCal = isoTocal(endDate);
+            } catch (Exception e) {
+                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Must specify endDate in the following format: YYYY-MM-DDThh:mm:ss");
+            }
         }
 
         if (page == null) {
