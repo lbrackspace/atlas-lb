@@ -67,6 +67,10 @@ public class EventResource extends ManagementDependencyProvider {
             page = 1;
         }
 
+        if (startCal.getTimeInMillis() > endCal.getTimeInMillis()) {
+            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Must specify an earlier startDate than endDate.");
+        }
+
         org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents dEvents;
         LoadBalancerServiceEvents rEvents = new LoadBalancerServiceEvents();
         try {

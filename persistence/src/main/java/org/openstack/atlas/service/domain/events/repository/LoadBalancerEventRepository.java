@@ -15,10 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.util.*;
 
 @Repository
@@ -81,6 +77,10 @@ public class LoadBalancerEventRepository {
     }
 
     public LoadBalancerServiceEvents getAllEventsForUsername(String username, Integer page, Calendar startDate, Calendar endDate) {
+        Query query = entityManager.createQuery("SELECT lbe FROM LoadBalancerEvent lbe WHERE lbe.author = :author AND lbe.created BETWEEN :startDate AND :endDate ORDER BY lbe.created ASC")
+                .setParameter("author", username).setParameter("startDate", startDate).setParameter("endDate", endDate);
+        
+        /*
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<LoadBalancerServiceEvent> query = builder.createQuery(LoadBalancerServiceEvent.class);
         Root<LoadBalancerServiceEvent> root = query.from(LoadBalancerServiceEvent.class);
@@ -88,7 +88,8 @@ public class LoadBalancerEventRepository {
         Predicate timeRange = builder.between(root.get(LoadBalancerServiceEvent_.created), startDate, endDate);
         query.where(userEvents, timeRange);
         query.select(root);
-        List<LoadBalancerServiceEvent> lsv = entityManager.createQuery(query).getResultList();
+        */
+        List<LoadBalancerServiceEvent> lsv = query.getResultList();
         LoadBalancerServiceEvents events = new LoadBalancerServiceEvents();
         events.getLoadBalancerServiceEvents().addAll(lsv);
         return events;
