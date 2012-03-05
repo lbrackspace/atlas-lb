@@ -598,7 +598,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         if (!lbFromApi.getLoadBalancerJoinVipSet().isEmpty()) {
             if (lbFromApi.getLoadBalancerJoinVipSet().size() > 1) {
-                throw new BadRequestException("Must supply only one IPV4");
+                throw new BadRequestException("Must supply only one IPV4.");
             }
             Set<LoadBalancerJoinVip> newVipConfig = new HashSet<LoadBalancerJoinVip>();
             List<VirtualIp> vipsOnAccount = virtualIpRepository.getVipsByAccountId(lbFromApi.getAccountId());
@@ -627,8 +627,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             lbFromApi.setLoadBalancerJoinVip6Set(null);
             for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancerJoinVip6SetConfig) {
                 if (loadBalancerJoinVip6.getVirtualIp().getId() == null) {
-
-                    ////PROBLEM HERE! vip6id is null on shared...
                     VirtualIpv6 ipv6 = virtualIpService.allocateIpv6VirtualIp(lbFromApi);
                     LoadBalancerJoinVip6 jbjv6 = new LoadBalancerJoinVip6();
                     jbjv6.setVirtualIp(ipv6);

@@ -31,6 +31,15 @@ public class SharedOrNewVipVerifier implements Verifier<List<VirtualIp>> {
             }
         }
 
+        if (virtualIps.size() >= 2) {
+            for (VirtualIp virtualIp : virtualIps) {
+                if (virtualIp.getIpVersion() != null || virtualIp.getType() != null) {
+                    validationResults.add(new ValidationResult(false, "Must supply one virtual ip for a non-shared virtual ip request."));
+                    return new VerifierResult(false, validationResults);
+                }
+            }
+        }
+
         return new VerifierResult(true);
     }
 }
