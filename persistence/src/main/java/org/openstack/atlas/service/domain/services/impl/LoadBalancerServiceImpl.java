@@ -621,6 +621,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             lbFromApi.setLoadBalancerJoinVip6Set(null);
             for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancerJoinVip6SetConfig) {
                 if (loadBalancerJoinVip6.getVirtualIp().getId() == null) {
+
+                    ////PROBLEM HERE! vip6id is null on shared...
                     VirtualIpv6 ipv6 = virtualIpService.allocateIpv6VirtualIp(lbFromApi);
                     LoadBalancerJoinVip6 jbjv6 = new LoadBalancerJoinVip6();
                     jbjv6.setVirtualIp(ipv6);
