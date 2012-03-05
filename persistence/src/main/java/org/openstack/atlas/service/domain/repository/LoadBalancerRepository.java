@@ -255,7 +255,7 @@ public class LoadBalancerRepository {
     }
 
     public ConnectionLimit getConnectionLimitsbyAccountIdLoadBalancerId(Integer accountId,
-                                                                        Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
+            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -279,7 +279,7 @@ public class LoadBalancerRepository {
     }
 
     public SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId,
-                                                                             Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
+            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -291,7 +291,7 @@ public class LoadBalancerRepository {
     }
 
     public LoadBalancer enableSessionPersistenceByIdAndAccountId(Integer id,
-                                                                 Integer accountId) throws EntityNotFoundException, BadRequestException {
+            Integer accountId) throws EntityNotFoundException, BadRequestException {
         LoadBalancer lb;
         lb = getById(id);
         if (!lb.getAccountId().equals(accountId)) {
@@ -445,8 +445,8 @@ public class LoadBalancerRepository {
     }
 
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
-                                                      String status, LbQueryStatus queryStatus, Calendar changedSince,
-                                                      Integer offset, Integer limit, Integer marker) throws BadRequestException {
+            String status, LbQueryStatus queryStatus, Calendar changedSince,
+            Integer offset, Integer limit, Integer marker) throws BadRequestException {
         List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
         LoadBalancerStatus lbStatus;
         String selectClause;
@@ -597,7 +597,7 @@ public class LoadBalancerRepository {
     }
 
     public List<AccessList> getAccessListByAccountIdLoadBalancerId(int accountId, int loadbalancerId,
-                                                                   Integer... p) throws EntityNotFoundException, DeletedStatusException {
+            Integer... p) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId,
                 accountId); // Puke if the LoadBalancer is not found presumebly Account LoadBalancer mismatch
         List<AccessList> accessList = new ArrayList<AccessList>();
@@ -630,8 +630,33 @@ public class LoadBalancerRepository {
 
     }
 
+    // A simple Question shoulden't fetch an entire loadbalancer object.
+    public boolean accountOwnsLoadBalancer(Integer aid, Integer lid) {
+        String qStr = "SELECT lb.id from LoadBalancer lb "
+                + "where lb.accountId=:aid and lb.id = :lid";
+        Query query = entityManager.createQuery(qStr).
+                setParameter("aid", aid).setParameter("lid", lid);
+        List<Integer> ids = query.getResultList();
+        if (ids.size() <= 0) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean loadBalancerHasHealthMonitor(Integer lid) {
+        String qStr = "SELECT lb.healthMonitor.id from LoadBalancer lb "
+                + " where lb.id = :lid";
+        Query query = entityManager.createQuery(qStr).setParameter("lid",lid);
+        List<Integer> ids = query.getResultList();
+        if(ids.size()<=0){
+            return false;
+        }
+        return true;
+
+    }
+
     public HealthMonitor getHealthMonitor(Integer accountId,
-                                          Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
+            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -643,7 +668,7 @@ public class LoadBalancerRepository {
     }
 
     public Set<VirtualIp> getVipsByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId,
-                                                           Integer... p) throws EntityNotFoundException, DeletedStatusException {
+            Integer... p) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadBalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -949,7 +974,7 @@ public class LoadBalancerRepository {
     }
 
     private Collection<AccountBilling> createAccountBillings(List<AccountUsage> accountUsageResults,
-                                                             List<Usage> lbUsageResults) {
+            List<Usage> lbUsageResults) {
         Map<Integer, AccountBilling> accountBillings = new HashMap<Integer, AccountBilling>();
         Map<Integer, LoadBalancerBilling> loadBalancerBillings = new HashMap<Integer, LoadBalancerBilling>();
 
@@ -976,7 +1001,7 @@ public class LoadBalancerRepository {
     }
 
     private AccountBilling getNewOrExistingAccountBilling(Map<Integer, AccountBilling> accountBillings,
-                                                          Integer accountId) {
+            Integer accountId) {
         AccountBilling accountBilling;
         if (accountBillings.containsKey(accountId)) {
             accountBilling = accountBillings.get(accountId);
@@ -1055,7 +1080,7 @@ public class LoadBalancerRepository {
     }
 
     public HostUsageRecord getHostUsage(Integer hostId, Calendar startTime,
-                                        Calendar endTime) throws EntityNotFoundException {
+            Calendar endTime) throws EntityNotFoundException {
 
         Query query;
         List<Object> hostUsageResults;
@@ -1330,7 +1355,7 @@ public class LoadBalancerRepository {
 
         criteria.select(lbRoot);
         criteria.where(builder.and(hasAccountId, builder.or(createdBetweenDates, updatedBetweenDates)));
-        return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit+1).getResultList();
+        return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit + 1).getResultList();
     }
 
     public Map<Integer, Integer> getAccountIdMapForUsageRecords(List<Usage> rawLoadBalancerUsageList) {
@@ -1341,8 +1366,7 @@ public class LoadBalancerRepository {
             loadBalancerIds.add(usage.getLoadbalancer().getId());
         }
 
-        Query query = entityManager.createQuery("SELECT l.accountId, l.id FROM LoadBalancer l where l.id in (:idList)")
-                .setParameter("idList", loadBalancerIds);
+        Query query = entityManager.createQuery("SELECT l.accountId, l.id FROM LoadBalancer l where l.id in (:idList)").setParameter("idList", loadBalancerIds);
         final List<Object[]> resultList = query.getResultList();
 
         for (Object[] row : resultList) {

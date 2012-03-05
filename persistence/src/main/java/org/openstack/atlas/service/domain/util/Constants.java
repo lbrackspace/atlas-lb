@@ -19,4 +19,6 @@ public final class Constants {
     public static final String DEFAULT_ERRORFILE = "global_error.html";
     public static final String DEFAULT_ERROR_MESSAGE = "<html>No suitable nodes.</html>";
     public static final String NoPrimaryNodeError = "you must have at least one primary node enabled";
+    public static final String NoMonitorForSecNodes = "you must enable health monitoring to use secondary nodes";
+    public static final String WontDeleteMonitorCauseSecNodes = "Can not delete HealthMonitor since this lb contains Secondary nodes that depend on it. Please secondary nodes first.";
 }
