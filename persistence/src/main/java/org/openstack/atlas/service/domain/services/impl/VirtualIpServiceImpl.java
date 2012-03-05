@@ -150,7 +150,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     }
 
     @Override
-    @Transactional(rollbackFor = {EntityNotFoundException.class, UnprocessableEntityException.class, ImmutableEntityException.class, BadRequestException.class, OutOfVipsException.class, UniqueLbPortViolationException.class, AccountMismatchException.class} )
+    @Transactional(rollbackFor = {EntityNotFoundException.class, UnprocessableEntityException.class, ImmutableEntityException.class, BadRequestException.class, OutOfVipsException.class, UniqueLbPortViolationException.class, AccountMismatchException.class})
     public VirtualIp addVirtualIpToLoadBalancer(VirtualIp vipConfig, LoadBalancer lb, Ticket ticket) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException, OutOfVipsException, UniqueLbPortViolationException, AccountMismatchException {
         VirtualIp vipToAdd;
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(lb.getId());
@@ -191,7 +191,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             vipToAdd = allocateIpv4VirtualIp(vipConfig, dbLoadBalancer.getHost().getCluster());
         }
 
-        if(!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
@@ -205,7 +205,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     }
 
     @Override
-    @Transactional(rollbackFor = {EntityNotFoundException.class, UnprocessableEntityException.class, ImmutableEntityException.class, BadRequestException.class, OutOfVipsException.class, UniqueLbPortViolationException.class, AccountMismatchException.class} )
+    @Transactional(rollbackFor = {EntityNotFoundException.class, UnprocessableEntityException.class, ImmutableEntityException.class, BadRequestException.class, OutOfVipsException.class, UniqueLbPortViolationException.class, AccountMismatchException.class})
     public VirtualIpv6 addIpv6VirtualIpToLoadBalancer(VirtualIpv6 vipConfig, LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException, OutOfVipsException, UniqueLbPortViolationException, AccountMismatchException {
 
         VirtualIpv6 vipToAdd;
@@ -217,7 +217,12 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         }
 
         if (vipConfig.getId() != null) {
-            vipToAdd = virtualIpv6Repository.getById(vipConfig.getId());
+            try {
+                vipToAdd = virtualIpv6Repository.getById(vipConfig.getId());
+            } catch (EntityNotFoundException enfe) {
+                LOG.debug(String.format("The id specified: %s could not be found. This is a request to a IPV4 virtual ip id. Or it is indeed a non-existent virutal ip. Account: %s. LoadBalancer: %s. %s", vipConfig.getId(), lb.getAccountId(), lb.getId(), enfe.getMessage()));
+                throw new EntityNotFoundException("Please provide a valid IPV6 virtual ip.");
+            }
 
             if (!vipTypeMatchesTypeForLoadBalancer(VirtualIpType.PUBLIC, dlb)) {
                 String message = StringHelper.mismatchingVipType(VirtualIpType.PUBLIC);
@@ -246,7 +251,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             vipToAdd = allocateIpv6VirtualIp(dlb);
         }
 
-        if(!loadBalancerRepository.testAndSetStatus(dlb.getAccountId(), dlb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+        if (!loadBalancerRepository.testAndSetStatus(dlb.getAccountId(), dlb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dlb);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
@@ -366,7 +371,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadbalancerId, accountId);
 
         if (!hasAtLeastMinRequiredVips(dbLoadBalancer, virtualIpIds)) {
-             LOG.debug("Updating the lb status to active");
+            LOG.debug("Updating the lb status to active");
             throw new BadRequestException(String.format("Cannot delete virtual ips. Minimum number of virtual ips required is %d.", Constants.MIN_REQUIRED_VIPS));
         }
 
@@ -376,7 +381,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             throw new BadRequestException(String.format("Must provide valid virtual ips, %s could not be found.", StringUtilities.DelimitString(badVipIds, ",")));
         }
 
-        if(!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
@@ -561,7 +566,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     public VirtualIpv6 allocateIpv6VirtualIp(LoadBalancer loadBalancer) throws EntityNotFoundException {
         // Acquire lock on account row due to concurrency issue
         virtualIpv6Repository.getLockedAccountRecord(loadBalancer.getAccountId());
-        
+
         VirtualIpv6 v6;
         Integer clusterId = loadBalancer.getHost().getCluster().getId();
         Integer accountId = loadBalancer.getAccountId();

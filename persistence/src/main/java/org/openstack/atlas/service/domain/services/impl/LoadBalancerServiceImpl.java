@@ -597,6 +597,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private void setVipConfigForLoadBalancer(LoadBalancer lbFromApi) throws OutOfVipsException, AccountMismatchException, UniqueLbPortViolationException, EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
 
         if (!lbFromApi.getLoadBalancerJoinVipSet().isEmpty()) {
+            if (lbFromApi.getLoadBalancerJoinVipSet().size() > 1) {
+                throw new BadRequestException("Must supply only one IPV4");
+            }
             Set<LoadBalancerJoinVip> newVipConfig = new HashSet<LoadBalancerJoinVip>();
             List<VirtualIp> vipsOnAccount = virtualIpRepository.getVipsByAccountId(lbFromApi.getAccountId());
             for (LoadBalancerJoinVip loadBalancerJoinVip : lbFromApi.getLoadBalancerJoinVipSet()) {
@@ -615,6 +618,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         if (!lbFromApi.getLoadBalancerJoinVip6Set().isEmpty()) {
+            if (lbFromApi.getLoadBalancerJoinVip6Set().size() > 1) {
+                throw new BadRequestException("Must supply only one IPV6");
+            }
             Set<LoadBalancerJoinVip6> newVip6Config = new HashSet<LoadBalancerJoinVip6>();
             List<VirtualIpv6> vips6OnAccount = virtualIpv6Repository.getVips6ByAccountId(lbFromApi.getAccountId());
             Set<LoadBalancerJoinVip6> loadBalancerJoinVip6SetConfig = lbFromApi.getLoadBalancerJoinVip6Set();
