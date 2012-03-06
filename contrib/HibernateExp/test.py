@@ -2,17 +2,15 @@
 	
 import com.zxtm.service.client.CertificateFiles as CertificateFiles
 import util
-util.setConfig("ndev.json",skipDb=True)
+util.setConfig("ndev.json")
 from util import *
 
-s = ZeusTest(stubs)
 
-nodes = [["50.56.125.120:80","184.106.70.249:80"]]
-pools = ["354934_211"]
+begin()
 
-tmp = s.stubs.p.getNodesPriorityValue(pools,nodes)
-pris = [(p.getNode(),p.getPriority()) for p in tmp[0]]
+qStr  = "SELECT lb.healthMonitor.id from LoadBalancer lb "
+qStr += "    where lb.accountId=354932 and lb.id=221"
 
-penabled = s.stubs.p.getPriorityEnabled(pools)
+qStr  = "SELECT lb.id from LoadBalancer lb "
+qStr += "    where lb.accountId=354934 and lb.id = 221"
 
-pnodes = s.stubs.p.getPriorityNodes(pools)
