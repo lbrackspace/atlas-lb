@@ -38,8 +38,8 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getName()).must().exist().forContext(POST).withMessage("Must provide a name for the load balancer.");
                 result(validationTarget().getName()).must().not().beEmptyOrNull().forContext(POST).withMessage("Load balancer name is invalid. Please specify a valid name");
                 result(validationTarget().getProtocol()).must().exist().forContext(POST).withMessage("Must provide a valid protocol for the load balancer.");
-                result(validationTarget().getVirtualIps()).must().exist().forContext(POST).withMessage("Must provide exactly one virtual ip for the load balancer.");
-                result(validationTarget().getVirtualIps()).must().haveSizeOfExactly(1).forContext(POST).withMessage("Must have only one virtual ip for the load balancer");
+                result(validationTarget().getVirtualIps()).must().exist().forContext(POST).withMessage("Must provide at least one virtual ip for the load balancer.");
+                result(validationTarget().getVirtualIps()).must().haveSizeOfAtLeast(1).forContext(POST).withMessage("Must have at least one virtual ip for the load balancer");
                 result(validationTarget().getVirtualIps()).if_().exist().then().must().adhereTo(new SharedOrNewVipVerifier()).forContext(POST).withMessage("Must specify either a shared or new virtual ip.");
                 result(validationTarget().getVirtualIps()).if_().exist().then().must().delegateTo(new VirtualIpValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getConnectionLogging()).if_().exist().then().must().delegateTo(new ConnectionLoggingValidator().getValidator(), POST);

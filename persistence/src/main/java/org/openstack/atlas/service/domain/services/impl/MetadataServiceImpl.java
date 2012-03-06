@@ -2,23 +2,22 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entities.AccountLimitType;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.Meta;
-import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.pojos.NodeMap;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
 import org.openstack.atlas.service.domain.services.MetadataService;
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
+import org.openstack.atlas.service.domain.util.Constants;
+import org.openstack.atlas.util.converters.StringConverter;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class MetadataServiceImpl extends BaseService implements MetadataService {
@@ -109,6 +108,49 @@ public class MetadataServiceImpl extends BaseService implements MetadataService 
         }
 
         metadataRepository.update(currentLb);
+    }
+
+    @Override
+    public List<String> prepareForMetadataDeletion(Integer accountId, Integer loadBalancerId, List<Integer> ids) throws EntityNotFoundException {
+        List<String> validationErrors = new ArrayList<String>();
+        String format, errMsg;
+
+        LoadBalancer currentLb = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
+        Set<Integer> currentMetaIds = new HashSet<Integer>();
+        Set<Integer> invalidMetaIds = new HashSet<Integer>();
+
+        for (Meta meta : currentLb.getMetadata()) {
+            currentMetaIds.add(meta.getId());
+        }
+
+        for (Integer id : ids) {
+            if(!currentMetaIds.contains(id)) invalidMetaIds.add(id);
+        }
+
+        int batch_delete_limit = accountLimitService.getLimit(accountId, AccountLimitType.BATCH_DELETE_LIMIT);
+
+        if (ids.size() > batch_delete_limit) {
+            format = "Request to delete %d metadata items exceeds the account limit"
+                    + " BATCH_DELETE_LIMIT of %d please attempt to delete fewer then %d nodes";
+            errMsg = String.format(format, ids.size(), batch_delete_limit, batch_delete_limit);
+            validationErrors.add(errMsg);
+        }
+        
+        if (!invalidMetaIds.isEmpty()) {
+            // Don't even take this request seriously any ID does not belong to this account
+            format = "Metadata ids %s are not a part of your loadbalancer";
+            errMsg = String.format(format, StringConverter.integersAsString(invalidMetaIds));
+            validationErrors.add(errMsg);
+        }
+
+        return validationErrors;
+    }
+
+    @Transactional
+    @Override
+    public LoadBalancer deleteMetadata(LoadBalancer lb, Collection<Integer> ids) throws EntityNotFoundException {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
+        return metadataRepository.deleteMetadata(dbLoadBalancer, ids);
     }
 
     private boolean loadBalancerContainsMeta(LoadBalancer lb, Meta meta) {

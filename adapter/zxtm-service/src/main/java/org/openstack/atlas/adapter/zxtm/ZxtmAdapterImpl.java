@@ -536,7 +536,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         addVirtualIps(config, lb, ZxtmNameBuilder.genVSName(lb));
         if (lb.hasSsl()) {
-            addVirtualIps(config, lb, ZxtmNameBuilder.genVSName(lb));
+            addVirtualIps(config, lb, ZxtmNameBuilder.genSslVSName(lb));
         }
     }
 

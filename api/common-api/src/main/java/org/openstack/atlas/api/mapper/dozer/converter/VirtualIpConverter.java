@@ -31,7 +31,7 @@ public class VirtualIpConverter implements CustomConverter {
             VirtualIpDozerWrapper dozerWrapper = (VirtualIpDozerWrapper) sourceFieldValue;
             ArrayList<org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp> vips = new ArrayList<org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp>();
 
-             try {
+            try {
                 for (LoadBalancerJoinVip loadBalancerJoinVip : dozerWrapper.getLoadBalancerJoinVipSet()) {
                     VirtualIp vip = new VirtualIp();
                     vip.setId(loadBalancerJoinVip.getVirtualIp().getId());
@@ -50,8 +50,8 @@ public class VirtualIpConverter implements CustomConverter {
                     }
                     vips.add(vip);
                 }
-             } catch (NullPointerException e) {
-                 //Ignore, there is nothing to map
+            } catch (NullPointerException e) {
+                //Ignore, there is nothing to map
             }
 
             if (dozerWrapper.getLoadBalancerJoinVipSet() != null || !dozerWrapper.getLoadBalancerJoinVip6Set().isEmpty()) {
@@ -80,9 +80,17 @@ public class VirtualIpConverter implements CustomConverter {
             for (VirtualIp vip : vips) {
                 if (vip.getId() != null) {
                     if (vip.getId() >= VIP_ID_DEMARCATION) {
-                        loadBalancerJoinVip6Set = buildSharedVip6(vip);
+                        if (loadBalancerJoinVip6Set.isEmpty()) {
+                            loadBalancerJoinVip6Set = buildSharedVip6Set(vip);
+                        } else {
+                            loadBalancerJoinVip6Set.add(buildSharedVip6(vip));
+                        }
                     } else {
-                        loadBalancerJoinVipSet = buildSharedVip(vip);
+                        if (loadBalancerJoinVipSet.isEmpty()) {
+                            loadBalancerJoinVipSet = buildSharedVipSet(vip);
+                        } else {
+                            loadBalancerJoinVipSet.add(buildSharedVip(vip));
+                        }
                     }
                 }
                 if (vip.getIpVersion() != null) {
@@ -108,7 +116,7 @@ public class VirtualIpConverter implements CustomConverter {
                         vip.setIpVersion(IpVersion.IPV4);
                         loadBalancerJoinVipSet = buildLoadBalancerJoinVipSet(vip);
 
-                    }else if (vip.getType() != null && vip.getType().equals(VipType.SERVICENET)) {
+                    } else if (vip.getType() != null && vip.getType().equals(VipType.SERVICENET)) {
                         vip.setIpVersion(IpVersion.IPV4);
                         loadBalancerJoinVipSet = buildLoadBalancerJoinVipSet(vip);
                     }
@@ -191,28 +199,52 @@ public class VirtualIpConverter implements CustomConverter {
         return loadBalancerJoinVipSet;
     }
 
-    private Set<LoadBalancerJoinVip> buildSharedVip(VirtualIp vip) {
+    private LoadBalancerJoinVip buildSharedVip(VirtualIp vip) {
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
-        Set<LoadBalancerJoinVip> loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
+//        Set<LoadBalancerJoinVip> loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
 
         org.openstack.atlas.service.domain.entities.VirtualIp domainVip = new org.openstack.atlas.service.domain.entities.VirtualIp();
         domainVip.setId(vip.getId());
 
         loadBalancerJoinVip.setVirtualIp(domainVip);
-        loadBalancerJoinVipSet.add(loadBalancerJoinVip);
+//        loadBalancerJoinVipSet.add(loadBalancerJoinVip);
+
+        return loadBalancerJoinVip;
+    }
+
+    private Set<LoadBalancerJoinVip> buildSharedVipSet(VirtualIp vip) {
+//        LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
+        Set<LoadBalancerJoinVip> loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
+
+//        org.openstack.atlas.service.domain.entities.VirtualIp domainVip = new org.openstack.atlas.service.domain.entities.VirtualIp();
+//        domainVip.setId(vip.getId());
+
+//        loadBalancerJoinVip.setVirtualIp(domainVip);
+        loadBalancerJoinVipSet.add(buildSharedVip(vip));
 
         return loadBalancerJoinVipSet;
     }
 
-    private Set<LoadBalancerJoinVip6> buildSharedVip6(VirtualIp vip) {
+    private LoadBalancerJoinVip6 buildSharedVip6(VirtualIp vip) {
         LoadBalancerJoinVip6 loadBalancerJoinVip6 = new LoadBalancerJoinVip6();
-        Set<LoadBalancerJoinVip6> loadBalancerJoinVip6Set = new HashSet<LoadBalancerJoinVip6>();
 
         org.openstack.atlas.service.domain.entities.VirtualIpv6 domainVip6 = new org.openstack.atlas.service.domain.entities.VirtualIpv6();
         domainVip6.setId(vip.getId());
 
         loadBalancerJoinVip6.setVirtualIp(domainVip6);
-        loadBalancerJoinVip6Set.add(loadBalancerJoinVip6);
+
+        return loadBalancerJoinVip6;
+    }
+
+    private Set<LoadBalancerJoinVip6> buildSharedVip6Set(VirtualIp vip) {
+//        LoadBalancerJoinVip6 loadBalancerJoinVip6 = new LoadBalancerJoinVip6();
+        Set<LoadBalancerJoinVip6> loadBalancerJoinVip6Set = new HashSet<LoadBalancerJoinVip6>();
+
+//        org.openstack.atlas.service.domain.entities.VirtualIpv6 domainVip6 = new org.openstack.atlas.service.domain.entities.VirtualIpv6();
+//        domainVip6.setId(vip.getId());
+
+//        loadBalancerJoinVip6.setVirtualIp(domainVip6);
+        loadBalancerJoinVip6Set.add(buildSharedVip6(vip));
 
         return loadBalancerJoinVip6Set;
     }

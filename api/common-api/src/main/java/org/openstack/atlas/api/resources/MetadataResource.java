@@ -10,13 +10,20 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Meta;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
+import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -75,6 +82,33 @@ public class MetadataResource extends CommonDependencyProvider {
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
+    }
+
+    @DELETE
+    @Produces({APPLICATION_XML, APPLICATION_JSON})
+    public Response deleteMetadata(@QueryParam("id") List<Integer> metaIds) {
+        List<String> validationErrors;
+        Collections.sort(metaIds);
+        LoadBalancer dlb = new LoadBalancer();
+        dlb.setId(loadBalancerId);
+        dlb.setAccountId(accountId);
+
+        try {
+            if (metaIds.isEmpty()) {
+                BadRequestException badRequestException = new BadRequestException("Must supply one or more id's to process this request.");
+                return ResponseFactory.getErrorResponse(badRequestException, null, null);
+            }
+
+            validationErrors = metadataService.prepareForMetadataDeletion(accountId, loadBalancerId, metaIds);
+            if (!validationErrors.isEmpty()) {
+                return getValidationFaultResponse(validationErrors);
+            }
+            
+            metadataService.deleteMetadata(dlb, metaIds);
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }
+        return Response.status(200).build();
     }
 
     @Path("{id: [-+]?[1-9][0-9]*}")

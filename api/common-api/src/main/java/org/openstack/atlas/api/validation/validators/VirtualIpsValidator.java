@@ -16,8 +16,8 @@ public class VirtualIpsValidator implements ResourceValidator<VirtualIps> {
         validator = build(new ValidatorBuilder<VirtualIps>(VirtualIps.class) {
             {
                 // SHARED EXPECTATIONS
-                result(validationTarget().getVirtualIps()).must().exist().withMessage("Must provide one and only one virtual Ip.");
-                result(validationTarget().getVirtualIps()).if_().exist().then().must().haveSizeOfExactly(1).withMessage("Must provide one and only one virtual Ip.");
+                result(validationTarget().getVirtualIps()).must().exist().withMessage("Must provide at least one virtual Ip.");
+                result(validationTarget().getVirtualIps()).if_().exist().then().must().haveSizeOfAtLeast(1).withMessage("Must provide at least one virtual Ip.");
                 result(validationTarget().getVirtualIps()).must().delegateTo(new VirtualIpValidator().getValidator(), POST);
             }
         });

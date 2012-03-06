@@ -92,7 +92,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         // Check if this user has at least one Primary node.
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
-        if(!npc.hasPrimary()){
+        if (!npc.hasPrimary()) {
             throw new BadRequestException(Constants.NoPrimaryNodeError);
         }
 
@@ -129,7 +129,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             LOG.warn("The accounts do not match for the requested shared virtual ip.");
             throw e;
         } catch (BadRequestException e) {
-            LOG.warn("Protocol must be HTTP for session persistence.");
+            LOG.debug(e.getMessage());
             throw e;
         } catch (ProtocolHealthMonitorMismatchException e) {
             LOG.warn("Protocol type of HTTP/HTTPS must match Health Monitor Type of HTTP/HTTPS.");
@@ -561,7 +561,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
     }
 
-    private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException {
+    private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException, BadRequestException {
         boolean isHost = false;
         LoadBalancer gLb = new LoadBalancer();
 
@@ -597,19 +597,27 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 //            }
 //        }
 
-        for (LoadBalancerJoinVip loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVipSet()) {
-            if (loadBalancerJoinVip.getVirtualIp().getId() != null) {
-                isHost = true;
-                gLb = virtualIpRepository.getLoadBalancersByVipId(loadBalancerJoinVip.getVirtualIp().getId()).iterator().next();
+        Integer vipId = null;
+        try {
+            for (LoadBalancerJoinVip loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVipSet()) {
+                if (loadBalancerJoinVip.getVirtualIp().getId() != null) {
+                    isHost = true;
+                    vipId = loadBalancerJoinVip.getVirtualIp().getId();
+                    gLb = virtualIpRepository.getLoadBalancersByVipId(vipId).iterator().next();
+                }
             }
-        }
 
-        for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancer.getLoadBalancerJoinVip6Set()) {
-            if (loadBalancerJoinVip6.getVirtualIp().getId() != null) {
-                isHost = true;
-                gLb = virtualIpv6Repository.getLoadBalancersByVipId(loadBalancerJoinVip6.getVirtualIp().getId()).iterator().next();
+            for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancer.getLoadBalancerJoinVip6Set()) {
+                if (loadBalancerJoinVip6.getVirtualIp().getId() != null) {
+                    isHost = true;
+                    vipId = loadBalancerJoinVip6.getVirtualIp().getId();
+                    gLb = virtualIpv6Repository.getLoadBalancersByVipId(vipId).iterator().next();
 
+                }
             }
+        } catch (NoSuchElementException nse) {
+            LOG.info(String.format("Virtual ip id provided was not valid. for Account: %s LoadBalancer %s VIPID: %s", loadBalancer.getAccountId(), loadBalancer.getId(), vipId));
+            throw new BadRequestException("Shared virtual ip could not be found. Please provide a valid virtual ip id to process this request.");
         }
 
         if (!isHost) {
@@ -624,6 +632,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private void setVipConfigForLoadBalancer(LoadBalancer lbFromApi) throws OutOfVipsException, AccountMismatchException, UniqueLbPortViolationException, EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
 
         if (!lbFromApi.getLoadBalancerJoinVipSet().isEmpty()) {
+            if (lbFromApi.getLoadBalancerJoinVipSet().size() > 1) {
+                throw new BadRequestException("Cannot supply more than one IPV4 virtual ip.");
+            }
             Set<LoadBalancerJoinVip> newVipConfig = new HashSet<LoadBalancerJoinVip>();
             List<VirtualIp> vipsOnAccount = virtualIpRepository.getVipsByAccountId(lbFromApi.getAccountId());
             for (LoadBalancerJoinVip loadBalancerJoinVip : lbFromApi.getLoadBalancerJoinVipSet()) {
@@ -642,6 +653,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         if (!lbFromApi.getLoadBalancerJoinVip6Set().isEmpty()) {
+            if (lbFromApi.getLoadBalancerJoinVip6Set().size() > 1) {
+                throw new BadRequestException("Cannot supply more than one IPV6 virtual ip");
+            }
             Set<LoadBalancerJoinVip6> newVip6Config = new HashSet<LoadBalancerJoinVip6>();
             List<VirtualIpv6> vips6OnAccount = virtualIpv6Repository.getVips6ByAccountId(lbFromApi.getAccountId());
             Set<LoadBalancerJoinVip6> loadBalancerJoinVip6SetConfig = lbFromApi.getLoadBalancerJoinVip6Set();

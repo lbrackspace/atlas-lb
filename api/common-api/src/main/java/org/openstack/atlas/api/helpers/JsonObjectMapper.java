@@ -15,7 +15,6 @@ import org.openstack.atlas.api.helpers.JsonSerializer.ObjectWrapperSerializer;
 import org.openstack.atlas.api.helpers.JsonSerializer.PropertyCollectionSerializer;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.w3.atom.Link;
 /* import org.openstack.atlas.docs.loadbalancers.api.v1.*; STOP splat codeing this. Yes that means you Trevor */
 
@@ -34,6 +33,8 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
 
 public class JsonObjectMapper extends ObjectMapper {
 
@@ -48,11 +49,11 @@ public class JsonObjectMapper extends ObjectMapper {
 
 
         Class[] serializerWrapperClasses = new Class[]{HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class,
+            SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class,
             Node.class, RateLimit.class, Errorpage.class,SslTermination.class, Link.class, AllowedDomain.class};
 
         Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class,
+            SessionPersistence.class, ConnectionLogging.class, Meta.class,
             ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
             Errorpage.class, SslTermination.class, Host.class, Link.class, AllowedDomain.class};
 
@@ -79,7 +80,9 @@ public class JsonObjectMapper extends ObjectMapper {
 
         csf.addSpecificMapping(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems"));
         csf.addSpecificMapping(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes"));
+        csf.addSpecificMapping(Metadata.class, new PropertyCollectionSerializer(serConf, Metadata.class, "getMetas"));
 
+        cdf.addSpecificMapping(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas"));
         cdf.addSpecificMapping(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems"));
 
 

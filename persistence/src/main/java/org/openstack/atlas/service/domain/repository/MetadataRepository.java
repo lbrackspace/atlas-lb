@@ -119,4 +119,19 @@ public class MetadataRepository {
         entityManager.flush();
         return loadBalancer;
     }
+
+    public LoadBalancer deleteMetadata(LoadBalancer lb, Collection<Integer> ids) {
+        Set<Meta> metasCurrentlyOnLb = new HashSet<Meta>(lb.getMetadata());
+        for (Meta metaCurrentlyOnLb : metasCurrentlyOnLb) {
+            for (Integer idOfMetaToDelete : ids) {
+                if (metaCurrentlyOnLb.getId().equals(idOfMetaToDelete)) {
+                    lb.getMetadata().remove(metaCurrentlyOnLb);
+                }
+            }
+        }
+        lb.setUpdated(Calendar.getInstance());
+        lb = entityManager.merge(lb);
+        entityManager.flush();
+        return lb;
+    }
 }
