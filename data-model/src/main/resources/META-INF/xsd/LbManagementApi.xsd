@@ -435,17 +435,6 @@
     </xsd:complexType>
     <!-- END Zeus callback contract -->
 
-    <xsd:element name="usageBilling" type="tns:usageBilling"/>
-    <xsd:complexType name="usageBilling">
-        <xsd:attribute name="startTime" type="xsd:dateTime"/>
-        <xsd:attribute name="endTime" type="xsd:dateTime"/>
-        <xsd:attribute name="incomingTransfer" type="xsd:long"/>
-        <xsd:attribute name="outgoingTransfer" type="xsd:long"/>
-        <xsd:attribute name="numVips" type="xsd:int"/>
-        <xsd:attribute name="sslTermination" type="xsd:boolean"/>
-        <xsd:attribute name="tier" type="xsd:string"/>
-    </xsd:complexType>
-
     <xsd:element name="accountBillings" type="tns:accountBillings"/>
     <xsd:complexType name="accountBillings">
         <xsd:sequence>
@@ -487,6 +476,9 @@
         <xsd:attribute name="averageNumConnections" type="xsd:double"/>
         <xsd:attribute name="incomingTransfer" type="xsd:long"/>
         <xsd:attribute name="outgoingTransfer" type="xsd:long"/>
+        <xsd:attribute name="averageNumConnectionsSsl" type="xsd:double"/>
+        <xsd:attribute name="incomingTransferSsl" type="xsd:long"/>
+        <xsd:attribute name="outgoingTransferSsl" type="xsd:long"/>
         <xsd:attribute name="numVips" type="xsd:int"/>
         <xsd:attribute name="numPolls" type="xsd:int"/>
         <xsd:attribute name="vipType" type="papi:vipType"/>
