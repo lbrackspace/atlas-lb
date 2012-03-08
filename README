@@ -1,4 +1,4 @@
-Requirements
+ Requirements
 ------------
   Java >= 1.5
   Apache Maven == 2.2.1 (Use settings from settings.xml file located in config/maven)
