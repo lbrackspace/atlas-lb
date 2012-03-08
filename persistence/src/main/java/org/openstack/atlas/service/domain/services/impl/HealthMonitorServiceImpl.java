@@ -1,17 +1,22 @@
 package org.openstack.atlas.service.domain.services.impl;
 
-
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.openstack.atlas.service.domain.util.Constants;
 
 @Service
 public class HealthMonitorServiceImpl extends BaseService implements HealthMonitorService {
+
     private final Log LOG = LogFactory.getLog(HealthMonitorServiceImpl.class);
 
     @Override
@@ -79,13 +84,20 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
 
     @Override
     @Transactional(rollbackFor = {EntityNotFoundException.class, ImmutableEntityException.class, UnprocessableEntityException.class})
-    public void prepareForDeletion(LoadBalancer requestLb) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
+    public void prepareForDeletion(LoadBalancer requestLb) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException {
         LOG.debug("Entering " + getClass());
         LoadBalancer dbLb = loadBalancerRepository.getByIdAndAccountId(requestLb.getId(), requestLb.getAccountId());
         isLbActive(dbLb);
 
-        if (dbLb.getHealthMonitor() == null)
+        // we won't allowed to delete a health monitor if it has Secondary nodes
+        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(dbLb.getNodes());
+        if (npc.hasSecondary()) {
+                throw new BadRequestException(Constants.WontDeleteMonitorCauseSecNodes);
+        }
+
+        if (dbLb.getHealthMonitor() == null) {
             throw new UnprocessableEntityException("No health monitor found to delete.");
+        }
 
         LOG.debug("Updating the lb status to pending_update");
         if (!loadBalancerRepository.testAndSetStatus(dbLb.getAccountId(), dbLb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
@@ -105,39 +117,63 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
     private void setHttpMonitorProperties(HealthMonitor requestMonitor, HealthMonitor dbMonitor, HealthMonitor newMonitor) throws BadRequestException {
         setConnectMonitorProperties(requestMonitor, dbMonitor, newMonitor);
 
-        if (requestMonitor.getPath() != null) newMonitor.setPath(requestMonitor.getPath());
-        else if (dbMonitor != null && dbMonitor.getPath() != null && dbMonitor.getPath().length() > 0)
+        if (requestMonitor.getPath() != null) {
+            newMonitor.setPath(requestMonitor.getPath());
+        } else if (dbMonitor != null && dbMonitor.getPath() != null && dbMonitor.getPath().length() > 0) {
             newMonitor.setPath(dbMonitor.getPath());
-        else throw new BadRequestException("Must provide a path for the request");
+        } else {
+            throw new BadRequestException("Must provide a path for the request");
+        }
 
-        if (requestMonitor.getStatusRegex() != null) newMonitor.setStatusRegex(requestMonitor.getStatusRegex());
-        else if (dbMonitor != null && dbMonitor.getStatusRegex() != null && dbMonitor.getStatusRegex().length() > 0)
+        if (requestMonitor.getStatusRegex() != null) {
+            newMonitor.setStatusRegex(requestMonitor.getStatusRegex());
+        } else if (dbMonitor != null && dbMonitor.getStatusRegex() != null && dbMonitor.getStatusRegex().length() > 0) {
             newMonitor.setStatusRegex(dbMonitor.getStatusRegex());
-        else newMonitor.setStatusRegex(null);
+        } else {
+            newMonitor.setStatusRegex(null);
+        }
 
-        if (requestMonitor.getBodyRegex() != null) newMonitor.setBodyRegex(requestMonitor.getBodyRegex());
-        else if (dbMonitor != null && dbMonitor.getBodyRegex() != null && dbMonitor.getBodyRegex().length() > 0)
+        if (requestMonitor.getBodyRegex() != null) {
+            newMonitor.setBodyRegex(requestMonitor.getBodyRegex());
+        } else if (dbMonitor != null && dbMonitor.getBodyRegex() != null && dbMonitor.getBodyRegex().length() > 0) {
             newMonitor.setBodyRegex(dbMonitor.getBodyRegex());
-        else newMonitor.setBodyRegex(null);
+        } else {
+            newMonitor.setBodyRegex(null);
+        }
     }
 
     private void setConnectMonitorProperties(HealthMonitor requestMonitor, HealthMonitor dbMonitor, HealthMonitor newMonitor) throws BadRequestException {
-        if (requestMonitor.getType() != null) newMonitor.setType(requestMonitor.getType());
-        else if (dbMonitor != null) newMonitor.setType(dbMonitor.getType());
-        else throw new BadRequestException("Must provide a type for the request");
+        if (requestMonitor.getType() != null) {
+            newMonitor.setType(requestMonitor.getType());
+        } else if (dbMonitor != null) {
+            newMonitor.setType(dbMonitor.getType());
+        } else {
+            throw new BadRequestException("Must provide a type for the request");
+        }
 
-        if (requestMonitor.getDelay() != null) newMonitor.setDelay(requestMonitor.getDelay());
-        else if (dbMonitor != null) newMonitor.setDelay(dbMonitor.getDelay());
-        else throw new BadRequestException("Must provide a delay for the request");
+        if (requestMonitor.getDelay() != null) {
+            newMonitor.setDelay(requestMonitor.getDelay());
+        } else if (dbMonitor != null) {
+            newMonitor.setDelay(dbMonitor.getDelay());
+        } else {
+            throw new BadRequestException("Must provide a delay for the request");
+        }
 
-        if (requestMonitor.getTimeout() != null) newMonitor.setTimeout(requestMonitor.getTimeout());
-        else if (dbMonitor != null) newMonitor.setTimeout(dbMonitor.getTimeout());
-        else throw new BadRequestException("Must provide a timeout for the request");
+        if (requestMonitor.getTimeout() != null) {
+            newMonitor.setTimeout(requestMonitor.getTimeout());
+        } else if (dbMonitor != null) {
+            newMonitor.setTimeout(dbMonitor.getTimeout());
+        } else {
+            throw new BadRequestException("Must provide a timeout for the request");
+        }
 
-        if (requestMonitor.getAttemptsBeforeDeactivation() != null)
+        if (requestMonitor.getAttemptsBeforeDeactivation() != null) {
             newMonitor.setAttemptsBeforeDeactivation(requestMonitor.getAttemptsBeforeDeactivation());
-        else if (dbMonitor != null) newMonitor.setAttemptsBeforeDeactivation(dbMonitor.getAttemptsBeforeDeactivation());
-        else throw new BadRequestException("Must provide attemptsBeforeActivation for the request");
+        } else if (dbMonitor != null) {
+            newMonitor.setAttemptsBeforeDeactivation(dbMonitor.getAttemptsBeforeDeactivation());
+        } else {
+            throw new BadRequestException("Must provide attemptsBeforeActivation for the request");
+        }
 
         newMonitor.setPath(null);
         newMonitor.setStatusRegex(null);

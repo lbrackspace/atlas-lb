@@ -99,6 +99,11 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             throw new BadRequestException(Constants.NoPrimaryNodeError);
         }
 
+        // Your not alowed to add secondary nodes with out Some form of monitoring. B-16407
+        if(npc.hasSecondary() && !loadBalancerRepository.loadBalancerHasHealthMonitor(oldNodesLb.getId())) {
+            throw new BadRequestException(Constants.NoMonitorForSecNodes);
+        }
+
         LOG.debug("Verifying that there are no duplicate nodes...");
         if (detectDuplicateNodes(oldNodesLb, newNodesLb)) {
             LOG.warn("Duplicate nodes found! Sending failure response back to client...");
@@ -141,7 +146,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
     @Override
     @Transactional
-    public LoadBalancer updateNode(LoadBalancer msgLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
+    public LoadBalancer updateNode(LoadBalancer msgLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         LoadBalancer oldLbNodes = loadBalancerRepository.getByIdAndAccountId(msgLb.getId(), msgLb.getAccountId());
 
         Node nodeToUpdate = msgLb.getNodes().iterator().next();
@@ -159,6 +164,8 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             LOG.warn("No active nodes found! Sending failure response back to client...");
             throw new UnprocessableEntityException("One or more nodes must remain ENABLED.");
         }
+
+        // Won't delete secondary nodes untill you also delete Health Monitor
 
         LOG.debug("Nodes on dbLoadbalancer: " + oldLbNodes.getNodes().size());
         for (Node n : oldLbNodes.getNodes()) {
@@ -190,6 +197,10 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         if (!npc.hasPrimary()) {
             throw new UnprocessableEntityException(Constants.NoPrimaryNodeError);
         }
+        if(npc.hasSecondary() && oldLbNodes.getHealthMonitor() == null){
+            throw new BadRequestException(Constants.NoMonitorForSecNodes);
+        }
+
         LOG.debug("Updating the lb status to pending_update");
         oldLbNodes.setStatus(LoadBalancerStatus.PENDING_UPDATE);
         oldLbNodes.setUserName(msgLb.getUserName());
@@ -343,6 +354,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     }
 
     @Override
+    @Transactional
     public List<String> prepareForNodesDeletion(Integer accountId, Integer loadBalancerId, List<Integer> ids) throws EntityNotFoundException {
         List<String> validationErrors = new ArrayList<String>();
         String format;

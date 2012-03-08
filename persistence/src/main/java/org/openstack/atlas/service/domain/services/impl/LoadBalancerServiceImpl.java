@@ -92,8 +92,14 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         // Check if this user has at least one Primary node.
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
-        if (!npc.hasPrimary()) {
+        // Drop Health Monitor code here for secNodes
+        if(!npc.hasPrimary()){
             throw new BadRequestException(Constants.NoPrimaryNodeError);
+        }
+        
+        // If user wants secondary nodes they must have some kind of healthmonitoring
+        if(lb.getHealthMonitor() == null && npc.hasSecondary()) {
+            throw new BadRequestException(Constants.NoMonitorForSecNodes);
         }
 
         //check for blacklisted Nodes

@@ -5,11 +5,7 @@
     <groupId>org.hexp</groupId>
     <artifactId>HibernateExp</artifactId>
     <packaging>jar</packaging>
-<<<<<<< HEAD
     <version>1.11.0-SNAPSHOT</version>
-=======
-    <version>1.10.8-SNAPSHOT</version>
->>>>>>> 1.10-candidate
     <name>HibernateExp</name>
     <url>http://maven.apache.org</url>
     <properties>
