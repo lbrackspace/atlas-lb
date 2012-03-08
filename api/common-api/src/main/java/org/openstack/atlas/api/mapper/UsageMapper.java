@@ -51,14 +51,18 @@ public final class UsageMapper {
         rusage.setAverageNumConnections(dusage.getAverageConcurrentConnections());
         rusage.setIncomingTransfer(dusage.getIncomingTransfer());
         rusage.setOutgoingTransfer(dusage.getOutgoingTransfer());
+        rusage.setAverageNumConnectionsSsl(dusage.getAverageConcurrentConnectionsSsl());
+        rusage.setIncomingTransferSsl(dusage.getIncomingTransferSsl());
+        rusage.setOutgoingTransferSsl(dusage.getOutgoingTransferSsl());
         rusage.setNumVips(dusage.getNumVips());
         rusage.setNumPolls(dusage.getNumberOfPolls());
         rusage.setStartTime(dusage.getStartTime());
         rusage.setEndTime(dusage.getEndTime());
         rusage.setEventType(dusage.getEventType());
-        // rusage.updateSslTermination((dusage.getTags() & BitTags.BIT_TAG_SSL) == 1); Hidden per JIRA:SITESLB-687
 
         BitTags bitTags = new BitTags(dusage.getTags());
+
+        rusage.setHasSsl(bitTags.isTagOn(BitTag.SSL));
 
         if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
             rusage.setVipType(VipType.SERVICENET);
@@ -93,6 +97,9 @@ public final class UsageMapper {
         rusage.setAverageNumConnections(dusage.getAverageConcurrentConnections());
         rusage.setIncomingTransfer(dusage.getIncomingTransfer());
         rusage.setOutgoingTransfer(dusage.getOutgoingTransfer());
+        rusage.setAverageNumConnectionsSsl(dusage.getAverageConcurrentConnectionsSsl());
+        rusage.setIncomingTransferSsl(dusage.getIncomingTransferSsl());
+        rusage.setOutgoingTransferSsl(dusage.getOutgoingTransferSsl());
         rusage.setNumVips(dusage.getNumVips());
         rusage.setNumPolls(dusage.getNumberOfPolls());
         rusage.setStartTime(dusage.getStartTime());
@@ -102,7 +109,7 @@ public final class UsageMapper {
         BitTags bitTags = new BitTags(dusage.getTags());
 
         rusage.setHasSsl(bitTags.isTagOn(BitTag.SSL));
-        
+
         if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
             rusage.setVipType(VipType.SERVICENET);
         } else {
