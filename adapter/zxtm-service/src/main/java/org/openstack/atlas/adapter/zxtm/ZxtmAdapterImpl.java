@@ -34,9 +34,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final String RATE_LIMIT_HTTP = "rate_limit_http";
     public static final String RATE_LIMIT_NON_HTTP = "rate_limit_nonhttp";
     public static final String XFF = "add_x_forwarded_for_header";
+    public static final String XFP = "add_x_forwarded_proto";
     public static final VirtualServerRule ruleRateLimitHttp = new VirtualServerRule(RATE_LIMIT_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleRateLimitNonHttp = new VirtualServerRule(RATE_LIMIT_NON_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
+    public static final VirtualServerRule ruleXForwardedProto = new VirtualServerRule(XFP, true, VirtualServerRuleRunFlag.run_every);
 
     @Override
     public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
@@ -151,6 +153,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
             TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
             attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
+
+            TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
+            attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
+
+            LOG.info(String.format("Enabling SSL Headers for virtual server: %s", virtualServerName));
+            serviceStubs.getVirtualServerBinding().setSSLHeaders(new String[]{virtualServerName}, new boolean[]{true});
+
             String[] errorFile = serviceStubs.getVirtualServerBinding().getErrorFile(new String[]{poolName});
             if (!errorFile[0].equals("")) {
                 setErrorFile(config, virtualServerName, errorFile[0]);
@@ -764,9 +773,18 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
+    private void attachXFPRuleToVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
+        if (serviceStubs.getVirtualServerBinding().getProtocol(new String[]{virtualServerName})[0].equals(VirtualServerProtocol.http)) {
+            LOG.debug(String.format("Attaching the XFP rule and enabling it on load balancer '%s'...", virtualServerName));
+            serviceStubs.getVirtualServerBinding().addRules(new String[]{virtualServerName}, new VirtualServerRule[][]{{ZxtmAdapterImpl.ruleXForwardedProto}});
+            LOG.debug(String.format("XFP rule successfully enabled on load balancer '%s'.", virtualServerName));
+        }
+    }
+
     private void attachXFFRuleToVirtualServers(ZxtmServiceStubs serviceStubs, String[] virtualServerNames) throws RemoteException {
         for (String vsName : virtualServerNames) {
             attachXFFRuleToVirtualServer(serviceStubs, vsName);
+            attachXFPRuleToVirtualServer(serviceStubs, vsName);
         }
     }
 
@@ -789,9 +807,23 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug(String.format("XFF rule successfully removed from load balancer '%s'.", virtualServerName));
     }
 
+    private void removeXFPRuleFromVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
+        LOG.debug(String.format("Removing the XFP rule from load balancer '%s'...", virtualServerName));
+        VirtualServerRule[][] virtualServerRules = serviceStubs.getVirtualServerBinding().getRules(new String[]{virtualServerName});
+        if (virtualServerRules.length > 0) {
+            for (VirtualServerRule virtualServerRule : virtualServerRules[0]) {
+                if (virtualServerRule.getName().equals(ZxtmAdapterImpl.ruleXForwardedProto.getName())) {
+                    serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{ZxtmAdapterImpl.ruleXForwardedProto.getName()}});
+                }
+            }
+        }
+        LOG.debug(String.format("XFP rule successfully removed from load balancer '%s'.", virtualServerName));
+    }
+
     private void removeXFFRuleFromVirtualServers(ZxtmServiceStubs serviceStubs, String[] virtualServerNames) throws RemoteException {
         for (String vsName : virtualServerNames) {
             removeXFFRuleFromVirtualServer(serviceStubs, vsName);
+            removeXFPRuleFromVirtualServer(serviceStubs, vsName);
         }
     }
 
@@ -804,7 +836,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         CatalogSSLCertificatesBindingStub certificateCatalogService = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
 
         try {
-            LOG.info(String.format("Creating ssl termination load balancer in zeus...", virtualServerName));
+            LOG.info(String.format("Creating ssl termination load balancer %s in zeus... ", virtualServerName));
             createSecureVirtualServer(conf, loadBalancer);
         } catch (Exception af) {
             if (af instanceof ObjectAlreadyExists) {
@@ -814,9 +846,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             if (!serviceStubs.getVirtualServerBinding().getPort(new String[]{virtualServerName})[0].equals(zeusSslTermination.getSslTermination().getSecurePort())) {
-                LOG.info(String.format("Updating secure servers port for ssl termination load balancer in zeus...", virtualServerName));
+                LOG.info(String.format("Updating secure servers port for ssl termination load balancer  %s in zeus...", virtualServerName));
                 updatePort(conf, virtualServerName, zeusSslTermination.getSslTermination().getSecurePort());
-                LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer in zeus...", virtualServerName));
+                LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer %s in zeus...", virtualServerName));
             }
 
             try {
@@ -833,12 +865,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
 
             if (zeusSslTermination.getCertIntermediateCert() != null) {
-                LOG.info(String.format("Importing certificate for load balancer: ", loadBalancer.getId()));
+                LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
                 CertificateFiles certificateFiles = new CertificateFiles();
                 certificateFiles.setPrivate_key(zeusSslTermination.getSslTermination().getPrivatekey());
                 certificateFiles.setPublic_cert(zeusSslTermination.getCertIntermediateCert());
                 certificateCatalogService.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
-                LOG.debug(String.format("Successfully imported certificate for load balancer: ", loadBalancer.getId()));
+                LOG.debug(String.format("Successfully imported certificate for load balancer: %s", loadBalancer.getId()));
             }
 
             LOG.info(String.format("Attaching certificate and key, load balancer: %s ", loadBalancer.getId()));
