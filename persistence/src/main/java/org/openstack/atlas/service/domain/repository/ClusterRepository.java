@@ -304,11 +304,11 @@ public class ClusterRepository  {
         String query;
         if (id == null) { // Assume we want to grab all Clusters
             query = "select l.accountId ,c.id,count(*) from LoadBalancer l "
-                    + "join l.host h join h.cluster c group by l.accountId, c.id";
+                    + "join l.host h join h.cluster c WHERE l.status != 'DELETED' group by l.accountId, c.id";
             results = entityManager.createQuery(query).getResultList();
         } else {
             query = "select l.accountId ,c.id,count(*) from LoadBalancer l "
-                    + "join l.host h join h.cluster c  where c.id = :id group by l.accountId, c.id";
+                    + "join l.host h join h.cluster c  where c.id = :id AND l.status != 'DELETED' group by l.accountId, c.id";
             results = entityManager.createQuery(query).setParameter("id", id).getResultList();
         }
         for (Object r : results) {

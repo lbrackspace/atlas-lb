@@ -226,11 +226,11 @@ public class HostRepository {
         String query;
         if (id == null) { // Assume we want to grab all Clusters
             query = "select l.accountId ,h.id,count(*) from LoadBalancer l "
-                    + "join l.host h where l.status != \"DELETED\" group by l.accountId, h.id";
+                    + "join l.host h where l.status != 'DELETED' group by l.accountId, h.id";
             results = entityManager.createQuery(query).getResultList();
         } else {
             query = "select l.accountId ,h.id,count(*) from LoadBalancer l "
-                    + "join l.host h where h.id = :id and l.status != \"DELETED\" group by l.accountId, h.id";
+                    + "join l.host h where h.id = :id and l.status != 'DELETED' group by l.accountId, h.id";
             results = entityManager.createQuery(query).setParameter("id", id).getResultList();
         }
         for (Object r : results) {
