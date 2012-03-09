@@ -127,6 +127,7 @@
         <xsd:attribute name="noOfuniqueCustomer" type="xsd:int"/>
         <xsd:attribute name="numberOfHostMachines" type="xsd:int"/>
         <xsd:attribute name="averageUtilizationofHosts" type="xsd:string"/>
+        <xsd:attribute name="clusterStatus" type="xsd:string" />
     </xsd:complexType>
 
      <xsd:complexType name="capacityPlanningVirtualIpBlocks">
