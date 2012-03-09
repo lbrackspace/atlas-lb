@@ -56,10 +56,14 @@ public final class ZxtmNameBuilder {
         Set<String> generatedNames = new HashSet<String>();
         for (LoadBalancer loadBalancer : loadBalancers) {
             generatedNames.add(genVSName(loadBalancer));
-            //TODO: figure out usage for ssl
-//            if (loadBalancer.hasSsl()) {
-//                generatedNames.add(genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId()));
-//            }
+        }
+        return generatedNames;
+    }
+
+    public static Set<String> generateSslNamesWithAccountIdAndLoadBalancerId(Set<LoadBalancer> loadBalancers) throws InsufficientRequestException {
+        Set<String> generatedNames = new HashSet<String>();
+        for (LoadBalancer loadBalancer : loadBalancers) {
+            generatedNames.add(genSslVSName(loadBalancer));
         }
         return generatedNames;
     }

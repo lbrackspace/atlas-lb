@@ -70,7 +70,7 @@ public class UsageRollupMerger {
 
         // TODO: This list needs to be sorted by timestamps in order to work. Verify
         for (LoadBalancerUsage usageRecordToMerge : usages) {
-            Tier.Level usageToMergeTier = Tier.calculateTierLevel(usageRecordToMerge.getAverageConcurrentConnections());
+            Tier.Level usageToMergeTier = Tier.calculateTierLevel(usageRecordToMerge.getAverageConcurrentConnections()); // Only usage non-ssl traffic for tier calculation
             Tier.Level currUsageTier = Tier.calculateTierLevel(latestCustomerFacingRecord.getAverageConcurrentConnections());
 
             if (((latestCustomerFacingRecord.getEventType() == null && usageRecordToMerge.getEventType() == null)
@@ -80,17 +80,23 @@ public class UsageRollupMerger {
                   && usageToMergeTier.equals(currUsageTier)) {
                 // Merge records if tags, vips and tier are the same and eventsType are both null or first is not null and second is
                 Double currUsageCcs = latestCustomerFacingRecord.getAverageConcurrentConnections();
+                Double currUsageCcsSsl = latestCustomerFacingRecord.getAverageConcurrentConnectionsSsl();
                 Integer currUsagePolls = latestCustomerFacingRecord.getNumberOfPolls();
                 Double usageToMergeCcs = usageRecordToMerge.getAverageConcurrentConnections();
+                Double usageToMergeCcsSsl = usageRecordToMerge.getAverageConcurrentConnectionsSsl();
                 Integer usageToMergePolls = usageRecordToMerge.getNumberOfPolls();
 
                 if ((usageToMergePolls + currUsagePolls) > 0.0) {
                     latestCustomerFacingRecord.setAverageConcurrentConnections((currUsageCcs * currUsagePolls + usageToMergeCcs * usageToMergePolls) / (usageToMergePolls + currUsagePolls));
+                    latestCustomerFacingRecord.setAverageConcurrentConnectionsSsl((currUsageCcsSsl * currUsagePolls + usageToMergeCcsSsl * usageToMergePolls) / (usageToMergePolls + currUsagePolls));
                 } else {
                     latestCustomerFacingRecord.setAverageConcurrentConnections(0.0);
+                    latestCustomerFacingRecord.setAverageConcurrentConnectionsSsl(0.0);
                 }
                 latestCustomerFacingRecord.setIncomingTransfer(latestCustomerFacingRecord.getIncomingTransfer() + usageRecordToMerge.getCumulativeBandwidthBytesIn());
+                latestCustomerFacingRecord.setIncomingTransferSsl(latestCustomerFacingRecord.getIncomingTransferSsl() + usageRecordToMerge.getCumulativeBandwidthBytesInSsl());
                 latestCustomerFacingRecord.setOutgoingTransfer(latestCustomerFacingRecord.getOutgoingTransfer() + usageRecordToMerge.getCumulativeBandwidthBytesOut());
+                latestCustomerFacingRecord.setOutgoingTransferSsl(latestCustomerFacingRecord.getOutgoingTransferSsl() + usageRecordToMerge.getCumulativeBandwidthBytesOutSsl());
                 latestCustomerFacingRecord.setNumberOfPolls(usageToMergePolls + currUsagePolls);
                 latestCustomerFacingRecord.setEndTime(usageRecordToMerge.getEndTime());
             } else {
@@ -104,8 +110,11 @@ public class UsageRollupMerger {
                 latestCustomerFacingRecord.setLoadbalancer(lb);
                 latestCustomerFacingRecord.setAccountId(usageRecordToMerge.getAccountId());
                 latestCustomerFacingRecord.setAverageConcurrentConnections(usageRecordToMerge.getAverageConcurrentConnections());
+                latestCustomerFacingRecord.setAverageConcurrentConnectionsSsl(usageRecordToMerge.getAverageConcurrentConnectionsSsl());
                 latestCustomerFacingRecord.setIncomingTransfer(usageRecordToMerge.getCumulativeBandwidthBytesIn());
+                latestCustomerFacingRecord.setIncomingTransferSsl(usageRecordToMerge.getCumulativeBandwidthBytesInSsl());
                 latestCustomerFacingRecord.setOutgoingTransfer(usageRecordToMerge.getCumulativeBandwidthBytesOut());
+                latestCustomerFacingRecord.setOutgoingTransferSsl(usageRecordToMerge.getCumulativeBandwidthBytesOutSsl());
                 latestCustomerFacingRecord.setStartTime(usageRecordToMerge.getStartTime());
                 latestCustomerFacingRecord.setEndTime(usageRecordToMerge.getEndTime());
                 latestCustomerFacingRecord.setNumberOfPolls(usageRecordToMerge.getNumberOfPolls());
@@ -125,8 +134,11 @@ public class UsageRollupMerger {
         Usage currUsageRecord = new Usage();
         currUsageRecord.setAccountId(null);
         currUsageRecord.setAverageConcurrentConnections(null);
+        currUsageRecord.setAverageConcurrentConnectionsSsl(null);
         currUsageRecord.setIncomingTransfer(null);
+        currUsageRecord.setIncomingTransferSsl(null);
         currUsageRecord.setOutgoingTransfer(null);
+        currUsageRecord.setOutgoingTransferSsl(null);
         currUsageRecord.setNumberOfPolls(null);
         currUsageRecord.setNumVips(null);
         currUsageRecord.setTags(null);
