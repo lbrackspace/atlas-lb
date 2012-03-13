@@ -206,14 +206,14 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     @Override
     @Transactional(rollbackFor = {EntityNotFoundException.class, UnprocessableEntityException.class, ImmutableEntityException.class, BadRequestException.class, OutOfVipsException.class, UniqueLbPortViolationException.class, AccountMismatchException.class})
-    public VirtualIpv6 addIpv6VirtualIpToLoadBalancer(VirtualIpv6 vipConfig, LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException, OutOfVipsException, UniqueLbPortViolationException, AccountMismatchException {
+    public VirtualIpv6 addIpv6VirtualIpToLoadBalancer(VirtualIpv6 vipConfig, LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException, OutOfVipsException, UniqueLbPortViolationException, AccountMismatchException, LimitReachedException {
 
         VirtualIpv6 vipToAdd;
         LoadBalancer dlb = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
 
         Integer ipv6Limit = accountLimitService.getLimit(dlb.getAccountId(), AccountLimitType.IPV6_LIMIT);
         if (dlb.getLoadBalancerJoinVip6Set().size() >= ipv6Limit) {
-            throw new BadRequestException(String.format("Your load balancer cannot have more than %d IPv6 virtual ips.", ipv6Limit));
+            throw new LimitReachedException(String.format("Your load balancer cannot have more than %d IPv6 virtual ips.", ipv6Limit));
         }
 
         if (vipConfig.getId() != null) {

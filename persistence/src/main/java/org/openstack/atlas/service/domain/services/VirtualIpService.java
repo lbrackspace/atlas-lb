@@ -32,7 +32,7 @@ public interface VirtualIpService {
 
     public VirtualIp addVirtualIpToLoadBalancer(VirtualIp vipConfig, LoadBalancer lb, Ticket ticket) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException, OutOfVipsException, UniqueLbPortViolationException, AccountMismatchException;
 
-    public VirtualIpv6 addIpv6VirtualIpToLoadBalancer(VirtualIpv6 vipConfig, LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException, OutOfVipsException, UniqueLbPortViolationException, AccountMismatchException;
+    public VirtualIpv6 addIpv6VirtualIpToLoadBalancer(VirtualIpv6 vipConfig, LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException, OutOfVipsException, UniqueLbPortViolationException, AccountMismatchException, LimitReachedException;
 
     public boolean isVipAllocatedToMultipleLoadBalancers(VirtualIp virtualIp);
 

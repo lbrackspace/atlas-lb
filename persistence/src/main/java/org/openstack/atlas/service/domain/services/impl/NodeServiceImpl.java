@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.NodeMap;
@@ -7,25 +9,18 @@ import org.openstack.atlas.service.domain.services.AccountLimitService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.NodeService;
 import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.converters.StringConverter;
+import org.openstack.atlas.util.ip.IPUtils;
 import org.openstack.atlas.util.ip.IPv6;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.openstack.atlas.util.ip.IPUtils;
-import org.openstack.atlas.service.domain.util.Constants;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
+import java.util.*;
 
 @Service
 public class NodeServiceImpl extends BaseService implements NodeService {
@@ -84,7 +79,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
     @Override
     @Transactional
-    public Set<Node> createNodes(LoadBalancer newNodesLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
+    public Set<Node> createNodes(LoadBalancer newNodesLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException, LimitReachedException {
         LoadBalancer oldNodesLb = loadBalancerRepository.getByIdAndAccountId(newNodesLb.getId(), newNodesLb.getAccountId());
         isLbActive(oldNodesLb);
 
@@ -92,7 +87,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         Integer nodeLimit = accountLimitService.getLimit(oldNodesLb.getAccountId(), AccountLimitType.NODE_LIMIT);
 
         if (potentialTotalNumNodes > nodeLimit) {
-            throw new BadRequestException(String.format("Nodes must not exceed %d per load balancer.", nodeLimit));
+            throw new LimitReachedException(String.format("Nodes must not exceed %d per load balancer.", nodeLimit));
         }
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldNodesLb.getNodes(), newNodesLb.getNodes());
         if (!npc.hasPrimary()) {

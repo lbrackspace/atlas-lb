@@ -17,7 +17,7 @@ public interface NodeService {
 
     public Node getNodeByAccountIdLoadBalancerIdNodeId(Integer accountId, Integer loadBalancerId, Integer nodeId) throws EntityNotFoundException, DeletedStatusException;
 
-    public Set<Node> createNodes(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
+    public Set<Node> createNodes(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException, LimitReachedException;
 
     public LoadBalancer updateNode(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
 
