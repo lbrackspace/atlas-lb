@@ -35,6 +35,9 @@ public class GroupResource extends ManagementDependencyProvider {
     @Path("setdefault")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response updateGroup(@QueryParam("default") String defaultValue) {
+        if (!isUserInRole("cp,ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
 
         GroupRateLimit lbLimitGroup = new GroupRateLimit();
         lbLimitGroup.setId(id);
