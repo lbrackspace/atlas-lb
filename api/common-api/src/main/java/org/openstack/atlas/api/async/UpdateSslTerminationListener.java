@@ -13,8 +13,6 @@ import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 
 import javax.jms.Message;
 
-import static org.openstack.atlas.service.domain.events.UsageEvent.SSL_ON;
-import static org.openstack.atlas.service.domain.events.UsageEvent.SSL_OFF;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
@@ -56,7 +54,7 @@ public class UpdateSslTerminationListener extends BaseListener {
             notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dbLoadBalancer);
             // Notify usage processor
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF); // TODO: Should this be here if it never got created?
             return;
         }
 
@@ -67,7 +65,11 @@ public class UpdateSslTerminationListener extends BaseListener {
 
         // Notify usage processor
         if (queTermination.getSslTermination().isEnabled()) {
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ON);
+            if(queTermination.getSslTermination().isSecureTrafficOnly()) {
+                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
+            } else {
+                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
+            }
         } else {
             usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
         }

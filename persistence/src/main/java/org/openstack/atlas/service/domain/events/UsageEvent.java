@@ -2,7 +2,8 @@ package org.openstack.atlas.service.domain.events;
 
 public enum UsageEvent {
     SSL_OFF,
-    SSL_ON,
+    SSL_ONLY_ON,
+    SSL_MIXED_ON,
     CREATE_LOADBALANCER,
     DELETE_LOADBALANCER,
     CREATE_VIRTUAL_IP,
