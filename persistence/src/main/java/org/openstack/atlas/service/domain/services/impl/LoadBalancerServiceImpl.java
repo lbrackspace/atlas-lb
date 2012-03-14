@@ -116,7 +116,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             throw new BadRequestException("Duplicate nodes detected. Please provide a list of unique node addresses.");
         }
 
-        if (isNodeLimitReached(lb.getAccountId())) {
+        if (isNodeLimitReached(lb)) {
             throw new LimitReachedException(String.format("Node limit for this load balancer exceeded."));
         }
 
@@ -480,18 +480,17 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return limitReached;
     }
 
-    public Boolean isNodeLimitReached(Integer accountId) {
+    public Boolean isNodeLimitReached(LoadBalancer loadBalancer) {
         try {
-            LOG.debug(String.format("Obtaining node limit for acount '%d' from database...", accountId));
-            Integer limit = accountLimitService.getLimit(accountId, AccountLimitType.NODE_LIMIT);
-            Set<Node> nodes = nodeRepository.getAllNodesByAccountId(accountId);
-            if (nodes.size() >= limit) {
+            LOG.debug(String.format("Obtaining node limit for acount '%d' from database...", loadBalancer.getAccountId()));
+            Integer limit = accountLimitService.getLimit(loadBalancer.getAccountId(), AccountLimitType.NODE_LIMIT);
+            if (loadBalancer.getNodes().size() > limit) {
                 return true;
             }
         } catch (EntityNotFoundException e) {
             LOG.error(String.format("No node limit found. "
                 + "Customer with account '%d' could potentially be creating too many nodes! "
-                + "Allowing operation to continue...", accountId), e);
+                + "Allowing operation to continue...", loadBalancer.getAccountId()), e);
         }
         return false;
     }

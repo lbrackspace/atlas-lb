@@ -155,13 +155,6 @@ public class NodeRepository {
         return nodes;
     }
 
-    // Get all Nodes regardless of weight status etc
-    public Set<Node> getAllNodesByAccountId(Integer aid) throws EntityNotFoundException {
-        String qStr = "SELECT n.* FROM node n INNER JOIN loadbalancer l ON l.id = n.loadbalancer.id WHERE l.account.id = :accountId";
-        List<Node> nodesList = entityManager.createQuery(qStr).setParameter("accountId", aid).getResultList();
-        return new HashSet<Node>(nodesList);
-    }
-
     public Set<Node> getNodesByAccountIdLoadBalancerId(LoadBalancer loadBalancer,
             Integer... p) throws EntityNotFoundException, DeletedStatusException {
         if (loadBalancer.getStatus().equals(LoadBalancerStatus.DELETED)) {
