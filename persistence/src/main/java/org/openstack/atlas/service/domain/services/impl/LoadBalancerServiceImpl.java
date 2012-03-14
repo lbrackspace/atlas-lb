@@ -24,13 +24,9 @@ import java.util.*;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.BUILD;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DELETED;
-import static org.openstack.atlas.service.domain.events.entities.CategoryType.CREATE;
-import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
-import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
+import static org.openstack.atlas.service.domain.events.entities.CategoryType.*;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
-import static org.openstack.atlas.service.domain.events.entities.EventType.BUILD_LOADBALANCER;
-import static org.openstack.atlas.service.domain.events.entities.EventType.PENDING_UPDATE_LOADBALANCER;
-import static org.openstack.atlas.service.domain.events.entities.EventType.PENDING_DELETE_LOADBALANCER;
+import static org.openstack.atlas.service.domain.events.entities.EventType.*;
 
 @Service
 public class LoadBalancerServiceImpl extends BaseService implements LoadBalancerService {
@@ -118,6 +114,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         if (nodeService.detectDuplicateNodes(new LoadBalancer(), lb)) {
             throw new BadRequestException("Duplicate nodes detected. Please provide a list of unique node addresses.");
+        }
+
+        if (isNodeLimitReached(lb.getAccountId())) {
+            throw new LimitReachedException(String.format("Node limit for this load balancer exceeded."));
         }
 
         try {
@@ -478,6 +478,22 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         return limitReached;
+    }
+
+    public Boolean isNodeLimitReached(Integer accountId) {
+        try {
+            LOG.debug(String.format("Obtaining node limit for acount '%d' from database...", accountId));
+            Integer limit = accountLimitService.getLimit(accountId, AccountLimitType.NODE_LIMIT);
+            Set<Node> nodes = nodeRepository.getAllNodesByAccountId(accountId);
+            if (nodes.size() >= limit) {
+                return true;
+            }
+        } catch (EntityNotFoundException e) {
+            LOG.error(String.format("No node limit found. "
+                + "Customer with account '%d' could potentially be creating too many nodes! "
+                + "Allowing operation to continue...", accountId), e);
+        }
+        return false;
     }
 
     @Override
