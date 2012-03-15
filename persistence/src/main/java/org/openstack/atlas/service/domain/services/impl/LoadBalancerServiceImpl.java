@@ -86,12 +86,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         // Check if this user has at least one Primary node.
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
         // Drop Health Monitor code here for secNodes
-        if(!npc.hasPrimary()){
+        if (!npc.hasPrimary()) {
             throw new BadRequestException(Constants.NoPrimaryNodeError);
         }
-        
+
         // If user wants secondary nodes they must have some kind of healthmonitoring
-        if(lb.getHealthMonitor() == null && npc.hasSecondary()) {
+        if (lb.getHealthMonitor() == null && npc.hasSecondary()) {
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
         }
 
@@ -479,14 +479,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             loadBalancer.setConnectionLogging(false);
         }
 
-        if (loadBalancer.getProtocol() == null || loadBalancer.getPort() == null) {
+        if ((loadBalancer.getProtocol() == null && loadBalancer.getPort() == null) || (loadBalancer.getProtocol() == null && loadBalancer.getPort() != null)) {
             LoadBalancerProtocolObject defaultProtocol = loadBalancerRepository.getDefaultProtocol();
-            if (loadBalancer.getProtocol() == null) {
-                loadBalancer.setProtocol(defaultProtocol.getName());
-            }
-            if (loadBalancer.getPort() == null) {
-                loadBalancer.setPort(defaultProtocol.getPort());
-            }
+            loadBalancer.setProtocol(defaultProtocol.getName());
+            loadBalancer.setPort(defaultProtocol.getPort());
+        } else if (loadBalancer.getProtocol() != null && loadBalancer.getPort() == null) {
+            LoadBalancerProtocolObject protocol = loadBalancerRepository.getProtocol(loadBalancer.getProtocol());
+            loadBalancer.setPort(protocol.getPort());
         }
 
         if (loadBalancer.getSessionPersistence() == null) {
