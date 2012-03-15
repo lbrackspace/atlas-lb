@@ -42,6 +42,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
     private BounceResource bounceResource;
     private Integer accountId;
     private HttpHeaders requestHeaders;
+    private AllowedDomainsResource allowedDomainsResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
@@ -282,6 +283,11 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         return Response.status(200).entity(rLimits).build();
     }
 
+    @Path("alloweddomains")
+    public AllowedDomainsResource retrieveAllowedDomainsResource() {
+        return allowedDomainsResource;
+    }
+
     private Response getFeedResponse(Integer page) {
         Map<String, Object> feedAttributes = new HashMap<String, Object>();
         feedAttributes.put("feedType", PARENT_FEED);
@@ -326,5 +332,9 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {
         this.requestHeaders = requestHeaders;
+    }
+
+    public void setAllowedDomainsResource(AllowedDomainsResource allowedDomainsResource) {
+        this.allowedDomainsResource = allowedDomainsResource;
     }
 }

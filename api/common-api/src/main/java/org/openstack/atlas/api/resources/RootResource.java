@@ -25,7 +25,6 @@ public class RootResource extends CommonDependencyProvider {
     @PathParam("id")
     private Integer accountId;
     private LoadBalancersResource loadBalancersResource;
-    private AllowedDomainsResource allowedDomainsResource;
     private ThrowResource throwResource; // Yes for testing
 
     @Path("loadbalancers")
@@ -41,11 +40,6 @@ public class RootResource extends CommonDependencyProvider {
     @Path("throw")
     public ThrowResource retrieveThrowResource() {
         return throwResource;
-    }
-
-    @Path("alloweddomains")
-    public AllowedDomainsResource retrieveAllowedDomainsResource() {
-        return allowedDomainsResource;
     }
 
     public void setLoadBalancersResource(LoadBalancersResource loadBalancersResource) {
@@ -70,9 +64,5 @@ public class RootResource extends CommonDependencyProvider {
 
     public void setOrigContainer(RequestStateContainer origContainer) {
         this.origContainer = origContainer;
-    }
-
-    public void setAllowedDomainsResource(AllowedDomainsResource allowedDomainsResource) {
-        this.allowedDomainsResource = allowedDomainsResource;
     }
 }
