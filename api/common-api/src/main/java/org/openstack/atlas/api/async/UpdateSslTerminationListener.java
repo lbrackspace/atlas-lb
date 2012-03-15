@@ -53,8 +53,6 @@ public class UpdateSslTerminationListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dbLoadBalancer);
-            // Notify usage processor
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF); // TODO: Should this be here if it never got created?
             return;
         }
 
