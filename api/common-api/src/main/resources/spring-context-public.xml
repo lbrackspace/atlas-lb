@@ -95,11 +95,6 @@
                   parent="commonDependencyProvider"
                   scope="request"/>
         </property>
-        <property name="allowedDomainsResource">
-            <bean  class="org.openstack.atlas.api.resources.AllowedDomainsResource"
-                   parent="commonDependencyProvider"
-                   scope="request" />
-        </property>
         <property name="loadBalancersResource">
             <bean class="org.openstack.atlas.api.resources.LoadBalancersResource"
                   parent="commonDependencyProvider"
@@ -132,6 +127,11 @@
                     <bean class="org.openstack.atlas.api.resources.AlgorithmsResource"
                           parent="commonDependencyProvider"
                           scope="request"/>
+                </property>
+                <property name="allowedDomainsResource">
+                    <bean  class="org.openstack.atlas.api.resources.AllowedDomainsResource"
+                           parent="commonDependencyProvider"
+                           scope="request" />
                 </property>
             </bean>
         </property>
