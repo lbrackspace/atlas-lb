@@ -50,26 +50,26 @@
             <param-value>true</param-value>
         </init-param>
     </filter>
-    <filter>
-        <filter-name>groupRateLimitFilter</filter-name>
-        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-        <init-param>
-            <param-name>targetFilterLifecycle</param-name>
-            <param-value>true</param-value>
-        </init-param>
-    </filter>
-    <filter>
-        <filter-name>rateLimitingFilter</filter-name>
-        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-        <init-param>
-            <param-name>targetFilterLifecycle</param-name>
-            <param-value>true</param-value>
-        </init-param>
-        <init-param>
-            <param-name>context-adapter-class</param-name>
-            <param-value>com.rackspace.cloud.commons.util.servlet.context.impl.ServletSpringContext</param-value>
-        </init-param>
-    </filter>
+    <!--<filter>-->
+        <!--<filter-name>groupRateLimitFilter</filter-name>-->
+        <!--<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>-->
+        <!--<init-param>-->
+            <!--<param-name>targetFilterLifecycle</param-name>-->
+            <!--<param-value>true</param-value>-->
+        <!--</init-param>-->
+    <!--</filter>-->
+    <!--<filter>-->
+        <!--<filter-name>rateLimitingFilter</filter-name>-->
+        <!--<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>-->
+        <!--<init-param>-->
+            <!--<param-name>targetFilterLifecycle</param-name>-->
+            <!--<param-value>true</param-value>-->
+        <!--</init-param>-->
+        <!--<init-param>-->
+            <!--<param-name>context-adapter-class</param-name>-->
+            <!--<param-value>com.rackspace.cloud.commons.util.servlet.context.impl.ServletSpringContext</param-value>-->
+        <!--</init-param>-->
+    <!--</filter>-->
     <filter>
         <filter-name>jsonValidationFilter</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
@@ -88,14 +88,14 @@
         <filter-name>authenticationFilter</filter-name>
         <servlet-name>CXFServlet</servlet-name>
     </filter-mapping>
-    <filter-mapping>
-        <filter-name>groupRateLimitFilter</filter-name>
-        <servlet-name>CXFServlet</servlet-name>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>rateLimitingFilter</filter-name>
-        <servlet-name>CXFServlet</servlet-name>
-    </filter-mapping>
+    <!--<filter-mapping>-->
+        <!--<filter-name>groupRateLimitFilter</filter-name>-->
+        <!--<servlet-name>CXFServlet</servlet-name>-->
+    <!--</filter-mapping>-->
+    <!--<filter-mapping>-->
+        <!--<filter-name>rateLimitingFilter</filter-name>-->
+        <!--<servlet-name>CXFServlet</servlet-name>-->
+    <!--</filter-mapping>-->
     <filter-mapping>
         <filter-name>jsonValidationFilter</filter-name>
         <servlet-name>CXFServlet</servlet-name>
