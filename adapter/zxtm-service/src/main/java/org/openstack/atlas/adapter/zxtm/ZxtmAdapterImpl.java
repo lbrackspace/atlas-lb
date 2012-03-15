@@ -228,13 +228,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         final String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         final String poolName = virtualServerName;
 
-        LOG.debug(String.format("Deleting load balancer '%s'...", virtualServerName));
+        LOG.debug(String.format("Deleting load balancer '%s'", virtualServerName));
 
         removeAndSetDefaultErrorFile(config, loadBalancer);
-        //If present, remove the secure virtual server
+        //If present, remove the secure virtual server (SSL Termination)
         if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
             removeSslTermination(config, loadBalancer);
         }
+
         deleteRateLimit(config, loadBalancer);
         deleteVirtualServer(serviceStubs, virtualServerName);
         deleteNodePool(serviceStubs, poolName);
@@ -288,13 +289,17 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     private void deleteTrafficIpGroups(ZxtmServiceStubs serviceStubs, LoadBalancer lb) throws RemoteException, InsufficientRequestException {
         for (LoadBalancerJoinVip loadBalancerJoinVip : lb.getLoadBalancerJoinVipSet()) {
+            LOG.info(String.format("About to remove traffic ip group for load balancer: %d on account: %d", lb.getId(), lb.getAccountId()));
             String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip.getVirtualIp());
             deleteTrafficIpGroup(serviceStubs, trafficIpGroupName);
+            LOG.info(String.format("Traffic ip group: %s for load balancer: %d was removed..", trafficIpGroupName, lb.getId()));
         }
 
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : lb.getLoadBalancerJoinVip6Set()) {
+            LOG.info(String.format("About to remove traffic ip group for load balancer: %d on account: %d", lb.getId(), lb.getAccountId()));
             String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip6.getVirtualIp());
             deleteTrafficIpGroup(serviceStubs, trafficIpGroupName);
+            LOG.info(String.format("Traffic ip group: %s for load balancer: %d was removed..", trafficIpGroupName, lb.getId()));
         }
     }
 
@@ -312,13 +317,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.debug(String.format("Traffic ip group '%s' already deleted. Ignoring...", trafficIpGroupName));
-            }
+            } else
             if (e instanceof ObjectInUse) {
                 LOG.debug(String.format("Traffic ip group '%s' is in use (i.e. shared). Skipping...", trafficIpGroupName));
-            }
+            } else
             if (!(e instanceof ObjectDoesNotExist) && !(e instanceof ObjectInUse)) {
                 LOG.debug(String.format("There was an unknown issues deleting traffic ip group: %s", trafficIpGroupName) + e.getMessage());
             }
+            LOG.debug(String.format("There was an error removing traffic ip group: %s Message: %s Stack-Trace: %s", trafficIpGroupName, e.getMessage(), Arrays.toString(e.getStackTrace())));
         }
 
         //(VERSION 1) D-01942 failed when trying to verify tig, code not needed...
@@ -898,7 +904,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             //Detach and remove ssl termination (shadow server)
-            LOG.info(String.format("Detaching and disabling certificate for load balancer: '%s'", loadBalancer.getId()));
+            LOG.info(String.format("Detaching and disabling certificate for load balancer: '%s' virtual server name: %s", loadBalancer.getId(), virtualServerNameNonSecure));
             enableDisableSslTermination(conf, loadBalancer, false);
             serviceStubs.getVirtualServerBinding().setSSLCertificate(new String[]{virtualServerName}, new String[]{""});
             serviceStubs.getZxtmCatalogSSLCertificatesBinding().deleteCertificate(new String[]{virtualServerName});
@@ -913,6 +919,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 if (af instanceof ObjectDoesNotExist) {
                     LOG.warn(String.format("There was an warning removing rate limit from the shadow server as it does not exist for load balancer: '%s' ", loadBalancer.getId()));
                 }
+                LOG.error(String.format("There was an unexpected exception while removing the secure virtual servers ratelimit for virtual server: %s", virtualServerName));
             }
 
             //Removing connectionThrottle from shadow server
@@ -937,24 +944,24 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             deleteProtectionCatalog(serviceStubs, virtualServerName);
             LOG.debug(String.format("Removed protection catalog from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
-            //Removing the shadow VS
+            //Removing the secure VS
             try {
-                LOG.info(String.format("Removing the shadow virtual server..."));
+                LOG.info(String.format(String.format("Removing the secure virtual server: %s", virtualServerName)));
                 deleteVirtualServer(serviceStubs, virtualServerName);
-                LOG.debug(String.format("Successfully removed the shadow virtual server..."));
+                LOG.debug(String.format(String.format("Successfully removed the secure virtual server: %s", virtualServerName)));
             } catch (ObjectDoesNotExist dne) {
                 //Only happens when deleteLoadBalancer calls us
-                LOG.info(String.format("Virtual server %s was not found for removeSslTermination, ignoring...", virtualServerNameNonSecure));
+                LOG.info(String.format("Virtual server %s was not found for %s removeSslTermination, ignoring...", virtualServerName, virtualServerNameNonSecure));
             }
 
-            //Un-suspending non-secure vs
+            //Un-suspending non-secure VS
             try {
                 LOG.info("Suspending/disabling non-secure virtual server for load balancer: " + loadBalancer.getId());
                 suspendUnsuspendVirtualServer(conf, virtualServerNameNonSecure, false);
                 LOG.debug("Successfully suspended/disabled non-secure virtual server for load balancer: " + loadBalancer.getId());
             } catch (ObjectDoesNotExist dne) {
                 //Only happens when deleteLoadBalancer calls us
-                LOG.info(String.format("Virtual server %s was not found to suspend or enable, ignoring...", virtualServerNameNonSecure));
+                LOG.info(String.format("Virtual server %s was not found for %s to suspend or enable, ignoring...", virtualServerName, virtualServerNameNonSecure));
             }
 
         } catch (RemoteException af) {
