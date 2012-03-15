@@ -6,8 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import org.bouncycastle.jce.provider.JCERSAPrivateCrtKey;
 import org.bouncycastle.jce.provider.X509CertificateObject;
+import org.bouncycastle.jce.provider.HackedProviderAccessor;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.exceptions.ConversionException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
@@ -78,7 +79,12 @@ public class ZeusUtil {
         }
         if (keyPem != null) {
             try {
-                kp = (KeyPair) PemUtils.fromPem(keyPem);
+                Object pemObj =  PemUtils.fromPem(keyPem);
+                // Incase the object is returned as a JCERSAPrivateCrtKey instead of KeyPair
+                if(pemObj instanceof JCERSAPrivateCrtKey){
+                    pemObj = HackedProviderAccessor.newKeyPair((JCERSAPrivateCrtKey)pemObj);
+                }
+                kp = (KeyPair) pemObj;
                 if(kp == null){
                     errorList.add(ERRORDECODINGKEY);
                     return zcf;
