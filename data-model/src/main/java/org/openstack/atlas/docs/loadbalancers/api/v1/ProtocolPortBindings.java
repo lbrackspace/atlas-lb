@@ -32,6 +32,7 @@ public final class ProtocolPortBindings {
         protocolPortMap.put("DNS_UDP",53);
         protocolPortMap.put("UDP",0);
         protocolPortMap.put("UDP_STREAM",0);
+        protocolPortMap.put("MYSQL",3306);
 
         keys = new ArrayList<String>();
         protocols = new Protocols();

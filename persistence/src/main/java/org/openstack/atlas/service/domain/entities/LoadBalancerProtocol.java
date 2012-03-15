@@ -20,7 +20,8 @@ public enum LoadBalancerProtocol implements Serializable {
     DNS_UDP,
     DNS_TCP,
     UDP_STREAM,
-    UDP;
+    UDP,
+    MYSQL;
 
     private final static long serialVersionUID = 532512316L;
 }
