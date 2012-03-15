@@ -36,7 +36,7 @@ public class HackedProviderAccessor {
     public static KeyPair newKeyPair(JCERSAPrivateCrtKey jrpck) {
         PrivateKey privKey = (PrivateKey) jrpck;
         JCERSAPublicKey jrpk = newJCERSAPublicKey(jrpck);
-        PublicKey pubKey = (PublicKey) newJCERSAPublicKey(jrpck);
+        PublicKey pubKey =  (PublicKey)jrpk;
         KeyPair kp = new KeyPair(pubKey, privKey);
         return kp;
     }
