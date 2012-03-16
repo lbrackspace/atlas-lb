@@ -479,8 +479,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
 
             final VirtualServerRule[][] virtualServerRules1 = getServiceStubs().getVirtualServerBinding().getRules(new String[]{secureLoadBalancerName()});
             Assert.assertEquals(1, virtualServerRules1.length);
-            Assert.assertEquals(2, virtualServerRules1[0].length);
-            Assert.assertEquals(ZxtmAdapterImpl.ruleRateLimitHttp, virtualServerRules1[0][1]);
+            Assert.assertEquals(3, virtualServerRules1[0].length);
+            Assert.assertEquals(ZxtmAdapterImpl.ruleXForwardedProto, virtualServerRules1[0][1]);
 
         } catch (Exception e) {
             e.printStackTrace();
