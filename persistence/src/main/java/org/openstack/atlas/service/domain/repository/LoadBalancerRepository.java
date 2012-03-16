@@ -826,6 +826,18 @@ public class LoadBalancerRepository {
                 "SELECT p FROM LoadBalancerProtocolObject p WHERE name = 'HTTP'").getSingleResult();
     }
 
+    public LoadBalancerProtocolObject getProtocol(LoadBalancerProtocol protocol) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerProtocolObject> criteria = builder.createQuery(LoadBalancerProtocolObject.class);
+        Root<LoadBalancerProtocolObject> protocolObjectRoot = criteria.from(LoadBalancerProtocolObject.class);
+
+        Predicate hasName = builder.equal(protocolObjectRoot.get(LoadBalancerProtocolObject_.name), protocol);
+
+        criteria.select(protocolObjectRoot);
+        criteria.where(hasName);
+        return entityManager.createQuery(criteria).getSingleResult();
+    }
+
     public void delete(Object o) {
         entityManager.remove(o);
         entityManager.flush();
