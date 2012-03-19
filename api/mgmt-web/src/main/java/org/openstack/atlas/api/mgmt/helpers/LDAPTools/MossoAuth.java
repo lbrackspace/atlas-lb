@@ -33,12 +33,14 @@ public class MossoAuth {
         this.classMap = classMap;
     }
 
-
     public boolean testAuth(String user, String passwd) {
         ClassConfig uc;
         LdapContext ctx;
         String udn;
         NamingEnumeration<SearchResult> results;
+        if (user == null || passwd == null || user.equals("") || passwd.equals("")) {
+            return false; // Prevents annonymouse binds.
+        }
         SearchControls ctls = new SearchControls();
         ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
         uc = classMap.get("user");
@@ -66,7 +68,10 @@ public class MossoAuth {
         SearchControls ctls = new SearchControls();
         ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
         Set<String> groupSet = new HashSet<String>();
-        Map<String,String> attrMap;
+        Map<String, String> attrMap;
+        if (user == null || passwd == null || user.equals("") || passwd.equals("")) {
+            return groupSet; // Returns empty groupset on annonymouse binds.
+        }
         GroupConfig gc = this.groupMap.get("groups");
         LDAPCtxContainer ct = new LDAPCtxContainer(config, classMap.get("user"));
         String filter = String.format(gc.getUserQuery(), escapeFilter(user));
@@ -78,7 +83,7 @@ public class MossoAuth {
             SearchResult sr = (SearchResult) answer.next();
             Attribute groupList = sr.getAttributes().get(gc.getMemberField());
             for (i = 0; i < groupList.size(); i++) {
-                attrMap = attrSplit((String)groupList.get(i));
+                attrMap = attrSplit((String) groupList.get(i));
                 groupName = attrMap.get(gc.getSdn());
                 groupSet.add(groupName);
                 nop();
