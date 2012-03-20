@@ -134,6 +134,14 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         verifyConnectionThrottle();
     }
 
+    @Test
+    public void shouldPassIfCertificateIsRemovedWithSecureVSStillThere() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        setSslTermination();
+        updateSslTermination();
+        deleteCertificate();
+        removeSimpleLoadBalancer();
+    }
+
     private void setSslTermination() {
         String sVs = null;
 
@@ -668,6 +676,16 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
                 }
             }
             Assert.assertFalse(doesExist2);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    private void deleteCertificate() {
+        try {
+            getServiceStubs().getVirtualServerBinding().setSSLCertificate(new String[]{secureLoadBalancerName()}, new String[]{""});
+            getServiceStubs().getZxtmCatalogSSLCertificatesBinding().deleteCertificate(new String[]{secureLoadBalancerName()});
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
