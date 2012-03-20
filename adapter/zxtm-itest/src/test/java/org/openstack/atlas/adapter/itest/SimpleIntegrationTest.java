@@ -114,16 +114,11 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     @Test
-    public void testNodeOperations() throws Exception {
+    public void testSimpleNodeOperations() throws Exception {
         // Update algorithm so we can test that node weights get set properly
         zxtmAdapter.setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), WEIGHTED_LEAST_CONNECTIONS);
 
         setNodes();
-        updateNodeConditionsToEnabled();
-        shouldRollbackWhenUpdatingAllNodeConditionsToDisabled();
-        updateAllNodeConditionsToDraining();
-        shouldRollbackWhenSettingUnsupportedNodeWeights();
-        updateNodeWeights();
         removeNode();
     }
 
@@ -195,23 +190,14 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         // Remove so later tests aren't affected
         lb.getNodes().remove(node3);
         lb.getNodes().remove(node4);
+        lb.getNodes().remove(node5);
         zxtmAdapter.setNodes(config, lb);
-    }
-
-    private void updateNodeConditionsToEnabled() throws Exception {
-        for (Node node : lb.getNodes()) {
-            node.setCondition(ENABLED);
-        }
-
-        zxtmAdapter.setNodes(config, lb);
-
-        assertThatAllNodesAreEnabled();
     }
 
     private void assertThatAllNodesAreEnabled() throws RemoteException, InsufficientRequestException {
         final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
         Assert.assertEquals(1, enabledNodes.length);
-        Assert.assertEquals(3, enabledNodes[0].length);
+        Assert.assertEquals(2, enabledNodes[0].length);
 
         final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
         Assert.assertEquals(1, disabledNodes.length);
@@ -221,106 +207,12 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         Assert.assertEquals(0, drainingNodes[0].length);
     }
 
-    private void shouldRollbackWhenUpdatingAllNodeConditionsToDisabled() throws Exception {
-        for (Node node : lb.getNodes()) {
-            node.setCondition(DISABLED);
-        }
-
-        try {
-            assertThatAllNodesAreEnabled();
-            zxtmAdapter.setNodes(config, lb);
-        } catch (Exception e) {
-            if (e instanceof ZxtmRollBackException) assertThatAllNodesAreEnabled();
-            else Assert.fail("Expected a ZxtmRollBackException.");
-        }
-    }
-
-    private void updateAllNodeConditionsToDraining() throws Exception {
-        for (Node node : lb.getNodes()) {
-            node.setCondition(DRAINING);
-        }
-
-        zxtmAdapter.setNodes(config, lb);
-
-        final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
-        Assert.assertEquals(1, enabledNodes.length);
-        Assert.assertEquals(3, enabledNodes[0].length);
-
-        final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
-        Assert.assertEquals(1, disabledNodes.length);
-        Assert.assertEquals(0, disabledNodes[0].length);
-
-        final String[][] drainingNodes = getServiceStubs().getPoolBinding().getDrainingNodes(new String[]{poolName()});
-        Assert.assertEquals(1, drainingNodes.length);
-        Assert.assertEquals(3, drainingNodes[0].length);
-    }
-
-    private void shouldRollbackWhenSettingUnsupportedNodeWeights() throws Exception {
-        node1.setWeight(0);
-        node2.setWeight(101);
-
-        try {
-            zxtmAdapter.setNodeWeights(config, lb.getId(), lb.getAccountId(), lb.getNodes());
-        } catch (Exception e) {
-            if (e instanceof ZxtmRollBackException) {
-                final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
-                final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
-                final String[][] drainingNodes = getServiceStubs().getPoolBinding().getDrainingNodes(new String[]{poolName()});
-
-                final PoolWeightingsDefinition[][] enabledNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, enabledNodes);
-                Assert.assertEquals(1, enabledNodeWeights.length);
-                Assert.assertEquals(3, enabledNodeWeights[0].length);
-                Assert.assertEquals(1, enabledNodeWeights[0][1].getWeighting());
-
-                final PoolWeightingsDefinition[][] disabledNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, disabledNodes);
-                Assert.assertEquals(1, disabledNodeWeights.length);
-                Assert.assertEquals(0, disabledNodeWeights[0].length);
-
-                final PoolWeightingsDefinition[][] drainingNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, drainingNodes);
-                Assert.assertEquals(1, drainingNodeWeights.length);
-                Assert.assertEquals(3, drainingNodeWeights[0].length);
-                Assert.assertEquals(1, drainingNodeWeights[0][0].getWeighting());
-                Assert.assertEquals(1, drainingNodeWeights[0][1].getWeighting());
-            } else {
-                Assert.fail("ZxtmRollBackException expected.");
-            }
-        }
-    }
-
-    private void updateNodeWeights() throws Exception {
-        node1.setWeight(50);
-        node2.setWeight(100);
-
-        zxtmAdapter.setNodeWeights(config, lb.getId(), lb.getAccountId(), lb.getNodes());
-
-        final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
-        final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
-        final String[][] drainingNodes = getServiceStubs().getPoolBinding().getDrainingNodes(new String[]{poolName()});
-
-        final PoolWeightingsDefinition[][] enabledNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, enabledNodes);
-        Assert.assertEquals(1, enabledNodeWeights.length);
-        Assert.assertEquals(3, enabledNodeWeights[0].length);
-        //TODO: figure out what i changed that is causing nodes to behave differently, i dont see any bad behaviour IRL
-//        Assert.assertTrue((enabledNodeWeights[0][0].getWeighting() == node1.getWeight()) || (enabledNodeWeights[0][0].getWeighting() == node2.getWeight()));
-//        Assert.assertTrue((enabledNodeWeights[0][1].getWeighting() == node1.getWeight()) || (enabledNodeWeights[0][1].getWeighting() == node2.getWeight()));
-
-        final PoolWeightingsDefinition[][] disabledNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, disabledNodes);
-        Assert.assertEquals(1, disabledNodeWeights.length);
-        Assert.assertEquals(0, disabledNodeWeights[0].length);
-
-        final PoolWeightingsDefinition[][] drainingNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, drainingNodes);
-        Assert.assertEquals(1, drainingNodeWeights.length);
-        Assert.assertEquals(3, drainingNodeWeights[0].length);
-//        Assert.assertTrue((drainingNodeWeights[0][0].getWeighting() == node1.getWeight()) || (drainingNodeWeights[0][0].getWeighting() == node2.getWeight()));
-//        Assert.assertTrue((drainingNodeWeights[0][1].getWeighting() == node1.getWeight()) || (drainingNodeWeights[0][1].getWeighting() == node2.getWeight()));
-    }
-
     private void removeNode() throws Exception {
         zxtmAdapter.removeNode(config, lb.getId(), lb.getAccountId(), node2.getIpAddress(), node2.getPort());
 
         final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
         Assert.assertEquals(1, enabledNodes.length);
-        Assert.assertEquals(2, enabledNodes[0].length);
+        Assert.assertEquals(1, enabledNodes[0].length);
 
         final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
         Assert.assertEquals(1, disabledNodes.length);
@@ -341,7 +233,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     private void addVirtualIp() throws Exception {
         VirtualIp vip2 = new VirtualIp();
         vip2.setId(ADDITIONAL_VIP_ID);
-        vip2.setIpAddress("10.69.0.61");
+        vip2.setIpAddress("10.69.0.58");
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
         loadBalancerJoinVip.setVirtualIp(vip2);
         lb.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);
