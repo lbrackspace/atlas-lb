@@ -230,7 +230,7 @@ public class ZeusTestBase {
 
             final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
             Assert.assertEquals(1, virtualServerRules.length);
-            Assert.assertEquals(1, virtualServerRules[0].length);
+            Assert.assertEquals(2, virtualServerRules[0].length);
             Assert.assertEquals(ZxtmAdapterImpl.ruleXForwardedFor, virtualServerRules[0][0]);
 
             final String[] errorFile = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()});

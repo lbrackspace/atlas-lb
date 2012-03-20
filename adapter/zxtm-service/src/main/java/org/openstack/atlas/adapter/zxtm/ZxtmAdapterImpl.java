@@ -110,6 +110,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
                 TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
                 attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
+
+                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
+                attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
+
                 setDefaultErrorFile(config, lb);
             }
         } catch (Exception e) {
@@ -369,6 +373,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
                 removeSessionPersistence(config, lbId, accountId); // We currently only support HTTP session persistence
                 removeXFFRuleFromVirtualServers(serviceStubs, vsNames); // XFF is only for the HTTP protocol
+                removeXFPRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
             }
         } catch (Exception e) {
             throw new ZxtmRollBackException("Update protocol request canceled.", e);
@@ -402,6 +407,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 if (protocol.equals(LoadBalancerProtocol.HTTP)) {
                     TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
                     attachXFFRuleToVirtualServers(serviceStubs, vsNames);
+
+                    TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
+                    attachXFPRuleToVirtualServers(serviceStubs, vsNames);
                 }
             } catch (Exception ex) {
                 throw new ZxtmRollBackException("Update protocol request canceled.", ex);
@@ -790,6 +798,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     private void attachXFFRuleToVirtualServers(ZxtmServiceStubs serviceStubs, String[] virtualServerNames) throws RemoteException {
         for (String vsName : virtualServerNames) {
             attachXFFRuleToVirtualServer(serviceStubs, vsName);
+        }
+    }
+
+    private void attachXFPRuleToVirtualServers(ZxtmServiceStubs serviceStubs, String[] virtualServerNames) throws RemoteException {
+        for (String vsName : virtualServerNames) {
             attachXFPRuleToVirtualServer(serviceStubs, vsName);
         }
     }
@@ -829,6 +842,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     private void removeXFFRuleFromVirtualServers(ZxtmServiceStubs serviceStubs, String[] virtualServerNames) throws RemoteException {
         for (String vsName : virtualServerNames) {
             removeXFFRuleFromVirtualServer(serviceStubs, vsName);
+        }
+    }
+
+    private void removeXFPRuleFromVirtualServers(ZxtmServiceStubs serviceStubs, String[] virtualServerNames) throws RemoteException {
+        for (String vsName : virtualServerNames) {
             removeXFPRuleFromVirtualServer(serviceStubs, vsName);
         }
     }
