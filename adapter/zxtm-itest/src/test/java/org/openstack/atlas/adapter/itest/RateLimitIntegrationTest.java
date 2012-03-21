@@ -60,8 +60,13 @@ public class RateLimitIntegrationTest extends ZeusTestBase {
 
             final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
             Assert.assertEquals(1, virtualServerRules.length);
-            Assert.assertEquals(2, virtualServerRules[0].length);
-            Assert.assertEquals(ZxtmAdapterImpl.ruleRateLimitHttp, virtualServerRules[0][1]);
+            Assert.assertEquals(3, virtualServerRules[0].length);
+            for (VirtualServerRule rule : virtualServerRules[0]) {
+                if (!(rule.equals(ZxtmAdapterImpl.ruleRateLimitHttp)) && !(rule.equals(ZxtmAdapterImpl.ruleXForwardedProto)) && !(rule.equals(ZxtmAdapterImpl.ruleXForwardedFor))) {
+                    Assert.fail("None of the rules matched, test failed!...");
+                }
+            }
+//            Assert.assertEquals(ZxtmAdapterImpl.ruleRateLimitHttp, virtualServerRules[0][1]);
 
         } catch (Exception e) {
             e.printStackTrace();
