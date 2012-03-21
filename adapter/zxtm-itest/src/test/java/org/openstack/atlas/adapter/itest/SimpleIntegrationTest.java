@@ -59,12 +59,47 @@ public class SimpleIntegrationTest extends ZeusTestBase {
             Assert.assertEquals(1, virtualServerRules.length);
 
             for (VirtualServerRule virtualServerRule : virtualServerRules[0]) {
-                if (virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedFor))
-                    Assert.fail("XFF rule should not be enabled!");
+                if (virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedFor) || virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedProto))
+                    Assert.fail("XFF and XFP rule should not be enabled!");
             }
 
             lb.setProtocol(HTTP);
             zxtmAdapter.updateProtocol(config, lb);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void updateProtocolVerifyXFHeaders() {
+        try {
+            lb.setProtocol(HTTPS);
+            zxtmAdapter.updateProtocol(config, lb);
+
+            final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
+            Assert.assertEquals(1, virtualServerBasicInfos.length);
+            Assert.assertEquals(VirtualServerProtocol.https, virtualServerBasicInfos[0].getProtocol());
+
+            final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
+            Assert.assertEquals(1, virtualServerRules.length);
+
+            for (VirtualServerRule virtualServerRule : virtualServerRules[0]) {
+                if (virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedFor) || virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedProto))
+                    Assert.fail("XFF and XFP rule should not be enabled!");
+            }
+
+            lb.setProtocol(HTTP);
+            zxtmAdapter.updateProtocol(config, lb);
+
+            for (VirtualServerRule virtualServerRule : virtualServerRules[0]) {
+                //Both XFF and XFP should be set when updating from any protocol to a HTTP protocol
+                Assert.assertTrue(virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedFor) || virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedProto));
+            }
+
+            final VirtualServerRule[][] virtualServerRules2 = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
+            Assert.assertEquals(2, virtualServerRules2[0].length);
 
         } catch (Exception e) {
             e.printStackTrace();
