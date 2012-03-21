@@ -1238,11 +1238,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             setDisabledNodes(config, poolName, getNodesWithCondition(nodes, NodeCondition.DISABLED));
-
-            //Version1 D-02581 12/28/11
-            verifyDrainingNodes(config, poolName, getNodesWithCondition(nodes, NodeCondition.DRAINING));
-//            setDrainingNodes(config, poolName, drainingApiNodes);
-
+            setDrainingNodes(config, poolName, getNodesWithCondition(nodes, NodeCondition.DRAINING));
             setNodeWeights(config, lbId, accountId, nodes);
             setNodesPriorities(config, poolName, lb);
         } catch (Exception e) {
@@ -1269,34 +1265,21 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         LOG.debug(String.format("Setting disabled nodes for pool '%s'", poolName));
         serviceStubs.getPoolBinding().setDisabledNodes(new String[]{poolName}, NodeHelper.getIpAddressesFromNodes(nodesToDisable));
+        LOG.debug(String.format("Successfully set disabled nodes for pool '%s'", poolName));
     }
 
     private void setDrainingNodes(LoadBalancerEndpointConfiguration config, String poolName, List<Node> nodesToDrain) throws RemoteException {
-        if (nodesToDrain == null || nodesToDrain.isEmpty()) {
-            return;
-        }
-
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        String[][] currentDrainingNodes = serviceStubs.getPoolBinding().getDrainingNodes(new String[]{poolName});
 
-        LOG.debug(String.format("Setting draining nodes for pool '%s'", poolName));
-        serviceStubs.getPoolBinding().setDrainingNodes(new String[]{poolName}, NodeHelper.getIpAddressesFromNodes(nodesToDrain));
-    }
-
-    private void verifyDrainingNodes(LoadBalancerEndpointConfiguration config, String poolName, List<Node> nodesToDrain) throws RemoteException {
-        if (nodesToDrain == null) {
-            return;
-        }
-
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-
-        String[][] drainingZeusNodesAfterUpdate = serviceStubs.getPoolBinding().getDrainingNodes(new String[]{poolName});
-
-        if (!nodesToDrain.isEmpty()) {
+        if (nodesToDrain != null && !nodesToDrain.isEmpty()) {
             LOG.debug(String.format("Setting draining nodes for pool '%s'", poolName));
             serviceStubs.getPoolBinding().setDrainingNodes(new String[]{poolName}, NodeHelper.getIpAddressesFromNodes(nodesToDrain));
-        } else if (drainingZeusNodesAfterUpdate[0].length > 0) {
+            LOG.debug(String.format("Successfully set draining nodes for pool '%s'", poolName));
+        } else if (currentDrainingNodes[0].length > 0) {
             LOG.debug(String.format("Removing draining nodes for pool '%s'", poolName));
-            serviceStubs.getPoolBinding().removeDrainingNodes(new String[]{poolName}, drainingZeusNodesAfterUpdate);
+            serviceStubs.getPoolBinding().removeDrainingNodes(new String[]{poolName}, currentDrainingNodes);
+            LOG.debug(String.format("Successfully removed draining nodes for pool '%s'", poolName));
         }
     }
 

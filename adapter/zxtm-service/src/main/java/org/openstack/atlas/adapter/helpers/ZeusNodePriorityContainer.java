@@ -20,9 +20,8 @@ public class ZeusNodePriorityContainer {
         priorityValues = new ArrayList<PoolPriorityValueDefinition>();
         constainsSecondary = false;
         constainsPrimary = true;
-        for (int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
-            if(node.getCondition()!= NodeCondition.ENABLED){
+        for (Node node : nodes) {
+            if (node.getCondition() == NodeCondition.DISABLED) {
                 continue; // This node is not enabled so it doesn't count as either primary or secondary.
             }
             PoolPriorityValueDefinition pVal = new PoolPriorityValueDefinition();
