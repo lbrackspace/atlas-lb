@@ -24,6 +24,8 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.jce.provider.HackedProviderAccessor;
+import org.bouncycastle.jce.provider.JCERSAPrivateCrtKey;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.ca.gui.utils.ButtonGroupMapper;
@@ -1037,9 +1039,9 @@ public class CaFrame extends javax.swing.JFrame {
             msg = String.format(fmt, CsrUtils.csrToStr(req));
             logDbg("%s\n", msg);
         } else if (obj instanceof X509CertificateObject) {
-            X509CertificateObject cert = (X509CertificateObject)obj;
+            X509CertificateObject cert = (X509CertificateObject) obj;
             String certStr = CertUtils.certToStr(cert);
-            logDbg("%s",certStr);
+            logDbg("%s", certStr);
         }
 }//GEN-LAST:event_identifyFileButtonActionPerformed
 
@@ -1089,7 +1091,7 @@ public class CaFrame extends javax.swing.JFrame {
                 logDbg("Loading key from file \"%s\"\n", keyFile);
                 try {
                     keyBytes = PemUtils.readFileToByteArray(keyFile);
-                    jKeyPair = (KeyPair) PemUtils.fromPem(keyBytes);
+                    jKeyPair = getKeyPairFromBytes(keyBytes);
                 } catch (PemException ex) {
                     logError("Error decoding keypair\n%s\n", getEST(ex));
                     return;
@@ -1297,7 +1299,8 @@ public class CaFrame extends javax.swing.JFrame {
             return;
         }
         try {
-            keys = new RsaPair((KeyPair) PemUtils.fromPem(caKeyBytes));
+            KeyPair kp = getKeyPairFromBytes(caKeyBytes);
+            keys = new RsaPair(kp);
         } catch (RsaException ex) {
             fmt = "Error translating data in \"%s\" to rsa key pair\n%s";
             logError(fmt, caKeyFile, getEST(ex));
@@ -1440,23 +1443,23 @@ public class CaFrame extends javax.swing.JFrame {
         certFile = vkcCertFN.getText();
         try {
             keyPem = PemUtils.readFileToByteArray(keyFile);
-        }catch(IOException ex) {
-            logError("Error reading key from \"%s\"\n%s\n", keyFile,getEST(ex));
+        } catch (IOException ex) {
+            logError("Error reading key from \"%s\"\n%s\n", keyFile, getEST(ex));
             return;
         }
         try {
             certPem = PemUtils.readFileToByteArray(certFile);
         } catch (IOException ex) {
-           logError("Error reading cert from \"%s\"\n%s\n",certFile,getEST(ex));
-           return;
+            logError("Error reading cert from \"%s\"\n%s\n", certFile, getEST(ex));
+            return;
         }
 
         errors = RSAKeyUtils.verifyKeyAndCert(keyPem, certPem);
-        if(errors.size()>0){
-            for(String error : errors){
+        if (errors.size() > 0) {
+            for (String error : errors) {
                 logError("%s\n", error);
             }
-        }else{
+        } else {
             logDbg("cert And Key Matched\n");
         }
     }//GEN-LAST:event_verifyKeyAndCertButtonActionPerformed
@@ -1484,22 +1487,22 @@ public class CaFrame extends javax.swing.JFrame {
         subjectFile = subjectCertFN.getText();
         try {
             issuerCertPem = PemUtils.readFileToByteArray(issuerFile);
-        }catch(IOException ex) {
-            logError("Error reading Issuer Cert from \"%s\"\n%s\n",issuerFile,getEST(ex));
+        } catch (IOException ex) {
+            logError("Error reading Issuer Cert from \"%s\"\n%s\n", issuerFile, getEST(ex));
             return;
         }
         try {
             subjectCertPem = PemUtils.readFileToByteArray(subjectFile);
         } catch (IOException ex) {
-            logError("Error reading Subject Cert from \"%s\"\n%s\n",subjectFile,getEST(ex));
+            logError("Error reading Subject Cert from \"%s\"\n%s\n", subjectFile, getEST(ex));
             return;
         }
         errorList = CertUtils.verifyIssuerAndSubjectCert(issuerCertPem, subjectCertPem);
-        if(errorList.size()<=0){
+        if (errorList.size() <= 0) {
             logDbg("Issuer and Subject Cert are valid\n");
-        }else{
-            for(String errorStr : errorList){
-                logError("%s\n",errorStr);
+        } else {
+            for (String errorStr : errorList) {
+                logError("%s\n", errorStr);
             }
         }
 
@@ -1514,18 +1517,20 @@ public class CaFrame extends javax.swing.JFrame {
         String cert;
         String chain;
 
-        key = (keyText.getText().length()>0)?keyText.getText():null;
-        cert = (certText.getText().length()>0)?certText.getText():null;
-        chain = (chainText.getText().length()>0)?chainText.getText():null;
+        key = (keyText.getText().length() > 0) ? keyText.getText() : null;
+        cert = (certText.getText().length() > 0) ? certText.getText() : null;
+        chain = (chainText.getText().length() > 0) ? chainText.getText() : null;
         ZeusCertFile zcf;
         List<String> errorList;
         zcf = ZeusUtil.getCertFile(key, cert, chain);
-        if(zcf.isError()){
-            for(String errorStr : zcf.getErrorList()){
-                logError("%s\n",errorStr);
+        if (zcf.isError()) {
+            for (String errorStr : zcf.getErrorList()) {
+                logError("%s\n", errorStr);
             }
-        }else{
+        } else {
             logDbg("Certificate key and chain are valid");
+            logDbg(String.format("reencoded Key:\n%s\n", zcf.getPrivate_key()));
+            logDbg(String.format("\n\ncrt:\n%s\n\n", zcf.getPublic_cert()));
         }
 
     }//GEN-LAST:event_verifyKeyCertChainActionPerformed
@@ -1727,6 +1732,16 @@ public class CaFrame extends javax.swing.JFrame {
             logDbg(err + "\n");
         }
         setDebugLogStyle(greenStyle);
+    }
+
+    private KeyPair getKeyPairFromBytes(byte[] pemBytes) throws PemException {
+        Object pemObj = PemUtils.fromPem(pemBytes);
+        // Incase the object is returned as a JCERSAPrivateCrtKey instead of KeyPair
+        if (pemObj instanceof JCERSAPrivateCrtKey) {
+            pemObj = HackedProviderAccessor.newKeyPair((JCERSAPrivateCrtKey) pemObj);
+        }
+        KeyPair kp = (KeyPair) pemObj;
+        return kp;
     }
 
     private String getStateStr() {
