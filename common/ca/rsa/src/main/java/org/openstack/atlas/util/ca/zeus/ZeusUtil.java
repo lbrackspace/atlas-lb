@@ -11,6 +11,7 @@ import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.bouncycastle.jce.provider.HackedProviderAccessor;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.exceptions.ConversionException;
+import org.openstack.atlas.util.ca.exceptions.NullKeyException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
 import org.openstack.atlas.util.ca.PemUtils;
@@ -196,8 +197,15 @@ public class ZeusUtil {
 
         if (rp != null) {
             try {
-                decodedStr = new String(keyPem, "US-ASCII");
+                byte[] priv = rp.getPrivAsPem();
+                decodedStr = new String(priv, "US-ASCII");
                 zcf.setPrivate_key(decodedStr);
+            } catch (NullKeyException ex) {
+                Logger.getLogger(ZeusUtil.class.getName()).log(Level.FINE, null, ex);
+                errorList.add(ERRORDECODINGKEY);
+            } catch (PemException ex) {
+                Logger.getLogger(ZeusUtil.class.getName()).log(Level.FINE, null, ex);
+                errorList.add(ERRORDECODINGKEY);
             } catch (UnsupportedEncodingException ex) {
                 errorList.add(MISSINGUSASCII);
                 return zcf;
