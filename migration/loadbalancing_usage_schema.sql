@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 5.1.57, for apple-darwin10.7.4 (i386)
+-- MySQL dump 10.13  Distrib 5.1.61, for apple-darwin10.6.0 (i386)
 --
 -- Host: 173.203.200.79    Database: loadbalancing_usage
 -- ------------------------------------------------------
@@ -23,7 +23,6 @@
 -- Table structure for table `event_type`
 --
 
-DROP TABLE IF EXISTS `event_type`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `event_type` (
@@ -37,7 +36,6 @@ CREATE TABLE `event_type` (
 -- Table structure for table `host_usage`
 --
 
-DROP TABLE IF EXISTS `host_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `host_usage` (
@@ -48,14 +46,13 @@ CREATE TABLE `host_usage` (
   `snapshot_time` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`),
   KEY `host_usage_host_key` (`host_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1745 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=408503 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `lb_usage`
 --
 
-DROP TABLE IF EXISTS `lb_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `lb_usage` (
@@ -73,17 +70,21 @@ CREATE TABLE `lb_usage` (
   `num_vips` int(11) NOT NULL default '1',
   `tags_bitmask` int(3) NOT NULL default '0',
   `event_type` varchar(32) default NULL,
+  `avg_concurrent_conns_ssl` double NOT NULL default '0',
+  `cum_bandwidth_bytes_in_ssl` bigint(20) NOT NULL default '0',
+  `cum_bandwidth_bytes_out_ssl` bigint(20) NOT NULL default '0',
+  `last_bandwidth_bytes_in_ssl` bigint(20) NOT NULL default '0',
+  `last_bandwidth_bytes_out_ssl` bigint(20) NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `lb_usage_account_key` (`account_id`),
   KEY `lb_usage_lb_key` (`loadbalancer_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1778 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3455671 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `lb_usage_event`
 --
 
-DROP TABLE IF EXISTS `lb_usage_event`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `lb_usage_event` (
@@ -96,17 +97,29 @@ CREATE TABLE `lb_usage_event` (
   PRIMARY KEY  (`id`),
   KEY `lb_usage_event_account_key` (`account_id`),
   KEY `lb_usage_event_lb_key` (`loadbalancer_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=589 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5131 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `meta`
 --
 
-DROP TABLE IF EXISTS `meta`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `meta` (
+  `meta_key` varchar(128) NOT NULL,
+  `meta_value` varchar(128) default NULL,
+  UNIQUE KEY `meta_key` (`meta_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `version`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `version` (
   `meta_key` varchar(128) NOT NULL,
   `meta_value` varchar(128) default NULL,
   UNIQUE KEY `meta_key` (`meta_key`)
@@ -122,4 +135,4 @@ CREATE TABLE `meta` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2011-06-13 15:55:04
+-- Dump completed on 2012-03-22 10:40:13
