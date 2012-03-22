@@ -22,7 +22,7 @@ import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.NONE;
 
-public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
+public class    ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     public static Log LOG = LogFactory.getLog(ZxtmAdapterImpl.class.getName());
     public static final LoadBalancerAlgorithm DEFAULT_ALGORITHM = LoadBalancerAlgorithm.RANDOM;
