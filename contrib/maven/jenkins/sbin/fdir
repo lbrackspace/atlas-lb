@@ -1,0 +1,34 @@
+#!/usr/bin/python
+
+import sys
+import os
+
+def printf(format, *args): print format % args,
+
+if len(sys.argv)>=2:
+    onlydir=True
+else:
+    onlydir=False
+
+def listdir():
+    cur_path=os.getcwd()
+    dir_list=os.listdir(".")
+    for entry in dir_list:
+        os.chdir(cur_path)
+        if os.path.isdir(entry) and not os.path.islink(entry):
+           if onlydir:
+               printf("%s\n",os.path.abspath(entry))
+           try:
+              os.chdir(entry)
+              listdir()
+              os.chdir("..")
+           except (KeyboardInterrupt,SystemExit):
+              raise
+           except:
+              printf("Error entering \"%s\" directory\n",entry)
+              continue
+        else:
+            if not onlydir:
+                printf("%s%s%s\n",cur_path,os.path.sep,entry)
+listdir()
+
