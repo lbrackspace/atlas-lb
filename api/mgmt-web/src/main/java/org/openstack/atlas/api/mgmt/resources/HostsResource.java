@@ -59,7 +59,7 @@ public class HostsResource extends ManagementDependencyProvider {
         try {
             org.openstack.atlas.service.domain.entities.Host domainHost = getDozerMapper().map(host, org.openstack.atlas.service.domain.entities.Host.class);
             hostService.create(domainHost);
-            return Response.status(Response.Status.ACCEPTED).entity(dozerMapper.map(domainHost, Host.class)).build();
+            return Response.status(Response.Status.ACCEPTED).entity(dozerMapper.map(domainHost, Host.class, "SIMPLE_HOST")).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
