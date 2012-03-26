@@ -1,0 +1,223 @@
+#!/usr/bin/env python
+
+from operator import itemgetter, attrgetter
+import httplib
+import cPickle
+import urllib2
+import urllib
+import base64
+import json
+import copy
+import sys
+import os
+
+example_auth_request_json = """{
+  "username": "<Your UserName>", 
+  "uri": "https://auth.api.rackspacecloud.com/v1.1", 
+  "key": "<Your Key>"
+}"""
+
+def setRequestMethod(methodStr):
+    def wrapper(*args,**kw):
+        return methodStr
+    return wrapper
+
+def keygetter(key):
+    def wrapper(item):
+        return item[key]
+    return wrapper
+
+def nilDictList(listIn):
+    out = []
+    keys = set()
+    for le in listIn:
+        for k in le.keys():
+            if k not in keys:
+                keys.add(k)
+    for le in listIn:
+        row = {}
+        for k in keys:
+            row[k] = le.get(k,None)
+        out.append(row)
+    return out
+
+def usage(prog):
+    util.printf("usage is %s <auth.json>\n",prog)
+    util.printf("\n")
+    util.printf("   Fetch auth token for the user specified specified\n")
+    util.printf("by the auth.json file and display it.\n")
+    util.printf("example auth.json file:\n")
+    util.printf("%s\n",example_auth_request_json)
+
+class BaseUtil(object):
+    @staticmethod
+    def printf(format,*args): sys.stdout.write(format%args)
+
+    @staticmethod
+    def fprintf(fp,format,*args): fp.write(format%args)
+
+    @staticmethod
+    def fullPath(file_path):
+        full_path = os.path.expanduser(file_path)
+        full_path = os.path.abspath(full_path)
+        return full_path
+
+    @staticmethod
+    def load_cpickle(file_name):
+        file_path = BaseUtil.fullPath(file_name)
+        fp = open(file_path,"r")
+        obj = cPickle.load(fp)
+        fp.close()
+        return obj
+
+    @staticmethod
+    def save_cpickle(file_name,obj):
+        file_path = BaseUtil.fullPath(file_name)
+        fp = open(file_path,"w")
+        cPickle.dump(obj,fp)
+        fp.close()
+        return None
+
+    @staticmethod
+    def load_json(json_file):
+        fp = open(BaseUtil.fullPath(json_file),"r")
+        json_data = fp.read()
+        fp.close()
+        out = json.loads(json_data)
+        return out
+
+    @staticmethod
+    def save_json(json_file,obj):
+        fp = open(BaseUtil.fullPath(json_file),"w")
+        out = json.dumps(obj, indent=2)
+        fp.write(out)
+        fp.close()
+
+    @staticmethod
+    def dir(obj):
+        for m in sorted(dir(obj)):
+            sys.stdout.write("%s\n"%m)
+        sys.stdout.flush()
+
+    @staticmethod
+    def pyXBName(obj):
+        className = obj.__class__.__name__
+        if className[-1] == "_":
+            return className[:-1]
+        return className
+
+util = BaseUtil
+
+class BaseClient(object):
+    def __init__(self,*args,**kw):
+        self.debug = kw.pop("debug",False)
+        self.headers = kw.pop("headers",{})
+        self.uri = kw.pop("uri")
+        if not self.headers.has_key("accept"):
+            self.headers["accept"]="application/json"
+        if not self.headers.has_key("content-type"):
+            self.headers["content-type"] = "application/json"
+
+    @staticmethod
+    def basicAuthHeader(user,passwd):
+        args = (user.encode("ascii","ignore"),passwd.encode("ascii","ignore"))
+        b64 = base64.b64encode("%s:%s"%args)
+        return {"Authorization":"BASIC %s"%b64}
+
+    def encodeQueryParams(self,params):
+        if len(params)<1:
+            return ""
+        else:
+            return "?%s"%urllib.urlencode(params)
+
+    def queryArgsFromKw(self,*args,**kw):
+        params = []
+        for key in args:
+            val = kw.pop(key,None)
+            if val == None:
+                continue
+            params.append( (key,val) )
+        return (kw,params)
+
+
+    def queryArgsFromKw(self,*args,**kw):
+        params = []
+        for key in args:
+            val = kw.pop(key,None)
+            if val == None:
+                continue
+            params.append( (key,val) )
+        return (kw,params)
+
+    def request(self,uri_tail,*args,**kw):
+        data = kw.get("data",None)
+        headers = copy.deepcopy(kw.get("headers",self.headers))
+        headers.update(kw.get("extra_headers",{}))
+        uri = self.uri + uri_tail
+        if kw.get("debug",self.debug):
+            fprintf(sys.stderr,"uri=%s\ndata=%s\nheaders=%s\n",uri,data,headers)
+        req = urllib2.Request(uri,data=data,headers=headers)
+        if kw.has_key("method"):
+            req.get_method = setRequestMethod(kw["method"])
+        return req
+
+    def postReq(self,*args,**kw):
+        kw["method"] = "POST"
+        return self.request(*args,**kw)
+
+    def getReq(self,*args,**kw):
+        kw["method"] = "GET"
+        return self.request(*args,**kw)
+
+    def deleteReq(self,*args,**kw):
+        kw["method"]="DELETE"
+        return self.request(*args,**kw)
+
+    def putReq(self,*args,**kw):
+        kw["method"] = "PUT"
+        return self.request(*args,**kw)
+
+class Auth1_1Client(BaseClient):
+    util = BaseUtil
+    def __init__(self,*args,**kw):
+        self.username = kw.pop("username")
+        self.key  = kw.pop("key")
+        self.auth_resp = kw.pop("auth_resp",None)
+        BaseClient.__init__(self,*args,**kw)
+
+    def addXauthHeaders(self,**kw):
+        kw["extra_headers"] = kw.pop("extra_headers",{})
+        kw["extra_headers"]["x-auth-token"] = self.getToken()
+        return kw
+
+
+    def fetchAuth(self):
+        self.auth_resp = None
+        cred = {"credentials":{"username":self.username,"key":self.key}}
+        kw = {}
+        uri = "/auth"
+        jdata = json.dumps(cred,indent=4)
+        req = self.postReq(uri,data=jdata)
+        resp = urllib2.urlopen(req)
+        self.auth_resp = json.loads(resp.read())
+        return copy.deepcopy(self.auth_resp)
+
+    def getToken(self):
+        return self.auth_resp["auth"]["token"]["id"]
+
+    def getServiceCatalog(self):
+        return copy.deepcopy(self.auth_resp["auth"]["serviceCatalog"])
+
+if __name__=="__main__":
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<2:
+        usage(prog)
+        sys.exit()
+    
+    conf_file = sys.argv[1]
+    conf = util.load_json(conf_file)
+    auth = Auth1_1Client(**conf)
+    auth.fetchAuth()
+    token = auth.getToken()
+    util.printf("x-auth-token: %s\n",auth.getToken())
+    
