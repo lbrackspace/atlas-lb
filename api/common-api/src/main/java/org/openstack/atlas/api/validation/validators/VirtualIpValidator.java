@@ -65,7 +65,7 @@ public class VirtualIpValidator implements ResourceValidator<VirtualIp> {
 
 
                 // VIRTUAL IP POST CONTEXT (PUBLIC ADD VIP)
-//                result(validationTarget().getId()).must().not().exist().forContext(POST_IPV6).withMessage("Cannot add a shared virtual ip.");
+                result(validationTarget().getId()).must().not().exist().forContext(POST_IPV6).withMessage("Cannot add a shared virtual ip.");
                 must().adhereTo(new Verifier<VirtualIp>() {
                     @Override
                     public VerifierResult verify(VirtualIp virtualIp) {
