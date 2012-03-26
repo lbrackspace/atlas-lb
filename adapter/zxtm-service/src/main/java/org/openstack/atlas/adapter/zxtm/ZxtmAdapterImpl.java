@@ -22,7 +22,7 @@ import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.NONE;
 
-public class    ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
+public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     public static Log LOG = LogFactory.getLog(ZxtmAdapterImpl.class.getName());
     public static final LoadBalancerAlgorithm DEFAULT_ALGORITHM = LoadBalancerAlgorithm.RANDOM;
@@ -163,6 +163,11 @@ public class    ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
                 LOG.info(String.format("Enabling SSL Headers for virtual server: %s", virtualServerName));
                 serviceStubs.getVirtualServerBinding().setSSLHeaders(new String[]{virtualServerName}, new boolean[]{true});
+
+                LOG.info(String.format("Disabling HOST Header rewrite on secure virtual server: %s", virtualServerName));
+                VirtualServerLocationDefaultRewriteMode never = VirtualServerLocationDefaultRewriteMode.never;
+                serviceStubs.getVirtualServerBinding().setLocationDefaultRewriteMode(new String[]{virtualServerName}, new VirtualServerLocationDefaultRewriteMode[]{never});
+                LOG.info(String.format("Succesfully disabled HOST Header rewrite on secure virtual server: %s", virtualServerName));
 
                 String[] errorFile = serviceStubs.getVirtualServerBinding().getErrorFile(new String[]{poolName});
                 if (!errorFile[0].equals("")) {
@@ -499,8 +504,7 @@ public class    ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-    private void updatePort(LoadBalancerEndpointConfiguration config, String virtualServerName, Integer port)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    private void updatePort(LoadBalancerEndpointConfiguration config, String virtualServerName, Integer port) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         try {
@@ -510,13 +514,13 @@ public class    ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.error(String.format("Cannot update port for virtual server '%s' as it does not exist.", virtualServerName), e);
+            } else {
+                throw new ZxtmRollBackException("Update port request canceled as there was an unexpected error...", e);
             }
-            throw new ZxtmRollBackException("Update port request canceled.", e);
         }
     }
 
-    private void suspendUnsuspendVirtualServer(LoadBalancerEndpointConfiguration config, String virtualServerName, boolean isSuspended)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    private void suspendUnsuspendVirtualServer(LoadBalancerEndpointConfiguration config, String virtualServerName, boolean isSuspended) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         boolean isEnabled = false;
@@ -525,12 +529,13 @@ public class    ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         try {
             LOG.debug(String.format("Updating suspension to '%s' for virtual server '%s'...", isSuspended, virtualServerName));
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{isEnabled});
-            LOG.info(String.format("Successfully updated suspension for virtual server '%s'.", virtualServerName));
+//            LOG.info(String.format("Successfully updated suspension for virtual server '%s'.", virtualServerName));
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
                 LOG.error(String.format("Cannot suspend/unsuspend virtual server '%s' as it does not exist.", virtualServerName), e);
+            } else {
+                throw new ZxtmRollBackException("Suspend/unsuspend request canceled.", e);
             }
-            throw new ZxtmRollBackException("Suspend/unsuspend request canceled.", e);
         }
     }
 
@@ -884,25 +889,27 @@ public class    ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
         }
 
-        try {
-            if (!serviceStubs.getVirtualServerBinding().getPort(new String[]{virtualServerName})[0].equals(zeusSslTermination.getSslTermination().getSecurePort())) {
-                LOG.info(String.format("Updating secure servers port for ssl termination load balancer  %s in zeus...", virtualServerName));
-                updatePort(conf, virtualServerName, zeusSslTermination.getSslTermination().getSecurePort());
-                LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer %s in zeus...", virtualServerName));
-            }
 
-            try {
-                if (zeusSslTermination.getCertIntermediateCert() != null) {
-                    if (certificateCatalogService.getCertificateInfo(new String[]{virtualServerName}) != null) {
-                        LOG.info(String.format("Certificate already exists, removing it for loadbalancer: %s", loadBalancer.getId()));
-                        enableDisableSslTermination(conf, loadBalancer, false);
-                        certificateCatalogService.deleteCertificate(new String[]{virtualServerName});
-                        LOG.debug(String.format("Removed existing certificate for loadbalancer: %s", loadBalancer.getId()));
-                    }
+        if (!serviceStubs.getVirtualServerBinding().getPort(new String[]{virtualServerName})[0].equals(zeusSslTermination.getSslTermination().getSecurePort())) {
+            LOG.info(String.format("Updating secure servers port for ssl termination load balancer  %s in zeus...", virtualServerName));
+            updatePort(conf, virtualServerName, zeusSslTermination.getSslTermination().getSecurePort());
+            LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer %s in zeus...", virtualServerName));
+        }
+
+        try {
+            if (zeusSslTermination.getCertIntermediateCert() != null) {
+                if (certificateCatalogService.getCertificateInfo(new String[]{virtualServerName}) != null) {
+                    LOG.info(String.format("Certificate already exists, removing it for loadbalancer: %s", loadBalancer.getId()));
+                    enableDisableSslTermination(conf, loadBalancer, false);
+                    certificateCatalogService.deleteCertificate(new String[]{virtualServerName});
+                    LOG.debug(String.format("Removed existing certificate for loadbalancer: %s", loadBalancer.getId()));
                 }
-            } catch (ObjectDoesNotExist odne) {
-                LOG.debug(String.format("The certificate does not exist, ignoring... loadbalancer: %s", loadBalancer.getId()));
             }
+        } catch (ObjectDoesNotExist odne) {
+            LOG.debug(String.format("The certificate does not exist, ignoring... loadbalancer: %s", loadBalancer.getId()));
+        }
+
+        try {
 
             if (zeusSslTermination.getCertIntermediateCert() != null) {
                 LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
@@ -926,6 +933,8 @@ public class    ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Successfully enabled:'%s' non-secure server for load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
         } catch (AxisFault af) {
             LOG.error("there was a error setting ssl termination in zxtm adapter for load balancer " + loadBalancer.getId());
+
+            //TODO: handle errors better...
             throw new ZxtmRollBackException("there was a error setting ssl termination in zxtm adapter for load balancer " + loadBalancer.getId(), af);
         }
     }
@@ -1026,8 +1035,9 @@ public class    ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, isVSEnabled);
         } catch (RemoteException af) {
-            LOG.error(String.format("There was a error updating ssl termination in zxtm adapter for loadbalancer: ", loadBalancer.getId()));
-            throw new RuntimeException(af);
+            String msg = String.format("There was a error enabling/disabling ssl termination for loadbalancer: %d", loadBalancer.getId());
+            LOG.error(msg);
+            throw new ZxtmRollBackException(msg, af);
         }
 
     }
