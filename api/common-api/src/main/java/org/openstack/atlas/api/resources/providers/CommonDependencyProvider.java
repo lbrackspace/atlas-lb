@@ -11,7 +11,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.*;
-
+import org.openstack.atlas.util.ip.IPUtils;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -199,35 +199,38 @@ public class CommonDependencyProvider {
         return restApiConfiguration;
     }
 
-    public List<String> verifyNodeDomains(Collection<Node> nodes){
+    public List<String> verifyNodeDomains(Collection<Node> nodes) {
         String fmt;
         String msg;
         List<String> foundIps;
         List<String> errors = new ArrayList<String>();
         for (Node node : nodes) {
             String address = node.getAddress();
-            if (address.matches(".*[a-zA-Z]+.*")) {
+            if (IPUtils.isValidIpv4String(address)) {
+                continue;// If this was an IPv4 Address don't try to validate it as a domain.
+            } else if (IPUtils.isValidIpv6String(address)) {
+                continue; // If this was an IPv6 address don't try to validate it as a domain
+            } else if (address.matches(".*[a-zA-Z]+.*")) {
                 if (!allowedDomainsService.hasHost(node.getAddress())) {
-                    fmt = "The domain %s is not allowed, please verify against baseUri/{accountId}/alloweddomains";
-                    fmt += "for allowed domains";
+                    fmt = "The address %s is not a valid IPv4, IPv6 address or an FQDN that is in an"
+                            + " authorized Domain";
                     msg = String.format(fmt, address);
                     errors.add(msg);
-                    
                 }
                 try {
                     foundIps = DnsUtil.lookup(address, "A", "AAAA");
                 } catch (NamingException ne) {
                     fmt = "Unable to resolve host %s could not add node at this time";
-                    msg = String.format(fmt,address);
-                    throw new ServiceUnavailableException(msg,ne);
+                    msg = String.format(fmt, address);
+                    throw new ServiceUnavailableException(msg, ne);
                 }
-                if(foundIps.isEmpty()){
+                if (foundIps.isEmpty()) {
                     fmt = "domain %s had no A or AAAA records. Can not add node. domain must have only 1 A or AAAA record";
-                    msg = String.format(fmt,address);
+                    msg = String.format(fmt, address);
                     errors.add(msg);
-                }else if(foundIps.size()>1){
+                } else if (foundIps.size() > 1) {
                     fmt = "domain %s has %d A or AAAA records";
-                    msg = String.format(fmt,address,foundIps.size());
+                    msg = String.format(fmt, address, foundIps.size());
                     errors.add(msg);
                 }
             }
