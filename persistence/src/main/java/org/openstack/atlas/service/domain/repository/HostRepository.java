@@ -156,7 +156,7 @@ public class HostRepository {
 
     public Host getEndPointHost(Integer clusterId) {
         String hqlStr = "from Host h where h.soapEndpointActive = 1 "
-                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER') "
+                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER','SOAP_API_ENDPOINT') "
                 + "and h.cluster.id = :clusterId "
                 + "order by h.hostStatus desc, h.id asc";
         Query q = entityManager.createQuery(hqlStr).setParameter("clusterId", clusterId).setMaxResults(1);
