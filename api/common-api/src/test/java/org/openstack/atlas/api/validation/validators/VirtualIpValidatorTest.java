@@ -103,9 +103,9 @@ public class VirtualIpValidatorTest {
         }
 
         @Test
-        public void shouldAcceptIdOnly() {
+        public void shouldNotAcceptIdOnly() {
             vip.setId(1234);
-            assertTrue(validator.validate(vip, POST_IPV6).passedValidation());
+            assertFalse(validator.validate(vip, POST_IPV6).passedValidation());
         }
 
         @Test

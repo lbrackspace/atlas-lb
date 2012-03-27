@@ -174,32 +174,39 @@ UNLOCK TABLES;
 
 LOCK TABLES `event_type` WRITE;
 /*!40000 ALTER TABLE `event_type` DISABLE KEYS */;
-INSERT INTO `event_type` VALUES ('CREATE_ACCESS_LIST','Created Access List');
-INSERT INTO `event_type` VALUES ('CREATE_CONNECTION_THROTTLE','Created Connection Throttle');
-INSERT INTO `event_type` VALUES ('CREATE_HEALTH_MONITOR','Created Health Monitor');
-INSERT INTO `event_type` VALUES ('CREATE_LOADBALANCER','A load balancer was created');
-INSERT INTO `event_type` VALUES ('CREATE_NODE','Node Created');
-INSERT INTO `event_type` VALUES ('CREATE_SESSION_PERSISTENCE','Created Session Persisitence');
-INSERT INTO `event_type` VALUES ('CREATE_VIRTUAL_IP','A virtual ip was created');
-INSERT INTO `event_type` VALUES ('DELETE_ACCESS_LIST','Deleted Access List');
-INSERT INTO `event_type` VALUES ('DELETE_CONNECTION_THROTTLE','Deleted Connection Throttle');
-INSERT INTO `event_type` VALUES ('DELETE_HEALTH_MONITOR','Deleted Health Monitor');
-INSERT INTO `event_type` VALUES ('DELETE_LOADBALANCER','A load balancer was deleted');
-INSERT INTO `event_type` VALUES ('DELETE_NETWORK_ITEM','Deleted Network Item');
-INSERT INTO `event_type` VALUES ('DELETE_NODE','Node deleted');
-INSERT INTO `event_type` VALUES ('DELETE_SESSION_PERSISTENCE','Deleted Session Persistence');
-INSERT INTO `event_type` VALUES ('DELETE_VIRTUAL_IP','A virtual ip was deleted');
-INSERT INTO `event_type` VALUES ('SSL_OFF','SSL was turned off');
-INSERT INTO `event_type` VALUES ('SSL_ON','SSL was turned on');
-INSERT INTO `event_type` VALUES ('SUSPEND_LOADBALANCER','A load balancer was suspended');
-INSERT INTO `event_type` VALUES ('UNSUSPEND_LOADBALANCER','A load balancer was unsuspended');
-INSERT INTO `event_type` VALUES ('UPDATE_ACCESS_LIST','Update Access List');
-INSERT INTO `event_type` VALUES ('UPDATE_CONNECTION_LOGGING','Updated Connection Logging');
-INSERT INTO `event_type` VALUES ('UPDATE_CONNECTION_THROTTLE','Update Connection Throttle');
-INSERT INTO `event_type` VALUES ('UPDATE_HEALTH_MONITOR','Updated Health Monitor');
-INSERT INTO `event_type` VALUES ('UPDATE_LOADBALANCER','Loadbalancer updated');
-INSERT INTO `event_type` VALUES ('UPDATE_NODE','Node updated');
-INSERT INTO `event_type` VALUES ('UPDATE_SESSION_PERSISTENCE','Updated Session Persisitence');
+INSERT INTO `event_type` VALUES ('BUILD_LOADBALANCER','Load balancer in build status'),
+('CREATE_ACCESS_LIST','Created Access List'),
+('CREATE_CONNECTION_THROTTLE','Created Connection Throttle'),
+('CREATE_HEALTH_MONITOR','Created Health Monitor'),
+('CREATE_LOADBALANCER','A load balancer was created'),
+('CREATE_NODE','Node Created'),
+('CREATE_SESSION_PERSISTENCE','Created Session Persisitence'),
+('CREATE_VIRTUAL_IP','A virtual ip was created'),
+('DELETE_ACCESS_LIST','Deleted Access List'),
+('DELETE_CONNECTION_THROTTLE','Deleted Connection Throttle'),
+('DELETE_HEALTH_MONITOR','Deleted Health Monitor'),
+('DELETE_LOADBALANCER','A load balancer was deleted'),
+('DELETE_NETWORK_ITEM','Deleted Network Item'),
+('DELETE_NODE','Node deleted'),
+('DELETE_SESSION_PERSISTENCE','Deleted Session Persistence'),
+('DELETE_SSL_TERMINATION','Delete SSL termination'),
+('DELETE_VIRTUAL_IP','A virtual ip was deleted'),
+('PENDING_DELETE_LOADBALANCER','Load balancer in pending delete status'),
+('PENDING_UPDATE_LOADBALANCER','Load balancer in pending update status'),
+('SSL_MIXED_ON','Both the ssl virtual server and non-ssl virtual server are enabled in Zeus'),
+('SSL_OFF','SSL was turned off'),
+('SSL_ON','SSL was turned on'),
+('SSL_ONLY_ON','Only the ssl virtual server is enabled in Zeus'),
+('SUSPEND_LOADBALANCER','A load balancer was suspended'),
+('UNSUSPEND_LOADBALANCER','A load balancer was unsuspended'),
+('UPDATE_ACCESS_LIST','Update Access List'),
+('UPDATE_CONNECTION_LOGGING','Updated Connection Logging'),
+('UPDATE_CONNECTION_THROTTLE','Update Connection Throttle'),
+('UPDATE_HEALTH_MONITOR','Updated Health Monitor'),
+('UPDATE_LOADBALANCER','Loadbalancer updated'),
+('UPDATE_NODE','Node updated'),
+('UPDATE_SESSION_PERSISTENCE','Updated Session Persisitence'),
+('UPDATE_SSL_TERMINATION','Update SSL termination');
 /*!40000 ALTER TABLE `event_type` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -322,19 +329,26 @@ UNLOCK TABLES;
 
 LOCK TABLES `lb_protocol` WRITE;
 /*!40000 ALTER TABLE `lb_protocol` DISABLE KEYS */;
-INSERT INTO `lb_protocol` VALUES ('FTP','The FTP protocol',21,1);
-INSERT INTO `lb_protocol` VALUES ('HTTP','The HTTP protocol',80,1);
-INSERT INTO `lb_protocol` VALUES ('HTTPS','The HTTPS protocol',443,1);
-INSERT INTO `lb_protocol` VALUES ('IMAPS','The IMAPS protocol',993,1);
-INSERT INTO `lb_protocol` VALUES ('IMAPv2','The IMAPv2 protocol',143,1);
-INSERT INTO `lb_protocol` VALUES ('IMAPv3','The IMAPv3 protocol',220,1);
-INSERT INTO `lb_protocol` VALUES ('IMAPv4','The IMAPv4 protocol',143,1);
-INSERT INTO `lb_protocol` VALUES ('LDAP','The LDAP protocol',389,1);
-INSERT INTO `lb_protocol` VALUES ('LDAPS','The LDAPS protocol',636,1);
-INSERT INTO `lb_protocol` VALUES ('POP3','The POP3 protocol',110,1);
-INSERT INTO `lb_protocol` VALUES ('POP3S','The POP3S protocol',995,1);
-INSERT INTO `lb_protocol` VALUES ('SMTP','The SMTP protocol',25,1);
-INSERT INTO `lb_protocol` VALUES ('TCP','The TCP protocol',0,1);
+INSERT INTO `lb_protocol` VALUES ('DNS_TCP','The DNS/TCP Protocol',53,1),
+('DNS_UDP','The DNS/UDP  Protocol',53,1),
+('FTP','The FTP protocol',21,1),
+('HTTP','The HTTP protocol',80,1),
+('HTTPS','The HTTPS protocol',443,1),
+('IMAPS','The IMAPS protocol',993,1),
+('IMAPv2','The IMAPv2 protocol',143,1),
+('IMAPv3','The IMAPv3 protocol',220,1),
+('IMAPv4','The IMAPv4 protocol',143,1),
+('LDAP','The LDAP protocol',389,1),
+('LDAPS','The LDAPS protocol',636,1),
+('MYSQL','TCP protocol running on port 3306',3306,1),
+('POP3','The POP3 protocol',110,1),
+('POP3S','The POP3S protocol',995,1),
+('SMTP','The SMTP protocol',25,1),
+('TCP','The TCP protocol',0,1),
+('TCP_CLIENT_FIRST','The TCP Client First Protocol',0,1),
+('UDP','The UDP Protocol',0,1),
+('UDP_STREAM','The UDP STREAMING Protocol',0,1);
+
 /*!40000 ALTER TABLE `lb_protocol` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -830,6 +844,10 @@ UNLOCK TABLES;
 LOCK TABLES `virtual_ip_ipv6` WRITE;
 /*!40000 ALTER TABLE `virtual_ip_ipv6` DISABLE KEYS */;
 /*!40000 ALTER TABLE `virtual_ip_ipv6` ENABLE KEYS */;
+UNLOCK TABLES;
+
+LOCK TABLES `node_type` WRITE;
+INSERT INTO `node_type` VALUES ('PRIMARY'),('SECONDARY');
 UNLOCK TABLES;
 
 --
