@@ -89,6 +89,37 @@
                     </webResources>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>1.3</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jvnet.jaxb2-commons</groupId>
+                        <artifactId>collection-setter-injector</artifactId>
+                        <version>1.0</version>
+                    </dependency>
+                </dependencies>
+
+                <executions>
+                    <execution>
+                        <id>generate-ahusage-sources</id>
+                        <configuration>
+                            <staleFile>target/lb.staleFile</staleFile>
+                            <extension>true</extension>
+                            <schemaDirectory>
+                                ${basedir}/src/main/resources/META-INF/xsd
+                            </schemaDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <!--<schemaFiles>*.xsd</schemaFiles>-->
+                            <packageName>org.openstack.atlas.jobs</packageName>
+                        </configuration>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

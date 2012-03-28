@@ -18,5 +18,6 @@ public enum JobName {
     WATCHDOG,
     FILES_SPLIT,
     MAPREDUCE,
-    LOG_FILE_CF_UPLOAD;
+    LOG_FILE_CF_UPLOAD,
+    ATOM_USAGE_POLLER;
 }

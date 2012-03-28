@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:lbaas="http://docs.rackspace.com/usage/lbaas"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:usage="http://docs.rackspace.com/usage/core"
+    xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
+    targetNamespace="http://docs.rackspace.com/usage/lbaas">
+
+    <element name="usage" type="lbaas:LBaaSUsage"/>
+
+    <complexType name="LBaaSUsage">
+        <annotation>
+            <documentation>
+                <html:p>
+                    Nova specific user fields.
+                </html:p>
+            </documentation>
+        </annotation>
+        <attribute name="version" type="xsd:string" fixed="1" use="required"/>
+        <attribute name="memory" type="xsd:int" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The amount of memory for the current usage.
+                    </html:p>
+                </documentation>
+                <appinfo>
+                    <usage:attributes aggregate-function="SUM" unit-of-measure="MB"/>
+                </appinfo>
+            </annotation>
+        </attribute>
+        <anyAttribute processContents="lax"/>
+    </complexType>
+</schema>
