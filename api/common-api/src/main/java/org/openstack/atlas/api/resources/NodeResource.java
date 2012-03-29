@@ -110,6 +110,11 @@ public class NodeResource extends CommonDependencyProvider {
         }
     }
 
+    @Path("metadata")
+    public NodeMetadataResource getNodeMetaDataResource() {
+
+    }
+
     private Response getFeedResponse(Integer page) {
         Map<String, Object> feedAttributes = new HashMap<String, Object>();
         feedAttributes.put("feedType", FeedType.NODE_FEED);
