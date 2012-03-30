@@ -26,6 +26,7 @@ public class NodeResource extends CommonDependencyProvider {
     private Integer accountId;
     private Integer loadBalancerId;
     private HttpHeaders requestHeaders;
+    private NodeMetadataResource nodeMetadataResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
@@ -108,7 +109,9 @@ public class NodeResource extends CommonDependencyProvider {
 
     @Path("metadata")
     public NodeMetadataResource getNodeMetaDataResource() {
-        return null;
+        nodeMetadataResource.setRequestHeaders(requestHeaders);
+        nodeMetadataResource.setAccountId(accountId);
+        return nodeMetadataResource;
     }
 
     private Response getFeedResponse(Integer page) {
@@ -157,5 +160,9 @@ public class NodeResource extends CommonDependencyProvider {
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {
         this.requestHeaders = requestHeaders;
+    }
+
+    public void setNodeMetadataResource(NodeMetadataResource nodeMetadataResource) {
+        this.nodeMetadataResource = nodeMetadataResource;
     }
 }

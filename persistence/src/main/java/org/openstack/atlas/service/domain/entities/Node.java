@@ -1,7 +1,11 @@
 package org.openstack.atlas.service.domain.entities;
 
+import org.hibernate.annotations.Cascade;
+
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @javax.persistence.Entity
 @Table(name = "node")
@@ -11,6 +15,11 @@ public class Node extends Entity implements Serializable {
     @ManyToOne
     @JoinColumn(name = "loadbalancer_id")
     private LoadBalancer loadbalancer;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "node", fetch = FetchType.EAGER)
+    @OrderBy("id")
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    private Set<Meta> metadata = new HashSet<Meta>();
 
     @Column(name = "ip_address", length = 39)
     private String ipAddress;
@@ -86,6 +95,14 @@ public class Node extends Entity implements Serializable {
 
     public void setStatus(NodeStatus status) {
         this.status = status;
+    }
+
+    public Set<Meta> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Set<Meta> metadata) {
+        this.metadata = metadata;
     }
 
     public boolean isNew() {

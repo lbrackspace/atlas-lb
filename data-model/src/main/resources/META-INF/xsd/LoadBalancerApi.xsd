@@ -122,6 +122,9 @@
 
     <xsd:element name="node" type="tns:node"/>
     <xsd:complexType name="node">
+        <xsd:sequence>
+            <xsd:element name="metadata" type="tns:metadata" minOccurs="0"/>
+        </xsd:sequence>
         <xsd:attribute name="id" type="xsd:int"/>
         <xsd:attribute name="address" type="xsd:string"/>
         <xsd:attribute name="port" type="xsd:int"/>
@@ -378,6 +381,23 @@
 
     <xsd:element name="meta" type="tns:meta"/>
     <xsd:complexType name="meta">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="id" type="xsd:int"/>
+                <xsd:attribute name="key" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:element name="nodemetadata" type="tns:nodemetadata"/>
+    <xsd:complexType name="nodemetadata">
+        <xsd:sequence>
+            <xsd:element name="meta" minOccurs="1" maxOccurs="unbounded" type="tns:meta"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="nodemeta" type="tns:nodemeta"/>
+    <xsd:complexType name="nodemeta">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
                 <xsd:attribute name="id" type="xsd:int"/>

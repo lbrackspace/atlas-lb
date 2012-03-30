@@ -8,6 +8,7 @@ public enum AccountLimitType implements Serializable {
     IPV6_LIMIT,
     LOADBALANCER_LIMIT,
     LOADBALANCER_META_LIMIT,
+    NODE_META_LIMIT,
     NODE_LIMIT;
     private final static long serialVersionUID = 532512316L;
 }
