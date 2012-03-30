@@ -17,6 +17,7 @@ import java.util.Set;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
+import static javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML;
 
 public class NodeMetadataResource extends CommonDependencyProvider {
     private final Log LOG = LogFactory.getLog(NodeMetadataResource.class);
@@ -103,3 +104,4 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         return Response.status(200).build();
     }
 }
+*/

@@ -1,26 +1,22 @@
 package org.openstack.atlas.api.resources;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.operations.Operation;
+import org.apache.abdera.model.Feed;
 import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.apache.abdera.model.Feed;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
 import org.openstack.atlas.service.domain.util.Constants;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
+import java.util.*;
 
 import static javax.ws.rs.core.MediaType.*;
 
@@ -112,7 +108,7 @@ public class NodeResource extends CommonDependencyProvider {
 
     @Path("metadata")
     public NodeMetadataResource getNodeMetaDataResource() {
-
+        return null;
     }
 
     private Response getFeedResponse(Integer page) {
