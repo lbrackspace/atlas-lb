@@ -33,6 +33,7 @@ public final class ProtocolPortBindings {
         protocolPortMap.put("UDP",0);
         protocolPortMap.put("UDP_STREAM",0);
         protocolPortMap.put("MYSQL",3306);
+        protocolPortMap.put("SFTP",22);
 
         keys = new ArrayList<String>();
         protocols = new Protocols();
