@@ -12,6 +12,8 @@ import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.tools.HadoopRunner;
 import org.openstack.atlas.util.LogFileUtil;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,7 +43,7 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
             runner.setInputString(runner.getRawlogsFileTime());
             scheduledFilesToRun.clear();
             scheduledFilesToRun.add(newestFile);
-        } else if(scheduledFilesToRun.isEmpty()) {
+        } else if (scheduledFilesToRun.isEmpty()) {
             LOG.info("Could not find any files that are not already scheduled. returning.");
             return;
         }
@@ -51,7 +53,11 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
         runner.setInputForMultiPathJobs(scheduledFilesToRun);
 
         try {
-            String jobName = "fileMove:" + runner.getInputString();
+            Calendar currentDate = Calendar.getInstance();
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMMddHH:mm:ss");
+            String dateNow = formatter.format(currentDate.getTime());
+
+            String jobName = "fileMove:" +  runner.getInputString();
             scheduler.scheduleJob(jobName, FileMoveJob.class, runner);
         } catch (SchedulingException e) {
             LOG.error(e);
