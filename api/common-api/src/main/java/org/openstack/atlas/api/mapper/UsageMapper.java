@@ -4,6 +4,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.entities.SslMode;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 
@@ -62,7 +63,7 @@ public final class UsageMapper {
 
         BitTags bitTags = new BitTags(dusage.getTags());
 
-        rusage.setHasSsl(bitTags.isTagOn(BitTag.SSL));
+        rusage.setSslMode(SslMode.getMode(bitTags).name());
 
         if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
             rusage.setVipType(VipType.SERVICENET);
@@ -108,7 +109,7 @@ public final class UsageMapper {
 
         BitTags bitTags = new BitTags(dusage.getTags());
 
-        rusage.setHasSsl(bitTags.isTagOn(BitTag.SSL));
+        rusage.setSslMode(SslMode.getMode(bitTags).name());
 
         if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
             rusage.setVipType(VipType.SERVICENET);

@@ -129,16 +129,20 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
                 tags.flipAllTagsOff();
                 break;
             case DELETE_LOADBALANCER:
-                // Leave tags as they were
+                tags.flipTagOff(BitTag.SSL);
+                tags.flipTagOff(BitTag.SSL_MIXED_MODE);
                 break;
             case SSL_OFF:
                 tags.flipTagOff(BitTag.SSL);
+                tags.flipTagOff(BitTag.SSL_MIXED_MODE);
                 break;
             case SSL_ONLY_ON:
                 tags.flipTagOn(BitTag.SSL);
+                tags.flipTagOff(BitTag.SSL_MIXED_MODE);
                 break;
             case SSL_MIXED_ON:
                 tags.flipTagOn(BitTag.SSL);
+                tags.flipTagOn(BitTag.SSL_MIXED_MODE);
                 break;
             default:
         }
