@@ -30,11 +30,17 @@ public class JobScheduler {
 
         statsJobDetail.getJobDataMap().putAll(data);
         Trigger moveTrigger = TriggerUtils.makeImmediateTrigger(0, 0);
+        moveTrigger.setJobName(uniqueJobName);
         moveTrigger.setName(uniqueJobName);
         moveTrigger.setVolatility(true);
 
+        //RESCHEDULE IF THE TRIGGER EXIST
         try {
-            stdScheduler.scheduleJob(statsJobDetail, moveTrigger);
+//            if (stdScheduler.getTriggerState(jobClass.toString(), Scheduler.DEFAULT_GROUP) == STATE_NONE) {
+//                stdScheduler.rescheduleJob(uniqueJobName, Scheduler.DEFAULT_GROUP, moveTrigger);
+//            } else {
+                stdScheduler.scheduleJob(statsJobDetail, moveTrigger);
+//            }
         } catch (SchedulerException e) {
             throw new SchedulingException(e);
         }

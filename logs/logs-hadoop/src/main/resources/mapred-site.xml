@@ -7,15 +7,15 @@
 
     <property>
         <name>mapred.job.tracker</name>
-        <value>hadoop1:9001</value>
+        <!--<value>hadoop1:9001</value>-->
         <!--<value>hadoop-name.ord.com:8021</value>-->
-        <!--<value>hadoop-name.dfw1.com:8021</value>-->
+        <value>hadoop-name.dfw1.com:8021</value>
     </property>
 
     <property>
         <name>hadoop.job.ugi</name>
-        <value>sites_stats,supergroup</value>
-        <!--<value>lbaas_dev,lbaas_dev</value>-->
+        <!--<value>sites_stats,supergroup</value>-->
+        <value>lbaas_dev,lbaas_dev</value>
     </property>
 
     <property>
