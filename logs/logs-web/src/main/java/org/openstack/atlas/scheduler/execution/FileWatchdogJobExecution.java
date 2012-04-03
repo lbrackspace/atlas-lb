@@ -57,7 +57,7 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
             SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMMddHH:mm:ss");
             String dateNow = formatter.format(currentDate.getTime());
 
-            String jobName = "fileMove:" +  runner.getInputString();
+            String jobName = "fileMove:" +  dateNow + runner.getInputString();
             scheduler.scheduleJob(jobName, FileMoveJob.class, runner);
         } catch (SchedulingException e) {
             LOG.error(e);
