@@ -24,7 +24,7 @@ import static javax.ws.rs.core.MediaType.*;
 
 public class NodeMetadataResource extends CommonDependencyProvider {
     private final Log LOG = LogFactory.getLog(NodeMetadataResource.class);
-    private MetaResource metaResource;
+    private NodeMetaResource nodeMetaResource;
     private HttpHeaders requestHeaders;
     private Integer accountId;
 
@@ -61,15 +61,15 @@ public class NodeMetadataResource extends CommonDependencyProvider {
     }
 
     @Path("{id: [-+]?[1-9][0-9]*}")
-    public MetaResource retrieveNodeResource(@PathParam("id") int id) {
-        metaResource.setRequestHeaders(requestHeaders);
-        metaResource.setId(id);
-        metaResource.setAccountId(accountId);
-        return metaResource;
+    public NodeMetaResource retrieveNodeResource(@PathParam("id") int id) {
+        nodeMetaResource.setRequestHeaders(requestHeaders);
+        nodeMetaResource.setId(id);
+        nodeMetaResource.setAccountId(accountId);
+        return nodeMetaResource;
     }
 
-    public void setMetaResource(MetaResource metaResource) {
-        this.metaResource = metaResource;
+    public void setMetaResource(NodeMetaResource nodeMetaResource) {
+        this.nodeMetaResource = nodeMetaResource;
     }
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {

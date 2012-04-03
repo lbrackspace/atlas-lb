@@ -1,24 +1,23 @@
 package org.openstack.atlas.api.resources;
 
+import org.apache.abdera.model.Feed;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
-import org.openstack.atlas.service.domain.operations.Operation;
-import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.api.helpers.LoadBalancerProperties;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.apache.abdera.model.Feed;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
+import org.openstack.atlas.service.domain.operations.Operation;
 
-import javax.faces.view.facelets.Metadata;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
@@ -46,6 +45,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     private int id;
     private Integer accountId;
     private HttpHeaders requestHeaders;
+    private NodeMetadataResource nodeMetadataResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
@@ -254,6 +254,10 @@ public class LoadBalancerResource extends CommonDependencyProvider {
 
     public void setMetadataResource(MetadataResource metadataResource) {
         this.metadataResource = metadataResource;
+    }
+
+    public void setNodeMetadataResource(NodeMetadataResource nodeMetadataResource) {
+        this.nodeMetadataResource = nodeMetadataResource;
     }
 
     public void setNodesResource(NodesResource nodesResource) {

@@ -12,7 +12,7 @@ public class NodeMeta extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @ManyToOne
-    @JoinColumn(name = "`loadbalancer_id`")
+    @JoinColumn(name = "`node_id`")
     private LoadBalancer loadbalancer;
 
     @Column(name = "`key`", length = 32)

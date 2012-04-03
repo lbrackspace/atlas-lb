@@ -119,6 +119,7 @@
                         <property name="connectionThrottleResource" ref="connectionThrottleResource"/>
                         <property name="healthMonitorResource" ref="healthMonitorResource"/>
                         <property name="metadataResource" ref="metadataResource"/>
+                        <property name="nodeMetadataResource" ref="NodeMetadataResource"/>
                         <property name="usageResource" ref="usageResource"/>
                         <property name="errorpageResource" ref="errorpageResource"/>
                         <property name="sslTerminationResource" ref="sslTerminationResource"/>
@@ -207,6 +208,16 @@
           scope="request">
         <property name="metaResource">
             <bean class="org.openstack.atlas.api.resources.MetaResource"
+                  parent="commonDependencyProvider"
+                  scope="request"/>
+        </property>
+    </bean>
+    <bean name="NodeMetadataResource"
+          class="org.openstack.atlas.api.resources.NodeMetadataResource"
+          parent="commonDependencyProvider"
+          scope="request">
+        <property name="nodeMetaResource">
+            <bean class="org.openstack.atlas.api.resources.NodeMetaResource"
                   parent="commonDependencyProvider"
                   scope="request"/>
         </property>
