@@ -392,7 +392,7 @@
     <xsd:element name="nodemetadata" type="tns:nodemetadata"/>
     <xsd:complexType name="nodemetadata">
         <xsd:sequence>
-            <xsd:element name="meta" minOccurs="1" maxOccurs="unbounded" type="tns:meta"/>
+            <xsd:element name="nodemeta" minOccurs="1" maxOccurs="unbounded" type="tns:nodemeta"/>
         </xsd:sequence>
     </xsd:complexType>
 
