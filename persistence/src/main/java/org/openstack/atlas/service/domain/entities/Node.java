@@ -19,7 +19,7 @@ public class Node extends Entity implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "node", fetch = FetchType.EAGER)
     @OrderBy("id")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
-    private Set<Meta> metadata = new HashSet<Meta>();
+    private Set<NodeMeta> metadata = new HashSet<NodeMeta>();
 
     @Column(name = "ip_address", length = 39)
     private String ipAddress;
@@ -97,11 +97,11 @@ public class Node extends Entity implements Serializable {
         this.status = status;
     }
 
-    public Set<Meta> getMetadata() {
+    public Set<NodeMeta> getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(Set<Meta> metadata) {
+    public void setNodeMetadata(Set<NodeMeta> metadata) {
         this.metadata = metadata;
     }
 

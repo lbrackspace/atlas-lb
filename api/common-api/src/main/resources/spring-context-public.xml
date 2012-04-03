@@ -57,6 +57,7 @@
         <property name="protocolsService" ref="protocolsService"/>
         <property name="virtualIpService" ref="virtualIpService"/>
         <property name="metadataService" ref="metadataService"/>
+        <property name="nodeMetadataService" ref="nodeMetadataService"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="accessListService" ref="accessListService"/>
         <property name="allowedDomainsService" ref="allowedDomainsService"/>

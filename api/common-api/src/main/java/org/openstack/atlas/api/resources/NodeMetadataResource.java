@@ -7,17 +7,20 @@ import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
 import org.openstack.atlas.service.domain.entities.Meta;
+import org.openstack.atlas.service.domain.entities.NodeMeta;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.Set;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.MediaType.APPLICATION_XML;
-import static javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML;
+import static javax.ws.rs.core.MediaType.*;
 
 public class NodeMetadataResource extends CommonDependencyProvider {
     private final Log LOG = LogFactory.getLog(NodeMetadataResource.class);
@@ -27,14 +30,17 @@ public class NodeMetadataResource extends CommonDependencyProvider {
 
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
-    public Response createMetadata(Metadata metadata) {
-        ValidatorResult result = ValidatorRepository.getValidatorFor(Metadata.class).validate(metadata, HttpRequestType.POST);
-         if (!result.passedValidation()) {
-             return getValidationFaultResponse(result);
-         }
+    public Response createMetadata(List<NodeMeta> metadata) throws EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
+        for (NodeMeta meta : metadata) {
+            ValidatorResult result = ValidatorRepository.getValidatorFor(NodeMeta.class).validate(meta, HttpRequestType.POST);
+            if (!result.passedValidation()) {
+                return getValidationFaultResponse(result);
+            }
+        }
 
         //Todo: make an appropriate return
-        return getValidationFaultResponse("Valid response stub.");
+        Set<NodeMeta> retNodeMetaData = nodeMetadataService.createNodeMetadata(accountId, metadata.get(0).getId(), metadata);
+        return Response.status(Response.Status.OK).entity(retNodeMetaData).build();
     }
 
     @GET
