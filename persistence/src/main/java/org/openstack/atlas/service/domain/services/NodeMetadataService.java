@@ -9,14 +9,11 @@ import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityExceptio
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public interface NodeMetadataService {
-    Set<NodeMeta> createNodeMetadata(Integer accountId, Integer nodeId, Collection<NodeMeta> NodeMetas) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
+    List<NodeMeta> createNodeMetadata(Integer accountId, Integer nodeId, List<NodeMeta> NodeMetas) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
 
-    Set<NodeMeta> getNodeMetadataByAccountIdLoadBalancerId(Integer accountId, Integer nodeId) throws EntityNotFoundException;
-
-    NodeMeta getNodeMeta(Integer accountId, Integer nodeId, Integer id) throws EntityNotFoundException;
+    List<NodeMeta> getNodeMetadataByAccountIdLoadBalancerId(Integer accountId, Integer nodeId) throws EntityNotFoundException;
 
     void deleteNodeMeta(Integer accountId, Integer nodeId, Integer id) throws EntityNotFoundException;
 

@@ -7,8 +7,9 @@ import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.service.domain.entities.Meta;
-import org.openstack.atlas.service.domain.entities.NodeMeta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeMeta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeMetadata;
+import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
@@ -17,8 +18,9 @@ import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityExceptio
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static javax.ws.rs.core.MediaType.*;
 
@@ -27,32 +29,39 @@ public class NodeMetadataResource extends CommonDependencyProvider {
     private NodeMetaResource nodeMetaResource;
     private HttpHeaders requestHeaders;
     private Integer accountId;
+    private Integer nodeId;
 
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
-    public Response createMetadata(List<NodeMeta> metadata) throws EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
-        for (NodeMeta meta : metadata) {
+    public Response createMetadata(List<NodeMeta> nodeMetadata) throws EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
+        List<org.openstack.atlas.service.domain.entities.NodeMeta> domainNodeMetaSet = new ArrayList<org.openstack.atlas.service.domain.entities.NodeMeta>();
+        for (NodeMeta meta : nodeMetadata) {
             ValidatorResult result = ValidatorRepository.getValidatorFor(NodeMeta.class).validate(meta, HttpRequestType.POST);
             if (!result.passedValidation()) {
                 return getValidationFaultResponse(result);
+            } else {
+                domainNodeMetaSet.add(dozerMapper.map(meta, org.openstack.atlas.service.domain.entities.NodeMeta.class));
             }
         }
 
-        //Todo: make an appropriate return
-        Set<NodeMeta> retNodeMetaData = nodeMetadataService.createNodeMetadata(accountId, metadata.get(0).getId(), metadata);
-        return Response.status(Response.Status.OK).entity(retNodeMetaData).build();
+        NodeMetadata retNodeMetadata = new NodeMetadata();
+        for (org.openstack.atlas.service.domain.entities.NodeMeta meta : nodeMetadataService.createNodeMetadata(nodeId, nodeId, domainNodeMetaSet)) {
+            retNodeMetadata.getNodeMetas().add(dozerMapper.map(meta, NodeMeta.class));
+        }
+        return Response.status(Response.Status.OK).entity(retNodeMetadata).build();
     }
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveMetadata() {
-        Set<Meta> domainMetaSet;
-        org.openstack.atlas.docs.loadbalancers.api.v1.Metadata returnMetadata = new org.openstack.atlas.docs.loadbalancers.api.v1.Metadata();
+        List<org.openstack.atlas.service.domain.entities.NodeMeta> domainNodeMetaSet;
+        NodeMetadata returnMetadata = new NodeMetadata();
+
         try {
             //Todo: Make this the call for the node meta data, not the load balancer id calls
-            domainMetaSet = metadataService.getMetadataByAccountIdLoadBalancerId(accountId, 175);
-            for (org.openstack.atlas.service.domain.entities.Meta domainMeta : domainMetaSet) {
-                returnMetadata.getMetas().add(dozerMapper.map(domainMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class));
+            domainNodeMetaSet = nodeMetadataService.getNodeMetadataByAccountIdLoadBalancerId(accountId, nodeId);
+            for (org.openstack.atlas.service.domain.entities.NodeMeta domainMeta : domainNodeMetaSet) {
+                returnMetadata.getNodeMetas().add(dozerMapper.map(domainMeta, NodeMeta.class));
             }
             return Response.status(Response.Status.OK).entity(returnMetadata).build();
         } catch (Exception e) {
@@ -60,11 +69,37 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         }
     }
 
+    @DELETE
+    @Produces({APPLICATION_XML, APPLICATION_JSON})
+    public Response deleteMetadata(@QueryParam("id") List<Integer> metaIds) {
+        List<String> validationErrors;
+        Collections.sort(metaIds);
+        Node node = new Node();
+        node.setId(nodeId);
+
+        try {
+            if (metaIds.isEmpty()) {
+                BadRequestException badRequestException = new BadRequestException("Must supply one or more id's to process this request.");
+                return ResponseFactory.getErrorResponse(badRequestException, null, null);
+            }
+
+            validationErrors = metadataService.prepareForMetadataDeletion(accountId, nodeId, metaIds);
+            if (!validationErrors.isEmpty()) {
+                return getValidationFaultResponse(validationErrors);
+            }
+
+            nodeMetadataService.deleteNodeMetadata(node, metaIds);
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }
+        return Response.status(200).build();
+    }
+
     @Path("{id: [-+]?[1-9][0-9]*}")
     public NodeMetaResource retrieveNodeResource(@PathParam("id") int id) {
         nodeMetaResource.setRequestHeaders(requestHeaders);
         nodeMetaResource.setId(id);
-        nodeMetaResource.setAccountId(accountId);
+        nodeMetaResource.setNodeId(nodeId);
         return nodeMetaResource;
     }
 
@@ -76,38 +111,15 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         this.requestHeaders = requestHeaders;
     }
 
+    public void setNodeId(Integer nodeId) {
+        this.nodeId = nodeId;
+    }
+
     public void setAccountId(Integer accountId) {
         this.accountId = accountId;
     }
 }
 
 /*
-
-    @DELETE
-    @Produces({APPLICATION_XML, APPLICATION_JSON})
-    public Response deleteMetadata(@QueryParam("id") List<Integer> metaIds) {
-        List<String> validationErrors;
-        Collections.sort(metaIds);
-        LoadBalancer dlb = new LoadBalancer();
-        dlb.setId(loadBalancerId);
-        dlb.setAccountId(accountId);
-
-        try {
-            if (metaIds.isEmpty()) {
-                BadRequestException badRequestException = new BadRequestException("Must supply one or more id's to process this request.");
-                return ResponseFactory.getErrorResponse(badRequestException, null, null);
-            }
-
-            validationErrors = metadataService.prepareForMetadataDeletion(accountId, loadBalancerId, metaIds);
-            if (!validationErrors.isEmpty()) {
-                return getValidationFaultResponse(validationErrors);
-            }
-
-            metadataService.deleteMetadata(dlb, metaIds);
-        } catch (Exception ex) {
-            return ResponseFactory.getErrorResponse(ex, null, null);
-        }
-        return Response.status(200).build();
-    }
 }
 */

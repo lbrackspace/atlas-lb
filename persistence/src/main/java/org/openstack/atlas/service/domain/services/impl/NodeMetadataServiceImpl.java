@@ -27,7 +27,7 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
     }
 
     @Override
-    public Set<NodeMeta> createNodeMetadata(Integer accountId, Integer nodeId, Collection<NodeMeta> nodeMetas) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
+    public List<NodeMeta> createNodeMetadata(Integer accountId, Integer nodeId, List<NodeMeta> nodeMetas) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         List<Node> nodes = nodeRepository.getNodesByIds(new ArrayList<Integer>(nodeId));
         Node node;
         if (nodes.size() != 1) {
@@ -57,18 +57,17 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
         LOG.debug(String.format("Current number of metadata items for loadbalancer '%d': %d", nodeId, node.getNodeMetadata().size()));
         LOG.debug(String.format("Number of new metadata items to be added: %d", nodeMetas.size()));
 
-        final Set<NodeMeta> metaSet = null;
-        LOG.debug(String.format("Successfully added %d metadata items for node '%d'", metaSet.size(), nodeId));
+        final List<NodeMeta> metaSet = null;
+        try {
+            LOG.debug(String.format("Successfully added %d metadata items for node '%d'", metaSet.size(), nodeId));
+        } catch (NullPointerException e) {
+            LOG.debug(String.format("No metadata items to add for node '%d'", 0, nodeId));
+        }
         return metaSet;
     }
 
     @Override
-    public Set<NodeMeta> getNodeMetadataByAccountIdLoadBalancerId(Integer accountId, Integer nodeId) throws EntityNotFoundException {
-        return null;
-    }
-
-    @Override
-    public NodeMeta getNodeMeta(Integer accountId, Integer nodeId, Integer id) throws EntityNotFoundException {
+    public List<NodeMeta> getNodeMetadataByAccountIdLoadBalancerId(Integer accountId, Integer nodeId) throws EntityNotFoundException {
         return null;
     }
 

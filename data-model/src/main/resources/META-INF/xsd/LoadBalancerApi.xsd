@@ -123,7 +123,7 @@
     <xsd:element name="node" type="tns:node"/>
     <xsd:complexType name="node">
         <xsd:sequence>
-            <xsd:element name="nodemetadata" type="tns:nodemetadata" minOccurs="0"/>
+            <xsd:element name="nodeMetadata" type="tns:nodeMetadata" minOccurs="0"/>
         </xsd:sequence>
         <xsd:attribute name="id" type="xsd:int"/>
         <xsd:attribute name="address" type="xsd:string"/>
@@ -389,15 +389,15 @@
         </xsd:simpleContent>
     </xsd:complexType>
 
-    <xsd:element name="nodemetadata" type="tns:nodemetadata"/>
-    <xsd:complexType name="nodemetadata">
+    <xsd:element name="nodeMetadata" type="tns:nodeMetadata"/>
+    <xsd:complexType name="nodeMetadata">
         <xsd:sequence>
-            <xsd:element name="nodemeta" minOccurs="1" maxOccurs="unbounded" type="tns:nodemeta"/>
+            <xsd:element name="nodeMeta" minOccurs="1" maxOccurs="unbounded" type="tns:nodeMeta"/>
         </xsd:sequence>
     </xsd:complexType>
 
-    <xsd:element name="nodemeta" type="tns:nodemeta"/>
-    <xsd:complexType name="nodemeta">
+    <xsd:element name="nodeMeta" type="tns:nodeMeta"/>
+    <xsd:complexType name="nodeMeta">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
                 <xsd:attribute name="id" type="xsd:int"/>
