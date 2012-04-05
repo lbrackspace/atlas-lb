@@ -14,6 +14,7 @@ import org.openstack.atlas.service.domain.entities.SessionPersistence;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.exceptions.*;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.util.Constants;
@@ -22,10 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -255,7 +253,7 @@ public class LoadBalancerRepository {
     }
 
     public ConnectionLimit getConnectionLimitsbyAccountIdLoadBalancerId(Integer accountId,
-            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
+                                                                        Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -279,7 +277,7 @@ public class LoadBalancerRepository {
     }
 
     public SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId,
-            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
+                                                                             Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -291,7 +289,7 @@ public class LoadBalancerRepository {
     }
 
     public LoadBalancer enableSessionPersistenceByIdAndAccountId(Integer id,
-            Integer accountId) throws EntityNotFoundException, BadRequestException {
+                                                                 Integer accountId) throws EntityNotFoundException, BadRequestException {
         LoadBalancer lb;
         lb = getById(id);
         if (!lb.getAccountId().equals(accountId)) {
@@ -445,8 +443,8 @@ public class LoadBalancerRepository {
     }
 
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
-            String status, LbQueryStatus queryStatus, Calendar changedSince,
-            Integer offset, Integer limit, Integer marker) throws BadRequestException {
+                                                      String status, LbQueryStatus queryStatus, Calendar changedSince,
+                                                      Integer offset, Integer limit, Integer marker) throws BadRequestException {
         List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
         LoadBalancerStatus lbStatus;
         String selectClause;
@@ -597,7 +595,7 @@ public class LoadBalancerRepository {
     }
 
     public List<AccessList> getAccessListByAccountIdLoadBalancerId(int accountId, int loadbalancerId,
-            Integer... p) throws EntityNotFoundException, DeletedStatusException {
+                                                                   Integer... p) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId,
                 accountId); // Puke if the LoadBalancer is not found presumebly Account LoadBalancer mismatch
         List<AccessList> accessList = new ArrayList<AccessList>();
@@ -646,9 +644,9 @@ public class LoadBalancerRepository {
     public boolean loadBalancerHasHealthMonitor(Integer lid) {
         String qStr = "SELECT lb.healthMonitor.id from LoadBalancer lb "
                 + " where lb.id = :lid";
-        Query query = entityManager.createQuery(qStr).setParameter("lid",lid);
+        Query query = entityManager.createQuery(qStr).setParameter("lid", lid);
         List<Integer> ids = query.getResultList();
-        if(ids.size()<=0){
+        if (ids.size() <= 0) {
             return false;
         }
         return true;
@@ -656,7 +654,7 @@ public class LoadBalancerRepository {
     }
 
     public HealthMonitor getHealthMonitor(Integer accountId,
-            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
+                                          Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -668,7 +666,7 @@ public class LoadBalancerRepository {
     }
 
     public Set<VirtualIp> getVipsByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId,
-            Integer... p) throws EntityNotFoundException, DeletedStatusException {
+                                                           Integer... p) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadBalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -986,7 +984,7 @@ public class LoadBalancerRepository {
     }
 
     private Collection<AccountBilling> createAccountBillings(List<AccountUsage> accountUsageResults,
-            List<Usage> lbUsageResults) {
+                                                             List<Usage> lbUsageResults) {
         Map<Integer, AccountBilling> accountBillings = new HashMap<Integer, AccountBilling>();
         Map<Integer, LoadBalancerBilling> loadBalancerBillings = new HashMap<Integer, LoadBalancerBilling>();
 
@@ -1013,7 +1011,7 @@ public class LoadBalancerRepository {
     }
 
     private AccountBilling getNewOrExistingAccountBilling(Map<Integer, AccountBilling> accountBillings,
-            Integer accountId) {
+                                                          Integer accountId) {
         AccountBilling accountBilling;
         if (accountBillings.containsKey(accountId)) {
             accountBilling = accountBillings.get(accountId);
@@ -1092,7 +1090,7 @@ public class LoadBalancerRepository {
     }
 
     public HostUsageRecord getHostUsage(Integer hostId, Calendar startTime,
-            Calendar endTime) throws EntityNotFoundException {
+                                        Calendar endTime) throws EntityNotFoundException {
 
         Query query;
         List<Object> hostUsageResults;
@@ -1294,32 +1292,68 @@ public class LoadBalancerRepository {
     }
 
     public void updatePortInJoinTable(LoadBalancer lb) {
-        String queryString = "from LoadBalancerJoinVip where loadBalancer.id = :lbId";
-        Query query = entityManager.createQuery(queryString).setParameter("lbId", lb.getId());
-        LoadBalancerJoinVip loadBalancerJoinVip = (LoadBalancerJoinVip) query.getSingleResult();
-        loadBalancerJoinVip.setPort(lb.getPort());
-        entityManager.merge(loadBalancerJoinVip);
+
+        try {
+            String queryString = "from LoadBalancerJoinVip where loadBalancer.id = :lbId";
+            Query query = entityManager.createQuery(queryString).setParameter("lbId", lb.getId());
+            LoadBalancerJoinVip loadBalancerJoinVip = (LoadBalancerJoinVip) query.getSingleResult();
+            loadBalancerJoinVip.setPort(lb.getPort());
+            entityManager.merge(loadBalancerJoinVip);
+        } catch (NoResultException nre) {
+            LOG.info(String.format("No ipv4 vips found to update, ignoring..."));
+        }
+
+        try {
+            String queryString6 = "from LoadBalancerJoinVip6 where loadBalancer.id = :lbId";
+            Query query6 = entityManager.createQuery(queryString6).setParameter("lbId", lb.getId());
+            LoadBalancerJoinVip6 loadBalancerJoinVip6 = (LoadBalancerJoinVip6) query6.getSingleResult();
+            loadBalancerJoinVip6.setPort(lb.getPort());
+            entityManager.merge(loadBalancerJoinVip6);
+        } catch (NoResultException nre6) {
+            LOG.info(String.format("No ipv6 vips found to update, ignoring..."));
+        }
     }
 
-    public boolean canUpdateToNewPort(Integer newPort, Set<LoadBalancerJoinVip> setToCheckAgainst) {
+    public boolean canUpdateToNewPort(Integer newPort, LoadBalancer loadBalancer) {
         Set<VirtualIp> vipsToCheckAgainst = new HashSet<VirtualIp>();
+        Set<VirtualIpv6> vips6ToCheckAgainst = new HashSet<VirtualIpv6>();
 
-        for (LoadBalancerJoinVip loadBalancerJoinVip : setToCheckAgainst) {
+        for (LoadBalancerJoinVip loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVipSet()) {
             vipsToCheckAgainst.add(loadBalancerJoinVip.getVirtualIp());
         }
 
-        String queryString = "select j from LoadBalancerJoinVip j where j.virtualIp in (:vips)";
-        Query query = entityManager.createQuery(queryString).setParameter("vips", vipsToCheckAgainst);
+        for (LoadBalancerJoinVip6 loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVip6Set()) {
+            vips6ToCheckAgainst.add(loadBalancerJoinVip.getVirtualIp());
+        }
 
-        List<LoadBalancerJoinVip> entriesWithPortsToCheckAgainst = query.getResultList();
+        boolean isValidPort = true;
+        if (!vipsToCheckAgainst.isEmpty()) {
+            String queryString = "select j from LoadBalancerJoinVip j where j.virtualIp in (:vips)";
+            Query query = entityManager.createQuery(queryString).setParameter("vips", vipsToCheckAgainst);
+            List<LoadBalancerJoinVip> entriesWithPortsToCheckAgainst = query.getResultList();
 
-        for (LoadBalancerJoinVip entryWithPortToCheckAgainst : entriesWithPortsToCheckAgainst) {
-            if (entryWithPortToCheckAgainst.getPort().equals(newPort)) {
-                return false;
+            for (LoadBalancerJoinVip entryWithPortToCheckAgainst : entriesWithPortsToCheckAgainst) {
+                if (entryWithPortToCheckAgainst.getPort().equals(newPort)) {
+                    isValidPort = false;
+                }
             }
         }
 
-        return true;
+        if (!vips6ToCheckAgainst.isEmpty()) {
+            String queryString6 = "select j from LoadBalancerJoinVip6 j where j.virtualIp in (:vips)";
+            Query query6 = entityManager.createQuery(queryString6).setParameter("vips", vips6ToCheckAgainst);
+
+            List<LoadBalancerJoinVip6> entriesWithPortsToCheckAgainst6 = query6.getResultList();
+
+
+            for (LoadBalancerJoinVip6 entryWithPortToCheckAgainst6 : entriesWithPortsToCheckAgainst6) {
+                if (entryWithPortToCheckAgainst6.getPort().equals(newPort)) {
+                    isValidPort = false;
+                }
+            }
+        }
+
+        return isValidPort;
     }
 
     public List<Ticket> getTickets(Integer loadBalancerId, Integer... p) {
