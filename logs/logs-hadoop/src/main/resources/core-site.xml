@@ -8,9 +8,9 @@
 
     <property>
         <name>fs.default.name</name>
-        <value>hdfs://hadoop1:9000</value>
+        <!--<value>hdfs://hadoop1:9000</value>-->
         <!--<value>hdfs://hadoop-name.ord.com:8020</value>-->
-        <!--<value>hdfs://hadoop-name.dfw1.com:8020</value>-->
+        <value>hdfs://hadoop-name.dfw1.com:8020</value>
     </property>
 
     <!--<property>
