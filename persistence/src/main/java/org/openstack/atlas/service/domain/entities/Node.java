@@ -4,7 +4,6 @@ import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 @javax.persistence.Entity
@@ -19,7 +18,7 @@ public class Node extends Entity implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "node", fetch = FetchType.EAGER)
     @OrderBy("id")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
-    private Set<NodeMeta> metadata = new HashSet<NodeMeta>();
+    private Set<NodeMeta> nodeMetadata;
 
     @Column(name = "ip_address", length = 39)
     private String ipAddress;
@@ -97,12 +96,12 @@ public class Node extends Entity implements Serializable {
         this.status = status;
     }
 
-    public Set<NodeMeta> getMetadata() {
-        return metadata;
+    public Set<NodeMeta> getNodeMetadata() {
+        return nodeMetadata;
     }
 
-    public void setNodeMetadata(Set<NodeMeta> metadata) {
-        this.metadata = metadata;
+    public void setNodeMetadata(Set<NodeMeta> nodeMetadataetadata) {
+        this.nodeMetadata = nodeMetadataetadata;
     }
 
     public boolean isNew() {

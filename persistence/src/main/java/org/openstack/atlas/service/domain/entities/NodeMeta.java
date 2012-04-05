@@ -13,7 +13,7 @@ public class NodeMeta extends Entity implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "`node_id`")
-    private LoadBalancer loadbalancer;
+    private Node node;
 
     @Column(name = "`key`", length = 32)
     private String key;
@@ -21,12 +21,12 @@ public class NodeMeta extends Entity implements Serializable {
     @Column(name = "`value`", length = 256)
     private String value;
 
-    public LoadBalancer getLoadbalancer() {
-        return loadbalancer;
+    public Node getNode() {
+        return node;
     }
 
-    public void setLoadbalancer(LoadBalancer loadbalancer) {
-        this.loadbalancer = loadbalancer;
+    public void setNode(Node node) {
+        this.node = node;
     }
 
     public String getKey() {

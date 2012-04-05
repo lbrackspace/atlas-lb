@@ -68,7 +68,7 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         return nodeMetaResource;
     }
 
-    public void setMetaResource(NodeMetaResource nodeMetaResource) {
+    public void setNodeMetaResource(NodeMetaResource nodeMetaResource) {
         this.nodeMetaResource = nodeMetaResource;
     }
 

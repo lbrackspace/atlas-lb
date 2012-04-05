@@ -41,6 +41,7 @@ public class BaseService {
     protected GroupRepository groupRepository;
     protected ClusterRepository clusterRepository;
     protected MetadataRepository metadataRepository;
+    protected NodeMetadataRepository nodeMetadataRepository;
     protected NodeRepository nodeRepository;
     protected RateLimitRepository rateLimitRepository;
     protected JobStateRepository jobStateRepository;
@@ -60,6 +61,10 @@ public class BaseService {
 
     public void setMetadataRepository(MetadataRepository metadataRepository) {
         this.metadataRepository = metadataRepository;
+    }
+
+    public void setNodeMetadataRepository(NodeMetadataRepository nodeMetadataRepository) {
+        this.nodeMetadataRepository = nodeMetadataRepository;
     }
 
     public void setNodeRepository(NodeRepository nodeRepository) {

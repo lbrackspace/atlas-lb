@@ -310,6 +310,17 @@
             <a>address</a>
             <b>ipAddress</b>
         </field>
+        <field>
+            <a>nodeMetadata</a>
+            <b>nodeMetadata</b>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Nodemeta</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.NodeMeta</b-hint>
+        </field>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Nodemeta</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.NodeMeta</class-b>
     </mapping>
 
     <mapping map-null="false" wildcard="false">

@@ -50,11 +50,11 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
         }
 
         LOG.debug(String.format("Verifying that there are no duplicate metadata keys for node '%d'...", nodeId));
-        if (detectDuplicateNodeMetadata(node.getMetadata(), nodeMetas)) {
+        if (detectDuplicateNodeMetadata(node.getNodeMetadata(), nodeMetas)) {
             LOG.warn("Duplicate metadata keys found! Sending failure response back to client...");
             throw new UnprocessableEntityException("Duplicate metadata keys detected. One or more metadata keys already configured on node.");
         }
-        LOG.debug(String.format("Current number of metadata items for loadbalancer '%d': %d", nodeId, node.getMetadata().size()));
+        LOG.debug(String.format("Current number of metadata items for loadbalancer '%d': %d", nodeId, node.getNodeMetadata().size()));
         LOG.debug(String.format("Number of new metadata items to be added: %d", nodeMetas.size()));
 
         final Set<NodeMeta> metaSet = null;
