@@ -171,7 +171,17 @@
             <bean class="org.openstack.atlas.api.resources.NodeResource"
                   parent="commonDependencyProvider"
                   scope="request">
-                <property name="nodeMetadataResource" ref="NodeMetadataResource"/>
+            <property name="nodeMetadataResource">
+                <bean class="org.openstack.atlas.api.resources.NodeMetadataResource"
+                      parent="commonDependencyProvider"
+                      scope="request">
+                    <property name="nodeMetaResource">
+                        <bean class="org.openstack.atlas.api.resources.NodeMetaResource"
+                              parent="commonDependencyProvider"
+                              scope="request"/>
+                    </property>
+                </bean>
+            </property>
             </bean>
         </property>
     </bean>
@@ -209,16 +219,6 @@
           scope="request">
         <property name="metaResource">
             <bean class="org.openstack.atlas.api.resources.MetaResource"
-                  parent="commonDependencyProvider"
-                  scope="request"/>
-        </property>
-    </bean>
-    <bean name="NodeMetadataResource"
-          class="org.openstack.atlas.api.resources.NodeMetadataResource"
-          parent="commonDependencyProvider"
-          scope="request">
-        <property name="nodeMetaResource">
-            <bean class="org.openstack.atlas.api.resources.NodeMetaResource"
                   parent="commonDependencyProvider"
                   scope="request"/>
         </property>

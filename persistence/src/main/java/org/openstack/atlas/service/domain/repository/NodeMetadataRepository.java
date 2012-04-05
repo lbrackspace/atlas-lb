@@ -25,7 +25,7 @@ public class NodeMetadataRepository {
         Set<NodeMeta> newMetas = new HashSet<NodeMeta>();
 
         for (NodeMeta meta : metas) {
-            meta.setLoadbalancer(node.getLoadbalancer());
+            meta.setNode(node);
             newMetas.add(entityManager.merge(meta));
         }
 
