@@ -32,6 +32,7 @@ public class ZxtmConversionUtils {
 		mapper.put(LoadBalancerProtocol.UDP_STREAM, VirtualServerProtocol.udpstreaming);
 		mapper.put(LoadBalancerProtocol.UDP, VirtualServerProtocol.udp);
 		mapper.put(LoadBalancerProtocol.MYSQL, VirtualServerProtocol.server_first);
+		mapper.put(LoadBalancerProtocol.SFTP, VirtualServerProtocol.server_first);
 
 		return (VirtualServerProtocol) mapper.get(Protocol);
 	}

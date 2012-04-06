@@ -207,7 +207,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         if (loadBalancer.getPort() != null && !loadBalancer.getPort().equals(dbLoadBalancer.getPort())) {
             LOG.debug("Updating loadbalancer port to " + loadBalancer.getPort());
-            if (loadBalancerRepository.canUpdateToNewPort(loadBalancer.getPort(), dbLoadBalancer.getLoadBalancerJoinVipSet())) {
+            if (loadBalancerRepository.canUpdateToNewPort(loadBalancer.getPort(), dbLoadBalancer)) {
                 loadBalancerRepository.updatePortInJoinTable(loadBalancer);
                 dbLoadBalancer.setPort(loadBalancer.getPort());
             } else {
