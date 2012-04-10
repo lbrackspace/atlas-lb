@@ -138,6 +138,27 @@ public class HostRepository {
         return loadBalancers;
     }
 
+    /* Used by usage poller */
+    public List<LoadBalancer> getSslLoadBalancersWithStatus(Integer hostId, LoadBalancerStatus status) {
+        List<Object> loadBalancerTuples;
+        List<LoadBalancer> loadBalancers = new ArrayList<LoadBalancer>();
+
+        loadBalancerTuples = entityManager.createNativeQuery("SELECT lb.id, lb.account_id FROM loadbalancer lb, lb_ssl s where lb.host_id = :hostId and lb.id = s.loadbalancer_id and lb.status = :status")
+                .setParameter("hostId", hostId)
+                .setParameter("status", status.name())
+                .getResultList();
+
+        for (Object loadBalancerTuple : loadBalancerTuples) {
+            Object[] row = (Object[]) loadBalancerTuple;
+            LoadBalancer lb = new LoadBalancer();
+            lb.setId((Integer) row[0]);
+            lb.setAccountId((Integer) row[1]);
+            loadBalancers.add(lb);
+        }
+
+        return loadBalancers;
+    }
+
     public void save(Host host) {
         entityManager.persist(host);
     }

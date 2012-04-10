@@ -132,7 +132,11 @@ public class SyncListener extends BaseListener {
                             // Notify usage processor
                             usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
                             if (dbLoadBalancer.isUsingSsl()) {
-                                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ON);
+                                if(dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
+                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
+                                } else {
+                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
+                                }
                             } else {
                                 usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
                             }
