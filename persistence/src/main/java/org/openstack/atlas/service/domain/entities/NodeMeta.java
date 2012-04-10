@@ -7,7 +7,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @javax.persistence.Entity
-@Table(name = "lb_meta_data")
+@Table(name = "node_meta_data")
 public class NodeMeta extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
