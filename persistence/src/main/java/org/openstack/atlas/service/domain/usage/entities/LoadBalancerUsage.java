@@ -41,6 +41,7 @@ public class LoadBalancerUsage extends Entity implements Serializable {
     @Column(name = "event_type", nullable = true)
     String eventType;
 
+
     public Integer getAccountId() {
         return accountId;
     }

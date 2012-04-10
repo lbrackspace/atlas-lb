@@ -1,11 +1,6 @@
 package org.openstack.atlas.atom.jobs;
 
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.ApacheHttpClientHandler;
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
@@ -100,10 +95,10 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
 //                     lu.addTheseThings();
 
 
-                    ApacheHttpClient httpClient = new ApacheHttpClient();
-                    httpClient.getClientHandler().getHttpClient().
-                    ApacheHttpClientHandler apacheHttpClientHandler = new ApacheHttpClientHandler(httpClient, config);
-                    HttpClient httpclient = apacheHttpClientHandler.getHttpClient();
+//                    ApacheHttpClient httpClient = new ApacheHttpClient();
+//                    httpClient.getClientHandler().getHttpClient().
+//                    ApacheHttpClientHandler apacheHttpClientHandler = new ApacheHttpClientHandler(httpClient, config);
+//                    HttpClient httpclient = apacheHttpClientHandler.getHttpClient();
 
 
                     ClientResponse cr = client.resource("atom.endpoint.com").path("/").queryParam("bliggityblah", "bloop").accept(MediaType.APPLICATION_XML).post(ClientResponse.class, lu);

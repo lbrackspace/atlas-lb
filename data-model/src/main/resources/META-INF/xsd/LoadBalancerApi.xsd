@@ -242,6 +242,7 @@
         <xsd:attribute name="endTime" type="xsd:dateTime"/>
         <xsd:attribute name="eventType" type="xsd:string" use="optional"/>
         <xsd:attribute name="vipType" type="tns:vipType"/>
+        <xsd:attribute name="entryVersion" type="xsd:int"/>
     </xsd:complexType>
 
     <xsd:element name="accountBilling" type="tns:accountBilling"/>

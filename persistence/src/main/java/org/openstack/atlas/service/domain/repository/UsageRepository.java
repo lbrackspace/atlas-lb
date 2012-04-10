@@ -6,12 +6,8 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.Usage_;
 import org.openstack.atlas.service.domain.events.UsageEvent;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage_;
-import org.hibernate.ejb.criteria.OrderImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import sun.security.util.BigInt;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -65,14 +61,14 @@ public class UsageRepository {
 
     private String generateBatchInsertQuery(List<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type) values");
+        sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
 
     private String generateBatchUpdateQuery(List<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("REPLACE INTO lb_usage(id, loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type) values");
+        sb.append("REPLACE INTO lb_usage(id, loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
@@ -102,12 +98,22 @@ public class UsageRepository {
             sb.append(usage.getNumVips()).append(",");
             sb.append(usage.getTags()).append(",");
             if (usage.getEventType() == null) {
-                sb.append(usage.getEventType());
+                sb.append(usage.getEventType()).append(",");
             } else {
-                sb.append("'").append(usage.getEventType()).append("'");
+                sb.append("'").append(usage.getEventType()).append("'").append(",");
             }
-            sb.append("),");
+            //Used for keeping track of updated rows
+            int versionBump;
+            if (usage.getEntryVersion() == null) {
+               //new record
+               versionBump = 0;
+            } else {
+               versionBump = usage.getEntryVersion();
+            }
 
+            versionBump += 1;
+            sb.append(versionBump);
+            sb.append("),");
         }
         if (sb.toString().endsWith(",")) {
             sb.deleteCharAt(sb.lastIndexOf(","));

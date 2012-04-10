@@ -34,6 +34,8 @@ public class Usage extends Entity implements Serializable {
     String eventType;
     @Column(name="account_id", nullable = false)
     private Integer accountId;
+    @Column(name="entry_version", nullable = false)
+    private Integer entryVersion;
 
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;
@@ -121,5 +123,13 @@ public class Usage extends Entity implements Serializable {
 
     public void setAccountId(Integer accountId) {
         this.accountId = accountId;
+    }
+
+    public Integer getEntryVersion() {
+        return entryVersion;
+    }
+
+    public void setEntryVersion(Integer entryVersion) {
+        this.entryVersion = entryVersion;
     }
 }
