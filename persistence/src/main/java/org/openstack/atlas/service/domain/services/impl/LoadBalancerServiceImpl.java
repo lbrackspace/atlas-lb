@@ -169,9 +169,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         joinIpv6OnLoadBalancer(dbLoadBalancer);
 
         // Add atom entry
-        String atomTitle = "Load Balancer in build status";
-        String atomSummary = "Load balancer in build status";
-        notificationService.saveLoadBalancerEvent(lb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, BUILD_LOADBALANCER, CREATE, INFO);
+//        String atomTitle = "Load Balancer in build status";
+//        String atomSummary = "Load balancer in build status";
+//        notificationService.saveLoadBalancerEvent(lb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, BUILD_LOADBALANCER, CREATE, INFO);
 
         //Save history record
         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.BUILD);
@@ -302,9 +302,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         LOG.debug("Updated the loadbalancer in DB. Now sending response back.");
 
         // Add atom entry
-        String atomTitle = "Load Balancer in pending update status";
-        String atomSummary = "Load balancer in pending update status";
-        notificationService.saveLoadBalancerEvent(loadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, PENDING_UPDATE_LOADBALANCER, UPDATE, INFO);
+//        String atomTitle = "Load Balancer in pending update status";
+//        String atomSummary = "Load balancer in pending update status";
+//        notificationService.saveLoadBalancerEvent(loadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, PENDING_UPDATE_LOADBALANCER, UPDATE, INFO);
 
         // TODO: Sending db loadbalancer causes everything to update. Tweek for performance
         LOG.debug("Leaving " + getClass());
@@ -408,9 +408,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         dbLb.setUserName(loadBalancer.getUserName());
 
         // Add atom entry
-        String atomTitle = "Load Balancer in pending delete status";
-        String atomSummary = "Load balancer in pending delete status";
-        notificationService.saveLoadBalancerEvent(loadBalancer.getUserName(), loadBalancer.getAccountId(), loadBalancer.getId(), atomTitle, atomSummary, PENDING_DELETE_LOADBALANCER, DELETE, INFO);
+//        String atomTitle = "Load Balancer in pending delete status";
+//        String atomSummary = "Load balancer in pending delete status";
+//        notificationService.saveLoadBalancerEvent(loadBalancer.getUserName(), loadBalancer.getAccountId(), loadBalancer.getId(), atomTitle, atomSummary, PENDING_DELETE_LOADBALANCER, DELETE, INFO);
 
         LOG.debug("Leaving " + getClass());
         return dbLb;
@@ -449,9 +449,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     //Set status record
                     loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE);
                     // Add atom entry
-                    String atomTitle = "Load Balancer in pending delete status";
-                    String atomSummary = "Load balancer in pending delete status";
-                    notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, PENDING_DELETE_LOADBALANCER, DELETE, INFO);
+//                    String atomTitle = "Load Balancer in pending delete status";
+//                    String atomSummary = "Load balancer in pending delete status";
+//                    notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, PENDING_DELETE_LOADBALANCER, DELETE, INFO);
                 }
             } catch (Exception e) {
                 badLbIds.add(lbIdToDelete);

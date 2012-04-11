@@ -90,6 +90,7 @@
         <property name="rateLimitingService" ref="rateLimitingService"/>
         <property name="notificationService" ref="notificationService"/>
         <property name="allowedDomainsService" ref="allowedDomainsService"/>
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
         <property name="callbackService" ref="callbackService"/>
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
 
@@ -113,6 +114,7 @@
         <property name="hostUsageRepository" ref="hostUsageRepository"/>
         <property name="blacklistRepository" ref="blacklistRepository"/>
         <property name="allowedDomainsRepository" ref="allowedDomainsRepository"/>
+        <property name="loadBalancerStatusHistoryRepository" ref="loadBalancerStatusHistoryRepository"/>
     </bean>
     <bean id="loadBalancingManagementImpl"
           class="org.openstack.atlas.api.mgmt.resources.RootResource"
@@ -267,6 +269,11 @@
                   scope="request"/>
         </property>
     </bean>
+    <bean name="saveStateHistoryResource"
+          class="org.openstack.atlas.api.mgmt.resources.SaveStateHistoryResource"
+          parent="managementDependencyProvider"
+          scope="request">
+    </bean>
     <bean id="mgmtErrorPageResource"
           class="org.openstack.atlas.api.mgmt.resources.ErrorpageResource"
           parent="managementDependencyProvider"
@@ -288,6 +295,7 @@
           scope="request">
         <property name="loadBalancerResource" ref="loadBalancerResource"/>
         <property name="accountLimitsResource" ref="accountLimitsResource"/>
+        <property name="saveStateHistoryResource" ref="saveStateHistoryResource"/>
     </bean>
 
 
