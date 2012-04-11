@@ -57,9 +57,6 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
         loadBalancerService.createSuspension(dbLoadBalancer, requestLb.getSuspension());
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.SUSPENDED);
 
-        //Save status record
-        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.SUSPENDED);
-
         // Add atom entry
         String atomTitle = "Load Balancer Suspended";
         String atomSummary = "Load balancer suspended. Please contact support if you have any questions.";
