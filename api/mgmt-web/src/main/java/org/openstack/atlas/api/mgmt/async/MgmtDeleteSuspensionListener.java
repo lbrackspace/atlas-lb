@@ -56,6 +56,9 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
         loadBalancerService.removeSuspension(dbLoadBalancer.getId());
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
+        //Set status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
+
         // Add atom entry
         String atomTitle = "Load Balancer Un-Suspended";
         String atomSummary = "Load balancer un-suspended";

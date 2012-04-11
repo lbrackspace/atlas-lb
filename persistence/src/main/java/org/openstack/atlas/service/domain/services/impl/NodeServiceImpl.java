@@ -7,6 +7,7 @@ import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.NodeMap;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
+import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.NodeService;
 import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
 import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
@@ -28,10 +29,16 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     private final Log LOG = LogFactory.getLog(NodeServiceImpl.class);
     private AccountLimitService accountLimitService;
     private LoadBalancerService loadBalancerService;
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     @Required
     public void setAccountLimitService(AccountLimitService accountLimitService) {
         this.accountLimitService = accountLimitService;
+    }
+
+    @Required
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
     }
 
     @Override
@@ -126,6 +133,9 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         LOG.debug("Updating the lb status to pending_update");
         oldNodesLb.setStatus(LoadBalancerStatus.PENDING_UPDATE);
 
+        //Set status record
+        loadBalancerStatusHistoryService.save(oldNodesLb.getAccountId(), oldNodesLb.getId(), LoadBalancerStatus.PENDING_UPDATE);
+
         LOG.debug("Current number of nodes for loadbalancer: " + oldNodesLb.getNodes().size());
         LOG.debug("Number of new nodes to be added: " + newNodesLb.getNodes().size());
         NodesHelper.setNodesToStatus(newNodesLb, NodeStatus.ONLINE);
@@ -199,8 +209,10 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         LOG.debug("Updating the lb status to pending_update");
         oldLbNodes.setStatus(LoadBalancerStatus.PENDING_UPDATE);
         oldLbNodes.setUserName(msgLb.getUserName());
-
         nodeRepository.update(oldLbNodes);
+
+        //Set status record
+        loadBalancerStatusHistoryService.save(oldLbNodes.getAccountId(), oldLbNodes.getId(), LoadBalancerStatus.PENDING_UPDATE);
         return oldLbNodes;
     }
 
@@ -242,8 +254,10 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
         LOG.debug("Updating the lb status to pending_update");
         dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
-
         loadBalancerRepository.update(dbLoadBalancer);
+
+        //Set status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         return loadBalancer;
     }
 
@@ -369,6 +383,9 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             errMsg = String.format(format, doomedNodeCount, batch_delete_limit, batch_delete_limit);
             validationErrors.add(errMsg);
         }
+
+        //Set status record
+        loadBalancerStatusHistoryService.save(dlb.getAccountId(), dlb.getId(), LoadBalancerStatus.PENDING_UPDATE);
         if (notMyIds.size() > 0) {
             // Don't even take this request seriously any
             // ID does not belong to this account

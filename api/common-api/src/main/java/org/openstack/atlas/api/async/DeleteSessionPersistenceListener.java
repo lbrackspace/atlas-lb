@@ -47,6 +47,9 @@ public class DeleteSessionPersistenceListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(requestLb.getAccountId(), requestLb.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(requestLb);
+
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             return;
         }
 
@@ -54,6 +57,9 @@ public class DeleteSessionPersistenceListener extends BaseListener {
         dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);
+
+        //Set status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
         // Add atom entry
         String atomTitle = "Session Persistence Successfully Deleted";

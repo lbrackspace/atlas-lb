@@ -48,6 +48,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         }
 
         try {
+
             LOG.debug("Creating load balancer in Zeus...");
             reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
             LOG.debug("Successfully created a load balancer in Zeus.");
@@ -60,15 +61,21 @@ public class CreateLoadBalancerListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
+
             // Notify usage processor
             usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
             return;
+
         }
 
         // Update load balancer in DB
         dbLoadBalancer.setStatus(ACTIVE);
         NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
         dbLoadBalancer = loadBalancerService.update(dbLoadBalancer);
+
+        //Set status history record
+        loadBalancerStatusHistoryService.save(queueLb.getAccountId(), queueLb.getId(), LoadBalancerStatus.ACTIVE);
 
         addAtomEntryForLoadBalancer(queueLb, dbLoadBalancer);
         addAtomEntriesForNodes(queueLb, dbLoadBalancer);

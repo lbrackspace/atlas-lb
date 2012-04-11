@@ -7,11 +7,15 @@ import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
+import org.openstack.atlas.service.domain.exceptions.ServiceUnavailableException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.*;
+import org.openstack.atlas.util.ip.DnsUtil;
 import org.openstack.atlas.util.ip.IPUtils;
+
+import javax.naming.NamingException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -19,10 +23,6 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.naming.NamingException;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.ServiceUnavailableException;
-import org.openstack.atlas.util.ip.DnsUtil;
 
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class CommonDependencyProvider {
@@ -51,6 +51,7 @@ public class CommonDependencyProvider {
     protected ProtocolsService protocolsService;
     protected SslTerminationService sslTerminationService;
     protected AllowedDomainsService allowedDomainsService;
+    protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
 
     public ReverseProxyLoadBalancerService getReverseProxyLoadBalancerService() {
@@ -135,6 +136,10 @@ public class CommonDependencyProvider {
 
     public void setAllowedDomainsService(AllowedDomainsService allowedDomainsService) {
         this.allowedDomainsService = allowedDomainsService;
+    }
+
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
     }
 
     public String getUserName(HttpHeaders headers) {

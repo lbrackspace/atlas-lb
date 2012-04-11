@@ -1,8 +1,8 @@
 package org.openstack.atlas.api.async;
 
-import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
@@ -12,9 +12,7 @@ import org.openstack.atlas.util.converters.StringConverter;
 
 import javax.jms.Message;
 import java.util.List;
-import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
+import java.util.Set;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -60,6 +58,9 @@ public class DeleteNodesListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(msg.getAccountId(), msg.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(msg, doomedNodeIds);
+
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             return;
         }
 
@@ -72,6 +73,9 @@ public class DeleteNodesListener extends BaseListener {
         // Update load balancer status in DB
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);
+
+        //Set status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
         // Add atom entry
         String atomTitle = "Nodes Successfully Deleted";

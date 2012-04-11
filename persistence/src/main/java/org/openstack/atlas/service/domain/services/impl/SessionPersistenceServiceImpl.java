@@ -1,18 +1,26 @@
 package org.openstack.atlas.service.domain.services.impl;
 
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
 import org.openstack.atlas.service.domain.exceptions.*;
+import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.SessionPersistenceService;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
 
 public class SessionPersistenceServiceImpl extends BaseService implements SessionPersistenceService {
     private final Log LOG = LogFactory.getLog(SessionPersistenceServiceImpl.class);
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+
+    @Required
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
+    }
 
     @Override
     public SessionPersistence get(Integer accountId, Integer lbId) throws EntityNotFoundException, BadRequestException, DeletedStatusException {
@@ -35,6 +43,9 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
         dbLoadBalancer.setSessionPersistence(queueLb.getSessionPersistence());
@@ -57,6 +68,9 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
             String message = StringHelper.immutableLoadBalancer(dbLb);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLb.getAccountId(), dbLb.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
     }
 }

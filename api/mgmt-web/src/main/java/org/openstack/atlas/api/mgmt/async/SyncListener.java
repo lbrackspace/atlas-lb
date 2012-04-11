@@ -53,10 +53,15 @@ public class SyncListener extends BaseListener {
                 loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                 notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                 LOG.error(msg, e);
+
+                //Set status record
+                loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             }
 
             if (loadBalancerStatus.equals(PENDING_DELETE) || loadBalancerStatus.equals(DELETED)) {
                 loadBalancerService.setStatus(dbLoadBalancer, DELETED);
+                loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.DELETED);
+
                 loadBalancerService.pseudoDelete(dbLoadBalancer);
 
                 if (loadBalancerStatus.equals(PENDING_DELETE)) {
@@ -67,6 +72,10 @@ public class SyncListener extends BaseListener {
 
                     // Notify usage processor
                     usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+
+                    //Set status record
+                    loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE);
+
                 }
             } else {
 
@@ -76,13 +85,19 @@ public class SyncListener extends BaseListener {
                     LoadBalancer tempLb = loadBalancerService.get(queueSyncObject.getLoadBalancerId());
                     tempLb.setSslTermination(null);
 
+                    loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.BUILD);
                     reverseProxyLoadBalancerService.createLoadBalancer(tempLb);
                     loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
+                    loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
+
 
                     if (loadBalancerStatus.equals(BUILD)) {
                         NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
                         dbLoadBalancer.setStatus(ACTIVE);
                         dbLoadBalancer = loadBalancerService.update(dbLoadBalancer);
+
+                        //Set status record
+                        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
                         // Add atom entry
                         String atomTitle = "Load Balancer Successfully Created";
@@ -97,6 +112,10 @@ public class SyncListener extends BaseListener {
                     loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                     notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                     LOG.error(msg, e);
+
+                    //Set status record
+                    loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
+
                 }
 
                 try {
@@ -118,11 +137,15 @@ public class SyncListener extends BaseListener {
 
                         reverseProxyLoadBalancerService.updateSslTermination(dbLoadBalancer, zeusTermination);
                         loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
+                        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
+
 
                         if (loadBalancerStatus.equals(BUILD)) {
                             NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
                             dbLoadBalancer.setStatus(ACTIVE);
                             dbLoadBalancer = loadBalancerService.update(dbLoadBalancer);
+                            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
+
 
                             // Add atom entry
                             String atomTitle = "Load Balancer Successfully Created";

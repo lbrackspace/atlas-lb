@@ -43,6 +43,8 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
             LOG.debug(String.format("Successfully suspended load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
+
             String alertDescription = String.format("Error suspending load balancer '%d' in Zeus.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
@@ -55,6 +57,9 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
         loadBalancerService.createSuspension(dbLoadBalancer, requestLb.getSuspension());
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.SUSPENDED);
 
+        //Save status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.SUSPENDED);
+
         // Add atom entry
         String atomTitle = "Load Balancer Suspended";
         String atomSummary = "Load balancer suspended. Please contact support if you have any questions.";
@@ -62,6 +67,7 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
 
         // Notify usage processor
         usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER);
+
 
         LOG.info(String.format("Suspend load balancer operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }

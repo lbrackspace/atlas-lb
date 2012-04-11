@@ -2,10 +2,12 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
+import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.RateLimitingService;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ import java.util.List;
 @Service
 public class RateLimitingServiceImpl extends BaseService implements RateLimitingService {
     private final Log LOG = LogFactory.getLog(RateLimitingServiceImpl.class);
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
 
     @Override
@@ -26,6 +29,12 @@ public class RateLimitingServiceImpl extends BaseService implements RateLimiting
     public List<RateLimit> retrieveLoadBalancerRateLimits() {
         return loadBalancerRepository.getRateLimitByExpiration();
     }
+
+    @Required
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
+    }
+
 
     @Override
     @Transactional
@@ -49,6 +58,10 @@ public class RateLimitingServiceImpl extends BaseService implements RateLimiting
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+
         }
         loadBalancerRepository.update(dbLoadBalancer);
 
@@ -89,6 +102,9 @@ public class RateLimitingServiceImpl extends BaseService implements RateLimiting
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
         
         dbLb.setRateLimit(newRateLimit);
@@ -116,6 +132,9 @@ public class RateLimitingServiceImpl extends BaseService implements RateLimiting
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
         LOG.debug("Leaving " + getClass());

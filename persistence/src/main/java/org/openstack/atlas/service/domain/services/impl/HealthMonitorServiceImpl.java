@@ -1,23 +1,28 @@
 package org.openstack.atlas.service.domain.services.impl;
 
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.HealthMonitorService;
-import org.openstack.atlas.service.domain.services.helpers.StringHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
+import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.openstack.atlas.service.domain.util.Constants;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.openstack.atlas.service.domain.util.Constants;
 
 @Service
 public class HealthMonitorServiceImpl extends BaseService implements HealthMonitorService {
 
     private final Log LOG = LogFactory.getLog(HealthMonitorServiceImpl.class);
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+
+    @Required
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
+    }
 
     @Override
     public HealthMonitor get(Integer accountId, Integer lbId) throws EntityNotFoundException, DeletedStatusException {
@@ -54,6 +59,9 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
         dbLoadBalancer.setHealthMonitor(monitorToUpdate);
@@ -104,6 +112,9 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
             String message = StringHelper.immutableLoadBalancer(dbLb);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLb.getAccountId(), dbLb.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
     }
 

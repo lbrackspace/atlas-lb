@@ -56,6 +56,9 @@ public class DeleteNodeListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb, nodeToDelete);
+
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             return;
         }
 
@@ -65,6 +68,9 @@ public class DeleteNodeListener extends BaseListener {
         // Update load balancer status in DB
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);
+
+        //Set status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
         // Add atom entry
         String atomTitle = "Node Successfully Deleted";

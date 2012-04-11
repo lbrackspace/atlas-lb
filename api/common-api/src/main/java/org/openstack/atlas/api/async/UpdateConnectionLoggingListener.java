@@ -1,11 +1,11 @@
 package org.openstack.atlas.api.async;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import javax.jms.Message;
 
@@ -14,11 +14,11 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventType.UPDATE_CONNECTION_LOGGING;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
-import static org.openstack.atlas.api.atom.EntryHelper.UPDATE_LOGGING_TITLE;
 
 public class UpdateConnectionLoggingListener extends BaseListener {
 
     final Log LOG = LogFactory.getLog(UpdateConnectionLoggingListener.class);
+    private static final String UPDATE_LOGGING_TITLE = "Update Connection Logging";
 
     @Override
     public void doOnMessage(Message message) throws Exception {
@@ -52,6 +52,7 @@ public class UpdateConnectionLoggingListener extends BaseListener {
 
         String desc = "Connection logging successully set to " + dbLoadBalancer.isConnectionLogging().toString();
         notificationService.saveLoadBalancerEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), UPDATE_LOGGING_TITLE, desc, UPDATE_CONNECTION_LOGGING, UPDATE, EventSeverity.INFO);
+
 
         // Update load balancer status in DB
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);

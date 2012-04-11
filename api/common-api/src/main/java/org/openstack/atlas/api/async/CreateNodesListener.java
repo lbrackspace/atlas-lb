@@ -51,6 +51,9 @@ public class CreateNodesListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
+
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             return;
         }
 
@@ -58,6 +61,9 @@ public class CreateNodesListener extends BaseListener {
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         NodesHelper.setNodesToStatus(queueLb, dbLoadBalancer, NodeStatus.ONLINE);
         loadBalancerService.update(dbLoadBalancer);
+
+        //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
         // Add atom entries for new nodes only
         for (Node dbNode : dbLoadBalancer.getNodes()) {

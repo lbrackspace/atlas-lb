@@ -325,6 +325,7 @@ public class LoadBalancerRepository {
             lb.setStatus(statusToChangeTo);
             lb.setUpdated(Calendar.getInstance());
             entityManager.merge(lb);
+
             return true;
         }
 

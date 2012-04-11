@@ -1,12 +1,7 @@
 package org.openstack.atlas.service.domain.services;
 
 import javassist.tools.rmi.ObjectNotFoundException;
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.SessionPersistence;
-import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.pojos.AccountLoadBalancer;
@@ -66,7 +61,9 @@ public interface LoadBalancerService {
 
     void prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws EntityNotFoundException, BadRequestException;
 
-    boolean testAndSetStatusPending(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException;   
+    boolean testAndSetStatusPending(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException;
+
+    boolean testAndSetStatus(Integer accountId,Integer loadbalancerId, LoadBalancerStatus loadBalancerStatus) throws EntityNotFoundException, UnprocessableEntityException;
 
     UserPages getUserPages(Integer id,Integer accountId) throws EntityNotFoundException;
 
@@ -74,11 +71,11 @@ public interface LoadBalancerService {
 
     String getDefaultErrorPage() throws ObjectNotFoundException, EntityNotFoundException;
 
-    boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException;
+    boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException;
 
     boolean setDefaultErrorPage(String content) throws EntityNotFoundException;
 
-    boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException;
+    boolean removeErrorPage(Integer lid,Integer accountId) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException;
 
     List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId);
 
