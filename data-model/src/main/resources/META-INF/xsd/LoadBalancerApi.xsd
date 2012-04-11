@@ -247,6 +247,7 @@
         <xsd:attribute name="hasSsl" type="xsd:boolean"/>
         <xsd:attribute name="eventType" type="xsd:string" use="optional"/>
         <xsd:attribute name="entryVersion" type="xsd:int"/>
+        <xsd:attribute name="isPushed" type="xsd:int"/>
     </xsd:complexType>
 
     <xsd:element name="accountBilling" type="tns:accountBilling"/>
