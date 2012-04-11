@@ -44,7 +44,7 @@ public class UsagesForRollupDatabaseTest {
         public void shouldReturnOneEntryToInsertWhenRollupDatabaseContainsNoMatchingEntries() {
             Calendar startTime = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 1, 5, 0);
             Calendar endTime = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 1, 25, 0);
-            LoadBalancerUsage usage = createPolledUsageRecord(lbId, 50.0, 100l, 200l, 95l, 195l, 5, 2, 0, startTime, endTime, null);
+            LoadBalancerUsage usage = createPolledUsageRecord(lbId, 50.0, 100l, 200l, 95l, 195l, 50.0, 100l, 200l, 95l, 195l, 5, 2, 0, startTime, endTime, null);
 
             UsagesForDay usagesForDay = new UsagesForDay();
             usagesForDay.getUsages().add(usage);
@@ -62,8 +62,11 @@ public class UsagesForRollupDatabaseTest {
 
             Usage usageRecordToInsert = usagesForRollupDatabase.getUsagesToInsert().get(0);
             Assert.assertEquals(50.0, 0.0, usageRecordToInsert.getAverageConcurrentConnections());
+            Assert.assertEquals(50.0, 0.0, usageRecordToInsert.getAverageConcurrentConnectionsSsl());
             Assert.assertEquals(100, usageRecordToInsert.getIncomingTransfer().longValue());
+            Assert.assertEquals(100, usageRecordToInsert.getIncomingTransferSsl().longValue());
             Assert.assertEquals(200, usageRecordToInsert.getOutgoingTransfer().longValue());
+            Assert.assertEquals(200, usageRecordToInsert.getOutgoingTransferSsl().longValue());
             Assert.assertEquals(5, usageRecordToInsert.getNumberOfPolls().intValue());
             Assert.assertEquals(2, usageRecordToInsert.getNumVips().intValue());
         }
@@ -74,8 +77,8 @@ public class UsagesForRollupDatabaseTest {
             Calendar endTime1 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 1, 25, 0);
             Calendar startTime2 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 2, 5, 0);
             Calendar endTime2 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 2, 25, 0);
-            LoadBalancerUsage usage1 = createPolledUsageRecord(lbId, 50.0, 100l, 200l, 95l, 195l, 5, 2, 0, startTime1, endTime1, null);
-            LoadBalancerUsage usage2 = createPolledUsageRecord(lbId, 100.0, 100l, 200l, 95l, 195l, 5, 2, 0, startTime2, endTime2, null);
+            LoadBalancerUsage usage1 = createPolledUsageRecord(lbId, 50.0, 100l, 200l, 95l, 195l, 50.0, 100l, 200l, 95l, 195l, 5, 2, 0, startTime1, endTime1, null);
+            LoadBalancerUsage usage2 = createPolledUsageRecord(lbId, 100.0, 100l, 200l, 95l, 195l, 100.0, 100l, 200l, 95l, 195l, 5, 2, 0, startTime2, endTime2, null);
 
             UsagesForDay usagesForDay = new UsagesForDay();
             usagesForDay.getUsages().add(usage1);
@@ -94,8 +97,11 @@ public class UsagesForRollupDatabaseTest {
 
             Usage usageRecordToInsert = usagesForRollupDatabase.getUsagesToInsert().get(0);
             Assert.assertEquals(75.0, 0.0, usageRecordToInsert.getAverageConcurrentConnections());
+            Assert.assertEquals(75.0, 0.0, usageRecordToInsert.getAverageConcurrentConnectionsSsl());
             Assert.assertEquals(200, usageRecordToInsert.getIncomingTransfer().longValue());
+            Assert.assertEquals(200, usageRecordToInsert.getIncomingTransferSsl().longValue());
             Assert.assertEquals(400, usageRecordToInsert.getOutgoingTransfer().longValue());
+            Assert.assertEquals(400, usageRecordToInsert.getOutgoingTransferSsl().longValue());
             Assert.assertEquals(10, usageRecordToInsert.getNumberOfPolls().intValue());
             Assert.assertEquals(2, usageRecordToInsert.getNumVips().intValue());
         }
@@ -106,8 +112,8 @@ public class UsagesForRollupDatabaseTest {
             Calendar endTime1 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 1, 25, 0);
             Calendar startTime2 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 2, 5, 0);
             Calendar endTime2 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 2, 25, 0);
-            LoadBalancerUsage usage1 = createPolledUsageRecord(lbId, 50.0, 100l, 200l, 95l, 195l, 5, 2, 0, startTime1, endTime1, null);
-            LoadBalancerUsage usage2 = createPolledUsageRecord(lbId, 100.0, 100l, 200l, 95l, 195l, 5, 2, 1, startTime2, endTime2, null);
+            LoadBalancerUsage usage1 = createPolledUsageRecord(lbId, 50.0, 100l, 200l, 95l, 195l, 50.0, 100l, 200l, 95l, 195l, 5, 2, 0, startTime1, endTime1, null);
+            LoadBalancerUsage usage2 = createPolledUsageRecord(lbId, 100.0, 100l, 200l, 95l, 195l, 100.0, 100l, 200l, 95l, 195l, 5, 2, 1, startTime2, endTime2, null);
 
             UsagesForDay usagesForDay = new UsagesForDay();
             usagesForDay.getUsages().add(usage1);
@@ -126,8 +132,11 @@ public class UsagesForRollupDatabaseTest {
 
             Usage usageRecordToInsert = usagesForRollupDatabase.getUsagesToInsert().get(0);
             Assert.assertEquals(50.0, 0.0, usageRecordToInsert.getAverageConcurrentConnections());
+            Assert.assertEquals(50.0, 0.0, usageRecordToInsert.getAverageConcurrentConnectionsSsl());
             Assert.assertEquals(100, usageRecordToInsert.getIncomingTransfer().longValue());
+            Assert.assertEquals(100, usageRecordToInsert.getIncomingTransferSsl().longValue());
             Assert.assertEquals(200, usageRecordToInsert.getOutgoingTransfer().longValue());
+            Assert.assertEquals(200, usageRecordToInsert.getOutgoingTransferSsl().longValue());
             Assert.assertEquals(5, usageRecordToInsert.getNumberOfPolls().intValue());
             Assert.assertEquals(2, usageRecordToInsert.getNumVips().intValue());
         }
@@ -138,8 +147,8 @@ public class UsagesForRollupDatabaseTest {
             Calendar endTime1 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 1, 5, 0);
             Calendar startTime2 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 1, 6, 0);
             Calendar endTime2 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 1, 6, 0);
-            LoadBalancerUsage usage1 = createPolledUsageRecord(lbId, 0.0, 0l, 0l, 0l, 0l, 0, 1, 0, startTime1, endTime1, UsageEvent.CREATE_LOADBALANCER);
-            LoadBalancerUsage usage2 = createPolledUsageRecord(lbId, 0.0, 0l, 0l, 0l, 0l, 0, 1, 0, startTime2, endTime2, UsageEvent.SUSPEND_LOADBALANCER);
+            LoadBalancerUsage usage1 = createPolledUsageRecord(lbId, 0.0, 0l, 0l, 0l, 0l, 0.0, 0l, 0l, 0l, 0l, 0, 1, 0, startTime1, endTime1, UsageEvent.CREATE_LOADBALANCER);
+            LoadBalancerUsage usage2 = createPolledUsageRecord(lbId, 0.0, 0l, 0l, 0l, 0l, 0.0, 0l, 0l, 0l, 0l, 0, 1, 0, startTime2, endTime2, UsageEvent.SUSPEND_LOADBALANCER);
 
             UsagesForDay usagesForDay = new UsagesForDay();
             usagesForDay.getUsages().add(usage1);
@@ -158,16 +167,22 @@ public class UsagesForRollupDatabaseTest {
 
             Usage usageRecordToInsert = usagesForRollupDatabase.getUsagesToInsert().get(0);
             Assert.assertEquals(0.0, 0.0, usageRecordToInsert.getAverageConcurrentConnections());
+            Assert.assertEquals(0.0, 0.0, usageRecordToInsert.getAverageConcurrentConnectionsSsl());
             Assert.assertEquals(0, usageRecordToInsert.getIncomingTransfer().longValue());
+            Assert.assertEquals(0, usageRecordToInsert.getIncomingTransferSsl().longValue());
             Assert.assertEquals(0, usageRecordToInsert.getOutgoingTransfer().longValue());
+            Assert.assertEquals(0, usageRecordToInsert.getOutgoingTransferSsl().longValue());
             Assert.assertEquals(0, usageRecordToInsert.getNumberOfPolls().intValue());
             Assert.assertEquals(1, usageRecordToInsert.getNumVips().intValue());
             Assert.assertEquals("CREATE_LOADBALANCER", usageRecordToInsert.getEventType());
 
             usageRecordToInsert = usagesForRollupDatabase.getUsagesToInsert().get(1);
             Assert.assertEquals(0.0, 0.0, usageRecordToInsert.getAverageConcurrentConnections());
+            Assert.assertEquals(0.0, 0.0, usageRecordToInsert.getAverageConcurrentConnectionsSsl());
             Assert.assertEquals(0, usageRecordToInsert.getIncomingTransfer().longValue());
+            Assert.assertEquals(0, usageRecordToInsert.getIncomingTransferSsl().longValue());
             Assert.assertEquals(0, usageRecordToInsert.getOutgoingTransfer().longValue());
+            Assert.assertEquals(0, usageRecordToInsert.getOutgoingTransferSsl().longValue());
             Assert.assertEquals(0, usageRecordToInsert.getNumberOfPolls().intValue());
             Assert.assertEquals(1, usageRecordToInsert.getNumVips().intValue());
             Assert.assertEquals("SUSPEND_LOADBALANCER", usageRecordToInsert.getEventType());
@@ -179,8 +194,8 @@ public class UsagesForRollupDatabaseTest {
             Calendar endTime1 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 1, 5, 0);
             Calendar startTime2 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 1, 6, 0);
             Calendar endTime2 = new GregorianCalendar(2010, Calendar.NOVEMBER, 4, 1, 6, 0);
-            LoadBalancerUsage usage1 = createPolledUsageRecord(lbId, 1.0, 1l, 1l, 1l, 1l, 0, 1, 0, startTime1, endTime1, UsageEvent.CREATE_LOADBALANCER);
-            LoadBalancerUsage usage2 = createPolledUsageRecord(lbId, 1.0, 1l, 1l, 1l, 1l, 1, 1, 0, startTime2, endTime2, null);
+            LoadBalancerUsage usage1 = createPolledUsageRecord(lbId, 1.0, 1l, 1l, 1l, 1l, 1.0, 1l, 1l, 1l, 1l, 0, 1, 0, startTime1, endTime1, UsageEvent.CREATE_LOADBALANCER);
+            LoadBalancerUsage usage2 = createPolledUsageRecord(lbId, 1.0, 1l, 1l, 1l, 1l, 1.0, 1l, 1l, 1l, 1l, 1, 1, 0, startTime2, endTime2, null);
 
             UsagesForDay usagesForDay = new UsagesForDay();
             usagesForDay.getUsages().add(usage1);
@@ -199,21 +214,29 @@ public class UsagesForRollupDatabaseTest {
 
             Usage usageRecordToInsert = usagesForRollupDatabase.getUsagesToInsert().get(0);
             Assert.assertEquals(1.0, 0.0, usageRecordToInsert.getAverageConcurrentConnections());
+            Assert.assertEquals(1.0, 0.0, usageRecordToInsert.getAverageConcurrentConnectionsSsl());
             Assert.assertEquals(2, usageRecordToInsert.getIncomingTransfer().longValue());
+            Assert.assertEquals(2, usageRecordToInsert.getIncomingTransferSsl().longValue());
             Assert.assertEquals(2, usageRecordToInsert.getOutgoingTransfer().longValue());
+            Assert.assertEquals(2, usageRecordToInsert.getOutgoingTransferSsl().longValue());
             Assert.assertEquals(1, usageRecordToInsert.getNumberOfPolls().intValue());
             Assert.assertEquals(1, usageRecordToInsert.getNumVips().intValue());
             Assert.assertEquals("CREATE_LOADBALANCER", usageRecordToInsert.getEventType());
         }
 
-        private LoadBalancerUsage createPolledUsageRecord(Integer lbId, Double avgCcs, Long cumBIn, Long cumBOut, Long lastBIn, Long lastBOut, Integer numPolls, Integer numVips, Integer bitMask, Calendar startTime, Calendar endTime, UsageEvent eventType) {
+        private LoadBalancerUsage createPolledUsageRecord(Integer lbId, Double avgCcs, Long cumBIn, Long cumBOut, Long lastBIn, Long lastBOut, Double avgCcsSsl, Long cumBInSsl, Long cumBOutSsl, Long lastBInSsl, Long lastBOutSsl, Integer numPolls, Integer numVips, Integer bitMask, Calendar startTime, Calendar endTime, UsageEvent eventType) {
             LoadBalancerUsage usage = new LoadBalancerUsage();
             usage.setLoadbalancerId(lbId);
             usage.setAverageConcurrentConnections(avgCcs);
+            usage.setAverageConcurrentConnectionsSsl(avgCcsSsl);
             usage.setCumulativeBandwidthBytesIn(cumBIn);
+            usage.setCumulativeBandwidthBytesInSsl(cumBInSsl);
             usage.setCumulativeBandwidthBytesOut(cumBOut);
+            usage.setCumulativeBandwidthBytesOutSsl(cumBOutSsl);
             usage.setLastBandwidthBytesIn(lastBIn);
+            usage.setLastBandwidthBytesInSsl(lastBInSsl);
             usage.setLastBandwidthBytesOut(lastBOut);
+            usage.setLastBandwidthBytesOutSsl(lastBOutSsl);
             usage.setNumberOfPolls(numPolls);
             usage.setNumVips(numVips);
             usage.setTags(bitMask);

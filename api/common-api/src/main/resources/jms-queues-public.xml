@@ -36,6 +36,7 @@
         <property name="hostService" ref="hostService"/>
         <property name="accountLimitService" ref="accountLimitService"/>
         <property name="nodeService" ref="nodeService" />
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService" />
     </bean>
     <bean id="clusterService" class="org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl" parent="baseService" >
         <property name="virtualIpService" ref="virtualIpService"/>
@@ -44,33 +45,51 @@
     <bean id="nodeService" class="org.openstack.atlas.service.domain.services.impl.NodeServiceImpl" parent="baseService">
         <property name="accountLimitService" ref="accountLimitService"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
     <bean id="virtualIpService" class="org.openstack.atlas.service.domain.services.impl.VirtualIpServiceImpl" parent="baseService">
         <property name="accountLimitService" ref="accountLimitService"/>
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
     <bean id="metadataService" class="org.openstack.atlas.service.domain.services.impl.MetadataServiceImpl" parent="baseService">
         <property name="accountLimitService" ref="accountLimitService"/>
     </bean>
     <bean id="accessListService" class="org.openstack.atlas.service.domain.services.impl.AccessListServiceImpl" parent="baseService">
         <property name="accountLimitService" ref="accountLimitService"/>
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
-    <bean id="healthMonitorService" class="org.openstack.atlas.service.domain.services.impl.HealthMonitorServiceImpl" parent="baseService"/>
+    <bean id="loadBalancerStatusHistoryService" class="org.openstack.atlas.service.domain.services.impl.LoadBalancerStatusHistoryServiceImpl" parent="baseService">
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
+    </bean>
+    <bean id="healthMonitorService" class="org.openstack.atlas.service.domain.services.impl.HealthMonitorServiceImpl" parent="baseService">
+    <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
+    </bean>
+    <bean id="connectionThrottleService" class="org.openstack.atlas.service.domain.services.impl.ConnectionThrottleServiceImpl" parent="baseService">
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
+    </bean>
+    <bean id="sessionPersistenceService" class="org.openstack.atlas.service.domain.services.impl.SessionPersistenceServiceImpl" parent="baseService">
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
+    </bean>
+    <bean id="rateLimitingService" class="org.openstack.atlas.service.domain.services.impl.RateLimitingServiceImpl" parent="baseService">
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
+    </bean>
+    <bean id="sslTerminationService" class="org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl" parent="baseService">
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
+    </bean>
+    <bean id="suspensionService" class="org.openstack.atlas.service.domain.services.impl.SuspensionServiceImpl" parent="baseService">
+       <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
+    </bean>
     <bean id="alertService" class="org.openstack.atlas.service.domain.services.impl.AlertServiceImpl" parent="baseService"/>
     <bean id="hostService" class="org.openstack.atlas.service.domain.services.impl.HostServiceImpl" parent="baseService" />
     <bean id="connectionLoggingService" class="org.openstack.atlas.service.domain.services.impl.ConnectionLoggingServiceImpl" parent="baseService"/>
-    <bean id="connectionThrottleService" class="org.openstack.atlas.service.domain.services.impl.ConnectionThrottleServiceImpl" parent="baseService"/>
     <bean id="algorithmService" class="org.openstack.atlas.service.domain.services.impl.AlgorithmsServiceImpl" parent="baseService"/>
     <bean id="protocolsService" class="org.openstack.atlas.service.domain.services.impl.ProtocolsServiceImpl" parent="baseService"/>
-    <bean id="sessionPersistenceService" class="org.openstack.atlas.service.domain.services.impl.SessionPersistenceServiceImpl" parent="baseService" />
     <bean id="usageService" class="org.openstack.atlas.service.domain.services.impl.UsageServiceImpl" parent="baseService"/>
-    <bean id="rateLimitingService" class="org.openstack.atlas.service.domain.services.impl.RateLimitingServiceImpl" parent="baseService"/>
     <bean id="groupService" class="org.openstack.atlas.service.domain.services.impl.GroupServiceImpl" parent="baseService"/>
     <bean id="ticketService" class="org.openstack.atlas.service.domain.services.impl.TicketServiceImpl" parent="baseService"/>
     <bean id="accountLimitService" class="org.openstack.atlas.service.domain.services.impl.AccountLimitServiceImpl" parent="baseService"/>
-    <bean id="suspensionService" class="org.openstack.atlas.service.domain.services.impl.SuspensionServiceImpl" parent="baseService"/>
     <bean id="blackListService" class="org.openstack.atlas.service.domain.services.impl.BlackListServiceImpl" parent="baseService"/>
     <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl" parent="baseService"/>
-    <bean id="sslTerminationService" class="org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl" parent="baseService"/>
     <bean id="allowedDomainsService" class="org.openstack.atlas.service.domain.services.impl.AllowedDomainsServiceImpl" parent="baseService"/>
 
     <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
@@ -93,6 +112,7 @@
         <property name="loadBalancerUsageEventRepository" ref="loadBalancerUsageEventRepository" />
         <property name="sslTerminationRepository" ref="sslTerminationRepository" />
         <property name="allowedDomainsRepository" ref="allowedDomainsRepository" />
+        <property name="loadBalancerStatusHistoryRepository" ref="loadBalancerStatusHistoryRepository" />
     </bean>
 
     <bean id="usageEventHelper" class="org.openstack.atlas.api.async.UsageEventHelper" scope="prototype">
@@ -118,6 +138,7 @@
         <property name="hostService" ref="hostService"/>
         <property name="sslTerminationService" ref="sslTerminationService"/>
         <property name="usageEventHelper" ref="usageEventHelper"/>
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
 
     <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>

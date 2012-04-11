@@ -66,6 +66,7 @@
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
         <property name="restApiConfiguration" ref="configuration"/>
         <property name="sslTerminationService" ref="sslTerminationService"/>
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
 
     <!--DOZER SETTINGS-->

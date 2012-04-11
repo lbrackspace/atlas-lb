@@ -10,6 +10,7 @@
         <property name="blackListService" ref="blackListService"/>
         <property name="clusterService" ref="clusterService"/>
         <property name="suspensionService" ref="suspensionService"/>
+        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
 
     <bean id="mgmtDeleteHostSubnetMappingListener"

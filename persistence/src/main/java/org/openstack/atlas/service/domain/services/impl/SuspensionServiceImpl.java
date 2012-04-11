@@ -5,10 +5,18 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.SuspensionService;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
 
 public class SuspensionServiceImpl extends BaseService implements SuspensionService {
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+
+    @Required
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
+    }
 
     @Override
     @Transactional
@@ -24,9 +32,18 @@ public class SuspensionServiceImpl extends BaseService implements SuspensionServ
             throw new EntityNotFoundException(String.format("Cannot find loadbalancer with id #%d", queueLb.getId()));
         }
 
-        if (!isActiveLoadBalancer(dbLoadBalancer, false)) {
-            LOG.debug(String.format("Loadbalancer %d is currently immutable. Canceling request...", queueLb.getId()));
-            throw new ImmutableEntityException(String.format("Loadbalancer %d is currently immutable. Canceling request...", queueLb.getId()));
+//        if (!isActiveLoadBalancer(dbLoadBalancer, false)) {
+//            LOG.debug(String.format("Loadbalancer %d is currently immutable. Canceling request...", queueLb.getId()));
+//            throw new ImmutableEntityException(String.format("Loadbalancer %d is currently immutable. Canceling request...", queueLb.getId()));
+//        }
+
+        if(!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+            String message = String.format("Load balancer %d is considered immutable and cannot process request", queueLb.getId());
+            LOG.warn(message);
+            throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
         if (dbLoadBalancer.getSuspension() != null) {
@@ -35,7 +52,7 @@ public class SuspensionServiceImpl extends BaseService implements SuspensionServ
         }
 
         LOG.debug("Updating the lb status to pending_update");
-        dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
+//        dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
 
         LOG.debug("Leaving " + getClass());
     }
@@ -58,7 +75,12 @@ public class SuspensionServiceImpl extends BaseService implements SuspensionServ
         }
 
         LOG.debug("Updating the lb status to pending_update");
-        dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
+//        dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
+        loadBalancerRepository.setStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+
+        //Set status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+
     }
 
 }

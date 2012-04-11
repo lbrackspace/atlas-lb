@@ -15,9 +15,15 @@ public class Usage extends Entity implements Serializable {
     @Column(name = "avg_concurrent_conns", nullable = false)
     Double averageConcurrentConnections = 0.0;
     @Column(name = "bandwidth_in", nullable = false)
-    private Long incomingTransfer;
+    private Long incomingTransfer = 0L;
     @Column(name = "bandwidth_out", nullable = false)
-    private Long outgoingTransfer;
+    private Long outgoingTransfer = 0L;
+    @Column(name = "avg_concurrent_conns_ssl", nullable = false)
+    Double averageConcurrentConnectionsSsl = 0.0;
+    @Column(name = "bandwidth_in_ssl", nullable = false)
+    private Long incomingTransferSsl = 0L;
+    @Column(name = "bandwidth_out_ssl", nullable = false)
+    private Long outgoingTransferSsl = 0L;
     @Column(name = "start_time")
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar startTime;
@@ -69,6 +75,30 @@ public class Usage extends Entity implements Serializable {
 
     public void setOutgoingTransfer(Long outgoingTransfer) {
         this.outgoingTransfer = outgoingTransfer;
+    }
+
+    public Double getAverageConcurrentConnectionsSsl() {
+        return averageConcurrentConnectionsSsl;
+    }
+
+    public void setAverageConcurrentConnectionsSsl(Double averageConcurrentConnectionsSsl) {
+        this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
+    }
+
+    public Long getIncomingTransferSsl() {
+        return incomingTransferSsl;
+    }
+
+    public void setIncomingTransferSsl(Long incomingTransferSsl) {
+        this.incomingTransferSsl = incomingTransferSsl;
+    }
+
+    public Long getOutgoingTransferSsl() {
+        return outgoingTransferSsl;
+    }
+
+    public void setOutgoingTransferSsl(Long outgoingTransferSsl) {
+        this.outgoingTransferSsl = outgoingTransferSsl;
     }
 
     public Calendar getStartTime() {

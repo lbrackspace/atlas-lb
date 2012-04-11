@@ -1,21 +1,21 @@
 package org.openstack.atlas.api.async;
 
-import java.util.HashSet;
-import java.util.Set;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+
 import javax.jms.Message;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.API_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
-import static org.openstack.atlas.service.domain.events.entities.CategoryType.CREATE;
-import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
+import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_ACCESS_LIST;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
 
 public class DeleteAccessListListener extends BaseListener {
 
@@ -45,6 +45,9 @@ public class DeleteAccessListListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb, queueLb.getAccessLists());
+
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             return;
         }
 
@@ -62,6 +65,9 @@ public class DeleteAccessListListener extends BaseListener {
         dbLoadBalancer.getAccessLists().removeAll(accessListsToDelete);
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);
+
+        //Set status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
     }
 
     private void sendErrorToEventResource(LoadBalancer lb, Set<AccessList> accessLists) {

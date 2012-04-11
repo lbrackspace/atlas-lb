@@ -1,17 +1,17 @@
 package org.openstack.atlas.api.async;
 
-import org.openstack.atlas.util.converters.StringConverter;
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.util.converters.StringConverter;
 
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -55,6 +55,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
                 atomSummary.append("algorithm: '").append(dbLoadBalancer.getAlgorithm().name()).append("', ");
             } catch (Exception e) {
                 loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+
                 String alertDescription = String.format("Error updating algorithm for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name());
                 LOG.error(alertDescription, e);
                 notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
@@ -69,6 +70,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
                     LOG.debug(String.format("Successfully updated node weights for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
                 } catch (Exception e) {
                     loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+
                     String alertDescription = String.format("Error updating node weights for load balancer '%d' in Zeus...", dbLoadBalancer.getId());
                     LOG.error(alertDescription, e);
                     notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
@@ -86,6 +88,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
                 atomSummary.append("protocol: '").append(dbLoadBalancer.getProtocol().name()).append("', ");
             } catch (Exception e) {
                 loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+
                 String alertDescription = String.format("Error updating protocol for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name());
                 LOG.error(alertDescription, e);
                 notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
@@ -103,6 +106,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
                 atomSummary.append("port: '").append(dbLoadBalancer.getPort()).append("', ");
             } catch (Exception e) {
                 loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+
                 String alertDescription = String.format("Error updating port for load balancer '%d' to '%d' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getPort());
                 LOG.error(alertDescription, e);
                 notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);

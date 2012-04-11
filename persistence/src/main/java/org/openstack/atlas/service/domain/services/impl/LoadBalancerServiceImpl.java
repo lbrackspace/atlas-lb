@@ -36,6 +36,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private VirtualIpService virtualIpService;
     private HostService hostService;
     private NodeService nodeService;
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     @Required
     public void setNotificationService(NotificationService notificationService) {
@@ -60,6 +61,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Required
     public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
+    }
+
+    @Required
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
     }
 
     @Override
@@ -167,6 +173,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         String atomSummary = "Load balancer in build status";
         notificationService.saveLoadBalancerEvent(lb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, BUILD_LOADBALANCER, CREATE, INFO);
 
+        //Save history record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.BUILD);
+
         return dbLoadBalancer;
     }
 
@@ -180,6 +189,19 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     public boolean testAndSetStatusPending(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException {
         return loadBalancerRepository.testAndSetStatus(accountId, loadbalancerId, LoadBalancerStatus.PENDING_UPDATE, false);
+    }
+
+    @Override
+    @Transactional
+    public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus loadBalancerStatus) throws EntityNotFoundException, UnprocessableEntityException {
+        boolean isStatusSet;
+        isStatusSet = loadBalancerRepository.testAndSetStatus(accountId, loadbalancerId, loadBalancerStatus, false);
+        if (isStatusSet) {
+            loadBalancerStatusHistoryService.save(accountId, loadbalancerId, loadBalancerStatus);
+            return isStatusSet;
+        }
+
+        return isStatusSet;
     }
 
     @Override
@@ -199,7 +221,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         LOG.debug("Updating the lb status to pending_update");
-        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+        if (!testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE)) {
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
@@ -424,6 +446,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     LOG.warn(StringHelper.immutableLoadBalancer(dbLoadBalancer));
                     badLbStatusIds.add(lbIdToDelete);
                 } else {
+                    //Set status record
+                    loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE);
                     // Add atom entry
                     String atomTitle = "Load Balancer in pending delete status";
                     String atomSummary = "Load balancer in pending delete status";
@@ -489,8 +513,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
         } catch (EntityNotFoundException e) {
             LOG.error(String.format("No node limit found. "
-                + "Customer with account '%d' could potentially be creating too many nodes! "
-                + "Allowing operation to continue...", loadBalancer.getAccountId()), e);
+                    + "Customer with account '%d' could potentially be creating too many nodes! "
+                    + "Allowing operation to continue...", loadBalancer.getAccountId()), e);
         }
         return false;
     }
@@ -505,6 +529,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     public void setStatus(LoadBalancer lb, LoadBalancerStatus status) {
         try {
             loadBalancerRepository.setStatus(lb, status);
+            loadBalancerStatusHistoryService.save(lb.getAccountId(), lb.getId(), status);
+
         } catch (EntityNotFoundException e) {
             LOG.warn(String.format("Cannot set status for loadbalancer '%d' as it does not exist.", lb.getId()));
         }
@@ -817,7 +843,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Transactional
     @Override
-    public boolean setErrorPage(Integer lid, Integer accountId, String content) throws EntityNotFoundException {
+    public boolean setErrorPage(Integer lid, Integer accountId, String content) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
+        if(!loadBalancerRepository.testAndSetStatus(accountId, lid, LoadBalancerStatus.PENDING_UPDATE, false)) {
+            String message = "Load balancer is considered immutable and cannot process request";
+            LOG.warn(message);
+            throw new ImmutableEntityException(message);
+        }
         return loadBalancerRepository.setErrorPage(lid, accountId, content);
     }
 
@@ -830,7 +861,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Transactional
     @Override
-    public boolean removeErrorPage(Integer lid, Integer accountId) throws EntityNotFoundException {
+    public boolean removeErrorPage(Integer lid, Integer accountId) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
+         if(!loadBalancerRepository.testAndSetStatus(accountId, lid, LoadBalancerStatus.PENDING_UPDATE, false)) {
+            String message = "Load balancer is considered immutable and cannot process request";
+            LOG.warn(message);
+            throw new ImmutableEntityException(message);
+        }
         return loadBalancerRepository.removeErrorPage(lid, accountId);
     }
 

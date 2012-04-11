@@ -4,6 +4,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.AccessListService;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
+import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,10 +22,16 @@ import java.util.logging.Logger;
 public class AccessListServiceImpl extends BaseService implements AccessListService {
     private final Log LOG = LogFactory.getLog(AccessListServiceImpl.class);
     private AccountLimitService accountLimitService;
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     @Required
     public void setAccountLimitService(AccountLimitService accountLimitService) {
         this.accountLimitService = accountLimitService;
+    }
+
+    @Required
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
     }
 
     @Override
@@ -52,6 +59,9 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
             String message = StringHelper.immutableLoadBalancer(dLb);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dLb.getAccountId(), dLb.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
         Integer aListTotal = dLb.getAccessLists().size() + rLb.getAccessLists().size();
@@ -103,6 +113,9 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
         msg = String.format(format, rLb.getId());
         dLb.setStatus(LoadBalancerStatus.PENDING_UPDATE);
         loadBalancerRepository.update(dLb);
+
+        //Set status record
+         loadBalancerStatusHistoryService.save(dLb.getAccountId(), dLb.getId(), LoadBalancerStatus.PENDING_UPDATE);
         return rLb;
     }
 
@@ -154,6 +167,9 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
         returnLB.getAccessLists().clear();
         returnLB.getAccessLists().addAll(domainLB.getAccessLists());
         loadBalancerRepository.update(domainLB);
+
+        //Set status record
+        loadBalancerStatusHistoryService.save(domainLB.getAccountId(), domainLB.getId(), LoadBalancerStatus.PENDING_UPDATE);
         return returnLB;
     }
 

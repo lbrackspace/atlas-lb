@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.mgmt.async;
 
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -52,6 +53,8 @@ public class CreateRateLimitListener extends BaseListener {
 
         // Update load balancer in DB
         loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
+
 
         // Add atom entry
         String atomTitle = "Rate Limit Successfully Created";
@@ -70,6 +73,10 @@ public class CreateRateLimitListener extends BaseListener {
             LoadBalancer dbLoadBalancer = loadBalancerService.get(loadBalancer.getId(), loadBalancer.getAccountId());
             dbLoadBalancer.setStatus(ERROR);
             loadBalancerService.update(dbLoadBalancer);
+
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
+
         } catch (Exception e1) {
             LOG.error("Exception occurred during rollback ", e1);
         }

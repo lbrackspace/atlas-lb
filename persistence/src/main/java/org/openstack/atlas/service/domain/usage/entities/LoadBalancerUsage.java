@@ -26,6 +26,16 @@ public class LoadBalancerUsage extends Entity implements Serializable {
     Long lastBandwidthBytesIn = 0L;
     @Column(name = "last_bandwidth_bytes_out", nullable = false)
     Long lastBandwidthBytesOut = 0L;
+    @Column(name = "avg_concurrent_conns_ssl", nullable = false)
+    Double averageConcurrentConnectionsSsl = 0.0;
+    @Column(name = "cum_bandwidth_bytes_in_ssl", nullable = false)
+    Long cumulativeBandwidthBytesInSsl = 0L;
+    @Column(name = "cum_bandwidth_bytes_out_ssl", nullable = false)
+    Long cumulativeBandwidthBytesOutSsl = 0L;
+    @Column(name = "last_bandwidth_bytes_in_ssl", nullable = false)
+    Long lastBandwidthBytesInSsl = 0L;
+    @Column(name = "last_bandwidth_bytes_out_ssl", nullable = false)
+    Long lastBandwidthBytesOutSsl = 0L;
     @Column(name = "start_time", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     Calendar startTime;
@@ -96,6 +106,46 @@ public class LoadBalancerUsage extends Entity implements Serializable {
 
     public void setLastBandwidthBytesOut(Long lastBandwidthBytesOut) {
         this.lastBandwidthBytesOut = lastBandwidthBytesOut;
+    }
+
+    public Double getAverageConcurrentConnectionsSsl() {
+        return averageConcurrentConnectionsSsl;
+    }
+
+    public void setAverageConcurrentConnectionsSsl(Double averageConcurrentConnectionsSsl) {
+        this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
+    }
+
+    public Long getCumulativeBandwidthBytesInSsl() {
+        return cumulativeBandwidthBytesInSsl;
+    }
+
+    public void setCumulativeBandwidthBytesInSsl(Long cumulativeBandwidthBytesInSsl) {
+        this.cumulativeBandwidthBytesInSsl = cumulativeBandwidthBytesInSsl;
+    }
+
+    public Long getCumulativeBandwidthBytesOutSsl() {
+        return cumulativeBandwidthBytesOutSsl;
+    }
+
+    public void setCumulativeBandwidthBytesOutSsl(Long cumulativeBandwidthBytesOutSsl) {
+        this.cumulativeBandwidthBytesOutSsl = cumulativeBandwidthBytesOutSsl;
+    }
+
+    public Long getLastBandwidthBytesInSsl() {
+        return lastBandwidthBytesInSsl;
+    }
+
+    public void setLastBandwidthBytesInSsl(Long lastBandwidthBytesInSsl) {
+        this.lastBandwidthBytesInSsl = lastBandwidthBytesInSsl;
+    }
+
+    public Long getLastBandwidthBytesOutSsl() {
+        return lastBandwidthBytesOutSsl;
+    }
+
+    public void setLastBandwidthBytesOutSsl(Long lastBandwidthBytesOutSsl) {
+        this.lastBandwidthBytesOutSsl = lastBandwidthBytesOutSsl;
     }
 
     public Calendar getStartTime() {

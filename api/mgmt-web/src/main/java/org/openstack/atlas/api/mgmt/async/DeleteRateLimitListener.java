@@ -45,6 +45,10 @@ public class DeleteRateLimitListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
+
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
+
             return;
         }
 
@@ -52,6 +56,9 @@ public class DeleteRateLimitListener extends BaseListener {
         rateLimitingService.pseudoDelete(dbLoadBalancer);
         // Update load balancer in DB
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+        //Set status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
+
 
         // Add atom entry
         String atomTitle = "Rate Limit Successfully Deleted";

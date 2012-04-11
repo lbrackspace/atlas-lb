@@ -10,6 +10,7 @@ public abstract class BaseListener extends org.openstack.atlas.api.async.BaseLis
     protected BlackListService blackListService;
     protected ClusterService clusterService;
     protected SuspensionService suspensionService;
+    protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     public void setCallbackService(CallbackService callbackService) {
         this.callbackService = callbackService;
@@ -25,5 +26,9 @@ public abstract class BaseListener extends org.openstack.atlas.api.async.BaseLis
 
     public void setBlackListService(BlackListService blackListService) {
         this.blackListService = blackListService;
+    }
+
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
     }
 }

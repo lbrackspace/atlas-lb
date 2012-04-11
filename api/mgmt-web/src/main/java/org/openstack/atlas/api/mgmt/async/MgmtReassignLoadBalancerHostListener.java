@@ -33,6 +33,10 @@ public class MgmtReassignLoadBalancerHostListener extends BaseListener {
                 LOG.debug("Updating host to " + lb.getHost().getId() + " in zeus for loadbalancer " + lb.getId());
                 reverseProxyLoadBalancerService.changeHostForLoadBalancer(dbLb, lb.getHost());
                 loadBalancerService.setStatus(lb, LoadBalancerStatus.ACTIVE);
+
+                //Set status record
+                loadBalancerStatusHistoryService.save(lb.getAccountId(), lb.getId(), LoadBalancerStatus.ACTIVE);
+
                 LOG.debug("Successfully updated load balancer:" + lb.getId() + " in Zeus.");
             }
             LOG.debug("Successfully reassigned load balancer hosts in zeus.");

@@ -21,17 +21,23 @@ public class UsagesForPollingDatabase {
     private Map<String, Long> bytesInMap;
     private Map<String, Long> bytesOutMap;
     private Map<String, Integer> currentConnectionsMap;
+    private Map<String, Long> bytesInMapSsl;
+    private Map<String, Long> bytesOutMapSsl;
+    private Map<String, Integer> currentConnectionsMapSsl;
     private Calendar pollTime;
     private Map<Integer, LoadBalancerUsage> usagesAsMap;
     private List<LoadBalancerUsage> recordsToInsert;
     private List<LoadBalancerUsage> recordsToUpdate;
 
-    public UsagesForPollingDatabase(LoadBalancerRepository loadBalancerRepository, List<String> loadBalancerNames, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap, Calendar pollTime, Map<Integer, LoadBalancerUsage> usagesAsMap) {
+    public UsagesForPollingDatabase(LoadBalancerRepository loadBalancerRepository, List<String> loadBalancerNames, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap, Map<String, Long> bytesInMapSsl, Map<String, Long> bytesOutMapSsl, Map<String, Integer> currentConnectionsMapSsl, Calendar pollTime, Map<Integer, LoadBalancerUsage> usagesAsMap) {
         this.loadBalancerRepository = loadBalancerRepository;
         this.loadBalancerNames = loadBalancerNames;
         this.bytesInMap = bytesInMap;
         this.bytesOutMap = bytesOutMap;
         this.currentConnectionsMap = currentConnectionsMap;
+        this.bytesInMapSsl = bytesInMapSsl;
+        this.bytesOutMapSsl = bytesOutMapSsl;
+        this.currentConnectionsMapSsl = currentConnectionsMapSsl;
         this.pollTime = pollTime;
         this.usagesAsMap = usagesAsMap;
     }
@@ -69,6 +75,8 @@ public class UsagesForPollingDatabase {
                         // Add bandwidth that occurred between currentRecord endTime and newRecord startTime to currentRecord
                         currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(zxtmName)));
                         currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(zxtmName)));
+                        currentRecord.setCumulativeBandwidthBytesInSsl(calculateCumBandwidthBytesInSsl(currentRecord, bytesInMapSsl.get(zxtmName + "_s")));
+                        currentRecord.setCumulativeBandwidthBytesOutSsl(calculateCumBandwidthBytesOutSsl(currentRecord, bytesOutMapSsl.get(zxtmName + "_s")));
                         recordsToUpdate.add(currentRecord);
                     } else {
                         // Case 3: A record exists and we need to update because current day is the same as endTime day.
@@ -94,16 +102,25 @@ public class UsagesForPollingDatabase {
 
         if (oldNumPolls == 0) { // polls will equal 0 only when an event occurs, thus we act as if usage data is brand new
             currentRecord.setAverageConcurrentConnections(currentConnectionsMap.get(zxtmName).doubleValue());
+            if (currentConnectionsMapSsl.get(zxtmName + "_s") != null) currentRecord.setAverageConcurrentConnectionsSsl(currentConnectionsMapSsl.get(zxtmName + "_s").doubleValue());
             currentRecord.setCumulativeBandwidthBytesIn(0l);
+            currentRecord.setCumulativeBandwidthBytesInSsl(0l);
             currentRecord.setCumulativeBandwidthBytesOut(0l);
+            currentRecord.setCumulativeBandwidthBytesOutSsl(0l);
         } else {
             currentRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnections(), oldNumPolls, currentConnectionsMap.get(zxtmName)));
+            if (currentConnectionsMapSsl.get(zxtmName + "_s") != null) currentRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, currentConnectionsMapSsl.get(zxtmName + "_s")));
+            else currentRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, 0));
             currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(zxtmName)));
+            currentRecord.setCumulativeBandwidthBytesInSsl(calculateCumBandwidthBytesInSsl(currentRecord, bytesInMapSsl.get(zxtmName + "_s")));
             currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(zxtmName)));
+            currentRecord.setCumulativeBandwidthBytesOutSsl(calculateCumBandwidthBytesOutSsl(currentRecord, bytesOutMapSsl.get(zxtmName + "_s")));
         }
 
         currentRecord.setLastBandwidthBytesIn(bytesInMap.get(zxtmName));
+        if (bytesInMapSsl.get(zxtmName + "_s") != null) currentRecord.setLastBandwidthBytesInSsl(bytesInMapSsl.get(zxtmName + "_s"));
         currentRecord.setLastBandwidthBytesOut(bytesOutMap.get(zxtmName));
+        if (bytesOutMapSsl.get(zxtmName + "_s") != null) currentRecord.setLastBandwidthBytesOutSsl(bytesOutMapSsl.get(zxtmName + "_s"));
     }
 
     private LoadBalancerUsage createNewUsageRecord(String zxtmName, Integer accountId, Integer lbId) {
@@ -111,10 +128,15 @@ public class UsagesForPollingDatabase {
         newRecord.setAccountId(accountId);
         newRecord.setLoadbalancerId(lbId);
         newRecord.setAverageConcurrentConnections(currentConnectionsMap.get(zxtmName).doubleValue());
+        if(currentConnectionsMapSsl.get(zxtmName + "_s") != null) newRecord.setAverageConcurrentConnectionsSsl(currentConnectionsMapSsl.get(zxtmName + "_s").doubleValue());
         newRecord.setCumulativeBandwidthBytesIn(0l);
         newRecord.setCumulativeBandwidthBytesOut(0l);
+        newRecord.setCumulativeBandwidthBytesInSsl(0l);
+        newRecord.setCumulativeBandwidthBytesOutSsl(0l);
         newRecord.setLastBandwidthBytesIn(bytesInMap.get(zxtmName));
+        if(bytesInMapSsl.get(zxtmName + "_s") != null) newRecord.setLastBandwidthBytesInSsl(bytesInMapSsl.get(zxtmName + "_s"));
         newRecord.setLastBandwidthBytesOut(bytesOutMap.get(zxtmName));
+        if(bytesOutMapSsl.get(zxtmName + "_s") != null) newRecord.setLastBandwidthBytesOutSsl(bytesOutMapSsl.get(zxtmName + "_s"));
         newRecord.setStartTime(pollTime);
         newRecord.setEndTime(pollTime);
         newRecord.setNumberOfPolls(1);
@@ -132,6 +154,7 @@ public class UsagesForPollingDatabase {
     }
 
     public Long calculateCumBandwidthBytesIn(LoadBalancerUsage currentRecord, Long currentSnapshotValue) {
+        if (currentSnapshotValue == null) return currentRecord.getCumulativeBandwidthBytesIn();
         if (currentSnapshotValue >= currentRecord.getLastBandwidthBytesIn()) {
             return currentRecord.getCumulativeBandwidthBytesIn() + currentSnapshotValue - currentRecord.getLastBandwidthBytesIn();
         } else {
@@ -139,11 +162,30 @@ public class UsagesForPollingDatabase {
         }
     }
 
+    public Long calculateCumBandwidthBytesInSsl(LoadBalancerUsage currentRecord, Long currentSnapshotValue) {
+        if (currentSnapshotValue == null) return currentRecord.getCumulativeBandwidthBytesInSsl();
+        if (currentSnapshotValue >= currentRecord.getLastBandwidthBytesInSsl()) {
+            return currentRecord.getCumulativeBandwidthBytesInSsl() + currentSnapshotValue - currentRecord.getLastBandwidthBytesInSsl();
+        } else {
+            return currentRecord.getCumulativeBandwidthBytesInSsl() + currentSnapshotValue;
+        }
+    }
+
     public Long calculateCumBandwidthBytesOut(LoadBalancerUsage currentRecord, Long currentSnapshotValue) {
+        if (currentSnapshotValue == null) return currentRecord.getCumulativeBandwidthBytesOut();
         if (currentSnapshotValue >= currentRecord.getLastBandwidthBytesOut()) {
             return currentRecord.getCumulativeBandwidthBytesOut() + currentSnapshotValue - currentRecord.getLastBandwidthBytesOut();
         } else {
             return currentRecord.getCumulativeBandwidthBytesOut() + currentSnapshotValue;
+        }
+    }
+
+    public Long calculateCumBandwidthBytesOutSsl(LoadBalancerUsage currentRecord, Long currentSnapshotValue) {
+        if (currentSnapshotValue == null) return currentRecord.getCumulativeBandwidthBytesOutSsl();
+        if (currentSnapshotValue >= currentRecord.getLastBandwidthBytesOutSsl()) {
+            return currentRecord.getCumulativeBandwidthBytesOutSsl() + currentSnapshotValue - currentRecord.getLastBandwidthBytesOutSsl();
+        } else {
+            return currentRecord.getCumulativeBandwidthBytesOutSsl() + currentSnapshotValue;
         }
     }
 

@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.services.impl;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
+import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.VirtualIpService;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.Constants;
@@ -26,10 +27,16 @@ import java.util.*;
 public class VirtualIpServiceImpl extends BaseService implements VirtualIpService {
     private final Log LOG = LogFactory.getLog(VirtualIpServiceImpl.class);
     private AccountLimitService accountLimitService;
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     @Required
     public void setAccountLimitService(AccountLimitService accountLimitService) {
         this.accountLimitService = accountLimitService;
+    }
+
+    @Required
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
     }
 
     @Override
@@ -255,6 +262,9 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             String message = StringHelper.immutableLoadBalancer(dlb);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dlb.getAccountId(), dlb.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
         LoadBalancerJoinVip6 jv = new LoadBalancerJoinVip6(dlb.getPort(), dlb, vipToAdd);
@@ -385,6 +395,9 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
     }
 

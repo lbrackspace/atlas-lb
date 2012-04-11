@@ -56,6 +56,9 @@ public class DeleteSslTerminationListener extends BaseListener {
             sendErrorToEventResource(errorMsgLB);
             // Notify usage processor with a usage event
             usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
+
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             return;
         }
 
@@ -63,7 +66,7 @@ public class DeleteSslTerminationListener extends BaseListener {
 
 
         // Update load balancer status in DB
-            loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
         // Add atom entry
         String atomTitle = "Load Balancer SSL Termination Successfully Deleted";

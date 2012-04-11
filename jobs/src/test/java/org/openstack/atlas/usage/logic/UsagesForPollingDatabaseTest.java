@@ -24,6 +24,9 @@ public class UsagesForPollingDatabaseTest {
         private Map<String, Long> bytesInMap;
         private Map<String, Long> bytesOutMap;
         private Map<String, Integer> currentConnectionsMap;
+        private Map<String, Long> bytesInMapSsl;
+        private Map<String, Long> bytesOutMapSsl;
+        private Map<String, Integer> currentConnectionsMapSsl;
         private Map<Integer, LoadBalancerUsage> usagesAsMap;
         private String zxtmName;
         private LoadBalancerUsage currentUsage;
@@ -32,26 +35,37 @@ public class UsagesForPollingDatabaseTest {
         public void standUp() {
             zxtmName = "1234_1234";
             bytesInMap = new HashMap<String, Long>();
+            bytesInMapSsl = new HashMap<String, Long>();
             bytesOutMap = new HashMap<String, Long>();
+            bytesOutMapSsl = new HashMap<String, Long>();
             currentConnectionsMap = new HashMap<String, Integer>();
+            currentConnectionsMapSsl = new HashMap<String, Integer>();
             usagesAsMap = new HashMap<Integer, LoadBalancerUsage>();
             bytesInMap.put(zxtmName, 100l);
+            bytesInMapSsl.put(zxtmName + "_s", 100l);
             bytesOutMap.put(zxtmName, 200l);
+            bytesOutMapSsl.put(zxtmName + "_s", 200l);
             currentConnectionsMap.put(zxtmName, 50);
+            currentConnectionsMapSsl.put(zxtmName + "_s", 50);
 
             currentUsage = new LoadBalancerUsage();
             currentUsage.setAccountId(1234);
             currentUsage.setLoadbalancerId(1234);
             currentUsage.setAverageConcurrentConnections(125.0);
+            currentUsage.setAverageConcurrentConnectionsSsl(125.0);
             currentUsage.setCumulativeBandwidthBytesIn(125l);
+            currentUsage.setCumulativeBandwidthBytesInSsl(125l);
             currentUsage.setCumulativeBandwidthBytesOut(125l);
+            currentUsage.setCumulativeBandwidthBytesOutSsl(125l);
             currentUsage.setLastBandwidthBytesIn(150l);
+            currentUsage.setLastBandwidthBytesInSsl(150l);
             currentUsage.setLastBandwidthBytesOut(150l);
+            currentUsage.setLastBandwidthBytesOutSsl(150l);
             currentUsage.setNumberOfPolls(5);
             currentUsage.setNumVips(1);
 
             usagesAsMap.put(1234, currentUsage);
-            usagesForDatabase = new UsagesForPollingDatabase(null, null, bytesInMap, bytesOutMap, currentConnectionsMap, null, usagesAsMap);
+            usagesForDatabase = new UsagesForPollingDatabase(null, null, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl, null, usagesAsMap);
         }
 
         @Test
@@ -65,10 +79,15 @@ public class UsagesForPollingDatabaseTest {
             inOrder.verify(mockedUsageRecord).setEndTime(any(Calendar.class));
             inOrder.verify(mockedUsageRecord).setNumberOfPolls(1);
             inOrder.verify(mockedUsageRecord).setAverageConcurrentConnections(50.0);
+            inOrder.verify(mockedUsageRecord).setAverageConcurrentConnectionsSsl(50.0);
             inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesIn(0l);
+            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesInSsl(0l);
             inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesOut(0l);
+            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesOutSsl(0l);
             inOrder.verify(mockedUsageRecord).setLastBandwidthBytesIn(100l);
+            inOrder.verify(mockedUsageRecord).setLastBandwidthBytesInSsl(100l);
             inOrder.verify(mockedUsageRecord).setLastBandwidthBytesOut(200l);
+            inOrder.verify(mockedUsageRecord).setLastBandwidthBytesOutSsl(200l);
         }
 
         @Test
@@ -80,10 +99,15 @@ public class UsagesForPollingDatabaseTest {
             inOrder.verify(spy).setEndTime(any(Calendar.class));
             inOrder.verify(spy).setNumberOfPolls(6);
             inOrder.verify(spy).setAverageConcurrentConnections(112.5);
+            inOrder.verify(spy).setAverageConcurrentConnectionsSsl(112.5);
             inOrder.verify(spy).setCumulativeBandwidthBytesIn(225l);
+            inOrder.verify(spy).setCumulativeBandwidthBytesInSsl(225l);
             inOrder.verify(spy).setCumulativeBandwidthBytesOut(175l);
+            inOrder.verify(spy).setCumulativeBandwidthBytesOutSsl(175l);
             inOrder.verify(spy).setLastBandwidthBytesIn(100l);
+            inOrder.verify(spy).setLastBandwidthBytesInSsl(100l);
             inOrder.verify(spy).setLastBandwidthBytesOut(200l);
+            inOrder.verify(spy).setLastBandwidthBytesOutSsl(200l);
         }
 
     }
@@ -93,6 +117,9 @@ public class UsagesForPollingDatabaseTest {
         private Map<String, Long> bytesInMap;
         private Map<String, Long> bytesOutMap;
         private Map<String, Integer> currentConnectionsMap;
+        private Map<String, Long> bytesInMapSsl;
+        private Map<String, Long> bytesOutMapSsl;
+        private Map<String, Integer> currentConnectionsMapSsl;
         private Map<Integer, LoadBalancerUsage> usagesAsMap;
         private String zxtmName;
 
@@ -100,14 +127,20 @@ public class UsagesForPollingDatabaseTest {
         public void standUp() {
             zxtmName = "1234_1234";
             bytesInMap = new HashMap<String, Long>();
+            bytesInMapSsl = new HashMap<String, Long>();
             bytesOutMap = new HashMap<String, Long>();
+            bytesOutMapSsl = new HashMap<String, Long>();
             currentConnectionsMap = new HashMap<String, Integer>();
+            currentConnectionsMapSsl = new HashMap<String, Integer>();
             usagesAsMap = new HashMap<Integer, LoadBalancerUsage>();
             bytesInMap.put(zxtmName, 100l);
+            bytesInMapSsl.put(zxtmName, 100l);
             bytesOutMap.put(zxtmName, 200l);
+            bytesOutMapSsl.put(zxtmName, 200l);
             currentConnectionsMap.put(zxtmName, 50);
-            
-            usagesForDatabase = new UsagesForPollingDatabase(null, null, bytesInMap, bytesOutMap, currentConnectionsMap, null, usagesAsMap);
+            currentConnectionsMapSsl.put(zxtmName, 50);
+
+            usagesForDatabase = new UsagesForPollingDatabase(null, null, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl, null, usagesAsMap);
         }
         
         @Test
@@ -117,6 +150,16 @@ public class UsagesForPollingDatabaseTest {
             usageRecord.setLastBandwidthBytesIn(0l);
 
             Long actualValue = usagesForDatabase.calculateCumBandwidthBytesIn(usageRecord, 0l);
+            Assert.assertEquals(new Long(0), actualValue);
+        }
+
+        @Test
+        public void shouldCalculateCumBandwidthBytesInSslWhenUsageIsZero() {
+            LoadBalancerUsage usageRecord = new LoadBalancerUsage();
+            usageRecord.setCumulativeBandwidthBytesInSsl(0l);
+            usageRecord.setLastBandwidthBytesInSsl(0l);
+
+            Long actualValue = usagesForDatabase.calculateCumBandwidthBytesInSsl(usageRecord, 0l);
             Assert.assertEquals(new Long(0), actualValue);
         }
 
@@ -131,12 +174,32 @@ public class UsagesForPollingDatabaseTest {
         }
 
         @Test
+        public void shouldCalculateCumBandwidthBytesInSslWhenUsageIsIncreasingFromZero() {
+            LoadBalancerUsage usageRecord = new LoadBalancerUsage();
+            usageRecord.setCumulativeBandwidthBytesInSsl(0l);
+            usageRecord.setLastBandwidthBytesInSsl(0l);
+
+            Long actualValue = usagesForDatabase.calculateCumBandwidthBytesInSsl(usageRecord, 1024l);
+            Assert.assertEquals(new Long(1024), actualValue);
+        }
+
+        @Test
         public void shouldCalculateCumBandwidthBytesInWhenUsageIsIncreasingFromNonZero() {
             LoadBalancerUsage usageRecord = new LoadBalancerUsage();
             usageRecord.setCumulativeBandwidthBytesIn(1024l);
             usageRecord.setLastBandwidthBytesIn(1024l);
 
             Long actualValue = usagesForDatabase.calculateCumBandwidthBytesIn(usageRecord, 2048l);
+            Assert.assertEquals(new Long(2048), actualValue);
+        }
+
+        @Test
+        public void shouldCalculateCumBandwidthBytesInSslWhenUsageIsIncreasingFromNonZero() {
+            LoadBalancerUsage usageRecord = new LoadBalancerUsage();
+            usageRecord.setCumulativeBandwidthBytesInSsl(1024l);
+            usageRecord.setLastBandwidthBytesInSsl(1024l);
+
+            Long actualValue = usagesForDatabase.calculateCumBandwidthBytesInSsl(usageRecord, 2048l);
             Assert.assertEquals(new Long(2048), actualValue);
         }
 
@@ -151,12 +214,32 @@ public class UsagesForPollingDatabaseTest {
         }
 
         @Test
+        public void shouldCalculateCumBandwidthBytesInSslWhenZeusResetsMemory() {
+            LoadBalancerUsage usageRecord = new LoadBalancerUsage();
+            usageRecord.setCumulativeBandwidthBytesInSsl(2048l);
+            usageRecord.setLastBandwidthBytesInSsl(1024l);
+
+            Long actualValue = usagesForDatabase.calculateCumBandwidthBytesInSsl(usageRecord, 512l);
+            Assert.assertEquals(new Long(2560), actualValue);
+        }
+
+        @Test
         public void shouldCalculateCumBandwidthBytesInWhenNoUsageChange() {
             LoadBalancerUsage usageRecord = new LoadBalancerUsage();
             usageRecord.setCumulativeBandwidthBytesIn(2560l);
             usageRecord.setLastBandwidthBytesIn(512l);
 
             Long actualValue = usagesForDatabase.calculateCumBandwidthBytesIn(usageRecord, 512l);
+            Assert.assertEquals(new Long(2560), actualValue);
+        }
+
+        @Test
+        public void shouldCalculateCumBandwidthBytesInSslWhenNoUsageChange() {
+            LoadBalancerUsage usageRecord = new LoadBalancerUsage();
+            usageRecord.setCumulativeBandwidthBytesInSsl(2560l);
+            usageRecord.setLastBandwidthBytesInSsl(512l);
+
+            Long actualValue = usagesForDatabase.calculateCumBandwidthBytesInSsl(usageRecord, 512l);
             Assert.assertEquals(new Long(2560), actualValue);
         }
 
@@ -171,12 +254,32 @@ public class UsagesForPollingDatabaseTest {
         }
 
         @Test
+        public void shouldCalculateCumBandwidthBytesInSslWhenUsageRecordWithOldZeusValue() {
+            LoadBalancerUsage usageRecord = new LoadBalancerUsage();
+            usageRecord.setCumulativeBandwidthBytesInSsl(0l);
+            usageRecord.setLastBandwidthBytesInSsl(1024l);
+
+            Long actualValue = usagesForDatabase.calculateCumBandwidthBytesInSsl(usageRecord, 2048l);
+            Assert.assertEquals(new Long(1024), actualValue);
+        }
+
+        @Test
         public void shouldCalculateCumBandwidthBytesInWhenUsageRecordWithOldZeusValueAndZeusResets() {
             LoadBalancerUsage usageRecord = new LoadBalancerUsage();
             usageRecord.setCumulativeBandwidthBytesIn(0l);
             usageRecord.setLastBandwidthBytesIn(1024l);
 
             Long actualValue = usagesForDatabase.calculateCumBandwidthBytesIn(usageRecord, 512l);
+            Assert.assertEquals(new Long(512), actualValue);
+        }
+
+        @Test
+        public void shouldCalculateCumBandwidthBytesInSslWhenUsageRecordWithOldZeusValueAndZeusResets() {
+            LoadBalancerUsage usageRecord = new LoadBalancerUsage();
+            usageRecord.setCumulativeBandwidthBytesInSsl(0l);
+            usageRecord.setLastBandwidthBytesInSsl(1024l);
+
+            Long actualValue = usagesForDatabase.calculateCumBandwidthBytesInSsl(usageRecord, 512l);
             Assert.assertEquals(new Long(512), actualValue);
         }
     }

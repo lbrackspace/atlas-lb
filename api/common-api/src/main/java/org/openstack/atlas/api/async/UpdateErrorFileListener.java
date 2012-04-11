@@ -3,6 +3,7 @@ package org.openstack.atlas.api.async;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
@@ -39,6 +40,8 @@ public class UpdateErrorFileListener extends BaseListener {
             LOG.error(alertDescription, enfe);
             notificationService.saveAlert(data.getAccountId(), data.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dbLoadBalancer);
+            loadBalancerStatusHistoryService.save(data.getAccountId(), data.getLoadBalancerId(), LoadBalancerStatus.ERROR);
+
             return;
         }
 
@@ -65,6 +68,8 @@ public class UpdateErrorFileListener extends BaseListener {
                 notificationService.saveAlert(null, null, e, AlertType.ZEUS_FAILURE.name(), msg);
             }
         }
+
+        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
     }
 
     private void sendErrorToEventResource(LoadBalancer lb) {

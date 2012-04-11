@@ -50,6 +50,7 @@
         <class>org.openstack.atlas.service.domain.entities.Defaults</class>
         <class>org.openstack.atlas.service.domain.entities.AllowedDomain</class>
         <class>org.openstack.atlas.service.domain.entities.Meta</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadBalancerStatusHistory</class>
 
         <class>org.openstack.atlas.service.domain.events.entities.Event</class>
         <class>org.openstack.atlas.service.domain.events.entities.Alert</class>
