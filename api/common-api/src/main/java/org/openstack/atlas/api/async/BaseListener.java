@@ -1,22 +1,17 @@
 package org.openstack.atlas.api.async;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.UnauthorizedException;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.Sync;
 import org.openstack.atlas.service.domain.pojos.ZeusEvent;
-import org.openstack.atlas.service.domain.services.HealthMonitorService;
-import org.openstack.atlas.service.domain.services.HostService;
-import org.openstack.atlas.service.domain.services.LoadBalancerService;
-import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.service.domain.services.*;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 
@@ -39,6 +34,7 @@ public abstract class BaseListener implements MessageListener {
     protected RateLimitingService rateLimitingService;
     protected NodeService nodeService;
     protected SslTerminationService sslTerminationService;
+    protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     protected UsageEventHelper usageEventHelper;
 
@@ -96,6 +92,10 @@ public abstract class BaseListener implements MessageListener {
 
     public void setUsageEventHelper(UsageEventHelper usageEventHelper) {
         this.usageEventHelper = usageEventHelper;
+    }
+
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
     }
 
     public final void onMessage(Message message) {

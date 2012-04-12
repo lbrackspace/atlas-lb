@@ -1,23 +1,16 @@
 package org.openstack.atlas.api.async;
 
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 
+import javax.jms.Message;
 
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
-import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
-import static org.openstack.atlas.service.domain.events.entities.CategoryType.CREATE;
-import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
-import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
-import static org.openstack.atlas.service.domain.events.entities.EventType.CREATE_NODE;
-import static org.openstack.atlas.api.atom.EntryHelper.CREATE_NODE_TITLE;
-
-import javax.jms.Message;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
 public class DeleteErrorFileListener extends BaseListener {
 
@@ -40,11 +33,6 @@ public class DeleteErrorFileListener extends BaseListener {
             return;
         }
 
-
-
-
-
-
         LOG.debug("About to remove the error file from zeus... ");
         if (data.getAccountId() != null && data.getLoadBalancerId() != null) {
             try {
@@ -53,11 +41,15 @@ public class DeleteErrorFileListener extends BaseListener {
                 String tmpMsg = String.format("Error setting Errorfile for %d_%d", data.getAccountId(), data.getLoadBalancerId());
                 LOG.error(tmpMsg, e);
                 notificationService.saveAlert(data.getAccountId(), data.getLoadBalancerId(), e, AlertType.ZEUS_FAILURE.name(), msg);
+                //Set status record
+                loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
                 return;
             }
         } else {
             LOG.error("Error LoadbalancerId or accountId was null in call to DeleteErrorFileListener");
         }
+        //Set status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
         LOG.debug("Successfully removed the error file from zeus... ");
     }
 }

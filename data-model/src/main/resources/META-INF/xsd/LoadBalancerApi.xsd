@@ -239,12 +239,16 @@
         <xsd:attribute name="averageNumConnections" type="xsd:double"/>
         <xsd:attribute name="incomingTransfer" type="xsd:long"/>
         <xsd:attribute name="outgoingTransfer" type="xsd:long"/>
+        <xsd:attribute name="averageNumConnectionsSsl" type="xsd:double"/>
+        <xsd:attribute name="incomingTransferSsl" type="xsd:long"/>
+        <xsd:attribute name="outgoingTransferSsl" type="xsd:long"/>
         <xsd:attribute name="numVips" type="xsd:int"/>
         <xsd:attribute name="numPolls" type="xsd:int"/>
         <xsd:attribute name="startTime" type="xsd:dateTime"/>
         <xsd:attribute name="endTime" type="xsd:dateTime"/>
-        <xsd:attribute name="eventType" type="xsd:string" use="optional"/>
         <xsd:attribute name="vipType" type="tns:vipType"/>
+        <xsd:attribute name="hasSsl" type="xsd:boolean"/>
+        <xsd:attribute name="eventType" type="xsd:string" use="optional"/>
     </xsd:complexType>
 
     <xsd:element name="accountBilling" type="tns:accountBilling"/>

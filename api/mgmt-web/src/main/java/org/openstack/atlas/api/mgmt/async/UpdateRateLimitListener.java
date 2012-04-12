@@ -25,6 +25,10 @@ public class UpdateRateLimitListener extends BaseListener {
         reverseProxyLoadBalancerService.updateRateLimit(dbLoadBalancer, queueLb.getRateLimit());
         LOG.debug("Setting loadbalancer status to 'ACTIVE'...");
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+
+        //Set status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
+
         LOG.info("Update rate limit operation complete.");
     }
 }

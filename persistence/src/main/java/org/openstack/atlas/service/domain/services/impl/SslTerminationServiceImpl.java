@@ -10,12 +10,14 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.SslTerminationService;
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtil;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,12 @@ import java.util.TreeMap;
 @Service
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
     protected final Log LOG = LogFactory.getLog(SslTerminationServiceImpl.class);
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+
+    @Required
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
+    }
 
     @Override
     @Transactional
@@ -86,6 +94,9 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
         LOG.info(String.format("Saving ssl termination to the data base for loadbalancer: '%s'", lbId));
@@ -118,6 +129,9 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
                 String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
                 LOG.warn(message);
                 throw new ImmutableEntityException(message);
+            } else {
+                //Set status record
+                loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
             }
         } else {
             throw new BadRequestException("SSL termination could not be found for the requested loadbalancer.");

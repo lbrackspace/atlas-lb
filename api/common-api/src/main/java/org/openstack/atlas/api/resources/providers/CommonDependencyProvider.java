@@ -52,6 +52,7 @@ public class CommonDependencyProvider {
     protected ProtocolsService protocolsService;
     protected SslTerminationService sslTerminationService;
     protected AllowedDomainsService allowedDomainsService;
+    protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
 
     public ReverseProxyLoadBalancerService getReverseProxyLoadBalancerService() {
@@ -140,6 +141,10 @@ public class CommonDependencyProvider {
 
     public void setAllowedDomainsService(AllowedDomainsService allowedDomainsService) {
         this.allowedDomainsService = allowedDomainsService;
+    }
+
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
     }
 
     public String getUserName(HttpHeaders headers) {

@@ -1,20 +1,28 @@
 package org.openstack.atlas.service.domain.services.impl;
 
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.ConnectionLimit;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.ConnectionThrottleService;
+import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ConnectionThrottleServiceImpl extends BaseService implements ConnectionThrottleService {
     private final Log LOG = LogFactory.getLog(ConnectionThrottleServiceImpl.class);
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+
+    @Required
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
+    }
 
     @Override
     public ConnectionLimit get(Integer accountId, Integer lbId) throws EntityNotFoundException, DeletedStatusException {
@@ -78,6 +86,9 @@ public class ConnectionThrottleServiceImpl extends BaseService implements Connec
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
         LOG.debug("Updating the loadbalancer and connection dbThrottle in the database...");
@@ -100,10 +111,13 @@ public class ConnectionThrottleServiceImpl extends BaseService implements Connec
             throw new UnprocessableEntityException("No connection throttle found to delete.");
         }
 
-        if(!loadBalancerRepository.testAndSetStatus(dbLb.getAccountId(), dbLb.getId(), LoadBalancerStatus.PENDING_DELETE, false)) {
+        if(!loadBalancerRepository.testAndSetStatus(dbLb.getAccountId(), dbLb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dbLb);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLb.getAccountId(), dbLb.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
     }
 

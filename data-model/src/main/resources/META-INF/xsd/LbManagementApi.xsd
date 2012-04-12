@@ -38,6 +38,21 @@
         </xsd:complexContent>
     </xsd:complexType>
 
+    <xsd:element name="loadBalancersStatusHistory" type="tns:loadBalancersStatusHistory"/>
+    <xsd:complexType name="loadBalancersStatusHistory">
+        <xsd:sequence>
+            <xsd:element name="loadBalancerStatusHistory" type="tns:loadBalancerStatusHistory" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="loadBalancerStatusHistory" type="tns:loadBalancerStatusHistory"/>
+    <xsd:complexType name="loadBalancerStatusHistory">
+        <xsd:attribute name="accountId" type="xsd:int"/>
+        <xsd:attribute name="loadBalancerId" type="xsd:int"/>
+        <xsd:attribute name="status" type="xsd:string"/>
+        <xsd:attribute name="created" type="xsd:dateTime"/>
+    </xsd:complexType>
+
     <xsd:element name="byIdOrName" type="tns:byIdOrName"/>
     <xsd:complexType name="byIdOrName">
         <xsd:attribute name="id" type="xsd:int"/>
@@ -437,17 +452,6 @@
     </xsd:complexType>
     <!-- END Zeus callback contract -->
 
-    <xsd:element name="usageBilling" type="tns:usageBilling"/>
-    <xsd:complexType name="usageBilling">
-        <xsd:attribute name="startTime" type="xsd:dateTime"/>
-        <xsd:attribute name="endTime" type="xsd:dateTime"/>
-        <xsd:attribute name="incomingTransfer" type="xsd:long"/>
-        <xsd:attribute name="outgoingTransfer" type="xsd:long"/>
-        <xsd:attribute name="numVips" type="xsd:int"/>
-        <xsd:attribute name="sslTermination" type="xsd:boolean"/>
-        <xsd:attribute name="tier" type="xsd:string"/>
-    </xsd:complexType>
-
     <xsd:element name="accountBillings" type="tns:accountBillings"/>
     <xsd:complexType name="accountBillings">
         <xsd:sequence>
@@ -489,6 +493,9 @@
         <xsd:attribute name="averageNumConnections" type="xsd:double"/>
         <xsd:attribute name="incomingTransfer" type="xsd:long"/>
         <xsd:attribute name="outgoingTransfer" type="xsd:long"/>
+        <xsd:attribute name="averageNumConnectionsSsl" type="xsd:double"/>
+        <xsd:attribute name="incomingTransferSsl" type="xsd:long"/>
+        <xsd:attribute name="outgoingTransferSsl" type="xsd:long"/>
         <xsd:attribute name="numVips" type="xsd:int"/>
         <xsd:attribute name="numPolls" type="xsd:int"/>
         <xsd:attribute name="vipType" type="papi:vipType"/>
