@@ -165,7 +165,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         dbLoadBalancer.setUserName(lb.getUserName());
         joinIpv6OnLoadBalancer(dbLoadBalancer);
 
-//        // Add atom entry
+        // Add atom entry
 //        String atomTitle = "Load Balancer in build status";
 //        String atomSummary = "Load balancer in build status";
 //        notificationService.saveLoadBalancerEvent(lb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, BUILD_LOADBALANCER, CREATE, INFO);
@@ -445,6 +445,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 } else {
                     //Set status record
                     loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE);
+
 //                    // Add atom entry
 //                    String atomTitle = "Load Balancer in pending delete status";
 //                    String atomSummary = "Load balancer in pending delete status";

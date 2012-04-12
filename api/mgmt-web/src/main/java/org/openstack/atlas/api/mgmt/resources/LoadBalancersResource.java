@@ -1,30 +1,31 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.PaginationHelper;
+import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mapper.UsageMapper;
+import org.openstack.atlas.api.mgmt.helpers.CheckQueryParams;
+import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
+import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
+import org.openstack.atlas.api.mgmt.validation.contexts.ReassignHostContext;
+import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers;
-import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.operations.Operation;
-import org.openstack.atlas.api.faults.HttpResponseBuilder;
-import org.openstack.atlas.api.helpers.ResponseFactory;
-import org.openstack.atlas.api.mgmt.helpers.CheckQueryParams;
-import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
-import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
-import org.openstack.atlas.api.mgmt.validation.contexts.ReassignHostContext;
 import org.openstack.atlas.util.converters.exceptions.ConverterException;
 import org.openstack.atlas.util.ip.IPUtils;
-import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.w3.atom.Link;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import static javax.ws.rs.core.MediaType.*;
 import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
@@ -33,6 +34,7 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
 
     private LoadBalancerResource loadBalancerResource;
     private AccountLimitsResource accountLimitsResource;
+    private SaveStateHistoryResource saveStateHistoryResource;
     private int accountId;
 
     private HttpHeaders requestHeaders;
@@ -41,6 +43,12 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
     public LoadBalancerResource getHostResource(@PathParam("id") int id) {
         loadBalancerResource.setId(id);
         return loadBalancerResource;
+    }
+
+    @Path("{id: [1-9][0-9]*}/lbstatehistory")
+    public SaveStateHistoryResource getSaveStateHistory(@PathParam("id") int id) {
+        saveStateHistoryResource.setId(id);
+        return saveStateHistoryResource;
     }
 
     @Path("absolutelimits")
@@ -229,6 +237,10 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
 
     public void setAccountLimitsResource(AccountLimitsResource accountLimitsResource) {
         this.accountLimitsResource = accountLimitsResource;
+    }
+
+    public void setSaveStateHistoryResource(SaveStateHistoryResource saveStateHistoryResource) {
+        this.saveStateHistoryResource = saveStateHistoryResource;
     }
 
     public int getAccountId() {
