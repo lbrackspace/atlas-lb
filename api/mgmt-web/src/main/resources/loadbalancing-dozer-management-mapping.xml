@@ -374,6 +374,10 @@
             <a>address</a>
             <b>ipAddress</b>
         </field>
+        <field-exclude>
+            <a>nodeMetadata</a>
+            <b>nodeMetadata</b>
+        </field-exclude>
     </mapping>
 
     <mapping map-null="false" wildcard="false">
