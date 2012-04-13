@@ -61,5 +61,7 @@
           scope="prototype"/>
     <bean id="loadBalancerEventRepository" class="org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository"
           scope="prototype"/>
+    <bean id="loadBalancerUsageRepository" class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository"
+          scope="prototype"/>
 
 </beans>

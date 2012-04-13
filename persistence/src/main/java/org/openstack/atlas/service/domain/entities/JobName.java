@@ -19,5 +19,5 @@ public enum JobName {
     FILES_SPLIT,
     MAPREDUCE,
     LOG_FILE_CF_UPLOAD,
-    ATOM_USAGE_POLLER;
+    ATOM_USAGE_POLLER
 }
