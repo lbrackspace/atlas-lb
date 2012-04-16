@@ -45,7 +45,7 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         }
 
         NodeMetadata retNodeMetadata = new NodeMetadata();
-        for (org.openstack.atlas.service.domain.entities.NodeMeta meta : nodeMetadataService.createNodeMetadata(nodeId, nodeId, domainNodeMetaSet)) {
+        for (org.openstack.atlas.service.domain.entities.NodeMeta meta : nodeMetadataService.createNodeMetadata(accountId, nodeId, domainNodeMetaSet)) {
             retNodeMetadata.getNodeMetas().add(dozerMapper.map(meta, NodeMeta.class));
         }
         return Response.status(Response.Status.OK).entity(retNodeMetadata).build();
@@ -58,8 +58,7 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         NodeMetadata returnMetadata = new NodeMetadata();
 
         try {
-            //Todo: Make this the call for the node meta data, not the load balancer id calls
-            domainNodeMetaSet = nodeMetadataService.getNodeMetadataByAccountIdLoadBalancerId(accountId, nodeId);
+            domainNodeMetaSet = nodeMetadataService.getNodeMetadataByAccountIdNodeId(accountId, nodeId);
             for (org.openstack.atlas.service.domain.entities.NodeMeta domainMeta : domainNodeMetaSet) {
                 returnMetadata.getNodeMetas().add(dozerMapper.map(domainMeta, NodeMeta.class));
             }
@@ -119,7 +118,3 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         this.accountId = accountId;
     }
 }
-
-/*
-}
-*/

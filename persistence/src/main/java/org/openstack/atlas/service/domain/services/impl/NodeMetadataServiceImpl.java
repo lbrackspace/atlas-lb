@@ -13,13 +13,14 @@ import org.openstack.atlas.service.domain.repository.NodeMetadataRepository;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
 import org.openstack.atlas.service.domain.services.NodeMetadataService;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Service
 public class NodeMetadataServiceImpl extends BaseService implements NodeMetadataService {
     private final Log LOG = LogFactory.getLog(NodeMetadataServiceImpl.class);
     private AccountLimitService accountLimitService;
-    private NodeMetadataRepository nodeMetadataRepository;
 
     @Required
     public void setAccountLimitService(AccountLimitService accountLimitService) {
@@ -67,8 +68,8 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
     }
 
     @Override
-    public List<NodeMeta> getNodeMetadataByAccountIdLoadBalancerId(Integer accountId, Integer nodeId) throws EntityNotFoundException {
-        return null;
+    public List<NodeMeta> getNodeMetadataByAccountIdNodeId(Integer accountId, Integer nodeId) throws EntityNotFoundException {
+        return nodeMetadataRepository.getNodeMetaDataByAccountIdNodeId(nodeId);
     }
 
     @Override

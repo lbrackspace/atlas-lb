@@ -4,15 +4,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeMeta;
+import org.openstack.atlas.service.domain.entities.NodeMeta_;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Repository
 @Transactional
@@ -21,8 +26,8 @@ public class NodeMetadataRepository {
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
 
-    public Set<NodeMeta> addNodeMetas(Node node, Collection<NodeMeta> metas) {
-        Set<NodeMeta> newMetas = new HashSet<NodeMeta>();
+    public List<NodeMeta> addNodeMetas(Node node, Collection<NodeMeta> metas) {
+        List<NodeMeta> newMetas = new ArrayList<NodeMeta>();
 
         for (NodeMeta meta : metas) {
             meta.setNode(node);
@@ -33,6 +38,21 @@ public class NodeMetadataRepository {
         node = entityManager.merge(node);
         entityManager.flush();
         return newMetas;
+    }
+
+    public List<NodeMeta> getNodeMetaDataByAccountIdNodeId(Integer nodeId) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<NodeMeta> criteria = builder.createQuery(NodeMeta.class);
+        Root<NodeMeta> nodeMetaRoot = criteria.from(NodeMeta.class);
+
+        Node node = new Node();
+        node.setId(nodeId);
+
+        Predicate belongsToNode = builder.equal(nodeMetaRoot.get(NodeMeta_.node), node);
+
+        criteria.select(nodeMetaRoot);
+        criteria.where(belongsToNode);
+        return entityManager.createQuery(criteria).getResultList();
     }
 }
 

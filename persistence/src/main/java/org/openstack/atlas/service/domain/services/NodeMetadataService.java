@@ -13,7 +13,7 @@ import java.util.List;
 public interface NodeMetadataService {
     List<NodeMeta> createNodeMetadata(Integer accountId, Integer nodeId, List<NodeMeta> NodeMetas) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
 
-    List<NodeMeta> getNodeMetadataByAccountIdLoadBalancerId(Integer accountId, Integer nodeId) throws EntityNotFoundException;
+    List<NodeMeta> getNodeMetadataByAccountIdNodeId(Integer accountId, Integer nodeId) throws EntityNotFoundException;
 
     void deleteNodeMeta(Integer accountId, Integer nodeId, Integer id) throws EntityNotFoundException;
 
