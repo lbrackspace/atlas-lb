@@ -59,6 +59,10 @@ public class BatchDeleteLoadBalancerListener extends BaseListener {
 
         loadBalancerService.pseudoDelete(dbLoadBalancer);
 
+        //Save state record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.DELETED);
+
+
         // Add atom entry
         String atomTitle = "Load Balancer Successfully Deleted";
         String atomSummary = "Load balancer successfully deleted";

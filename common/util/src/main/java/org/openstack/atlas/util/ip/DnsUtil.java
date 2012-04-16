@@ -1,9 +1,9 @@
 package org.openstack.atlas.util.ip;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
+import org.apache.log4j.Logger;
+import org.openstack.atlas.util.common.StringUtils;
+
+import javax.naming.InvalidNameException;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -11,9 +11,10 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
-import org.apache.log4j.Logger;
-
-import org.openstack.atlas.util.common.StringUtils;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.List;
 
 public class DnsUtil {
 
@@ -58,6 +59,11 @@ public class DnsUtil {
             msg = String.format("No records found for domain %s returning empty List", fqdn);
             LOG.warn(msg);
             return records;
+        } catch (InvalidNameException inv) {
+            fmt = "Error looking up dns records for %s exception was %s";
+            msg = String.format(fmt, fqdn, StringUtils.getEST(inv));
+            LOG.error(msg);
+            throw inv;
         } catch (NamingException ne) {
             fmt = "Error looking up dns records for %s exception was %s";
             msg = String.format(fmt, fqdn, StringUtils.getEST(ne));
