@@ -7,7 +7,7 @@ public class IpAddressVerifier implements Verifier<String> {
 
     @Override
     public VerifierResult verify(String ipAddress) {
-        if(ipAddress.matches(".*[a-zA-Z]+.*") && ipAddress.length() < MAX_LENGTH) {
+        if(ipAddress.matches(".*[a-zA-Z]+.*") && ipAddress.length() <= MAX_LENGTH) {
             return new VerifierResult(true);
         }
         return new VerifierResult(IPUtils.isValidIpv4String(ipAddress) || IPUtils.isValidIpv6String(ipAddress));
