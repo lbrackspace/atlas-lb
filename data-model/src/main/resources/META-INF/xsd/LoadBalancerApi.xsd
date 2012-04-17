@@ -244,7 +244,7 @@
         <xsd:attribute name="startTime" type="xsd:dateTime"/>
         <xsd:attribute name="endTime" type="xsd:dateTime"/>
         <xsd:attribute name="vipType" type="tns:vipType"/>
-        <xsd:attribute name="hasSsl" type="xsd:boolean"/>
+        <xsd:attribute name="sslMode" type="xsd:string"/>
         <xsd:attribute name="eventType" type="xsd:string" use="optional"/>
     </xsd:complexType>
 
