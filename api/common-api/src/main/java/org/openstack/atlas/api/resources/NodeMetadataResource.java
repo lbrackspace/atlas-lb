@@ -28,6 +28,7 @@ public class NodeMetadataResource extends CommonDependencyProvider {
     private final Log LOG = LogFactory.getLog(NodeMetadataResource.class);
     private NodeMetaResource nodeMetaResource;
     private HttpHeaders requestHeaders;
+    private Integer loadbalancerId;
     private Integer accountId;
     private Integer nodeId;
 
@@ -112,6 +113,10 @@ public class NodeMetadataResource extends CommonDependencyProvider {
 
     public void setNodeId(Integer nodeId) {
         this.nodeId = nodeId;
+    }
+
+    public void setLoadbalancerId(Integer loadbalancerId) {
+        this.loadbalancerId = loadbalancerId;
     }
 
     public void setAccountId(Integer accountId) {

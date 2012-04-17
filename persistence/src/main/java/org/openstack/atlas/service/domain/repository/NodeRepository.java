@@ -131,6 +131,12 @@ public class NodeRepository {
         throw new EntityNotFoundException("Node not found");
     }
 
+    public Node getNodeByAccountIdLoadBalancerIdNodeId(Integer accountId, Integer loadbalancerId, Integer nodeId) throws EntityNotFoundException, DeletedStatusException {
+        String query = "from Node n where n.loadbalancer.id=:loadbalancerId and n.loadbalancer.accountId=:accountId AND n.id = :nodeId";
+        //Node node = entityManager.createQuery(query).setParameter("accountId", accountId).setParameter("loadbalancerId",loadbalancerId).setParameter("nodeId", nodeId).getSingleResult();
+        throw new EntityNotFoundException("Node not found");
+    }
+
     // Small check for existence
     public boolean isLoadBalancerbyAccountIdLoadBalancerId(Integer aid, Integer lid) {
         String qStr;

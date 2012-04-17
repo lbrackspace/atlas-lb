@@ -111,6 +111,7 @@ public class NodeResource extends CommonDependencyProvider {
     public NodeMetadataResource getNodeMetaDataResource() {
         nodeMetadataResource.setRequestHeaders(requestHeaders);
         nodeMetadataResource.setAccountId(accountId);
+        nodeMetadataResource.setLoadbalancerId(loadBalancerId);
         nodeMetadataResource.setNodeId(id);
         return nodeMetadataResource;
     }
