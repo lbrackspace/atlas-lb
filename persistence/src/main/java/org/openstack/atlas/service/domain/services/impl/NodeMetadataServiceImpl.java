@@ -2,7 +2,6 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.AccountLimitType;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeMeta;
@@ -77,7 +76,6 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
         List<String> validationErrors = new ArrayList<String>();
         String format, errorMessage;
 
-        Node currentNode = nodeRepository.getNodeByAccountIdLoadBalancerIdNodeId(accountId, loadBalancerId, nodeId);
         /*
         List<String> validationErrors = new ArrayList<String>();
         String format, errMsg;

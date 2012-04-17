@@ -15,7 +15,7 @@ public interface NodeMetadataService {
 
     List<NodeMeta> getNodeMetadataByAccountIdNodeId(Integer accountId, Integer nodeId) throws EntityNotFoundException;
 
-    List<String> prepareForNodeMetadataDeletion(Integer accountId, Integer nodeId, List<Integer> ids) throws EntityNotFoundException;
+    List<String> prepareForNodeMetadataDeletion(Integer accountId, Integer loadbalancerId, Integer nodeId, List<Integer> ids) throws EntityNotFoundException;
 
     Node deleteNodeMetadata(Node node, Collection<Integer> ids) throws EntityNotFoundException;
 }
