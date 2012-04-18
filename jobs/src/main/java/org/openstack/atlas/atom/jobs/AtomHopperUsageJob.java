@@ -19,7 +19,6 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParamBean;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.jobs.Job;
-import org.openstack.atlas.jobs.LBaaSUsage;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.entities.Usage;
@@ -35,6 +34,7 @@ import org.springframework.beans.factory.annotation.Required;
 import ru.hh.jersey.hchttpclient.ApacheHttpClient;
 import ru.hh.jersey.hchttpclient.ApacheHttpClientHandler;
 
+import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
@@ -100,19 +100,22 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
             List<AccountLoadBalancer> lbsForAccount = loadBalancerRepository.getAccountLoadBalancers(id);
             for (AccountLoadBalancer lb : lbsForAccount) {
                 try {
-                    lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), startTime, startTime);
+
+                    //Temp
+                    Calendar c = Calendar.getInstance();
+                    c.add(Calendar.MONTH, -1);
+                    lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), c, startTime);
                     int nbytes;
 
                     for (Usage ur : lbusage) {
-                        LBaaSUsage lu = new LBaaSUsage();
+                        LBaasUsagePojo lu = new LBaasUsagePojo();
 
                         lu.setMemory(ur.getNumberOfPolls());
                         LOG.info(String.format("Contacting atomHopper service now..."));
                         ClientResponse response = client.resource("http://atom.staging.ord1.us.ci.rackspace.net/lbaas/events").
-                                accept(acceptableTypes).
-                                header("body", "echo").
-                                type("test/plain").
-                                post(ClientResponse.class, String.format("Attempt %d", lu));
+                                accept(acceptableTypes)
+                                .type(MediaType.APPLICATION_XML_TYPE).
+                                post(ClientResponse.class, lu);
                         InputStream is = response.getEntityInputStream();
                         StringBuilder sb = new StringBuilder(PAGESIZE);
                         do {

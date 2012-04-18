@@ -68,7 +68,8 @@
     </bean>
     <bean id="accountUsagePollerTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="accountUsagePoller"/>
-        <property name="cronExpression" value="0 0 0 * * ?"/>
+        <!--<property name="cronExpression" value="0 0 0 * * ?"/>-->
+        <property name="cronExpression" value="0 */7 * * * ?"/>
         <!-- run every night at midnight -->
     </bean>
 
@@ -107,7 +108,8 @@
     </bean>
     <bean id="lbUsageRollupJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="lbUsageRollupJob"/>
-        <property name="cronExpression" value="0 0 * * * ?"/>
+        <!--<property name="cronExpression" value="0 0 * * * ?"/>-->
+        <property name="cronExpression" value="0 */6 * * * ?"/>
         <!-- run every hour -->
     </bean>
 
