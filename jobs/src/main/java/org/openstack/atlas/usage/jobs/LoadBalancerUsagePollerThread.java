@@ -132,7 +132,7 @@ public class LoadBalancerUsagePollerThread extends Thread {
         List<String> loadbalancerNamesWithSsl = new ArrayList<String>();
 
         for (String loadBalancerName : loadBalancerNames) {
-            final String sslLoadBalancerName = loadBalancerName + "_s";
+            final String sslLoadBalancerName = ZxtmNameBuilder.genSslVSName(loadBalancerName);
             if(sslLoadBalancerNamesForHost.contains(sslLoadBalancerName)) loadbalancerNamesWithSsl.add(sslLoadBalancerName);
         }
         return loadbalancerNamesWithSsl;

@@ -1,5 +1,6 @@
 package org.openstack.atlas.usage.logic;
 
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,11 +43,11 @@ public class UsagesForPollingDatabaseTest {
             currentConnectionsMapSsl = new HashMap<String, Integer>();
             usagesAsMap = new HashMap<Integer, LoadBalancerUsage>();
             bytesInMap.put(zxtmName, 100l);
-            bytesInMapSsl.put(zxtmName + "_s", 100l);
+            bytesInMapSsl.put(ZxtmNameBuilder.genSslVSName(zxtmName), 100l);
             bytesOutMap.put(zxtmName, 200l);
-            bytesOutMapSsl.put(zxtmName + "_s", 200l);
+            bytesOutMapSsl.put(ZxtmNameBuilder.genSslVSName(zxtmName), 200l);
             currentConnectionsMap.put(zxtmName, 50);
-            currentConnectionsMapSsl.put(zxtmName + "_s", 50);
+            currentConnectionsMapSsl.put(ZxtmNameBuilder.genSslVSName(zxtmName), 50);
 
             currentUsage = new LoadBalancerUsage();
             currentUsage.setAccountId(1234);
