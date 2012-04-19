@@ -5,6 +5,8 @@
 
 package org.openstack.atlas.util.ca;
 
+import java.util.List;
+import java.util.ArrayList;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -43,4 +45,23 @@ public class StringUtilsTest {
         assertEquals(expResult, result);
     }
 
+    @Test
+    public void testJoinString(){
+        List<String> strList = new ArrayList<String>();
+        strList.add("1");
+        strList.add("2");
+        strList.add("3");       
+        assertEquals("1,2,3",StringUtils.joinString(strList, ","));
+        nop();
+
+        strList = new ArrayList<String>();
+        assertEquals("",StringUtils.joinString(strList,","));
+
+        strList = new ArrayList<String>();
+        strList.add("1");
+        assertEquals("1",StringUtils.joinString(strList,","));
+    }
+
+    private static void nop(){
+    }
 }
