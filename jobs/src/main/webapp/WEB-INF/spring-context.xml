@@ -5,5 +5,12 @@
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
     <import resource="classpath:META-INF/spring/quartzjobs.xml"/>
-    
+
+    <!--STANDALONE SPRING SETTINGS-->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="file:/etc/openstack/atlas/public-api.conf"/>
+    </bean>
+    <bean id="configuration"
+          class="org.openstack.atlas.atom.util.AtomHopperConfiguration"
+          scope="prototype"/>
 </beans>
