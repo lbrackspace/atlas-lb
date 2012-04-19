@@ -13,7 +13,7 @@ public final class ZxtmNameHelper {
     /*
      *  A loadbalancer has the following format in Zeus: 'accountId_loadBalancerId'
      *  For example, account 1234 has load balancer 56. The virtual server name in
-     *  Zeus is then '1234_56'. If is has ssl then it will be suffixed with '_s'.
+     *  Zeus is then '1234_56'. If is has ssl then it will be suffixed with '_S'.
      */
 
     public static Integer stripAccountIdFromZxtmName(String zxtmName) throws NumberFormatException, ArrayIndexOutOfBoundsException {

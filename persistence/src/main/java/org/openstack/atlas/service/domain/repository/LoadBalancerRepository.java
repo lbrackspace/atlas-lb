@@ -984,8 +984,7 @@ public class LoadBalancerRepository {
         return createAccountBillings(accountUsageResults, lbUsageResults);
     }
 
-    private Collection<AccountBilling> createAccountBillings(List<AccountUsage> accountUsageResults,
-                                                             List<Usage> lbUsageResults) {
+    private Collection<AccountBilling> createAccountBillings(List<AccountUsage> accountUsageResults, List<Usage> lbUsageResults) {
         Map<Integer, AccountBilling> accountBillings = new HashMap<Integer, AccountBilling>();
         Map<Integer, LoadBalancerBilling> loadBalancerBillings = new HashMap<Integer, LoadBalancerBilling>();
 
@@ -995,13 +994,14 @@ public class LoadBalancerRepository {
             accountBilling.getAccountUsageRecords().add(accountUsageResult);
         }
 
+//        TODO: Need to add a record for lb's that don't have usage but are non-deleted
+        
         for (Usage lbUsageResult : lbUsageResults) {
             Integer accountId = lbUsageResult.getLoadbalancer().getAccountId();
             Integer lbId = lbUsageResult.getLoadbalancer().getId();
             String lbName = lbUsageResult.getLoadbalancer().getName();
             AccountBilling accountBilling = getNewOrExistingAccountBilling(accountBillings, accountId);
-            LoadBalancerBilling loadBalancerBilling = getNewOrExistingLoadBalancerbilling(loadBalancerBillings, lbId,
-                    lbName);
+            LoadBalancerBilling loadBalancerBilling = getNewOrExistingLoadBalancerbilling(loadBalancerBillings, lbId, lbName);
             loadBalancerBilling.getUsageRecords().add(lbUsageResult);
             if (!accountBilling.getLoadBalancerBillings().contains(loadBalancerBilling)) {
                 accountBilling.getLoadBalancerBillings().add(loadBalancerBilling);

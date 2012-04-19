@@ -2,6 +2,7 @@ package org.openstack.atlas.usage.logic;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.entities.VirtualIpType;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
@@ -75,8 +76,8 @@ public class UsagesForPollingDatabase {
                         // Add bandwidth that occurred between currentRecord endTime and newRecord startTime to currentRecord
                         currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(zxtmName)));
                         currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(zxtmName)));
-                        currentRecord.setCumulativeBandwidthBytesInSsl(calculateCumBandwidthBytesInSsl(currentRecord, bytesInMapSsl.get(zxtmName + "_s")));
-                        currentRecord.setCumulativeBandwidthBytesOutSsl(calculateCumBandwidthBytesOutSsl(currentRecord, bytesOutMapSsl.get(zxtmName + "_s")));
+                        currentRecord.setCumulativeBandwidthBytesInSsl(calculateCumBandwidthBytesInSsl(currentRecord, bytesInMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName))));
+                        currentRecord.setCumulativeBandwidthBytesOutSsl(calculateCumBandwidthBytesOutSsl(currentRecord, bytesOutMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName))));
                         recordsToUpdate.add(currentRecord);
                     } else {
                         // Case 3: A record exists and we need to update because current day is the same as endTime day.
@@ -102,25 +103,25 @@ public class UsagesForPollingDatabase {
 
         if (oldNumPolls == 0) { // polls will equal 0 only when an event occurs, thus we act as if usage data is brand new
             currentRecord.setAverageConcurrentConnections(currentConnectionsMap.get(zxtmName).doubleValue());
-            if (currentConnectionsMapSsl.get(zxtmName + "_s") != null) currentRecord.setAverageConcurrentConnectionsSsl(currentConnectionsMapSsl.get(zxtmName + "_s").doubleValue());
+            if (currentConnectionsMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)) != null) currentRecord.setAverageConcurrentConnectionsSsl(currentConnectionsMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)).doubleValue());
             currentRecord.setCumulativeBandwidthBytesIn(0l);
             currentRecord.setCumulativeBandwidthBytesInSsl(0l);
             currentRecord.setCumulativeBandwidthBytesOut(0l);
             currentRecord.setCumulativeBandwidthBytesOutSsl(0l);
         } else {
             currentRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnections(), oldNumPolls, currentConnectionsMap.get(zxtmName)));
-            if (currentConnectionsMapSsl.get(zxtmName + "_s") != null) currentRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, currentConnectionsMapSsl.get(zxtmName + "_s")));
+            if (currentConnectionsMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)) != null) currentRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, currentConnectionsMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName))));
             else currentRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, 0));
             currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(zxtmName)));
-            currentRecord.setCumulativeBandwidthBytesInSsl(calculateCumBandwidthBytesInSsl(currentRecord, bytesInMapSsl.get(zxtmName + "_s")));
+            currentRecord.setCumulativeBandwidthBytesInSsl(calculateCumBandwidthBytesInSsl(currentRecord, bytesInMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName))));
             currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(zxtmName)));
-            currentRecord.setCumulativeBandwidthBytesOutSsl(calculateCumBandwidthBytesOutSsl(currentRecord, bytesOutMapSsl.get(zxtmName + "_s")));
+            currentRecord.setCumulativeBandwidthBytesOutSsl(calculateCumBandwidthBytesOutSsl(currentRecord, bytesOutMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName))));
         }
 
         currentRecord.setLastBandwidthBytesIn(bytesInMap.get(zxtmName));
-        if (bytesInMapSsl.get(zxtmName + "_s") != null) currentRecord.setLastBandwidthBytesInSsl(bytesInMapSsl.get(zxtmName + "_s"));
+        if (bytesInMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)) != null) currentRecord.setLastBandwidthBytesInSsl(bytesInMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)));
         currentRecord.setLastBandwidthBytesOut(bytesOutMap.get(zxtmName));
-        if (bytesOutMapSsl.get(zxtmName + "_s") != null) currentRecord.setLastBandwidthBytesOutSsl(bytesOutMapSsl.get(zxtmName + "_s"));
+        if (bytesOutMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)) != null) currentRecord.setLastBandwidthBytesOutSsl(bytesOutMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)));
     }
 
     private LoadBalancerUsage createNewUsageRecord(String zxtmName, Integer accountId, Integer lbId) {
@@ -128,15 +129,15 @@ public class UsagesForPollingDatabase {
         newRecord.setAccountId(accountId);
         newRecord.setLoadbalancerId(lbId);
         newRecord.setAverageConcurrentConnections(currentConnectionsMap.get(zxtmName).doubleValue());
-        if(currentConnectionsMapSsl.get(zxtmName + "_s") != null) newRecord.setAverageConcurrentConnectionsSsl(currentConnectionsMapSsl.get(zxtmName + "_s").doubleValue());
+        if(currentConnectionsMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)) != null) newRecord.setAverageConcurrentConnectionsSsl(currentConnectionsMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)).doubleValue());
         newRecord.setCumulativeBandwidthBytesIn(0l);
         newRecord.setCumulativeBandwidthBytesOut(0l);
         newRecord.setCumulativeBandwidthBytesInSsl(0l);
         newRecord.setCumulativeBandwidthBytesOutSsl(0l);
         newRecord.setLastBandwidthBytesIn(bytesInMap.get(zxtmName));
-        if(bytesInMapSsl.get(zxtmName + "_s") != null) newRecord.setLastBandwidthBytesInSsl(bytesInMapSsl.get(zxtmName + "_s"));
+        if(bytesInMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)) != null) newRecord.setLastBandwidthBytesInSsl(bytesInMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)));
         newRecord.setLastBandwidthBytesOut(bytesOutMap.get(zxtmName));
-        if(bytesOutMapSsl.get(zxtmName + "_s") != null) newRecord.setLastBandwidthBytesOutSsl(bytesOutMapSsl.get(zxtmName + "_s"));
+        if(bytesOutMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)) != null) newRecord.setLastBandwidthBytesOutSsl(bytesOutMapSsl.get(ZxtmNameBuilder.genSslVSName(zxtmName)));
         newRecord.setStartTime(pollTime);
         newRecord.setEndTime(pollTime);
         newRecord.setNumberOfPolls(1);
