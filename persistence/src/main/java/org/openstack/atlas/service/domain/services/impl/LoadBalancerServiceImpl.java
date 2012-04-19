@@ -842,7 +842,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     @Override
     public boolean setErrorPage(Integer lid, Integer accountId, String content) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
-        if(!loadBalancerRepository.testAndSetStatus(accountId, lid, LoadBalancerStatus.PENDING_UPDATE, false)) {
+        if(!testAndSetStatus(accountId, lid, LoadBalancerStatus.PENDING_UPDATE)) {
             String message = "Load balancer is considered immutable and cannot process request";
             LOG.warn(message);
             throw new ImmutableEntityException(message);
@@ -860,7 +860,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     @Override
     public boolean removeErrorPage(Integer lid, Integer accountId) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
-         if(!loadBalancerRepository.testAndSetStatus(accountId, lid, LoadBalancerStatus.PENDING_UPDATE, false)) {
+         if(!testAndSetStatus(accountId, lid, LoadBalancerStatus.PENDING_UPDATE)) {
             String message = "Load balancer is considered immutable and cannot process request";
             LOG.warn(message);
             throw new ImmutableEntityException(message);

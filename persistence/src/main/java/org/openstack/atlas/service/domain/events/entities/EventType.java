@@ -32,4 +32,4 @@ public enum EventType implements Serializable {
     DELETE_SSL_TERMINATION;
 
     private final static long serialVersionUID = 532512316L;
-    }   
+}

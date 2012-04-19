@@ -426,14 +426,17 @@
             <b>averageNumConnections</b>
         </field>
         <field>
+            <a>averageConcurrentConnectionsSsl</a>
+            <b>averageNumConnectionsSsl</b>
+        </field>
+        <field>
             <a>numberOfPolls</a>
             <b>numPolls</b>
         </field>
-        <!-- Future Profing for JIRA:SITESLB-687
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SslTagConverter">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SslModeConverter">
             <a>tags</a>
-            <b get-method="isSsl">sslTermination</b>
-        </field>  -->
+            <b>sslMode</b>
+        </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VipTypeTagConverter">
             <a>tags</a>
             <b>vipType</b>
