@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.usage;
 public enum BitTag {
     SSL(1),
     SERVICENET_LB(2),
+    SSL_MIXED_MODE(4), // This can only be 'on' if the SSL tag is on
     
     /* Reserved bits for future use. We should
      * have a total of 31 bit flags. */
@@ -15,7 +16,6 @@ public enum BitTag {
      * large enough for the numbers your program will use, but if you
      * need a wider range of values, use long instead.*/
 
-    BIT_TAG_RESERVED_1(4),
     BIT_TAG_RESERVED_2(8),
     BIT_TAG_RESERVED_3(16),
     BIT_TAG_RESERVED_4(32),
