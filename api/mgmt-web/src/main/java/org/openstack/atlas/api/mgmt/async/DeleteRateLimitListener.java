@@ -41,13 +41,12 @@ public class DeleteRateLimitListener extends BaseListener {
             reverseProxyLoadBalancerService.deleteRateLimit(dbLoadBalancer);
             LOG.debug("Successfully deleted rate limit in Zeus.");
         } catch (Exception e) {
+            loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+
             String alertDescription = String.format("Error deleting rate limit in Zeus for loadbalancer '%d'.", queueLb.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
-
-            //Set status record
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
 
             return;
         }
@@ -56,8 +55,6 @@ public class DeleteRateLimitListener extends BaseListener {
         rateLimitingService.pseudoDelete(dbLoadBalancer);
         // Update load balancer in DB
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
-        //Set status record
-        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
 
         // Add atom entry

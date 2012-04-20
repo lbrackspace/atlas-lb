@@ -44,6 +44,8 @@ public class CreateRateLimitListener extends BaseListener {
             reverseProxyLoadBalancerService.setRateLimit(dbLoadBalancer, queueLb.getRateLimit());
             LOG.debug("Successfully created rate limit in Zeus.");
         } catch (Exception e) {
+            loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+
             String alertDescription = String.format("Error adding rate limit for load balancer '%d'", queueLb.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), e, ZEUS_FAILURE.name(), alertDescription);
@@ -53,7 +55,6 @@ public class CreateRateLimitListener extends BaseListener {
 
         // Update load balancer in DB
         loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
-        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
 
         // Add atom entry
@@ -73,9 +74,6 @@ public class CreateRateLimitListener extends BaseListener {
             LoadBalancer dbLoadBalancer = loadBalancerService.get(loadBalancer.getId(), loadBalancer.getAccountId());
             dbLoadBalancer.setStatus(ERROR);
             loadBalancerService.update(dbLoadBalancer);
-
-            //Set status record
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
 
         } catch (Exception e1) {
             LOG.error("Exception occurred during rollback ", e1);
