@@ -28,19 +28,23 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
     }
 
     @Override
-    public List<NodeMeta> createNodeMetadata(Integer accountId, Integer nodeId, List<NodeMeta> nodeMetas) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
-        List<Node> nodes = nodeRepository.getNodesByIds(new ArrayList<Integer>(nodeId));
+    public List<NodeMeta> createNodeMetadata(Integer accountId, Integer loadbalancerId, Integer nodeId, List<NodeMeta> nodeMetadata) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         Node node;
-        if (nodes.size() != 1) {
+        try {
+            node = nodeRepository.getNodeByAccountIdLoadBalancerIdNodeId(accountId, loadbalancerId, nodeId);
+        } catch(Exception e) {
             throw new EntityNotFoundException(String.format("Node with id %d doesn't exist", nodeId));
-        } else {
-            node = nodes.get(0);
         }
-        isLbActive(node.getLoadbalancer());
 
         try {
-            Integer potentialTotalNumMetas = node.getLoadbalancer().getMetadata().size() + nodeMetas.size();
-            Integer metaLimit = accountLimitService.getLimit(node.getLoadbalancer().getAccountId(), AccountLimitType.NODE_META_LIMIT);
+            isLbActive(node.getLoadbalancer());
+        } catch (Exception e) {
+            throw new BadRequestException(String.format("Loadbalancer %d is deleted, therefore it is immutable.", loadbalancerId));
+        }
+
+        try {
+            Integer potentialTotalNumMetas = node.getNodeMetadata().size() + nodeMetadata.size();
+            Integer metaLimit = accountLimitService.getLimit(accountId, AccountLimitType.NODE_META_LIMIT);
 
             LOG.debug(String.format("Verifying that metadata limit isn't reached for node '%d'...", node.getId()));
             if (potentialTotalNumMetas > metaLimit) {
@@ -51,20 +55,20 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
         }
 
         LOG.debug(String.format("Verifying that there are no duplicate metadata keys for node '%d'...", nodeId));
-        if (detectDuplicateNodeMetadata(node.getNodeMetadata(), nodeMetas)) {
+        if (detectDuplicateNodeMetadata(node.getNodeMetadata(), nodeMetadata)) {
             LOG.warn("Duplicate metadata keys found! Sending failure response back to client...");
             throw new UnprocessableEntityException("Duplicate metadata keys detected. One or more metadata keys already configured on node.");
         }
-        LOG.debug(String.format("Current number of metadata items for loadbalancer '%d': %d", nodeId, node.getNodeMetadata().size()));
-        LOG.debug(String.format("Number of new metadata items to be added: %d", nodeMetas.size()));
+        LOG.debug(String.format("Current number of metadata items for node '%d': %d", nodeId, node.getNodeMetadata().size()));
+        LOG.debug(String.format("Number of new metadata items to be added: %d", nodeMetadata.size()));
 
-        final List<NodeMeta> metaSet = null;
+        List<NodeMeta> createdNodeMeta = nodeMetadataRepository.addNodeMetas(node, nodeMetadata);
         try {
-            LOG.debug(String.format("Successfully added %d metadata items for node '%d'", metaSet.size(), nodeId));
+            LOG.debug(String.format("Successfully added %d metadata items for node '%d'", createdNodeMeta.size(), nodeId));
         } catch (NullPointerException e) {
             LOG.debug(String.format("No metadata items to add for node '%d'", 0, nodeId));
         }
-        return metaSet;
+        return createdNodeMeta;
     }
 
     @Override
@@ -189,42 +193,6 @@ import java.util.*;
         }
 
         metadataRepository.update(currentLb);
-    }
-
-    @Override
-    public List<String> prepareForMetadataDeletion(Integer accountId, Integer loadBalancerId, List<Integer> ids) throws EntityNotFoundException {
-        List<String> validationErrors = new ArrayList<String>();
-        String format, errMsg;
-
-        LoadBalancer currentLb = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
-        Set<Integer> currentMetaIds = new HashSet<Integer>();
-        Set<Integer> invalidMetaIds = new HashSet<Integer>();
-
-        for (Meta meta : currentLb.getMetadata()) {
-            currentMetaIds.add(meta.getId());
-        }
-
-        for (Integer id : ids) {
-            if(!currentMetaIds.contains(id)) invalidMetaIds.add(id);
-        }
-
-        int batch_delete_limit = accountLimitService.getLimit(accountId, AccountLimitType.BATCH_DELETE_LIMIT);
-
-        if (ids.size() > batch_delete_limit) {
-            format = "Request to delete %d metadata items exceeds the account limit"
-                    + " BATCH_DELETE_LIMIT of %d please attempt to delete fewer then %d nodes";
-            errMsg = String.format(format, ids.size(), batch_delete_limit, batch_delete_limit);
-            validationErrors.add(errMsg);
-        }
-
-        if (!invalidMetaIds.isEmpty()) {
-            // Don't even take this request seriously any ID does not belong to this account
-            format = "Metadata ids %s are not a part of your loadbalancer";
-            errMsg = String.format(format, StringConverter.integersAsString(invalidMetaIds));
-            validationErrors.add(errMsg);
-        }
-
-        return validationErrors;
     }
 
     @Transactional
