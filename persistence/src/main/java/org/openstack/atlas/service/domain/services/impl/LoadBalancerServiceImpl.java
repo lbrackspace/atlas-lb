@@ -127,7 +127,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             //check for TCP protocol and port before adding default, since TCP protocol has no default
             verifyTCPProtocolandPort(lb);
             addDefaultValues(lb);
-            verifySessionPersistence(lb);
+            //V1-B-17728 allowing ip SP for non-http protocols
+//            verifySessionPersistence(lb);
             verifyProtocolAndHealthMonitorType(lb);
             setHostForNewLoadBalancer(lb);
             setVipConfigForLoadBalancer(lb);

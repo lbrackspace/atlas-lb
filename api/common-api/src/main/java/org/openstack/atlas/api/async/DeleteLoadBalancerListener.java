@@ -44,7 +44,6 @@ public class DeleteLoadBalancerListener extends BaseListener {
             LOG.debug(String.format("Successfully deleted load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             LOG.error(String.format("LoadBalancer status before error was: '%s'", dbLoadBalancer.getStatus()));
             String alertDescription = String.format("Error deleting loadbalancer '%d' in Zeus.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);

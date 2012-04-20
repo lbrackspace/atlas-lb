@@ -58,9 +58,6 @@ public class DeleteNodesListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(msg.getAccountId(), msg.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(msg, doomedNodeIds);
-
-            //Set status record
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             return;
         }
 
