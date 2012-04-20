@@ -49,7 +49,9 @@ public class UpdateSslTerminationListener extends BaseListener {
             reverseProxyLoadBalancerService.updateSslTermination(dbLoadBalancer, queTermination);
             LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
         } catch (Exception e) {
+            dbLoadBalancer.setStatus(LoadBalancerStatus.ERROR);
             String alertDescription = String.format("An error occurred while creating loadbalancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId());
+            loadBalancerService.update(dbLoadBalancer);
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dbLoadBalancer);

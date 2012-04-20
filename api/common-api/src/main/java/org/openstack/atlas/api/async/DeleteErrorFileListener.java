@@ -48,8 +48,9 @@ public class DeleteErrorFileListener extends BaseListener {
         } else {
             LOG.error("Error LoadbalancerId or accountId was null in call to DeleteErrorFileListener");
         }
+
         //Set status record
-        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
+        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
         LOG.debug("Successfully removed the error file from zeus... ");
     }
 }
