@@ -4,6 +4,7 @@ import org.apache.abdera.model.Feed;
 import org.openstack.atlas.api.helpers.PaginationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mapper.DomainToRestModel;
+import org.openstack.atlas.api.mapper.UsageMapper;
 import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
@@ -153,7 +154,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
         try {
             daccountBilling = loadBalancerService.getAccountBilling(accountId, startTime, endTime);
-            raccountBilling = dozerMapper.map(daccountBilling, AccountBilling.class);
+            raccountBilling = UsageMapper.toDataModelAccountBilling(daccountBilling);
             return Response.status(200).entity(raccountBilling).build();
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
