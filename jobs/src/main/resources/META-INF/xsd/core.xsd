@@ -171,9 +171,6 @@
             </documentation>
         </annotation>
         <restriction base="xsd:dateTime" vc:minVersion="1.0" vc:maxVersion="1.1"/>
-        <!--<restriction base="xsd:dateTimeStamp" vc:minVersion="1.1">-->
-            <!--<assertion test="ends-with(string($value),'Z') or ends-with(string($value),'+00:00') or ends-with(string($value),'-00:00')"/>-->
-        <!--</restriction>-->
     </simpleType>
 
     <simpleType name="EventType">

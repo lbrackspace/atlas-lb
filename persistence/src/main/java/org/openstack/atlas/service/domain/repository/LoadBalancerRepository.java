@@ -595,6 +595,38 @@ public class LoadBalancerRepository {
         return accountLoadBalancers;
     }
 
+    // For Jira https://jira.mosso.com/browse/SITESLB-220
+    public List<AccountLoadBalancer> getAccountNonDeleteLoadBalancers(
+            int accountId) { // Jira: https://jira.mosso.com/browse/SITESLB-220
+        List<AccountLoadBalancer> accountLoadBalancers = new ArrayList<AccountLoadBalancer>();
+        List<Object> hResults;
+        String queryStr = "select l.id, "
+                + "l.name, "
+                + "c.id, "
+                + "c.name, "
+                + "l.status, "
+                + "l.protocol "
+                + "from LoadBalancer l join l.host h join h.cluster c "
+                + "where l.accountId=:accountId and l.status != 'DELETED'";
+        hResults = entityManager.createQuery(queryStr).setParameter("accountId", accountId).getResultList();
+        for (Object row : hResults) {
+            Object[] t = (Object[]) row;
+            LoadBalancerStatus status;
+            LoadBalancerProtocol protocol;
+            AccountLoadBalancer accountLoadBalancer = new AccountLoadBalancer();
+            accountLoadBalancer.setLoadBalancerId((Integer) t[0]);
+            accountLoadBalancer.setLoadBalancerName((String) t[1]);
+            accountLoadBalancer.setClusterId((Integer) t[2]);
+            accountLoadBalancer.setClusterName((String) t[3]);
+            status = (LoadBalancerStatus) t[4];
+            accountLoadBalancer.setStatus(status.toString());
+            protocol = (LoadBalancerProtocol) t[5];
+            accountLoadBalancer.setProtocol(protocol.toString());
+            accountLoadBalancers.add(accountLoadBalancer);
+        }
+        return accountLoadBalancers;
+    }
+
     public List<AccessList> getAccessListByAccountIdLoadBalancerId(int accountId, int loadbalancerId,
                                                                    Integer... p) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId,

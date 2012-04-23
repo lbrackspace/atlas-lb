@@ -4,8 +4,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.atom.pojo.Note;
-import org.openstack.atlas.atom.pojo.NotesList;
+import org.openstack.atlas.atom.pojo.*;
 import org.openstack.atlas.atom.util.AtomHopperConfiguration;
 import org.openstack.atlas.atom.util.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.util.ClientUtil;
@@ -61,7 +60,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
 
         List<Integer> accounts = loadBalancerRepository.getAllAccountIds();
         for (int id : accounts) {
-            List<AccountLoadBalancer> lbsForAccount = loadBalancerRepository.getAccountLoadBalancers(id);
+            List<AccountLoadBalancer> lbsForAccount = loadBalancerRepository.getAccountNonDeleteLoadBalancers(id);
 
             List<Usage> lbusage;
             for (AccountLoadBalancer lb : lbsForAccount) {
@@ -73,8 +72,21 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
                     //Tmp
 
                     for (Usage ur : lbusage) {
-//                        LBaasUsagePojo lu = new LBaasUsagePojo();
-//                        lu.setMemory(ur.getNumberOfPolls());
+                        EntryPojo entry = new EntryPojo();
+
+                        UsageV1Pojo usageV1 = new UsageV1Pojo();
+                        usageV1.setDataCenter("DFW");
+                        usageV1.setResourceName("LoadBalancer");
+
+
+                        LBaasUsagePojo lu = new LBaasUsagePojo();
+                        lu.setMemory(ur.getNumberOfPolls());
+                        lu.setVersion("1");
+                        usageV1.getAny().add(lu);
+
+                        entry.setTitle("LBAAS");
+                        entry.setAuthor("LBAAS");
+                        entry.setContent(usageV1);
 
 
                         //Tmp till contract for AH is ready...
@@ -87,10 +99,9 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
 
                         LOG.info(String.format("Contacting and uploading to the atomHopper service now..."));
                         ClientResponse response = client.resource(URI)
-                                .path("/notes/new")
                                 .accept(MediaType.APPLICATION_XML)
-                                .type(MediaType.APPLICATION_XML)
-                                .post(ClientResponse.class, notesList);
+                                .type(MediaType.APPLICATION_ATOM_XML)
+                                .post(ClientResponse.class, entry);
 
 
                         //Reading the response to parse the body to LOG (String)

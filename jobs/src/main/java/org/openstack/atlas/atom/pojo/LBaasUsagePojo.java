@@ -1,4 +1,4 @@
-package org.openstack.atlas.atom.jobs;
+package org.openstack.atlas.atom.pojo;
 
 import org.openstack.atlas.jobs.LBaaSUsage;
 
