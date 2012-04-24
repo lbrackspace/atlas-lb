@@ -4,13 +4,15 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.atom.pojo.*;
+import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.util.AtomHopperConfiguration;
 import org.openstack.atlas.atom.util.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.util.ClientUtil;
 import org.openstack.atlas.atom.util.ResponseUtil;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
+import org.openstack.atlas.jobs.LBaaSUsage;
+import org.openstack.atlas.jobs.UsageV1;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.entities.Usage;
@@ -23,7 +25,10 @@ import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 
 import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.Calendar;
 import java.util.List;
 
@@ -70,32 +75,35 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
                     //Tmp
                     int i = 0;
                     //Tmp
+                    //EVERYTHING IS BEING TESTED.....
 
                     for (Usage ur : lbusage) {
                         EntryPojo entry = new EntryPojo();
 
-                        UsageV1Pojo usageV1 = new UsageV1Pojo();
+                        //core
+                        UsageV1 usageV1 = new UsageV1();
                         usageV1.setDataCenter("DFW");
                         usageV1.setResourceName("LoadBalancer");
 
-
-                        LBaasUsagePojo lu = new LBaasUsagePojo();
+                        //product specific
+                        LBaaSUsage lu = new LBaaSUsage();
                         lu.setMemory(ur.getNumberOfPolls());
                         lu.setVersion("1");
                         usageV1.getAny().add(lu);
 
+                        //Atom specific
                         entry.setTitle("LBAAS");
                         entry.setAuthor("LBAAS");
-                        entry.setContent(usageV1);
 
+                        //Build the above toString in order to set in entry content
+                        JAXBContext jc = JAXBContext.newInstance(EntryPojo.class);
+                        Marshaller marshaller = jc.createMarshaller();
+                        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-                        //Tmp till contract for AH is ready...
-                        NotesList notesList = new NotesList();
-                        Note note = new Note();
-                        note.setText("This is my note:" + i + "LBID: " + ur.getLoadbalancer().getId());
-                        notesList.getNotes().add(note);
-                        i++;
-
+                        StringWriter st = new StringWriter();
+                        marshaller.marshal(usageV1, st);
+                        String xml = st.toString();
+                        entry.setContent(xml);
 
                         LOG.info(String.format("Contacting and uploading to the atomHopper service now..."));
                         ClientResponse response = client.resource(URI)
@@ -108,7 +116,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
                         InputStream is = response.getEntityInputStream();
                         StringBuilder sb = new StringBuilder(ResponseUtil.PAGESIZE);
                         if (response.getStatus() == 200) {
-                          ur.setPushed(true);
+                            ur.setPushed(true);
                         } else {
                             ur.setPushed(false);
                         }

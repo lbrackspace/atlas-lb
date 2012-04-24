@@ -4,7 +4,7 @@ import org.openstack.atlas.jobs.LBaaSUsage;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(namespace = "http://docs.rackspace.com/usage/lbaas", name = "LBaaSUsage")
-public class LBaasUsagePojo extends LBaaSUsage {
+@XmlRootElement(namespace = "xmlns:lbaas=http://docs.rackspace.com/usage/lbaas")
+public class LBaaSUsagePojo extends LBaaSUsage {
 
 }

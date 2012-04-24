@@ -12,7 +12,6 @@
     targetNamespace="http://docs.rackspace.com/usage/lbaas">
 
     <element name="usage" type="lbaas:LBaaSUsage"/>
-
     <complexType name="LBaaSUsage">
         <annotation>
             <documentation>
@@ -24,7 +23,7 @@
         <attribute name="version" type="xsd:string" fixed="1" use="required"/>
         <attribute name="memory" type="xsd:int" use="required">
             <annotation>
-                <documentation>
+                <documentation>                                                                                                     ^
                     <html:p>
                         The amount of memory for the current usage.
                     </html:p>

@@ -9,7 +9,7 @@ import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParamBean;
@@ -32,7 +32,7 @@ public class ClientUtil {
             connParams.setUseExpectContinue(false);
 
             ConnManagerParamBean poolParams = new ConnManagerParamBean(params);
-            poolParams.setMaxTotalConnections(1);
+            poolParams.setMaxTotalConnections(2);
             poolParams.setTimeout(100);
 
             ClientParamBean clientParams = new ClientParamBean(params);
@@ -47,8 +47,8 @@ public class ClientUtil {
             SchemeRegistry schemata = new SchemeRegistry();
             schemata.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
 
-            ClientConnectionManager connManager = new SingleClientConnManager(params, schemata);
-            //ClientConnectionManager connManager = new ThreadSafeClientConnManager(params, schemata);
+//            ClientConnectionManager connManager = new SingleClientConnManager(params, schemata);
+            ClientConnectionManager connManager = new ThreadSafeClientConnManager(params, schemata);
             HttpClient httpClient = new DefaultHttpClient(connManager, params);
 
             return new ApacheHttpClient(new ApacheHttpClientHandler(httpClient));

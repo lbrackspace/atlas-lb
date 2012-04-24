@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:usage="http://docs.rackspace.com/usage/core"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
+    targetNamespace="http://docs.rackspace.com/usage/core">
+
+    <!--
+        This schema provides a place to include/import relevant XSDs
+        and defines the current usage element.
+    -->
+    <include schemaLocation="core.xsd"/>  <!-- Loads Usage Version 1 -->
+    <!--<include schemaLocation="core2.xsd"/> &lt;!&ndash; Loads Usage Version 2 &ndash;&gt;-->
+
+    <!-- Core annotations declared here -->
+    <include schemaLocation="ProductExtension-Annotations.xsd"/>
+
+    <!-- Load Product Schema -->
+    <!--<import namespace="http://docs.rackspace.com/usage/nova"-->
+            <!--schemaLocation="ProductExtensionExample-Nova.xsd"/>-->
+
+    <import namespace="http://docs.rackspace.com/usage/lbaas"
+            schemaLocation="ProductExtensionExample-LBaaS.xsd"/>
+
+    <!--<import namespace="http://docs.rackspace.com/usage/monitoring"-->
+            <!--schemaLocation="ProductExtensionExample-MaaS.xsd"/>-->
+
+    <!--
+        The right type is selected based on the version.
+    -->
+    <!--<element name="usage" type="usage:UsageBase">-->
+        <!--&lt;!&ndash;&lt;!&ndash;<alternative test="xsd:integer(@version) = 1" type="usage:UsageV1"/>&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;<alternative test="xsd:integer(@version) = 2" type="usage:UsageV2"/>&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;<alternative type="xsd:error"/>&ndash;&gt;&ndash;&gt;-->
+    <!--</element>-->
+
+</schema>
