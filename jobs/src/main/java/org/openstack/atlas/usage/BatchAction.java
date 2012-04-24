@@ -1,7 +1,7 @@
 package org.openstack.atlas.usage;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface BatchAction<T> {
-    public void execute(List<T> objects) throws Exception;
+    public void execute(Collection<T> objects) throws Exception;
 }

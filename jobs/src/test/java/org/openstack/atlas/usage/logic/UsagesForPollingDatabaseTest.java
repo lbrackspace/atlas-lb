@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
+import org.openstack.atlas.usage.helpers.LoadBalancerNameMap;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -30,11 +31,19 @@ public class UsagesForPollingDatabaseTest {
         private Map<String, Integer> currentConnectionsMapSsl;
         private Map<Integer, LoadBalancerUsage> usagesAsMap;
         private String zxtmName;
+        private String zxtmSslName;
+        private LoadBalancerNameMap loadBalancerNameMap;
         private LoadBalancerUsage currentUsage;
 
         @Before
         public void standUp() {
             zxtmName = "1234_1234";
+            zxtmSslName = ZxtmNameBuilder.genSslVSName(zxtmName);
+            loadBalancerNameMap = new LoadBalancerNameMap();
+            loadBalancerNameMap.setLoadBalancerId(1234);
+            loadBalancerNameMap.setAccountId(1234);
+            loadBalancerNameMap.setNonSslVirtualServerName(zxtmName);
+            loadBalancerNameMap.setSslVirtualServerName(zxtmSslName);
             bytesInMap = new HashMap<String, Long>();
             bytesInMapSsl = new HashMap<String, Long>();
             bytesOutMap = new HashMap<String, Long>();
@@ -73,7 +82,7 @@ public class UsagesForPollingDatabaseTest {
         public void shouldRunInProperOrderWhenNumPollsIsZero() {
             LoadBalancerUsage mockedUsageRecord = mock(LoadBalancerUsage.class);
             mockedUsageRecord.setNumberOfPolls(0);
-            usagesForDatabase.updateCurrentRecord(zxtmName, mockedUsageRecord);
+            usagesForDatabase.updateCurrentRecord(loadBalancerNameMap, mockedUsageRecord);
             InOrder inOrder = inOrder(mockedUsageRecord);
 
             inOrder.verify(mockedUsageRecord).setNumberOfPolls(0);
@@ -94,7 +103,7 @@ public class UsagesForPollingDatabaseTest {
         @Test
         public void shouldRunInProperOrderWhenNumPollsIsNotZero() {
             LoadBalancerUsage spy = spy(currentUsage);
-            usagesForDatabase.updateCurrentRecord(zxtmName, spy);
+            usagesForDatabase.updateCurrentRecord(loadBalancerNameMap, spy);
             InOrder inOrder = inOrder(spy);
 
             inOrder.verify(spy).setEndTime(any(Calendar.class));
