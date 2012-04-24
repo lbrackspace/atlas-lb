@@ -90,10 +90,10 @@ public class UsagesForPollingDatabaseTest {
             inOrder.verify(mockedUsageRecord).setNumberOfPolls(1);
             inOrder.verify(mockedUsageRecord).setAverageConcurrentConnections(50.0);
             inOrder.verify(mockedUsageRecord).setAverageConcurrentConnectionsSsl(50.0);
-            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesIn(0l);
-            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesInSsl(0l);
-            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesOut(0l);
-            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesOutSsl(0l);
+            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesIn(anyLong());
+            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesInSsl(anyLong());
+            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesOut(anyLong());
+            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesOutSsl(anyLong());
             inOrder.verify(mockedUsageRecord).setLastBandwidthBytesIn(100l);
             inOrder.verify(mockedUsageRecord).setLastBandwidthBytesInSsl(100l);
             inOrder.verify(mockedUsageRecord).setLastBandwidthBytesOut(200l);
