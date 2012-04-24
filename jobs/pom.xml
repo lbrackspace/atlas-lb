@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-<version>1.11.5-SNAPSHOT</version>
+        <version>1.11.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-jobs</artifactId>
@@ -77,10 +77,10 @@
             <version>2.1.12</version>
         </dependency>
         <dependency>
-           <groupId>ru.hh.jersey</groupId>
-           <artifactId>jersey-hc-httpclient</artifactId>
-           <version>1.4</version>
-       </dependency>
+            <groupId>ru.hh.jersey</groupId>
+            <artifactId>jersey-hc-httpclient</artifactId>
+            <version>1.4</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -138,7 +138,17 @@
             </plugin>
         </plugins>
     </build>
-
+    <repositories>
+        <repository>
+            <id>hh-public</id>
+            <name>hh public releases repository</name>
+            <url>http://m2.hh.ru/content/repositories/public-releases</url>
+        </repository>
+        <repository>
+            <id>dev-java-net-m2</id>
+            <url>http://download.java.net/maven/2</url>
+        </repository>
+    </repositories>
 
     <profiles>
         <profile>
