@@ -14,10 +14,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Repository
 @Transactional
@@ -54,44 +51,20 @@ public class NodeMetadataRepository {
         criteria.where(belongsToNode);
         return entityManager.createQuery(criteria).getResultList();
     }
-}
 
-/*package org.openstack.atlas.service.domain.repository;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.util.Constants;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.util.*;
-
-@Repository
-@Transactional
-public class MetadataRepository {
-
-    public LoadBalancer deleteMetadata(LoadBalancer lb, Collection<Integer> ids) {
-        Set<Meta> metasCurrentlyOnLb = new HashSet<Meta>(lb.getMetadata());
-        for (Meta metaCurrentlyOnLb : metasCurrentlyOnLb) {
-            for (Integer idOfMetaToDelete : ids) {
-                if (metaCurrentlyOnLb.getId().equals(idOfMetaToDelete)) {
-                    lb.getMetadata().remove(metaCurrentlyOnLb);
+    public Node deleteMetadata(Node node, Collection<Integer> ids) {
+        List<NodeMeta> nodeMetas = new ArrayList<NodeMeta>(node.getNodeMetadata());
+        for (NodeMeta nodeMeta : nodeMetas) {
+            for (Integer id : ids) {
+                if (nodeMeta.getId().equals(id)) {
+                    node.getNodeMetadata().remove(id);
                 }
             }
         }
-        lb.setUpdated(Calendar.getInstance());
-        lb = entityManager.merge(lb);
+        node.getLoadbalancer().setUpdated(Calendar.getInstance());
+        node = entityManager.merge(node);
+        node.setLoadbalancer(entityManager.merge(node.getLoadbalancer()));
         entityManager.flush();
-        return lb;
+        return node;
     }
 }
-
-*/

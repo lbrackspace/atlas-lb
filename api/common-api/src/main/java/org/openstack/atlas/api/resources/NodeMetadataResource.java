@@ -88,7 +88,11 @@ public class NodeMetadataResource extends CommonDependencyProvider {
                 return getValidationFaultResponse(validationErrors);
             }
 
+            if (!nodeMetadataService.prepareForNodeMetadataDeletion(accountId, loadbalancerId, nodeId, metaIds).isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
+            }
             nodeMetadataService.deleteNodeMetadata(node, metaIds);
+
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
         }
