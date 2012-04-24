@@ -38,11 +38,11 @@ public class DeleteErrorFileListener extends BaseListener {
             try {
                 reverseProxyLoadBalancerService.removeAndSetDefaultErrorFile(dbLoadBalancer);
             } catch (Exception e) {
+                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+
                 String tmpMsg = String.format("Error setting Errorfile for %d_%d", data.getAccountId(), data.getLoadBalancerId());
                 LOG.error(tmpMsg, e);
                 notificationService.saveAlert(data.getAccountId(), data.getLoadBalancerId(), e, AlertType.ZEUS_FAILURE.name(), msg);
-                //Set status record
-                loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
                 return;
             }
         } else {

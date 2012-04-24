@@ -53,14 +53,10 @@ public class SyncListener extends BaseListener {
                 loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                 notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                 LOG.error(msg, e);
-
-                //Set status record
-                loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             }
 
             if (loadBalancerStatus.equals(PENDING_DELETE) || loadBalancerStatus.equals(DELETED)) {
                 loadBalancerService.setStatus(dbLoadBalancer, DELETED);
-                loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.DELETED);
 
                 loadBalancerService.pseudoDelete(dbLoadBalancer);
 
@@ -88,8 +84,6 @@ public class SyncListener extends BaseListener {
                     loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.BUILD);
                     reverseProxyLoadBalancerService.createLoadBalancer(tempLb);
                     loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
-                    loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
-
 
                     if (loadBalancerStatus.equals(BUILD)) {
                         NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
@@ -112,10 +106,6 @@ public class SyncListener extends BaseListener {
                     loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                     notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                     LOG.error(msg, e);
-
-                    //Set status record
-                    loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
-
                 }
 
                 try {
@@ -155,7 +145,7 @@ public class SyncListener extends BaseListener {
                             // Notify usage processor
                             usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
                             if (dbLoadBalancer.isUsingSsl()) {
-                                if(dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
+                                if (dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
                                     usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
                                 } else {
                                     usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
@@ -168,7 +158,6 @@ public class SyncListener extends BaseListener {
                 } catch (Exception e) {
                     String msg = "Error re-creating ssl terminated loadbalancer in SyncListener():";
                     loadBalancerService.setStatus(dbLoadBalancer, ERROR);
-                    notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                     LOG.error(msg, e);
                 }
             }

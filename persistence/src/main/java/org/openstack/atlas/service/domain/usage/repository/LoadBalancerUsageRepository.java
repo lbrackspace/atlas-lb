@@ -111,14 +111,14 @@ public class LoadBalancerUsageRepository {
 
     private String generateBatchInsertQuery(List<LoadBalancerUsage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO lb_usage(account_id, loadbalancer_id, avg_concurrent_conns, cum_bandwidth_bytes_in, cum_bandwidth_bytes_out, last_bandwidth_bytes_in, last_bandwidth_bytes_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type) values");
+        sb.append("INSERT INTO lb_usage(account_id, loadbalancer_id, avg_concurrent_conns, cum_bandwidth_bytes_in, cum_bandwidth_bytes_out, last_bandwidth_bytes_in, last_bandwidth_bytes_out, avg_concurrent_conns_ssl, cum_bandwidth_bytes_in_ssl, cum_bandwidth_bytes_out_ssl, last_bandwidth_bytes_in_ssl, last_bandwidth_bytes_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
 
     private String generateBatchUpdateQuery(List<LoadBalancerUsage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("REPLACE INTO lb_usage(id, account_id, loadbalancer_id, avg_concurrent_conns, cum_bandwidth_bytes_in, cum_bandwidth_bytes_out, last_bandwidth_bytes_in, last_bandwidth_bytes_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type) values");
+        sb.append("REPLACE INTO lb_usage(id, account_id, loadbalancer_id, avg_concurrent_conns, cum_bandwidth_bytes_in, cum_bandwidth_bytes_out, last_bandwidth_bytes_in, last_bandwidth_bytes_out, avg_concurrent_conns_ssl, cum_bandwidth_bytes_in_ssl, cum_bandwidth_bytes_out_ssl, last_bandwidth_bytes_in_ssl, last_bandwidth_bytes_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
@@ -138,6 +138,11 @@ public class LoadBalancerUsageRepository {
             sb.append(usage.getCumulativeBandwidthBytesOut()).append(",");
             sb.append(usage.getLastBandwidthBytesIn()).append(",");
             sb.append(usage.getLastBandwidthBytesOut()).append(",");
+            sb.append(usage.getAverageConcurrentConnectionsSsl()).append(",");
+            sb.append(usage.getCumulativeBandwidthBytesInSsl()).append(",");
+            sb.append(usage.getCumulativeBandwidthBytesOutSsl()).append(",");
+            sb.append(usage.getLastBandwidthBytesInSsl()).append(",");
+            sb.append(usage.getLastBandwidthBytesOutSsl()).append(",");
 
             DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String startTime = formatter.format(usage.getStartTime().getTime());

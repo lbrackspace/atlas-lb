@@ -1,19 +1,20 @@
 package org.openstack.atlas.api.mapper;
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccountUsage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.entities.SslMode;
+import org.openstack.atlas.service.domain.pojos.LoadBalancerBilling;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public final class UsageMapper {
+
     public static LoadBalancerUsage toRestApiServiceUsage(List<Usage> domainUsageList) {
         LoadBalancerUsage lbusage = new LoadBalancerUsage();
         if (domainUsageList != null) {
@@ -118,5 +119,40 @@ public final class UsageMapper {
         }
 
         return rusage;
+    }
+
+    public static org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling toDataModelAccountBilling(org.openstack.atlas.service.domain.pojos.AccountBilling domainAccountBilling) {
+        org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling dataModelAccountBilling = new org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling();
+        AccountUsage accountUsage = new AccountUsage();
+
+        for (org.openstack.atlas.service.domain.entities.AccountUsage domainAccountUsage : domainAccountBilling.getAccountUsageRecords()) {
+            org.openstack.atlas.docs.loadbalancers.api.v1.AccountUsageRecord accountUsageRecord = new org.openstack.atlas.docs.loadbalancers.api.v1.AccountUsageRecord();
+            accountUsageRecord.setNumLoadBalancers(domainAccountUsage.getNumLoadBalancers());
+            accountUsageRecord.setNumPublicVips(domainAccountUsage.getNumPublicVips());
+            accountUsageRecord.setNumServicenetVips(domainAccountUsage.getNumServicenetVips());
+            accountUsageRecord.setStartTime(domainAccountUsage.getStartTime());
+            accountUsage.getAccountUsageRecords().add(accountUsageRecord);
+        }
+        dataModelAccountBilling.setAccountUsage(accountUsage);
+        dataModelAccountBilling.getLoadBalancerUsages().addAll(loadBalancerBillingsToLoadBalancerUsages(domainAccountBilling.getLoadBalancerBillings()));
+        dataModelAccountBilling.setAccountId(domainAccountBilling.getAccountId());
+
+        return dataModelAccountBilling;
+    }
+
+    public static List<LoadBalancerUsage> loadBalancerBillingsToLoadBalancerUsages(List<LoadBalancerBilling> loadBalancerBillings) {
+        List<LoadBalancerUsage> loadBalancerUsages = new ArrayList<LoadBalancerUsage>();
+
+        for (LoadBalancerBilling loadBalancerBilling : loadBalancerBillings) {
+            LoadBalancerUsage loadBalancerUsage = new LoadBalancerUsage();
+            loadBalancerUsage.setLoadBalancerId(loadBalancerBilling.getLoadBalancerId());
+            loadBalancerUsage.setLoadBalancerName(loadBalancerBilling.getLoadBalancerName());
+            for (Usage usage : loadBalancerBilling.getUsageRecords()) {
+                loadBalancerUsage.getLoadBalancerUsageRecords().add(toRestApiUsage(usage));
+            }
+            loadBalancerUsages.add(loadBalancerUsage);
+        }
+
+        return loadBalancerUsages;
     }
 }

@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public final class ZxtmNameBuilder {
+    private static final String ssl_suffix = "_S";
 
     public static String genVSName(Integer lbId, Integer accountId) throws InsufficientRequestException {
         if (lbId == null) {
@@ -29,7 +30,11 @@ public final class ZxtmNameBuilder {
             throw new InsufficientRequestException("Missing account id for load balancer.");
         }
 
-        return accountId + "_" + lbId + "_S";
+        return accountId + "_" + lbId + ssl_suffix;
+    }
+
+    public static String genSslVSName(String vsName) {
+        return vsName + ssl_suffix;
     }
 
     public static String genVSName(LoadBalancer lb) throws InsufficientRequestException {

@@ -48,8 +48,6 @@ public class DeleteSessionPersistenceListener extends BaseListener {
             notificationService.saveAlert(requestLb.getAccountId(), requestLb.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(requestLb);
 
-            //Set status record
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             return;
         }
 

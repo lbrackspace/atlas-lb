@@ -7,7 +7,8 @@ import java.io.Serializable;
 
 public enum SessionPersistence implements Serializable {
     NONE(null),
-    HTTP_COOKIE(PersistenceType.HTTP_COOKIE);
+    HTTP_COOKIE(PersistenceType.HTTP_COOKIE),
+    SOURCE_IP(PersistenceType.SOURCE_IP);
 
     private final static long serialVersionUID = 532512316L;
     private PersistenceType myType;

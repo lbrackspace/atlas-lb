@@ -19,10 +19,10 @@ public class MgmtReassignLoadBalancerHostListener extends BaseListener {
         LOG.debug(message);
         List<LoadBalancer> requestLbs = getEsbRequestFromMessage(message).getLoadBalancers();
 
+        LoadBalancer dbLb = null;
         try {
             //Loop through and update the new configurations asynchronously
             for (LoadBalancer lb : requestLbs) {
-                LoadBalancer dbLb;
                 try {
                     dbLb = loadBalancerService.get(lb.getId());
                 } catch (EntityNotFoundException e) {
@@ -34,13 +34,12 @@ public class MgmtReassignLoadBalancerHostListener extends BaseListener {
                 reverseProxyLoadBalancerService.changeHostForLoadBalancer(dbLb, lb.getHost());
                 loadBalancerService.setStatus(lb, LoadBalancerStatus.ACTIVE);
 
-                //Set status record
-                loadBalancerStatusHistoryService.save(lb.getAccountId(), lb.getId(), LoadBalancerStatus.ACTIVE);
-
                 LOG.debug("Successfully updated load balancer:" + lb.getId() + " in Zeus.");
             }
             LOG.debug("Successfully reassigned load balancer hosts in zeus.");
         } catch (Exception e) {
+            loadBalancerService.setStatus(dbLb, LoadBalancerStatus.ERROR);
+
             throw new Exception("ZeuFailureException: One or more of the load balancers failed while being configured for Zeus : " + e);
         }
         loadBalancerService.updateLoadBalancers(requestLbs);

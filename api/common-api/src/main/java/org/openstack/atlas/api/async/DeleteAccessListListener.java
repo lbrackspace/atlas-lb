@@ -46,9 +46,7 @@ public class DeleteAccessListListener extends BaseListener {
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb, queueLb.getAccessLists());
 
-            //Set status record
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
-            return;
+           return;
         }
 
         Set<AccessList> accessListsToDelete = new HashSet<AccessList>();

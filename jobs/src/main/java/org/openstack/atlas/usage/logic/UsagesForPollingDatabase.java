@@ -10,14 +10,14 @@ import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
-import org.openstack.atlas.usage.helpers.ZxtmNameHelper;
+import org.openstack.atlas.usage.helpers.LoadBalancerNameMap;
 
 import java.util.*;
 
 public class UsagesForPollingDatabase {
     private final Log LOG = LogFactory.getLog(UsagesForPollingDatabase.class);
     private LoadBalancerRepository loadBalancerRepository;
-    private List<String> loadBalancerNames;
+    private Collection<LoadBalancerNameMap> loadBalancerNameMaps;
     private Map<String, Long> bytesInMap;
     private Map<String, Long> bytesOutMap;
     private Map<String, Integer> currentConnectionsMap;
@@ -29,9 +29,9 @@ public class UsagesForPollingDatabase {
     private List<LoadBalancerUsage> recordsToInsert;
     private List<LoadBalancerUsage> recordsToUpdate;
 
-    public UsagesForPollingDatabase(LoadBalancerRepository loadBalancerRepository, List<String> loadBalancerNames, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap, Map<String, Long> bytesInMapSsl, Map<String, Long> bytesOutMapSsl, Map<String, Integer> currentConnectionsMapSsl, Calendar pollTime, Map<Integer, LoadBalancerUsage> usagesAsMap) {
+    public UsagesForPollingDatabase(LoadBalancerRepository loadBalancerRepository, Collection<LoadBalancerNameMap> loadBalancerNameMaps, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap, Map<String, Long> bytesInMapSsl, Map<String, Long> bytesOutMapSsl, Map<String, Integer> currentConnectionsMapSsl, Calendar pollTime, Map<Integer, LoadBalancerUsage> usagesAsMap) {
         this.loadBalancerRepository = loadBalancerRepository;
-        this.loadBalancerNames = loadBalancerNames;
+        this.loadBalancerNameMaps = loadBalancerNameMaps;
         this.bytesInMap = bytesInMap;
         this.bytesOutMap = bytesOutMap;
         this.currentConnectionsMap = currentConnectionsMap;
@@ -54,89 +54,86 @@ public class UsagesForPollingDatabase {
         recordsToInsert = new ArrayList<LoadBalancerUsage>();
         recordsToUpdate = new ArrayList<LoadBalancerUsage>();
 
-        for (String zxtmName : loadBalancerNames) {
+        for (LoadBalancerNameMap loadBalancerNameMap : loadBalancerNameMaps) {
             try {
-                Integer accountId = ZxtmNameHelper.stripAccountIdFromZxtmName(zxtmName);
-                Integer lbId = ZxtmNameHelper.stripLbIdFromZxtmName(zxtmName);
+                Integer accountId = loadBalancerNameMap.getAccountId();
+                Integer lbId = loadBalancerNameMap.getLoadBalancerId();
 
                 if (!usagesAsMap.containsKey(lbId)) {
                     // Case 1: No record exists at all. Create one.
-                    LoadBalancerUsage newRecord = createNewUsageRecord(zxtmName, accountId, lbId);
+                    LoadBalancerUsage newRecord = createNewUsageRecord(loadBalancerNameMap, accountId, lbId);
                     recordsToInsert.add(newRecord);
                 } else {
                     LoadBalancerUsage currentRecord = usagesAsMap.get(lbId);
                     if (currentRecord.getEndTime().get(Calendar.HOUR_OF_DAY) != pollTime.get(Calendar.HOUR_OF_DAY) && pollTime.after(currentRecord.getEndTime())) {
                         // Case 2: A record exists but need to create new one because current hour is later than endTime hour.
-                        LoadBalancerUsage newRecord = createNewUsageRecord(zxtmName, accountId, lbId);
+                        LoadBalancerUsage newRecord = createNewUsageRecord(loadBalancerNameMap, accountId, lbId);
                         // Copy over tags from last record.
                         newRecord.setNumVips(currentRecord.getNumVips());
                         newRecord.setTags(currentRecord.getTags());
                         recordsToInsert.add(newRecord);
                         // Add bandwidth that occurred between currentRecord endTime and newRecord startTime to currentRecord
-                        currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(zxtmName)));
-                        currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(zxtmName)));
-                        currentRecord.setCumulativeBandwidthBytesInSsl(calculateCumBandwidthBytesInSsl(currentRecord, bytesInMapSsl.get(zxtmName + "_s")));
-                        currentRecord.setCumulativeBandwidthBytesOutSsl(calculateCumBandwidthBytesOutSsl(currentRecord, bytesOutMapSsl.get(zxtmName + "_s")));
+                        currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(loadBalancerNameMap.getNonSslVirtualServerName())));
+                        currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(loadBalancerNameMap.getNonSslVirtualServerName())));
+                        currentRecord.setCumulativeBandwidthBytesInSsl(calculateCumBandwidthBytesInSsl(currentRecord, bytesInMapSsl.get(loadBalancerNameMap.getSslVirtualServerName())));
+                        currentRecord.setCumulativeBandwidthBytesOutSsl(calculateCumBandwidthBytesOutSsl(currentRecord, bytesOutMapSsl.get(loadBalancerNameMap.getSslVirtualServerName())));
                         recordsToUpdate.add(currentRecord);
                     } else {
                         // Case 3: A record exists and we need to update because current day is the same as endTime day.
-                        updateCurrentRecord(zxtmName, currentRecord);
+                        updateCurrentRecord(loadBalancerNameMap, currentRecord);
                         recordsToUpdate.add(currentRecord);
                     }
                 }
             } catch (NumberFormatException e) {
-                LOG.warn(String.format("Invalid load balancer name '%s'. Ignoring usage record...", zxtmName));
+                LOG.warn(String.format("Invalid load balancer name '%d'. Ignoring usage record...", loadBalancerNameMap.getLoadBalancerId()));
             } catch (ArrayIndexOutOfBoundsException e) {
-                LOG.warn(String.format("Invalid load balancer name '%s'. Ignoring usage record...", zxtmName));
+                LOG.warn(String.format("Invalid load balancer name '%d'. Ignoring usage record...", loadBalancerNameMap.getLoadBalancerId()));
             }
         }
         return this;
     }
 
-    public void updateCurrentRecord(String zxtmName, LoadBalancerUsage currentRecord) {
+    public void updateCurrentRecord(LoadBalancerNameMap loadBalancerNameMap, LoadBalancerUsage currentRecord) {
 
         Integer oldNumPolls = currentRecord.getNumberOfPolls();
         Integer newNumPolls = oldNumPolls + 1;
         currentRecord.setEndTime(pollTime);
         currentRecord.setNumberOfPolls(newNumPolls);
 
-        if (oldNumPolls == 0) { // polls will equal 0 only when an event occurs, thus we act as if usage data is brand new
-            currentRecord.setAverageConcurrentConnections(currentConnectionsMap.get(zxtmName).doubleValue());
-            if (currentConnectionsMapSsl.get(zxtmName + "_s") != null) currentRecord.setAverageConcurrentConnectionsSsl(currentConnectionsMapSsl.get(zxtmName + "_s").doubleValue());
-            currentRecord.setCumulativeBandwidthBytesIn(0l);
-            currentRecord.setCumulativeBandwidthBytesInSsl(0l);
-            currentRecord.setCumulativeBandwidthBytesOut(0l);
-            currentRecord.setCumulativeBandwidthBytesOutSsl(0l);
+        if (oldNumPolls == 0) { // polls will equal 0 only when an event occurs, thus we act as if avg ccs are new
+            if (currentConnectionsMap.get(loadBalancerNameMap.getNonSslVirtualServerName()) != null) currentRecord.setAverageConcurrentConnections(currentConnectionsMap.get(loadBalancerNameMap.getNonSslVirtualServerName()).doubleValue());
+            if (currentConnectionsMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()) != null) currentRecord.setAverageConcurrentConnectionsSsl(currentConnectionsMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()).doubleValue());
         } else {
-            currentRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnections(), oldNumPolls, currentConnectionsMap.get(zxtmName)));
-            if (currentConnectionsMapSsl.get(zxtmName + "_s") != null) currentRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, currentConnectionsMapSsl.get(zxtmName + "_s")));
+            if (currentConnectionsMap.get(loadBalancerNameMap.getNonSslVirtualServerName()) != null) currentRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnections(), oldNumPolls, currentConnectionsMap.get(loadBalancerNameMap.getNonSslVirtualServerName())));
+            if (currentConnectionsMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()) != null) currentRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, currentConnectionsMapSsl.get(loadBalancerNameMap.getSslVirtualServerName())));
             else currentRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(currentRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, 0));
-            currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(zxtmName)));
-            currentRecord.setCumulativeBandwidthBytesInSsl(calculateCumBandwidthBytesInSsl(currentRecord, bytesInMapSsl.get(zxtmName + "_s")));
-            currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(zxtmName)));
-            currentRecord.setCumulativeBandwidthBytesOutSsl(calculateCumBandwidthBytesOutSsl(currentRecord, bytesOutMapSsl.get(zxtmName + "_s")));
         }
 
-        currentRecord.setLastBandwidthBytesIn(bytesInMap.get(zxtmName));
-        if (bytesInMapSsl.get(zxtmName + "_s") != null) currentRecord.setLastBandwidthBytesInSsl(bytesInMapSsl.get(zxtmName + "_s"));
-        currentRecord.setLastBandwidthBytesOut(bytesOutMap.get(zxtmName));
-        if (bytesOutMapSsl.get(zxtmName + "_s") != null) currentRecord.setLastBandwidthBytesOutSsl(bytesOutMapSsl.get(zxtmName + "_s"));
+        currentRecord.setCumulativeBandwidthBytesIn(calculateCumBandwidthBytesIn(currentRecord, bytesInMap.get(loadBalancerNameMap.getNonSslVirtualServerName())));
+        currentRecord.setCumulativeBandwidthBytesInSsl(calculateCumBandwidthBytesInSsl(currentRecord, bytesInMapSsl.get(loadBalancerNameMap.getSslVirtualServerName())));
+        currentRecord.setCumulativeBandwidthBytesOut(calculateCumBandwidthBytesOut(currentRecord, bytesOutMap.get(loadBalancerNameMap.getNonSslVirtualServerName())));
+        currentRecord.setCumulativeBandwidthBytesOutSsl(calculateCumBandwidthBytesOutSsl(currentRecord, bytesOutMapSsl.get(loadBalancerNameMap.getSslVirtualServerName())));
+
+        if (bytesInMap.get(loadBalancerNameMap.getNonSslVirtualServerName()) != null) currentRecord.setLastBandwidthBytesIn(bytesInMap.get(loadBalancerNameMap.getNonSslVirtualServerName()));
+        if (bytesInMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()) != null) currentRecord.setLastBandwidthBytesInSsl(bytesInMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()));
+        if (bytesOutMap.get(loadBalancerNameMap.getNonSslVirtualServerName()) != null) currentRecord.setLastBandwidthBytesOut(bytesOutMap.get(loadBalancerNameMap.getNonSslVirtualServerName()));
+        if (bytesOutMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()) != null) currentRecord.setLastBandwidthBytesOutSsl(bytesOutMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()));
     }
 
-    private LoadBalancerUsage createNewUsageRecord(String zxtmName, Integer accountId, Integer lbId) {
+    private LoadBalancerUsage createNewUsageRecord(LoadBalancerNameMap loadBalancerNameMap, Integer accountId, Integer lbId) {
         LoadBalancerUsage newRecord = new LoadBalancerUsage();
         newRecord.setAccountId(accountId);
         newRecord.setLoadbalancerId(lbId);
-        newRecord.setAverageConcurrentConnections(currentConnectionsMap.get(zxtmName).doubleValue());
-        if(currentConnectionsMapSsl.get(zxtmName + "_s") != null) newRecord.setAverageConcurrentConnectionsSsl(currentConnectionsMapSsl.get(zxtmName + "_s").doubleValue());
+        if (currentConnectionsMap.get(loadBalancerNameMap.getNonSslVirtualServerName()) != null) newRecord.setAverageConcurrentConnections(currentConnectionsMap.get(loadBalancerNameMap.getNonSslVirtualServerName()).doubleValue());
+        if (currentConnectionsMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()) != null) newRecord.setAverageConcurrentConnectionsSsl(currentConnectionsMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()).doubleValue());
         newRecord.setCumulativeBandwidthBytesIn(0l);
         newRecord.setCumulativeBandwidthBytesOut(0l);
         newRecord.setCumulativeBandwidthBytesInSsl(0l);
         newRecord.setCumulativeBandwidthBytesOutSsl(0l);
-        newRecord.setLastBandwidthBytesIn(bytesInMap.get(zxtmName));
-        if(bytesInMapSsl.get(zxtmName + "_s") != null) newRecord.setLastBandwidthBytesInSsl(bytesInMapSsl.get(zxtmName + "_s"));
-        newRecord.setLastBandwidthBytesOut(bytesOutMap.get(zxtmName));
-        if(bytesOutMapSsl.get(zxtmName + "_s") != null) newRecord.setLastBandwidthBytesOutSsl(bytesOutMapSsl.get(zxtmName + "_s"));
+        if (bytesInMap.get(loadBalancerNameMap.getNonSslVirtualServerName()) != null) newRecord.setLastBandwidthBytesIn(bytesInMap.get(loadBalancerNameMap.getNonSslVirtualServerName()));
+        if (bytesInMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()) != null) newRecord.setLastBandwidthBytesInSsl(bytesInMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()));
+        if (bytesOutMap.get(loadBalancerNameMap.getNonSslVirtualServerName()) != null) newRecord.setLastBandwidthBytesOut(bytesOutMap.get(loadBalancerNameMap.getNonSslVirtualServerName()));
+        if (bytesOutMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()) != null) newRecord.setLastBandwidthBytesOutSsl(bytesOutMapSsl.get(loadBalancerNameMap.getSslVirtualServerName()));
         newRecord.setStartTime(pollTime);
         newRecord.setEndTime(pollTime);
         newRecord.setNumberOfPolls(1);

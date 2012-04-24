@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
@@ -33,9 +34,14 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
         LOG.debug("Entering " + getClass());
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(queueLb.getId(), queueLb.getAccountId());
 
-        if (!(dbLoadBalancer.getProtocol().equals(org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP)
+        if ((dbLoadBalancer.getSessionPersistence().equals(PersistenceType.HTTP_COOKIE)) && !(dbLoadBalancer.getProtocol().equals(org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP)
                 || dbLoadBalancer.getProtocol().equals(org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS))) {
             throw new UnprocessableEntityException("Unprocessable entity, HTTP_COOKIE Session persistence can only be enabled while load balancer is in HTTP/HTTPS protocol");
+        }
+
+        if ((dbLoadBalancer.getSessionPersistence().equals(PersistenceType.SOURCE_IP)) && (dbLoadBalancer.getProtocol().equals(org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP)
+                || dbLoadBalancer.getProtocol().equals(org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS))) {
+            throw new UnprocessableEntityException("Unprocessable entity, SOURCE_IP Session persistence can only be enabled while load balancer is not in HTTP/HTTPS protocol");
         }
 
         LOG.debug("Updating the lb status to pending_update");
