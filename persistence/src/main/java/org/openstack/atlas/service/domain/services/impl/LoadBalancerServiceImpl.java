@@ -277,14 +277,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                         LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     }
-
-                    LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
-                    dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
-                } else if (!loadBalancer.getProtocol().equals(HTTP)) {
+                } else {
                     if (dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP) {
                         LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     }
+
+                    LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
                     dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
                     dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                 }
