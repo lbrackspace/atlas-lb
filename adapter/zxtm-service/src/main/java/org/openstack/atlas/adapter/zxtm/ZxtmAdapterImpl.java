@@ -2070,6 +2070,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     private String[] getPersistenceMode(SessionPersistence mode) throws InsufficientRequestException {
         if (mode == SessionPersistence.HTTP_COOKIE) {
             return new String[]{HTTP_COOKIE};
+        } else if (mode == SessionPersistence.SOURCE_IP) {
+            return new String[]{SOURCE_IP};
         } else {
             throw new InsufficientRequestException("Unrecognized persistence mode.");
         }

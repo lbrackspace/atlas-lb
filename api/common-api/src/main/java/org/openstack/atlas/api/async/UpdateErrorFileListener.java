@@ -51,6 +51,8 @@ public class UpdateErrorFileListener extends BaseListener {
                 reverseProxyLoadBalancerService.setErrorFile(dbLoadBalancer, content);
                 LOG.debug("Successfully updated error file in zeus.");
             } catch (Exception e) {
+                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+
                 String tmpMsg = String.format("Error setting Errorfile for %d_%d", aid, lid);
                 LOG.error(tmpMsg, e);
                 notificationService.saveAlert(aid, lid, e, AlertType.ZEUS_FAILURE.name(), msg);

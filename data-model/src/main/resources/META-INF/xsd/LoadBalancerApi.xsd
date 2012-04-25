@@ -202,6 +202,7 @@
     <xsd:simpleType name="persistenceType">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="HTTP_COOKIE"/>
+            <xsd:enumeration value="SOURCE_IP"/>
         </xsd:restriction>
     </xsd:simpleType>
 

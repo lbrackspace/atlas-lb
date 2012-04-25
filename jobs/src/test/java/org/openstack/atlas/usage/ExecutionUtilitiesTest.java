@@ -5,6 +5,7 @@ import org.openstack.atlas.usage.BatchAction;
 import org.openstack.atlas.usage.ExecutionUtilities;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -48,7 +49,7 @@ public class ExecutionUtilitiesTest {
     private <T> List<String> runExecuteInBatches(final List<T> objects, final int batchSize) throws Exception {
         final List<String> batchCountList = new ArrayList<String>();
         BatchAction<T> batchAction = new BatchAction<T>() {
-            public void execute(List<T> objects) throws Exception {
+            public void execute(Collection<T> objects) throws Exception {
                 batchCountList.add("");
             }
         };

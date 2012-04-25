@@ -23,10 +23,7 @@ import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class LoadBalancerUsagePoller extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsagePoller.class);
@@ -96,6 +93,13 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
             newUsage.setTags(updatedTags);
             newUsage.setEventType(usageEventEntry.getEventType()); // TODO: Use cached values from database???
 
+            if(recentUsage != null) {
+                newUsage.setLastBandwidthBytesIn(recentUsage.getLastBandwidthBytesIn());
+                newUsage.setLastBandwidthBytesInSsl(recentUsage.getLastBandwidthBytesInSsl());
+                newUsage.setLastBandwidthBytesOut(recentUsage.getLastBandwidthBytesOut());
+                newUsage.setLastBandwidthBytesOutSsl(recentUsage.getLastBandwidthBytesOutSsl());
+            }
+
             newUsages.add(newUsage);
         }
 
@@ -103,7 +107,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
 
         try {
             BatchAction<LoadBalancerUsageEvent> deleteEventUsagesAction = new BatchAction<LoadBalancerUsageEvent>() {
-                public void execute(List<LoadBalancerUsageEvent> usageEventEntries) throws Exception {
+                public void execute(Collection<LoadBalancerUsageEvent> usageEventEntries) throws Exception {
                     usageEventRepository.batchDelete(usageEventEntries);
                 }
             };

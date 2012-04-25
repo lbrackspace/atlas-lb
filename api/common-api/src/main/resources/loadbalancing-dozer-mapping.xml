@@ -398,25 +398,6 @@
     </mapping>
 
     <mapping map-null="false">
-        <class-a>org.openstack.atlas.service.domain.pojos.AccountBilling</class-a>
-        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling</class-b>
-        <field>
-            <a>accountId</a>
-            <b>accountId</b>
-        </field>
-        <field>
-            <a>accountUsageRecords</a>
-            <b>accountUsage</b>
-        </field>
-        <field>
-            <a>loadBalancerBillings</a>
-            <b>loadBalancerUsages</b>
-            <a-hint>org.openstack.atlas.service.domain.pojos.LoadBalancerBilling</a-hint>
-            <b-hint>org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage</b-hint>
-        </field>
-    </mapping>
-
-    <mapping map-null="false">
         <class-a>org.openstack.atlas.service.domain.pojos.LoadBalancerBilling</class-a>
         <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage</class-b>
         <field>

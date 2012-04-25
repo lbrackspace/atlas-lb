@@ -57,8 +57,6 @@ public class DeleteSslTerminationListener extends BaseListener {
             // Notify usage processor with a usage event
             usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
 
-            //Set status record
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
             return;
         }
 
