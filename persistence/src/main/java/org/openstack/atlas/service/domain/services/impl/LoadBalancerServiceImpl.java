@@ -24,6 +24,9 @@ import java.util.*;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.BUILD;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DELETED;
+import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
+import static org.openstack.atlas.service.domain.entities.SessionPersistence.NONE;
+import static org.openstack.atlas.service.domain.entities.SessionPersistence.SOURCE_IP;
 
 @Service
 public class LoadBalancerServiceImpl extends BaseService implements LoadBalancerService {
@@ -128,7 +131,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             verifyTCPProtocolandPort(lb);
             addDefaultValues(lb);
             //V1-B-17728 allowing ip SP for non-http protocols
-//            verifySessionPersistence(lb);
+            verifySessionPersistence(lb);
             verifyProtocolAndHealthMonitorType(lb);
             setHostForNewLoadBalancer(lb);
             setVipConfigForLoadBalancer(lb);
@@ -270,9 +273,18 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 //notifyUsageProcessorOfSslChanges(message, queueLb, dbLoadBalancer);
 
                 if (loadBalancer.getProtocol().equals(HTTP)) {
+                    if (dbLoadBalancer.getSessionPersistence() == SessionPersistence.HTTP_COOKIE) {
+                        LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
+                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                    }
+
                     LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
                     dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
-                } else {
+                } else if (!loadBalancer.getProtocol().equals(HTTP)) {
+                    if (dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP) {
+                        LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
+                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                    }
                     dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
                     dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                 }
@@ -566,10 +578,21 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     private void verifySessionPersistence(LoadBalancer queueLb) throws BadRequestException {
-        if (queueLb.getSessionPersistence() != SessionPersistence.NONE) {
-            LOG.info("Session Persistence detected. Verifying that the protocol is HTTP...");
-            if (queueLb.getProtocol() != LoadBalancerProtocol.HTTP) {
-                throw new BadRequestException("Protocol must be HTTP for session persistence.");
+        //Dupelicated in sessionPersistenceServiceImpl ...
+        SessionPersistence inpersist = queueLb.getSessionPersistence();
+        LoadBalancerProtocol dbProtocol = queueLb.getProtocol();
+
+        String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP and HTTP pass-through(ssl-termination) protocols.";
+        String sipErrMsg = "SOURCE_IP Session persistence is only valid with non HTTP protocols.";
+        if (inpersist != NONE) {
+            if (inpersist == HTTP_COOKIE &&
+                    (dbProtocol != HTTP )) {
+                throw new BadRequestException(httpErrMsg);
+            }
+
+            if (inpersist == SOURCE_IP &&
+                    (dbProtocol == HTTP)) {
+                throw new BadRequestException(sipErrMsg);
             }
         }
     }
@@ -842,7 +865,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     @Override
     public boolean setErrorPage(Integer lid, Integer accountId, String content) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
-        if(!testAndSetStatus(accountId, lid, LoadBalancerStatus.PENDING_UPDATE)) {
+        if (!testAndSetStatus(accountId, lid, LoadBalancerStatus.PENDING_UPDATE)) {
             String message = "Load balancer is considered immutable and cannot process request";
             LOG.warn(message);
             throw new ImmutableEntityException(message);
@@ -860,7 +883,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     @Override
     public boolean removeErrorPage(Integer lid, Integer accountId) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
-         if(!testAndSetStatus(accountId, lid, LoadBalancerStatus.PENDING_UPDATE)) {
+        if (!testAndSetStatus(accountId, lid, LoadBalancerStatus.PENDING_UPDATE)) {
             String message = "Load balancer is considered immutable and cannot process request";
             LOG.warn(message);
             throw new ImmutableEntityException(message);
