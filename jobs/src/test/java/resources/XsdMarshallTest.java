@@ -1,8 +1,8 @@
 package resources;
 
+import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -14,9 +14,10 @@ import org.openstack.atlas.service.domain.entities.Usage;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 
-@Ignore
 @RunWith(Enclosed.class)
 public class XsdMarshallTest {
     public static class WhenMarshallingGeneratedXML {
@@ -62,6 +63,13 @@ public class XsdMarshallTest {
                 Marshaller marshaller = jc.createMarshaller();
                 marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
+                marshaller.setProperty(CharacterEscapeHandler.class.getName(), new CharacterEscapeHandler() {
+                    @Override
+                    public void escape(char[] ch, int start, int length, boolean isAttVal, Writer out) throws IOException {
+                        out.write(ch, start, length);
+                    }
+                });
+
                 StringWriter st = new StringWriter();
                 marshaller.marshal(usageV1, st);
                 String xml = st.toString();
@@ -73,15 +81,10 @@ public class XsdMarshallTest {
                 System.out.print(entrystring);
 
 
-
-
             } catch (Exception e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 Assert.fail();
             }
-
-            Assert.assertEquals(50.0, 50.0);
         }
-
     }
 }
