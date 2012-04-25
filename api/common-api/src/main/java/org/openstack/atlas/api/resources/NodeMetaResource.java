@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeMeta;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -18,12 +19,21 @@ public class NodeMetaResource extends CommonDependencyProvider {
     private HttpHeaders requestHeaders;
     private Integer accountId;
     private Integer nodeId;
+    private Integer loadbalancerId;
     private Integer id;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON})
     public Response retrieveNodeMeta() {
-        return ResponseFactory.getResponseWithStatus(200, "Response stub.");
+        org.openstack.atlas.service.domain.entities.NodeMeta domainNodeMeta;
+        NodeMeta nodeMeta;
+        try {
+            domainNodeMeta = nodeMetadataService.getNodeMeta(accountId, loadbalancerId, nodeId, id);
+            nodeMeta = dozerMapper.map(domainNodeMeta, org.openstack.atlas.docs.loadbalancers.api.v1.NodeMeta.class);
+            return Response.status(Response.Status.OK).entity(nodeMeta).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
     }
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {
@@ -32,6 +42,10 @@ public class NodeMetaResource extends CommonDependencyProvider {
 
     public void setAccountId(Integer accountId) {
         this.accountId = accountId;
+    }
+
+    public void setLoadbalancerId(Integer loadbalancerId) {
+        this.loadbalancerId = loadbalancerId;
     }
 
     public void setNodeId(Integer nodeId) {
