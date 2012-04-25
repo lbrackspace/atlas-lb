@@ -16,6 +16,7 @@ import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepo
 import org.openstack.atlas.usage.BatchAction;
 import org.openstack.atlas.usage.ExecutionUtilities;
 import org.openstack.atlas.usage.helpers.HostConfigHelper;
+import org.openstack.atlas.usage.helpers.LoadBalancerNameMap;
 import org.openstack.atlas.usage.helpers.ZxtmNameHelper;
 import org.openstack.atlas.usage.logic.UsagesForPollingDatabase;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
@@ -51,14 +52,16 @@ public class LoadBalancerUsagePollerThread extends Thread {
             final LoadBalancerEndpointConfiguration config = HostConfigHelper.getConfig(host, hostRepository);
             final Set<String> loadBalancerNamesForHost = getValidLoadBalancerNamesForHost(host, config);
             final Set<String> sslLoadBalancerNamesForHost = getValidSslLoadBalancerNamesForHost(host, config);
+            final Collection<LoadBalancerNameMap> lbNameMapForHost = generateLbNameMap(loadBalancerNamesForHost, sslLoadBalancerNamesForHost);
 
-            BatchAction<String> batchAction = new BatchAction<String>() {
-                public void execute(List<String> loadBalancerNames) throws Exception {
-                    List<String> loadbalancerNamesWithSsl = getSslLoadBalancerNamesForBatch(loadBalancerNames, sslLoadBalancerNamesForHost);
-                    
+            BatchAction<LoadBalancerNameMap> batchAction = new BatchAction<LoadBalancerNameMap>() {
+                public void execute(Collection<LoadBalancerNameMap> loadBalancerNameMaps) throws Exception {
+                    List<String> loadbalancerNames = LoadBalancerNameMap.loadBalancerNames(loadBalancerNameMaps);
+                    List<String> loadbalancerNamesWithSsl = LoadBalancerNameMap.loadBalancerSslNames(loadBalancerNameMaps);
+
                     try {
                         LOG.info(String.format("Retrieving bytes in from '%s' (%s)...", host.getName(), host.getEndpoint()));
-                        Map<String, Long> bytesInMap = reverseProxyLoadBalancerAdapter.getLoadBalancerBytesIn(config, loadBalancerNames);
+                        Map<String, Long> bytesInMap = reverseProxyLoadBalancerAdapter.getLoadBalancerBytesIn(config, loadbalancerNames);
                         LOG.info(String.format("Retrieving ssl bytes in from '%s' (%s)...", host.getName(), host.getEndpoint()));
                         Map<String, Long> bytesInMapSsl = reverseProxyLoadBalancerAdapter.getLoadBalancerBytesIn(config, loadbalancerNamesWithSsl);
 
@@ -72,7 +75,7 @@ public class LoadBalancerUsagePollerThread extends Thread {
                         }
 
                         LOG.info(String.format("Retrieving bytes out from '%s' (%s)...", host.getName(), host.getEndpoint()));
-                        Map<String, Long> bytesOutMap = reverseProxyLoadBalancerAdapter.getLoadBalancerBytesOut(config, loadBalancerNames);
+                        Map<String, Long> bytesOutMap = reverseProxyLoadBalancerAdapter.getLoadBalancerBytesOut(config, loadbalancerNames);
                         LOG.info(String.format("Retrieving ssl bytes out from '%s' (%s)...", host.getName(), host.getEndpoint()));
                         Map<String, Long> bytesOutMapSsl = reverseProxyLoadBalancerAdapter.getLoadBalancerBytesOut(config, loadbalancerNamesWithSsl);
 
@@ -86,7 +89,7 @@ public class LoadBalancerUsagePollerThread extends Thread {
                         }
 
                         LOG.info(String.format("Retrieving current connections from '%s' (%s)...", host.getName(), host.getEndpoint()));
-                        Map<String, Integer> currentConnectionsMap = reverseProxyLoadBalancerAdapter.getLoadBalancerCurrentConnections(config, loadBalancerNames);
+                        Map<String, Integer> currentConnectionsMap = reverseProxyLoadBalancerAdapter.getLoadBalancerCurrentConnections(config, loadbalancerNames);
                         LOG.info(String.format("Retrieving ssl current connections from '%s' (%s)...", host.getName(), host.getEndpoint()));
                         Map<String, Integer> currentConnectionsMapSsl = reverseProxyLoadBalancerAdapter.getLoadBalancerCurrentConnections(config, loadbalancerNamesWithSsl);
 
@@ -99,20 +102,23 @@ public class LoadBalancerUsagePollerThread extends Thread {
                             LOG.debug(String.format("LB Name: '%s', Concurrent Connections: %d", loadBalancerName, currentConnectionsMapSsl.get(loadBalancerName)));
                         }
 
-                        updateUsageRecords(loadBalancerNames, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl);
+                        updateUsageRecords(loadBalancerNameMaps, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl);
                     } catch (RemoteException re) {
                         /* This exception is usually thrown due to the batch containing a
                          * load balancer name that just got suspended or deleted. Zeus,
                          * however, does not tell us which one (jira SITESLB-753) */
                         LOG.error("Remote exception occurred. Load balancer name(s) removed from batch. Skipping batch...", re);
-                        for (String ignoredLoadBalancerName : loadBalancerNames) {
+                        for (String ignoredLoadBalancerName : loadbalancerNames) {
                             LOG.error(String.format("LB name in bad batch: '%s'", ignoredLoadBalancerName));
+                        }
+                        for (String ignoredSslLoadBalancerName : loadbalancerNamesWithSsl) {
+                            LOG.error(String.format("LB name in bad batch: '%s'", ignoredSslLoadBalancerName));
                         }
                     }
                 }
             };
 
-            ExecutionUtilities.executeInBatches(loadBalancerNamesForHost, BATCH_SIZE, batchAction);
+            ExecutionUtilities.executeInBatches(lbNameMapForHost, BATCH_SIZE, batchAction);
         } catch (DecryptException de) {
             LOG.error(String.format("Error decrypting configuration for '%s' (%s)", host.getName(), host.getEndpoint()), de);
         } catch (AxisFault af) {
@@ -126,6 +132,37 @@ public class LoadBalancerUsagePollerThread extends Thread {
             LOG.error("Exception caught", e);
             e.printStackTrace();
         }
+    }
+
+    private Collection<LoadBalancerNameMap> generateLbNameMap(Set<String> loadBalancerNamesForHost, Set<String> sslLoadBalancerNamesForHost) {
+        Map<Integer, LoadBalancerNameMap> nameMaps = new HashMap<Integer, LoadBalancerNameMap>();
+
+        for (String lbName : loadBalancerNamesForHost) {
+            Integer lbId = ZxtmNameHelper.stripLbIdFromZxtmName(lbName);
+            Integer accountId = ZxtmNameHelper.stripAccountIdFromZxtmName(lbName);
+            LoadBalancerNameMap loadBalancerNameMap = new LoadBalancerNameMap();
+            loadBalancerNameMap.setLoadBalancerId(lbId);
+            loadBalancerNameMap.setAccountId(accountId);
+            loadBalancerNameMap.setNonSslVirtualServerName(lbName);
+            nameMaps.put(lbId, loadBalancerNameMap);
+        }
+
+        for (String sslLbName : sslLoadBalancerNamesForHost) {
+            Integer lbId = ZxtmNameHelper.stripLbIdFromZxtmName(sslLbName);
+            Integer accountId = ZxtmNameHelper.stripAccountIdFromZxtmName(sslLbName);
+            if(nameMaps.containsKey(lbId)) {
+                LoadBalancerNameMap loadBalancerNameMap = nameMaps.get(lbId);
+                loadBalancerNameMap.setSslVirtualServerName(sslLbName);
+            } else {
+                LoadBalancerNameMap loadBalancerNameMap = new LoadBalancerNameMap();
+                loadBalancerNameMap.setLoadBalancerId(lbId);
+                loadBalancerNameMap.setAccountId(accountId);
+                loadBalancerNameMap.setSslVirtualServerName(sslLbName);
+                nameMaps.put(lbId, loadBalancerNameMap);
+            }
+        }
+
+        return nameMaps.values();
     }
 
     private List<String> getSslLoadBalancerNamesForBatch(List<String> loadBalancerNames, Set<String> sslLoadBalancerNamesForHost) {
@@ -154,12 +191,12 @@ public class LoadBalancerUsagePollerThread extends Thread {
         return sslLoadBalancerNamesForHost;
     }
 
-    private void updateUsageRecords(List<String> loadBalancerNames, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap, Map<String, Long> bytesInMapSsl, Map<String, Long> bytesOutMapSsl, Map<String, Integer> currentConnectionsMapSsl) {
+    private void updateUsageRecords(Collection<LoadBalancerNameMap> loadBalancerNameMaps, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap, Map<String, Long> bytesInMapSsl, Map<String, Long> bytesOutMapSsl, Map<String, Integer> currentConnectionsMapSsl) {
         Calendar pollTime = Calendar.getInstance();
-        Map<Integer, Integer> lbIdAccountIdMap = ZxtmNameHelper.stripLbIdAndAccountIdFromZxtmName(loadBalancerNames);
+        Map<Integer, Integer> lbIdAccountIdMap = ZxtmNameHelper.stripLbIdAndAccountIdFromZxtmName(loadBalancerNameMaps);
         List<LoadBalancerUsage> usages = usageRepository.getMostRecentUsageForLoadBalancers(lbIdAccountIdMap.keySet());
         Map<Integer, LoadBalancerUsage> usagesAsMap = convertUsagesToMap(usages);
-        UsagesForPollingDatabase usagesForDatabase = new UsagesForPollingDatabase(loadBalancerRepository, loadBalancerNames, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl, pollTime, usagesAsMap).invoke();
+        UsagesForPollingDatabase usagesForDatabase = new UsagesForPollingDatabase(loadBalancerRepository, loadBalancerNameMaps, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl, pollTime, usagesAsMap).invoke();
 
         if (!usagesForDatabase.getRecordsToInsert().isEmpty())
             usageRepository.batchCreate(usagesForDatabase.getRecordsToInsert());

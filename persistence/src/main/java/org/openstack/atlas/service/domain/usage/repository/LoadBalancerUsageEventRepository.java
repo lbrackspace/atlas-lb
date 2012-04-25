@@ -20,6 +20,7 @@ import javax.persistence.criteria.Root;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -37,7 +38,7 @@ public class LoadBalancerUsageEventRepository {
         return usages;
     }
 
-    public void batchDelete(List<LoadBalancerUsageEvent> usages) {
+    public void batchDelete(Collection<LoadBalancerUsageEvent> usages) {
         List<Integer> usageIds = new ArrayList<Integer>();
 
         for (LoadBalancerUsageEvent usage : usages) {
