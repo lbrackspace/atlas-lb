@@ -394,7 +394,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
-                removeSessionPersistence(config, lbId, accountId); // We currently only support HTTP session persistence
+                //V1-B-17728 support for SOURCE_IP
+//                removeSessionPersistence(config, lbId, accountId); // We currently only support HTTP session persistence
                 removeXFFRuleFromVirtualServers(serviceStubs, vsNames); // XFF is only for the HTTP protocol
                 removeXFPRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
             }
