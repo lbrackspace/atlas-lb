@@ -96,7 +96,7 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
         }
 
         for (Integer id : ids) {
-            if (nodeMetaIds.contains(id)) {
+            if (!nodeMetaIds.contains(id)) {
                 invalidIds.add(id);
             }
         }
@@ -120,8 +120,8 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
     }
 
     @Override
-    public Node deleteNodeMetadata(Node node, Collection<Integer> ids) throws EntityNotFoundException {
-        return nodeMetadataRepository.deleteMetadata(node, ids);
+    public void deleteNodeMetadata(Node node, Collection<Integer> ids) throws EntityNotFoundException {
+        nodeMetadataRepository.deleteMetadata(node, ids);
     }
 
     @Override

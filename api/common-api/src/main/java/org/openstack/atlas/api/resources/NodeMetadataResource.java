@@ -74,8 +74,12 @@ public class NodeMetadataResource extends CommonDependencyProvider {
     public Response deleteMetadata(@QueryParam("id") List<Integer> metaIds) {
         List<String> validationErrors;
         Collections.sort(metaIds);
-        Node node = new Node();
-        node.setId(nodeId);
+        Node node;
+        try {
+            node = nodeService.getNodeByAccountIdLoadBalancerIdNodeId(accountId, loadbalancerId, nodeId);
+        } catch(Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Could not find node " + nodeId + ".").build();
+        }
 
         try {
             if (metaIds.isEmpty()) {
@@ -83,12 +87,8 @@ public class NodeMetadataResource extends CommonDependencyProvider {
                 return ResponseFactory.getErrorResponse(badRequestException, null, null);
             }
 
-            validationErrors = metadataService.prepareForMetadataDeletion(accountId, nodeId, metaIds);
+            validationErrors = nodeMetadataService.prepareForNodeMetadataDeletion(accountId, loadbalancerId, nodeId, metaIds);
             if (!validationErrors.isEmpty()) {
-                return getValidationFaultResponse(validationErrors);
-            }
-
-            if (!nodeMetadataService.prepareForNodeMetadataDeletion(accountId, loadbalancerId, nodeId, metaIds).isEmpty()) {
                 return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
             }
             nodeMetadataService.deleteNodeMetadata(node, metaIds);

@@ -5,6 +5,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeMeta;
 import org.openstack.atlas.service.domain.entities.NodeMeta_;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,20 +57,27 @@ public class NodeMetadataRepository {
         return entityManager.createQuery(criteria).getResultList();
     }
 
-    public Node deleteMetadata(Node node, Collection<Integer> ids) {
-        List<NodeMeta> nodeMetas = new ArrayList<NodeMeta>(node.getNodeMetadata());
-        for (NodeMeta nodeMeta : nodeMetas) {
-            for (Integer id : ids) {
-                if (nodeMeta.getId().equals(id)) {
-                    node.getNodeMetadata().remove(id);
-                }
+    public void deleteMetadata(Node node, Collection<Integer> ids) throws EntityNotFoundException {
+        List<NodeMeta> nodeMetas = node.getNodeMetadata();
+        Boolean removed = false;
+
+        for (NodeMeta meta : node.getNodeMetadata()) {
+            if (!ids.contains(meta.getId())) {
+                nodeMetas.add(meta);
+                removed = true;
             }
         }
-        node.getLoadbalancer().setUpdated(Calendar.getInstance());
-        node = entityManager.merge(node);
-        node.setLoadbalancer(entityManager.merge(node.getLoadbalancer()));
+
+        if (!removed) {
+            String message = Constants.MetaNotFound;
+            LOG.warn(message);
+            throw new EntityNotFoundException(message);
+        }
+
+        node.setNodeMetadata(nodeMetas);
+
+        entityManager.merge(node);
         entityManager.flush();
-        return node;
     }
 
     public NodeMeta getNodeMeta(Integer nodeId, Integer id) {
