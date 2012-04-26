@@ -33,11 +33,12 @@ public class NodeMetadataRepository {
 
         for (NodeMeta meta : metas) {
             meta.setNode(node);
-            newMetas.add(entityManager.merge(meta));
+            newMetas.add(meta);
         }
 
+        node.getNodeMetadata().addAll(newMetas);
         node.getLoadbalancer().setUpdated(Calendar.getInstance());
-        node = entityManager.merge(node);
+        entityManager.merge(node.getLoadbalancer());
         entityManager.flush();
         return newMetas;
     }
@@ -58,25 +59,27 @@ public class NodeMetadataRepository {
     }
 
     public void deleteMetadata(Node node, Collection<Integer> ids) throws EntityNotFoundException {
-        List<NodeMeta> nodeMetas = node.getNodeMetadata();
-        Boolean removed = false;
+        List<NodeMeta> nodeMetas = new ArrayList<NodeMeta>();
+        Boolean exists = false;
 
         for (NodeMeta meta : node.getNodeMetadata()) {
-            if (!ids.contains(meta.getId())) {
+            if (ids.contains(meta.getId()))
+                exists = true;
+            else {
                 nodeMetas.add(meta);
-                removed = true;
             }
         }
 
-        if (!removed) {
+        if (!exists) {
             String message = Constants.MetaNotFound;
             LOG.warn(message);
             throw new EntityNotFoundException(message);
         }
+        entityManager.createQuery("DELETE FROM NodeMeta n WHERE n.id IN (:ids)").setParameter("ids", ids).executeUpdate();
 
         node.setNodeMetadata(nodeMetas);
-
-        entityManager.merge(node);
+        node.getLoadbalancer().setUpdated(Calendar.getInstance());
+        entityManager.merge(node.getLoadbalancer());
         entityManager.flush();
     }
 

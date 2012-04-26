@@ -34,19 +34,19 @@ public class NodeMetadataResource extends CommonDependencyProvider {
 
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
-    public Response createMetadata(List<NodeMeta> nodeMetadata) throws EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
-        List<org.openstack.atlas.service.domain.entities.NodeMeta> domainNodeMetaSet = new ArrayList<org.openstack.atlas.service.domain.entities.NodeMeta>();
-        for (NodeMeta meta : nodeMetadata) {
+    public Response createMetadata(NodeMetadata nodeMetadata) throws EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
+        List<org.openstack.atlas.service.domain.entities.NodeMeta> domainNodeMetas = new ArrayList<org.openstack.atlas.service.domain.entities.NodeMeta>();
+        for (NodeMeta meta : nodeMetadata.getNodeMetas()) {
             ValidatorResult result = ValidatorRepository.getValidatorFor(NodeMeta.class).validate(meta, HttpRequestType.POST);
             if (!result.passedValidation()) {
                 return getValidationFaultResponse(result);
             } else {
-                domainNodeMetaSet.add(dozerMapper.map(meta, org.openstack.atlas.service.domain.entities.NodeMeta.class));
+                domainNodeMetas.add(dozerMapper.map(meta, org.openstack.atlas.service.domain.entities.NodeMeta.class));
             }
         }
 
         NodeMetadata retNodeMetadata = new NodeMetadata();
-        for (org.openstack.atlas.service.domain.entities.NodeMeta meta : nodeMetadataService.createNodeMetadata(accountId, loadbalancerId, nodeId, domainNodeMetaSet)) {
+        for (org.openstack.atlas.service.domain.entities.NodeMeta meta : nodeMetadataService.createNodeMetadata(accountId, loadbalancerId, nodeId, domainNodeMetas)) {
             retNodeMetadata.getNodeMetas().add(dozerMapper.map(meta, NodeMeta.class));
         }
         return Response.status(Response.Status.OK).entity(retNodeMetadata).build();
@@ -61,7 +61,7 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         try {
             domainNodeMetaSet = nodeMetadataService.getNodeMetadataByAccountIdNodeId(accountId, nodeId);
             for (org.openstack.atlas.service.domain.entities.NodeMeta domainMeta : domainNodeMetaSet) {
-                returnMetadata.getNodeMetas().add(dozerMapper.map(domainMeta, NodeMeta.class));
+                returnMetadata.getNodeMetas().add(dozerMapper.map(domainMeta, NodeMeta.class, "NODE_META_DATA"));
             }
             return Response.status(Response.Status.OK).entity(returnMetadata).build();
         } catch (Exception e) {
