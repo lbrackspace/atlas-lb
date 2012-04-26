@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <schema
     elementFormDefault="qualified"
     attributeFormDefault="unqualified"
@@ -21,7 +22,8 @@
         </annotation>
         <attribute name="aggregate-function" type="usage:AggregateFunction" use="optional" default="NONE"/>
         <attribute name="display-name" type="xsd:string" use="optional" />
-        <attribute name="unit-of-measure" type="xsd:string" use="optional"/>
+        <attribute name="unit-of-measure" type="usage:UnitOfMeasure" use="optional"/>
+        <attribute name="group" type="xsd:boolean" use="optional" default="false" />
     </complexType>
 
     <simpleType name="AggregateFunction">
@@ -37,6 +39,25 @@
             <enumeration value="SUM"/>
             <enumeration value="AVG"/>
             <enumeration value="MAX"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="UnitOfMeasure">
+        <annotation>
+            <documentation>
+                <html:p>
+                    Aggregate Functions.
+                </html:p>
+            </documentation>
+        </annotation>
+        <restriction base="xsd:string">
+            <enumeration value="BYTES"/>
+            <enumeration value="MEGABYTES"/>
+            <enumeration value="GIGABYTES"/>
+            <enumeration value="SECONDS"/>
+            <enumeration value="MINUTES"/>
+            <enumeration value="HOURS"/>
+            <enumeration value="COUNT"/>
         </restriction>
     </simpleType>
 </schema>

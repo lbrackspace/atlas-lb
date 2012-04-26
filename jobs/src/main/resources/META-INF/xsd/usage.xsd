@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <schema
     elementFormDefault="qualified"
     attributeFormDefault="unqualified"
@@ -15,15 +14,12 @@
         and defines the current usage element.
     -->
     <include schemaLocation="core.xsd"/>  <!-- Loads Usage Version 1 -->
-    <!--<include schemaLocation="core2.xsd"/> &lt;!&ndash; Loads Usage Version 2 &ndash;&gt;-->
+    <include schemaLocation="core2.xsd"/> <!-- Loads Usage Version 2 -->
 
     <!-- Core annotations declared here -->
     <include schemaLocation="ProductExtension-Annotations.xsd"/>
 
     <!-- Load Product Schema -->
-    <!--<import namespace="http://docs.rackspace.com/usage/nova"-->
-            <!--schemaLocation="ProductExtensionExample-Nova.xsd"/>-->
-
     <import namespace="http://docs.rackspace.com/usage/lbaas"
             schemaLocation="ProductExtensionExample-LBaaS.xsd"/>
 
@@ -34,9 +30,9 @@
         The right type is selected based on the version.
     -->
     <!--<element name="usage" type="usage:UsageBase">-->
-        <!--&lt;!&ndash;&lt;!&ndash;<alternative test="xsd:integer(@version) = 1" type="usage:UsageV1"/>&ndash;&gt;&ndash;&gt;-->
-        <!--&lt;!&ndash;&lt;!&ndash;<alternative test="xsd:integer(@version) = 2" type="usage:UsageV2"/>&ndash;&gt;&ndash;&gt;-->
-        <!--&lt;!&ndash;&lt;!&ndash;<alternative type="xsd:error"/>&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;<alternative test="xsd:integer(@version) = 1" type="usage:UsageV1"/>&ndash;&gt;-->
+        <!--&lt;!&ndash;<alternative test="xsd:integer(@version) = 2" type="usage:UsageV2"/>&ndash;&gt;-->
+        <!--&lt;!&ndash;<alternative type="xsd:error"/>&ndash;&gt;-->
     <!--</element>-->
 
 </schema>

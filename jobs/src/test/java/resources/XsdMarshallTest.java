@@ -75,10 +75,11 @@ public class XsdMarshallTest {
                 String xml = st.toString();
                 entry.setContent(xml);
 
-                StringWriter st1 = new StringWriter();
-                marshaller.marshal(entry, st1);
-                String entrystring = st1.toString();
-                System.out.print(entrystring);
+//                StringWriter st1 = new StringWriter();
+//                marshaller.marshal(entry, st1);
+//                String entrystring = st1.toString();
+                System.out.print(xml);
+//
 
 
             } catch (Exception e) {

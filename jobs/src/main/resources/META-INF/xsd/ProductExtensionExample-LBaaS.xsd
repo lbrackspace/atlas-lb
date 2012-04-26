@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <schema
     elementFormDefault="qualified"
     attributeFormDefault="unqualified"
@@ -11,25 +10,26 @@
     xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
     targetNamespace="http://docs.rackspace.com/usage/lbaas">
 
-    <element name="usage" type="lbaas:LBaaSUsage"/>
-    <complexType name="LBaaSUsage">
+    <element name="usage" type="lbaas:LbaasUsage"/>
+
+    <complexType name="LbaasUsage">
         <annotation>
             <documentation>
                 <html:p>
-                    Nova specific user fields.
+                    LBaaS specific user fields.
                 </html:p>
             </documentation>
         </annotation>
         <attribute name="version" type="xsd:string" fixed="1" use="required"/>
         <attribute name="memory" type="xsd:int" use="required">
             <annotation>
-                <documentation>                                                                                                     ^
+                <documentation>
                     <html:p>
                         The amount of memory for the current usage.
                     </html:p>
                 </documentation>
                 <appinfo>
-                    <usage:attributes aggregate-function="SUM" unit-of-measure="MB"/>
+                    <usage:attributes aggregate-function="SUM" unit-of-measure="MEGABYTES"/>
                 </appinfo>
             </annotation>
         </attribute>

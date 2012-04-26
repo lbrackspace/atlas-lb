@@ -11,7 +11,7 @@ import org.openstack.atlas.atom.util.ClientUtil;
 import org.openstack.atlas.atom.util.ResponseUtil;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
-import org.openstack.atlas.jobs.LBaaSUsage;
+import org.openstack.atlas.jobs.LbaasUsage;
 import org.openstack.atlas.jobs.UsageV1;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
@@ -86,7 +86,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
                         usageV1.setResourceName("LoadBalancer");
 
                         //product specific
-                        LBaaSUsage lu = new LBaaSUsage();
+                        LbaasUsage lu = new LbaasUsage();
                         lu.setMemory(ur.getNumberOfPolls());
                         lu.setVersion("1");
                         usageV1.getAny().add(lu);
