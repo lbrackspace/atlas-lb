@@ -20,17 +20,85 @@
                 </html:p>
             </documentation>
         </annotation>
-        <attribute name="version" type="xsd:string" fixed="1" use="required"/>
-        <attribute name="memory" type="xsd:int" use="required">
+        <attribute name="avgConcurrentConnections" type="xsd:double" use="required">
             <annotation>
                 <documentation>
                     <html:p>
-                        The amount of memory for the current usage.
+                        The amount conncurrent connections.
                     </html:p>
                 </documentation>
-                <appinfo>
-                    <usage:attributes aggregate-function="SUM" unit-of-measure="MEGABYTES"/>
-                </appinfo>
+            </annotation>
+        </attribute>
+        <attribute name="avgConcurrentConnectionsSsl" type="xsd:double" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The amount conncurrent connections.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="bandWidthIn" type="xsd:double" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The amount band width in.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="bandWidthOut" type="xsd:double" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The amount band width out.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="bandWidthInSsl" type="xsd:double" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The amount band width in.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="bandWidthOutSsl" type="xsd:double" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The amount band width out.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="numPolls" type="xsd:double" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The number of polls per record.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="numVips" type="xsd:double" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The number of vips.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="tagsBitmask" type="xsd:double" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The bitmask tag.
+                    </html:p>
+                </documentation>
             </annotation>
         </attribute>
         <anyAttribute processContents="lax"/>

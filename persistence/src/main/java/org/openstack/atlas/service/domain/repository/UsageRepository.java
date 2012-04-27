@@ -59,6 +59,11 @@ public class UsageRepository {
         entityManager.createNativeQuery(query).executeUpdate();
     }
 
+    public void updateEntryVersion(Usage usageRecord) {
+        LOG.info(String.format("updateEntryRecord called"));
+        entityManager.merge(usageRecord);
+    }
+
     private String generateBatchInsertQuery(List<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version) values");
@@ -105,10 +110,10 @@ public class UsageRepository {
             //Used for keeping track of updated rows
             int versionBump;
             if (usage.getEntryVersion() == null) {
-               //new record
-               versionBump = 0;
+                //new record
+                versionBump = 0;
             } else {
-               versionBump = usage.getEntryVersion();
+                versionBump = usage.getEntryVersion();
             }
 
             versionBump += 1;

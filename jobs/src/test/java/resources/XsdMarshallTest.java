@@ -9,8 +9,6 @@ import org.junit.runner.RunWith;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
-import org.openstack.atlas.jobs.ObjectFactory;
-import org.openstack.atlas.service.domain.entities.Usage;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -22,22 +20,20 @@ import java.io.Writer;
 public class XsdMarshallTest {
     public static class WhenMarshallingGeneratedXML {
         private Double originalAverage = 50.0;
-        private Usage usageRecord;
+//        private Usage usageRecord;
 
 
         @Before
         public void standUp() {
-            usageRecord = new Usage();
-            usageRecord.setPushed(false);
-            usageRecord.setAccountId(5432);
-            usageRecord.setEntryVersion(1);
-            usageRecord.setNumberOfPolls(22);
+//            usageRecord = new Usage();
+//            usageRecord.setPushed(false);
+//            usageRecord.setAccountId(5432);
+//            usageRecord.setEntryVersion(1);
+//            usageRecord.setNumberOfPolls(22);
         }
 
         @Test
         public void shouldMarshallToStringProperly() {
-            ObjectFactory objectFactory = new ObjectFactory();
-
             EntryPojo entry = new EntryPojo();
 
             //core
@@ -47,9 +43,11 @@ public class XsdMarshallTest {
 
             //product specific
             LBaaSUsagePojo lu = new LBaaSUsagePojo();
-            lu.setMemory(usageRecord.getNumberOfPolls());
-            lu.setVersion("1");
+//            lu.setMemory(4);
+//            lu.setVersion("1");
             usageV1.getAny().add(lu);
+
+
 
             //Atom specific
             entry.setTitle("LBAAS");
@@ -58,7 +56,7 @@ public class XsdMarshallTest {
             //Build the above toString in order to set in entry content
             JAXBContext jc = null;
             try {
-                jc = JAXBContext.newInstance(EntryPojo.class);
+                jc = JAXBContext.newInstance(UsageV1Pojo.class);
 
                 Marshaller marshaller = jc.createMarshaller();
                 marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -69,18 +67,34 @@ public class XsdMarshallTest {
                         out.write(ch, start, length);
                     }
                 });
+                marshaller.setProperty("com.sun.xml.bind.xmlDeclaration", Boolean.FALSE);
 
                 StringWriter st = new StringWriter();
                 marshaller.marshal(usageV1, st);
                 String xml = st.toString();
+
+
+
+                JAXBContext jc1 = null;
+
+                jc1 = JAXBContext.newInstance(EntryPojo.class);
+
+                Marshaller marshaller1 = jc1.createMarshaller();
+                marshaller1.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+                marshaller1.setProperty(CharacterEscapeHandler.class.getName(), new CharacterEscapeHandler() {
+                    @Override
+                    public void escape(char[] ch, int start, int length, boolean isAttVal, Writer out) throws IOException {
+                        out.write(ch, start, length);
+                    }
+                });
+
                 entry.setContent(xml);
 
-//                StringWriter st1 = new StringWriter();
-//                marshaller.marshal(entry, st1);
-//                String entrystring = st1.toString();
-                System.out.print(xml);
-//
-
+                StringWriter st1 = new StringWriter();
+                marshaller1.marshal(entry, st1);
+                String entrystring = st1.toString();
+                System.out.print(entrystring);
 
             } catch (Exception e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

@@ -1,0 +1,211 @@
+<?xml version="1.0"?>
+<!--
+   This is a 1.0 XML Schema, generated from a 1.1 schema.
+   The purpose of the schema is to enable support for XSD 1.0 processors.
+   The official schema is the 1.1 version from which this schema was defined.
+   This schema misses some critical checks that are only performed in the 1.1 version.
+   Validation at the usage layer will always use the 1.1 schema.
+-->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:usage="http://docs.rackspace.com/usage/core" xmlns:xerces="http://xerces.apache.org" xmlns:saxon="http://saxon.sf.net/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://docs.rackspace.com/usage/core">
+
+    <complexType name="UsageBase" abstract="true">
+        <annotation>
+            <documentation>
+                <html:p>
+                    This is the base type for all usage records.  The
+                    only thing that is required is a version
+                    attribute.
+                </html:p>
+            </documentation>
+        </annotation>
+        <attribute name="version" type="xsd:string" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        Usage record version.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+    </complexType>
+
+    <complexType name="UsageV1">
+        <annotation>
+            <documentation>
+                <html:p>
+                    Usage information version 1.
+                </html:p>
+            </documentation>
+        </annotation>
+        <complexContent>
+            <extension base="usage:UsageBase">
+                <sequence>
+                    <any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+                </sequence>
+                <attribute name="tenantId" type="xsd:string" use="required">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                Identifies the tenant ID.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="serviceCode" type="xsd:string" use="required">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                Identifies the product.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="resourceId" type="xsd:string" use="required">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                Identifies an instance of the product.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="usageId" type="usage:UUID" use="required">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                A GUID identifying the usage record.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="eventType" type="usage:EventType" use="optional" default="EXISTS">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                Identifies the type of event. For example
+                                CREATE, EXISTS, UPDATE, DELETE, SUSPEND, UNSUSPEND.
+                            </html:p>
+                            <html:p>
+                                The use of the attribute is optional,
+                                however, if the attribute is not
+                                specified "EXISTS" will be assumed.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="dataCenter" type="xsd:string" use="optional" default="global">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                Identifies the datacenter of the resource.
+                                For example DFW3.
+                            </html:p>
+                            <html:p>
+                                The use of the attribute is optional,
+                                however, if the attribute is not
+                                specified "global" will be assumed.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="region" type="xsd:string" use="optional" default="global">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                Identifies the region.
+                            </html:p>
+                            <html:p>
+                                The use of the attribute is optional,
+                                however, if the attribute is not
+                                specified "global" will be assumed.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="startTime" type="usage:UTCTime" use="required">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                UTC, ISO Format start time.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="endTime" type="usage:UTCTime" use="optional">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                UTC, ISO Format end time.  For an EXISTs
+                                event, the startTime and endTime reflect the
+                                usage duriation for the resource instance.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="resourceName" type="xsd:string" use="optional">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                Customer defined name for the resource.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <simpleType name="UUID">
+        <annotation>
+            <documentation>
+                <html:p>
+                    A universally unique identifier.
+                </html:p>
+            </documentation>
+        </annotation>
+        <restriction base="xsd:string">
+            <length value="36" fixed="true"/>
+            <pattern value="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="UTCTime">
+        <annotation>
+            <documentation>
+                <html:p>
+                    A datetime in which the timezone is explicitly
+                    required and must be +00:00 or Z.
+                </html:p>
+                <html:p>
+                    <html:strong>
+                        Only an XSD 1.1 validator will enforce this restriction.
+                    </html:strong>
+                </html:p>
+            </documentation>
+        </annotation>
+        <restriction base="xsd:dateTime" vc:minVersion="1.0" vc:maxVersion="1.1"/>
+
+    </simpleType>
+
+    <simpleType name="EventType">
+        <annotation>
+            <documentation>
+                <html:p>
+                    The type of usage event.  Possible values are
+                    CREATE, EXISTS, UPDATE, DELETE, SUSPEND,
+                    UNSUSPEND.
+                </html:p>
+            </documentation>
+        </annotation>
+        <restriction base="xsd:string">
+            <enumeration value="CREATE"/>
+            <enumeration value="EXISTS"/>
+            <enumeration value="UPDATE"/>
+            <enumeration value="DELETE"/>
+            <enumeration value="SUSPEND"/>
+            <enumeration value="UNSUSPEND"/>
+            <enumeration value="EXTENDED"/>
+        </restriction>
+    </simpleType>
+</schema>

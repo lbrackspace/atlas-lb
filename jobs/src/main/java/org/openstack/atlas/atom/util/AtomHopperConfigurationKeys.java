@@ -4,4 +4,5 @@ import org.openstack.atlas.cfg.ConfigurationKey;
 
 public enum AtomHopperConfigurationKeys implements ConfigurationKey {
     atom_hopper_endpoint,
+    region
 }

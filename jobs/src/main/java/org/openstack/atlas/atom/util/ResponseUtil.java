@@ -1,5 +1,9 @@
 package org.openstack.atlas.atom.util;
 
+import com.sun.jersey.api.client.ClientResponse;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 
 public class ResponseUtil {
@@ -8,9 +12,7 @@ public class ResponseUtil {
 
 
     /**
-     *
      * @param throwable the throwable exception used to parse the extended stack trace.
-     *
      * @return the string based off the throwables stack trace
      */
     public static String getExtendedStackTrace(Throwable throwable) {
@@ -33,9 +35,7 @@ public class ResponseUtil {
     }
 
     /**
-     *
      * @param ex the exception used to parse the stack trace
-     *
      * @return the string parsed from the exceptions stack trace
      */
     public static String getStackTrace(Exception ex) {
@@ -55,5 +55,25 @@ public class ResponseUtil {
         Calendar c = getNow();
         c.add(Calendar.WEEK_OF_MONTH, -1);
         return c;
+    }
+
+    /**
+     *
+     * @param response the clientResponse
+     * @return string with response body
+     * @throws IOException
+     */
+    public static String processResponseBody(ClientResponse response) throws IOException {
+        InputStream is = response.getEntityInputStream();
+        StringBuilder sb = new StringBuilder(ResponseUtil.PAGESIZE);
+
+        int nbytes;
+        do {
+            byte[] buff = new byte[ResponseUtil.FRAGSIZE];
+            nbytes = is.read(buff);
+            String frag = new String(buff, "UTF-8");
+            sb.append(frag);
+        } while (nbytes > 0);
+        return sb.toString();
     }
 }
