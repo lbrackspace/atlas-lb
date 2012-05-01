@@ -17,7 +17,8 @@ public class NodeMetadataValidator implements ResourceValidator<NodeMetadata> {
 
             {
                 // FULL EXPECTATIONS
-                result(validationTarget().getNodeMetas()).must().exist().forContext(POST).withMessage("Must provide at least 1 entry of meta data.");
+                result(validationTarget().getNodeMetas()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide at least 1 entry of meta data.");
+                result(validationTarget().getNodeMetas()).if_().exist().then().must().delegateTo(new NodeMetaValidator().getValidator(), POST);
             }
         });
     }

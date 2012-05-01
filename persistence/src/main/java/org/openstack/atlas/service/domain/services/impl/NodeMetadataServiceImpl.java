@@ -139,8 +139,19 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
     }
 
     @Override
-    public List<NodeMeta> updateNodeMeta(Node node) throws EntityNotFoundException {
-        throw new EntityNotFoundException("This is a stub for the getNodeMeta function in the service impl.");
+    public NodeMeta updateNodeMeta(Integer accountId, Integer loadbalancerId, Integer nodeId, NodeMeta callNodeMeta) throws EntityNotFoundException {
+        Node node = nodeRepository.getNodeByAccountIdLoadBalancerIdNodeId(accountId, loadbalancerId, nodeId);
+        List<Integer> ids = new ArrayList<Integer>();
+
+        for (NodeMeta nodeMeta : node.getNodeMetadata()) {
+            ids.add(nodeMeta.getId());
+        }
+
+        if (!ids.contains(callNodeMeta.getId())) {
+            throw new EntityNotFoundException("Node meta with id " + callNodeMeta.getId() + " doesn't exist.");
+        }
+
+        return nodeMetadataRepository.updateNodeMeta(node, callNodeMeta);
     }
 
     private boolean detectDuplicateNodeMetadata(Collection<NodeMeta> nodemeta1, Collection<NodeMeta> nodemeta2) {

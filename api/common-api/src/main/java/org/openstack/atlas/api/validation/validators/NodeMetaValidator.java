@@ -6,7 +6,6 @@ import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeMeta;
 
 import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
-import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 
 public class NodeMetaValidator implements ResourceValidator<NodeMeta> {
 
@@ -16,10 +15,10 @@ public class NodeMetaValidator implements ResourceValidator<NodeMeta> {
         validator = build(new ValidatorBuilder<NodeMeta>(NodeMeta.class) {
 
             {
-                // FULL EXPECTATIONS
-                result(validationTarget().getKey()).must().exist().forContext(POST).withMessage("Must provide a key for the meta data.");
-                result(validationTarget().getValue()).must().exist().forContext(POST).withMessage("Must provide a value for the meta data.");
-                result(validationTarget().getId()).must().not().exist().forContext(POST).withMessage("Must not specify an id for any meta data.");
+                // SHARED EXPECTATIONS
+                result(validationTarget().getKey()).must().exist().withMessage("Must provide a key for the meta data.");
+                result(validationTarget().getValue()).must().exist().withMessage("Must provide a value for the meta data.");
+                result(validationTarget().getId()).must().not().exist().withMessage("Must not specify an id for node meta data");
             }
         });
     }

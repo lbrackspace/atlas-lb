@@ -106,6 +106,21 @@ public class NodeMetadataRepository {
         return resultItem;
     }
 
+    public NodeMeta updateNodeMeta(Node node, NodeMeta callNodeMeta) {
+        for (NodeMeta nodeMeta : node.getNodeMetadata()) {
+            if (nodeMeta.getId().equals(callNodeMeta.getId())) {
+                nodeMeta.setKey(callNodeMeta.getKey());
+                nodeMeta.setValue(callNodeMeta.getValue());
+                nodeMeta.setNode(node);
+            }
+        }
+
+        node.getLoadbalancer().setUpdated(Calendar.getInstance());
+        entityManager.merge(node.getLoadbalancer());
+        entityManager.flush();
+        return callNodeMeta;
+    }
+
     /*
         String query = "from Node n where n.loadbalancer.id=:loadbalancerId and n.loadbalancer.accountId=:accountId AND n.id = :nodeId";
         try {

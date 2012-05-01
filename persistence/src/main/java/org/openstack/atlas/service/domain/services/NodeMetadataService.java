@@ -23,7 +23,7 @@ public interface NodeMetadataService {
 
     List<NodeMeta> deleteNodeMeta(Integer accountId, Integer loadbalancerId, Integer nodeId, Integer id) throws EntityNotFoundException;
 
-    List<NodeMeta> updateNodeMeta(Node node) throws EntityNotFoundException;
+    NodeMeta updateNodeMeta(Integer accountId, Integer loadbalancerId, Integer nodeId, NodeMeta callNodeMeta) throws EntityNotFoundException;
 }
 
 /*
