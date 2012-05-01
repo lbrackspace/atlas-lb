@@ -50,6 +50,8 @@ public class NodeMetaResource extends CommonDependencyProvider {
             return getValidationFaultResponse(result);
         }
 
+        callNodeMeta.setId(id);
+
         try {
             org.openstack.atlas.service.domain.entities.NodeMeta domainNodeMeta = dozerMapper.map(callNodeMeta, org.openstack.atlas.service.domain.entities.NodeMeta.class);
             NodeMeta nodeMeta = dozerMapper.map(nodeMetadataService.updateNodeMeta(accountId, loadbalancerId, nodeId, domainNodeMeta), NodeMeta.class);

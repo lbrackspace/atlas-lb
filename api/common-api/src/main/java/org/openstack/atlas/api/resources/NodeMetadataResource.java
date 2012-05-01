@@ -102,8 +102,10 @@ public class NodeMetadataResource extends CommonDependencyProvider {
     @Path("{id: [-+]?[1-9][0-9]*}")
     public NodeMetaResource retrieveNodeResource(@PathParam("id") int id) {
         nodeMetaResource.setRequestHeaders(requestHeaders);
-        nodeMetaResource.setId(id);
+        nodeMetaResource.setAccountId(accountId);
+        nodeMetaResource.setLoadbalancerId(loadbalancerId);
         nodeMetaResource.setNodeId(nodeId);
+        nodeMetaResource.setId(id);
         return nodeMetaResource;
     }
 
@@ -115,15 +117,15 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         this.requestHeaders = requestHeaders;
     }
 
-    public void setNodeId(Integer nodeId) {
-        this.nodeId = nodeId;
+    public void setAccountId(Integer accountId) {
+        this.accountId = accountId;
     }
 
     public void setLoadbalancerId(Integer loadbalancerId) {
         this.loadbalancerId = loadbalancerId;
     }
 
-    public void setAccountId(Integer accountId) {
-        this.accountId = accountId;
+    public void setNodeId(Integer nodeId) {
+        this.nodeId = nodeId;
     }
 }
