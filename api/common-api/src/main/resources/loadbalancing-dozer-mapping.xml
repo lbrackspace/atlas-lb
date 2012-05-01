@@ -304,7 +304,7 @@
     </mapping>
 
     <mapping map-null="false">
-        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Node</class-a>
+        <class-a bean-factory="org.openstack.atlas.api.mapper.dozer.factory.NodeFactory">org.openstack.atlas.docs.loadbalancers.api.v1.Node</class-a>
         <class-b>org.openstack.atlas.service.domain.entities.Node</class-b>
         <field>
             <a>address</a>
@@ -314,7 +314,7 @@
 
     <mapping map-null="false" map-id="HIDE_NODE_META">
         <class-a>org.openstack.atlas.service.domain.entities.Node</class-a>
-        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.Node</class-b>
+        <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.NodeFactory">org.openstack.atlas.docs.loadbalancers.api.v1.Node</class-b>
         <field>
             <a>ipAddress</a>
             <b>address</b>
@@ -322,8 +322,6 @@
         <field-exclude>
             <a>nodeMetadata</a>
             <b>nodeMetadata</b>
-            <a-hint>org.openstack.atlas.service.domain.entities.NodeMeta</a-hint>
-            <b-hint>org.openstack.atlas.docs.loadbalancers.api.v1.NodeMetadata</b-hint>
         </field-exclude>
     </mapping>
 

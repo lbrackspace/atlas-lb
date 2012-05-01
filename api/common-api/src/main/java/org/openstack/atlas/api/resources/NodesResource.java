@@ -44,7 +44,7 @@ public class NodesResource extends CommonDependencyProvider {
             dnodes = nodeService.getNodesByAccountIdLoadBalancerId(getAccountId(), getLoadBalancerId(), offset, limit, marker);
             dnodes = LoadBalancerProperties.setWeightsforNodes(dnodes);
             for (org.openstack.atlas.service.domain.entities.Node dnode : dnodes) {
-                rnodes.getNodes().add(dozerMapper.map(dnode, org.openstack.atlas.docs.loadbalancers.api.v1.Node.class));
+                rnodes.getNodes().add(dozerMapper.map(dnode, org.openstack.atlas.docs.loadbalancers.api.v1.Node.class, "HIDE_NODE_META"));
             }
             return Response.status(200).entity(rnodes).build();
         } catch (Exception e) {
