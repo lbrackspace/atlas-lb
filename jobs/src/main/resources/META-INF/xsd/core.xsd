@@ -16,20 +16,18 @@
     targetNamespace="http://docs.rackspace.com/usage/core">
 
     <include schemaLocation="_1.0Core.xsd"/>
-    <import namespace="http://docs.rackspace.com/usage/lbaas"
-            schemaLocation="ProductExtensionExample-LBaaS.xsd"/>
 
     <!-- Define the element for XSD 1.0 clients -->
-    <element name="usage">
-        <complexType>
-            <complexContent>
-                <restriction base="usage:UsageV1">
-                    <sequence>
-                        <any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
-                    </sequence>
-                    <attribute name="version" type="xsd:string" use="required" fixed="1"/>
-                </restriction>
-            </complexContent>
-        </complexType>
-    </element>
+    <element name="usage" type="usage:V1Element"/>
+
+    <complexType name="V1Element">
+        <complexContent>
+            <restriction base="usage:UsageV1">
+                <sequence>
+                    <any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+                </sequence>
+                <attribute name="version" type="xsd:string" use="required" fixed="1"/>
+            </restriction>
+        </complexContent>
+    </complexType>
 </schema>

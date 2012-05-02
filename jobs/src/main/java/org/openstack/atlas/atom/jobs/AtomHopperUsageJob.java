@@ -2,14 +2,20 @@ package org.openstack.atlas.atom.jobs;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
-import org.openstack.atlas.atom.util.*;
+import org.openstack.atlas.atom.util.AtomHopperConfiguration;
+import org.openstack.atlas.atom.util.AtomHopperConfigurationKeys;
+import org.openstack.atlas.atom.util.ClientUtil;
+import org.openstack.atlas.atom.util.ResponseUtil;
 import org.openstack.atlas.cfg.Configuration;
+import org.openstack.atlas.jobs.EventType;
 import org.openstack.atlas.jobs.Job;
+import org.openstack.atlas.jobs.UsageContent;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.entities.Usage;
@@ -28,6 +34,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.UUID;
 
 public class AtomHopperUsageJob extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(AtomHopperUsageJob.class);
@@ -37,7 +44,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
     private Configuration configuration = new AtomHopperConfiguration();
 
     private String region = "GLOBAL"; //default..
-    private final String title = "LBAAS-USAGE"; //default..
+    private final String title = "cloudLoadBalancers"; //default..
     private final String author = "LBAAS"; //default..
 
     @Override
@@ -46,7 +53,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
     }
 
     private void startPoller() {
-        region = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
+        region = configuration.getString(AtomHopperConfigurationKeys.region);
 
         //URI from config : atomHopper/USL endpoint
         String URI = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
@@ -74,28 +81,30 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
                     List<Usage> lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), ResponseUtil.getStartTime(), ResponseUtil.getNow());
 
                     //Walk each record...
-                    for (Usage ur : lbusage) {
-                        if (!ur.isPushed()) {
+                    for (Usage usageRecord : lbusage) {
+                        if (usageRecord.isNeedsPushed()) {
+
                             EntryPojo entry = new EntryPojo();
                             entry.setTitle(title);
                             entry.setAuthor(author);
 
-                            String usage = UsageMarshaller.marshallUsage(generateUsageEntry(ur));
-                            entry.setContent(usage);
+                            UsageContent usageContent = new UsageContent();
+                            usageContent.setUsage(generateUsageEntry(usageRecord));
+                            entry.setContent(usageContent);
 
-                            LOG.info(String.format("Contacting and uploading to the atomHopper service now..."));
-                            ClientResponse response = client.resource(URI)
-                                    .accept(MediaType.APPLICATION_XML)
+                            LOG.info(String.format("Uploading to the atomHopper service now..."));
+                            WebResource cr = client.resource(URI);
+                            ClientResponse response = cr.accept(MediaType.APPLICATION_XML)
                                     .type(MediaType.APPLICATION_ATOM_XML)
                                     .post(ClientResponse.class, entry);
 
-                            //Notify usage if the record was pushed or not...
+                            //Notify usage if the record was uploaded or not...
                             if (response.getStatus() == 201) {
-                                ur.setPushed(true);
+                                usageRecord.setNeedsPushed(false);
                             } else {
-                                ur.setPushed(false);
+                                usageRecord.setNeedsPushed(true);
                             }
-                            usageRepository.updateEntryVersion(ur);
+                            usageRepository.updatePushedRecord(usageRecord);
 
                             String body = ResponseUtil.processResponseBody(response);
                             LOG.info(String.format("Status=%s\n", response.getStatus()));
@@ -129,16 +138,18 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
         usageV1.setStartTime(processCalendar(usageRecord.getStartTime().getTimeInMillis()));
         usageV1.setEndTime(processCalendar(usageRecord.getEndTime().getTimeInMillis()));
 
-        //TODO: map values of event type lb to generic event types...
-//        if (usageRecord.getEventType() == null) {
-//            usageV1.setEventType(null);
-//        } else {
-//            usageV1.setEventType(fromValue(usageRecord.getEventType()));
-//        }
-        usageV1.setEventType(org.openstack.atlas.jobs.EventType.CREATE);
+        if (mapEventType(usageRecord) == null) {
+            usageV1.setEventType(null);
+        } else {
+            usageV1.setEventType(mapEventType(usageRecord));
+        }
+
         usageV1.setTenantId(usageRecord.getAccountId().toString());
-        usageV1.setResourceId("magicID" + usageRecord.getId());
-        usageV1.setUsageId("specialIdForUsageRecord");
+        usageV1.setResourceId(usageRecord.getLoadbalancer().getId().toString());
+
+        //Generate UUID
+        UUID uuid = new UUID(usageRecord.getId(), usageRecord.getLoadbalancer().getId());
+        usageV1.setUsageId(uuid.toString());
 
 
         LBaaSUsagePojo lu = new LBaaSUsagePojo();
@@ -151,6 +162,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
         lu.setNumPolls(usageRecord.getNumberOfPolls());
         lu.setNumVips(usageRecord.getNumVips());
         lu.setTagsBitmask(usageRecord.getTags());
+        lu.setEventType(usageRecord.getEventType());
 
         usageV1.getAny().add(lu);
         return usageV1;
@@ -161,6 +173,23 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
         gc.setTimeInMillis(timeInMillis);
         DatatypeFactory dtf = DatatypeFactory.newInstance();
         return dtf.newXMLGregorianCalendar(gc);
+    }
+
+    private EventType mapEventType(Usage usageRecord) throws DatatypeConfigurationException {
+        if (usageRecord.getEventType() != null) {
+            if (usageRecord.getEventType().equals("CREATE_LOADBALANCER")) {
+                return EventType.CREATE;
+            } else if (usageRecord.getEventType().equals("DELETE_LOADBALANCER")) {
+                return EventType.DELETE;
+            } else if (usageRecord.getEventType().equals("SUSPEND_LOADBALANCER")) {
+                return EventType.SUSPEND;
+            } else if (usageRecord.getEventType().equals("UNSUSPEND_LOADBANCER")) {
+                return EventType.UNSUSPEND;
+            } else if (usageRecord.getEventType().equals("UPDATE_LOADBALANCER")) {
+                return EventType.UPDATE;
+            }
+        }
+        return null;
     }
 
     private void processJobState(JobName jobName, JobStateVal jobStateVal) {

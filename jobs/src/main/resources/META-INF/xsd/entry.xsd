@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:usage="http://docs.rackspace.com/usage/core" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://www.w3.org/2005/Atom">
+
+    <!--<import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/usage/core" schemaLocation="core.xsd"/>-->
+
+    <import schemaLocation="wrapper.xsd"/>
+
+    <element name="entry" type="atom:UsageEntry"/>
+
+    <complexType name="UsageEntry">
+        <annotation>
+            <documentation>
+                <html:p>
+                    The following is a usage entry as expected by
+                    AtomHopper when collecting usage.
+                </html:p>
+            </documentation>
+        </annotation>
+        
+        <!--
+            Order matters in 1.0 land :-(
+        -->
+        <sequence vc:minVersion="1.0" vc:maxVersion="1.1">
+            <element name="title" type="xsd:string"/>
+            <element name="author" type="xsd:string"/>
+            <element name="id" type="xsd:anyURI"/>
+            <element name="updated" type="xsd:dateTime"/>
+            <element name="category" type="atom:UsageCategory" minOccurs="0" maxOccurs="20"/>
+            <element name="content" type="atom:UsageContent"/>
+            <any maxOccurs="20" minOccurs="0" processContents="skip"/>
+        </sequence>
+    </complexType>
+
+    <complexType name="UsageContent">
+        <sequence>
+            <element ref="usage:usage"/>
+        </sequence>
+        <attribute name="type" type="xsd:string" fixed="application/xml" use="required"/>
+    </complexType>
+
+    <complexType name="UsageCategory">
+        <attribute name="term" type="xsd:string" use="required"/>
+        <attribute name="scheme" type="xsd:anyURI" use="optional"/>
+        <attribute name="label" type="xsd:string" use="optional"/>
+    </complexType>
+</schema>

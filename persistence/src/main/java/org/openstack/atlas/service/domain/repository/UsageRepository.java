@@ -59,21 +59,21 @@ public class UsageRepository {
         entityManager.createNativeQuery(query).executeUpdate();
     }
 
-    public void updateEntryVersion(Usage usageRecord) {
+    public void updatePushedRecord(Usage usageRecord) {
         LOG.info(String.format("updateEntryRecord called"));
         entityManager.merge(usageRecord);
     }
 
     private String generateBatchInsertQuery(List<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version) values");
+        sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
 
     private String generateBatchUpdateQuery(List<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("REPLACE INTO lb_usage(id, loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version) values");
+        sb.append("REPLACE INTO lb_usage(id, loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
@@ -107,6 +107,7 @@ public class UsageRepository {
             } else {
                 sb.append("'").append(usage.getEventType()).append("'").append(",");
             }
+
             //Used for keeping track of updated rows
             int versionBump;
             if (usage.getEntryVersion() == null) {
@@ -115,10 +116,13 @@ public class UsageRepository {
             } else {
                 versionBump = usage.getEntryVersion();
             }
-
             versionBump += 1;
             sb.append(versionBump);
             sb.append("),");
+            //Mark as not pushed so job can update the AHUSL
+            sb.append(1);
+            sb.append("),");
+
         }
         if (sb.toString().endsWith(",")) {
             sb.deleteCharAt(sb.lastIndexOf(","));

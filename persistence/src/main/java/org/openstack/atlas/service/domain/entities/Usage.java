@@ -42,8 +42,8 @@ public class Usage extends Entity implements Serializable {
     private Integer accountId;
     @Column(name="entry_version", nullable = false)
     private Integer entryVersion;
-    @Column(name = "is_pushed", nullable = false)
-    private boolean isPushed;
+    @Column(name = "needs_pushed", nullable = false)
+    private boolean needsPushed;
 
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;
@@ -165,11 +165,11 @@ public class Usage extends Entity implements Serializable {
         this.entryVersion = entryVersion;
     }
 
-    public boolean isPushed() {
-        return isPushed;
+    public boolean isNeedsPushed() {
+        return needsPushed;
     }
 
-    public void setPushed(boolean pushed) {
-        isPushed = pushed;
+    public void setNeedsPushed(boolean needsPushed) {
+        this.needsPushed = needsPushed;
     }
 }

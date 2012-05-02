@@ -1,22 +1,12 @@
 package org.openstack.atlas.atom.pojo;
 
+import org.openstack.atlas.jobs.UsageEntry;
+
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 
-@XmlRootElement(namespace = "http://www.w3.org/2005/Atom",name = "entry")
-public class EntryPojo {
-    public String title;
-    public String author;
-    public String content;
+@XmlRootElement(namespace = "http://www.w3.org/2005/Atom", name = "entry")
+@XmlSeeAlso({LBaaSUsagePojo.class})
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
+public class EntryPojo extends UsageEntry {
 }

@@ -1,7 +1,6 @@
 package org.openstack.atlas.atom.util;
 
 import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
-import org.openstack.atlas.atom.pojo.UsageV1Pojo;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -11,8 +10,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 public class UsageMarshaller {
-    public static String marshallUsage(UsageV1Pojo usageV1) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(UsageV1Pojo.class);
+    public static String marshallObject(Object object) throws JAXBException {
+        JAXBContext jc = JAXBContext.newInstance(object.getClass());
 
         Marshaller marshaller = jc.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -26,8 +25,16 @@ public class UsageMarshaller {
         });
 
         StringWriter st = new StringWriter();
-        marshaller.marshal(usageV1, st);
+        marshaller.marshal(object, st);
         String xml = st.toString();
         return xml;
     }
+
+//    public static String marshallUsage(UsageV1Pojo usageV1) throws JAXBException {
+//        return marshallObject(usageV1);
+//    }
+//
+//    public static String marshallEntry(EntryPojo entry) throws JAXBException {
+//        return marshallObject(entry);
+//    }
 }

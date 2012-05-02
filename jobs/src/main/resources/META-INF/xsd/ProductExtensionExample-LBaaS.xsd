@@ -101,6 +101,15 @@
                 </documentation>
             </annotation>
         </attribute>
+        <attribute name="eventType" type="xsd:string" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The event type.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
         <anyAttribute processContents="lax"/>
     </complexType>
 </schema>

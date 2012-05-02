@@ -151,7 +151,7 @@
                         </documentation>
                     </annotation>
                 </attribute>
-
+                
             </extension>
         </complexContent>
     </complexType>
@@ -185,7 +185,7 @@
             </documentation>
         </annotation>
         <restriction base="xsd:dateTime" vc:minVersion="1.0" vc:maxVersion="1.1"/>
-
+        
     </simpleType>
 
     <simpleType name="EventType">
