@@ -33,12 +33,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final String HTTP_COOKIE = "HTTP_COOKIE";
     public static final String RATE_LIMIT_HTTP = "rate_limit_http";
     public static final String RATE_LIMIT_NON_HTTP = "rate_limit_nonhttp";
+    public static final String CONTENT_CACHING = "content_caching";
     public static final String XFF = "add_x_forwarded_for_header";
     public static final String XFP = "add_x_forwarded_proto";
     public static final VirtualServerRule ruleRateLimitHttp = new VirtualServerRule(RATE_LIMIT_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleRateLimitNonHttp = new VirtualServerRule(RATE_LIMIT_NON_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedProto = new VirtualServerRule(XFP, true, VirtualServerRuleRunFlag.run_every);
+    public static final VirtualServerRule ruleContentCaching = new VirtualServerRule(CONTENT_CACHING, true, VirtualServerRuleRunFlag.run_every);
 
     @Override
     public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
@@ -214,6 +216,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
             updateConnectionLogging(config, lb);
+        }
+
+        if (lb.isContentCaching() != null && lb.isContentCaching()) {
+            updateContentCaching(config, lb);
         }
 
         if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
@@ -1510,6 +1516,79 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         LOG.info(String.format("Successfully updated connection logging for virtual server '%s'...", virtualServerName));
+    }
+
+    @Override
+    public void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+         LOG.debug("Attempting to update content caching for load balancer: " + loadBalancer.getId());
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        Integer lbId = loadBalancer.getId();
+        Integer accountId = loadBalancer.getAccountId();
+
+        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        String[] vsNames;
+
+        boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
+
+        if (isSecureServer) {
+            vsNames = new String[]{virtualServerName, virtualSecureServerName};
+        } else {
+            vsNames = new String[]{virtualServerName};
+        }
+
+        for (String vsName : vsNames) {
+            updateContentCaching(config, loadBalancer, vsName);
+        }
+    }
+
+    private void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String virtualServerName)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+
+        boolean isContentCaching = loadBalancer.isContentCaching();
+        LoadBalancerProtocol protocol = loadBalancer.getProtocol();
+
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        final String rollBackMessage = "Update content caching request canceled.";
+
+        if (isContentCaching) {
+            LOG.debug(String.format("ENABLING content caching for virtual server '%s'...", virtualServerName));
+        } else {
+            LOG.debug(String.format("DISABLING content caching for virtual server '%s'...", virtualServerName));
+        }
+
+        try {
+            VirtualServerRule contentCachingRule = ZxtmAdapterImpl.ruleContentCaching;
+            if (isContentCaching) {
+
+                LOG.debug("Attach content caching rule and enable on the virtual server.");
+
+                if (protocol.equals(LoadBalancerProtocol.HTTP)) {
+                    serviceStubs.getVirtualServerBinding().addRules(new String[]{virtualServerName}, new VirtualServerRule[][]{{contentCachingRule}});
+                    serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{isContentCaching});
+                    LOG.info("Rules attached to the VS, update content caching successfully completed.");
+                } else {
+                    LOG.info("Content caching rule note set because loadbalancer protocol is not HTTP.");
+                    serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{contentCachingRule.getName()}});
+                    serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{false});
+                }
+            } else {
+                LOG.info("Removing content caching rule from virtualserver: " + virtualServerName);
+                    serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{contentCachingRule.getName()}});
+                    serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{false});
+            }
+
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+                LOG.error(String.format("Virtual server '%s' does not exist. Cannot update content caching.", virtualServerName));
+            }
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }
+
+        LOG.info(String.format("Successfully updated content caching for virtual server '%s'...", virtualServerName));
     }
 
     @Override

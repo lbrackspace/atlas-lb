@@ -1,24 +1,23 @@
 package org.openstack.atlas.api.resources;
 
+import org.apache.abdera.model.Feed;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
-import org.openstack.atlas.service.domain.operations.Operation;
-import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.api.helpers.LoadBalancerProperties;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.apache.abdera.model.Feed;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
+import org.openstack.atlas.service.domain.operations.Operation;
 
-import javax.faces.view.facelets.Metadata;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
@@ -34,6 +33,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     private final Log LOG = LogFactory.getLog(LoadBalancerResource.class);
     private AccessListResource accessListResource;
     private ConnectionLoggingResource connectionLoggingResource;
+    private ContentCachingResource contentCachingResource;
     private HealthMonitorResource healthMonitorResource;
     private MetadataResource metadataResource;
     private NodesResource nodesResource;
@@ -156,6 +156,13 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         return connectionLoggingResource;
     }
 
+    @Path("contentcaching")
+    public ContentCachingResource retrieveContentCachingResource() {
+        contentCachingResource.setAccountId(accountId);
+        contentCachingResource.setLoadBalancerId(id);
+        return contentCachingResource;
+    }
+
     @Path("connectionthrottle")
     public ConnectionThrottleResource retrieveConnectionThrottleResource() {
         connectionThrottleResource.setRequestHeaders(requestHeaders);
@@ -266,6 +273,10 @@ public class LoadBalancerResource extends CommonDependencyProvider {
 
     public void setConnectionThrottleResource(ConnectionThrottleResource connectionThrottleResource) {
         this.connectionThrottleResource = connectionThrottleResource;
+    }
+
+    public void setContentCachingResource(ContentCachingResource contentCachingResource) {
+        this.contentCachingResource = contentCachingResource;
     }
 
     public void setVirtualIpsResource(VirtualIpsResource virtualIpsResource) {

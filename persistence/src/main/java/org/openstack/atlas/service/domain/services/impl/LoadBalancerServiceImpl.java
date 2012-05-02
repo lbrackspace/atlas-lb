@@ -276,19 +276,19 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                         LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     } else {
-                       LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
-                       dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
+                        LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
+                        dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     }
 
-                } else if(!loadBalancer.getProtocol().equals(HTTP)) {
-                     if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP)) {
+                } else if (!loadBalancer.getProtocol().equals(HTTP)) {
+                    if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP)) {
                         LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     } else {
-                       LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
-                       dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
-                       dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                        LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
+                        dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
+                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     }
                 }
             } else {
@@ -297,18 +297,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
         }
 
-        if (loadBalancer.isConnectionLogging() != null && !loadBalancer.isConnectionLogging().equals(dbLoadBalancer.isConnectionLogging())) {
-            if (loadBalancer.isConnectionLogging()) {
-                if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
-                    LOG.error("Protocol must be HTTP for connection logging.");
-                    throw new UnprocessableEntityException(String.format("Protocol must be HTTP for connection logging."));
-                }
-                LOG.debug("Enabling connection logging on the loadbalancer...");
-            } else {
-                LOG.debug("Disabling connection logging on the loadbalancer...");
-            }
-            dbLoadBalancer.setConnectionLogging(loadBalancer.isConnectionLogging());
-        }
+       LOG.debug(String.format("Verifying connectionLogging and contentCaching... if enabled, they are valid only with HTTP protocol.."));
+       verifyProtocolLoggingAndCaching(loadBalancer, dbLoadBalancer);
+
 
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
@@ -322,6 +313,41 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         // TODO: Sending db loadbalancer causes everything to update. Tweek for performance
         LOG.debug("Leaving " + getClass());
         return dbLoadBalancer;
+    }
+
+    private void verifyProtocolLoggingAndCaching(LoadBalancer loadBalancer, LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
+        String logErr = "Protocol must be HTTP for connection logging.";
+        String ccErr = "Protocol must be HTTP for content caching.";
+        String enable = " is Being enabled on the loadbalancer";
+        String disable = " is Being disabled on the loadbalancer";
+
+        if (loadBalancer.isConnectionLogging() != null && !loadBalancer.isConnectionLogging().equals(dbLoadBalancer.isConnectionLogging())) {
+            if (loadBalancer.isConnectionLogging()) {
+                if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
+                    LOG.error(logErr);
+                    throw new UnprocessableEntityException(logErr);
+                }
+                LOG.debug("ConnectionLogging" + enable);
+            } else {
+                LOG.debug("ConnectionLogging" + disable);
+            }
+            dbLoadBalancer.setConnectionLogging(loadBalancer.isConnectionLogging());
+        }
+
+        if (loadBalancer.isContentCaching() != null && !loadBalancer.isContentCaching().equals(dbLoadBalancer.isConnectionLogging())) {
+            if (loadBalancer.isContentCaching()) {
+                if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
+                    LOG.error(ccErr);
+                    throw new UnprocessableEntityException(ccErr);
+                }
+                 LOG.debug("ContentCaching" + enable);
+            } else {
+                LOG.debug("ContentCaching" + disable);
+            }
+            dbLoadBalancer.setConnectionLogging(loadBalancer.isConnectionLogging());
+        }
+
+
     }
 
     @Transactional

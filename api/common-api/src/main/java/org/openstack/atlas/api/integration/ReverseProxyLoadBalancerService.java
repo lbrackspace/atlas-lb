@@ -35,6 +35,8 @@ public interface ReverseProxyLoadBalancerService {
 
     void updateConnectionLogging(LoadBalancer lb) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
 
+    void updateContentCaching(LoadBalancer lb) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
+
     void setNodes(LoadBalancer lb) throws Exception;
 
     void removeNode(Integer id, Integer accountId, Node node) throws Exception;

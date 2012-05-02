@@ -82,6 +82,7 @@
     <bean id="alertService" class="org.openstack.atlas.service.domain.services.impl.AlertServiceImpl" parent="baseService"/>
     <bean id="hostService" class="org.openstack.atlas.service.domain.services.impl.HostServiceImpl" parent="baseService" />
     <bean id="connectionLoggingService" class="org.openstack.atlas.service.domain.services.impl.ConnectionLoggingServiceImpl" parent="baseService"/>
+    <bean id="contentCachingService" class="org.openstack.atlas.service.domain.services.impl.ContentCachingServiceImpl" parent="baseService"/>
     <bean id="algorithmService" class="org.openstack.atlas.service.domain.services.impl.AlgorithmsServiceImpl" parent="baseService"/>
     <bean id="protocolsService" class="org.openstack.atlas.service.domain.services.impl.ProtocolsServiceImpl" parent="baseService"/>
     <bean id="usageService" class="org.openstack.atlas.service.domain.services.impl.UsageServiceImpl" parent="baseService"/>
@@ -131,6 +132,7 @@
         <property name="healthMonitorService" ref="healthMonitorService"/>
         <property name="connectionThrottleService" ref="connectionThrottleService"/>
         <property name="connectionLoggingService" ref="connectionLoggingService"/>
+        <property name="contentCachingService" ref="contentCachingService"/>
         <property name="sessionPersistenceService" ref="sessionPersistenceService"/>
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
         <property name="accessListService" ref="accessListService"/>
@@ -473,6 +475,23 @@
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
         <property name="messageListener" ref="updateConnectionLoggingListener"/>
         <property name="destinationName" value="UPDATE_CONNECTION_LOGGING"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+    <bean id="updateContentCachingListener"
+          class="org.openstack.atlas.api.async.UpdateContentCachingListener"
+          parent="baseListener"/>
+
+    <bean id="updateContentCachingContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="updateContentCachingListener"/>
+        <property name="destinationName" value="UPDATE_CONTENT_CACHING"/>
         <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
         <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
         <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
