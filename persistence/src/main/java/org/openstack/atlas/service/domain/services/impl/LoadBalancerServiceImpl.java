@@ -271,22 +271,25 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (portHMTypecheck) {
                 /* Notify the Usage Processor on changes of protocol to and from secure protocols */
                 //notifyUsageProcessorOfSslChanges(message, queueLb, dbLoadBalancer);
-
                 if (loadBalancer.getProtocol().equals(HTTP)) {
-                    if (dbLoadBalancer.getSessionPersistence() == SessionPersistence.HTTP_COOKIE) {
+                    if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.HTTP_COOKIE)) {
                         LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
+                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                    } else {
+                       LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
+                       dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     }
 
-                    LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
-                    dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
-                } else if (!loadBalancer.getProtocol().equals(HTTP)) {
-                    if (dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP) {
+                } else if(!loadBalancer.getProtocol().equals(HTTP)) {
+                     if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP)) {
                         LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                    } else {
+                       LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
+                       dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
+                       dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     }
-                    dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
-                    dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                 }
             } else {
                 LOG.error("Cannot update port as the loadbalancer has a incompatible Health Monitor type");
@@ -586,7 +589,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         String sipErrMsg = "SOURCE_IP Session persistence is only valid with non HTTP protocols.";
         if (inpersist != NONE) {
             if (inpersist == HTTP_COOKIE &&
-                    (dbProtocol != HTTP )) {
+                    (dbProtocol != HTTP)) {
                 throw new BadRequestException(httpErrMsg);
             }
 
