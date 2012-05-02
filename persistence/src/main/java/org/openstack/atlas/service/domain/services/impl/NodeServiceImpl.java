@@ -163,14 +163,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
         isLbActive(oldLbNodes);
 
-        Node nodeBeingUpdated = msgLb.getNodes().iterator().next();
-        LOG.debug("Verifying that we have an at least one active node...");
-        if (!activeNodeCheck(oldLbNodes, nodeBeingUpdated)) {
-            LOG.warn("No active nodes found! Sending failure response back to client...");
-            throw new UnprocessableEntityException("One or more nodes must remain ENABLED.");
-        }
-
-        // Won't delete secondary nodes untill you also delete Health Monitor
+        Node nodeBeingUpdated = new Node();
 
         LOG.debug("Nodes on dbLoadbalancer: " + oldLbNodes.getNodes().size());
         for (Node n : oldLbNodes.getNodes()) {
@@ -195,9 +188,20 @@ public class NodeServiceImpl extends BaseService implements NodeService {
                     n.setWeight(nodeToUpdate.getWeight());
                 }
                 n.setToBeUpdated(true);
+                nodeBeingUpdated = n;
                 break;
             }
         }
+
+        LOG.debug("Verifying that we have an at least one active node...");
+        if (!activeNodeCheck(oldLbNodes, nodeBeingUpdated)) {
+            LOG.warn("No active nodes found! Sending failure response back to client...");
+            throw new UnprocessableEntityException("One or more nodes must remain ENABLED.");
+        }
+
+        // Won't delete secondary nodes untill you also delete Health Monitor
+
+
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldLbNodes.getNodes());
         if (!npc.hasPrimary()) {
             throw new UnprocessableEntityException(Constants.NoPrimaryNodeError);
