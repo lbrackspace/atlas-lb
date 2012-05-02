@@ -173,10 +173,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 LOG.info(String.format("Succesfully disabled HOST Header rewrite on secure virtual server: %s", virtualServerName));
 
                 String[] errorFile = serviceStubs.getVirtualServerBinding().getErrorFile(new String[]{poolName});
-                if (!errorFile[0].equals("")) {
-                    setErrorFile(config, virtualServerName, errorFile[0]);
-                } else {
+//                efContents = serviceStubs.getZxtmConfExtraBinding().getFile(new String[]{poolName});
+                if (errorFile[0].equals("Default") || errorFile[0].equals(Constants.DEFAULT_ERRORFILE)) {
                     setDefaultErrorFile(config, virtualServerName);
+                } else {
+                    setErrorFile(config, virtualServerName, serviceStubs.getZxtmConfExtraBinding().getFile(new String[]{errorFile[0]})[0]);
                 }
             }
 
@@ -1000,6 +1001,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.info(String.format("Removing accessList from load balancer...'%s'...", loadBalancer.getId()));
             deleteAccessList(conf, virtualServerName);
             LOG.debug(String.format("Remove accessList from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
+
+            //Removing error file from shadow server
+            LOG.info(String.format("Removing error file from load balancer...'%s'...", loadBalancer.getId()));
+            deleteErrorFile(conf, virtualServerName);
+            LOG.debug(String.format("Remove error file from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
             //Removing protectionCatalog from shadow server
             LOG.info(String.format("Removing protection catalog from load balancer...'%s'...", loadBalancer.getId()));
