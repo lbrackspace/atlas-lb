@@ -1,5 +1,6 @@
 package resources;
 
+import com.rackspace.docs.usage.core.V1Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,7 +10,7 @@ import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
 import org.openstack.atlas.atom.util.UsageMarshaller;
-import org.openstack.atlas.jobs.UsageContent;
+import org.w3._2005.atom.UsageContent;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -68,7 +69,7 @@ public class XsdMarshallTest {
                 entry.setTitle("LBAAS");
                 entry.setAuthor("LBAAS");
 
-                JAXBContext jc = JAXBContext.newInstance(UsageV1Pojo.class);
+                JAXBContext jc = JAXBContext.newInstance(V1Element.class);
                 Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("src/main/resources/META-INF/xsd/core.xsd"));
 
                 Unmarshaller unmarshaller = jc.createUnmarshaller();
@@ -81,6 +82,7 @@ public class XsdMarshallTest {
                 UsageContent usageContent = new UsageContent();
                 usageContent.setUsage(usageV1);
                 entry.setContent(usageContent);
+                entry.getContent().setType("applicaiton/xml");
                 System.out.print(UsageMarshaller.marshallObject(entry));
 
             } catch (Exception e) {

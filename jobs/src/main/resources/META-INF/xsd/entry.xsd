@@ -2,9 +2,7 @@
 
 <schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:usage="http://docs.rackspace.com/usage/core" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://www.w3.org/2005/Atom">
 
-    <!--<import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/usage/core" schemaLocation="core.xsd"/>-->
-
-    <import schemaLocation="wrapper.xsd"/>
+    <import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/usage/core" schemaLocation="core.xsd"/>
 
     <element name="entry" type="atom:UsageEntry"/>
 

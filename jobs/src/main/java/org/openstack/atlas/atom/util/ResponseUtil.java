@@ -53,7 +53,7 @@ public class ResponseUtil {
 
     public static Calendar getStartTime() {
         Calendar c = getNow();
-        c.add(Calendar.WEEK_OF_MONTH, -1);
+        c.add(Calendar.MONTH, -1);
         return c;
     }
 

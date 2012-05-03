@@ -1,7 +1,7 @@
 package org.openstack.atlas.atom.pojo;
 
 
-import org.openstack.atlas.jobs.LbaasUsage;
+import com.rackspace.docs.usage.lbaas.LbaasUsage;
 
 import javax.xml.bind.annotation.XmlRootElement;
 

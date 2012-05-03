@@ -245,6 +245,5 @@
     <bean id="atomHopperUsageJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="atomHopperUsageJob"/>
         <property name="cronExpression" value="0 */3 * * * ?"/>
-        <!-- run every 15 mins -->
     </bean>
 </beans>

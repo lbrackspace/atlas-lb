@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-
-<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:usage="http://docs.rackspace.com/usage/core" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://www.w3.org/2005/Atom">
-  <include schemaLocation="core.xsd"/>
-</schema>

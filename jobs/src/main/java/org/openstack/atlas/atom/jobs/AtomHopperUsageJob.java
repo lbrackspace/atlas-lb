@@ -1,5 +1,6 @@
 package org.openstack.atlas.atom.jobs;
 
+import com.rackspace.docs.usage.core.EventType;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -13,9 +14,7 @@ import org.openstack.atlas.atom.util.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.util.ClientUtil;
 import org.openstack.atlas.atom.util.ResponseUtil;
 import org.openstack.atlas.cfg.Configuration;
-import org.openstack.atlas.jobs.EventType;
 import org.openstack.atlas.jobs.Job;
-import org.openstack.atlas.jobs.UsageContent;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.entities.Usage;
@@ -26,6 +25,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
+import org.w3._2005.atom.UsageContent;
 
 import javax.ws.rs.core.MediaType;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -91,6 +91,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
                             UsageContent usageContent = new UsageContent();
                             usageContent.setUsage(generateUsageEntry(usageRecord));
                             entry.setContent(usageContent);
+                            entry.getContent().setType(MediaType.APPLICATION_XML);
 
                             LOG.info(String.format("Uploading to the atomHopper service now..."));
                             WebResource cr = client.resource(URI);
