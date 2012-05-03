@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
+import org.openstack.atlas.usage.helpers.LoadBalancerNameMap;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -30,11 +31,19 @@ public class UsagesForPollingDatabaseTest {
         private Map<String, Integer> currentConnectionsMapSsl;
         private Map<Integer, LoadBalancerUsage> usagesAsMap;
         private String zxtmName;
+        private String zxtmSslName;
+        private LoadBalancerNameMap loadBalancerNameMap;
         private LoadBalancerUsage currentUsage;
 
         @Before
         public void standUp() {
             zxtmName = "1234_1234";
+            zxtmSslName = ZxtmNameBuilder.genSslVSName(zxtmName);
+            loadBalancerNameMap = new LoadBalancerNameMap();
+            loadBalancerNameMap.setLoadBalancerId(1234);
+            loadBalancerNameMap.setAccountId(1234);
+            loadBalancerNameMap.setNonSslVirtualServerName(zxtmName);
+            loadBalancerNameMap.setSslVirtualServerName(zxtmSslName);
             bytesInMap = new HashMap<String, Long>();
             bytesInMapSsl = new HashMap<String, Long>();
             bytesOutMap = new HashMap<String, Long>();
@@ -73,7 +82,7 @@ public class UsagesForPollingDatabaseTest {
         public void shouldRunInProperOrderWhenNumPollsIsZero() {
             LoadBalancerUsage mockedUsageRecord = mock(LoadBalancerUsage.class);
             mockedUsageRecord.setNumberOfPolls(0);
-            usagesForDatabase.updateCurrentRecord(zxtmName, mockedUsageRecord);
+            usagesForDatabase.updateCurrentRecord(loadBalancerNameMap, mockedUsageRecord);
             InOrder inOrder = inOrder(mockedUsageRecord);
 
             inOrder.verify(mockedUsageRecord).setNumberOfPolls(0);
@@ -81,10 +90,10 @@ public class UsagesForPollingDatabaseTest {
             inOrder.verify(mockedUsageRecord).setNumberOfPolls(1);
             inOrder.verify(mockedUsageRecord).setAverageConcurrentConnections(50.0);
             inOrder.verify(mockedUsageRecord).setAverageConcurrentConnectionsSsl(50.0);
-            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesIn(0l);
-            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesInSsl(0l);
-            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesOut(0l);
-            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesOutSsl(0l);
+            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesIn(anyLong());
+            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesInSsl(anyLong());
+            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesOut(anyLong());
+            inOrder.verify(mockedUsageRecord).setCumulativeBandwidthBytesOutSsl(anyLong());
             inOrder.verify(mockedUsageRecord).setLastBandwidthBytesIn(100l);
             inOrder.verify(mockedUsageRecord).setLastBandwidthBytesInSsl(100l);
             inOrder.verify(mockedUsageRecord).setLastBandwidthBytesOut(200l);
@@ -94,7 +103,7 @@ public class UsagesForPollingDatabaseTest {
         @Test
         public void shouldRunInProperOrderWhenNumPollsIsNotZero() {
             LoadBalancerUsage spy = spy(currentUsage);
-            usagesForDatabase.updateCurrentRecord(zxtmName, spy);
+            usagesForDatabase.updateCurrentRecord(loadBalancerNameMap, spy);
             InOrder inOrder = inOrder(spy);
 
             inOrder.verify(spy).setEndTime(any(Calendar.class));

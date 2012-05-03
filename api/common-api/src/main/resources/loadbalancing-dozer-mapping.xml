@@ -264,6 +264,10 @@
             <a>connectionLogging</a>
             <b get-method="isConnectionLogging">connectionLogging</b>
         </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ContentCachingConverter">
+            <a>contentCaching</a>
+            <b get-method="isContentCaching">contentCaching</b>
+        </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SourceAddressesConverter">
             <a>sourceAddresses</a>
             <b>host</b>
@@ -385,25 +389,6 @@
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
             <a>name</a>
             <b>name</b>
-        </field>
-    </mapping>
-
-    <mapping map-null="false">
-        <class-a>org.openstack.atlas.service.domain.pojos.AccountBilling</class-a>
-        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling</class-b>
-        <field>
-            <a>accountId</a>
-            <b>accountId</b>
-        </field>
-        <field>
-            <a>accountUsageRecords</a>
-            <b>accountUsage</b>
-        </field>
-        <field>
-            <a>loadBalancerBillings</a>
-            <b>loadBalancerUsages</b>
-            <a-hint>org.openstack.atlas.service.domain.pojos.LoadBalancerBilling</a-hint>
-            <b-hint>org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage</b-hint>
         </field>
     </mapping>
 

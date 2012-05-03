@@ -41,6 +41,7 @@ public class CommonDependencyProvider {
     protected LoadBalancerService loadBalancerService;
     protected HealthMonitorService healthMonitorService;
     protected ConnectionLoggingService connectionLoggingService;
+    protected ContentCachingService contentCachingService;
     protected ConnectionThrottleService connectionThrottleService;
     protected VirtualIpService virtualIpService;
     protected MetadataService metadataService;
@@ -90,6 +91,10 @@ public class CommonDependencyProvider {
 
     public void setConnectionLoggingService(ConnectionLoggingService connectionLoggingService) {
         this.connectionLoggingService = connectionLoggingService;
+    }
+
+    public void setContentCachingService(ContentCachingService contentCachingService) {
+        this.contentCachingService = contentCachingService;
     }
 
     public void setHealthMonitorService(HealthMonitorService healthMonitorService) {

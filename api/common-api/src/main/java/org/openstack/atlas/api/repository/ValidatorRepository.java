@@ -23,6 +23,7 @@ public final class ValidatorRepository {
         classKeyedValidatorMap.put(VirtualIp.class, new VirtualIpValidator());
         classKeyedValidatorMap.put(ConnectionThrottle.class, new ConnectionThrottleValidator());
         classKeyedValidatorMap.put(ConnectionLogging.class, new ConnectionLoggingValidator());
+        classKeyedValidatorMap.put(ContentCaching.class, new ContentCachingValidator());
         classKeyedValidatorMap.put(SslTermination.class, new SslTerminationValidator());
 
         if (!classKeyedValidatorMap.containsKey(classOfObjectToValidate)) {

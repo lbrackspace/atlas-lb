@@ -2,9 +2,9 @@ package org.openstack.atlas.api.mgmt.resources;
 
 import org.openstack.atlas.api.helpers.PaginationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.api.mapper.UsageMapper;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountBillings;
-import org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling;
 import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.util.converters.exceptions.ConverterException;
 import org.w3.atom.Link;
@@ -125,7 +125,7 @@ public class AccountsResource extends ManagementDependencyProvider {
         try {
             dAccountBillings = getLoadBalancerRepository().getAccountBillingForAllAccounts(startTime, endTime);
             for (org.openstack.atlas.service.domain.pojos.AccountBilling dAccountBilling : dAccountBillings) {
-                rAccountBillings.getAccountBillings().add(getDozerMapper().map(dAccountBilling, AccountBilling.class));
+                rAccountBillings.getAccountBillings().add(UsageMapper.toDataModelAccountBilling(dAccountBilling));
             }
             return Response.status(200).entity(rAccountBillings).build();
         } catch (Exception ex) {

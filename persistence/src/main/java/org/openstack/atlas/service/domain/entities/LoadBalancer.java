@@ -51,6 +51,8 @@ public class LoadBalancer extends Entity implements Serializable {
     private Integer accountId;
     @Column(name = "connection_logging", nullable = false)
     private Boolean connectionLogging;
+    @Column(name = "content_caching", nullable = false)
+    private Boolean contentCaching;
     @JoinColumn(name = "protocol", nullable = false)
     @Enumerated(EnumType.STRING)
     private LoadBalancerProtocol protocol;
@@ -188,6 +190,14 @@ public class LoadBalancer extends Entity implements Serializable {
 
     public void setConnectionLogging(Boolean connectionLogging) {
         this.connectionLogging = connectionLogging;
+    }
+
+    public Boolean isContentCaching() {
+        return contentCaching;
+    }
+
+    public void setContentCaching(Boolean contentCaching) {
+        this.contentCaching = contentCaching;
     }
 
     public ConnectionLimit getConnectionLimit() {

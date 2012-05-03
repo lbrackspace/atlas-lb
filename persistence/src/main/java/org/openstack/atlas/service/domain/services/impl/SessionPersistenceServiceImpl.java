@@ -3,7 +3,6 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
@@ -13,6 +12,11 @@ import org.openstack.atlas.service.domain.services.SessionPersistenceService;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
+import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
+
+import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.*;
+import static org.openstack.atlas.service.domain.entities.SessionPersistence.*;
+
 
 public class SessionPersistenceServiceImpl extends BaseService implements SessionPersistenceService {
     private final Log LOG = LogFactory.getLog(SessionPersistenceServiceImpl.class);
@@ -29,23 +33,15 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
     }
 
     @Override
-    @Transactional(rollbackFor = {EntityNotFoundException.class, ImmutableEntityException.class, UnprocessableEntityException.class})
-    public void update(LoadBalancer queueLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
+    @Transactional(rollbackFor = {EntityNotFoundException.class, ImmutableEntityException.class, BadRequestException.class})
+    public void update(LoadBalancer queueLb) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
         LOG.debug("Entering " + getClass());
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(queueLb.getId(), queueLb.getAccountId());
 
-        if ((dbLoadBalancer.getSessionPersistence().equals(PersistenceType.HTTP_COOKIE)) && !(dbLoadBalancer.getProtocol().equals(org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP)
-                || dbLoadBalancer.getProtocol().equals(org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS))) {
-            throw new UnprocessableEntityException("Unprocessable entity, HTTP_COOKIE Session persistence can only be enabled while load balancer is in HTTP/HTTPS protocol");
-        }
-
-        if ((dbLoadBalancer.getSessionPersistence().equals(PersistenceType.SOURCE_IP)) && (dbLoadBalancer.getProtocol().equals(org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP)
-                || dbLoadBalancer.getProtocol().equals(org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS))) {
-            throw new UnprocessableEntityException("Unprocessable entity, SOURCE_IP Session persistence can only be enabled while load balancer is not in HTTP/HTTPS protocol");
-        }
+        validateSessionPersistenceProtocolCompatibility(queueLb, dbLoadBalancer);
 
         LOG.debug("Updating the lb status to pending_update");
-        if(!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
@@ -70,7 +66,7 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
             throw new UnprocessableEntityException("Session persistence is already deleted.");
         }
 
-        if(!loadBalancerRepository.testAndSetStatus(dbLb.getAccountId(), dbLb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+        if (!loadBalancerRepository.testAndSetStatus(dbLb.getAccountId(), dbLb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dbLb);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
@@ -79,4 +75,29 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
             loadBalancerStatusHistoryService.save(dbLb.getAccountId(), dbLb.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
     }
+
+    public void validateSessionPersistenceProtocolCompatibility(LoadBalancer inLb, LoadBalancer dbLb) throws BadRequestException, UnprocessableEntityException {
+        SessionPersistence inpersist = inLb.getSessionPersistence();
+        LoadBalancerProtocol dbProtocol = dbLb.getProtocol();
+
+        String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP and HTTP(SSL Termination) protocols. ";
+        String sipErrMsg = "SOURCE_IP Session persistence is only valid with non-HTTP protocols. ";
+
+        LOG.info("Verifying session persistence protocol..." + inpersist);
+        if (inpersist != NONE) {
+            if (inpersist == HTTP_COOKIE &&
+                    (dbProtocol != HTTP)) {
+                LOG.info(httpErrMsg);
+                throw new BadRequestException(httpErrMsg);
+            }
+
+            if (inpersist == SOURCE_IP &&
+                    (dbProtocol == HTTP)) {
+                LOG.info(httpErrMsg);
+                throw new BadRequestException(sipErrMsg);
+            }
+        }
+        LOG.info("Successfully verified session persistence protocol..." + inLb.getSessionPersistence());
+    }
 }
+

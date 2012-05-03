@@ -29,6 +29,7 @@ public abstract class BaseListener implements MessageListener {
     protected HealthMonitorService healthMonitorService;
     protected ConnectionThrottleService connectionThrottleService;
     protected ConnectionLoggingService connectionLoggingService;
+    protected ContentCachingService contentCachingService;
     protected SessionPersistenceService sessionPersistenceService;
     protected AccessListService accessListService;
     protected RateLimitingService rateLimitingService;
@@ -68,6 +69,10 @@ public abstract class BaseListener implements MessageListener {
 
     public void setConnectionLoggingService(ConnectionLoggingService connectionLoggingService) {
         this.connectionLoggingService = connectionLoggingService;
+    }
+
+    public void setContentCachingService(ContentCachingService contentCachingService) {
+        this.contentCachingService = contentCachingService;
     }
 
     public void setSessionPersistenceService(SessionPersistenceService sessionPersistenceService) {

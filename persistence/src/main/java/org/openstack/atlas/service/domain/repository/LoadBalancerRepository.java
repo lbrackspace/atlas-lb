@@ -1307,6 +1307,22 @@ public class LoadBalancerRepository {
         return (Boolean) results.get(0);
     }
 
+    public Boolean getContentCachingByAccountIdLoadBalancerId(int accId, int lbId) throws EntityNotFoundException {
+        String queryStr = "select contentCaching from LoadBalancer lb where lb.accountId = :accId"
+                + " and lb.id = :lbId";
+
+        Query query = entityManager.createQuery(queryStr);
+        query.setParameter("accId", accId);
+        query.setParameter("lbId", lbId);
+        List results = query.getResultList();
+
+        if (results.isEmpty()) {
+            throw new EntityNotFoundException("Load balancer not found");
+        }
+
+        return (Boolean) results.get(0);
+    }
+
     public void removeRateLimitByExpiration(int id) {
         String queryStr = "delete from RateLimit rl where :now >= rl.expirationTime";
 
