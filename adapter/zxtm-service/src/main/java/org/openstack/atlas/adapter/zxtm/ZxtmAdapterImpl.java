@@ -1546,12 +1546,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     private void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String virtualServerName)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        boolean isContentCaching = false;
 
-        boolean isContentCaching = loadBalancer.isContentCaching();
+        if (loadBalancer.isContentCaching() != null) {
+            isContentCaching = loadBalancer.isContentCaching();
+        }
+
         LoadBalancerProtocol protocol = loadBalancer.getProtocol();
-
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-
         final String rollBackMessage = "Update content caching request canceled.";
 
         if (isContentCaching) {
@@ -1577,8 +1579,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 }
             } else {
                 LOG.info("Removing content caching rule from virtualserver: " + virtualServerName);
-                    serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{contentCachingRule.getName()}});
-                    serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{false});
+                serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{contentCachingRule.getName()}});
+                serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{false});
             }
 
         } catch (Exception e) {
