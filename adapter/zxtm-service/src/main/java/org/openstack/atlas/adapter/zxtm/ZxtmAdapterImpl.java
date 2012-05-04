@@ -1583,10 +1583,16 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{false});
             }
 
-        } catch (Exception e) {
-            if (e instanceof ObjectDoesNotExist) {
-                LOG.error(String.format("Virtual server '%s' does not exist. Cannot update content caching.", virtualServerName));
-            }
+        } catch (ObjectDoesNotExist obdne) {
+            LOG.error("Content caching not found, ignoring...");
+        } catch (DeploymentError e) {
+            LOG.error("Error updating content caching..." + e);
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        } catch (InvalidInput e) {
+            LOG.error("Error updating content caching..." + e);
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }  catch (RemoteException e) {
+            LOG.error("Error updating content caching..." + e);
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
 
