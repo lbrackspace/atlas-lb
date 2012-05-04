@@ -282,6 +282,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     }
 
                 } else if (!loadBalancer.getProtocol().equals(HTTP)) {
+                    dbLoadBalancer.setContentCaching(false);
                     if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP)) {
                         LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
@@ -297,8 +298,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
         }
 
-       LOG.debug(String.format("Verifying connectionLogging and contentCaching... if enabled, they are valid only with HTTP protocol.."));
-       verifyProtocolLoggingAndCaching(loadBalancer, dbLoadBalancer);
+        LOG.debug(String.format("Verifying connectionLogging and contentCaching... if enabled, they are valid only with HTTP protocol.."));
+        verifyProtocolLoggingAndCaching(loadBalancer, dbLoadBalancer);
 
 
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
@@ -340,7 +341,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     LOG.error(ccErr);
                     throw new UnprocessableEntityException(ccErr);
                 }
-                 LOG.debug("ContentCaching" + enable);
+                LOG.debug("ContentCaching" + enable);
             } else {
                 LOG.debug("ContentCaching" + disable);
             }

@@ -408,6 +408,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
                 removeXFFRuleFromVirtualServers(serviceStubs, vsNames); // XFF is only for the HTTP protocol
                 removeXFPRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
+                updateContentCaching(config, lb);
             }
         } catch (Exception e) {
             throw new ZxtmRollBackException(String.format("Update protocol request canceled for %s ", virtualServerName), e);
@@ -1521,7 +1522,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-         LOG.debug("Attempting to update content caching for load balancer: " + loadBalancer.getId());
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         Integer lbId = loadBalancer.getId();
