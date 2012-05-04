@@ -121,7 +121,7 @@ public class UsageRepository {
             }
             versionBump += 1;
             sb.append(versionBump);
-            sb.append("),");
+            sb.append(",");
             //Mark as not pushed so job can update the AHUSL
             sb.append(1);
             sb.append("),");
