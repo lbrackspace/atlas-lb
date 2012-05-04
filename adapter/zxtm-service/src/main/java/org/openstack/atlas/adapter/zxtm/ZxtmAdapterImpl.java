@@ -1584,13 +1584,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
 
         } catch (ObjectDoesNotExist obdne) {
-            LOG.error("Content caching not found, ignoring...");
+            LOG.error("Virtual server not found, ignoring this request......" + obdne);
         } catch (DeploymentError e) {
             LOG.error("Error updating content caching..." + e);
             throw new ZxtmRollBackException(rollBackMessage, e);
         } catch (InvalidInput e) {
-            LOG.error("Error updating content caching..." + e);
-            throw new ZxtmRollBackException(rollBackMessage, e);
+            LOG.error("Content caching not found, ignoring..." + e);
+//            throw new ZxtmRollBackException(rollBackMessage, e);
         }  catch (RemoteException e) {
             LOG.error("Error updating content caching..." + e);
             throw new ZxtmRollBackException(rollBackMessage, e);
