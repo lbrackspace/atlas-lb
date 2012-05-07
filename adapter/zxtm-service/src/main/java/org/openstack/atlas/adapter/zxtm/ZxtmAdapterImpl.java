@@ -2021,6 +2021,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
+    public Integer getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        String virtualServerName = isSsl ? ZxtmNameBuilder.genSslVSName(loadBalancerId, accountId) : ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
+        String virtualServerNames[] = {virtualServerName};
+        int[] ccsArray = serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(virtualServerNames);
+        return ccsArray[0];
+    }
+
+    @Override
     public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config) throws RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         return serviceStubs.getSystemStatsBinding().getTotalCurrentConn();
@@ -2056,6 +2065,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
+    public Long getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        String virtualServerName = isSsl ? ZxtmNameBuilder.genSslVSName(loadBalancerId, accountId) : ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
+        String virtualServerNames[] = {virtualServerName};
+        long[] bytesInArray = serviceStubs.getSystemStatsBinding().getVirtualserverBytesIn(virtualServerNames);
+        return bytesInArray[0];
+    }
+
+    @Override
     public Map<String, Long> getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, List<String> names) throws RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         Map<String, Long> bytesOutMap = new HashMap<String, Long>();
@@ -2068,6 +2086,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         return bytesOutMap;
+    }
+
+    @Override
+    public Long getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        String virtualServerName = isSsl ? ZxtmNameBuilder.genSslVSName(loadBalancerId, accountId) : ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
+        String virtualServerNames[] = {virtualServerName};
+        long[] bytesOutArray = serviceStubs.getSystemStatsBinding().getVirtualserverBytesOut(virtualServerNames);
+        return bytesOutArray[0];
     }
 
     @Override

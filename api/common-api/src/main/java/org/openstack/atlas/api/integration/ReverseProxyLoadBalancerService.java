@@ -81,6 +81,12 @@ public interface ReverseProxyLoadBalancerService {
 
     int getTotalCurrentConnectionsForHost(Host host) throws Exception;
 
+    Integer getLoadBalancerCurrentConnections(LoadBalancer lb, boolean isSsl) throws Exception;
+
+    Long getLoadBalancerBytesIn(LoadBalancer lb, boolean isSsl) throws Exception;
+
+    Long getLoadBalancerBytesOut(LoadBalancer lb, boolean isSsl) throws Exception;
+
     public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception;
 
     Hostssubnet getSubnetMappings(Host host) throws Exception;

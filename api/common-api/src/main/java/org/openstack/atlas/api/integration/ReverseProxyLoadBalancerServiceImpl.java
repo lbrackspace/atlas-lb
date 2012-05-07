@@ -395,6 +395,45 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
+    public Integer getLoadBalancerCurrentConnections(LoadBalancer lb, boolean isSsl) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
+        int conn;
+        try {
+            conn = reverseProxyLoadBalancerAdapter.getLoadBalancerCurrentConnections(config, lb.getAccountId(), lb.getId(), isSsl);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+        return conn;
+    }
+
+    @Override
+    public Long getLoadBalancerBytesIn(LoadBalancer lb, boolean isSsl) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
+        long bytesIn;
+        try {
+            bytesIn = reverseProxyLoadBalancerAdapter.getLoadBalancerBytesIn(config, lb.getAccountId(), lb.getId(), isSsl);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+        return bytesIn;
+    }
+
+    @Override
+    public Long getLoadBalancerBytesOut(LoadBalancer lb, boolean isSsl) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
+        long bytesOut;
+        try {
+            bytesOut = reverseProxyLoadBalancerAdapter.getLoadBalancerBytesOut(config, lb.getAccountId(), lb.getId(), isSsl);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+        return bytesOut;
+    }
+
+    @Override
     public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
         String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
