@@ -9,10 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
-import org.openstack.atlas.atom.util.AtomHopperConfiguration;
-import org.openstack.atlas.atom.util.AtomHopperConfigurationKeys;
-import org.openstack.atlas.atom.util.ClientUtil;
-import org.openstack.atlas.atom.util.ResponseUtil;
+import org.openstack.atlas.atom.util.*;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
 import org.openstack.atlas.service.domain.entities.JobName;
@@ -31,6 +28,7 @@ import javax.ws.rs.core.MediaType;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -130,7 +128,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
         LOG.info(String.format("Atom hopper usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 
-    private UsageV1Pojo generateUsageEntry(Usage usageRecord) throws DatatypeConfigurationException {
+    private UsageV1Pojo generateUsageEntry(Usage usageRecord) throws DatatypeConfigurationException, NoSuchAlgorithmException {
         UsageV1Pojo usageV1 = new UsageV1Pojo();
         usageV1.setRegion(region);
         usageV1.setServiceCode(title);
@@ -149,7 +147,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
         usageV1.setResourceId(usageRecord.getLoadbalancer().getId().toString());
 
         //Generate UUID
-        UUID uuid = new UUID(usageRecord.getId(), usageRecord.getLoadbalancer().getId());
+        UUID uuid = UUIDUtil.genUUID(genUUIDString(usageRecord));
         usageV1.setUsageId(uuid.toString());
 
 
@@ -191,6 +189,10 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
             }
         }
         return null;
+    }
+
+    private String genUUIDString(Usage usageRecord) {
+        return usageRecord.getId() + "_" + usageRecord.getLoadbalancer().getId() + "_" + region;
     }
 
     private void processJobState(JobName jobName, JobStateVal jobStateVal) {

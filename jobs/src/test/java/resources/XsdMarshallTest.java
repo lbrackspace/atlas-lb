@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
+import org.openstack.atlas.atom.util.UUIDUtil;
 import org.openstack.atlas.atom.util.UsageMarshaller;
 import org.w3._2005.atom.UsageContent;
 
@@ -24,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.UUID;
 
 @RunWith(Enclosed.class)
 public class XsdMarshallTest {
@@ -45,6 +47,9 @@ public class XsdMarshallTest {
             try {
                 EntryPojo entry = new EntryPojo();
 
+                String uString = "DFW" + "234" + "2346";
+                UUID uuid = UUIDUtil.genUUID(uString);
+
                 //core
                 UsageV1Pojo usageV1 = new UsageV1Pojo();
                 usageV1.setDataCenter("DFW");
@@ -53,7 +58,7 @@ public class XsdMarshallTest {
                 usageV1.setTenantId("1");
                 usageV1.setServiceCode("lbaas");
                 usageV1.setResourceId("22mfmfnmf");
-                usageV1.setUsageId("560490c6-6c63-11e1-adfe-27851d5aed13");
+                usageV1.setUsageId(uuid.toString());
                 Calendar cal = Calendar.getInstance();
                 usageV1.setStartTime(processCalendar(cal.getTimeInMillis()));
                 usageV1.setEndTime(processCalendar(cal.getTimeInMillis()));
@@ -64,13 +69,12 @@ public class XsdMarshallTest {
 //            lu.setVersion("1");
                 usageV1.getAny().add(lu);
 
-
                 //Atom specific
                 entry.setTitle("LBAAS");
                 entry.setAuthor("LBAAS");
 
                 JAXBContext jc = JAXBContext.newInstance(V1Element.class);
-                Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("src/main/resources/META-INF/xsd/core.xsd"));
+                Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("jobs/src/main/resources/META-INF/xsd/core.xsd"));
 
                 Unmarshaller unmarshaller = jc.createUnmarshaller();
                 unmarshaller.setSchema(factory);
@@ -78,9 +82,13 @@ public class XsdMarshallTest {
                 ByteArrayInputStream input = new ByteArrayInputStream(UsageMarshaller.marshallObject(usageV1).getBytes());
                 System.out.print(unmarshaller.unmarshal(input));
 
+//                 UUID uuid = new UUID(usageRecord.getId(), usageRecord.getLoadbalancer().getId());
+
+
 //                entry.setContent(UsageMarshaller.marshallObject(usageV1));
                 UsageContent usageContent = new UsageContent();
                 usageContent.setUsage(usageV1);
+
                 entry.setContent(usageContent);
                 entry.getContent().setType("applicaiton/xml");
                 System.out.print(UsageMarshaller.marshallObject(entry));
