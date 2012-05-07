@@ -47,11 +47,19 @@ public class ResponseUtil {
         return sb.toString();
     }
 
+    /**
+     *
+     * @return the Calendar
+     */
     public static Calendar getNow() {
         return Calendar.getInstance();
     }
 
-    public static Calendar getStartTime() {
+    /**
+     *
+     * @return the Calendar minus a month
+     */
+    public static Calendar getStartCal() {
         Calendar c = getNow();
         c.add(Calendar.MONTH, -1);
         return c;

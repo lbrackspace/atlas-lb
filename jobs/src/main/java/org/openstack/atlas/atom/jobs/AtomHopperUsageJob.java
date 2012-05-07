@@ -3,7 +3,6 @@ package org.openstack.atlas.atom.jobs;
 import com.rackspace.docs.usage.core.EventType;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.atom.pojo.EntryPojo;
@@ -36,14 +35,19 @@ import java.util.UUID;
 
 public class AtomHopperUsageJob extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(AtomHopperUsageJob.class);
-    private LoadBalancerRepository loadBalancerRepository;
-    private UsageRepository usageRepository;
 
     private Configuration configuration = new AtomHopperConfiguration();
+    private LoadBalancerRepository loadBalancerRepository;
+    private UsageRepository usageRepository;
 
     private String region = "GLOBAL"; //default..
     private final String title = "cloudLoadBalancers"; //default..
     private final String author = "LBAAS"; //default..
+    private String configRegion = null;
+    private String uri = null;
+
+    Client client;
+
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
@@ -51,11 +55,6 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
     }
 
     private void startPoller() {
-        region = configuration.getString(AtomHopperConfigurationKeys.region);
-
-        //URI from config : atomHopper/USL endpoint
-        String URI = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
-
         /**
          * LOG START job-state
          *
@@ -64,8 +63,9 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
         LOG.info(String.format("Atom hopper usage poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
         processJobState(JobName.ATOM_USAGE_POLLER, JobStateVal.IN_PROGRESS);
 
+
         //Create the threaded client to handle requests...
-        Client client = ClientUtil.makeHttpClient();
+        client = ClientUtil.makeHttpClient();
 
         //Grab all accounts a begin processing usage...
         List<Integer> accounts = loadBalancerRepository.getAllAccountIds();
@@ -76,7 +76,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
             for (AccountLoadBalancer lb : lbsForAccount) {
                 try {
                     //Retrieve usage for account by lbId
-                    List<Usage> lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), ResponseUtil.getStartTime(), ResponseUtil.getNow());
+                    List<Usage> lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), ResponseUtil.getStartCal(), ResponseUtil.getNow());
 
                     //Walk each record...
                     for (Usage usageRecord : lbusage) {
@@ -91,9 +91,13 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
                             entry.setContent(usageContent);
                             entry.getContent().setType(MediaType.APPLICATION_XML);
 
+
+                            //URI from config : atomHopper/USL endpoint
+                            uri = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
+
                             LOG.info(String.format("Uploading to the atomHopper service now..."));
-                            WebResource cr = client.resource(URI);
-                            ClientResponse response = cr.accept(MediaType.APPLICATION_XML)
+                            ClientResponse response = client.resource(uri)
+                                    .accept(MediaType.APPLICATION_XML)
                                     .type(MediaType.APPLICATION_ATOM_XML)
                                     .post(ClientResponse.class, entry);
 
@@ -129,6 +133,11 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
     }
 
     private UsageV1Pojo generateUsageEntry(Usage usageRecord) throws DatatypeConfigurationException, NoSuchAlgorithmException {
+        configRegion = configuration.getString(AtomHopperConfigurationKeys.region);
+        if (configRegion != null) {
+            region = configRegion;
+        }
+
         UsageV1Pojo usageV1 = new UsageV1Pojo();
         usageV1.setRegion(region);
         usageV1.setServiceCode(title);
@@ -151,6 +160,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
         usageV1.setUsageId(uuid.toString());
 
 
+        //LBAAS specific values
         LBaaSUsagePojo lu = new LBaaSUsagePojo();
         lu.setAvgConcurrentConnections(usageRecord.getAverageConcurrentConnections());
         lu.setAvgConcurrentConnectionsSsl(usageRecord.getAverageConcurrentConnectionsSsl());

@@ -10,6 +10,12 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 public class UsageMarshaller {
+    /**
+     *
+     * @param object: the object to marshall
+     * @return String of marshalled xml
+     * @throws JAXBException
+     */
     public static String marshallObject(Object object) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(object.getClass());
 

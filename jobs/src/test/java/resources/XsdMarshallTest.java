@@ -3,6 +3,7 @@ package resources;
 import com.rackspace.docs.usage.core.V1Element;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -27,23 +28,18 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
+@Ignore
 @RunWith(Enclosed.class)
 public class XsdMarshallTest {
     public static class WhenMarshallingGeneratedXML {
-//        private Usage usageRecord;
-
 
         @Before
         public void standUp() {
-//            usageRecord = new Usage();
-//            usageRecord.setPushed(false);
-//            usageRecord.setAccountId(5432);
-//            usageRecord.setEntryVersion(1);
-//            usageRecord.setNumberOfPolls(22);
         }
 
         @Test
         public void shouldMarshallToStringProperly() {
+            //Builds fake data and tests the xsd/xml validation
             try {
                 EntryPojo entry = new EntryPojo();
 
@@ -65,8 +61,8 @@ public class XsdMarshallTest {
 
                 //product specific
                 LBaaSUsagePojo lu = new LBaaSUsagePojo();
-//            lu.setMemory(4);
-//            lu.setVersion("1");
+                lu.setBandWidthIn(4);
+                lu.setAvgConcurrentConnections(30000);
                 usageV1.getAny().add(lu);
 
                 //Atom specific
@@ -82,10 +78,6 @@ public class XsdMarshallTest {
                 ByteArrayInputStream input = new ByteArrayInputStream(UsageMarshaller.marshallObject(usageV1).getBytes());
                 System.out.print(unmarshaller.unmarshal(input));
 
-//                 UUID uuid = new UUID(usageRecord.getId(), usageRecord.getLoadbalancer().getId());
-
-
-//                entry.setContent(UsageMarshaller.marshallObject(usageV1));
                 UsageContent usageContent = new UsageContent();
                 usageContent.setUsage(usageV1);
 
