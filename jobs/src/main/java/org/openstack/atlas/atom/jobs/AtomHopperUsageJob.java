@@ -63,65 +63,67 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
         LOG.info(String.format("Atom hopper usage poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
         processJobState(JobName.ATOM_USAGE_POLLER, JobStateVal.IN_PROGRESS);
 
+        if (configuration.getString(AtomHopperConfigurationKeys.allow_ahusl).equals("true")) {
 
-        //Create the threaded client to handle requests...
-        client = ClientUtil.makeHttpClient();
+            //Create the threaded client to handle requests...
+            client = ClientUtil.makeHttpClient();
 
-        //Grab all accounts a begin processing usage...
-        List<Integer> accounts = loadBalancerRepository.getAllAccountIds();
-        for (int id : accounts) {
-            //Retrieve all non-deleted lbs for account
-            List<AccountLoadBalancer> lbsForAccount = loadBalancerRepository.getAccountNonDeleteLoadBalancers(id);
-            //Walk each lb...
-            for (AccountLoadBalancer lb : lbsForAccount) {
-                try {
-                    //Retrieve usage for account by lbId
-                    List<Usage> lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), ResponseUtil.getStartCal(), ResponseUtil.getNow());
+            //Grab all accounts a begin processing usage...
+            List<Integer> accounts = loadBalancerRepository.getAllAccountIds();
+            for (int id : accounts) {
+                //Retrieve all non-deleted lbs for account
+                List<AccountLoadBalancer> lbsForAccount = loadBalancerRepository.getAccountNonDeleteLoadBalancers(id);
+                //Walk each lb...
+                for (AccountLoadBalancer lb : lbsForAccount) {
+                    try {
+                        //Retrieve usage for account by lbId
+                        List<Usage> lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), ResponseUtil.getStartCal(), ResponseUtil.getNow());
 
-                    //Walk each record...
-                    for (Usage usageRecord : lbusage) {
-                        if (usageRecord.isNeedsPushed()) {
+                        //Walk each record...
+                        for (Usage usageRecord : lbusage) {
+                            if (usageRecord.isNeedsPushed()) {
 
-                            EntryPojo entry = new EntryPojo();
-                            entry.setTitle(title);
-                            entry.setAuthor(author);
+                                EntryPojo entry = new EntryPojo();
+                                entry.setTitle(title);
+                                entry.setAuthor(author);
 
-                            UsageContent usageContent = new UsageContent();
-                            usageContent.setUsage(generateUsageEntry(usageRecord));
-                            entry.setContent(usageContent);
-                            entry.getContent().setType(MediaType.APPLICATION_XML);
+                                UsageContent usageContent = new UsageContent();
+                                usageContent.setUsage(generateUsageEntry(usageRecord));
+                                entry.setContent(usageContent);
+                                entry.getContent().setType(MediaType.APPLICATION_XML);
 
 
-                            //URI from config : atomHopper/USL endpoint
-                            uri = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
+                                //URI from config : atomHopper/USL endpoint
+                                uri = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
 
-                            LOG.info(String.format("Uploading to the atomHopper service now..."));
-                            ClientResponse response = client.resource(uri)
-                                    .accept(MediaType.APPLICATION_XML)
-                                    .type(MediaType.APPLICATION_ATOM_XML)
-                                    .post(ClientResponse.class, entry);
+                                LOG.info(String.format("Uploading to the atomHopper service now..."));
+                                ClientResponse response = client.resource(uri)
+                                        .accept(MediaType.APPLICATION_XML)
+                                        .type(MediaType.APPLICATION_ATOM_XML)
+                                        .post(ClientResponse.class, entry);
 
-                            //Notify usage if the record was uploaded or not...
-                            if (response.getStatus() == 201) {
-                                usageRecord.setNeedsPushed(false);
-                            } else {
-                                usageRecord.setNeedsPushed(true);
+                                //Notify usage if the record was uploaded or not...
+                                if (response.getStatus() == 201) {
+                                    usageRecord.setNeedsPushed(false);
+                                } else {
+                                    usageRecord.setNeedsPushed(true);
+                                }
+                                usageRepository.updatePushedRecord(usageRecord);
+
+                                String body = ResponseUtil.processResponseBody(response);
+                                LOG.info(String.format("Status=%s\n", response.getStatus()));
+                                LOG.info(String.format("body %s\n", body));
+                                response.close();
                             }
-                            usageRepository.updatePushedRecord(usageRecord);
-
-                            String body = ResponseUtil.processResponseBody(response);
-                            LOG.info(String.format("Status=%s\n", response.getStatus()));
-                            LOG.info(String.format("body %s\n", body));
-                            response.close();
                         }
+                    } catch (Throwable t) {
+                        System.out.printf("Exception: %s\n", ResponseUtil.getExtendedStackTrace(t));
+                        LOG.error(String.format("Exception: %s\n", ResponseUtil.getExtendedStackTrace(t)));
                     }
-                } catch (Throwable t) {
-                    System.out.printf("Exception: %s\n", ResponseUtil.getExtendedStackTrace(t));
-                    LOG.error(String.format("Exception: %s\n", ResponseUtil.getExtendedStackTrace(t)));
                 }
             }
+            client.destroy();
         }
-        client.destroy();
 
         /**
          * LOG END job-state
