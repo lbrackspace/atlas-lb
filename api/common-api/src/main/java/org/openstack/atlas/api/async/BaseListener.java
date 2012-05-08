@@ -111,7 +111,8 @@ public abstract class BaseListener implements MessageListener {
             ue.printStackTrace();
         } catch (Exception e) {
             //ToDo: When in production log a cleaner message. But for now show the whole stack trace
-            System.out.println("Exception in BaseListener" + e.getMessage());
+//            System.out.println("Exception in BaseListener" + e.getMessage());
+            LOG.error(getStackTrace(e));
             Log L = LogFactory.getLog(this.getClass());
             L.error(String.format("Error processing message In Class %s: %s ", this.getClass().getSimpleName(), getStackTrace(e)));
             onRollback(message, e);
