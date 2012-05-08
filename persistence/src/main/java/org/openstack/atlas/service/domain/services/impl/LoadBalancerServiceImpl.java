@@ -476,9 +476,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     @Transactional(rollbackFor = {EntityNotFoundException.class, ImmutableEntityException.class, UnprocessableEntityException.class, BadRequestException.class})
-    public void prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws BadRequestException {
+    public List<LoadBalancer> prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws BadRequestException {
         List<Integer> badLbIds = new ArrayList<Integer>();
         List<Integer> badLbStatusIds = new ArrayList<Integer>();
+
+        List<LoadBalancer> loadBalancers = new ArrayList<LoadBalancer>();
         for (int lbIdToDelete : loadBalancerIds) {
             try {
                 LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbIdToDelete, accountId);
@@ -494,6 +496,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 //                    String atomSummary = "Load balancer in pending delete status";
 //                    notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, PENDING_DELETE_LOADBALANCER, DELETE, INFO);
                 }
+                loadBalancers.add(dbLoadBalancer);
             } catch (Exception e) {
                 badLbIds.add(lbIdToDelete);
             }
@@ -502,6 +505,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             throw new BadRequestException(String.format("Must provide valid load balancers: %s  could not be found.", StringUtilities.DelimitString(badLbIds, ",")));
         if (!badLbStatusIds.isEmpty())
             throw new BadRequestException(String.format("Must provide valid load balancers: %s  are immutable and could not be processed.", StringUtilities.DelimitString(badLbStatusIds, ",")));
+
+        return loadBalancers;
     }
 
     @Override

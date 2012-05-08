@@ -1,7 +1,7 @@
 package org.openstack.atlas.service.domain.pojos;
 
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Meta;
-import org.openstack.atlas.service.domain.entities.SslTermination;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ public class MessageDataContainer implements Serializable {
     private List<Integer> newNodeIds;
     private ZeusSslTermination zeusSslTermination;
     private Collection<Meta> metadata;
+    private LoadBalancer loadBalancer;
     //for batch deletes
     private List<Integer> ids;
 
@@ -131,5 +132,13 @@ public class MessageDataContainer implements Serializable {
 
     public void setMetadata(Collection<Meta> metadata) {
         this.metadata = metadata;
+    }
+
+    public LoadBalancer getLoadBalancer() {
+        return loadBalancer;
+    }
+
+    public void setLoadBalancer(LoadBalancer loadBalancer) {
+        this.loadBalancer = loadBalancer;
     }
 }
