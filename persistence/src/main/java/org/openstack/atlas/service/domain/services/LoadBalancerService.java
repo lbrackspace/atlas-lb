@@ -59,7 +59,7 @@ public interface LoadBalancerService {
 
     void setStatus(Integer accoundId,Integer loadbalancerId,LoadBalancerStatus status) throws EntityNotFoundException;
 
-    void prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws EntityNotFoundException, BadRequestException;
+    List<LoadBalancer> prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws EntityNotFoundException, BadRequestException;
 
     boolean testAndSetStatusPending(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException;
 

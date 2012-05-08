@@ -9,16 +9,12 @@ import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LimitTypes;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Limits;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.service.domain.entities.AccountLimitType;
 import org.openstack.atlas.service.domain.entities.LimitType;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
-import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.util.converters.exceptions.ConverterException;
 import org.w3.atom.Link;
 
@@ -29,7 +25,6 @@ import java.util.*;
 
 import static javax.ws.rs.core.MediaType.*;
 import static org.openstack.atlas.api.atom.FeedType.PARENT_FEED;
-import static org.openstack.atlas.service.domain.operations.Operation.BATCH_DELETE_LOADBALANCER;
 import static org.openstack.atlas.service.domain.operations.Operation.CREATE_LOADBALANCER;
 import static org.openstack.atlas.service.domain.util.Constants.NUM_DAYS_OF_USAGE;
 import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
@@ -104,7 +99,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         try {
             List<Node> nodes = loadBalancer.getNodes();
             List<String> errors = verifyNodeDomains(nodes);
-            if(errors.size()>0){
+            if (errors.size() > 0) {
                 return getValidationFaultResponse(errors);
             }
             org.openstack.atlas.service.domain.entities.LoadBalancer domainLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
@@ -225,13 +220,16 @@ public class LoadBalancersResource extends CommonDependencyProvider {
                 return ResponseFactory.getErrorResponse(badRequestException, null, null);
             }
 
-            loadBalancerService.prepareForDelete(accountId, new ArrayList<Integer>(loadBalancerIds));
+            List<org.openstack.atlas.service.domain.entities.LoadBalancer> verifiedLbs = loadBalancerService.prepareForDelete(accountId, new ArrayList<Integer>(loadBalancerIds));
 
-            for (int loadBalancerToDeleteId : loadBalancerIds) {
-                MessageDataContainer messageDataContainer = new MessageDataContainer();
-                messageDataContainer.setAccountId(accountId);
-                messageDataContainer.setLoadBalancerId(loadBalancerToDeleteId);
-                asyncService.callAsyncLoadBalancingOperation(BATCH_DELETE_LOADBALANCER, messageDataContainer);
+            for (org.openstack.atlas.service.domain.entities.LoadBalancer dblb : verifiedLbs) {
+                if (requestHeaders != null) {
+                    if (requestHeaders.getRequestHeader("X-PP-User") != null && requestHeaders.getRequestHeader("X-PP-User").size() > 0) {
+                        dblb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
+                    }
+                }
+                //TODO: Use this till we update other methods to use the dataContainer
+                asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_LOADBALANCER, dblb);
             }
 
             return Response.status(202).build();

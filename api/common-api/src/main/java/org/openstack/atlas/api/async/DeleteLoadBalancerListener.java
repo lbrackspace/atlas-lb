@@ -6,11 +6,8 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 
 import javax.jms.Message;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -28,70 +25,62 @@ public class DeleteLoadBalancerListener extends BaseListener {
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
 
-        List<Integer> lbIds = new ArrayList<Integer>();
-
-        MessageDataContainer mdc = getDataContainerFromMessage(message);
         LoadBalancer queueLb = getLoadbalancerFromMessage(message);
         LoadBalancer dbLoadBalancer;
 
-        lbIds.addAll(mdc.getIds());
-        lbIds.add(queueLb.getId());
+        try {
+            dbLoadBalancer = loadBalancerService.get(queueLb.getId());
+        } catch (EntityNotFoundException enfe) {
+            String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
+            LOG.error(alertDescription, enfe);
+            notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
+            sendErrorToEventResource(queueLb);
+            return;
+        }
 
-        for (Integer id : lbIds) {
-            try {
-                dbLoadBalancer = loadBalancerService.get(id);
-            } catch (EntityNotFoundException enfe) {
-                String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
-                LOG.error(alertDescription, enfe);
-                notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
-                sendErrorToEventResource(queueLb);
-                return;
-            }
+        try {
+            LOG.debug(String.format("Deleting load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+            reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
+            LOG.debug(String.format("Successfully deleted load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+        } catch (Exception e) {
+            loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+            LOG.error(String.format("LoadBalancer status before error was: '%s'", dbLoadBalancer.getStatus()));
+            String alertDescription = String.format("Error deleting loadbalancer '%d' in Zeus.", dbLoadBalancer.getId());
+            LOG.error(alertDescription, e);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            sendErrorToEventResource(queueLb);
 
-            try {
-                LOG.debug(String.format("Deleting load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
-                LOG.debug(String.format("Successfully deleted load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            } catch (Exception e) {
-                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-                LOG.error(String.format("LoadBalancer status before error was: '%s'", dbLoadBalancer.getStatus()));
-                String alertDescription = String.format("Error deleting loadbalancer '%d' in Zeus.", dbLoadBalancer.getId());
-                LOG.error(alertDescription, e);
-                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-                sendErrorToEventResource(queueLb);
-
-                // Notify usage processor with a usage event
-                if (dbLoadBalancer.hasSsl()) {
-                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
-                }
-                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
-
-                return;
-            }
-
+            // Notify usage processor with a usage event
             if (dbLoadBalancer.hasSsl()) {
-                LOG.debug(String.format("Deleting load balancer '%d' ssl termination in database...", dbLoadBalancer.getId()));
-                sslTerminationService.deleteSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
-                LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in database.", dbLoadBalancer.getId()));
-
-                // Notify usage processor with a usage event
                 usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
             }
-
-            dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.DELETED);
-
-
-            // Add atom entry
-            String atomTitle = "Load Balancer Successfully Deleted";
-            String atomSummary = "Load balancer successfully deleted";
-            notificationService.saveLoadBalancerEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
-
-            // Notify usage processor
             usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
 
-            LOG.info(String.format("Load balancer '%d' successfully deleted.", dbLoadBalancer.getId()));
+            return;
         }
+
+        if (dbLoadBalancer.hasSsl()) {
+            LOG.debug(String.format("Deleting load balancer '%d' ssl termination in database...", dbLoadBalancer.getId()));
+            sslTerminationService.deleteSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+            LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in database.", dbLoadBalancer.getId()));
+
+            // Notify usage processor with a usage event
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
+        }
+
+        dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.DELETED);
+
+
+        // Add atom entry
+        String atomTitle = "Load Balancer Successfully Deleted";
+        String atomSummary = "Load balancer successfully deleted";
+        notificationService.saveLoadBalancerEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
+
+        // Notify usage processor
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+
+        LOG.info(String.format("Load balancer '%d' successfully deleted.", dbLoadBalancer.getId()));
     }
 
     private void sendErrorToEventResource(LoadBalancer lb) {
