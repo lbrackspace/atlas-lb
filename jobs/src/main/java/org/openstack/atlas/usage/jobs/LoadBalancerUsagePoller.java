@@ -18,6 +18,7 @@ import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEven
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
 import org.openstack.atlas.usage.BatchAction;
 import org.openstack.atlas.usage.ExecutionUtilities;
+import org.openstack.atlas.usage.logic.UsageCalculator;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
@@ -70,6 +71,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
 
         List<LoadBalancerUsageEvent> usageEventEntries = usageEventRepository.getAllUsageEventEntries();
         List<LoadBalancerUsage> newUsages = new ArrayList<LoadBalancerUsage>();
+        List<LoadBalancerUsage> recentUsages = new ArrayList<LoadBalancerUsage>();
 
         for (LoadBalancerUsageEvent usageEventEntry : usageEventEntries) {
             UsageEvent usageEvent = UsageEvent.valueOf(usageEventEntry.getEventType());
@@ -91,9 +93,45 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
             newUsage.setEndTime(eventTime);
             newUsage.setNumberOfPolls(0);
             newUsage.setTags(updatedTags);
-            newUsage.setEventType(usageEventEntry.getEventType()); // TODO: Use cached values from database???
+            newUsage.setEventType(usageEventEntry.getEventType());
 
-            if(recentUsage != null) {
+            if (recentUsage != null) {
+                Integer oldNumPolls = recentUsage.getNumberOfPolls();
+                Integer newNumPolls = oldNumPolls + 1;
+
+                if (usageEventEntry.getLastBandwidthBytesIn() != null) {
+                    recentUsage.setCumulativeBandwidthBytesIn(UsageCalculator.calculateCumBandwidthBytesIn(recentUsage, usageEventEntry.getLastBandwidthBytesIn()));
+                    recentUsage.setLastBandwidthBytesIn(usageEventEntry.getLastBandwidthBytesIn());
+                    recentUsage.setEndTime(eventTime);
+                }
+                if (usageEventEntry.getLastBandwidthBytesOut() != null) {
+                    recentUsage.setCumulativeBandwidthBytesOut(UsageCalculator.calculateCumBandwidthBytesOut(recentUsage, usageEventEntry.getLastBandwidthBytesOut()));
+                    recentUsage.setLastBandwidthBytesOut(usageEventEntry.getLastBandwidthBytesOut());
+                    recentUsage.setEndTime(eventTime);
+                }
+                if (usageEventEntry.getLastBandwidthBytesInSsl() != null) {
+                    recentUsage.setCumulativeBandwidthBytesInSsl(UsageCalculator.calculateCumBandwidthBytesInSsl(recentUsage, usageEventEntry.getLastBandwidthBytesInSsl()));
+                    recentUsage.setLastBandwidthBytesInSsl(usageEventEntry.getLastBandwidthBytesInSsl());
+                    recentUsage.setEndTime(eventTime);
+                }
+                if (usageEventEntry.getLastBandwidthBytesOutSsl() != null) {
+                    recentUsage.setCumulativeBandwidthBytesOutSsl(UsageCalculator.calculateCumBandwidthBytesOutSsl(recentUsage, usageEventEntry.getLastBandwidthBytesOutSsl()));
+                    recentUsage.setLastBandwidthBytesOutSsl(usageEventEntry.getLastBandwidthBytesOutSsl());
+                    recentUsage.setEndTime(eventTime);
+                }
+                if (usageEventEntry.getLastConcurrentConnections() != null) {
+                    recentUsage.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(recentUsage.getAverageConcurrentConnections(), oldNumPolls, usageEventEntry.getLastConcurrentConnections()));
+                    recentUsage.setNumberOfPolls(newNumPolls);
+                    recentUsage.setEndTime(eventTime);
+                }
+                if (usageEventEntry.getLastConcurrentConnectionsSsl() != null) {
+                    recentUsage.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(recentUsage.getAverageConcurrentConnectionsSsl(), oldNumPolls, usageEventEntry.getLastConcurrentConnectionsSsl()));
+                    recentUsage.setNumberOfPolls(newNumPolls);
+                    recentUsage.setEndTime(eventTime);
+                }
+
+                recentUsages.add(recentUsage);
+
                 newUsage.setLastBandwidthBytesIn(recentUsage.getLastBandwidthBytesIn());
                 newUsage.setLastBandwidthBytesInSsl(recentUsage.getLastBandwidthBytesInSsl());
                 newUsage.setLastBandwidthBytesOut(recentUsage.getLastBandwidthBytesOut());
@@ -104,6 +142,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
         }
 
         if (!newUsages.isEmpty()) hourlyUsageRepository.batchCreate(newUsages);
+        if (!recentUsages.isEmpty()) hourlyUsageRepository.batchUpdate(recentUsages);
 
         try {
             BatchAction<LoadBalancerUsageEvent> deleteEventUsagesAction = new BatchAction<LoadBalancerUsageEvent>() {
