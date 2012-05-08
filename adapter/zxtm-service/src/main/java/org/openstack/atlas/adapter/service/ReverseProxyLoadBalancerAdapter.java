@@ -119,6 +119,9 @@ public interface ReverseProxyLoadBalancerAdapter {
     public Map<String, Integer> getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, List<String> names)
             throws RemoteException;
 
+    public Integer getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl)
+            throws RemoteException, InsufficientRequestException;
+
     public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config)
             throws RemoteException;
 
@@ -128,8 +131,14 @@ public interface ReverseProxyLoadBalancerAdapter {
     public Map<String, Long> getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, List<String> names)
             throws RemoteException;
 
+    public Long getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl)
+        throws RemoteException, InsufficientRequestException;
+
     public Map<String, Long> getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, List<String> names)
             throws RemoteException;
+
+    public Long getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl)
+        throws RemoteException, InsufficientRequestException;
 
     public Long getHostBytesIn(LoadBalancerEndpointConfiguration config)
             throws RemoteException;
