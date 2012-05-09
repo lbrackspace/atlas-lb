@@ -21,23 +21,5 @@ public interface NodeMetadataService {
 
     NodeMeta getNodeMeta(Integer nodeId, Integer id) throws EntityNotFoundException;
 
-    List<NodeMeta> deleteNodeMeta(Integer accountId, Integer loadbalancerId, Integer nodeId, Integer id) throws EntityNotFoundException;
-
     NodeMeta updateNodeMeta(Integer accountId, Integer loadbalancerId, Integer nodeId, NodeMeta callNodeMeta) throws EntityNotFoundException;
 }
-
-/*
-    Set<Meta> createMetadata(Integer accountId, Integer loadBalancerId, Collection<Meta> metas) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
-
-    Set<Meta> getMetadataByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) throws EntityNotFoundException;
-
-    Meta getMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException;
-
-    void deleteMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException;
-
-    void updateMeta(LoadBalancer domainLb) throws EntityNotFoundException;
-
-    List<String> prepareForMetadataDeletion(Integer accountId, Integer loadBalancerId, List<Integer> ids) throws EntityNotFoundException;
-
-    LoadBalancer deleteMetadata(LoadBalancer lb, Collection<Integer> ids) throws EntityNotFoundException;
-*/

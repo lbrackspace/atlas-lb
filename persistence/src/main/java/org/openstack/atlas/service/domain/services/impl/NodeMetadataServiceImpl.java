@@ -134,11 +134,6 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
     }
 
     @Override
-    public List<NodeMeta> deleteNodeMeta(Integer accountId, Integer loadbalancerId, Integer nodeId, Integer id) throws EntityNotFoundException {
-        throw new EntityNotFoundException("This is a stub for the getNodeMeta function in the service impl.");
-    }
-
-    @Override
     public NodeMeta updateNodeMeta(Integer accountId, Integer loadbalancerId, Integer nodeId, NodeMeta callNodeMeta) throws EntityNotFoundException {
         Node node = nodeRepository.getNodeByAccountIdLoadBalancerIdNodeId(accountId, loadbalancerId, nodeId);
         List<Integer> ids = new ArrayList<Integer>();
