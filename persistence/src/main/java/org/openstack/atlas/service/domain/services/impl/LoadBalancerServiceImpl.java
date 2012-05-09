@@ -271,22 +271,26 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (portHMTypecheck) {
                 /* Notify the Usage Processor on changes of protocol to and from secure protocols */
                 //notifyUsageProcessorOfSslChanges(message, queueLb, dbLoadBalancer);
-
                 if (loadBalancer.getProtocol().equals(HTTP)) {
-                    if (dbLoadBalancer.getSessionPersistence() == SessionPersistence.HTTP_COOKIE) {
+                    if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.HTTP_COOKIE)) {
                         LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
+                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                    } else {
+                        LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
+                        dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     }
 
-                    LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
-                    dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                 } else if (!loadBalancer.getProtocol().equals(HTTP)) {
-                    if (dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP) {
+                    dbLoadBalancer.setContentCaching(false);
+                    if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP)) {
                         LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                    } else {
+                        LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
+                        dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
+                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     }
-                    dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
-                    dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                 }
             } else {
                 LOG.error("Cannot update port as the loadbalancer has a incompatible Health Monitor type");
@@ -294,18 +298,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
         }
 
-        if (loadBalancer.isConnectionLogging() != null && !loadBalancer.isConnectionLogging().equals(dbLoadBalancer.isConnectionLogging())) {
-            if (loadBalancer.isConnectionLogging()) {
-                if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
-                    LOG.error("Protocol must be HTTP for connection logging.");
-                    throw new UnprocessableEntityException(String.format("Protocol must be HTTP for connection logging."));
-                }
-                LOG.debug("Enabling connection logging on the loadbalancer...");
-            } else {
-                LOG.debug("Disabling connection logging on the loadbalancer...");
-            }
-            dbLoadBalancer.setConnectionLogging(loadBalancer.isConnectionLogging());
-        }
+        LOG.debug(String.format("Verifying connectionLogging and contentCaching... if enabled, they are valid only with HTTP protocol.."));
+        verifyProtocolLoggingAndCaching(loadBalancer, dbLoadBalancer);
+
 
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
@@ -319,6 +314,41 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         // TODO: Sending db loadbalancer causes everything to update. Tweek for performance
         LOG.debug("Leaving " + getClass());
         return dbLoadBalancer;
+    }
+
+    private void verifyProtocolLoggingAndCaching(LoadBalancer loadBalancer, LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
+        String logErr = "Protocol must be HTTP for connection logging.";
+        String ccErr = "Protocol must be HTTP for content caching.";
+        String enable = " is Being enabled on the loadbalancer";
+        String disable = " is Being disabled on the loadbalancer";
+
+        if (loadBalancer.isConnectionLogging() != null && !loadBalancer.isConnectionLogging().equals(dbLoadBalancer.isConnectionLogging())) {
+            if (loadBalancer.isConnectionLogging()) {
+                if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
+                    LOG.error(logErr);
+                    throw new UnprocessableEntityException(logErr);
+                }
+                LOG.debug("ConnectionLogging" + enable);
+            } else {
+                LOG.debug("ConnectionLogging" + disable);
+            }
+            dbLoadBalancer.setConnectionLogging(loadBalancer.isConnectionLogging());
+        }
+
+        if (loadBalancer.isContentCaching() != null && !loadBalancer.isContentCaching().equals(dbLoadBalancer.isConnectionLogging())) {
+            if (loadBalancer.isContentCaching()) {
+                if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
+                    LOG.error(ccErr);
+                    throw new UnprocessableEntityException(ccErr);
+                }
+                LOG.debug("ContentCaching" + enable);
+            } else {
+                LOG.debug("ContentCaching" + disable);
+            }
+            dbLoadBalancer.setConnectionLogging(loadBalancer.isConnectionLogging());
+        }
+
+
     }
 
     @Transactional
@@ -446,9 +476,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     @Transactional(rollbackFor = {EntityNotFoundException.class, ImmutableEntityException.class, UnprocessableEntityException.class, BadRequestException.class})
-    public void prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws BadRequestException {
+    public List<LoadBalancer> prepareForDelete(Integer accountId, List<Integer> loadBalancerIds) throws BadRequestException {
         List<Integer> badLbIds = new ArrayList<Integer>();
         List<Integer> badLbStatusIds = new ArrayList<Integer>();
+
+        List<LoadBalancer> loadBalancers = new ArrayList<LoadBalancer>();
         for (int lbIdToDelete : loadBalancerIds) {
             try {
                 LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbIdToDelete, accountId);
@@ -463,6 +495,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 //                    String atomSummary = "Load balancer in pending delete status";
 //                    notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, PENDING_DELETE_LOADBALANCER, DELETE, INFO);
                 }
+                loadBalancers.add(dbLoadBalancer);
             } catch (Exception e) {
                 badLbIds.add(lbIdToDelete);
             }
@@ -471,6 +504,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             throw new BadRequestException(String.format("Must provide valid load balancers: %s  could not be found.", StringUtilities.DelimitString(badLbIds, ",")));
         if (!badLbStatusIds.isEmpty())
             throw new BadRequestException(String.format("Must provide valid load balancers: %s  are immutable and could not be processed.", StringUtilities.DelimitString(badLbStatusIds, ",")));
+
+        return loadBalancers;
     }
 
     @Override
@@ -586,7 +621,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         String sipErrMsg = "SOURCE_IP Session persistence is only valid with non HTTP protocols.";
         if (inpersist != NONE) {
             if (inpersist == HTTP_COOKIE &&
-                    (dbProtocol != HTTP )) {
+                    (dbProtocol != HTTP)) {
                 throw new BadRequestException(httpErrMsg);
             }
 

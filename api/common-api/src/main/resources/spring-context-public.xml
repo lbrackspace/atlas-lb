@@ -51,6 +51,7 @@
         <property name="loadBalancerService" ref="loadBalancerService"/>
         <property name="healthMonitorService" ref="healthMonitorService"/>
         <property name="connectionLoggingService" ref="connectionLoggingService"/>
+        <property name="contentCachingService" ref="contentCachingService"/>
         <property name="connectionThrottleService" ref="connectionThrottleService"/>
         <property name="sessionPersistenceService" ref="sessionPersistenceService"/>
         <property name="algorithmsService" ref="algorithmService"/>
@@ -118,6 +119,7 @@
                         <property name="connectionLoggingResource" ref="connectionLoggingResource"/>
                         <property name="virtualIpsResource" ref="virtualIpsResource"/>
                         <property name="connectionThrottleResource" ref="connectionThrottleResource"/>
+                        <property name="contentCachingResource" ref="contentCachingResource"/>
                         <property name="healthMonitorResource" ref="healthMonitorResource"/>
                         <property name="metadataResource" ref="metadataResource"/>
                         <property name="usageResource" ref="usageResource"/>
@@ -208,6 +210,10 @@
     </bean>
     <bean name="connectionLoggingResource"
           class="org.openstack.atlas.api.resources.ConnectionLoggingResource"
+          parent="commonDependencyProvider"
+          scope="request"/>
+    <bean name="contentCachingResource"
+          class="org.openstack.atlas.api.resources.ContentCachingResource"
           parent="commonDependencyProvider"
           scope="request"/>
     <bean name="healthMonitorResource"

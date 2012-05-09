@@ -53,6 +53,10 @@ public class UsageEventHelper {
     }
 
     public void processUsageEvent(LoadBalancer loadBalancer, UsageEvent usageEvent) throws Exception {
+        processUsageEvent(loadBalancer, usageEvent, null, null, null, null, null, null);
+    }
+
+    public void processUsageEvent(LoadBalancer loadBalancer, UsageEvent usageEvent, Long bytesOut, Long bytesIn, Integer concurrentConns, Long bytesOutSsl, Long bytesInSsl, Integer concurrentConnsSsl) {
         LOG.info(String.format("Processing '%s' usage event for load balancer '%d'...", usageEvent.name(), loadBalancer.getId()));
         Calendar eventTime = Calendar.getInstance();
 
@@ -62,6 +66,12 @@ public class UsageEventHelper {
         newUsageEvent.setStartTime(eventTime);
         newUsageEvent.setNumVips(loadBalancer.getLoadBalancerJoinVipSet().size());
         newUsageEvent.setEventType(usageEvent.name());
+        newUsageEvent.setLastBandwidthBytesOut(bytesOut);
+        newUsageEvent.setLastBandwidthBytesIn(bytesIn);
+        newUsageEvent.setLastConcurrentConnections(concurrentConns);
+        newUsageEvent.setLastBandwidthBytesOutSsl(bytesOutSsl);
+        newUsageEvent.setLastBandwidthBytesInSsl(bytesInSsl);
+        newUsageEvent.setLastConcurrentConnectionsSsl(concurrentConnsSsl);
 
         usageService.createUsageEvent(newUsageEvent);
 

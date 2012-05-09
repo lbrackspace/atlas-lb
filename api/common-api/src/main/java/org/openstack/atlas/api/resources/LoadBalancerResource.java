@@ -33,6 +33,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     private final Log LOG = LogFactory.getLog(LoadBalancerResource.class);
     private AccessListResource accessListResource;
     private ConnectionLoggingResource connectionLoggingResource;
+    private ContentCachingResource contentCachingResource;
     private HealthMonitorResource healthMonitorResource;
     private MetadataResource metadataResource;
     private NodesResource nodesResource;
@@ -156,6 +157,13 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         return connectionLoggingResource;
     }
 
+    @Path("contentcaching")
+    public ContentCachingResource retrieveContentCachingResource() {
+        contentCachingResource.setAccountId(accountId);
+        contentCachingResource.setLoadBalancerId(id);
+        return contentCachingResource;
+    }
+
     @Path("connectionthrottle")
     public ConnectionThrottleResource retrieveConnectionThrottleResource() {
         connectionThrottleResource.setRequestHeaders(requestHeaders);
@@ -270,6 +278,10 @@ public class LoadBalancerResource extends CommonDependencyProvider {
 
     public void setConnectionThrottleResource(ConnectionThrottleResource connectionThrottleResource) {
         this.connectionThrottleResource = connectionThrottleResource;
+    }
+
+    public void setContentCachingResource(ContentCachingResource contentCachingResource) {
+        this.contentCachingResource = contentCachingResource;
     }
 
     public void setVirtualIpsResource(VirtualIpsResource virtualIpsResource) {

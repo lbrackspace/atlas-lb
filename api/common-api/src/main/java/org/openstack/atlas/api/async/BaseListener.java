@@ -29,6 +29,7 @@ public abstract class BaseListener implements MessageListener {
     protected HealthMonitorService healthMonitorService;
     protected ConnectionThrottleService connectionThrottleService;
     protected ConnectionLoggingService connectionLoggingService;
+    protected ContentCachingService contentCachingService;
     protected SessionPersistenceService sessionPersistenceService;
     protected AccessListService accessListService;
     protected RateLimitingService rateLimitingService;
@@ -70,6 +71,10 @@ public abstract class BaseListener implements MessageListener {
         this.connectionLoggingService = connectionLoggingService;
     }
 
+    public void setContentCachingService(ContentCachingService contentCachingService) {
+        this.contentCachingService = contentCachingService;
+    }
+
     public void setSessionPersistenceService(SessionPersistenceService sessionPersistenceService) {
         this.sessionPersistenceService = sessionPersistenceService;
     }
@@ -106,7 +111,8 @@ public abstract class BaseListener implements MessageListener {
             ue.printStackTrace();
         } catch (Exception e) {
             //ToDo: When in production log a cleaner message. But for now show the whole stack trace
-            System.out.println("Exception in BaseListener" + e.getMessage());
+//            System.out.println("Exception in BaseListener" + e.getMessage());
+            LOG.error(getStackTrace(e));
             Log L = LogFactory.getLog(this.getClass());
             L.error(String.format("Error processing message In Class %s: %s ", this.getClass().getSimpleName(), getStackTrace(e)));
             onRollback(message, e);

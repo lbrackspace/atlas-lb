@@ -1,6 +1,5 @@
 package org.openstack.atlas.adapter.zxtm;
 
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import com.zxtm.service.client.*;
 import org.apache.axis.AxisFault;
 import org.apache.axis.types.UnsignedInt;
@@ -15,10 +14,12 @@ import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.openstack.atlas.util.ca.StringUtils;
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 import org.openstack.atlas.util.converters.StringConverter;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
-import org.openstack.atlas.util.ca.zeus.ZeusUtil;
-import org.openstack.atlas.util.ca.StringUtils;
+
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -32,12 +33,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final String HTTP_COOKIE = "HTTP_COOKIE";
     public static final String RATE_LIMIT_HTTP = "rate_limit_http";
     public static final String RATE_LIMIT_NON_HTTP = "rate_limit_nonhttp";
+    public static final String CONTENT_CACHING = "content_caching";
     public static final String XFF = "add_x_forwarded_for_header";
     public static final String XFP = "add_x_forwarded_proto";
     public static final VirtualServerRule ruleRateLimitHttp = new VirtualServerRule(RATE_LIMIT_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleRateLimitNonHttp = new VirtualServerRule(RATE_LIMIT_NON_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedProto = new VirtualServerRule(XFP, true, VirtualServerRuleRunFlag.run_every);
+    public static final VirtualServerRule ruleContentCaching = new VirtualServerRule(CONTENT_CACHING, true, VirtualServerRuleRunFlag.run_every);
 
     @Override
     public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
@@ -172,10 +175,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 LOG.info(String.format("Succesfully disabled HOST Header rewrite on secure virtual server: %s", virtualServerName));
 
                 String[] errorFile = serviceStubs.getVirtualServerBinding().getErrorFile(new String[]{poolName});
-                if (!errorFile[0].equals("")) {
-                    setErrorFile(config, virtualServerName, errorFile[0]);
-                } else {
+//                efContents = serviceStubs.getZxtmConfExtraBinding().getFile(new String[]{poolName});
+                if (errorFile[0].equals("Default") || errorFile[0].equals(Constants.DEFAULT_ERRORFILE)) {
                     setDefaultErrorFile(config, virtualServerName);
+                } else {
+                    setErrorFile(config, virtualServerName, serviceStubs.getZxtmConfExtraBinding().getFile(new String[]{errorFile[0]})[0]);
                 }
             }
 
@@ -212,6 +216,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
             updateConnectionLogging(config, lb);
+        }
+
+        if (lb.isContentCaching() != null && lb.isContentCaching()) {
+            updateContentCaching(config, lb);
         }
 
         if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
@@ -393,10 +401,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         try {
+            if (lb.getSessionPersistence() == SessionPersistence.NONE) {
+                //V1-B-17728 support for SOURCE_IP
+                removeSessionPersistence(config, lbId, accountId);
+            }
             if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
-                removeSessionPersistence(config, lbId, accountId); // We currently only support HTTP session persistence
                 removeXFFRuleFromVirtualServers(serviceStubs, vsNames); // XFF is only for the HTTP protocol
                 removeXFPRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
+                updateContentCaching(config, lb);
             }
         } catch (Exception e) {
             throw new ZxtmRollBackException(String.format("Update protocol request canceled for %s ", virtualServerName), e);
@@ -878,11 +890,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void updateSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, ZeusSslTermination zeusSslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         final String virtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         final String virtualServerNameNonSecure = ZxtmNameBuilder.genVSName(loadBalancer);
-        ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(zeusSslTermination.getSslTermination().getPrivatekey(),zeusSslTermination.getSslTermination().getCertificate(),zeusSslTermination.getSslTermination().getIntermediateCertificate());
-        if (zeusCertFile.isError()){
-            String fmt ="ZuesertFile generation Failure: %s";
+        ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(zeusSslTermination.getSslTermination().getPrivatekey(), zeusSslTermination.getSslTermination().getCertificate(), zeusSslTermination.getSslTermination().getIntermediateCertificate());
+        if (zeusCertFile.isError()) {
+            String fmt = "ZuesertFile generation Failure: %s";
             String errors = StringUtils.joinString(zeusCertFile.getErrorList(), ",");
-            String msg = String.format(fmt,errors);
+            String msg = String.format(fmt, errors);
             throw new InsufficientRequestException(msg);
         }
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
@@ -996,6 +1008,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.info(String.format("Removing accessList from load balancer...'%s'...", loadBalancer.getId()));
             deleteAccessList(conf, virtualServerName);
             LOG.debug(String.format("Remove accessList from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
+
+            //Removing error file from shadow server
+            LOG.info(String.format("Removing error file from load balancer...'%s'...", loadBalancer.getId()));
+            deleteErrorFile(conf, virtualServerName);
+            LOG.debug(String.format("Remove error file from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
             //Removing protectionCatalog from shadow server
             LOG.info(String.format("Removing protection catalog from load balancer...'%s'...", loadBalancer.getId()));
@@ -1503,6 +1520,86 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
+    public void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        Integer lbId = loadBalancer.getId();
+        Integer accountId = loadBalancer.getAccountId();
+
+        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        String[] vsNames;
+
+        boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
+
+        if (isSecureServer) {
+            vsNames = new String[]{virtualServerName, virtualSecureServerName};
+        } else {
+            vsNames = new String[]{virtualServerName};
+        }
+
+        for (String vsName : vsNames) {
+            updateContentCaching(config, loadBalancer, vsName);
+        }
+    }
+
+    private void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String virtualServerName)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        boolean isContentCaching = false;
+
+        if (loadBalancer.isContentCaching() != null) {
+            isContentCaching = loadBalancer.isContentCaching();
+        }
+
+        LoadBalancerProtocol protocol = loadBalancer.getProtocol();
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String rollBackMessage = "Update content caching request canceled.";
+
+        if (isContentCaching) {
+            LOG.debug(String.format("ENABLING content caching for virtual server '%s'...", virtualServerName));
+        } else {
+            LOG.debug(String.format("DISABLING content caching for virtual server '%s'...", virtualServerName));
+        }
+
+        try {
+            VirtualServerRule contentCachingRule = ZxtmAdapterImpl.ruleContentCaching;
+            if (isContentCaching) {
+
+                LOG.debug("Attach content caching rule and enable on the virtual server.");
+
+                if (protocol.equals(LoadBalancerProtocol.HTTP)) {
+                    serviceStubs.getVirtualServerBinding().addRules(new String[]{virtualServerName}, new VirtualServerRule[][]{{contentCachingRule}});
+                    serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{isContentCaching});
+                    LOG.info("Rules attached to the VS, update content caching successfully completed.");
+                } else {
+                    LOG.info("Content caching rule note set because loadbalancer protocol is not HTTP.");
+                    serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{contentCachingRule.getName()}});
+                    serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{false});
+                }
+            } else {
+                LOG.info("Removing content caching rule from virtualserver: " + virtualServerName);
+                serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{contentCachingRule.getName()}});
+                serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{false});
+            }
+
+        } catch (ObjectDoesNotExist obdne) {
+            LOG.error("Virtual server not found, ignoring this request......" + obdne);
+        } catch (DeploymentError e) {
+            LOG.error("Error updating content caching..." + e);
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        } catch (InvalidInput e) {
+            LOG.error("Content caching not found, ignoring..." + e);
+//            throw new ZxtmRollBackException(rollBackMessage, e);
+        }  catch (RemoteException e) {
+            LOG.error("Error updating content caching..." + e);
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }
+
+        LOG.info(String.format("Successfully updated content caching for virtual server '%s'...", virtualServerName));
+    }
+
+    @Override
     public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
 
@@ -1924,6 +2021,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
+    public Integer getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        String virtualServerName = isSsl ? ZxtmNameBuilder.genSslVSName(loadBalancerId, accountId) : ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
+        String virtualServerNames[] = {virtualServerName};
+        int[] ccsArray = serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(virtualServerNames);
+        return ccsArray[0];
+    }
+
+    @Override
     public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config) throws RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         return serviceStubs.getSystemStatsBinding().getTotalCurrentConn();
@@ -1959,6 +2065,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
+    public Long getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        String virtualServerName = isSsl ? ZxtmNameBuilder.genSslVSName(loadBalancerId, accountId) : ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
+        String virtualServerNames[] = {virtualServerName};
+        long[] bytesInArray = serviceStubs.getSystemStatsBinding().getVirtualserverBytesIn(virtualServerNames);
+        return bytesInArray[0];
+    }
+
+    @Override
     public Map<String, Long> getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, List<String> names) throws RemoteException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         Map<String, Long> bytesOutMap = new HashMap<String, Long>();
@@ -1971,6 +2086,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         return bytesOutMap;
+    }
+
+    @Override
+    public Long getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        String virtualServerName = isSsl ? ZxtmNameBuilder.genSslVSName(loadBalancerId, accountId) : ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
+        String virtualServerNames[] = {virtualServerName};
+        long[] bytesOutArray = serviceStubs.getSystemStatsBinding().getVirtualserverBytesOut(virtualServerNames);
+        return bytesOutArray[0];
     }
 
     @Override

@@ -28,6 +28,12 @@ public class DeleteSslTerminationListener extends BaseListener {
 
         MessageDataContainer dataContainer = getDataContainerFromMessage(message);
         LoadBalancer dbLoadBalancer;
+        Long bytesOut;
+        Long bytesIn;
+        Integer concurrentConns;
+        Long bytesOutSsl;
+        Long bytesInSsl;
+        Integer concurrentConnsSsl;
         LoadBalancer errorMsgLB = new LoadBalancer();
         errorMsgLB.setUserName(dataContainer.getUserName());
         errorMsgLB.setId(dataContainer.getLoadBalancerId());
@@ -43,6 +49,30 @@ public class DeleteSslTerminationListener extends BaseListener {
             return;
         }
 
+        // Try to get non-ssl usage
+        try {
+            bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
+            bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
+            concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
+        } catch (Exception e) {
+            LOG.warn("Couldn't retrieve load balancer usage stats. Setting them to null.");
+            bytesOut = null;
+            bytesIn = null;
+            concurrentConns = null;
+        }
+
+        // Try to get ssl usage
+        try {
+            bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
+            bytesInSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, true);
+            concurrentConnsSsl = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, true);
+        } catch (Exception e) {
+            LOG.warn("Couldn't retrieve load balancer usage stats for ssl virtual server. Setting them to null.");
+            bytesOutSsl = null;
+            bytesInSsl = null;
+            concurrentConnsSsl = null;
+        }
+
         try {
             LOG.debug(String.format("Deleting load balancer '%d' ssl termination in Zeus...", dbLoadBalancer.getId()));
             reverseProxyLoadBalancerService.removeSslTermination(dbLoadBalancer);
@@ -55,7 +85,7 @@ public class DeleteSslTerminationListener extends BaseListener {
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(errorMsgLB);
             // Notify usage processor with a usage event
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
 
             return;
         }
@@ -72,7 +102,7 @@ public class DeleteSslTerminationListener extends BaseListener {
         notificationService.saveLoadBalancerEvent(errorMsgLB.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_SSL_TERMINATION, DELETE, INFO);
 
         // Notify usage processor with a usage event
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
 
         LOG.info(String.format("Load balancer ssl termination '%d' successfully deleted.", dbLoadBalancer.getId()));
     }

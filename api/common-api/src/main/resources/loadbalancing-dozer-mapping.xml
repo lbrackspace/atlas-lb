@@ -264,6 +264,10 @@
             <a>connectionLogging</a>
             <b get-method="isConnectionLogging">connectionLogging</b>
         </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ContentCachingConverter">
+            <a>contentCaching</a>
+            <b get-method="isContentCaching">contentCaching</b>
+        </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SourceAddressesConverter">
             <a>sourceAddresses</a>
             <b>host</b>

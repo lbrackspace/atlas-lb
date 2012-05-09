@@ -170,6 +170,17 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
+    public void updateContentCaching(LoadBalancer lb) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        try {
+            reverseProxyLoadBalancerAdapter.updateContentCaching(config, lb);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
     public void addVirtualIps(Integer lbId, Integer accountId, LoadBalancer loadBalancer) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
@@ -381,6 +392,45 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             throw af;
         }
         return conn;
+    }
+
+    @Override
+    public Integer getLoadBalancerCurrentConnections(LoadBalancer lb, boolean isSsl) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
+        int conn;
+        try {
+            conn = reverseProxyLoadBalancerAdapter.getLoadBalancerCurrentConnections(config, lb.getAccountId(), lb.getId(), isSsl);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+        return conn;
+    }
+
+    @Override
+    public Long getLoadBalancerBytesIn(LoadBalancer lb, boolean isSsl) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
+        long bytesIn;
+        try {
+            bytesIn = reverseProxyLoadBalancerAdapter.getLoadBalancerBytesIn(config, lb.getAccountId(), lb.getId(), isSsl);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+        return bytesIn;
+    }
+
+    @Override
+    public Long getLoadBalancerBytesOut(LoadBalancer lb, boolean isSsl) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
+        long bytesOut;
+        try {
+            bytesOut = reverseProxyLoadBalancerAdapter.getLoadBalancerBytesOut(config, lb.getAccountId(), lb.getId(), isSsl);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+        return bytesOut;
     }
 
     @Override

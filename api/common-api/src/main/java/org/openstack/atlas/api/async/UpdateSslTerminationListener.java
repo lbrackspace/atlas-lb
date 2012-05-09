@@ -31,6 +31,12 @@ public class UpdateSslTerminationListener extends BaseListener {
         MessageDataContainer dataContainer = getDataContainerFromMessage(message);
         ZeusSslTermination queTermination = dataContainer.getZeusSslTermination();
         LoadBalancer dbLoadBalancer = new LoadBalancer();
+        Long bytesOut;
+        Long bytesIn;
+        Integer concurrentConns;
+        Long bytesOutSsl;
+        Long bytesInSsl;
+        Integer concurrentConnsSsl;
 
         try {
             LOG.debug("Grabbing loadbalancer...");
@@ -42,6 +48,30 @@ public class UpdateSslTerminationListener extends BaseListener {
             notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dbLoadBalancer);
             return;
+        }
+
+        // Try to get non-ssl usage
+        try {
+            bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
+            bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
+            concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
+        } catch (Exception e) {
+            LOG.warn("Couldn't retrieve load balancer usage stats. Setting them to null.");
+            bytesOut = null;
+            bytesIn = null;
+            concurrentConns = null;
+        }
+
+        // Try to get ssl usage
+        try {
+            bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
+            bytesInSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, true);
+            concurrentConnsSsl = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, true);
+        } catch (Exception e) {
+            LOG.warn("Couldn't retrieve load balancer usage stats for ssl virtual server. Setting them to null.");
+            bytesOutSsl = null;
+            bytesInSsl = null;
+            concurrentConnsSsl = null;
         }
 
         try {
@@ -67,12 +97,12 @@ public class UpdateSslTerminationListener extends BaseListener {
         // Notify usage processor
         if (queTermination.getSslTermination().isEnabled()) {
             if(queTermination.getSslTermination().isSecureTrafficOnly()) {
-                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
+                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
             } else {
-                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
+                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
             }
         } else {
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
         }
 
         LOG.info(String.format("Updated load balancer '%d' ssl termination successfully for loadbalancer: ", dbLoadBalancer.getId()));

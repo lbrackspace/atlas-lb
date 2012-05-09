@@ -35,6 +35,8 @@ public interface ReverseProxyLoadBalancerService {
 
     void updateConnectionLogging(LoadBalancer lb) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
 
+    void updateContentCaching(LoadBalancer lb) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
+
     void setNodes(LoadBalancer lb) throws Exception;
 
     void removeNode(Integer id, Integer accountId, Node node) throws Exception;
@@ -78,6 +80,12 @@ public interface ReverseProxyLoadBalancerService {
     void setErrorFile(LoadBalancer loadBalancer, String content) throws Exception,DecryptException, MalformedURLException;
 
     int getTotalCurrentConnectionsForHost(Host host) throws Exception;
+
+    Integer getLoadBalancerCurrentConnections(LoadBalancer lb, boolean isSsl) throws Exception;
+
+    Long getLoadBalancerBytesIn(LoadBalancer lb, boolean isSsl) throws Exception;
+
+    Long getLoadBalancerBytesOut(LoadBalancer lb, boolean isSsl) throws Exception;
 
     public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception;
 

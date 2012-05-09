@@ -43,6 +43,7 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getVirtualIps()).if_().exist().then().must().adhereTo(new SharedOrNewVipVerifier()).forContext(POST).withMessage("Must specify either a shared or new virtual ip.");
                 result(validationTarget().getVirtualIps()).if_().exist().then().must().delegateTo(new VirtualIpValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getConnectionLogging()).if_().exist().then().must().delegateTo(new ConnectionLoggingValidator().getValidator(), POST);
+                result(validationTarget().getContentCaching()).if_().exist().then().must().delegateTo(new ContentCachingValidator().getValidator(), POST);
 
                 // Need to determine how to get validation working for the collections.
                 result(validationTarget().getAccessList()).if_().exist().then().must().cannotExceedSize(100).withMessage("Must not provide more than one hundred access list items");
@@ -76,6 +77,7 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getConnectionThrottle()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/throttles to configure connection throttling.");
                 result(validationTarget().getAccessList()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/accesslist to configure access lists.");
                 result(validationTarget().getConnectionLogging()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/connecitonlogging to configure connection logging.");
+                result(validationTarget().getContentCaching()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/contentcaching to configure content caching.");
 
             }
         });
