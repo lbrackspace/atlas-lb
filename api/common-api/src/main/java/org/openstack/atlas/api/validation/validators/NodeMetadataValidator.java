@@ -3,6 +3,7 @@ package org.openstack.atlas.api.validation.validators;
 import org.openstack.atlas.api.validation.Validator;
 import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.api.validation.verifiers.DuplicateNodeMetaVerifier;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeMetadata;
 
 import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
@@ -19,6 +20,7 @@ public class NodeMetadataValidator implements ResourceValidator<NodeMetadata> {
                 // FULL EXPECTATIONS
                 result(validationTarget().getNodeMetas()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide at least 1 entry of meta data.");
                 result(validationTarget().getNodeMetas()).if_().exist().then().must().delegateTo(new NodeMetaValidator().getValidator(), POST);
+                result(validationTarget().getNodeMetas()).must().adhereTo(new DuplicateNodeMetaVerifier()).forContext(POST).withMessage("Duplicate keys detected. Please ensure that the key is unique for each metadata item.");
             }
         });
     }
