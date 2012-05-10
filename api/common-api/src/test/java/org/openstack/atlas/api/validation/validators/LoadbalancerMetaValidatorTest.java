@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -19,14 +19,14 @@ public class LoadbalancerMetaValidatorTest {
 
     public static class WhenValidatingPost {
 
-        private LoadbalancerMeta meta;
-        private LoadbalancerMetaValidator validatorLoadbalancer;
+        private Meta meta;
+        private MetaValidator validatorLoadbalancer;
 
         @Before
         public void standUp() {
-            validatorLoadbalancer = new LoadbalancerMetaValidator();
+            validatorLoadbalancer = new MetaValidator();
 
-            meta = new LoadbalancerMeta();
+            meta = new Meta();
             meta.setKey("metaKey1");
             meta.setValue("metaValue1");
         }
@@ -93,14 +93,14 @@ public class LoadbalancerMetaValidatorTest {
 
     public static class WhenValidatingPut {
 
-        private LoadbalancerMeta meta;
-        private LoadbalancerMetaValidator validatorLoadbalancer;
+        private Meta meta;
+        private MetaValidator validatorLoadbalancer;
 
         @Before
         public void standUp() {
-            validatorLoadbalancer = new LoadbalancerMetaValidator();
+            validatorLoadbalancer = new MetaValidator();
 
-            meta = new LoadbalancerMeta();
+            meta = new Meta();
             meta.setValue("metaValue1");
         }
 

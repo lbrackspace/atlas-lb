@@ -46,20 +46,20 @@ public class DataModelToDomainLoadBalancerMapperTest {
             conLog.setEnabled(true);
             loadBalancer.setConnectionLogging(conLog);
 
-            org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta meta1 = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta();
+            org.openstack.atlas.docs.loadbalancers.api.v1.Meta meta1 = new org.openstack.atlas.docs.loadbalancers.api.v1.Meta();
             meta1.setId(4100);
             meta1.setKey("metaKey1");
             meta1.setValue("metaValue1");
 
-            org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta meta2 = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta();
+            org.openstack.atlas.docs.loadbalancers.api.v1.Meta meta2 = new org.openstack.atlas.docs.loadbalancers.api.v1.Meta();
             meta2.setId(4101);
             meta2.setKey("metaKey2");
             meta2.setValue("metaValue2");
 
-            final LoadbalancerMetadata metadata = new LoadbalancerMetadata();
-            metadata.getLoadbalancerMetas().add(meta1);
-            metadata.getLoadbalancerMetas().add(meta2);
-            loadBalancer.getLoadbalancerMetadata().addAll(metadata.getLoadbalancerMetas());
+            final Metadata metadata = new Metadata();
+            metadata.getMetas().add(meta1);
+            metadata.getMetas().add(meta2);
+            loadBalancer.getMetadata().addAll(metadata.getMetas());
 
             Node node1 = new Node();
             node1.setId(4100);

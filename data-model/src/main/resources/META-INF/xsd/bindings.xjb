@@ -65,17 +65,11 @@
         <bindings scd="~tns:loadBalancer">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer"/>
         </bindings>
-        <bindings scd="~tns:loadbalancerMetadata">
-            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata"/>
+        <bindings scd="~tns:metadata">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Metadata"/>
         </bindings>
-        <bindings scd="~tns:loadbalancerMeta">
-            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta"/>
-        </bindings>
-        <bindings scd="~tns:nodeMetadata">
-            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.NodeMetadata"/>
-        </bindings>
-        <bindings scd="~tns:nodeMeta">
-            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.NodeMeta"/>
+        <bindings scd="~tns:meta">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Meta"/>
         </bindings>
         <bindings scd="~tns:nodes">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Nodes"/>

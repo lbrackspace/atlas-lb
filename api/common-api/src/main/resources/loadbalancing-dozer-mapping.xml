@@ -221,9 +221,9 @@
             <b>algorithm</b>
         </field>
         <field>
-            <a>loadbalancerMetadata</a>
+            <a>metadata</a>
             <b>loadbalancerMetadata</b>
-            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta</a-hint>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</b-hint>
         </field>
         <field map-id="HIDE_NODE_META">
@@ -303,7 +303,7 @@
     </mapping>
 
     <mapping map-null="false">
-        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta</class-a>
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</class-a>
         <class-b>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</class-b>
     </mapping>
 
@@ -324,19 +324,19 @@
             <b>address</b>
         </field>
         <field-exclude>
-            <a>nodeMetadata</a>
+            <a>metadata</a>
             <b>nodeMetadata</b>
         </field-exclude>
     </mapping>
 
     <mapping map-null="false">
-        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.NodeMeta</class-a>
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</class-a>
         <class-b>org.openstack.atlas.service.domain.entities.NodeMeta</class-b>
     </mapping>
 
     <mapping map-null="false" map-id="NODE_META_DATA">
         <class-a>org.openstack.atlas.service.domain.entities.NodeMeta</class-a>
-        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.NodeMeta</class-b>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</class-b>
     </mapping>
 
     <mapping map-null="false" wildcard="false">

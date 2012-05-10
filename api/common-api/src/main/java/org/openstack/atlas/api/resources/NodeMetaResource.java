@@ -7,7 +7,7 @@ import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NodeMeta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.openstack.atlas.service.domain.entities.Node;
 
 import javax.ws.rs.*;
@@ -31,11 +31,11 @@ public class NodeMetaResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON})
     public Response retrieveNodeMeta() {
         org.openstack.atlas.service.domain.entities.NodeMeta domainNodeMeta;
-        NodeMeta nodeMeta;
+        Meta Meta;
         try {
             domainNodeMeta = nodeMetadataService.getNodeMeta(nodeId, id);
-            nodeMeta = dozerMapper.map(domainNodeMeta, org.openstack.atlas.docs.loadbalancers.api.v1.NodeMeta.class);
-            return Response.status(Response.Status.OK).entity(nodeMeta).build();
+            Meta = dozerMapper.map(domainNodeMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class);
+            return Response.status(Response.Status.OK).entity(Meta).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
@@ -43,8 +43,8 @@ public class NodeMetaResource extends CommonDependencyProvider {
 
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
-    public Response updateMeta(NodeMeta callNodeMeta) {
-        ValidatorResult result = ValidatorRepository.getValidatorFor(NodeMeta.class).validate(callNodeMeta, HttpRequestType.PUT);
+    public Response updateMeta(Meta callNodeMeta) {
+        ValidatorResult result = ValidatorRepository.getValidatorFor(Meta.class).validate(callNodeMeta, HttpRequestType.PUT);
 
         if (!result.passedValidation()) {
             return getValidationFaultResponse(result);
@@ -54,9 +54,9 @@ public class NodeMetaResource extends CommonDependencyProvider {
 
         try {
             org.openstack.atlas.service.domain.entities.NodeMeta domainNodeMeta = dozerMapper.map(callNodeMeta, org.openstack.atlas.service.domain.entities.NodeMeta.class);
-            NodeMeta nodeMeta = dozerMapper.map(nodeMetadataService.updateNodeMeta(accountId, loadbalancerId, nodeId, domainNodeMeta), NodeMeta.class);
+            Meta Meta = dozerMapper.map(nodeMetadataService.updateNodeMeta(accountId, loadbalancerId, nodeId, domainNodeMeta), Meta.class);
 
-            return Response.status(Response.Status.OK).entity(nodeMeta).build();
+            return Response.status(Response.Status.OK).entity(Meta).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

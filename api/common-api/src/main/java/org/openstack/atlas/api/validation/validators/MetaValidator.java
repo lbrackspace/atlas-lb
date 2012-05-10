@@ -4,20 +4,20 @@ import org.openstack.atlas.api.validation.Validator;
 import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.api.validation.verifiers.MustHaveLengthVerifier;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NodeMeta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 
 import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 
-public class NodeMetaValidator implements ResourceValidator<NodeMeta> {
+public class MetaValidator implements ResourceValidator<Meta> {
 
-    private final Validator<NodeMeta> validator;
+    private final Validator<Meta> validator;
     private final int MAX_KEY_LENGTH = 32;
     private final int MAX_VALUE_LENGTH = 256;
 
-    public NodeMetaValidator() {
-        validator = build(new ValidatorBuilder<NodeMeta>(NodeMeta.class) {
+    public MetaValidator() {
+        validator = build(new ValidatorBuilder<Meta>(Meta.class) {
 
             {
                 // SHARED EXPECTATIONS
@@ -40,13 +40,13 @@ public class NodeMetaValidator implements ResourceValidator<NodeMeta> {
     }
 
     @Override
-    public ValidatorResult validate(NodeMeta objectToValidate, Object context) {
+    public ValidatorResult validate(Meta objectToValidate, Object context) {
         ValidatorResult result = validator.validate(objectToValidate, context);
         return ValidatorUtilities.removeEmptyMessages(result);
     }
 
     @Override
-    public Validator<NodeMeta> getValidator() {
+    public Validator<Meta> getValidator() {
         return validator;
     }
 

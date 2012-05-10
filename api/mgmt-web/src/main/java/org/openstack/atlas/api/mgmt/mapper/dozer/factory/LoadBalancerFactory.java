@@ -13,7 +13,7 @@ public class LoadBalancerFactory implements BeanFactory {
             lb.setAccessList(null);
             lb.setLoadBalancerUsage(null);
             lb.setNodes(null);
-            lb.setLoadbalancerMetadata(null);
+            lb.setMetadata(null);
             lb.setVirtualIps(null);
             lb.setTickets(null);
             return lb;

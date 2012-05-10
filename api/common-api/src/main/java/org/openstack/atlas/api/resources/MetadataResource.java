@@ -7,7 +7,7 @@ import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadbalancerMeta;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
@@ -31,8 +31,8 @@ public class MetadataResource extends CommonDependencyProvider {
 
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
-    public Response createMetadata(LoadbalancerMetadata metadata) {
-        ValidatorResult result = ValidatorRepository.getValidatorFor(LoadbalancerMetadata.class).validate(metadata, HttpRequestType.POST);
+    public Response createMetadata(Metadata metadata) {
+        ValidatorResult result = ValidatorRepository.getValidatorFor(Metadata.class).validate(metadata, HttpRequestType.POST);
 
         if (!result.passedValidation()) {
             return getValidationFaultResponse(result);
@@ -42,15 +42,15 @@ public class MetadataResource extends CommonDependencyProvider {
             loadBalancerService.get(loadBalancerId, accountId);
 
             List<LoadbalancerMeta> domainLoadbalancerMetaList = new ArrayList<LoadbalancerMeta>();
-            for (org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta meta : metadata.getLoadbalancerMetas()) {
+            for (org.openstack.atlas.docs.loadbalancers.api.v1.Meta meta : metadata.getMetas()) {
                 domainLoadbalancerMetaList.add(dozerMapper.map(meta, LoadbalancerMeta.class));
             }
 
             Set<LoadbalancerMeta> dbMetadata = loadbalancerMetadataService.createLoadbalancerMetadata(accountId, loadBalancerId, domainLoadbalancerMetaList);
 
-            org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata returnMetadata = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata();
+            org.openstack.atlas.docs.loadbalancers.api.v1.Metadata returnMetadata = new org.openstack.atlas.docs.loadbalancers.api.v1.Metadata();
             for (LoadbalancerMeta loadbalancerMeta : dbMetadata) {
-                returnMetadata.getLoadbalancerMetas().add(dozerMapper.map(loadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta.class));
+                returnMetadata.getMetas().add(dozerMapper.map(loadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class));
             }
 
             return Response.status(Response.Status.OK).entity(returnMetadata).build();
@@ -63,11 +63,11 @@ public class MetadataResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveMetadata(){
         Set<LoadbalancerMeta> domainLoadbalancerMetaSet;
-        org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata returnMetadata = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata();
+        org.openstack.atlas.docs.loadbalancers.api.v1.Metadata returnMetadata = new org.openstack.atlas.docs.loadbalancers.api.v1.Metadata();
         try {
             domainLoadbalancerMetaSet = loadbalancerMetadataService.getLoadbalancerMetadataByAccountIdLoadBalancerId(accountId, loadBalancerId);
             for (LoadbalancerMeta domainLoadbalancerMeta : domainLoadbalancerMetaSet) {
-                returnMetadata.getLoadbalancerMetas().add(dozerMapper.map(domainLoadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta.class));
+                returnMetadata.getMetas().add(dozerMapper.map(domainLoadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class));
             }
             return Response.status(Response.Status.OK).entity(returnMetadata).build();
         } catch (Exception e) {

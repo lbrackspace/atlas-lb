@@ -13,7 +13,7 @@ public class NodeFactory implements BeanFactory {
             node.setId(null);
             node.setAddress(null);
             node.setCondition(null);
-            node.setNodeMetadata(null);
+            node.setMetadata(null);
             node.setPort(null);
             node.setStatus(null);
             node.setType(null);

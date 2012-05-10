@@ -6,8 +6,8 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NodeMetadata;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NodeMeta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -17,20 +17,20 @@ public class NodeMetadataValidatorTest {
 
     public static class WhenValidatingPost {
 
-        private NodeMetadataValidator validator;
-        private NodeMetadata metadata;
-        private NodeMeta meta1;
+        private MetadataValidator validator;
+        private Metadata metadata;
+        private Meta meta1;
 
         @Before
         public void setUpValidMetadataObject() {
-            validator = new NodeMetadataValidator();
-            metadata = new NodeMetadata();
+            validator = new MetadataValidator();
+            metadata = new Metadata();
 
-            meta1 = new NodeMeta();
+            meta1 = new Meta();
             meta1.setKey("metaKey1");
             meta1.setValue("metaValue1");
 
-            metadata.getNodeMetas().add(meta1);
+            metadata.getMetas().add(meta1);
         }
 
         @Test
@@ -46,13 +46,13 @@ public class NodeMetadataValidatorTest {
 
         @Test
         public void shouldRejectMetadataObjectWithNoMetas() {
-            assertFalse(validator.validate(new NodeMetadata(), HttpRequestType.POST).passedValidation());
+            assertFalse(validator.validate(new Metadata(), HttpRequestType.POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenPassingInDuplicateKeys() {
-            NodeMeta metaWithDuplicateKey = meta1;
-            metadata.getNodeMetas().add(metaWithDuplicateKey);
+            Meta metaWithDuplicateKey = meta1;
+            metadata.getMetas().add(metaWithDuplicateKey);
             assertFalse(validator.validate(metadata, HttpRequestType.POST).passedValidation());
         }
     }
