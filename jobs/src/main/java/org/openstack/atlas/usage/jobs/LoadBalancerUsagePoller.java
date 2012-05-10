@@ -99,7 +99,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
 
             if (previousUsageRecord != null) {
                 Integer oldNumPolls = previousUsageRecord.getNumberOfPolls();
-                Integer newNumPolls = oldNumPolls + 1;
+                Integer newNumPolls = (previousUsageRecord.getId() != null) ? oldNumPolls + 1 : 1; // If it hasn't been created then its only 1 poll
 
                 if (usageEventEntry.getLastBandwidthBytesIn() != null) {
                     previousUsageRecord.setCumulativeBandwidthBytesIn(UsageCalculator.calculateCumBandwidthBytesIn(previousUsageRecord, usageEventEntry.getLastBandwidthBytesIn()));
@@ -122,12 +122,20 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
                     previousUsageRecord.setEndTime(eventTime);
                 }
                 if (usageEventEntry.getLastConcurrentConnections() != null) {
-                    previousUsageRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(previousUsageRecord.getAverageConcurrentConnections(), oldNumPolls, usageEventEntry.getLastConcurrentConnections()));
+                    if(previousUsageRecord.getEventType().equals(UsageEvent.SSL_ONLY_ON.name())) {
+                        previousUsageRecord.setAverageConcurrentConnections(0.0);
+                    } else {
+                        previousUsageRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(previousUsageRecord.getAverageConcurrentConnections(), oldNumPolls, usageEventEntry.getLastConcurrentConnections()));
+                    }
                     previousUsageRecord.setNumberOfPolls(newNumPolls);
                     previousUsageRecord.setEndTime(eventTime);
                 }
                 if (usageEventEntry.getLastConcurrentConnectionsSsl() != null) {
-                    previousUsageRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(previousUsageRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, usageEventEntry.getLastConcurrentConnectionsSsl()));
+                    if(previousUsageRecord.getEventType().equals(UsageEvent.SSL_OFF.name())) {
+                        previousUsageRecord.setAverageConcurrentConnectionsSsl(0.0);
+                    } else {
+                        previousUsageRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(previousUsageRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, usageEventEntry.getLastConcurrentConnectionsSsl()));
+                    }
                     previousUsageRecord.setNumberOfPolls(newNumPolls);
                     previousUsageRecord.setEndTime(eventTime);
                 }
