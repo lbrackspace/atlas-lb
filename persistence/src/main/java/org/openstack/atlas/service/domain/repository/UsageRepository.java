@@ -49,6 +49,20 @@ public class UsageRepository {
         return usage;
     }
 
+    public Usage getMostRecentUsageForLoadBalancer(Integer loadBalancerId) {
+        if (loadBalancerId == null) return null;
+
+        Query query = entityManager.createNativeQuery("SELECT a.* " +
+                "FROM lb_usage a, " +
+                "(SELECT loadbalancer_id, max(end_time) as end_time FROM lb_usage WHERE loadbalancer_id = :loadbalancerId GROUP BY loadbalancer_id) b " +
+                "WHERE a.loadbalancer_id = :loadbalancerId and a.loadbalancer_id = b.loadbalancer_id and a.end_time = b.end_time;", Usage.class)
+                .setParameter("loadbalancerId", loadBalancerId);
+
+        List<Usage> usage = (List<Usage>) query.getResultList();
+        if (usage == null) return null;
+        return usage.get(0);
+    }
+
     public void batchCreate(List<Usage> usages) {
         LOG.info(String.format("batchCreate() called with %d records", usages.size()));
 

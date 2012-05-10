@@ -29,7 +29,7 @@ import java.util.*;
 public class LoadBalancerUsagePoller extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsagePoller.class);
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
-    LoadBalancerRepository loadBalancerRepository;
+    private LoadBalancerRepository loadBalancerRepository;
     private HostRepository hostRepository;
     private LoadBalancerUsageRepository hourlyUsageRepository;
     private LoadBalancerUsageEventRepository usageEventRepository;
