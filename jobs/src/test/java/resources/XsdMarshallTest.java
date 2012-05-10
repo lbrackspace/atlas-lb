@@ -3,10 +3,10 @@ package resources;
 import com.rackspace.docs.usage.core.V1Element;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.atom.pojo.AccountLBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
@@ -28,7 +28,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
-@Ignore
 @RunWith(Enclosed.class)
 public class XsdMarshallTest {
     public static class WhenMarshallingGeneratedXML {
@@ -42,12 +41,14 @@ public class XsdMarshallTest {
             //Builds fake data and tests the xsd/xml validation
             try {
                 EntryPojo entry = new EntryPojo();
+//                UsageEntry entry = new UsageEntry();
 
                 String uString = "DFW" + "234" + "2346";
                 UUID uuid = UUIDUtil.genUUID(uString);
 
                 //core
                 UsageV1Pojo usageV1 = new UsageV1Pojo();
+//                V1Element usageV1 = new V1Element();
                 usageV1.setDataCenter("DFW");
                 usageV1.setResourceName("LoadBalancer");
                 usageV1.setVersion("1");
@@ -61,21 +62,34 @@ public class XsdMarshallTest {
 
                 //product specific
                 LBaaSUsagePojo lu = new LBaaSUsagePojo();
+//                LoadBalancerUsage lu = new LoadBalancerUsage();
                 lu.setBandWidthIn(4);
                 lu.setAvgConcurrentConnections(30000);
                 usageV1.getAny().add(lu);
+
+                AccountLBaaSUsagePojo ausage = new AccountLBaaSUsagePojo();
+                ausage.setAccountId(12345);
+                ausage.setId(2);
+                ausage.setNumLoadbalancers(33);
+                ausage.setNumPublicVips(3);
+                ausage.setNumServicenetVips(4);
+                ausage.setStartTime(processCalendar(cal.getTimeInMillis()));
+                usageV1.getAny().add(ausage);
+
+
 
                 //Atom specific
                 entry.setTitle("LBAAS");
                 entry.setAuthor("LBAAS");
 
+                //Unmarshall and verify against schema
                 JAXBContext jc = JAXBContext.newInstance(V1Element.class);
-                Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("jobs/src/main/resources/META-INF/xsd/core.xsd"));
-
+                Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("src/main/resources/META-INF/xsd/core.xsd"));
                 Unmarshaller unmarshaller = jc.createUnmarshaller();
                 unmarshaller.setSchema(factory);
-
                 ByteArrayInputStream input = new ByteArrayInputStream(UsageMarshaller.marshallObject(usageV1).getBytes());
+
+
                 System.out.print(unmarshaller.unmarshal(input));
 
                 UsageContent usageContent = new UsageContent();

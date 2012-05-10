@@ -142,7 +142,7 @@
                     <bindingDirectory>${basedir}/src/main/resources/META-INF/xsd</bindingDirectory>
                     <schemaIncludes>
                         <include>entry.xsd</include>
-                        <include>ProductExtensionExample-LBaaS.xsd</include>
+                        <include>ProductExtension-LBaaS.xsd</include>
                     </schemaIncludes>
                 </configuration>
                 <executions>

@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 
 @XmlRootElement(namespace = "http://docs.rackspace.com/usage/core", name = "usage")
-@XmlSeeAlso({LBaaSUsagePojo.class})
+@XmlSeeAlso({LBaaSUsagePojo.class, AccountLBaaSUsagePojo.class})
 public class UsageV1Pojo extends V1Element {
 
 }

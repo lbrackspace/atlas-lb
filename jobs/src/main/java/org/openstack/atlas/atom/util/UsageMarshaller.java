@@ -31,6 +31,7 @@ public class UsageMarshaller {
         });
 
         StringWriter st = new StringWriter();
+
         marshaller.marshal(object, st);
         String xml = st.toString();
         return xml;

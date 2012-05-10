@@ -1122,6 +1122,27 @@ public class LoadBalancerRepository {
         return accountBilling;
     }
 
+    public AccountUsage getLatestAccountUsage(Integer accountId, Calendar startTime, Calendar endTime) throws EntityNotFoundException {
+        AccountBilling accountBilling = new AccountBilling();
+        accountBilling.setAccountId(accountId);
+
+        Query query;
+        List<AccountUsage> accountUsageResults;
+
+        String accountUsageQuery = "select u from AccountUsage u where u.accountId = :accountId and "
+                + "        u.startTime >= :startTime and "
+                + "        u.startTime <= :endTime "
+                + "        order by u.startTime asc";
+
+        query = entityManager.createQuery(accountUsageQuery);
+        query.setParameter("accountId", accountId);
+        query.setParameter("startTime", startTime);
+        query.setParameter("endTime", endTime);
+        accountUsageResults = query.getResultList();
+
+        return accountUsageResults.get(0);
+    }
+
     public HostUsageRecord getHostUsage(Integer hostId, Calendar startTime,
                                         Calendar endTime) throws EntityNotFoundException {
 

@@ -10,9 +10,9 @@
     xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
     targetNamespace="http://docs.rackspace.com/usage/lbaas">
 
-    <element name="usage" type="lbaas:LbaasUsage"/>
+    <element name="usage" type="lbaas:loadBalancerUsage"/>
 
-    <complexType name="LbaasUsage">
+    <complexType name="loadBalancerUsage">
         <annotation>
             <documentation>
                 <html:p>
@@ -112,4 +112,77 @@
         </attribute>
         <anyAttribute processContents="lax"/>
     </complexType>
+
+
+
+
+
+    <element name="accountUsage" type="lbaas:accountLoadBalancerUsage"/>
+
+    <complexType name="accountLoadBalancerUsage">
+        <annotation>
+            <documentation>
+                <html:p>
+                    LBaaS specific user fields.
+                </html:p>
+            </documentation>
+        </annotation>
+        <attribute name="id" type="xsd:int" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The id associated with this account usage entry.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="accountId" type="xsd:int" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The account id.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="numLoadbalancers" type="xsd:int" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The number of load balancers for this account.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="numPublicVips" type="xsd:int" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The number of public vips on this account.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="numServicenetVips" type="xsd:int" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The number of service net vips on this account.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="startTime" type="xsd:dateTime" use="required">
+            <annotation>
+                <documentation>
+                    <html:p>
+                        The start time.
+                    </html:p>
+                </documentation>
+            </annotation>
+        </attribute>
+        <anyAttribute processContents="lax"/>
+    </complexType>
+
+
 </schema>

@@ -5,12 +5,14 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.atom.pojo.AccountLBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
 import org.openstack.atlas.atom.util.*;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
+import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.entities.Usage;
@@ -64,7 +66,8 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
         processJobState(JobName.ATOM_USAGE_POLLER, JobStateVal.IN_PROGRESS);
 
         if (configuration.getString(AtomHopperConfigurationKeys.allow_ahusl).equals("true")) {
-
+            //URI from config : atomHopper/USL endpoint
+            uri = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
             //Create the threaded client to handle requests...
             client = ClientUtil.makeHttpClient();
 
@@ -78,8 +81,10 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
                     try {
                         //Retrieve usage for account by lbId
                         List<Usage> lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), ResponseUtil.getStartCal(), ResponseUtil.getNow());
+                        //Latest AccountUsage record
+                        AccountUsage accountUsage = loadBalancerRepository.getLatestAccountUsage(id, ResponseUtil.getStartCal(), ResponseUtil.getNow());
 
-                        //Walk each record...
+                        //Walk each load balancer usage record...
                         for (Usage usageRecord : lbusage) {
                             if (usageRecord.isNeedsPushed()) {
 
@@ -88,13 +93,10 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
                                 entry.setAuthor(author);
 
                                 UsageContent usageContent = new UsageContent();
-                                usageContent.setUsage(generateUsageEntry(usageRecord));
+                                usageContent.setUsage(generateUsageEntry(usageRecord, accountUsage));
                                 entry.setContent(usageContent);
                                 entry.getContent().setType(MediaType.APPLICATION_XML);
 
-
-                                //URI from config : atomHopper/USL endpoint
-                                uri = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
 
                                 LOG.info(String.format("Uploading to the atomHopper service now..."));
                                 ClientResponse response = client.resource(uri)
@@ -134,7 +136,7 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
         LOG.info(String.format("Atom hopper usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 
-    private UsageV1Pojo generateUsageEntry(Usage usageRecord) throws DatatypeConfigurationException, NoSuchAlgorithmException {
+    private UsageV1Pojo generateUsageEntry(Usage usageRecord, AccountUsage accountUsage) throws DatatypeConfigurationException, NoSuchAlgorithmException {
         configRegion = configuration.getString(AtomHopperConfigurationKeys.region);
         if (configRegion != null) {
             region = configRegion;
@@ -160,6 +162,16 @@ public class AtomHopperUsageJob extends Job implements StatefulJob {
         //Generate UUID
         UUID uuid = UUIDUtil.genUUID(genUUIDString(usageRecord));
         usageV1.setUsageId(uuid.toString());
+
+        //LBaaS account usage
+        AccountLBaaSUsagePojo ausage = new AccountLBaaSUsagePojo();
+        ausage.setAccountId(accountUsage.getAccountId());
+        ausage.setId(accountUsage.getId());
+        ausage.setNumLoadbalancers(accountUsage.getNumLoadBalancers());
+        ausage.setNumPublicVips(accountUsage.getNumPublicVips());
+        ausage.setNumServicenetVips(accountUsage.getNumServicenetVips());
+        ausage.setStartTime(processCalendar(accountUsage.getStartTime().getTimeInMillis()));
+        usageV1.getAny().add(ausage);
 
 
         //LBAAS specific values
