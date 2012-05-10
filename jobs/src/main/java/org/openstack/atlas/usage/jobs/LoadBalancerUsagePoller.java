@@ -69,17 +69,19 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
     private void processUsageEvents() {
         LOG.info("Processing usage events...");
 
-        List<LoadBalancerUsageEvent> usageEventEntries = usageEventRepository.getAllUsageEventEntries();
-        List<LoadBalancerUsage> newUsages = new ArrayList<LoadBalancerUsage>();
-        List<LoadBalancerUsage> recentUsages = new ArrayList<LoadBalancerUsage>();
+        List<LoadBalancerUsageEvent> usageEventEntries = usageEventRepository.getAllUsageEventEntriesInOrder();
+        List<LoadBalancerUsage> usagesToCreate = new ArrayList<LoadBalancerUsage>();
+        List<LoadBalancerUsage> usagesToUpdate = new ArrayList<LoadBalancerUsage>();
+        Map<Integer, List<LoadBalancerUsage>> newEventUsageMap = new HashMap<Integer, List<LoadBalancerUsage>>();
 
         for (LoadBalancerUsageEvent usageEventEntry : usageEventEntries) {
             UsageEvent usageEvent = UsageEvent.valueOf(usageEventEntry.getEventType());
-            LoadBalancerUsage recentUsage = hourlyUsageRepository.getMostRecentUsageForLoadBalancer(usageEventEntry.getLoadbalancerId());
-            int updatedTags = getTags(usageEventEntry.getAccountId(), usageEventEntry.getLoadbalancerId(), usageEvent, recentUsage);
+            LoadBalancerUsage previousUsageRecord = getPreviousUsageRecord(usageEventEntry, newEventUsageMap);
+
+            int updatedTags = getTags(usageEventEntry.getAccountId(), usageEventEntry.getLoadbalancerId(), usageEvent, previousUsageRecord);
 
             Calendar eventTime;
-            if (recentUsage != null && recentUsage.getEndTime().after(usageEventEntry.getStartTime())) {
+            if (previousUsageRecord != null && previousUsageRecord.getEndTime().after(usageEventEntry.getStartTime())) {
                 eventTime = Calendar.getInstance();
             } else {
                 eventTime = usageEventEntry.getStartTime();
@@ -95,54 +97,69 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
             newUsage.setTags(updatedTags);
             newUsage.setEventType(usageEventEntry.getEventType());
 
-            if (recentUsage != null) {
-                Integer oldNumPolls = recentUsage.getNumberOfPolls();
+            if (previousUsageRecord != null) {
+                Integer oldNumPolls = previousUsageRecord.getNumberOfPolls();
                 Integer newNumPolls = oldNumPolls + 1;
 
                 if (usageEventEntry.getLastBandwidthBytesIn() != null) {
-                    recentUsage.setCumulativeBandwidthBytesIn(UsageCalculator.calculateCumBandwidthBytesIn(recentUsage, usageEventEntry.getLastBandwidthBytesIn()));
-                    recentUsage.setLastBandwidthBytesIn(usageEventEntry.getLastBandwidthBytesIn());
-                    recentUsage.setEndTime(eventTime);
+                    previousUsageRecord.setCumulativeBandwidthBytesIn(UsageCalculator.calculateCumBandwidthBytesIn(previousUsageRecord, usageEventEntry.getLastBandwidthBytesIn()));
+                    previousUsageRecord.setLastBandwidthBytesIn(usageEventEntry.getLastBandwidthBytesIn());
+                    previousUsageRecord.setEndTime(eventTime);
                 }
                 if (usageEventEntry.getLastBandwidthBytesOut() != null) {
-                    recentUsage.setCumulativeBandwidthBytesOut(UsageCalculator.calculateCumBandwidthBytesOut(recentUsage, usageEventEntry.getLastBandwidthBytesOut()));
-                    recentUsage.setLastBandwidthBytesOut(usageEventEntry.getLastBandwidthBytesOut());
-                    recentUsage.setEndTime(eventTime);
+                    previousUsageRecord.setCumulativeBandwidthBytesOut(UsageCalculator.calculateCumBandwidthBytesOut(previousUsageRecord, usageEventEntry.getLastBandwidthBytesOut()));
+                    previousUsageRecord.setLastBandwidthBytesOut(usageEventEntry.getLastBandwidthBytesOut());
+                    previousUsageRecord.setEndTime(eventTime);
                 }
                 if (usageEventEntry.getLastBandwidthBytesInSsl() != null) {
-                    recentUsage.setCumulativeBandwidthBytesInSsl(UsageCalculator.calculateCumBandwidthBytesInSsl(recentUsage, usageEventEntry.getLastBandwidthBytesInSsl()));
-                    recentUsage.setLastBandwidthBytesInSsl(usageEventEntry.getLastBandwidthBytesInSsl());
-                    recentUsage.setEndTime(eventTime);
+                    previousUsageRecord.setCumulativeBandwidthBytesInSsl(UsageCalculator.calculateCumBandwidthBytesInSsl(previousUsageRecord, usageEventEntry.getLastBandwidthBytesInSsl()));
+                    previousUsageRecord.setLastBandwidthBytesInSsl(usageEventEntry.getLastBandwidthBytesInSsl());
+                    previousUsageRecord.setEndTime(eventTime);
                 }
                 if (usageEventEntry.getLastBandwidthBytesOutSsl() != null) {
-                    recentUsage.setCumulativeBandwidthBytesOutSsl(UsageCalculator.calculateCumBandwidthBytesOutSsl(recentUsage, usageEventEntry.getLastBandwidthBytesOutSsl()));
-                    recentUsage.setLastBandwidthBytesOutSsl(usageEventEntry.getLastBandwidthBytesOutSsl());
-                    recentUsage.setEndTime(eventTime);
+                    previousUsageRecord.setCumulativeBandwidthBytesOutSsl(UsageCalculator.calculateCumBandwidthBytesOutSsl(previousUsageRecord, usageEventEntry.getLastBandwidthBytesOutSsl()));
+                    previousUsageRecord.setLastBandwidthBytesOutSsl(usageEventEntry.getLastBandwidthBytesOutSsl());
+                    previousUsageRecord.setEndTime(eventTime);
                 }
                 if (usageEventEntry.getLastConcurrentConnections() != null) {
-                    recentUsage.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(recentUsage.getAverageConcurrentConnections(), oldNumPolls, usageEventEntry.getLastConcurrentConnections()));
-                    recentUsage.setNumberOfPolls(newNumPolls);
-                    recentUsage.setEndTime(eventTime);
+                    previousUsageRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(previousUsageRecord.getAverageConcurrentConnections(), oldNumPolls, usageEventEntry.getLastConcurrentConnections()));
+                    previousUsageRecord.setNumberOfPolls(newNumPolls);
+                    previousUsageRecord.setEndTime(eventTime);
                 }
                 if (usageEventEntry.getLastConcurrentConnectionsSsl() != null) {
-                    recentUsage.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(recentUsage.getAverageConcurrentConnectionsSsl(), oldNumPolls, usageEventEntry.getLastConcurrentConnectionsSsl()));
-                    recentUsage.setNumberOfPolls(newNumPolls);
-                    recentUsage.setEndTime(eventTime);
+                    previousUsageRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(previousUsageRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, usageEventEntry.getLastConcurrentConnectionsSsl()));
+                    previousUsageRecord.setNumberOfPolls(newNumPolls);
+                    previousUsageRecord.setEndTime(eventTime);
                 }
 
-                recentUsages.add(recentUsage);
+                if (previousUsageRecord.getId() != null) {
+                    usagesToUpdate.add(previousUsageRecord);
+                }
 
-                newUsage.setLastBandwidthBytesIn(recentUsage.getLastBandwidthBytesIn());
-                newUsage.setLastBandwidthBytesInSsl(recentUsage.getLastBandwidthBytesInSsl());
-                newUsage.setLastBandwidthBytesOut(recentUsage.getLastBandwidthBytesOut());
-                newUsage.setLastBandwidthBytesOutSsl(recentUsage.getLastBandwidthBytesOutSsl());
+                newUsage.setLastBandwidthBytesIn(previousUsageRecord.getLastBandwidthBytesIn());
+                newUsage.setLastBandwidthBytesInSsl(previousUsageRecord.getLastBandwidthBytesInSsl());
+                newUsage.setLastBandwidthBytesOut(previousUsageRecord.getLastBandwidthBytesOut());
+                newUsage.setLastBandwidthBytesOutSsl(previousUsageRecord.getLastBandwidthBytesOutSsl());
             }
 
-            newUsages.add(newUsage);
+            if (newEventUsageMap.containsKey(newUsage.getLoadbalancerId())) {
+                newEventUsageMap.get(newUsage.getLoadbalancerId()).add(newUsage);
+            } else {
+                List<LoadBalancerUsage> recentUsagesForLb = new ArrayList<LoadBalancerUsage>();
+                recentUsagesForLb.add(newUsage);
+                newEventUsageMap.put(newUsage.getLoadbalancerId(), recentUsagesForLb);
+            }
         }
 
-        if (!newUsages.isEmpty()) hourlyUsageRepository.batchCreate(newUsages);
-        if (!recentUsages.isEmpty()) hourlyUsageRepository.batchUpdate(recentUsages);
+        // Move usages over to array
+        for (Integer lbId : newEventUsageMap.keySet()) {
+            for (LoadBalancerUsage loadBalancerUsage : newEventUsageMap.get(lbId)) {
+                usagesToCreate.add(loadBalancerUsage);
+            }
+        }
+
+        if (!usagesToCreate.isEmpty()) hourlyUsageRepository.batchCreate(usagesToCreate);
+        if (!usagesToUpdate.isEmpty()) hourlyUsageRepository.batchUpdate(usagesToUpdate);
 
         try {
             BatchAction<LoadBalancerUsageEvent> deleteEventUsagesAction = new BatchAction<LoadBalancerUsageEvent>() {
@@ -155,7 +172,17 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
             LOG.error("Exception occurred while deleting usage event entries.", e);
         }
 
-        LOG.info(String.format("%d usage events processed.", newUsages.size()));
+        LOG.info(String.format("%d usage events processed.", usagesToCreate.size()));
+    }
+
+    private LoadBalancerUsage getPreviousUsageRecord(LoadBalancerUsageEvent usageEventEntry, Map<Integer, List<LoadBalancerUsage>> newEventUsageMap) {
+        // return previous event that has yet to be created
+        if (newEventUsageMap.containsKey(usageEventEntry.getLoadbalancerId())) {
+            List<LoadBalancerUsage> loadBalancerUsagesForLb = newEventUsageMap.get(usageEventEntry.getLoadbalancerId());
+            return (LoadBalancerUsage) loadBalancerUsagesForLb.toArray()[loadBalancerUsagesForLb.size()-1];
+        }
+
+        return hourlyUsageRepository.getMostRecentUsageForLoadBalancer(usageEventEntry.getLoadbalancerId());
     }
 
     private int getTags(Integer accountId, Integer lbId, UsageEvent usageEvent, LoadBalancerUsage recentUsage) {
