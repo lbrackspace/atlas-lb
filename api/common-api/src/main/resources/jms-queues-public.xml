@@ -51,7 +51,7 @@
         <property name="accountLimitService" ref="accountLimitService"/>
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
-    <bean id="metadataService" class="org.openstack.atlas.service.domain.services.impl.LoadbalancerMetadataServiceImpl" parent="baseService">
+    <bean id="loadbalancerMetadataService" class="org.openstack.atlas.service.domain.services.impl.LoadbalancerMetadataServiceImpl" parent="baseService">
         <property name="accountLimitService" ref="accountLimitService"/>
     </bean>
     <bean id="nodeMetadataService" class="org.openstack.atlas.service.domain.services.impl.NodeMetadataServiceImpl" parent="baseService">

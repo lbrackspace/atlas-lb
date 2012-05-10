@@ -44,7 +44,7 @@ public class CommonDependencyProvider {
     protected ContentCachingService contentCachingService;
     protected ConnectionThrottleService connectionThrottleService;
     protected VirtualIpService virtualIpService;
-    protected MetadataService metadataService;
+    protected LoadbalancerMetadataService loadbalancerMetadataService;
     protected NodeMetadataService nodeMetadataService;
     protected NodeService nodeService;
     protected SessionPersistenceService sessionPersistenceService;
@@ -106,8 +106,8 @@ public class CommonDependencyProvider {
         this.virtualIpService = virtualIpService;
     }
 
-    public void setMetadataService(MetadataService metadataService) {
-        this.metadataService = metadataService;
+    public void setLoadbalancerMetadataService(LoadbalancerMetadataService loadbalancerMetadataService) {
+        this.loadbalancerMetadataService = loadbalancerMetadataService;
     }
 
     public void setNodeMetadataService(NodeMetadataService nodeMetadataService) {

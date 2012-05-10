@@ -167,15 +167,15 @@ public class DomainToDataModelLoadBalancerMapperTest {
         public void should_map_metadata_to_null_if_null() {
             loadBalancer.setLoadbalancerMetadata(null);
             dataModelLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class);
-            Assert.assertNull(dataModelLoadBalancer.getMetadata());
+            Assert.assertNull(dataModelLoadBalancer.getLoadbalancerMetadata());
         }
 
         @Test
         public void should_map_metadata_and_its_properties() {
-            final List<org.openstack.atlas.docs.loadbalancers.api.v1.Meta> list = dataModelLoadBalancer.getMetadata();
+            final List<org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta> list = dataModelLoadBalancer.getLoadbalancerMetadata();
             Assert.assertEquals(2, list.size());
 
-            for (org.openstack.atlas.docs.loadbalancers.api.v1.Meta meta : list) {
+            for (org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta meta : list) {
                 if (!(meta.getId() == 991 || meta.getId() == 992)) {
                     Assert.fail();
                 }

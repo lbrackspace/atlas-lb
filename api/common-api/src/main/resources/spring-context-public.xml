@@ -57,7 +57,7 @@
         <property name="algorithmsService" ref="algorithmService"/>
         <property name="protocolsService" ref="protocolsService"/>
         <property name="virtualIpService" ref="virtualIpService"/>
-        <property name="metadataService" ref="metadataService"/>
+        <property name="loadbalancerMetadataService" ref="loadbalancerMetadataService"/>
         <property name="nodeMetadataService" ref="nodeMetadataService"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="accessListService" ref="accessListService"/>

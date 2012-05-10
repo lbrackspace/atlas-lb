@@ -7,7 +7,7 @@ import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadbalancerMeta;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
@@ -20,9 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.MediaType.APPLICATION_XML;
+import static javax.ws.rs.core.MediaType.*;
 
 public class MetadataResource extends CommonDependencyProvider {
     private final Log LOG = LogFactory.getLog(MetadataResource.class);
@@ -33,8 +31,8 @@ public class MetadataResource extends CommonDependencyProvider {
 
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
-    public Response createMetadata(Metadata metadata) {
-        ValidatorResult result = ValidatorRepository.getValidatorFor(Metadata.class).validate(metadata, HttpRequestType.POST);
+    public Response createMetadata(LoadbalancerMetadata metadata) {
+        ValidatorResult result = ValidatorRepository.getValidatorFor(LoadbalancerMetadata.class).validate(metadata, HttpRequestType.POST);
 
         if (!result.passedValidation()) {
             return getValidationFaultResponse(result);
@@ -44,15 +42,15 @@ public class MetadataResource extends CommonDependencyProvider {
             loadBalancerService.get(loadBalancerId, accountId);
 
             List<LoadbalancerMeta> domainLoadbalancerMetaList = new ArrayList<LoadbalancerMeta>();
-            for (org.openstack.atlas.docs.loadbalancers.api.v1.Meta meta : metadata.getMetas()) {
+            for (org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta meta : metadata.getLoadbalancerMetas()) {
                 domainLoadbalancerMetaList.add(dozerMapper.map(meta, LoadbalancerMeta.class));
             }
 
-            Set<LoadbalancerMeta> dbMetadata = metadataService.createMetadata(accountId, loadBalancerId, domainLoadbalancerMetaList);
+            Set<LoadbalancerMeta> dbMetadata = loadbalancerMetadataService.createLoadbalancerMetadata(accountId, loadBalancerId, domainLoadbalancerMetaList);
 
-            org.openstack.atlas.docs.loadbalancers.api.v1.Metadata returnMetadata = new org.openstack.atlas.docs.loadbalancers.api.v1.Metadata();
+            org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata returnMetadata = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata();
             for (LoadbalancerMeta loadbalancerMeta : dbMetadata) {
-                returnMetadata.getMetas().add(dozerMapper.map(loadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class));
+                returnMetadata.getLoadbalancerMetas().add(dozerMapper.map(loadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta.class));
             }
 
             return Response.status(Response.Status.OK).entity(returnMetadata).build();
@@ -65,11 +63,11 @@ public class MetadataResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveMetadata(){
         Set<LoadbalancerMeta> domainLoadbalancerMetaSet;
-        org.openstack.atlas.docs.loadbalancers.api.v1.Metadata returnMetadata = new org.openstack.atlas.docs.loadbalancers.api.v1.Metadata();
+        org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata returnMetadata = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata();
         try {
-            domainLoadbalancerMetaSet = metadataService.getMetadataByAccountIdLoadBalancerId(accountId, loadBalancerId);
+            domainLoadbalancerMetaSet = loadbalancerMetadataService.getLoadbalancerMetadataByAccountIdLoadBalancerId(accountId, loadBalancerId);
             for (LoadbalancerMeta domainLoadbalancerMeta : domainLoadbalancerMetaSet) {
-                returnMetadata.getMetas().add(dozerMapper.map(domainLoadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class));
+                returnMetadata.getLoadbalancerMetas().add(dozerMapper.map(domainLoadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta.class));
             }
             return Response.status(Response.Status.OK).entity(returnMetadata).build();
         } catch (Exception e) {
@@ -92,12 +90,12 @@ public class MetadataResource extends CommonDependencyProvider {
                 return ResponseFactory.getErrorResponse(badRequestException, null, null);
             }
 
-            validationErrors = metadataService.prepareForMetadataDeletion(accountId, loadBalancerId, metaIds);
+            validationErrors = loadbalancerMetadataService.prepareForLoadbalancerMetadataDeletion(accountId, loadBalancerId, metaIds);
             if (!validationErrors.isEmpty()) {
                 return getValidationFaultResponse(validationErrors);
             }
             
-            metadataService.deleteMetadata(dlb, metaIds);
+            loadbalancerMetadataService.deleteMetadata(dlb, metaIds);
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
         }

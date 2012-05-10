@@ -18,12 +18,12 @@ import java.util.*;
 
 @Repository
 @Transactional
-public class MetadataRepository {
-    final Log LOG = LogFactory.getLog(MetadataRepository.class);
+public class LoadbalancerMetadataRepository {
+    final Log LOG = LogFactory.getLog(LoadbalancerMetadataRepository.class);
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
 
-    public Set<LoadbalancerMeta> addMetas(LoadBalancer loadBalancer, Collection<LoadbalancerMeta> loadbalancerMetas) {
+    public Set<LoadbalancerMeta> addLoadbalancerMetas(LoadBalancer loadBalancer, Collection<LoadbalancerMeta> loadbalancerMetas) {
         Set<LoadbalancerMeta> newLoadbalancerMetas = new HashSet<LoadbalancerMeta>();
 
         for (LoadbalancerMeta loadbalancerMeta : loadbalancerMetas) {
@@ -37,7 +37,7 @@ public class MetadataRepository {
         return newLoadbalancerMetas;
     }
 
-    public List<LoadbalancerMeta> getMetadataByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) {
+    public List<LoadbalancerMeta> getLoadbalancerMetadataByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<LoadbalancerMeta> criteria = builder.createQuery(LoadbalancerMeta.class);
         Root<LoadbalancerMeta> metaRoot = criteria.from(LoadbalancerMeta.class);
@@ -46,14 +46,14 @@ public class MetadataRepository {
         lb.setId(loadBalancerId);
         lb.setAccountId(accountId);
 
-        Predicate belongsToLoadBalancer = builder.equal(metaRoot.get(Meta_.loadbalancer), lb);
+        Predicate belongsToLoadBalancer = builder.equal(metaRoot.get(LoadbalancerMeta_.loadbalancer), lb);
 
         criteria.select(metaRoot);
         criteria.where(belongsToLoadBalancer);
         return entityManager.createQuery(criteria).getResultList();
     }
 
-    public LoadbalancerMeta getMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
+    public LoadbalancerMeta getLoadbalancerMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<LoadbalancerMeta> criteria = builder.createQuery(LoadbalancerMeta.class);
         Root<LoadbalancerMeta> metaRoot = criteria.from(LoadbalancerMeta.class);
@@ -62,8 +62,8 @@ public class MetadataRepository {
         lb.setId(loadBalancerId);
         lb.setAccountId(accountId);
 
-        Predicate belongsToLoadBalancer = builder.equal(metaRoot.get(Meta_.loadbalancer), lb);
-        Predicate hasId = builder.equal(metaRoot.get(Meta_.id), id);
+        Predicate belongsToLoadBalancer = builder.equal(metaRoot.get(LoadbalancerMeta_.loadbalancer), lb);
+        Predicate hasId = builder.equal(metaRoot.get(LoadbalancerMeta_.id), id);
 
         criteria.select(metaRoot);
         criteria.where(builder.and(belongsToLoadBalancer, hasId));
@@ -78,7 +78,7 @@ public class MetadataRepository {
         return resultList.get(0);
     }
 
-    public void deleteMeta(LoadBalancer loadBalancer, Integer id) throws EntityNotFoundException {
+    public void deleteLoadbalancerMeta(LoadBalancer loadBalancer, Integer id) throws EntityNotFoundException {
         Set<LoadbalancerMeta> dbMetadata = new HashSet<LoadbalancerMeta>(loadBalancer.getLoadbalancerMetadata());
         Boolean removed = false;
 
@@ -120,7 +120,7 @@ public class MetadataRepository {
         return loadBalancer;
     }
 
-    public LoadBalancer deleteMetadata(LoadBalancer lb, Collection<Integer> ids) {
+    public LoadBalancer deleteLoadbalancerMetadata(LoadBalancer lb, Collection<Integer> ids) {
         Set<LoadbalancerMeta> metasCurrentlyOnLb = new HashSet<LoadbalancerMeta>(lb.getLoadbalancerMetadata());
         for (LoadbalancerMeta loadbalancerMetaCurrentlyOnLb : metasCurrentlyOnLb) {
             for (Integer idOfMetaToDelete : ids) {

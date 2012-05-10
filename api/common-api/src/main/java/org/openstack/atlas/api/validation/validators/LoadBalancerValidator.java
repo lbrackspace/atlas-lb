@@ -54,7 +54,7 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getNodes()).if_().exist().then().must().delegateTo(new NodeValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getNodes()).must().haveSizeOfAtLeast(1).forContext(POST).withMessage("Must have at least one node.");
                 result(validationTarget().getLoadbalancerMetadata()).if_().exist().then().must().delegateTo(new LoadbalancerMetaValidator().getValidator(), POST).forContext(POST);
-                result(validationTarget().getLoadbalancerMetadata()).if_().exist().then().must().adhereTo(new DuplicateMetaVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");
+                result(validationTarget().getLoadbalancerMetadata()).if_().exist().then().must().adhereTo(new DuplicateLoadbalancerMetaVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");
                 result(validationTarget().getLoadbalancerMetadata()).if_().exist().then().must().cannotExceedSize(25).withMessage("Must not provide more than twenty five metadata items per load balancer.");
                 result(validationTarget().getSessionPersistence()).if_().exist().then().must().delegateTo(new SessionPersistenceValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getHealthMonitor()).if_().exist().then().must().delegateTo(new HealthMonitorValidator().getValidator(), POST).forContext(POST);

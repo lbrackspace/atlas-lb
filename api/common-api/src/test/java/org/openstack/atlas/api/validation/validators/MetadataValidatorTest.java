@@ -17,19 +17,19 @@ public class MetadataValidatorTest {
     public static class WhenValidatingPost {
 
         private MetadataValidator validator;
-        private Metadata metadata;
-        private Meta meta1;
+        private LoadbalancerMetadata metadata;
+        private LoadbalancerMeta meta1;
 
         @Before
         public void setUpValidMetadataObject() {
             validator = new MetadataValidator();
-            metadata = new Metadata();
+            metadata = new LoadbalancerMetadata();
 
-            meta1 = new Meta();
+            meta1 = new LoadbalancerMeta();
             meta1.setKey("metaKey1");
             meta1.setValue("metaValue1");
 
-            metadata.getMetas().add(meta1);
+            metadata.getLoadbalancerMetas().add(meta1);
         }
 
         @Test
@@ -45,13 +45,13 @@ public class MetadataValidatorTest {
 
         @Test
         public void shouldRejectMetadataObjectWithNoMetas() {
-            assertFalse(validator.validate(new Metadata(), HttpRequestType.POST).passedValidation());
+            assertFalse(validator.validate(new LoadbalancerMetadata(), HttpRequestType.POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenPassingInDuplicateKeys() {
-            Meta metaWithDuplicateKey = meta1;
-            metadata.getMetas().add(metaWithDuplicateKey);
+            LoadbalancerMeta metaWithDuplicateKey = meta1;
+            metadata.getLoadbalancerMetas().add(metaWithDuplicateKey);
             assertFalse(validator.validate(metadata, HttpRequestType.POST).passedValidation());
         }
     }

@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -12,27 +12,27 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 
 @RunWith(Enclosed.class)
-public class MetaValidatorTest {
+public class LoadbalancerMetaValidatorTest {
 
     private final static int MAX_KEY_LENGTH = 32;
     private final static int MAX_VALUE_LENGTH = 256;
 
     public static class WhenValidatingPost {
 
-        private Meta meta;
+        private LoadbalancerMeta meta;
         private LoadbalancerMetaValidator validatorLoadbalancer;
 
         @Before
         public void standUp() {
             validatorLoadbalancer = new LoadbalancerMetaValidator();
 
-            meta = new Meta();
+            meta = new LoadbalancerMeta();
             meta.setKey("metaKey1");
             meta.setValue("metaValue1");
         }
 
         @Test
-        public void shouldAcceptValidMeta() {
+        public void shouldAcceptValidLoadbalancerMeta() {
             assertTrue(validatorLoadbalancer.validate(meta, POST).passedValidation());
         }
 
@@ -93,19 +93,19 @@ public class MetaValidatorTest {
 
     public static class WhenValidatingPut {
 
-        private Meta meta;
+        private LoadbalancerMeta meta;
         private LoadbalancerMetaValidator validatorLoadbalancer;
 
         @Before
         public void standUp() {
             validatorLoadbalancer = new LoadbalancerMetaValidator();
 
-            meta = new Meta();
+            meta = new LoadbalancerMeta();
             meta.setValue("metaValue1");
         }
 
         @Test
-        public void shouldAcceptValidMeta() {
+        public void shouldAcceptValidLoadbalancerMeta() {
             assertTrue(validatorLoadbalancer.validate(meta, PUT).passedValidation());
         }
 

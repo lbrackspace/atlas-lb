@@ -16,8 +16,8 @@ public final class ValidatorRepository {
         classKeyedValidatorMap.put(NetworkItem.class, new NetworkItemValidator());
         classKeyedValidatorMap.put(NodeMetadata.class, new NodeMetadataValidator());
         classKeyedValidatorMap.put(NodeMeta.class, new NodeMetaValidator());
-        classKeyedValidatorMap.put(Metadata.class, new MetadataValidator());
-        classKeyedValidatorMap.put(Meta.class, new LoadbalancerMetaValidator());
+        classKeyedValidatorMap.put(LoadbalancerMetadata.class, new MetadataValidator());
+        classKeyedValidatorMap.put(LoadbalancerMeta.class, new LoadbalancerMetaValidator());
         classKeyedValidatorMap.put(Nodes.class, new NodesValidator());
         classKeyedValidatorMap.put(Node.class, new NodeValidator());
         classKeyedValidatorMap.put(SessionPersistence.class, new SessionPersistenceValidator());
