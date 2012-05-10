@@ -8,7 +8,8 @@
     <import resource="usage-jpa-persistence.xml"/>
 
     <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
-    <bean id="reverseProxyLoadBalancerService" class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl"/>
+    <bean id="reverseProxyLoadBalancerService"
+          class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl"/>
 
     <!--ENABLED TRIGGERS-->
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
@@ -25,6 +26,7 @@
                 <ref bean="atomAlertDeletionJobTrigger"/>
                 <ref bean="hostEndpointPollerJobTrigger"/>
                 <ref bean="atomHopperUsageJobTrigger"/>
+                <ref bean="suspendedLbJobTrigger"/>
             </list>
         </property>
     </bean>
@@ -117,7 +119,7 @@
     <!--USAGE DELETION JOB CONFIG-->
     <bean name="dailyDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass"
-        value="org.openstack.atlas.jobs.DailyDeletionJob"/>
+                  value="org.openstack.atlas.jobs.DailyDeletionJob"/>
         <property name="jobDataAsMap">
             <map>
                 <entry key="hourlyUsageRepository" value-ref="hourlyUsageRepository"/>
@@ -237,13 +239,31 @@
                 <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
                 <entry key="usageRepository" value-ref="usageRepository"/>
                 <entry key="hostRepository" value-ref="hostRepository"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="atomHopperUsageJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="atomHopperUsageJob"/>
+        <property name="cronExpression" value="0 */3 * * * ?"/>
+    </bean>
+
+    <!--SUSPENDED LOAD BALANCER JOB CONFIG-->
+    <bean name="suspendedLbJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"
+                  value="org.openstack.atlas.usage.jobs.SuspendedLoadBalancerJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
+                <entry key="rollUpUsageRepository" value-ref="rollupUsageRepository"/>
                 <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
     </bean>
-    <bean id="atomHopperUsageJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-        <property name="jobDetail" ref="atomHopperUsageJob"/>
-        <property name="cronExpression" value="0 */3 * * * ?"/>
+    <bean id="suspendedLbJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="suspendedLbJob"/>
+        <property name="cronExpression" value="0 0 0 * * ?"/>
+        <!-- run every night at midnight -->
     </bean>
 </beans>

@@ -1493,4 +1493,18 @@ public class LoadBalancerRepository {
 
         return map;
     }
+
+    public List<LoadBalancer> getLoadBalancersWithStatus(LoadBalancerStatus loadBalancerStatus) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancer> criteria = builder.createQuery(LoadBalancer.class);
+        Root<LoadBalancer> lbRoot = criteria.from(LoadBalancer.class);
+
+        Predicate hasStatus = builder.equal(lbRoot.get(LoadBalancer_.status), loadBalancerStatus);
+
+        criteria.select(lbRoot);
+        criteria.where(hasStatus);
+
+        List<LoadBalancer> loadBalancersWithStatus = entityManager.createQuery(criteria).getResultList();
+        return (loadBalancersWithStatus == null) ? new ArrayList<LoadBalancer>() : loadBalancersWithStatus;
+    }
 }
