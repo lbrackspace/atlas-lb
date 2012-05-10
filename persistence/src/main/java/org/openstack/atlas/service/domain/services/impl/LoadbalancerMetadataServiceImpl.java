@@ -7,11 +7,8 @@ import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
-import org.openstack.atlas.service.domain.pojos.NodeMap;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
 import org.openstack.atlas.service.domain.services.MetadataService;
-import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
-import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.converters.StringConverter;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
@@ -20,8 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
-public class MetadataServiceImpl extends BaseService implements MetadataService {
-    private final Log LOG = LogFactory.getLog(MetadataServiceImpl.class);
+public class LoadbalancerMetadataServiceImpl extends BaseService implements MetadataService {
+    private final Log LOG = LogFactory.getLog(LoadbalancerMetadataServiceImpl.class);
     private AccountLimitService accountLimitService;
 
     @Required
@@ -30,12 +27,12 @@ public class MetadataServiceImpl extends BaseService implements MetadataService 
     }
 
     @Override
-    public Set<Meta> createMetadata(Integer accountId, Integer loadBalancerId, Collection<Meta> metas) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
+    public Set<LoadbalancerMeta> createMetadata(Integer accountId, Integer loadBalancerId, Collection<LoadbalancerMeta> loadbalancerMetas) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         LoadBalancer oldLb = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
         isLbActive(oldLb);
 
         try {
-            Integer potentialTotalNumMetas = oldLb.getMetadata().size() + metas.size();
+            Integer potentialTotalNumMetas = oldLb.getLoadbalancerMetadata().size() + loadbalancerMetas.size();
             Integer metaLimit = accountLimitService.getLimit(oldLb.getAccountId(), AccountLimitType.LOADBALANCER_META_LIMIT);
 
             LOG.debug(String.format("Verifying that metadata limit isn't reached for lb '%d'...", loadBalancerId));
@@ -47,33 +44,33 @@ public class MetadataServiceImpl extends BaseService implements MetadataService 
         }
 
         LOG.debug(String.format("Verifying that there are no duplicate metadata keys for lb '%d'...", loadBalancerId));
-        if (detectDuplicateMetadata(oldLb.getMetadata(), metas)) {
+        if (detectDuplicateMetadata(oldLb.getLoadbalancerMetadata(), loadbalancerMetas)) {
             LOG.warn("Duplicate metadata keys found! Sending failure response back to client...");
             throw new UnprocessableEntityException("Duplicate metadata keys detected. One or more metadata keys already configured on load balancer.");
         }
 
-        LOG.debug(String.format("Current number of metadata items for loadbalancer '%d': %d", loadBalancerId, oldLb.getMetadata().size()));
-        LOG.debug(String.format("Number of new metadata items to be added: %d", metas.size()));
+        LOG.debug(String.format("Current number of metadata items for loadbalancer '%d': %d", loadBalancerId, oldLb.getLoadbalancerMetadata().size()));
+        LOG.debug(String.format("Number of new metadata items to be added: %d", loadbalancerMetas.size()));
 
-        final Set<Meta> metaSet = metadataRepository.addMetas(oldLb, metas);
-        LOG.debug(String.format("Successfully added %d metadata items for loadbalancer '%d'", metaSet.size(), loadBalancerId));
-        return metaSet;
+        final Set<LoadbalancerMeta> loadbalancerMetaSet = metadataRepository.addMetas(oldLb, loadbalancerMetas);
+        LOG.debug(String.format("Successfully added %d metadata items for loadbalancer '%d'", loadbalancerMetaSet.size(), loadBalancerId));
+        return loadbalancerMetaSet;
     }
 
     @Override
-    public Set<Meta> getMetadataByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) throws EntityNotFoundException {
-        final List<Meta> metadataByAccountIdLoadBalancerId = metadataRepository.getMetadataByAccountIdLoadBalancerId(accountId, loadBalancerId);
-        Set<Meta> metaSet = new HashSet<Meta>();
+    public Set<LoadbalancerMeta> getMetadataByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) throws EntityNotFoundException {
+        final List<LoadbalancerMeta> metadataByAccountIdLoadBalancerId = metadataRepository.getMetadataByAccountIdLoadBalancerId(accountId, loadBalancerId);
+        Set<LoadbalancerMeta> loadbalancerMetaSet = new HashSet<LoadbalancerMeta>();
 
-        for (Meta meta : metadataByAccountIdLoadBalancerId) {
-            metaSet.add(meta);
+        for (LoadbalancerMeta loadbalancerMeta : metadataByAccountIdLoadBalancerId) {
+            loadbalancerMetaSet.add(loadbalancerMeta);
         }
         
-        return metaSet;
+        return loadbalancerMetaSet;
     }
 
     @Override
-    public Meta getMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
+    public LoadbalancerMeta getMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
         return metadataRepository.getMeta(accountId, loadBalancerId, id);
     }
 
@@ -87,21 +84,21 @@ public class MetadataServiceImpl extends BaseService implements MetadataService 
     public void updateMeta(LoadBalancer msgLb) throws EntityNotFoundException {
         LoadBalancer currentLb = loadBalancerRepository.getByIdAndAccountId(msgLb.getId(), msgLb.getAccountId());
 
-        Meta metaToUpdate = msgLb.getMetadata().iterator().next();
-        if (!loadBalancerContainsMeta(currentLb, metaToUpdate)) {
-            LOG.warn("Meta to update not found. Sending response to client...");
-            throw new EntityNotFoundException(String.format("Meta data item with id #%d not found for loadbalancer #%d", metaToUpdate.getId(), msgLb.getId()));
+        LoadbalancerMeta loadbalancerMetaToUpdate = msgLb.getLoadbalancerMetadata().iterator().next();
+        if (!loadBalancerContainsMeta(currentLb, loadbalancerMetaToUpdate)) {
+            LOG.warn("LoadbalancerMeta to update not found. Sending response to client...");
+            throw new EntityNotFoundException(String.format("LoadbalancerMeta data item with id #%d not found for loadbalancer #%d", loadbalancerMetaToUpdate.getId(), msgLb.getId()));
         }
 
-        LOG.debug("Meta on dbLoadbalancer: " + currentLb.getMetadata().size());
-        for (Meta meta : currentLb.getMetadata()) {
-            if (meta.getId().equals(metaToUpdate.getId())) {
-                LOG.info("Meta to be updated found: " + meta.getId());
-                if (metaToUpdate.getKey() != null) {
-                    meta.setKey(metaToUpdate.getKey());
+        LOG.debug("LoadbalancerMeta on dbLoadbalancer: " + currentLb.getLoadbalancerMetadata().size());
+        for (LoadbalancerMeta loadbalancerMeta : currentLb.getLoadbalancerMetadata()) {
+            if (loadbalancerMeta.getId().equals(loadbalancerMetaToUpdate.getId())) {
+                LOG.info("LoadbalancerMeta to be updated found: " + loadbalancerMeta.getId());
+                if (loadbalancerMetaToUpdate.getKey() != null) {
+                    loadbalancerMeta.setKey(loadbalancerMetaToUpdate.getKey());
                 }
-                if (metaToUpdate.getValue() != null) {
-                    meta.setValue(metaToUpdate.getValue());
+                if (loadbalancerMetaToUpdate.getValue() != null) {
+                    loadbalancerMeta.setValue(loadbalancerMetaToUpdate.getValue());
                 }
                 break;
             }
@@ -119,8 +116,8 @@ public class MetadataServiceImpl extends BaseService implements MetadataService 
         Set<Integer> currentMetaIds = new HashSet<Integer>();
         Set<Integer> invalidMetaIds = new HashSet<Integer>();
 
-        for (Meta meta : currentLb.getMetadata()) {
-            currentMetaIds.add(meta.getId());
+        for (LoadbalancerMeta loadbalancerMeta : currentLb.getLoadbalancerMetadata()) {
+            currentMetaIds.add(loadbalancerMeta.getId());
         }
 
         for (Integer id : ids) {
@@ -153,26 +150,26 @@ public class MetadataServiceImpl extends BaseService implements MetadataService 
         return metadataRepository.deleteMetadata(dbLoadBalancer, ids);
     }
 
-    private boolean loadBalancerContainsMeta(LoadBalancer lb, Meta meta) {
-        for (Meta m : lb.getMetadata()) {
-            if (m.getId().equals(meta.getId())) {
+    private boolean loadBalancerContainsMeta(LoadBalancer lb, LoadbalancerMeta loadbalancerMeta) {
+        for (LoadbalancerMeta m : lb.getLoadbalancerMetadata()) {
+            if (m.getId().equals(loadbalancerMeta.getId())) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean detectDuplicateMetadata(Collection<Meta> metadata1, Collection<Meta> metadata2) {
+    private boolean detectDuplicateMetadata(Collection<LoadbalancerMeta> metadata1, Collection<LoadbalancerMeta> metadata2) {
         Set<String> keys = new HashSet<String>();
 
-        for (Meta meta : metadata1) {
-            if (!keys.add(meta.getKey())) {
+        for (LoadbalancerMeta loadbalancerMeta : metadata1) {
+            if (!keys.add(loadbalancerMeta.getKey())) {
                 return true;
             }
         }
 
-        for (Meta meta : metadata2) {
-            if (!keys.add(meta.getKey())) {
+        for (LoadbalancerMeta loadbalancerMeta : metadata2) {
+            if (!keys.add(loadbalancerMeta.getKey())) {
                 return true;
             }
         }

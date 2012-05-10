@@ -9,6 +9,7 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadbalancerMeta;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
@@ -27,11 +28,11 @@ public class MetaResource extends CommonDependencyProvider {
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON})
     public Response retrieveMeta() {
-        org.openstack.atlas.service.domain.entities.Meta domainMeta;
+        LoadbalancerMeta domainLoadbalancerMeta;
         org.openstack.atlas.docs.loadbalancers.api.v1.Meta apiMeta;
         try {
-            domainMeta = metadataService.getMeta(accountId, loadBalancerId, id);
-            apiMeta = dozerMapper.map(domainMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class);
+            domainLoadbalancerMeta = metadataService.getMeta(accountId, loadBalancerId, id);
+            apiMeta = dozerMapper.map(domainLoadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class);
             return Response.status(Response.Status.OK).entity(apiMeta).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);

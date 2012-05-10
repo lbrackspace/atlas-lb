@@ -34,5 +34,5 @@ create table loadbalancer_virtualipv6(
     foreign key(virtualip6_id) references virtual_ip_ipv6(id)
 )ENGINE=InnoDB;
 
-update `meta` set `meta_value` = '25' where `meta_key`='version';
+update `loadbalancerMeta` set `meta_value` = '25' where `meta_key`='version';
 

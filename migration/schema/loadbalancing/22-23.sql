@@ -20,5 +20,5 @@ CREATE TABLE `blacklist_item` (
 insert into blacklist_type values('NODE', 'Blacklisted Nodes');
 insert into blacklist_type values('ACCESSLIST', 'Blacklisted lists');
 
-update `meta` set `meta_value` = '23' where `meta_key`='version';
+update `loadbalancerMeta` set `meta_value` = '23' where `meta_key`='version';
 

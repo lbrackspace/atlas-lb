@@ -49,7 +49,7 @@
         <class>org.openstack.atlas.service.domain.entities.SslTermination</class>
         <class>org.openstack.atlas.service.domain.entities.Defaults</class>
         <class>org.openstack.atlas.service.domain.entities.AllowedDomain</class>
-        <class>org.openstack.atlas.service.domain.entities.Meta</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</class>
         <class>org.openstack.atlas.service.domain.entities.NodeMeta</class>
         <class>org.openstack.atlas.service.domain.entities.LoadBalancerStatusHistory</class>
 

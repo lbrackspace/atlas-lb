@@ -20,11 +20,11 @@ public class MetaValidatorTest {
     public static class WhenValidatingPost {
 
         private Meta meta;
-        private MetaValidator validator;
+        private LoadbalancerMetaValidator validatorLoadbalancer;
 
         @Before
         public void standUp() {
-            validator = new MetaValidator();
+            validatorLoadbalancer = new LoadbalancerMetaValidator();
 
             meta = new Meta();
             meta.setKey("metaKey1");
@@ -33,72 +33,72 @@ public class MetaValidatorTest {
 
         @Test
         public void shouldAcceptValidMeta() {
-            assertTrue(validator.validate(meta, POST).passedValidation());
+            assertTrue(validatorLoadbalancer.validate(meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenIdIsSet() {
             meta.setId(1234);
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            assertFalse(validatorLoadbalancer.validate(meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenKeyIsNull() {
             meta.setKey(null);
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            assertFalse(validatorLoadbalancer.validate(meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenKeyIsEmpty() {
             meta.setKey("");
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            assertFalse(validatorLoadbalancer.validate(meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsNull() {
             meta.setValue(null);
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            assertFalse(validatorLoadbalancer.validate(meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsEmpty() {
             meta.setValue("");
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            assertFalse(validatorLoadbalancer.validate(meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenKeyIsEqualToMaxLength() {
             meta.setKey(createStringOfLength(MAX_KEY_LENGTH));
-            assertTrue(validator.validate(meta, POST).passedValidation());
+            assertTrue(validatorLoadbalancer.validate(meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenKeyIsLongerThanMaxLength() {
             meta.setKey(createStringOfLength(MAX_KEY_LENGTH + 1));
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            assertFalse(validatorLoadbalancer.validate(meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsEqualToMaxLength() {
             meta.setValue(createStringOfLength(MAX_VALUE_LENGTH));
-            assertTrue(validator.validate(meta, POST).passedValidation());
+            assertTrue(validatorLoadbalancer.validate(meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsLongerThanMaxLength() {
             meta.setValue(createStringOfLength(MAX_VALUE_LENGTH + 1));
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            assertFalse(validatorLoadbalancer.validate(meta, POST).passedValidation());
         }
     }
 
     public static class WhenValidatingPut {
 
         private Meta meta;
-        private MetaValidator validator;
+        private LoadbalancerMetaValidator validatorLoadbalancer;
 
         @Before
         public void standUp() {
-            validator = new MetaValidator();
+            validatorLoadbalancer = new LoadbalancerMetaValidator();
 
             meta = new Meta();
             meta.setValue("metaValue1");
@@ -106,37 +106,37 @@ public class MetaValidatorTest {
 
         @Test
         public void shouldAcceptValidMeta() {
-            assertTrue(validator.validate(meta, PUT).passedValidation());
+            assertTrue(validatorLoadbalancer.validate(meta, PUT).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenIdIsSet() {
             meta.setId(1234);
-            assertFalse(validator.validate(meta, PUT).passedValidation());
+            assertFalse(validatorLoadbalancer.validate(meta, PUT).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsNull() {
             meta.setValue(null);
-            assertFalse(validator.validate(meta, PUT).passedValidation());
+            assertFalse(validatorLoadbalancer.validate(meta, PUT).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsEmpty() {
             meta.setValue("");
-            assertFalse(validator.validate(meta, PUT).passedValidation());
+            assertFalse(validatorLoadbalancer.validate(meta, PUT).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsEqualToMaxLength() {
             meta.setValue(createStringOfLength(MAX_VALUE_LENGTH));
-            assertTrue(validator.validate(meta, PUT).passedValidation());
+            assertTrue(validatorLoadbalancer.validate(meta, PUT).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsLongerThanMaxLength() {
             meta.setValue(createStringOfLength(MAX_VALUE_LENGTH + 1));
-            assertFalse(validator.validate(meta, PUT).passedValidation());
+            assertFalse(validatorLoadbalancer.validate(meta, PUT).passedValidation());
         }
     }
 

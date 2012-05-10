@@ -2,22 +2,15 @@ package org.openstack.atlas.api.resources;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.api.helpers.LoadBalancerProperties;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.Meta;
-import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.LoadbalancerMeta;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
-import org.openstack.atlas.service.domain.operations.Operation;
-import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
@@ -50,16 +43,16 @@ public class MetadataResource extends CommonDependencyProvider {
         try {
             loadBalancerService.get(loadBalancerId, accountId);
 
-            List<org.openstack.atlas.service.domain.entities.Meta> domainMetaList = new ArrayList<Meta>();
+            List<LoadbalancerMeta> domainLoadbalancerMetaList = new ArrayList<LoadbalancerMeta>();
             for (org.openstack.atlas.docs.loadbalancers.api.v1.Meta meta : metadata.getMetas()) {
-                domainMetaList.add(dozerMapper.map(meta, org.openstack.atlas.service.domain.entities.Meta.class));
+                domainLoadbalancerMetaList.add(dozerMapper.map(meta, LoadbalancerMeta.class));
             }
 
-            Set<org.openstack.atlas.service.domain.entities.Meta> dbMetadata = metadataService.createMetadata(accountId, loadBalancerId, domainMetaList);
+            Set<LoadbalancerMeta> dbMetadata = metadataService.createMetadata(accountId, loadBalancerId, domainLoadbalancerMetaList);
 
             org.openstack.atlas.docs.loadbalancers.api.v1.Metadata returnMetadata = new org.openstack.atlas.docs.loadbalancers.api.v1.Metadata();
-            for (org.openstack.atlas.service.domain.entities.Meta meta : dbMetadata) {
-                returnMetadata.getMetas().add(dozerMapper.map(meta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class));
+            for (LoadbalancerMeta loadbalancerMeta : dbMetadata) {
+                returnMetadata.getMetas().add(dozerMapper.map(loadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class));
             }
 
             return Response.status(Response.Status.OK).entity(returnMetadata).build();
@@ -71,12 +64,12 @@ public class MetadataResource extends CommonDependencyProvider {
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveMetadata(){
-        Set<Meta> domainMetaSet;
+        Set<LoadbalancerMeta> domainLoadbalancerMetaSet;
         org.openstack.atlas.docs.loadbalancers.api.v1.Metadata returnMetadata = new org.openstack.atlas.docs.loadbalancers.api.v1.Metadata();
         try {
-            domainMetaSet = metadataService.getMetadataByAccountIdLoadBalancerId(accountId, loadBalancerId);
-            for (org.openstack.atlas.service.domain.entities.Meta domainMeta : domainMetaSet) {
-                returnMetadata.getMetas().add(dozerMapper.map(domainMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class));
+            domainLoadbalancerMetaSet = metadataService.getMetadataByAccountIdLoadBalancerId(accountId, loadBalancerId);
+            for (LoadbalancerMeta domainLoadbalancerMeta : domainLoadbalancerMetaSet) {
+                returnMetadata.getMetas().add(dozerMapper.map(domainLoadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class));
             }
             return Response.status(Response.Status.OK).entity(returnMetadata).build();
         } catch (Exception e) {

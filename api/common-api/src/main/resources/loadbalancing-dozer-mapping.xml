@@ -221,10 +221,10 @@
             <b>algorithm</b>
         </field>
         <field>
-            <a>metadata</a>
-            <b>metadata</b>
-            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</a-hint>
-            <b-hint>org.openstack.atlas.service.domain.entities.Meta</b-hint>
+            <a>loadbalancerMetadata</a>
+            <b>loadbalancerMetadata</b>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</b-hint>
         </field>
         <field map-id="HIDE_NODE_META">
             <a>nodes</a>
@@ -304,7 +304,7 @@
 
     <mapping map-null="false">
         <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</class-a>
-        <class-b>org.openstack.atlas.service.domain.entities.Meta</class-b>
+        <class-b>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</class-b>
     </mapping>
 
     <mapping map-null="false">

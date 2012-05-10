@@ -109,7 +109,7 @@ import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 
 import javax.ws.rs.*;

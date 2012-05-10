@@ -19,7 +19,7 @@ public class MetadataValidator implements ResourceValidator<Metadata> {
                 // POST EXPECTATIONS
                 result(validationTarget().getMetas()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide at least one metadata item");
                 result(validationTarget().getMetas()).if_().exist().then().must().cannotExceedSize(25).withMessage("Must not provide more than twenty five metadata items per load balancer.");
-                result(validationTarget().getMetas()).if_().exist().then().must().delegateTo(new MetaValidator().getValidator(), POST).forContext(POST);
+                result(validationTarget().getMetas()).if_().exist().then().must().delegateTo(new LoadbalancerMetaValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getMetas()).must().adhereTo(new DuplicateMetaVerifier()).forContext(POST).withMessage("Duplicate keys detected. Please ensure that the key is unique for each metadata item.");
             }
         });

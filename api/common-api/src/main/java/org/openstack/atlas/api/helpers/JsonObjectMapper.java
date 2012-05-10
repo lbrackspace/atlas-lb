@@ -33,8 +33,8 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMetadata;
 
 public class JsonObjectMapper extends ObjectMapper {
 
@@ -49,11 +49,11 @@ public class JsonObjectMapper extends ObjectMapper {
 
 
         Class[] serializerWrapperClasses = new Class[]{HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class,
+            SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, LoadbalancerMeta.class,
             Node.class, RateLimit.class, Errorpage.class,SslTermination.class, Link.class, AllowedDomain.class};
 
         Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class, Meta.class,
+            SessionPersistence.class, ConnectionLogging.class, LoadbalancerMeta.class,
             ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
             Errorpage.class, SslTermination.class, Host.class, Link.class, AllowedDomain.class};
 
@@ -80,9 +80,9 @@ public class JsonObjectMapper extends ObjectMapper {
 
         csf.addSpecificMapping(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems"));
         csf.addSpecificMapping(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes"));
-        csf.addSpecificMapping(Metadata.class, new PropertyCollectionSerializer(serConf, Metadata.class, "getMetas"));
+        csf.addSpecificMapping(LoadbalancerMetadata.class, new PropertyCollectionSerializer(serConf, LoadbalancerMetadata.class, "getMetas"));
 
-        cdf.addSpecificMapping(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas"));
+        cdf.addSpecificMapping(LoadbalancerMetadata.class, new PropertyListDeserializer(LoadbalancerMetadata.class, LoadbalancerMeta.class, "getMetas"));
         cdf.addSpecificMapping(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems"));
 
 

@@ -244,4 +244,4 @@ CREATE TABLE IF NOT EXISTS `virtual_ip_event` (
 
 ALTER TABLE `virtual_ip` RENAME TO `virtual_ip_ipv4`;
 
-update `meta` set `meta_value` = '24' where `meta_key`='version';
+update `loadbalancerMeta` set `meta_value` = '24' where `meta_key`='version';

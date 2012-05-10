@@ -6,4 +6,4 @@ ALTER TABLE `cluster` DROP COLUMN `cluster_status`;
 
 DROP TABLE IF EXISTS `cluster_status`;
 
-update `meta` set `meta_value` = '31' where `meta_key`='version';
+update `loadbalancerMeta` set `meta_value` = '31' where `meta_key`='version';

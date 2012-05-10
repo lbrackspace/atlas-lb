@@ -26,8 +26,8 @@ public class UriClassDiscover {
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/healthmonitor(\\.json|\\.xml)?/?$", HealthMonitor.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/nodes(\\.json|\\.xml)?/?$", Nodes.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/nodes/\\d+(\\.json|\\.xml)?/?$", Node.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/metadata(\\.json|\\.xml)?/?$", Metadata.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/metadata/\\d+(\\.json|\\.xml)?/?$", Meta.class));
+        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/metadata(\\.json|\\.xml)?/?$", LoadbalancerMetadata.class));
+        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/metadata/\\d+(\\.json|\\.xml)?/?$", LoadbalancerMeta.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/sessionpersistence(\\.json|\\.xml)?/?$", SessionPersistence.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/connectionthrottle(\\.json|\\.xml)?/?$", ConnectionThrottle.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/ssltermination(\\.json|\\.xml)?/?$", SslTermination.class));

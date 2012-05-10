@@ -51,4 +51,4 @@ DELETE FROM `event_type` WHERE `name` = 'UPDATE_NODE';
 DELETE FROM `event_type` WHERE `name` = 'UPDATE_SESSION_PERSISTENCE';
 DELETE FROM `event_type` WHERE `name` = 'UPDATE_CONNECTION_LOGGING';
 
-update `meta` set `meta_value` = '23' where `meta_key`='version';
+update `loadbalancerMeta` set `meta_value` = '23' where `meta_key`='version';

@@ -50,15 +50,15 @@ CREATE TABLE `lb_usage` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 -- ----------------------------
---  Table structure for `meta`
+--  Table structure for `loadbalancerMeta`
 -- ----------------------------
-DROP TABLE IF EXISTS `meta`;
-CREATE TABLE `meta` (
+DROP TABLE IF EXISTS `loadbalancerMeta`;
+CREATE TABLE `loadbalancerMeta` (
   `meta_key` varchar(128) NOT NULL,
   `meta_value` varchar(128) default NULL,
   UNIQUE KEY `meta_key` (`meta_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-INSERT INTO meta values('version', '1');
+INSERT INTO loadbalancerMeta values('version', '1');
 

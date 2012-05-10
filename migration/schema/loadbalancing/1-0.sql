@@ -29,5 +29,5 @@ drop table `node_status`;
 drop table `virtual_ip`;
 drop table `virtual_ip_type`;
 drop table `allocated_virtual_ip`;
-drop table `meta`;
+drop table `loadbalancerMeta`;
 drop table `traffic_scripts`;

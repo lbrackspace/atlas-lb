@@ -1,5 +1,5 @@
 USE loadbalancing;
-update `meta` set `meta_value` = '13' where `meta_key`='version';
+update `loadbalancerMeta` set `meta_value` = '13' where `meta_key`='version';
 
 CREATE TABLE `group_loadbalancer_limit` (
 `id` int(11) NOT NULL auto_increment,

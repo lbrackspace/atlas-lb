@@ -23,24 +23,24 @@ public class MetadataRepository {
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
 
-    public Set<Meta> addMetas(LoadBalancer loadBalancer, Collection<Meta> metas) {
-        Set<Meta> newMetas = new HashSet<Meta>();
+    public Set<LoadbalancerMeta> addMetas(LoadBalancer loadBalancer, Collection<LoadbalancerMeta> loadbalancerMetas) {
+        Set<LoadbalancerMeta> newLoadbalancerMetas = new HashSet<LoadbalancerMeta>();
 
-        for (Meta meta : metas) {
-            meta.setLoadbalancer(loadBalancer);
-            newMetas.add(entityManager.merge(meta));
+        for (LoadbalancerMeta loadbalancerMeta : loadbalancerMetas) {
+            loadbalancerMeta.setLoadbalancer(loadBalancer);
+            newLoadbalancerMetas.add(entityManager.merge(loadbalancerMeta));
         }
 
         loadBalancer.setUpdated(Calendar.getInstance());
         loadBalancer = entityManager.merge(loadBalancer);
         entityManager.flush();
-        return newMetas;
+        return newLoadbalancerMetas;
     }
 
-    public List<Meta> getMetadataByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) {
+    public List<LoadbalancerMeta> getMetadataByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Meta> criteria = builder.createQuery(Meta.class);
-        Root<Meta> metaRoot = criteria.from(Meta.class);
+        CriteriaQuery<LoadbalancerMeta> criteria = builder.createQuery(LoadbalancerMeta.class);
+        Root<LoadbalancerMeta> metaRoot = criteria.from(LoadbalancerMeta.class);
 
         LoadBalancer lb = new LoadBalancer();
         lb.setId(loadBalancerId);
@@ -53,10 +53,10 @@ public class MetadataRepository {
         return entityManager.createQuery(criteria).getResultList();
     }
 
-    public Meta getMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
+    public LoadbalancerMeta getMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Meta> criteria = builder.createQuery(Meta.class);
-        Root<Meta> metaRoot = criteria.from(Meta.class);
+        CriteriaQuery<LoadbalancerMeta> criteria = builder.createQuery(LoadbalancerMeta.class);
+        Root<LoadbalancerMeta> metaRoot = criteria.from(LoadbalancerMeta.class);
 
         LoadBalancer lb = new LoadBalancer();
         lb.setId(loadBalancerId);
@@ -67,7 +67,7 @@ public class MetadataRepository {
 
         criteria.select(metaRoot);
         criteria.where(builder.and(belongsToLoadBalancer, hasId));
-        final List<Meta> resultList = entityManager.createQuery(criteria).getResultList();
+        final List<LoadbalancerMeta> resultList = entityManager.createQuery(criteria).getResultList();
 
         if (resultList.isEmpty()) {
             String message = Constants.MetaNotFound;
@@ -79,13 +79,13 @@ public class MetadataRepository {
     }
 
     public void deleteMeta(LoadBalancer loadBalancer, Integer id) throws EntityNotFoundException {
-        Set<Meta> dbMetadata = new HashSet<Meta>(loadBalancer.getMetadata());
+        Set<LoadbalancerMeta> dbMetadata = new HashSet<LoadbalancerMeta>(loadBalancer.getLoadbalancerMetadata());
         Boolean removed = false;
 
-        for (Meta meta : dbMetadata) {
-            Integer metaId = meta.getId();
+        for (LoadbalancerMeta loadbalancerMeta : dbMetadata) {
+            Integer metaId = loadbalancerMeta.getId();
             if (metaId.equals(id)) {
-                loadBalancer.getMetadata().remove(meta);
+                loadBalancer.getLoadbalancerMetadata().remove(loadbalancerMeta);
                 removed = true;
             }
         }
@@ -121,11 +121,11 @@ public class MetadataRepository {
     }
 
     public LoadBalancer deleteMetadata(LoadBalancer lb, Collection<Integer> ids) {
-        Set<Meta> metasCurrentlyOnLb = new HashSet<Meta>(lb.getMetadata());
-        for (Meta metaCurrentlyOnLb : metasCurrentlyOnLb) {
+        Set<LoadbalancerMeta> metasCurrentlyOnLb = new HashSet<LoadbalancerMeta>(lb.getLoadbalancerMetadata());
+        for (LoadbalancerMeta loadbalancerMetaCurrentlyOnLb : metasCurrentlyOnLb) {
             for (Integer idOfMetaToDelete : ids) {
-                if (metaCurrentlyOnLb.getId().equals(idOfMetaToDelete)) {
-                    lb.getMetadata().remove(metaCurrentlyOnLb);
+                if (loadbalancerMetaCurrentlyOnLb.getId().equals(idOfMetaToDelete)) {
+                    lb.getLoadbalancerMetadata().remove(loadbalancerMetaCurrentlyOnLb);
                 }
             }
         }

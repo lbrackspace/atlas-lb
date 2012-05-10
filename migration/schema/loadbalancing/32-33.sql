@@ -20,4 +20,4 @@ CREATE TABLE `lb_ssl` (
 INSERT INTO `event_type` VALUES('UPDATE_SSL_TERMINATION', 'Update SSL termination');
 INSERT INTO `event_type` VALUES('DELETE_SSL_TERMINATION', 'Delete SSL termination');
 
-update `meta` set `meta_value` = '33' where `meta_key`='version';
+update `loadbalancerMeta` set `meta_value` = '33' where `meta_key`='version';

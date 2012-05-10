@@ -10,5 +10,5 @@ create table user_pages(
 
 #insert into user_pages(loadbalancer_id,errorpage)values(316,"<html>Test</html>");
 
-update `meta` set `meta_value` = '31' where `meta_key`='version';
+update `loadbalancerMeta` set `meta_value` = '31' where `meta_key`='version';
 

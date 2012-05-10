@@ -130,10 +130,10 @@ public class NodeMetadataRepository {
         }
 
 
-    public Meta getMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
+    public LoadbalancerMeta getMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Meta> criteria = builder.createQuery(Meta.class);
-        Root<Meta> metaRoot = criteria.from(Meta.class);
+        CriteriaQuery<LoadbalancerMeta> criteria = builder.createQuery(LoadbalancerMeta.class);
+        Root<LoadbalancerMeta> metaRoot = criteria.from(LoadbalancerMeta.class);
 
         LoadBalancer lb = new LoadBalancer();
         lb.setId(loadBalancerId);
@@ -144,7 +144,7 @@ public class NodeMetadataRepository {
 
         criteria.select(metaRoot);
         criteria.where(builder.and(belongsToLoadBalancer, hasId));
-        final List<Meta> resultList = entityManager.createQuery(criteria).getResultList();
+        final List<LoadbalancerMeta> resultList = entityManager.createQuery(criteria).getResultList();
 
         if (resultList.isEmpty()) {
             String message = Constants.MetaNotFound;
@@ -156,13 +156,13 @@ public class NodeMetadataRepository {
     }
 
     public void deleteMeta(LoadBalancer loadBalancer, Integer id) throws EntityNotFoundException {
-        Set<Meta> dbMetadata = new HashSet<Meta>(loadBalancer.getMetadata());
+        Set<LoadbalancerMeta> dbMetadata = new HashSet<LoadbalancerMeta>(loadBalancer.getLoadbalancerMetadata());
         Boolean removed = false;
 
-        for (Meta meta : dbMetadata) {
+        for (LoadbalancerMeta meta : dbMetadata) {
             Integer metaId = meta.getId();
             if (metaId.equals(id)) {
-                loadBalancer.getMetadata().remove(meta);
+                loadBalancer.getLoadbalancerMetadata().remove(meta);
                 removed = true;
             }
         }

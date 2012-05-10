@@ -464,13 +464,13 @@ LOCK TABLES `loadbalancer_virtualipv6` WRITE;
 UNLOCK TABLES;
 
 --
--- Dumping data for table `meta`
+-- Dumping data for table `loadbalancerMeta`
 --
 
-LOCK TABLES `meta` WRITE;
-/*!40000 ALTER TABLE `meta` DISABLE KEYS */;
-INSERT INTO `meta` VALUES ('version','28');
-/*!40000 ALTER TABLE `meta` ENABLE KEYS */;
+LOCK TABLES `loadbalancerMeta` WRITE;
+/*!40000 ALTER TABLE `loadbalancerMeta` DISABLE KEYS */;
+INSERT INTO `loadbalancerMeta` VALUES ('version','28');
+/*!40000 ALTER TABLE `loadbalancerMeta` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

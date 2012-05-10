@@ -17,4 +17,4 @@ delete from event_type where `name` = 'BUILD_LOADBALANCER';
 delete from event_type where `name` = 'PENDING_UPDATE_LOADBALANCER';
 delete from event_type where `name` = 'PENDING_DELETE_LOADBALANCER';
 
-update `meta` set `meta_value` = '39' where `meta_key`='version';
+update `loadbalancerMeta` set `meta_value` = '39' where `meta_key`='version';

@@ -15,4 +15,4 @@ CREATE TABLE `ticket` (
   CONSTRAINT `ticket_loadbalancer_id_fk` FOREIGN KEY (`loadbalancer_id`) REFERENCES `loadbalancer` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-update `meta` set `meta_value` = '18' where `meta_key`='version';
+update `loadbalancerMeta` set `meta_value` = '18' where `meta_key`='version';

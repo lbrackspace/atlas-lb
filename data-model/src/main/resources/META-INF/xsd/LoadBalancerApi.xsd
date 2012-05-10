@@ -25,7 +25,7 @@
         <xsd:sequence>
             <xsd:element name="virtualIps" type="tns:virtualIps" minOccurs="0"/>
             <xsd:element name="nodes" type="tns:nodes" minOccurs="0"/>
-            <xsd:element name="metadata" type="tns:metadata" minOccurs="0"/>
+            <xsd:element name="loadbalancerMetadata" type="tns:loadbalancerMetadata" minOccurs="0"/>
             <xsd:element name="loadBalancerUsage" type="tns:loadBalancerUsage" minOccurs="0"/>
             <xsd:element name="sessionPersistence" type="tns:sessionPersistence" minOccurs="0"/>
             <xsd:element name="healthMonitor" type="tns:healthMonitor" minOccurs="0"/>
@@ -383,15 +383,15 @@
         <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>
 
-    <xsd:element name="metadata" type="tns:metadata"/>
-    <xsd:complexType name="metadata">
+    <xsd:element name="loadbalancerMetadata" type="tns:loadbalancerMetadata"/>
+    <xsd:complexType name="loadbalancerMetadata">
         <xsd:sequence>
-            <xsd:element name="meta" minOccurs="1" maxOccurs="unbounded" type="tns:meta"/>
+            <xsd:element name="loadbalancerMeta" minOccurs="1" maxOccurs="unbounded" type="tns:loadbalancerMeta"/>
         </xsd:sequence>
     </xsd:complexType>
 
-    <xsd:element name="meta" type="tns:meta"/>
-    <xsd:complexType name="meta">
+    <xsd:element name="loadbalancerMeta" type="tns:loadbalancerMeta"/>
+    <xsd:complexType name="loadbalancerMeta">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
                 <xsd:attribute name="id" type="xsd:int"/>

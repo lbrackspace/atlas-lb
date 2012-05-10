@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @javax.persistence.Entity
 @Table(name = "lb_meta_data")
-public class Meta extends Entity implements Serializable {
+public class LoadbalancerMeta extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @ManyToOne
