@@ -2,6 +2,7 @@ package org.openstack.atlas.service.domain.usage.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.JobState_;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.events.entities.EventType;
@@ -13,10 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,11 +29,18 @@ public class LoadBalancerUsageEventRepository {
     @PersistenceContext(unitName = "loadbalancingUsage")
     private EntityManager entityManager;
 
-    public List<LoadBalancerUsageEvent> getAllUsageEventEntries() {
-        Query query = entityManager.createQuery("FROM LoadBalancerUsageEvent e");
-        List<LoadBalancerUsageEvent> usages = query.getResultList();
-        if (usages == null) return new ArrayList<LoadBalancerUsageEvent>();
-        return usages;
+    public List<LoadBalancerUsageEvent> getAllUsageEventEntriesInOrder() {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerUsageEvent> criteria = builder.createQuery(LoadBalancerUsageEvent.class);
+        Root<LoadBalancerUsageEvent> usageEventRoot = criteria.from(LoadBalancerUsageEvent.class);
+
+        Order startTimeOrder = builder.asc(usageEventRoot.get(LoadBalancerUsageEvent_.startTime));
+
+        criteria.select(usageEventRoot);
+        criteria.orderBy(startTimeOrder);
+
+        List<LoadBalancerUsageEvent> usageEvents = entityManager.createQuery(criteria).getResultList();
+        return (usageEvents == null) ? new ArrayList<LoadBalancerUsageEvent>() : usageEvents;
     }
 
     public void batchDelete(Collection<LoadBalancerUsageEvent> usages) {
