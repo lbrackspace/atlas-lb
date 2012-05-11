@@ -37,7 +37,8 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
     @Override
     @Transactional
     public void handleZeusEvent(ZeusEvent zeusEvent) throws BadRequestException {
-        // Example paramLine: "INFO pools/501148_11066 nodes/10.179.78.70:80 nodeworking Node 10.179.78.70 is working again"
+        // Example ipv4 paramLine: "INFO pools/501148_11066 nodes/10.179.78.70:80 nodeworking Node 10.179.78.70 is working again"
+        // Example ipv6 paramLine: "INFO pools/501148_11066 nodes/[fe80::4240:adff:fe5c:c9ee]:80 nodeworking Node fe80::4240:adff:fe5c:c9ee is working again"
 
         if (zeusEvent.getParamLine().contains(NODE_FAIL_TAG) || zeusEvent.getParamLine().contains(NODE_WORKING_TAG)) {
             LOG.debug("Node status changed.");
@@ -97,15 +98,30 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
     }
 
     public String getIpAddress(String paramLine) {
-        String nodesObject = paramLine.split(" ")[2];
-        String ipAddressWithPort = nodesObject.split("/")[1];
-        return ipAddressWithPort.split(":")[0];
+//        String nodesObject = paramLine.split(" ")[2];
+//        String ipAddressWithPort = nodesObject.split("/")[1];
+//        return ipAddressWithPort.split(":")[0].replace("[", "");
+        String nodeLine = paramLine.split("Node ")[1];
+        return nodeLine.split(" ")[0];
     }
 
     public Integer getIpPort(String paramLine) throws Exception {
         String nodesObject = paramLine.split(" ")[2];
         String ipAddressWithPort = nodesObject.split("/")[1];
         String port = ipAddressWithPort.split(":")[1];
+
+        try {
+            return Integer.parseInt(port);
+        } catch (NumberFormatException e) {
+            LOG.info("Error parsing paramline for ipv4, trying for ipv6");
+        }
+        return getIpPortForIpv6(paramLine);
+    }
+
+    public Integer getIpPortForIpv6(String paramLine) throws Exception {
+        String nodesObject = paramLine.split(" ")[2];
+        String ipAddressWithPort = nodesObject.split("/")[1];
+        String port = ipAddressWithPort.split("]:")[1];
 
         try {
             return Integer.parseInt(port);
