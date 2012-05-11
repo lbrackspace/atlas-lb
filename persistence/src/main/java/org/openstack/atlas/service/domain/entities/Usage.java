@@ -6,7 +6,7 @@ import java.util.Calendar;
 
 @javax.persistence.Entity
 @Table(name="lb_usage")
-public class Usage extends Entity implements Serializable {
+public class  Usage extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @ManyToOne

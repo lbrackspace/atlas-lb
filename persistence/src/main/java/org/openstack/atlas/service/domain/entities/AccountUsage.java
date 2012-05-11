@@ -23,6 +23,8 @@ public class AccountUsage extends Entity implements Serializable {
     @Column(name = "start_time")
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar startTime;
+    @Column(name = "needs_pushed", nullable = false)
+    private boolean needsPushed;
 
     public Integer getAccountId() {
         return accountId;
@@ -62,5 +64,13 @@ public class AccountUsage extends Entity implements Serializable {
 
     public void setStartTime(Calendar startTime) {
         this.startTime = startTime;
+    }
+
+    public boolean isNeedsPushed() {
+        return needsPushed;
+    }
+
+    public void setNeedsPushed(boolean needsPushed) {
+        this.needsPushed = needsPushed;
     }
 }

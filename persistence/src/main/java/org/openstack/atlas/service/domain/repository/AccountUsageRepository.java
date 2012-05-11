@@ -32,6 +32,11 @@ public class AccountUsageRepository {
         entityManager.persist(accountUsage);
     }
 
+    public void updatePushedRecord(AccountUsage usageRecord) {
+        LOG.info(String.format("updateEntryRecord called"));
+        entityManager.merge(usageRecord);
+    }
+
     public void deleteAllRecordsBefore(Calendar time) {
         Query query = entityManager.createQuery("DELETE AccountUsage u WHERE u.endTime < :timestamp")
                 .setParameter("timestamp", time, TemporalType.TIMESTAMP);
