@@ -385,7 +385,8 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         }
 
         //Set status record
-        loadBalancerStatusHistoryService.save(dlb.getAccountId(), dlb.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        loadBalancerStatusHistoryService.save(accountId, loadBalancerId, LoadBalancerStatus.PENDING_UPDATE);
+
         if (notMyIds.size() > 0) {
             // Don't even take this request seriously any
             // ID does not belong to this account
