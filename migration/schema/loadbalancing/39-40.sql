@@ -25,8 +25,8 @@ INSERT INTO `event_type`(`name`, `description`) VALUES('SSL_MIXED_ON', 'Both the
 
 insert into host_status(name,description)values("SOAP_API_ENDPOINT","Indicates that this Host shall handle all SOAP requests for this cluster.");
 
-insert into event_type(name, description) values('BUILD_LOADBALANCER', 'Load balancer in build status');
-insert into event_type(name, description) values('PENDING_UPDATE_LOADBALANCER', 'Load balancer in pending update status');
-insert into event_type(name, description) values('PENDING_DELETE_LOADBALANCER', 'Load balancer in pending delete status');
+-- insert into event_type(name, description) values('BUILD_LOADBALANCER', 'Load balancer in build status');
+-- insert into event_type(name, description) values('PENDING_UPDATE_LOADBALANCER', 'Load balancer in pending update status');
+-- insert into event_type(name, description) values('PENDING_DELETE_LOADBALANCER', 'Load balancer in pending delete status');
 
 update `meta` set `meta_value` = '40' where `meta_key`='version';
