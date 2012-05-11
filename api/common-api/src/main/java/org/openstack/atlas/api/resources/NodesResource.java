@@ -64,7 +64,6 @@ public class NodesResource extends CommonDependencyProvider {
         dlb.setId(loadBalancerId);
         Collections.sort(nodeIds);
 
-        if (accountId == null)
         try {
             if (nodeIds.isEmpty()) {
                 BadRequestException badRequestException = new BadRequestException("Must supply one or more id's to process this request.");
