@@ -13,9 +13,7 @@ import org.openstack.atlas.jobs.Job;
 import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
-import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
-import org.openstack.atlas.service.domain.pojos.AccountLoadBalancer;
 import org.openstack.atlas.service.domain.repository.AccountUsageRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.quartz.JobExecutionContext;
@@ -73,60 +71,53 @@ public class AtomHopperAccountUsageJob extends Job implements StatefulJob {
 
             //Grab all accounts a begin processing usage...
             List<Integer> accounts = loadBalancerRepository.getAllAccountIds();
-            for (int id : accounts) {
-                //Retrieve all non-deleted lbs for account
-                List<AccountLoadBalancer> lbsForAccount = loadBalancerRepository.getAccountNonDeleteLoadBalancers(id);
-                //Walk each lb...
-                for (AccountLoadBalancer lb : lbsForAccount) {
-                    try {
-                        //Retrieve usage for account by lbId
-                        List<Usage> lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), ResponseUtil.getStartCal(), ResponseUtil.getNow());
-                        //Latest AccountUsage record
-                        AccountBilling accountUsage = loadBalancerRepository.getAccountBilling(id, ResponseUtil.getStartCal(), ResponseUtil.getNow());
+            for (int accountId : accounts) {
+                try {
+                    //Latest AccountUsage record
+                    AccountBilling accountUsage = loadBalancerRepository.getAccountBilling(accountId, ResponseUtil.getStartCal(), ResponseUtil.getNow());
 
-                        //Walk each load balancer usage record...
-                        for (AccountUsage asausage : accountUsage.getAccountUsageRecords()) {
-                            if (asausage.isNeedsPushed()) {
+                    //Walk each load balancer usage record...
+                    for (AccountUsage asausage : accountUsage.getAccountUsageRecords()) {
+                        if (asausage.isNeedsPushed()) {
 
-                                EntryPojo entry = new EntryPojo();
-                                entry.setTitle(title);
-                                entry.setAuthor(author);
+                            EntryPojo entry = new EntryPojo();
+                            entry.setTitle(title);
+                            entry.setAuthor(author);
 
-                                UsageContent usageContent = new UsageContent();
-                                usageContent.setUsage(generateUsageEntry(asausage));
-                                entry.setContent(usageContent);
-                                entry.getContent().setType(MediaType.APPLICATION_XML);
-                                UsageCategory usageCategory = new UsageCategory();
-                                usageCategory.setLabel("accountLoadBalancerUsage");
-                                usageCategory.setTerm("plain");
-                                entry.getCategory().add(usageCategory);
+                            UsageContent usageContent = new UsageContent();
+                            usageContent.setUsage(generateUsageEntry(asausage));
+                            entry.setContent(usageContent);
+                            entry.getContent().setType(MediaType.APPLICATION_XML);
+                            UsageCategory usageCategory = new UsageCategory();
+                            usageCategory.setLabel("accountLoadBalancerUsage");
+                            usageCategory.setTerm("plain");
+                            entry.getCategory().add(usageCategory);
 
 
-                                LOG.info(String.format("Uploading to the atomHopper service now..."));
-                                ClientResponse response = client.resource(uri)
-                                        .accept(MediaType.APPLICATION_XML)
-                                        .type(MediaType.APPLICATION_ATOM_XML)
-                                        .post(ClientResponse.class, entry);
+                            LOG.info(String.format("Uploading to the atomHopper service now..."));
+                            ClientResponse response = client.resource(uri)
+                                    .accept(MediaType.APPLICATION_XML)
+                                    .type(MediaType.APPLICATION_ATOM_XML)
+                                    .post(ClientResponse.class, entry);
 
-                                //Notify usage if the record was uploaded or not...
-                                if (response.getStatus() == 201) {
-                                    asausage.setNeedsPushed(false);
-                                } else {
-                                    LOG.error("There was an error pushing to the atom hopper service" + response.getStatus());
-                                    asausage.setNeedsPushed(true);
-                                }
-                                accountUsageRepository.updatePushedRecord(asausage);
-
-                                String body = ResponseUtil.processResponseBody(response);
-                                LOG.info(String.format("Status=%s\n", response.getStatus()));
-                                LOG.info(String.format("body %s\n", body));
-                                response.close();
+                            //Notify usage if the record was uploaded or not...
+                            if (response.getStatus() == 201) {
+                                asausage.setNeedsPushed(false);
+                            } else {
+                                LOG.error("There was an error pushing to the atom hopper service" + response.getStatus());
+                                asausage.setNeedsPushed(true);
                             }
+                            accountUsageRepository.updatePushedRecord(asausage);
+
+                            String body = ResponseUtil.processResponseBody(response);
+                            LOG.info(String.format("Status=%s\n", response.getStatus()));
+                            LOG.info(String.format("body %s\n", body));
+                            response.close();
                         }
-                    } catch (Throwable t) {
-                        System.out.printf("Exception: %s\n", ResponseUtil.getExtendedStackTrace(t));
-                        LOG.error(String.format("Exception: %s\n", ResponseUtil.getExtendedStackTrace(t)));
                     }
+                } catch (Throwable t) {
+                    System.out.printf("Exception: %s\n", ResponseUtil.getExtendedStackTrace(t));
+                    LOG.error(String.format("Exception: %s\n", ResponseUtil.getExtendedStackTrace(t)));
                 }
             }
             client.destroy();
