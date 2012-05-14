@@ -1100,7 +1100,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         } catch (InvalidInput ip) {
             //Couldn't find a custom 'default' error file...
             LOG.error(String.format("Ther Error file: %s could not be set for: %s", errorFileName, vsName));
-            virtualServerService.setErrorFile(vsNames, new String[]{Constants.DEFAULT_ERRORFILE});
+            virtualServerService.setErrorFile(vsNames, new String[]{"Default"});
 
         }
     }
@@ -1137,6 +1137,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug(String.format("Attempting to set the default error file for: %s", vsName));
         //TODO: uncomment when zeus performance issues are resolved... (VERSION 1) TK-12805
 //        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{vsName}, new String[]{Constants.DEFAULT_ERRORFILE});
+        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{vsName}, new String[]{"Default"});
         LOG.info(String.format("Successfully set the default error file for: %s", vsName));
 
     }
