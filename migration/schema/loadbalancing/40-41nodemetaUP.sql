@@ -3,7 +3,7 @@ use `loadbalancing`;
 INSERT INTO `limit_type` VALUES ('NODE_META_LIMIT',25,'Max number of metadata items for a node');
 
 -- ----------------------------
---  Table structure for `node loadbalancerMeta`
+--  Table structure for `node meta`
 -- ----------------------------
 DROP TABLE IF EXISTS `node_meta_data`;
 CREATE TABLE `node_meta_data` (
@@ -18,4 +18,4 @@ CREATE TABLE `node_meta_data` (
   CONSTRAINT `meta_node_ibfk_1` FOREIGN KEY (`node_id`) REFERENCES `node` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-update `loadbalancerMeta` set `meta_value` = '41?' where `meta_key`='version';
+update `meta` set `meta_value` = '41?' where `meta_key`='version';

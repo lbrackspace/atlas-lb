@@ -4,4 +4,4 @@ alter table `loadbalancer` add column `content_caching` tinyint(1) NULL default 
 
 insert into `event_type` values("UPDATE_CONTENT_CACHING", "Update Content Caching");
 
-update `loadbalancerMeta` set `meta_value` = '42???' where `meta_key`='version';
+update `meta` set `meta_value` = '42???' where `meta_key`='version';

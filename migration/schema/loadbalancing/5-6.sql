@@ -15,5 +15,5 @@ INSERT INTO event_type values('DELETE_VIRTUAL_IP', 'A virtual ip was deleted');
 INSERT INTO event_type values('SSL_ON', 'SSL was turned on');
 INSERT INTO event_type values('SSL_OFF', 'SSL was turned off');
 
-update `loadbalancerMeta` set `meta_value` = '6' where `meta_key`='version';
+update `meta` set `meta_value` = '6' where `meta_key`='version';
 

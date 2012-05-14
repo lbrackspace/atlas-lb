@@ -1,4 +1,4 @@
 use `loadbalancing`;
 
 alter table `host` change `traffic_manager_name` `target_host` varchar(255) not null;
-update `loadbalancerMeta` set `meta_value` = '2' where `meta_key`='version';
+update `meta` set `meta_value` = '2' where `meta_key`='version';

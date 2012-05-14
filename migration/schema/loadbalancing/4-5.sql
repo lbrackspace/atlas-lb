@@ -20,5 +20,5 @@ CREATE TABLE `account_group` (
 alter table group_rate_limit add UNIQUE  `name` (`group_name`); 
 
 update loadbalancer set sessionPersistence = 'NONE' where sessionPersistence = 'SOURCE_IP';
-update loadbalancerMeta set `meta_value` = '5' where `meta_key`='version';
+update meta set `meta_value` = '5' where `meta_key`='version';
 

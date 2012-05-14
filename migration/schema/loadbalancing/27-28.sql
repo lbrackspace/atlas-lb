@@ -29,4 +29,4 @@ INSERT INTO account_limits (`account_id`, `limit_amount`, `limit_type`) SELECT a
 DROP TABLE account_loadbalancer_limit;
 DROP TABLE group_loadbalancer_limit;
 
-update `loadbalancerMeta` set `meta_value` = '28' where `meta_key`='version';
+update `meta` set `meta_value` = '28' where `meta_key`='version';

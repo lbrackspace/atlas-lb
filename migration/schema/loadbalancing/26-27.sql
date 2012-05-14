@@ -4,4 +4,4 @@ insert ignore into category_type (name, description) values ('CREATE', 'Resource
 insert ignore into category_type (name, description) values('DELETE', 'Resource deleted');
 insert ignore into category_type (name, description) values('UPDATE', 'Resource updated');
 
-update `loadbalancerMeta` set `meta_value` = '27' where `meta_key`='version';
+update `meta` set `meta_value` = '27' where `meta_key`='version';

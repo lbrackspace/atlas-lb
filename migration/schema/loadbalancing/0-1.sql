@@ -433,10 +433,10 @@ CREATE TABLE `allocated_virtual_ip` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
---  Table structure for `loadbalancerMeta`
+--  Table structure for `meta`
 -- ----------------------------
-DROP TABLE IF EXISTS `loadbalancerMeta`;
-CREATE TABLE `loadbalancerMeta` (
+DROP TABLE IF EXISTS `meta`;
+CREATE TABLE `meta` (
   `meta_key` varchar(128) NOT NULL,
   `meta_value` varchar(128) default NULL,
   UNIQUE KEY `meta_key` (`meta_key`)
@@ -523,5 +523,5 @@ INSERT INTO health_monitor_type values('CONNECT','Indicates the healthmonitor is
 INSERT INTO health_monitor_type values('HTTP','Indicates the healthmonitor is of type HTTP');
 INSERT INTO health_monitor_type values('HTTPS','Indicates the healthmonitor is of type HTTPS');
 
-INSERT INTO loadbalancerMeta values('version', '1');
+INSERT INTO meta values('version', '1');
 

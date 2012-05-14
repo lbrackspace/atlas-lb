@@ -100,13 +100,13 @@ CREATE TABLE `lb_usage_event` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `loadbalancerMeta`
+-- Table structure for table `meta`
 --
 
-DROP TABLE IF EXISTS `loadbalancerMeta`;
+DROP TABLE IF EXISTS `meta`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `loadbalancerMeta` (
+CREATE TABLE `meta` (
   `meta_key` varchar(128) NOT NULL,
   `meta_value` varchar(128) default NULL,
   UNIQUE KEY `meta_key` (`meta_key`)

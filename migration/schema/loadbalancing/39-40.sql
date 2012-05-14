@@ -29,4 +29,4 @@ insert into host_status(name,description)values("SOAP_API_ENDPOINT","Indicates t
 -- insert into event_type(name, description) values('PENDING_UPDATE_LOADBALANCER', 'Load balancer in pending update status');
 -- insert into event_type(name, description) values('PENDING_DELETE_LOADBALANCER', 'Load balancer in pending delete status');
 
-update `loadbalancerMeta` set `meta_value` = '40' where `meta_key`='version';
+update `meta` set `meta_value` = '40' where `meta_key`='version';

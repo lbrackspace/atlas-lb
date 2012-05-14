@@ -7,4 +7,4 @@ CREATE TABLE `defaults` (
  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-update `loadbalancerMeta` set `meta_value` = '30' where `meta_key`='version';
+update `meta` set `meta_value` = '30' where `meta_key`='version';

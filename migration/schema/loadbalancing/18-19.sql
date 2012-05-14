@@ -6,4 +6,4 @@ insert into ticket(ticket_id, loadbalancer_id, comment) select ticket_id, loadba
 ALTER TABLE `lb_suspension` DROP COLUMN `ticket_id`;
 ALTER TABLE `lb_rate_limit` DROP COLUMN `ticket_id`;
 
-update `loadbalancerMeta` set `meta_value` = '19' where `meta_key`='version';
+update `meta` set `meta_value` = '19' where `meta_key`='version';

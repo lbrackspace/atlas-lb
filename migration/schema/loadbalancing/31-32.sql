@@ -17,4 +17,4 @@ ALTER TABLE `cluster` ADD KEY `cluster_status_fk` (`cluster_status`);
 
 ALTER TABLE `cluster` ADD CONSTRAINT `cluster_ibfk_2` FOREIGN KEY (`cluster_status`) REFERENCES `cluster_status` (`name`);
 
-update `loadbalancerMeta` set `meta_value` = '32' where `meta_key`='version';
+update `meta` set `meta_value` = '32' where `meta_key`='version';

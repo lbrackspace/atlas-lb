@@ -4,4 +4,4 @@ DROP TABLE IF EXISTS `lb_meta_data`;
 
 DELETE FROM `limit_type` WHERE `name` = 'LOADBALANCER_META_LIMIT' LIMIT 1;
 
-update `loadbalancerMeta` set `meta_value` = '36' where `meta_key`='version';
+update `meta` set `meta_value` = '36' where `meta_key`='version';

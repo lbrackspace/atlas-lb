@@ -18,4 +18,4 @@ CREATE TABLE `account_loadbalancer_limit` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-update `loadbalancerMeta` set `meta_value` = '27' where `meta_key`='version';
+update `meta` set `meta_value` = '27' where `meta_key`='version';
