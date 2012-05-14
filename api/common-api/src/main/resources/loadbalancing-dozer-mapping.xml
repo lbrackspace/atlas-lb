@@ -314,8 +314,12 @@
             <a>address</a>
             <b>ipAddress</b>
         </field>
+        <field>
+            <a>metadata</a>
+            <b>nodeMetadata</b>
+        </field>
     </mapping>
-
+    
     <mapping map-null="false" map-id="HIDE_NODE_META">
         <class-a>org.openstack.atlas.service.domain.entities.Node</class-a>
         <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.NodeFactory">org.openstack.atlas.docs.loadbalancers.api.v1.Node</class-b>

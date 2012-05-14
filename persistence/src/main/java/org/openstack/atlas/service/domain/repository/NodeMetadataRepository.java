@@ -44,6 +44,7 @@ public class NodeMetadataRepository {
     }
 
     public List<NodeMeta> getNodeMetaDataByAccountIdNodeId(Integer nodeId) {
+        List<NodeMeta> list = new ArrayList<NodeMeta>();
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<NodeMeta> criteria = builder.createQuery(NodeMeta.class);
         Root<NodeMeta> nodeMetaRoot = criteria.from(NodeMeta.class);
@@ -55,7 +56,8 @@ public class NodeMetadataRepository {
 
         criteria.select(nodeMetaRoot);
         criteria.where(belongsToNode);
-        return entityManager.createQuery(criteria).getResultList();
+        list = entityManager.createQuery(criteria).getResultList();
+        return list;
     }
 
     public void deleteMetadata(Node node, Collection<Integer> ids) throws EntityNotFoundException {

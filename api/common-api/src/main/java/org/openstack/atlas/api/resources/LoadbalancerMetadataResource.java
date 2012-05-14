@@ -22,9 +22,9 @@ import java.util.Set;
 
 import static javax.ws.rs.core.MediaType.*;
 
-public class MetadataResource extends CommonDependencyProvider {
-    private final Log LOG = LogFactory.getLog(MetadataResource.class);
-    private MetaResource metaResource;
+public class LoadbalancerMetadataResource extends CommonDependencyProvider {
+    private final Log LOG = LogFactory.getLog(LoadbalancerMetadataResource.class);
+    private LoadbalancerMetaResource loadbalancerMetaResource;
     private HttpHeaders requestHeaders;
     private Integer accountId;
     private Integer loadBalancerId;
@@ -103,16 +103,16 @@ public class MetadataResource extends CommonDependencyProvider {
     }
 
     @Path("{id: [-+]?[1-9][0-9]*}")
-    public MetaResource retrieveNodeResource(@PathParam("id") int id) {
-        metaResource.setRequestHeaders(requestHeaders);
-        metaResource.setId(id);
-        metaResource.setAccountId(accountId);
-        metaResource.setLoadBalancerId(loadBalancerId);
-        return metaResource;
+    public LoadbalancerMetaResource retrieveNodeResource(@PathParam("id") int id) {
+        loadbalancerMetaResource.setRequestHeaders(requestHeaders);
+        loadbalancerMetaResource.setId(id);
+        loadbalancerMetaResource.setAccountId(accountId);
+        loadbalancerMetaResource.setLoadBalancerId(loadBalancerId);
+        return loadbalancerMetaResource;
     }
 
-    public void setMetaResource(MetaResource metaResource) {
-        this.metaResource = metaResource;
+    public void setLoadbalancerMetaResource(LoadbalancerMetaResource loadbalancerMetaResource) {
+        this.loadbalancerMetaResource = loadbalancerMetaResource;
     }
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {

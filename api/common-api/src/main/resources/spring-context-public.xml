@@ -121,7 +121,7 @@
                         <property name="connectionThrottleResource" ref="connectionThrottleResource"/>
                         <property name="contentCachingResource" ref="contentCachingResource"/>
                         <property name="healthMonitorResource" ref="healthMonitorResource"/>
-                        <property name="metadataResource" ref="metadataResource"/>
+                        <property name="loadbalancerMetadataResource" ref="loadbalancerMetadataResource"/>
                         <property name="usageResource" ref="usageResource"/>
                         <property name="errorpageResource" ref="errorpageResource"/>
                         <property name="sslTerminationResource" ref="sslTerminationResource"/>
@@ -220,12 +220,12 @@
           class="org.openstack.atlas.api.resources.HealthMonitorResource"
           parent="commonDependencyProvider"
           scope="request"/>
-    <bean name="metadataResource"
-          class="org.openstack.atlas.api.resources.MetadataResource"
+    <bean name="loadbalancerMetadataResource"
+          class="org.openstack.atlas.api.resources.LoadbalancerMetadataResource"
           parent="commonDependencyProvider"
           scope="request">
-        <property name="metaResource">
-            <bean class="org.openstack.atlas.api.resources.MetaResource"
+        <property name="loadbalancerMetaResource">
+            <bean class="org.openstack.atlas.api.resources.LoadbalancerMetaResource"
                   parent="commonDependencyProvider"
                   scope="request"/>
         </property>

@@ -17,8 +17,8 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
-public class MetaResource extends CommonDependencyProvider {
-    private final Log LOG = LogFactory.getLog(MetaResource.class);
+public class LoadbalancerMetaResource extends CommonDependencyProvider {
+    private final Log LOG = LogFactory.getLog(LoadbalancerMetaResource.class);
     private HttpHeaders requestHeaders;
     private Integer accountId;
     private Integer loadBalancerId;

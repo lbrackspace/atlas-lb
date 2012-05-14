@@ -99,26 +99,3 @@ public class NodeMetaResource extends CommonDependencyProvider {
         this.id = id;
     }
 }
-/*
-package org.openstack.atlas.api.resources;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.api.helpers.ResponseFactory;
-import org.openstack.atlas.api.repository.ValidatorRepository;
-import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
-import org.openstack.atlas.api.validation.context.HttpRequestType;
-import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadbalancerMeta;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.HttpHeaders;
-
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.MediaType.APPLICATION_XML;
-
-public class MetaResource extends CommonDependencyProvider {
-}
-
-*/
