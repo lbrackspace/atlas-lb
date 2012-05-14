@@ -2,4 +2,4 @@ use `loadbalancing_usage`;
 
 drop table `lb_usage_event`;
 
-update `loadbalancerMeta` set `meta_value` = '10' where `meta_key`='version';
+update `meta` set `meta_value` = '10' where `meta_key`='version';

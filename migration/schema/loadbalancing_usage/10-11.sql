@@ -20,4 +20,4 @@ CREATE TABLE `lb_usage_event` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-update `loadbalancerMeta` set `meta_value` = '11' where `meta_key`='version';
+update `meta` set `meta_value` = '11' where `meta_key`='version';

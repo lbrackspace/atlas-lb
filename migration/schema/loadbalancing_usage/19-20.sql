@@ -10,5 +10,5 @@ CREATE TABLE `host_usage` (
   KEY `host_usage_host_key` (`host_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-update `loadbalancerMeta` set `meta_value` = '20' where `meta_key`='version';
+update `meta` set `meta_value` = '20' where `meta_key`='version';
 
