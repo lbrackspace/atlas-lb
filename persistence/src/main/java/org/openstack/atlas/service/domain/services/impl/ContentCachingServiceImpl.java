@@ -4,7 +4,9 @@ package org.openstack.atlas.service.domain.services.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
@@ -24,7 +26,7 @@ public class ContentCachingServiceImpl extends BaseService implements ContentCac
 
     @Override
     @Transactional
-    public void update(LoadBalancer queueLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
+    public void update(LoadBalancer queueLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         LOG.debug("Entering " + getClass());
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(queueLb.getId(), queueLb.getAccountId());
 
@@ -33,6 +35,12 @@ public class ContentCachingServiceImpl extends BaseService implements ContentCac
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
+        }
+
+        if (queueLb.isContentCaching() && dbLoadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
+            String msg ="Content caching cannot be enabled for non HTTP load balancers.";
+            LOG.error(msg);
+            throw new BadRequestException(msg);
         }
 
         dbLoadBalancer.setContentCaching(queueLb.isContentCaching());

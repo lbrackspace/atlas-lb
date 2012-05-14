@@ -133,6 +133,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             //V1-B-17728 allowing ip SP for non-http protocols
             verifySessionPersistence(lb);
             verifyProtocolAndHealthMonitorType(lb);
+            verifyContentCaching(lb);
             setHostForNewLoadBalancer(lb);
             setVipConfigForLoadBalancer(lb);
         } catch (UniqueLbPortViolationException e) {
@@ -649,6 +650,14 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                         throw new ProtocolHealthMonitorMismatchException("Protocol must be HTTPS for an HTTPS health monitor.");
                     }
                 }
+            }
+        }
+    }
+
+    private void verifyContentCaching(LoadBalancer queueLb) throws ProtocolHealthMonitorMismatchException, BadRequestException {
+        if (queueLb.isContentCaching() != null && queueLb.isContentCaching()) {
+            if (queueLb.getProtocol() != LoadBalancerProtocol.HTTP) {
+                throw new BadRequestException("Content caching can only be enabled for HTTP loadbalancers.");
             }
         }
     }
