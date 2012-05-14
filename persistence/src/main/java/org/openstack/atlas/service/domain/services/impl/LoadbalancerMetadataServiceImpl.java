@@ -52,14 +52,14 @@ public class LoadbalancerMetadataServiceImpl extends BaseService implements Load
         LOG.debug(String.format("Current number of metadata items for loadbalancer '%d': %d", loadBalancerId, oldLb.getLoadbalancerMetadata().size()));
         LOG.debug(String.format("Number of new metadata items to be added: %d", loadbalancerMetas.size()));
 
-        final Set<LoadbalancerMeta> loadbalancerMetaSet = metadataRepository.addLoadbalancerMetas(oldLb, loadbalancerMetas);
+        final Set<LoadbalancerMeta> loadbalancerMetaSet = loadbalancerMetadataRepository.addLoadbalancerMetas(oldLb, loadbalancerMetas);
         LOG.debug(String.format("Successfully added %d metadata items for loadbalancer '%d'", loadbalancerMetaSet.size(), loadBalancerId));
         return loadbalancerMetaSet;
     }
 
     @Override
     public Set<LoadbalancerMeta> getLoadbalancerMetadataByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) throws EntityNotFoundException {
-        final List<LoadbalancerMeta> metadataByAccountIdLoadBalancerId = metadataRepository.getLoadbalancerMetadataByAccountIdLoadBalancerId(accountId, loadBalancerId);
+        final List<LoadbalancerMeta> metadataByAccountIdLoadBalancerId = loadbalancerMetadataRepository.getLoadbalancerMetadataByAccountIdLoadBalancerId(accountId, loadBalancerId);
         Set<LoadbalancerMeta> loadbalancerMetaSet = new HashSet<LoadbalancerMeta>();
 
         for (LoadbalancerMeta loadbalancerMeta : metadataByAccountIdLoadBalancerId) {
@@ -71,13 +71,13 @@ public class LoadbalancerMetadataServiceImpl extends BaseService implements Load
 
     @Override
     public LoadbalancerMeta getLoadbalancerMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
-        return metadataRepository.getLoadbalancerMeta(accountId, loadBalancerId, id);
+        return loadbalancerMetadataRepository.getLoadbalancerMeta(accountId, loadBalancerId, id);
     }
 
     @Override
     public void deleteLoadbalancerMeta(Integer accountId, Integer loadBalancerId, Integer id) throws EntityNotFoundException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
-        metadataRepository.deleteLoadbalancerMeta(dbLoadBalancer, id);
+        loadbalancerMetadataRepository.deleteLoadbalancerMeta(dbLoadBalancer, id);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class LoadbalancerMetadataServiceImpl extends BaseService implements Load
             }
         }
 
-        metadataRepository.update(currentLb);
+        loadbalancerMetadataRepository.update(currentLb);
     }
 
     @Override
@@ -147,7 +147,7 @@ public class LoadbalancerMetadataServiceImpl extends BaseService implements Load
     @Override
     public LoadBalancer deleteMetadata(LoadBalancer lb, Collection<Integer> ids) throws EntityNotFoundException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
-        return metadataRepository.deleteLoadbalancerMetadata(dbLoadBalancer, ids);
+        return loadbalancerMetadataRepository.deleteLoadbalancerMetadata(dbLoadBalancer, ids);
     }
 
     private boolean loadBalancerContainsMeta(LoadBalancer lb, LoadbalancerMeta loadbalancerMeta) {

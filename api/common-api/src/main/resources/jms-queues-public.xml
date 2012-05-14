@@ -107,7 +107,7 @@
         <property name="blacklistRepository" ref="blacklistRepository"/>
         <property name="groupRepository" ref="groupRepository" />
         <property name="clusterRepository" ref="clusterRepository" />
-        <property name="metadataRepository" ref="metadataRepository" />
+        <property name="loadbalancerMetadataRepository" ref="loadbalancerMetadataRepository" />
         <property name="nodeMetadataRepository" ref="nodeMetadataRepository" />
         <property name="nodeRepository" ref="nodeRepository" />
         <property name="rateLimitRepository" ref="rateLimitRepository" />

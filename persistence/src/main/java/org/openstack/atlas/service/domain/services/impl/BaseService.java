@@ -40,7 +40,7 @@ public class BaseService {
     protected AlertRepository alertRepository;
     protected GroupRepository groupRepository;
     protected ClusterRepository clusterRepository;
-    protected LoadbalancerMetadataRepository metadataRepository;
+    protected LoadbalancerMetadataRepository loadbalancerMetadataRepository;
     protected NodeMetadataRepository nodeMetadataRepository;
     protected NodeRepository nodeRepository;
     protected RateLimitRepository rateLimitRepository;
@@ -60,8 +60,8 @@ public class BaseService {
         this.rateLimitRepository = rateLimitRepository;
     }
 
-    public void setMetadataRepository(LoadbalancerMetadataRepository metadataRepository) {
-        this.metadataRepository = metadataRepository;
+    public void setLoadbalancerMetadataRepository(LoadbalancerMetadataRepository loadbalancerMetadataRepository) {
+        this.loadbalancerMetadataRepository = loadbalancerMetadataRepository;
     }
 
     public void setNodeMetadataRepository(NodeMetadataRepository nodeMetadataRepository) {
