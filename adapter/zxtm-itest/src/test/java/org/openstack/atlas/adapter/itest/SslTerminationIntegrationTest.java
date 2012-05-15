@@ -140,7 +140,6 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         setSslTermination();
         updateSslTermination();
         deleteCertificate();
-        removeSimpleLoadBalancer();
     }
 
     @Test
@@ -208,6 +207,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
         }
     }
 
@@ -274,6 +274,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
         }
     }
 
@@ -284,6 +285,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             sVs = ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
         } catch (InsufficientRequestException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+
         }
 
         try {
@@ -337,6 +339,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
         }
     }
 
@@ -376,6 +379,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+
         }
     }
 
@@ -395,6 +400,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+
         }
 
         //logging
@@ -444,8 +451,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
 
             //remove error page
             zxtmAdapter.removeAndSetDefaultErrorFile(config, lb);
-            Assert.assertEquals("", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
-            Assert.assertEquals("", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertEquals("Default", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
+            Assert.assertEquals("Default", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
 
             //set error file with ssl already there
             zxtmAdapter.setErrorFile(config, lb, errorContent);
@@ -455,6 +462,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+
         }
     }
 
@@ -464,21 +473,23 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             String errorContent = "<html><body>ErrorFileContents</body></html>";
 
             zxtmAdapter.deleteErrorFile(config, lb);
+            String blah2 = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0];
             Assert.assertEquals("", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
 
             //no ssl yet
             try {
-                Assert.assertEquals("", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
+                String blah = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0];
+                Assert.assertEquals("Default", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
             } catch (ObjectDoesNotExist odne) {
                 Assert.assertTrue("ssl not present", odne.getErrmsg().contains(secureLoadBalancerName()));
             }
 
             //remove error page
             zxtmAdapter.removeAndSetDefaultErrorFile(config, lb);
-            Assert.assertEquals("", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
+            Assert.assertEquals("Default", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
 
             try {
-                Assert.assertEquals("", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
+                Assert.assertEquals("Default", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
             } catch (ObjectDoesNotExist odne) {
                 Assert.assertTrue("ssl not present", odne.getErrmsg().contains(secureLoadBalancerName()));
             }
@@ -527,6 +538,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+
         }
     }
 
@@ -577,6 +590,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+
         }
     }
 
@@ -618,6 +633,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+
         }
     }
 
@@ -693,6 +710,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+
         }
     }
 
@@ -731,6 +750,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+
         }
 
         try {
@@ -768,6 +789,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+
         }
     }
 
@@ -778,6 +801,8 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+
         }
     }
 }

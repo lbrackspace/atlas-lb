@@ -14,6 +14,7 @@ import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.xml.sax.SAXException;
 
 import java.net.MalformedURLException;
@@ -60,6 +61,7 @@ public class ZeusTestBase {
         try {
             retrieveConfigValues();
             setupEndpointConfiguration();
+            RsaConst.init();
         } catch (MalformedURLException e) {
             Assert.fail(e.getMessage());
         }
@@ -79,7 +81,7 @@ public class ZeusTestBase {
     private static void setupEndpointConfiguration() throws MalformedURLException {
         List<String> targetFailoverHosts = new ArrayList<String>();
         targetFailoverHosts.add(FAILOVER_HOST_1);
-        targetFailoverHosts.add(FAILOVER_HOST_2);
+//        targetFailoverHosts.add(FAILOVER_HOST_2);
         Host soapEndpointHost = new Host();
         soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
         Host trafficManagerHost = new Host();
@@ -204,7 +206,7 @@ public class ZeusTestBase {
 
             final String[][] trafficManagers = getServiceStubs().getTrafficIpGroupBinding().getTrafficManager(new String[]{trafficIpGroupName});
             Assert.assertEquals(1, trafficManagers.length);
-            Assert.assertEquals(3, trafficManagers[0].length);
+            Assert.assertEquals(2, trafficManagers[0].length);
 
             final String[][] vips = getServiceStubs().getTrafficIpGroupBinding().getIPAddresses(new String[]{trafficIpGroupName});
             Assert.assertEquals(1, vips.length);

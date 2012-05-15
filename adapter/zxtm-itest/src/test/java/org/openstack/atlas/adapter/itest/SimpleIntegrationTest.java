@@ -21,6 +21,7 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.*;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.*;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
+import static org.openstack.atlas.service.domain.entities.SessionPersistence.SOURCE_IP;
 
 /*
  * IMPORTANT! PLEASE READ!
@@ -115,6 +116,27 @@ public class SimpleIntegrationTest extends ZeusTestBase {
             zxtmAdapter.updateConnectionLogging(config, lb);
             lb.setProtocol(HTTPS);
             zxtmAdapter.updateProtocol(config, lb);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void changeProtocolWithContentCachingEnabled() {
+        try {
+            lb.setProtocol(HTTP);
+            zxtmAdapter.updateProtocol(config, lb);
+
+            lb.setContentCaching(Boolean.TRUE);
+            zxtmAdapter.updateContentCaching(config, lb);
+            boolean[] isCCenabled1 = getServiceStubs().getVirtualServerBinding().getWebcacheEnabled(new String[]{loadBalancerName()});
+            Assert.assertEquals(Boolean.TRUE, isCCenabled1[0]);
+
+            lb.setProtocol(TCP);
+            zxtmAdapter.updateProtocol(config, lb);
+            boolean[] isCCenabled2 = getServiceStubs().getVirtualServerBinding().getWebcacheEnabled(new String[]{loadBalancerName()});
+            Assert.assertEquals(Boolean.FALSE, isCCenabled2[0]);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -389,12 +411,15 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
     @Test
     public void testAllSessionPersistenceOperations() throws Exception {
-        updateSessionPersistence();
-        removeSessionPersistence();
+        updateSessionPersistenceToCookie();
+        removeSessionPersistenceForCookie();
+        updateSessionPersistenceToSourceIp();
+        removeSessionPersistenceForSourceIp();
         shouldDisableSessionPersistenceWhenUpdatingToNonHttpProtocol();
+        shouldDisableSessionPersistenceWhenUpdatingToHttpProtocol();
     }
 
-    private void updateSessionPersistence() throws Exception {
+    private void updateSessionPersistenceToCookie() throws Exception {
         zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), HTTP_COOKIE);
 
         final String[] persistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
@@ -414,9 +439,57 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         Assert.assertTrue(doesPersistenceClassExist);
     }
 
-    private void removeSessionPersistence() throws Exception {
+    private void updateSessionPersistenceToSourceIp() throws Exception {
+        zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), SOURCE_IP);
+
+        final String[] persistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
+        Assert.assertEquals(1, persistenceNamesForPools.length);
+        Assert.assertEquals(SOURCE_IP.name(), persistenceNamesForPools[0]);
+
+        final String[] allPersistenceClasses = getServiceStubs().getPersistenceBinding().getPersistenceNames();
+        boolean doesPersistenceClassExist = false;
+
+        for (String persistenceClass : allPersistenceClasses) {
+            if (persistenceClass.equals(persistenceNamesForPools[0])) {
+                doesPersistenceClassExist = true;
+                break;
+            }
+        }
+
+        Assert.assertTrue(doesPersistenceClassExist);
+    }
+
+    private void removeSessionPersistenceForCookie() throws Exception {
         final String[] persistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
         Assert.assertEquals(HTTP_COOKIE.name(), persistenceNamesForPools[0]);
+
+        try {
+            zxtmAdapter.removeSessionPersistence(config, lb.getId(), lb.getAccountId());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+
+        final String[] deletedPersistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
+        Assert.assertEquals(1, deletedPersistenceNamesForPools.length);
+        Assert.assertEquals("", deletedPersistenceNamesForPools[0]);
+
+        final String[] allPersistenceClasses = getServiceStubs().getPersistenceBinding().getPersistenceNames();
+        boolean doesPersistenceClassExist = false;
+
+        for (String persistenceClass : allPersistenceClasses) {
+            if (persistenceClass.equals(persistenceNamesForPools[0])) {
+                doesPersistenceClassExist = true;
+                break;
+            }
+        }
+
+        Assert.assertTrue(doesPersistenceClassExist);
+    }
+
+    private void removeSessionPersistenceForSourceIp() throws Exception {
+        final String[] persistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
+        Assert.assertEquals(SOURCE_IP.name(), persistenceNamesForPools[0]);
 
         try {
             zxtmAdapter.removeSessionPersistence(config, lb.getId(), lb.getAccountId());
@@ -449,7 +522,21 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         Assert.assertEquals(1, persistenceCatalogList.length);
         Assert.assertEquals(HTTP_COOKIE.name(), persistenceCatalogList[0]);
         ZeusTestBase.setupIvars();
-        lb.setProtocol(HTTPS);
+        lb.setProtocol(TCP);
+        zxtmAdapter.updateProtocol(config, lb);
+        persistenceCatalogList = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
+        Assert.assertEquals(1, persistenceCatalogList.length);
+        Assert.assertEquals("", persistenceCatalogList[0]);
+    }
+
+    private void shouldDisableSessionPersistenceWhenUpdatingToHttpProtocol() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        ZeusTestBase.setupIvars();
+        zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), SOURCE_IP);
+        String[] persistenceCatalogList = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
+        Assert.assertEquals(1, persistenceCatalogList.length);
+        Assert.assertEquals(SOURCE_IP.name(), persistenceCatalogList[0]);
+        ZeusTestBase.setupIvars();
+        lb.setProtocol(HTTP);
         zxtmAdapter.updateProtocol(config, lb);
         persistenceCatalogList = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
         Assert.assertEquals(1, persistenceCatalogList.length);

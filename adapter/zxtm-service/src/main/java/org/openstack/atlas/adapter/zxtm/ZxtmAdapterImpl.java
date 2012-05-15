@@ -401,14 +401,21 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         try {
-            if (lb.getSessionPersistence() == SessionPersistence.NONE) {
-                //V1-B-17728 support for SOURCE_IP
-                removeSessionPersistence(config, lbId, accountId);
-            }
+//            if (lb.getSessionPersistence() == SessionPersistence.NONE) {
+//                //V1-B-17728 support for SOURCE_IP
+//                removeSessionPersistence(config, lbId, accountId);
+//            }
             if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
                 removeXFFRuleFromVirtualServers(serviceStubs, vsNames); // XFF is only for the HTTP protocol
                 removeXFPRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
                 updateContentCaching(config, lb);
+                if (!SessionPersistence.SOURCE_IP.equals(lb.getSessionPersistence())) {
+                    removeSessionPersistence(config, lbId, accountId);
+                }
+            } else {
+                 if (!SessionPersistence.HTTP_COOKIE.equals(lb.getSessionPersistence())) {
+                    removeSessionPersistence(config, lbId, accountId);
+                }
             }
         } catch (Exception e) {
             throw new ZxtmRollBackException(String.format("Update protocol request canceled for %s ", virtualServerName), e);
@@ -1010,7 +1017,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Remove accessList from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
             //Removing error file from shadow server
-            LOG.info(String.format("Removing error file from load balancer...'%s'...", loadBalancer.getId()));
+            LOG.info(String.format("Removing error file from load balancer...'%s' for sll termination...", loadBalancer.getId()));
             deleteErrorFile(conf, virtualServerName);
             LOG.debug(String.format("Remove error file from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
@@ -1099,7 +1106,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.info(String.format("Successfully set the error file for: %s...", vsName));
         } catch (InvalidInput ip) {
             //Couldn't find a custom 'default' error file...
-            LOG.error(String.format("Ther Error file: %s could not be set for: %s", errorFileName, vsName));
+            LOG.error(String.format("The Error file: %s could not be set for: %s", errorFileName, vsName));
             virtualServerService.setErrorFile(vsNames, new String[]{"Default"});
 
         }
@@ -1136,10 +1143,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         LOG.debug(String.format("Attempting to set the default error file for: %s", vsName));
         //TODO: uncomment when zeus performance issues are resolved... (VERSION 1) TK-12805
+        try {
 //        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{vsName}, new String[]{Constants.DEFAULT_ERRORFILE});
         serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{vsName}, new String[]{"Default"});
         LOG.info(String.format("Successfully set the default error file for: %s", vsName));
-
+        } catch (ObjectDoesNotExist odne) {
+            LOG.warn(String.format("Virtual server %s does not exist, ignoring...", vsName));
+        }
     }
 
     @Override
@@ -1574,7 +1584,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{isContentCaching});
                     LOG.info("Rules attached to the VS, update content caching successfully completed.");
                 } else {
-                    LOG.info("Content caching rule note set because loadbalancer protocol is not HTTP.");
+                    LOG.info("Content caching rule not set because loadbalancer protocol is not HTTP.");
                     serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{contentCachingRule.getName()}});
                     serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{false});
                 }

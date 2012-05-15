@@ -65,7 +65,7 @@ public class GlobalErrorFileIntegrationTest extends ZeusTestBase {
                 }
             }
             Assert.assertFalse(doesExist);
-            //TODO: uncomment once we resolve zxtm issues
+            //TODO: uncomment once we resolve zxtm issues. update: use zeus' 'Default' for the time being.........
             Assert.assertEquals("Default", fileNameAfterDeletion);
         } catch (Exception e) {
             e.printStackTrace();
