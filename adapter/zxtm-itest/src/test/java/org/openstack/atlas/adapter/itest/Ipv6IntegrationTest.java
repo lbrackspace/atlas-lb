@@ -70,6 +70,7 @@ public class Ipv6IntegrationTest extends ZeusTestBase {
 
     @Test
     public void createAndRemoveIpv6LoadBalancer() {
+        removeIpv6LoadBalancer();
         createSimpleIpv6LoadBalancer();
         removeIpv6LoadBalancer();
     }
@@ -88,7 +89,7 @@ public class Ipv6IntegrationTest extends ZeusTestBase {
 
             final String[][] trafficManagers = getServiceStubs().getTrafficIpGroupBinding().getTrafficManager(new String[]{trafficIpGroupName});
             Assert.assertEquals(1, trafficManagers.length);
-            Assert.assertEquals(3, trafficManagers[0].length);
+            Assert.assertEquals(2, trafficManagers[0].length);
 
             final String[][] vips = getServiceStubs().getTrafficIpGroupBinding().getIPAddresses(new String[]{trafficIpGroupName});
             Assert.assertEquals(1, vips.length);

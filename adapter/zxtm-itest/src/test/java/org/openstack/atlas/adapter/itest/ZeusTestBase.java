@@ -1,5 +1,7 @@
 package org.openstack.atlas.adapter.itest;
 
+import Util.ConfigurationKeys;
+import Util.EsbConfiguration;
 import com.zxtm.service.client.*;
 import org.apache.axis.AxisFault;
 import org.junit.Assert;
@@ -10,7 +12,9 @@ import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
+import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.xml.sax.SAXException;
 
 import java.net.MalformedURLException;
@@ -27,15 +31,16 @@ import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 
 public class ZeusTestBase {
     public static final Integer SLEEP_TIME_BETWEEN_TESTS = 500;
+    private static Configuration configuration = new EsbConfiguration();
 
-    // TODO: get this from external config...
-    public static final String ZXTM_USERNAME = "lbaas_dev";
-    public static final String ZXTM_PASSWORD = "9pdJF2scMUmXfs";
-    public static final String ZXTM_ENDPOINT_URI = "https://173.203.239.70:9090/soap";
-    public static final String TARGET_HOST = "ztm-n01.dev.lbaas.rackspace.com";
-    public static final String FAILOVER_HOST_1 = "ztm-n03.dev.lbaas.rackspace.com";
-    public static final String FAILOVER_HOST_2 = "ztm-n04.dev.lbaas.rackspace.com";
-    public static final String DEFAULT_LOG_FILE_LOCATION = "/opt/zeus/zxtm/log/access_log";
+    public static String ZXTM_USERNAME;
+    public static String ZXTM_PASSWORD;
+    public static String ZXTM_ENDPOINT_URI;
+    public static String TARGET_HOST;
+    public static String FAILOVER_HOST_1;
+    public static String FAILOVER_HOST_2;
+    public static String DEFAULT_LOG_FILE_LOCATION;
+
     public static final Integer TEST_ACCOUNT_ID = 999998;
     public static final Integer TEST_LOADBALANCER_ID = 999998;
     public static final Integer TEST_VIP_ID = 999998;
@@ -54,17 +59,29 @@ public class ZeusTestBase {
     static {
         zxtmAdapter = new ZxtmAdapterImpl();
         try {
+            retrieveConfigValues();
             setupEndpointConfiguration();
+            RsaConst.init();
         } catch (MalformedURLException e) {
             Assert.fail(e.getMessage());
         }
         setUpClusterForIPv6Operations();
     }
 
+    private static void retrieveConfigValues() {
+        ZXTM_USERNAME = configuration.getString(ConfigurationKeys.zxtm_username);
+        ZXTM_PASSWORD = configuration.getString(ConfigurationKeys.zxtm_password);
+        ZXTM_ENDPOINT_URI = configuration.getString(ConfigurationKeys.zxtm_endpoint_uri);
+        TARGET_HOST = configuration.getString(ConfigurationKeys.target_host);
+        FAILOVER_HOST_1 = configuration.getString(ConfigurationKeys.failover_host_1);
+        FAILOVER_HOST_2 = configuration.getString(ConfigurationKeys.failover_host_2);
+        DEFAULT_LOG_FILE_LOCATION = configuration.getString(ConfigurationKeys.default_log_file_location);
+    }
+
     private static void setupEndpointConfiguration() throws MalformedURLException {
         List<String> targetFailoverHosts = new ArrayList<String>();
         targetFailoverHosts.add(FAILOVER_HOST_1);
-        targetFailoverHosts.add(FAILOVER_HOST_2);
+//        targetFailoverHosts.add(FAILOVER_HOST_2);
         Host soapEndpointHost = new Host();
         soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
         Host trafficManagerHost = new Host();
@@ -166,7 +183,7 @@ public class ZeusTestBase {
     }
 
     protected static void shouldBeValidApiVersion() {
-        String ZEUS_API_VERSION = "7.3r1";
+        String ZEUS_API_VERSION = "8.1r1";
         try {
             Assert.assertEquals(ZEUS_API_VERSION, getServiceStubs().getSystemMachineInfoBinding().getProductVersion());
         } catch (RemoteException e) {
@@ -189,7 +206,7 @@ public class ZeusTestBase {
 
             final String[][] trafficManagers = getServiceStubs().getTrafficIpGroupBinding().getTrafficManager(new String[]{trafficIpGroupName});
             Assert.assertEquals(1, trafficManagers.length);
-            Assert.assertEquals(3, trafficManagers[0].length);
+            Assert.assertEquals(2, trafficManagers[0].length);
 
             final String[][] vips = getServiceStubs().getTrafficIpGroupBinding().getIPAddresses(new String[]{trafficIpGroupName});
             Assert.assertEquals(1, vips.length);
