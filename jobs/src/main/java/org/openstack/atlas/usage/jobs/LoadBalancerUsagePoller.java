@@ -122,7 +122,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
                     previousUsageRecord.setEndTime(eventTime);
                 }
                 if (usageEventEntry.getLastConcurrentConnections() != null) {
-                    if(previousUsageRecord.getEventType().equals(UsageEvent.SSL_ONLY_ON.name())) {
+                    if(UsageEvent.SSL_ONLY_ON.name().equals(previousUsageRecord.getEventType())) {
                         previousUsageRecord.setAverageConcurrentConnections(0.0);
                     } else {
                         previousUsageRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(previousUsageRecord.getAverageConcurrentConnections(), oldNumPolls, usageEventEntry.getLastConcurrentConnections()));
@@ -131,7 +131,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
                     previousUsageRecord.setEndTime(eventTime);
                 }
                 if (usageEventEntry.getLastConcurrentConnectionsSsl() != null) {
-                    if(previousUsageRecord.getEventType().equals(UsageEvent.SSL_OFF.name())) {
+                    if(UsageEvent.SSL_OFF.name().equals(previousUsageRecord.getEventType())) {
                         previousUsageRecord.setAverageConcurrentConnectionsSsl(0.0);
                     } else {
                         previousUsageRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(previousUsageRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, usageEventEntry.getLastConcurrentConnectionsSsl()));
