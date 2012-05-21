@@ -659,6 +659,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (queueLb.getProtocol() != LoadBalancerProtocol.HTTP) {
                 throw new BadRequestException("Content caching can only be enabled for HTTP loadbalancers.");
             }
+        } else if (queueLb.isContentCaching() == null) {
+            queueLb.setContentCaching(false);
         }
     }
 
