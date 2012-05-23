@@ -33,7 +33,7 @@ public class NodeMetadataRepository {
 
         for (NodeMeta meta : metas) {
             meta.setNode(node);
-            newMetas.add(meta);
+            newMetas.add(entityManager.merge(meta));
         }
 
         node.getNodeMetadata().addAll(newMetas);

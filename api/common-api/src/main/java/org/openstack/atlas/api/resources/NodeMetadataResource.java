@@ -47,9 +47,9 @@ public class NodeMetadataResource extends CommonDependencyProvider {
 
         Metadata retNodeMetadata = new Metadata();
         try {
-        for (org.openstack.atlas.service.domain.entities.NodeMeta meta : nodeMetadataService.createNodeMetadata(accountId, loadbalancerId, nodeId, domainNodeMetas)) {
-            retNodeMetadata.getMetas().add(dozerMapper.map(meta, Meta.class));
-        }
+            for (org.openstack.atlas.service.domain.entities.NodeMeta meta : nodeMetadataService.createNodeMetadata(accountId, loadbalancerId, nodeId, domainNodeMetas)) {
+                retNodeMetadata.getMetas().add(dozerMapper.map(meta, Meta.class));
+            }
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
