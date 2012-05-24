@@ -16,6 +16,7 @@ import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.SslTerminationRepository;
+import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl;
 
 import java.util.HashSet;
@@ -31,6 +32,7 @@ public class SslTerminationImplTest {
         LoadBalancerRepository lbRepository;
         SslTerminationRepository sslTerminationRepository;
         SslTerminationService sslTerminationService;
+        LoadBalancerService loadBalancerService;
         LoadBalancer lb;
         LoadBalancer lb2;
         LoadBalancerJoinVip lbjv;
@@ -44,6 +46,7 @@ public class SslTerminationImplTest {
             lbRepository = mock(LoadBalancerRepository.class);
             sslTerminationRepository = mock(SslTerminationRepository.class);
             sslTerminationService = new SslTerminationServiceImpl();
+            loadBalancerService = new LoadBalancerServiceImpl();
         }
 
         @Before
