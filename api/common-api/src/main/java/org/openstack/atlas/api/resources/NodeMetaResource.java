@@ -56,7 +56,7 @@ public class NodeMetaResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entities.NodeMeta domainNodeMeta = dozerMapper.map(callNodeMeta, org.openstack.atlas.service.domain.entities.NodeMeta.class);
             Meta Meta = dozerMapper.map(nodeMetadataService.updateNodeMeta(accountId, loadbalancerId, nodeId, domainNodeMeta), Meta.class);
 
-            return Response.status(Response.Status.ACCEPTED).entity(Meta).build();
+            return Response.status(Response.Status.OK).entity(Meta).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
@@ -73,7 +73,7 @@ public class NodeMetaResource extends CommonDependencyProvider {
             nodeMetadataService.prepareForNodeMetadataDeletion(accountId, loadbalancerId, nodeId, ids);
             nodeMetadataService.deleteNodeMetadata(node, ids);
 
-            return Response.status(Response.Status.ACCEPTED).build();
+            return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
