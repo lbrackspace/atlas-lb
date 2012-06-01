@@ -53,7 +53,7 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
-        return Response.status(Response.Status.OK).entity(retNodeMetadata).build();
+        return Response.status(Response.Status.ACCEPTED).entity(retNodeMetadata).build();
     }
 
     @GET
@@ -100,7 +100,7 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
         }
-        return Response.status(200).build();
+        return Response.status(Response.Status.ACCEPTED).build();
     }
 
     @Path("{id: [-+]?[1-9][0-9]*}")
