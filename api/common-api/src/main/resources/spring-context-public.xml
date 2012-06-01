@@ -57,7 +57,8 @@
         <property name="algorithmsService" ref="algorithmService"/>
         <property name="protocolsService" ref="protocolsService"/>
         <property name="virtualIpService" ref="virtualIpService"/>
-        <property name="metadataService" ref="metadataService"/>
+        <property name="loadbalancerMetadataService" ref="loadbalancerMetadataService"/>
+        <property name="nodeMetadataService" ref="nodeMetadataService"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="accessListService" ref="accessListService"/>
         <property name="allowedDomainsService" ref="allowedDomainsService"/>
@@ -120,7 +121,7 @@
                         <property name="connectionThrottleResource" ref="connectionThrottleResource"/>
                         <property name="contentCachingResource" ref="contentCachingResource"/>
                         <property name="healthMonitorResource" ref="healthMonitorResource"/>
-                        <property name="metadataResource" ref="metadataResource"/>
+                        <property name="loadbalancerMetadataResource" ref="loadbalancerMetadataResource"/>
                         <property name="usageResource" ref="usageResource"/>
                         <property name="errorpageResource" ref="errorpageResource"/>
                         <property name="sslTerminationResource" ref="sslTerminationResource"/>
@@ -172,7 +173,19 @@
         <property name="nodeResource">
             <bean class="org.openstack.atlas.api.resources.NodeResource"
                   parent="commonDependencyProvider"
-                  scope="request"/>
+                  scope="request">
+            <property name="nodeMetadataResource">
+                <bean class="org.openstack.atlas.api.resources.NodeMetadataResource"
+                      parent="commonDependencyProvider"
+                      scope="request">
+                    <property name="nodeMetaResource">
+                        <bean class="org.openstack.atlas.api.resources.NodeMetaResource"
+                              parent="commonDependencyProvider"
+                              scope="request"/>
+                    </property>
+                </bean>
+            </property>
+            </bean>
         </property>
     </bean>
     <bean name="virtualIpsResource"
@@ -207,12 +220,12 @@
           class="org.openstack.atlas.api.resources.HealthMonitorResource"
           parent="commonDependencyProvider"
           scope="request"/>
-    <bean name="metadataResource"
-          class="org.openstack.atlas.api.resources.MetadataResource"
+    <bean name="loadbalancerMetadataResource"
+          class="org.openstack.atlas.api.resources.LoadbalancerMetadataResource"
           parent="commonDependencyProvider"
           scope="request">
-        <property name="metaResource">
-            <bean class="org.openstack.atlas.api.resources.MetaResource"
+        <property name="loadbalancerMetaResource">
+            <bean class="org.openstack.atlas.api.resources.LoadbalancerMetaResource"
                   parent="commonDependencyProvider"
                   scope="request"/>
         </property>

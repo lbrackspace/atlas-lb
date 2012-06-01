@@ -18,29 +18,30 @@ public class MetaValidator implements ResourceValidator<Meta> {
 
     public MetaValidator() {
         validator = build(new ValidatorBuilder<Meta>(Meta.class) {
+
             {
                 // SHARED EXPECTATIONS
-                result(validationTarget().getId()).must().not().exist().withMessage("Meta id cannot be modified.");
-                result(validationTarget().getKey()).if_().exist().then().must().adhereTo(new MustHaveLengthVerifier(MAX_KEY_LENGTH)).withMessage(String.format("Meta key must not exceed %d characters.", MAX_KEY_LENGTH));
-                result(validationTarget().getValue()).if_().exist().then().must().adhereTo(new MustHaveLengthVerifier(MAX_VALUE_LENGTH)).withMessage(String.format("Meta value must not exceed %d characters.", MAX_VALUE_LENGTH));
+                result(validationTarget().getId()).must().not().exist().withMessage("Must not specify an id for node meta data");
+                result(validationTarget().getKey()).if_().exist().then().must().adhereTo(new MustHaveLengthVerifier(MAX_KEY_LENGTH)).withMessage(String.format("Node meta key must not exceed %d characters.", MAX_KEY_LENGTH));
+                result(validationTarget().getValue()).if_().exist().then().must().adhereTo(new MustHaveLengthVerifier(MAX_VALUE_LENGTH)).withMessage(String.format("Node meta value must not exceed %d characters.", MAX_VALUE_LENGTH));
 
                 // POST EXPECTATIONS
-                result(validationTarget().getKey()).must().exist().forContext(POST).withMessage("Must provide a key for the metadata item.");
-                result(validationTarget().getKey()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a key for the metadata item.");
-                result(validationTarget().getValue()).must().exist().forContext(POST).withMessage("Must provide a value for the metadata item.");
-                result(validationTarget().getValue()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a value for the metadata item.");
+                result(validationTarget().getKey()).must().exist().forContext(POST).withMessage("Must provide a key for the node metadata item.");
+                result(validationTarget().getKey()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a key for the node metadata item.");
+                result(validationTarget().getValue()).must().exist().forContext(POST).withMessage("Must provide a value for the node metadata item.");
+                result(validationTarget().getValue()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a value for the node metadata item.");
 
                 // PUT EXPECTATIONS
-                result(validationTarget().getKey()).must().not().exist().forContext(PUT).withMessage("Meta key field cannot be modified.");
-                result(validationTarget().getValue()).must().exist().forContext(PUT).withMessage("Must provide a value to update for the metadata item.");
-                result(validationTarget().getValue()).must().not().beEmptyOrNull().forContext(PUT).withMessage("Must provide a value for the metadata item.");
+                result(validationTarget().getKey()).must().not().exist().forContext(PUT).withMessage("Node meta key field cannot be modified.");
+                result(validationTarget().getValue()).must().exist().forContext(PUT).withMessage("Must provide a value to update for the node metadata item.");
+                result(validationTarget().getValue()).must().not().beEmptyOrNull().forContext(PUT).withMessage("Must provide a value for the node metadata item.");
             }
         });
     }
 
     @Override
-    public ValidatorResult validate(Meta meta, Object context) {
-        ValidatorResult result = validator.validate(meta, context);
+    public ValidatorResult validate(Meta objectToValidate, Object context) {
+        ValidatorResult result = validator.validate(objectToValidate, context);
         return ValidatorUtilities.removeEmptyMessages(result);
     }
 
@@ -48,4 +49,5 @@ public class MetaValidator implements ResourceValidator<Meta> {
     public Validator<Meta> getValidator() {
         return validator;
     }
+
 }

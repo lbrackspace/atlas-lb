@@ -2,6 +2,7 @@ package org.openstack.atlas.service.domain.entities;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @javax.persistence.Entity
 @Table(name = "node")
@@ -11,6 +12,10 @@ public class Node extends Entity implements Serializable {
     @ManyToOne
     @JoinColumn(name = "loadbalancer_id")
     private LoadBalancer loadbalancer;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "node", fetch = FetchType.EAGER)
+    @OrderBy("id")
+    private List<NodeMeta> nodeMetadata;
 
     @Column(name = "ip_address", length = 39)
     private String ipAddress;
@@ -86,6 +91,14 @@ public class Node extends Entity implements Serializable {
 
     public void setStatus(NodeStatus status) {
         this.status = status;
+    }
+
+    public List<NodeMeta> getNodeMetadata() {
+        return nodeMetadata;
+    }
+
+    public void setNodeMetadata(List<NodeMeta> nodeMetadataetadata) {
+        this.nodeMetadata = nodeMetadataetadata;
     }
 
     public boolean isNew() {

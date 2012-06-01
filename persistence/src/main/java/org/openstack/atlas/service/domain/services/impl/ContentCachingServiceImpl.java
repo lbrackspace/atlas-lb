@@ -30,17 +30,17 @@ public class ContentCachingServiceImpl extends BaseService implements ContentCac
         LOG.debug("Entering " + getClass());
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(queueLb.getId(), queueLb.getAccountId());
 
+        if (queueLb.isContentCaching() && dbLoadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
+            String msg ="Content caching cannot be enabled for non HTTP load balancers.";
+            LOG.error(msg);
+            throw new BadRequestException(msg);
+        }
+
         LOG.debug("Updating the lb status to pending_update");
         if(!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
-        }
-
-        if (queueLb.isContentCaching() && dbLoadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
-            String msg ="Content caching cannot be enabled for non HTTP load balancers.";
-            LOG.error(msg);
-            throw new BadRequestException(msg);
         }
 
         dbLoadBalancer.setContentCaching(queueLb.isContentCaching());

@@ -222,11 +222,11 @@
         </field>
         <field>
             <a>metadata</a>
-            <b>metadata</b>
+            <b>loadbalancerMetadata</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</a-hint>
-            <b-hint>org.openstack.atlas.service.domain.entities.Meta</b-hint>
+            <b-hint>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</b-hint>
         </field>
-        <field>
+        <field map-id="HIDE_NODE_META">
             <a>nodes</a>
             <b>nodes</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Node</a-hint>
@@ -304,16 +304,43 @@
 
     <mapping map-null="false">
         <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</class-a>
-        <class-b>org.openstack.atlas.service.domain.entities.Meta</class-b>
+        <class-b>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</class-b>
     </mapping>
 
     <mapping map-null="false">
-        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Node</class-a>
+        <class-a bean-factory="org.openstack.atlas.api.mapper.dozer.factory.NodeFactory">org.openstack.atlas.docs.loadbalancers.api.v1.Node</class-a>
         <class-b>org.openstack.atlas.service.domain.entities.Node</class-b>
         <field>
             <a>address</a>
             <b>ipAddress</b>
         </field>
+        <field>
+            <a>metadata</a>
+            <b>nodeMetadata</b>
+        </field>
+    </mapping>
+    
+    <mapping map-null="false" map-id="HIDE_NODE_META">
+        <class-a>org.openstack.atlas.service.domain.entities.Node</class-a>
+        <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.NodeFactory">org.openstack.atlas.docs.loadbalancers.api.v1.Node</class-b>
+        <field>
+            <a>ipAddress</a>
+            <b>address</b>
+        </field>
+        <field-exclude>
+            <a>metadata</a>
+            <b>nodeMetadata</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.NodeMeta</class-b>
+    </mapping>
+
+    <mapping map-null="false" map-id="NODE_META_DATA">
+        <class-a>org.openstack.atlas.service.domain.entities.NodeMeta</class-a>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</class-b>
     </mapping>
 
     <mapping map-null="false" wildcard="false">

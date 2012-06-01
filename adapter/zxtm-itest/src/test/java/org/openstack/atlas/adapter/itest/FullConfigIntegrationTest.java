@@ -65,7 +65,7 @@ public class FullConfigIntegrationTest extends ZeusTestBase {
             removeLoadBalancer();
             zxtmAdapter.createLoadBalancer(config, lb);
             Thread.sleep(1000); // TODO: Verify settings here
-            removeLoadBalancer();
+//            removeLoadBalancer();
         } catch (ObjectDoesNotExist odne) {
             // Ignore
         } catch (Exception e) {

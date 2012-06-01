@@ -10,19 +10,12 @@ import org.openstack.atlas.service.domain.entities.HealthMonitorType;
 import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.Meta;
+import org.openstack.atlas.service.domain.entities.LoadbalancerMeta;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeCondition;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
-import org.openstack.atlas.service.domain.events.entities.CategoryType;
-import org.openstack.atlas.service.domain.events.entities.EventSeverity;
-import org.openstack.atlas.service.domain.events.entities.EventType;
-import org.openstack.atlas.service.domain.events.entities.LoadBalancerEvent;
-import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent;
-import org.openstack.atlas.service.domain.events.pojos.AccountLoadBalancerServiceEvents;
-import org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents;
 import org.dozer.DozerBeanMapper;
 import org.junit.Assert;
 import org.junit.Before;
@@ -172,7 +165,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
         @Test
         public void should_map_metadata_to_null_if_null() {
-            loadBalancer.setMetadata(null);
+            loadBalancer.setLoadbalancerMetadata(null);
             dataModelLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class);
             Assert.assertNull(dataModelLoadBalancer.getMetadata());
         }
@@ -582,18 +575,18 @@ public class DomainToDataModelLoadBalancerMapperTest {
         loadBalancer.setProtocol(LoadBalancerProtocol.IMAPv4);
         loadBalancer.setConnectionLogging(true);
 
-        final Set<Meta> metaData = new HashSet<Meta>();
-        final Meta meta1 = new Meta();
-        meta1.setId(991);
-        meta1.setKey("metaKey1");
-        meta1.setValue("metaValue1");
-        metaData.add(meta1);
-        final Meta meta2 = new Meta();
-        meta2.setId(992);
-        meta2.setKey("metaKey2");
-        meta2.setValue("metaValue2");
-        metaData.add(meta2);
-        loadBalancer.setMetadata(metaData);
+        final Set<LoadbalancerMeta> loadbalancerMetaData = new HashSet<LoadbalancerMeta>();
+        final LoadbalancerMeta loadbalancerMeta1 = new LoadbalancerMeta();
+        loadbalancerMeta1.setId(991);
+        loadbalancerMeta1.setKey("metaKey1");
+        loadbalancerMeta1.setValue("metaValue1");
+        loadbalancerMetaData.add(loadbalancerMeta1);
+        final LoadbalancerMeta loadbalancerMeta2 = new LoadbalancerMeta();
+        loadbalancerMeta2.setId(992);
+        loadbalancerMeta2.setKey("metaKey2");
+        loadbalancerMeta2.setValue("metaValue2");
+        loadbalancerMetaData.add(loadbalancerMeta2);
+        loadBalancer.setLoadbalancerMetadata(loadbalancerMetaData);
 
         final Set<Node> hashSet = new HashSet<Node>();
         final Node node1 = new Node();

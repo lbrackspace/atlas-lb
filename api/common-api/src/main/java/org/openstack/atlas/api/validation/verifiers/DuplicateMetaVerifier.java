@@ -10,7 +10,7 @@ public class DuplicateMetaVerifier implements Verifier<List<Meta>> {
 
     public VerifierResult verify(List<Meta> metaList) {
         Set<String> keys = new HashSet<String>();
-        
+
         if(metaList == null) {
             return new VerifierResult(true); // Don't flag the user for duplicate metaList when the metaList must not be empty verifier already flagged the user.
         }

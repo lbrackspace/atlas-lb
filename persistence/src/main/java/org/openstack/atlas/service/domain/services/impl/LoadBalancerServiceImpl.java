@@ -7,10 +7,7 @@ import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
 import org.openstack.atlas.service.domain.services.*;
-import org.openstack.atlas.service.domain.services.helpers.AlertType;
-import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
-import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
-import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.openstack.atlas.service.domain.services.helpers.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
@@ -24,9 +21,7 @@ import java.util.*;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.BUILD;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DELETED;
-import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
-import static org.openstack.atlas.service.domain.entities.SessionPersistence.NONE;
-import static org.openstack.atlas.service.domain.entities.SessionPersistence.SOURCE_IP;
+import static org.openstack.atlas.service.domain.entities.SessionPersistence.*;
 
 @Service
 public class LoadBalancerServiceImpl extends BaseService implements LoadBalancerService {
@@ -37,6 +32,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private HostService hostService;
     private NodeService nodeService;
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+
 
     @Required
     public void setNotificationService(NotificationService notificationService) {
@@ -222,6 +218,18 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 //            SslTerminationHelper.isProtocolSecure(loadBalancer);
         }
 
+        LOG.info("Verifying unique ports against SSL termination securePort ");
+        if (dbLoadBalancer.hasSsl()) {
+            SslTermination ssl = dbLoadBalancer.getSslTermination();
+            if (ssl.getSecurePort() != loadBalancer.getPort()) {
+                LOG.info(String.format("Load balancer port:%d  and SSL Termination port:%d are unique, continue...", loadBalancer.getPort(), ssl.getSecurePort()));
+            } else {
+                LOG.error("Cannot update load balancer port as it is currently in use by ssl termination.");
+                throw new BadRequestException(String.format("Port currently assigned to SSL termination for this load balancer. Please try another port."));
+            }
+        }
+
+
         LOG.debug("Updating the lb status to pending_update");
         if (!testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE)) {
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
@@ -239,6 +247,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 throw new BadRequestException(String.format("Port currently assigned to one of the virtual ips. Please try another port."));
             }
         }
+
 
         if (loadBalancer.getName() != null && !loadBalancer.getName().equals(dbLoadBalancer.getName())) {
             LOG.debug("Updating loadbalancer name to " + loadBalancer.getName());
@@ -660,6 +669,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (queueLb.getProtocol() != LoadBalancerProtocol.HTTP) {
                 throw new BadRequestException("Content caching can only be enabled for HTTP loadbalancers.");
             }
+        } else if (queueLb.isContentCaching() == null) {
+            queueLb.setContentCaching(false);
         }
     }
 

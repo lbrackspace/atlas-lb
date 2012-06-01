@@ -19,124 +19,124 @@ public class MetaValidatorTest {
 
     public static class WhenValidatingPost {
 
-        private Meta meta;
+        private Meta Meta;
         private MetaValidator validator;
 
         @Before
         public void standUp() {
             validator = new MetaValidator();
 
-            meta = new Meta();
-            meta.setKey("metaKey1");
-            meta.setValue("metaValue1");
+            Meta = new Meta();
+            Meta.setKey("NodeMetaKey1");
+            Meta.setValue("NodeMetaValue1");
         }
 
         @Test
-        public void shouldAcceptValidMeta() {
-            assertTrue(validator.validate(meta, POST).passedValidation());
+        public void shouldAcceptValidNodeMeta() {
+            assertTrue(validator.validate(Meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenIdIsSet() {
-            meta.setId(1234);
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            Meta.setId(1234);
+            assertFalse(validator.validate(Meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenKeyIsNull() {
-            meta.setKey(null);
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            Meta.setKey(null);
+            assertFalse(validator.validate(Meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenKeyIsEmpty() {
-            meta.setKey("");
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            Meta.setKey("");
+            assertFalse(validator.validate(Meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsNull() {
-            meta.setValue(null);
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            Meta.setValue(null);
+            assertFalse(validator.validate(Meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsEmpty() {
-            meta.setValue("");
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            Meta.setValue("");
+            assertFalse(validator.validate(Meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenKeyIsEqualToMaxLength() {
-            meta.setKey(createStringOfLength(MAX_KEY_LENGTH));
-            assertTrue(validator.validate(meta, POST).passedValidation());
+            Meta.setKey(createStringOfLength(MAX_KEY_LENGTH));
+            assertTrue(validator.validate(Meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenKeyIsLongerThanMaxLength() {
-            meta.setKey(createStringOfLength(MAX_KEY_LENGTH + 1));
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            Meta.setKey(createStringOfLength(MAX_KEY_LENGTH + 1));
+            assertFalse(validator.validate(Meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsEqualToMaxLength() {
-            meta.setValue(createStringOfLength(MAX_VALUE_LENGTH));
-            assertTrue(validator.validate(meta, POST).passedValidation());
+            Meta.setValue(createStringOfLength(MAX_VALUE_LENGTH));
+            assertTrue(validator.validate(Meta, POST).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsLongerThanMaxLength() {
-            meta.setValue(createStringOfLength(MAX_VALUE_LENGTH + 1));
-            assertFalse(validator.validate(meta, POST).passedValidation());
+            Meta.setValue(createStringOfLength(MAX_VALUE_LENGTH + 1));
+            assertFalse(validator.validate(Meta, POST).passedValidation());
         }
     }
 
     public static class WhenValidatingPut {
 
-        private Meta meta;
+        private Meta Meta;
         private MetaValidator validator;
 
         @Before
         public void standUp() {
             validator = new MetaValidator();
 
-            meta = new Meta();
-            meta.setValue("metaValue1");
+            Meta = new Meta();
+            Meta.setValue("NodeMetaValue1");
         }
 
         @Test
-        public void shouldAcceptValidMeta() {
-            assertTrue(validator.validate(meta, PUT).passedValidation());
+        public void shouldAcceptValidNodeMeta() {
+            assertTrue(validator.validate(Meta, PUT).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenIdIsSet() {
-            meta.setId(1234);
-            assertFalse(validator.validate(meta, PUT).passedValidation());
+            Meta.setId(1234);
+            assertFalse(validator.validate(Meta, PUT).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsNull() {
-            meta.setValue(null);
-            assertFalse(validator.validate(meta, PUT).passedValidation());
+            Meta.setValue(null);
+            assertFalse(validator.validate(Meta, PUT).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsEmpty() {
-            meta.setValue("");
-            assertFalse(validator.validate(meta, PUT).passedValidation());
+            Meta.setValue("");
+            assertFalse(validator.validate(Meta, PUT).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsEqualToMaxLength() {
-            meta.setValue(createStringOfLength(MAX_VALUE_LENGTH));
-            assertTrue(validator.validate(meta, PUT).passedValidation());
+            Meta.setValue(createStringOfLength(MAX_VALUE_LENGTH));
+            assertTrue(validator.validate(Meta, PUT).passedValidation());
         }
 
         @Test
         public void shouldRejectWhenValueIsLongerThanMaxLength() {
-            meta.setValue(createStringOfLength(MAX_VALUE_LENGTH + 1));
-            assertFalse(validator.validate(meta, PUT).passedValidation());
+            Meta.setValue(createStringOfLength(MAX_VALUE_LENGTH + 1));
+            assertFalse(validator.validate(Meta, PUT).passedValidation());
         }
     }
 

@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.services;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.AccountLimitRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
@@ -196,7 +197,7 @@ public class LoadBalancerServiceImplTest {
         LoadBalancerProtocolObject defaultProtocol;
 
         @Before
-        public void standUp() throws EntityNotFoundException {
+        public void standUp() throws EntityNotFoundException, UnprocessableEntityException {
             lb = new LoadBalancer();
             lbRepository = mock(LoadBalancerRepository.class);
             lbService = new LoadBalancerServiceImpl();
@@ -215,9 +216,10 @@ public class LoadBalancerServiceImplTest {
             lb.setStatus(LoadBalancerStatus.ACTIVE);
 
 
-
             defaultProtocol = new LoadBalancerProtocolObject(LoadBalancerProtocol.HTTP, "HTTP Protocol", 80, true);
             when(lbRepository.getByIdAndAccountId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(lb);
+//            when(lbRepository.testAndSetStatus(Matchers.<Integer>any(), Matchers.<Integer>any(),Matchers.<LoadBalancerStatus>any(), Matchers.<Boolean>any())).thenReturn(true);
+
         }
 
         @Test(expected = BadRequestException.class)
@@ -225,6 +227,17 @@ public class LoadBalancerServiceImplTest {
             LoadBalancer loadBalancer = new LoadBalancer();
             loadBalancer.setProtocol(LoadBalancerProtocol.HTTPS);
             loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+
+            lbService.prepareForUpdate(loadBalancer);
+
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldFailWhenUpdatingPortToSSLPort() throws Exception {
+
+            LoadBalancer loadBalancer = new LoadBalancer();
+            loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+            loadBalancer.setPort(445);
 
             lbService.prepareForUpdate(loadBalancer);
 

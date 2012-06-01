@@ -3,23 +3,13 @@ package org.openstack.atlas.api.mapper.dozer;
 import org.dozer.DozerBeanMapper;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
-import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
-import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitorType;
-import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NodeStatus;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
-import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.AccessListType;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
+import org.openstack.atlas.service.domain.entities.VirtualIpType;
 
 import java.util.GregorianCalendar;
 
@@ -56,12 +46,12 @@ public class DataModelToDomainLoadBalancerMapperTest {
             conLog.setEnabled(true);
             loadBalancer.setConnectionLogging(conLog);
 
-            Meta meta1 = new Meta();
+            org.openstack.atlas.docs.loadbalancers.api.v1.Meta meta1 = new org.openstack.atlas.docs.loadbalancers.api.v1.Meta();
             meta1.setId(4100);
             meta1.setKey("metaKey1");
             meta1.setValue("metaValue1");
 
-            Meta meta2 = new Meta();
+            org.openstack.atlas.docs.loadbalancers.api.v1.Meta meta2 = new org.openstack.atlas.docs.loadbalancers.api.v1.Meta();
             meta2.setId(4101);
             meta2.setKey("metaKey2");
             meta2.setValue("metaValue2");
@@ -153,9 +143,9 @@ public class DataModelToDomainLoadBalancerMapperTest {
 
         @Test
         public void should_map_enumerations_on_the_loadbalancer() {
-            Assert.assertEquals(LoadBalancerProtocol.IMAPv4,
+            Assert.assertEquals(org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.IMAPv4,
                     domainLoadBalancer.getProtocol());
-            Assert.assertEquals(LoadBalancerAlgorithm.ROUND_ROBIN,
+            Assert.assertEquals(org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.ROUND_ROBIN,
                     domainLoadBalancer.getAlgorithm());
             Assert.assertEquals(
                     org.openstack.atlas.service.domain.entities.LoadBalancerStatus.SUSPENDED,
@@ -164,15 +154,15 @@ public class DataModelToDomainLoadBalancerMapperTest {
 
         @Test
         public void should_map_metadata_across_the_two_load_balancers_and_the_properties_of_individual_meta() {
-            Assert.assertEquals(2, domainLoadBalancer.getMetadata().size());
+            Assert.assertEquals(2, domainLoadBalancer.getLoadbalancerMetadata().size());
 
-            for (org.openstack.atlas.service.domain.entities.Meta meta : domainLoadBalancer.getMetadata()) {
-                if (!(meta.getId() == 4100 || meta.getId() == 4101))
-                    Assert.fail("Did not map the id of the meta correctly");
-                if (!(meta.getKey().equals("metaKey1") || meta.getKey().equals("metaKey2")))
-                    Assert.fail("Did not map the key of the meta correctly");
-                if (!(meta.getValue().equals("metaValue1") || meta.getValue().equals("metaValue2")))
-                    Assert.fail("Did not map the value of the meta correctly");
+            for (org.openstack.atlas.service.domain.entities.LoadbalancerMeta loadbalancerMeta : domainLoadBalancer.getLoadbalancerMetadata()) {
+                if (!(loadbalancerMeta.getId() == 4100 || loadbalancerMeta.getId() == 4101))
+                    Assert.fail("Did not map the id of the loadbalancerMeta correctly");
+                if (!(loadbalancerMeta.getKey().equals("metaKey1") || loadbalancerMeta.getKey().equals("metaKey2")))
+                    Assert.fail("Did not map the key of the loadbalancerMeta correctly");
+                if (!(loadbalancerMeta.getValue().equals("metaValue1") || loadbalancerMeta.getValue().equals("metaValue2")))
+                    Assert.fail("Did not map the value of the loadbalancerMeta correctly");
             }
         }
 

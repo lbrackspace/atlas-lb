@@ -17,8 +17,8 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
-public class MetaResource extends CommonDependencyProvider {
-    private final Log LOG = LogFactory.getLog(MetaResource.class);
+public class LoadbalancerMetaResource extends CommonDependencyProvider {
+    private final Log LOG = LogFactory.getLog(LoadbalancerMetaResource.class);
     private HttpHeaders requestHeaders;
     private Integer accountId;
     private Integer loadBalancerId;
@@ -27,11 +27,11 @@ public class MetaResource extends CommonDependencyProvider {
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON})
     public Response retrieveMeta() {
-        org.openstack.atlas.service.domain.entities.Meta domainMeta;
-        org.openstack.atlas.docs.loadbalancers.api.v1.Meta apiMeta;
+        org.openstack.atlas.service.domain.entities.LoadbalancerMeta domainLoadbalancerMeta;
+        Meta apiMeta;
         try {
-            domainMeta = metadataService.getMeta(accountId, loadBalancerId, id);
-            apiMeta = dozerMapper.map(domainMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class);
+            domainLoadbalancerMeta = loadbalancerMetadataService.getLoadbalancerMeta(accountId, loadBalancerId, id);
+            apiMeta = dozerMapper.map(domainLoadbalancerMeta, org.openstack.atlas.docs.loadbalancers.api.v1.Meta.class);
             return Response.status(Response.Status.OK).entity(apiMeta).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
@@ -55,7 +55,7 @@ public class MetaResource extends CommonDependencyProvider {
             LoadBalancer domainLb = dozerMapper.map(apiLb, LoadBalancer.class);
             domainLb.setId(loadBalancerId);
             domainLb.setAccountId(accountId);
-            metadataService.updateMeta(domainLb);
+            loadbalancerMetadataService.updateLoadbalancerMeta(domainLb);
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
@@ -65,7 +65,7 @@ public class MetaResource extends CommonDependencyProvider {
     @DELETE
     public Response deleteMeta() {
         try {
-            metadataService.deleteMeta(accountId, loadBalancerId, id);
+            loadbalancerMetadataService.deleteLoadbalancerMeta(accountId, loadBalancerId, id);
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);

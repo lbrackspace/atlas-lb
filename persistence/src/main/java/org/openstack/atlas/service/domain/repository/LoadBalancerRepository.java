@@ -1,6 +1,5 @@
 package org.openstack.atlas.service.domain.repository;
 
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.service.domain.entities.*;
 
 import org.openstack.atlas.service.domain.entities.AccessList;
@@ -8,7 +7,7 @@ import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.service.domain.entities.HealthMonitor;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.Meta;
+import org.openstack.atlas.service.domain.entities.LoadbalancerMeta;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
 import org.openstack.atlas.service.domain.entities.SslTermination;
@@ -756,9 +755,9 @@ public class LoadBalancerRepository {
             }
         }
 
-        if (loadBalancer.getMetadata() != null) {
-            for (Meta meta : loadBalancer.getMetadata()) {
-                meta.setLoadbalancer(loadBalancer);
+        if (loadBalancer.getLoadbalancerMetadata() != null) {
+            for (LoadbalancerMeta loadbalancerMeta : loadBalancer.getLoadbalancerMetadata()) {
+                loadbalancerMeta.setLoadbalancer(loadBalancer);
             }
         }
 

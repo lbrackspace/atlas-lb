@@ -35,7 +35,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     private ConnectionLoggingResource connectionLoggingResource;
     private ContentCachingResource contentCachingResource;
     private HealthMonitorResource healthMonitorResource;
-    private MetadataResource metadataResource;
+    private LoadbalancerMetadataResource loadbalancerMetadataResource;
     private NodesResource nodesResource;
     private SessionPersistenceResource sessionPersistenceResource;
     private ConnectionThrottleResource connectionThrottleResource;
@@ -46,6 +46,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     private int id;
     private Integer accountId;
     private HttpHeaders requestHeaders;
+    private NodeMetadataResource nodeMetadataResource;
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
@@ -187,11 +188,11 @@ public class LoadBalancerResource extends CommonDependencyProvider {
     }
 
     @Path("metadata")
-    public MetadataResource retrieveMetadataResource() {
-        metadataResource.setRequestHeaders(requestHeaders);
-        metadataResource.setAccountId(accountId);
-        metadataResource.setLoadBalancerId(id);
-        return metadataResource;
+    public LoadbalancerMetadataResource retrieveMetadataResource() {
+        loadbalancerMetadataResource.setRequestHeaders(requestHeaders);
+        loadbalancerMetadataResource.setAccountId(accountId);
+        loadbalancerMetadataResource.setLoadBalancerId(id);
+        return loadbalancerMetadataResource;
     }
 
     @Path("nodes")
@@ -259,8 +260,12 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         this.healthMonitorResource = healthMonitorResource;
     }
 
-    public void setMetadataResource(MetadataResource metadataResource) {
-        this.metadataResource = metadataResource;
+    public void setLoadbalancerMetadataResource(LoadbalancerMetadataResource loadbalancerMetadataResource) {
+        this.loadbalancerMetadataResource = loadbalancerMetadataResource;
+    }
+
+    public void setNodeMetadataResource(NodeMetadataResource nodeMetadataResource) {
+        this.nodeMetadataResource = nodeMetadataResource;
     }
 
     public void setNodesResource(NodesResource nodesResource) {
