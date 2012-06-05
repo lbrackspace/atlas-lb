@@ -11,6 +11,6 @@
         <property name="location" value="file:/etc/openstack/atlas/public-api.conf"/>
     </bean>
     <bean id="configuration"
-          class="org.openstack.atlas.atom.util.AtomHopperConfiguration"
+          class="org.openstack.atlas.atom.config.AtomHopperConfiguration"
           scope="prototype"/>
 </beans>

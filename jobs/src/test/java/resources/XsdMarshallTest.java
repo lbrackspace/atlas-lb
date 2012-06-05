@@ -1,6 +1,8 @@
 package resources;
 
-import com.rackspace.docs.usage.core.V1Element;
+import com.rackspace.docs.core.event.DC;
+import com.rackspace.docs.core.event.EventType;
+import com.rackspace.docs.core.event.V1Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +14,8 @@ import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
 import org.openstack.atlas.atom.util.UUIDUtil;
 import org.openstack.atlas.atom.util.UsageMarshaller;
+import org.w3._2005.atom.Title;
+import org.w3._2005.atom.Type;
 import org.w3._2005.atom.UsageContent;
 
 import javax.xml.XMLConstants;
@@ -49,13 +53,13 @@ public class XsdMarshallTest {
                 //core
                 UsageV1Pojo usageV1 = new UsageV1Pojo();
 //                V1Element usageV1 = new V1Element();
-                usageV1.setDataCenter("DFW");
+                usageV1.setDataCenter(DC.DFW_1);
                 usageV1.setResourceName("LoadBalancer");
                 usageV1.setVersion("1");
                 usageV1.setTenantId("1");
-                usageV1.setServiceCode("lbaas");
                 usageV1.setResourceId("22mfmfnmf");
-                usageV1.setUsageId(uuid.toString());
+                usageV1.setType(EventType.CREATE);
+                usageV1.setId(uuid.toString());
                 Calendar cal = Calendar.getInstance();
                 usageV1.setStartTime(processCalendar(cal.getTimeInMillis()));
                 usageV1.setEndTime(processCalendar(cal.getTimeInMillis()));
@@ -79,12 +83,14 @@ public class XsdMarshallTest {
 
 
                 //Atom specific
-                entry.setTitle("LBAAS");
-                entry.setAuthor("LBAAS");
+                Title title = new Title();
+                title.setType(Type.TEXT);
+                title.setValue("LBAAS");
+                entry.setTitle(title);
 
                 //Unmarshall and verify against schema
                 JAXBContext jc = JAXBContext.newInstance(V1Element.class);
-                Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("src/main/resources/META-INF/xsd/core.xsd"));
+                Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("jobs/src/main/resources/META-INF/xsd/core.xsd"));
                 Unmarshaller unmarshaller = jc.createUnmarshaller();
                 unmarshaller.setSchema(factory);
                 ByteArrayInputStream input = new ByteArrayInputStream(UsageMarshaller.marshallObject(usageV1).getBytes());
@@ -93,7 +99,7 @@ public class XsdMarshallTest {
                 System.out.print(unmarshaller.unmarshal(input));
 
                 UsageContent usageContent = new UsageContent();
-                usageContent.setUsage(usageV1);
+                usageContent.setEvent(usageV1);
 
                 entry.setContent(usageContent);
                 entry.getContent().setType("applicaiton/xml");

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
    This is a 1.0 XML Schema, generated from a 1.1 schema.
    The purpose of the schema is to enable support for XSD 1.0 processors.
@@ -6,13 +6,13 @@
    This schema misses some critical checks that are only performed in the 1.1 version.
    Validation at the usage layer will always use the 1.1 schema.
 -->
-<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:usage="http://docs.rackspace.com/usage/core" xmlns:xerces="http://xerces.apache.org" xmlns:saxon="http://saxon.sf.net/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://docs.rackspace.com/usage/core">
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:event="http://docs.rackspace.com/core/event" xmlns:xerces="http://xerces.apache.org" xmlns:saxon="http://saxon.sf.net/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://docs.rackspace.com/core/event">
 
-    <complexType name="UsageBase" abstract="true">
+    <complexType name="EventBase" abstract="true">
         <annotation>
             <documentation>
                 <html:p>
-                    This is the base type for all usage records.  The
+                    This is the base type for all event records.  The
                     only thing that is required is a version
                     attribute.
                 </html:p>
@@ -22,40 +22,31 @@
             <annotation>
                 <documentation>
                     <html:p>
-                        Usage record version.
+                        Event record version.
                     </html:p>
                 </documentation>
             </annotation>
         </attribute>
     </complexType>
 
-    <complexType name="UsageV1">
+    <complexType name="EventV1">
         <annotation>
             <documentation>
                 <html:p>
-                    Usage information version 1.
+                    Event information version 1.
                 </html:p>
             </documentation>
         </annotation>
         <complexContent>
-            <extension base="usage:UsageBase">
+            <extension base="event:EventBase">
                 <sequence>
-                    <any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+                    <any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
                 </sequence>
                 <attribute name="tenantId" type="xsd:string" use="required">
                     <annotation>
                         <documentation>
                             <html:p>
                                 Identifies the tenant ID.
-                            </html:p>
-                        </documentation>
-                    </annotation>
-                </attribute>
-                <attribute name="serviceCode" type="xsd:string" use="required">
-                    <annotation>
-                        <documentation>
-                            <html:p>
-                                Identifies the product.
                             </html:p>
                         </documentation>
                     </annotation>
@@ -69,60 +60,53 @@
                         </documentation>
                     </annotation>
                 </attribute>
-                <attribute name="usageId" type="usage:UUID" use="required">
+                <attribute name="id" type="event:UUID" use="required">
                     <annotation>
                         <documentation>
                             <html:p>
-                                A GUID identifying the usage record.
+                                A GUID identifying the event record.
                             </html:p>
                         </documentation>
                     </annotation>
                 </attribute>
-                <attribute name="eventType" type="usage:EventType" use="optional" default="EXISTS">
+                <attribute name="type" type="event:EventType" use="required">
                     <annotation>
                         <documentation>
                             <html:p>
-                                Identifies the type of event. For example
-                                CREATE, EXISTS, UPDATE, DELETE, SUSPEND, UNSUSPEND.
-                            </html:p>
-                            <html:p>
-                                The use of the attribute is optional,
-                                however, if the attribute is not
-                                specified "EXISTS" will be assumed.
+                                Identifies the type of event.  If one
+                                of the existing event types don't feed
+                                set this type to EXTENDED and add an
+                                eventType attribute to your product
+                                schema.
                             </html:p>
                         </documentation>
                     </annotation>
                 </attribute>
-                <attribute name="dataCenter" type="xsd:string" use="optional" default="global">
+                <attribute name="dataCenter" type="event:DC" use="optional" default="GLOBAL">
                     <annotation>
                         <documentation>
                             <html:p>
-                                Identifies the datacenter of the resource.
-                                For example DFW3.
-                            </html:p>
-                            <html:p>
-                                The use of the attribute is optional,
-                                however, if the attribute is not
-                                specified "global" will be assumed.
+                                Identifies the datacenter of the
+                                event, for example, DFW3.  The
+                                attribute is optional, if it is not
+                                specified GLOBAL will be assumed.
                             </html:p>
                         </documentation>
                     </annotation>
                 </attribute>
-                <attribute name="region" type="xsd:string" use="optional" default="global">
+                <attribute name="region" type="event:Region" use="optional" default="GLOBAL">
                     <annotation>
                         <documentation>
                             <html:p>
-                                Identifies the region.
-                            </html:p>
-                            <html:p>
-                                The use of the attribute is optional,
-                                however, if the attribute is not
-                                specified "global" will be assumed.
+                                Identifies the region, for example,
+                                DFW.  The attribute is optional, if it
+                                is not specified GLOBAL will be
+                                assumed.
                             </html:p>
                         </documentation>
                     </annotation>
                 </attribute>
-                <attribute name="startTime" type="usage:UTCTime" use="required">
+                <attribute name="startTime" type="event:UTCDateTime" use="optional">
                     <annotation>
                         <documentation>
                             <html:p>
@@ -131,13 +115,25 @@
                         </documentation>
                     </annotation>
                 </attribute>
-                <attribute name="endTime" type="usage:UTCTime" use="optional">
+                <attribute name="endTime" type="event:UTCDateTime" use="optional">
                     <annotation>
                         <documentation>
                             <html:p>
                                 UTC, ISO Format end time.  For an EXISTs
                                 event, the startTime and endTime reflect the
-                                usage duriation for the resource instance.
+                                event duriation for the resource instance.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="eventTime" type="event:UTCDateTime" use="optional">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                UTC, ISO Format event time. The time
+                                when an event occured. Use instead of
+                                startTime and endTime in cases where
+                                the event does not have a range.
                             </html:p>
                         </documentation>
                     </annotation>
@@ -151,7 +147,13 @@
                         </documentation>
                     </annotation>
                 </attribute>
-                
+
+
+
+
+
+
+
             </extension>
         </complexContent>
     </complexType>
@@ -170,7 +172,7 @@
         </restriction>
     </simpleType>
 
-    <simpleType name="UTCTime">
+    <simpleType name="UTCDateTime">
         <annotation>
             <documentation>
                 <html:p>
@@ -185,27 +187,80 @@
             </documentation>
         </annotation>
         <restriction base="xsd:dateTime" vc:minVersion="1.0" vc:maxVersion="1.1"/>
-        
+
     </simpleType>
 
     <simpleType name="EventType">
         <annotation>
             <documentation>
                 <html:p>
-                    The type of usage event.  Possible values are
-                    CREATE, EXISTS, UPDATE, DELETE, SUSPEND,
-                    UNSUSPEND.
+                    The type of event.
                 </html:p>
             </documentation>
         </annotation>
         <restriction base="xsd:string">
             <enumeration value="CREATE"/>
-            <enumeration value="EXISTS"/>
+            <enumeration value="USAGE"/>
             <enumeration value="UPDATE"/>
             <enumeration value="DELETE"/>
             <enumeration value="SUSPEND"/>
             <enumeration value="UNSUSPEND"/>
             <enumeration value="EXTENDED"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="Region">
+        <annotation>
+            <documentation>
+                <html:p>
+                    The region in which the event is
+                    located. GLOBAL implies that the resoure is
+                    regionless.
+                </html:p>
+                <html:p>
+                    Note that the source of truth for this is in the
+                    <html:a href="https://dcwiki.rackspace.com/wiki/Main_Page">DC
+                    Portal</html:a>.
+                </html:p>
+            </documentation>
+        </annotation>
+        <restriction base="xsd:string">
+            <enumeration value="GLOBAL"/>
+            <enumeration value="DFW"/>
+            <enumeration value="HKG"/>
+            <enumeration value="IAD"/>
+            <enumeration value="LON"/>
+            <enumeration value="ORD"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="DC">
+        <annotation>
+            <documentation>
+                <html:p>
+                    The datacenter in which the event is
+                    located. GLOBAL implies that the resoure is
+                    regionless.
+                </html:p>
+                <html:p>
+                    Note that the source of truth for this is in the
+                    <html:a href="https://dcwiki.rackspace.com/wiki/Main_Page">DC
+                    Portal</html:a>.
+                </html:p>
+            </documentation>
+        </annotation>
+        <restriction base="xsd:string">
+            <enumeration value="GLOBAL"/>
+            <enumeration value="DFW1"/>
+            <enumeration value="DFW2"/>
+            <enumeration value="DFW3"/>
+            <enumeration value="HKG1"/>
+            <enumeration value="IAD1"/>
+            <enumeration value="IAD2"/>
+            <enumeration value="IAD3"/>
+            <enumeration value="LON1"/>
+            <enumeration value="LON3"/>
+            <enumeration value="ORD1"/>
         </restriction>
     </simpleType>
 </schema>

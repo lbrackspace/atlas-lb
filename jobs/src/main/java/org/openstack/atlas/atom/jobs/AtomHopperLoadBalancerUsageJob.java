@@ -1,14 +1,16 @@
 package org.openstack.atlas.atom.jobs;
 
-import com.rackspace.docs.usage.core.EventType;
-import com.sun.jersey.api.client.Client;
+import com.rackspace.docs.core.event.DC;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.atom.config.AtomHopperConfiguration;
+import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
-import org.openstack.atlas.atom.util.*;
+import org.openstack.atlas.atom.util.AHUSLUtil;
+import org.openstack.atlas.atom.util.UUIDUtil;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
 import org.openstack.atlas.service.domain.entities.JobName;
@@ -17,20 +19,21 @@ import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.pojos.AccountLoadBalancer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
+import org.openstack.atomhopper.AHUSLClient;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
+import org.w3._2005.atom.Title;
+import org.w3._2005.atom.Type;
 import org.w3._2005.atom.UsageCategory;
 import org.w3._2005.atom.UsageContent;
 
 import javax.ws.rs.core.MediaType;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,12 +45,13 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
     private UsageRepository usageRepository;
 
     private String region = "GLOBAL"; //default..
-    private final String title = "cloudLoadBalancers"; //default..
+    private final String lbaasTitle = "cloudLoadBalancers"; //default..
+    private final String label = "loadBalancerUsage";
     private final String author = "LBAAS"; //default..
     private String configRegion = null;
     private String uri = null;
 
-    Client client;
+    AHUSLClient client;
 
 
     @Override
@@ -68,7 +72,11 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
             //URI from config : atomHopper/USL endpoint
             uri = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
             //Create the threaded client to handle requests...
-            client = ClientUtil.makeHttpClient();
+            try {
+                client = new AHUSLClient(uri);
+            } catch (Exception e) {
+                LOG.info("The client failed to initialize: " + Arrays.toString(e.getStackTrace()));
+            }
 
             //Grab all accounts a begin processing usage...
             List<Integer> accounts = loadBalancerRepository.getAllAccountIds();
@@ -79,31 +87,31 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
                 for (AccountLoadBalancer lb : lbsForAccount) {
                     try {
                         //Retrieve usage for account by lbId
-                        List<Usage> lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), ResponseUtil.getStartCal(), ResponseUtil.getNow());
+                        List<Usage> lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), AHUSLUtil.getStartCal(), AHUSLUtil.getNow());
 
                         //Walk each load balancer usage record...
                         for (Usage usageRecord : lbusage) {
                             if (usageRecord.isNeedsPushed()) {
 
                                 EntryPojo entry = new EntryPojo();
+                                Title title = new Title();
+                                title.setType(Type.TEXT);
+                                title.setValue(lbaasTitle);
                                 entry.setTitle(title);
-                                entry.setAuthor(author);
 
                                 UsageContent usageContent = new UsageContent();
-                                usageContent.setUsage(generateUsageEntry(usageRecord));
+                                usageContent.setEvent(generateUsageEntry(usageRecord));
                                 entry.setContent(usageContent);
                                 entry.getContent().setType(MediaType.APPLICATION_XML);
+
                                 UsageCategory usageCategory = new UsageCategory();
-                                usageCategory.setLabel("loadBalancerUsage");
+                                usageCategory.setLabel(label);
                                 usageCategory.setTerm("plain");
                                 entry.getCategory().add(usageCategory);
 
 
                                 LOG.info(String.format("Uploading to the atomHopper service now..."));
-                                ClientResponse response = client.resource(uri)
-                                        .accept(MediaType.APPLICATION_XML)
-                                        .type(MediaType.APPLICATION_ATOM_XML)
-                                        .post(ClientResponse.class, entry);
+                                ClientResponse response = client.postEntry(entry);
 
                                 //Notify usage if the record was uploaded or not...
                                 if (response.getStatus() == 201) {
@@ -114,15 +122,15 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
                                 }
                                 usageRepository.updatePushedRecord(usageRecord);
 
-                                String body = ResponseUtil.processResponseBody(response);
+                                String body = AHUSLUtil.processResponseBody(response);
                                 LOG.info(String.format("Status=%s\n", response.getStatus()));
                                 LOG.info(String.format("body %s\n", body));
                                 response.close();
                             }
                         }
                     } catch (Throwable t) {
-                        System.out.printf("Exception: %s\n", ResponseUtil.getExtendedStackTrace(t));
-                        LOG.error(String.format("Exception: %s\n", ResponseUtil.getExtendedStackTrace(t)));
+                        System.out.printf("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t));
+                        LOG.error(String.format("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t)));
                     }
                 }
             }
@@ -145,17 +153,17 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
         }
 
         UsageV1Pojo usageV1 = new UsageV1Pojo();
-        usageV1.setRegion(region);
-        usageV1.setServiceCode(title);
+        usageV1.setRegion(AHUSLUtil.mapRegion(region));
 
         usageV1.setVersion(usageRecord.getEntryVersion().toString());
-        usageV1.setStartTime(processCalendar(usageRecord.getStartTime().getTimeInMillis()));
-        usageV1.setEndTime(processCalendar(usageRecord.getEndTime().getTimeInMillis()));
+        usageV1.setStartTime(AHUSLUtil.processCalendar(usageRecord.getStartTime().getTimeInMillis()));
+        usageV1.setEndTime(AHUSLUtil.processCalendar(usageRecord.getEndTime().getTimeInMillis()));
+        usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.data_center)));
 
-        if (mapEventType(usageRecord) == null) {
-            usageV1.setEventType(null);
+        if (AHUSLUtil.mapEventType(usageRecord) == null) {
+            usageV1.setType(null);
         } else {
-            usageV1.setEventType(mapEventType(usageRecord));
+            usageV1.setType(AHUSLUtil.mapEventType(usageRecord));
         }
 
         usageV1.setTenantId(usageRecord.getAccountId().toString());
@@ -163,7 +171,7 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
 
         //Generate UUID
         UUID uuid = UUIDUtil.genUUID(genUUIDString(usageRecord));
-        usageV1.setUsageId(uuid.toString());
+        usageV1.setId(uuid.toString());
 
         //LBAAS specific values
         LBaaSUsagePojo lu = new LBaaSUsagePojo();
@@ -180,30 +188,6 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
 
         usageV1.getAny().add(lu);
         return usageV1;
-    }
-
-    private XMLGregorianCalendar processCalendar(long timeInMillis) throws DatatypeConfigurationException {
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.setTimeInMillis(timeInMillis);
-        DatatypeFactory dtf = DatatypeFactory.newInstance();
-        return dtf.newXMLGregorianCalendar(gc);
-    }
-
-    private EventType mapEventType(Usage usageRecord) throws DatatypeConfigurationException {
-        if (usageRecord.getEventType() != null) {
-            if (usageRecord.getEventType().equals("CREATE_LOADBALANCER")) {
-                return EventType.CREATE;
-            } else if (usageRecord.getEventType().equals("DELETE_LOADBALANCER")) {
-                return EventType.DELETE;
-            } else if (usageRecord.getEventType().equals("SUSPEND_LOADBALANCER")) {
-                return EventType.SUSPEND;
-            } else if (usageRecord.getEventType().equals("UNSUSPEND_LOADBANCER")) {
-                return EventType.UNSUSPEND;
-            } else if (usageRecord.getEventType().equals("UPDATE_LOADBALANCER")) {
-                return EventType.UPDATE;
-            }
-        }
-        return null;
     }
 
     private String genUUIDString(Usage usageRecord) {

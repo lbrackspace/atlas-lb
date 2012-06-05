@@ -6,11 +6,11 @@
     xmlns:lbaas="http://docs.rackspace.com/usage/lbaas"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:html="http://www.w3.org/1999/xhtml"
-    xmlns:usage="http://docs.rackspace.com/usage/core"
+    xmlns:event="http://docs.rackspace.com/core/event"
     xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
     targetNamespace="http://docs.rackspace.com/usage/lbaas">
 
-    <element name="usage" type="lbaas:loadBalancerUsage"/>
+    <element name="event" type="lbaas:loadBalancerUsage"/>
 
     <complexType name="loadBalancerUsage">
         <annotation>

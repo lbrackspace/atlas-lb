@@ -1,4 +1,4 @@
-package org.openstack.atlas.atom.util;
+package org.openstack.atlas.atom.config;
 
 import org.openstack.atlas.osgi.cfg.commons.ApacheCommonsConfiguration;
 public class AtomHopperConfiguration extends ApacheCommonsConfiguration {
