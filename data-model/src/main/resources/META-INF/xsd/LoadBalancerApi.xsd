@@ -96,6 +96,7 @@
         <xsd:attribute name="path" type="xsd:string"/>
         <xsd:attribute name="statusRegex" type="xsd:string"/>
         <xsd:attribute name="bodyRegex" type="xsd:string"/>
+        <xsd:attribute name="hostHeader" type="xsd:string"/>
         <xsd:attribute name="type" type="tns:healthMonitorType"/>
     </xsd:complexType>
 
