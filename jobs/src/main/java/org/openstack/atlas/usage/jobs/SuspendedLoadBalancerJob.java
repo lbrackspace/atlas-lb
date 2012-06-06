@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.usage.helpers.EsbConfiguration;
@@ -51,7 +52,7 @@ public class SuspendedLoadBalancerJob extends Job implements StatefulJob {
             for (LoadBalancer suspendedLoadBalancer : suspendedLoadBalancers) {
                 Usage recentUsage = rollUpUsageRepository.getMostRecentUsageForLoadBalancer(suspendedLoadBalancer.getId());
                 Usage usage  = new Usage();
-                usage.setEventType(LoadBalancerStatus.SUSPENDED.name());
+                usage.setEventType(UsageEvent.SUSPENDED_LOADBALANCER.name());
                 usage.setLoadbalancer(suspendedLoadBalancer);
                 usage.setAccountId(suspendedLoadBalancer.getAccountId());
                 if (recentUsage != null) usage.setTags(recentUsage.getTags());
