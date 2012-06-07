@@ -186,7 +186,7 @@ public class LoadBalancerRepository {
     public List<LoadBalancer> getExpiredLbs() {
         Calendar threeMonthsAgo = Calendar.getInstance();
         threeMonthsAgo.add(Calendar.DATE, -90);
-        String queryStr = "select l from LoadBalancer l where l.status = :status and l.updated <= :threeMonthsAgo";
+        String queryStr = "select l from LoadBalancer l where l.status = :status and l.updated >= :threeMonthsAgo";
 
         Query query = entityManager.createQuery(queryStr);
         query.setParameter("threeMonthsAgo", threeMonthsAgo);
