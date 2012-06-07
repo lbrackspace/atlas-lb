@@ -6,13 +6,18 @@
    This schema misses some critical checks that are only performed in the 1.1 version.
    Validation at the usage layer will always use the 1.1 schema.
 -->
-<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:event="http://docs.rackspace.com/core/event" xmlns:xerces="http://xerces.apache.org" xmlns:saxon="http://saxon.sf.net/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://docs.rackspace.com/core/event">
+<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:event="http://docs.rackspace.com/core/event"
+        xmlns:xerces="http://xerces.apache.org" xmlns:saxon="http://saxon.sf.net/"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified"
+        attributeFormDefault="unqualified" targetNamespace="http://docs.rackspace.com/core/event"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xerces.apache.org ">
 
     <complexType name="EventBase" abstract="true">
         <annotation>
             <documentation>
                 <html:p>
-                    This is the base type for all event records.  The
+                    This is the base type for all event records. The
                     only thing that is required is a version
                     attribute.
                 </html:p>
@@ -73,7 +78,7 @@
                     <annotation>
                         <documentation>
                             <html:p>
-                                Identifies the type of event.  If one
+                                Identifies the type of event. If one
                                 of the existing event types don't feed
                                 set this type to EXTENDED and add an
                                 eventType attribute to your product
@@ -87,7 +92,7 @@
                         <documentation>
                             <html:p>
                                 Identifies the datacenter of the
-                                event, for example, DFW3.  The
+                                event, for example, DFW3. The
                                 attribute is optional, if it is not
                                 specified GLOBAL will be assumed.
                             </html:p>
@@ -99,7 +104,7 @@
                         <documentation>
                             <html:p>
                                 Identifies the region, for example,
-                                DFW.  The attribute is optional, if it
+                                DFW. The attribute is optional, if it
                                 is not specified GLOBAL will be
                                 assumed.
                             </html:p>
@@ -119,7 +124,7 @@
                     <annotation>
                         <documentation>
                             <html:p>
-                                UTC, ISO Format end time.  For an EXISTs
+                                UTC, ISO Format end time. For an EXISTs
                                 event, the startTime and endTime reflect the
                                 event duriation for the resource instance.
                             </html:p>
@@ -147,11 +152,6 @@
                         </documentation>
                     </annotation>
                 </attribute>
-
-
-
-
-
 
 
             </extension>
@@ -220,7 +220,7 @@
                 <html:p>
                     Note that the source of truth for this is in the
                     <html:a href="https://dcwiki.rackspace.com/wiki/Main_Page">DC
-                    Portal</html:a>.
+                        Portal</html:a>.
                 </html:p>
             </documentation>
         </annotation>
@@ -245,7 +245,7 @@
                 <html:p>
                     Note that the source of truth for this is in the
                     <html:a href="https://dcwiki.rackspace.com/wiki/Main_Page">DC
-                    Portal</html:a>.
+                        Portal</html:a>.
                 </html:p>
             </documentation>
         </annotation>
@@ -263,4 +263,4 @@
             <enumeration value="ORD1"/>
         </restriction>
     </simpleType>
-</schema>
+</xsd:schema>

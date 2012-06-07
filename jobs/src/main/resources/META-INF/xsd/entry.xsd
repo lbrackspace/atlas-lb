@@ -6,7 +6,7 @@
    This schema misses some critical checks that are only performed in the 1.1 version.
    Validation at the usage layer will always use the 1.1 schema.
 -->
-<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:event="http://docs.rackspace.com/core/event" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://www.w3.org/2005/Atom">
+<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:event="http://docs.rackspace.com/core/event" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://www.w3.org/2005/Atom">
 
 
 
@@ -65,4 +65,4 @@
             <enumeration value="xhtml"/>
         </restriction>
     </simpleType>
-</schema>
+</xsd:schema>

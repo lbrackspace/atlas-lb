@@ -15,19 +15,19 @@
     xmlns:html="http://www.w3.org/1999/xhtml"
     targetNamespace="http://docs.rackspace.com/core/event">
 
-    <include schemaLocation="_1.0Core.xsd"/>
+    <xsd:include schemaLocation="_1.0Core.xsd"/>
 
     <!-- Define the element for XSD 1.0 clients -->
-    <element name="event" type="event:V1Element"/>
+    <xsd:element name="event" type="event:V1Element"/>
 
-    <complexType name="V1Element">
-        <complexContent>
-            <restriction base="event:EventV1">
-                <sequence>
-                    <any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
-                </sequence>
-                <attribute name="version" type="xsd:string" use="required" fixed="1"/>
-            </restriction>
-        </complexContent>
-    </complexType>
+    <xsd:complexType name="V1Element">
+        <xsd:complexContent>
+            <xsd:restriction base="event:EventV1">
+                <xsd:sequence>
+                    <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+                <xsd:attribute name="version" type="xsd:string" use="required" fixed="1"/>
+            </xsd:restriction>
+        </xsd:complexContent>
+    </xsd:complexType>
 </xsd:schema>
