@@ -12,6 +12,12 @@
 
     <import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/core/event" schemaLocation="core.xsd"/>
 
+    <xsd:import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/usage/lbaas/account"
+            schemaLocation="ProductExtension-LBaaSAccount.xsd"/>
+
+    <xsd:import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/usage/lbaas"
+            schemaLocation="ProductExtension-LBaaS.xsd"/>
+
     <element name="entry" type="atom:UsageEntry"/>
 
     <complexType name="UsageEntry">

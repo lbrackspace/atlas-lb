@@ -6,8 +6,12 @@ import org.openstack.atlas.atom.pojo.AccountLBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
 import org.openstack.atlas.cfg.Configuration;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.entities.SslMode;
+import org.openstack.atlas.service.domain.usage.BitTag;
+import org.openstack.atlas.service.domain.usage.BitTags;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.security.NoSuchAlgorithmException;
@@ -19,7 +23,7 @@ import java.util.UUID;
 public class LbaasUsageDataMap {
     private static String region = "GLOBAL"; //default..
 
-     public static UsageV1Pojo generateUsageEntry(Configuration configuration, String configRegion, Usage usageRecord) throws DatatypeConfigurationException, NoSuchAlgorithmException {
+    public static UsageV1Pojo generateUsageEntry(Configuration configuration, String configRegion, Usage usageRecord) throws DatatypeConfigurationException, NoSuchAlgorithmException {
         configRegion = configuration.getString(AtomHopperConfigurationKeys.region);
         if (configRegion != null) {
             region = configRegion;
@@ -56,8 +60,15 @@ public class LbaasUsageDataMap {
         lu.setBandWidthOutSsl(usageRecord.getOutgoingTransferSsl());
         lu.setNumPolls(usageRecord.getNumberOfPolls());
         lu.setNumVips(usageRecord.getNumVips());
-        lu.setTagsBitmask(usageRecord.getTags());
-        lu.setEventType(usageRecord.getEventType());
+
+        BitTags bitTags = new BitTags(usageRecord.getTags());
+        if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
+            lu.setVipType(VipType.SERVICENET.value());
+        } else {
+            lu.setVipType(VipType.PUBLIC.value());
+        }
+
+        lu.setSslMode(SslMode.getMode(bitTags).name());
 
         usageV1.getAny().add(lu);
         return usageV1;
@@ -87,12 +98,10 @@ public class LbaasUsageDataMap {
 
         //LBaaS account usage
         AccountLBaaSUsagePojo ausage = new AccountLBaaSUsagePojo();
-        ausage.setAccountId(accountUsage.getAccountId());
         ausage.setId(accountUsage.getId());
         ausage.setNumLoadbalancers(accountUsage.getNumLoadBalancers());
         ausage.setNumPublicVips(accountUsage.getNumPublicVips());
         ausage.setNumServicenetVips(accountUsage.getNumServicenetVips());
-        ausage.setStartTime(AHUSLUtil.processCalendar(accountUsage.getStartTime().getTimeInMillis()));
         usageV1.getAny().add(ausage);
 
         return usageV1;

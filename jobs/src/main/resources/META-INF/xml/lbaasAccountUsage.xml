@@ -1,33 +1,27 @@
 <productSchema xmlns="http://docs.rackspace.com/core/usage/schema"
-               namespace="http://docs.rackspace.com/usage/lbaas"
-               serviceCode="CloudLoadBalancersAccountUsage"
+               namespace="http://docs.rackspace.com/usage/lbaas/account"
+               serviceCode="CloudLoadBalancers"
                version="1"
-               resourceTypes="ACCOUNTLOADBALANCERUSAGE">
+               groupByResource="false"
+               resourceTypes="TENANT">
     <description>
-        Lbaas load balancer usage fields.
+        Lbaas load balancer tenant  usage fields.
     </description>
     <attribute name="id" type="int" use="required"
-               groupBy="true">
-        The id associated with the account record.
-    </attribute>
-    <attribute name="accountId" type="int" use="required"
-               unitOfMeasure="int" groupBy="true">
-        The account id associated with the account record.
+               billable="false">
+        The internal id associated with the tenant.
     </attribute>
     <attribute name="numLoadbalancers" type="int" use="required"
-               unitOfMeasure="int" groupBy="true">
-        The number of load balancers associated with the account record.
+               unitOfMeasure="COUNT" groupBy="true">
+        The number of load balancers associated with the tenant.
     </attribute>
     <attribute name="numPublicVips" type="int" use="required"
-               unitOfMeasure="int" groupBy="true">
-        The number of public virtual ips associated with the account record.
+               unitOfMeasure="COUNT" groupBy="true">
+        The number of public virtual ips associated with the tenant.
+        record.
     </attribute>
     <attribute name="numServicenetVips" type="int" use="required"
-               unitOfMeasure="int" groupBy="true">
+               unitOfMeasure="COUNT" groupBy="true">
         The amount of ssl bandwidth in, in bytes.
-    </attribute>
-    <attribute name="startTime" type="dateTime" use="required"
-               groupBy="true">
-        The amount of ssl bandwidth out in bytes.
     </attribute>
 </productSchema>

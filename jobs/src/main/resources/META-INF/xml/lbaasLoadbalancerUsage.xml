@@ -1,53 +1,49 @@
 <productSchema xmlns="http://docs.rackspace.com/core/usage/schema"
                namespace="http://docs.rackspace.com/usage/lbaas"
-               serviceCode="CloudLoadBalancersUsage"
+               serviceCode="CloudLoadBalancers"
                version="1"
-               resourceTypes="LOADBALANCERUSAGE">
+               resourceTypes="LOADBALANCER">
     <description>
         Lbaas load balancer usage fields.
     </description>
     <attribute name="avgConcurrentConnections" type="double" use="required"
-               unitOfMeasure="int" groupBy="true">
-        The amount of conncurrent connections in bytes.
+               unitOfMeasure="COUNT" groupBy="true">
+        The amount of conncurrent connections.
     </attribute>
     <attribute name="avgConcurrentConnectionsSsl" type="double" use="required"
-               unitOfMeasure="int" groupBy="true">
-        The amount of conncurrent ssl connections in bytes.
+               unitOfMeasure="COUNT" groupBy="true">
+        The amount of conncurrent ssl connections.
     </attribute>
     <attribute name="bandWidthIn" type="long" use="required"
-               unitOfMeasure="B" groupBy="true">
+               unitOfMeasure="B" aggregateFunction="SUM" groupBy="true">
         The amount of bandwidth in, in bytes.
     </attribute>
     <attribute name="bandWidthOut" type="long" use="required"
-               unitOfMeasure="B" groupBy="true">
+               unitOfMeasure="B" aggregateFunction="SUM" groupBy="true">
         The amount of bandwidth out in bytes.
     </attribute>
     <attribute name="bandWidthInSsl" type="long" use="required"
-               unitOfMeasure="B" groupBy="true">
+               unitOfMeasure="B" aggregateFunction="SUM" groupBy="true">
         The amount of ssl bandwidth in, in bytes.
     </attribute>
     <attribute name="bandWidthOutSsl" type="long" use="required"
-               unitOfMeasure="B" groupBy="true">
+               unitOfMeasure="B" aggregateFunction="SUM" groupBy="true">
         The amount of ssl bandwidth out in bytes.
     </attribute>
     <attribute name="numPolls" type="int" use="required"
-               unitOfMeasure="int" groupBy="true">
-        The number of polls per record.
+               unitOfMeasure="COUNT" groupBy="true">
+        The number of polls per load balancer.
     </attribute>
     <attribute name="numVips" type="int" use="required"
-               unitOfMeasure="int" groupBy="true">
-        The number of vips per record.
+               unitOfMeasure="COUNT" groupBy="true">
+        The number of vips per load balancer.
     </attribute>
-    <attribute name="tagsBitmask" type="int" use="required"
-               unitOfMeasure="int" groupBy="true">
-        the BitMask tags.
-    </attribute>
-    <attribute name="eventType" type="string" use="required"
-                groupBy="true">
-        The event type.
-    </attribute>
-    <attribute name="accountId" type="int" use="required"
+    <attribute name="vipType" type="string" use="required"
                groupBy="true">
-        The account id.
+        The vip type associated with the load balancer.
+    </attribute>
+    <attribute name="sslMode" type="string" use="required"
+               groupBy="true">
+        The mode determining SSL status on the load balancer.
     </attribute>
 </productSchema>

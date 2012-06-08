@@ -17,6 +17,8 @@
 
     <xsd:include schemaLocation="_1.0Core.xsd"/>
 
+
+
     <!-- Define the element for XSD 1.0 clients -->
     <xsd:element name="event" type="event:V1Element"/>
 

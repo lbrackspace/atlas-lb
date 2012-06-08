@@ -18,6 +18,7 @@ import org.w3._2005.atom.Title;
 import org.w3._2005.atom.Type;
 import org.w3._2005.atom.UsageContent;
 
+import javax.ws.rs.core.MediaType;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -73,14 +74,11 @@ public class XsdMarshallTest {
                 usageV1.getAny().add(lu);
 
                 AccountLBaaSUsagePojo ausage = new AccountLBaaSUsagePojo();
-                ausage.setAccountId(12345);
                 ausage.setId(2);
                 ausage.setNumLoadbalancers(33);
                 ausage.setNumPublicVips(3);
                 ausage.setNumServicenetVips(4);
-                ausage.setStartTime(processCalendar(cal.getTimeInMillis()));
                 usageV1.getAny().add(ausage);
-
 
 
                 //Atom specific
@@ -89,9 +87,14 @@ public class XsdMarshallTest {
                 title.setValue("LBAAS");
                 entry.setTitle(title);
 
+//                UsageContent usageContent = new UsageContent();
+//                usageContent.setEvent(usageV1);
+//                entry.setContent(usageContent);
+//                entry.getContent().setType(MediaType.APPLICATION_XML);
+
                 //Unmarshall and verify against schema
                 JAXBContext jc = JAXBContext.newInstance(V1Element.class);
-                Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("src/main/resources/META-INF/xsd/core.xsd"));
+                Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("jobs/src/main/resources/META-INF/xsd/entry.xsd"));
                 Unmarshaller unmarshaller = jc.createUnmarshaller();
                 unmarshaller.setSchema(factory);
                 ByteArrayInputStream input = new ByteArrayInputStream(UsageMarshaller.marshallObject(usageV1).getBytes());
@@ -103,7 +106,7 @@ public class XsdMarshallTest {
                 usageContent.setEvent(usageV1);
 
                 entry.setContent(usageContent);
-                entry.getContent().setType("applicaiton/xml");
+                entry.getContent().setType(MediaType.APPLICATION_XML);
                 System.out.print(UsageMarshaller.marshallObject(entry));
 
             } catch (Exception e) {
