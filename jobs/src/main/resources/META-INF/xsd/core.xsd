@@ -9,11 +9,19 @@
 <xsd:schema
         elementFormDefault="qualified"
         attributeFormDefault="unqualified"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:tx="http://www.springframework.org/schema/tx"
         xmlns="http://www.w3.org/2001/XMLSchema/spring-tx-2.5.xsd"
         xmlns:event="http://docs.rackspace.com/core/event"
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns:html="http://www.w3.org/1999/xhtml"
-        targetNamespace="http://docs.rackspace.com/core/event">
+        targetNamespace="http://docs.rackspace.com/core/event"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                         http://www.springframework.org/schema/beans/spring-beans.xsd
+                         http://www.springframework.org/schema/aop
+                         http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+                         http://www.springframework.org/schema/context
+                         http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
     <xsd:include schemaLocation="_1.0Core.xsd"/>
 
