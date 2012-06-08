@@ -140,10 +140,15 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
 
         for (NodeMeta nodeMeta : node.getNodeMetadata()) {
             ids.add(nodeMeta.getId());
+            if (nodeMeta.getId().equals(callNodeMeta.getId())) {
+                callNodeMeta.setKey(nodeMeta.getKey());
+            }
         }
 
         if (!ids.contains(callNodeMeta.getId())) {
             throw new EntityNotFoundException("Node meta with id " + callNodeMeta.getId() + " doesn't exist.");
+        } else {
+            callNodeMeta.setNode(node);
         }
 
         return nodeMetadataRepository.updateNodeMeta(node, callNodeMeta);

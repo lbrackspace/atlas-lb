@@ -100,7 +100,7 @@ public class NodeMetadataResource extends CommonDependencyProvider {
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
         }
-        return Response.status(200).build();
+        return Response.status(Response.Status.OK).build();
     }
 
     @Path("{id: [-+]?[1-9][0-9]*}")
