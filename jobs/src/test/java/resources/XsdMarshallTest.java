@@ -32,6 +32,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
+
 @RunWith(Enclosed.class)
 public class XsdMarshallTest {
     public static class WhenMarshallingGeneratedXML {
@@ -90,7 +91,7 @@ public class XsdMarshallTest {
 
                 //Unmarshall and verify against schema
                 JAXBContext jc = JAXBContext.newInstance(V1Element.class);
-                Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("jobs/src/main/resources/META-INF/xsd/core.xsd"));
+                Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("src/main/resources/META-INF/xsd/core.xsd"));
                 Unmarshaller unmarshaller = jc.createUnmarshaller();
                 unmarshaller.setSchema(factory);
                 ByteArrayInputStream input = new ByteArrayInputStream(UsageMarshaller.marshallObject(usageV1).getBytes());

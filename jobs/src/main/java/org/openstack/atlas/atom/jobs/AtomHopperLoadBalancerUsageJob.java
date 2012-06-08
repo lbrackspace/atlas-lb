@@ -1,16 +1,13 @@
 package org.openstack.atlas.atom.jobs;
 
-import com.rackspace.docs.core.event.DC;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.atom.config.AtomHopperConfiguration;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.pojo.EntryPojo;
-import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
-import org.openstack.atlas.atom.pojo.UsageV1Pojo;
 import org.openstack.atlas.atom.util.AHUSLUtil;
-import org.openstack.atlas.atom.util.UUIDUtil;
+import org.openstack.atlas.atom.util.LbaasUsageDataMap;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
 import org.openstack.atlas.service.domain.entities.JobName;
@@ -30,12 +27,9 @@ import org.w3._2005.atom.UsageCategory;
 import org.w3._2005.atom.UsageContent;
 
 import javax.ws.rs.core.MediaType;
-import javax.xml.datatype.DatatypeConfigurationException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
 
 public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(AtomHopperLoadBalancerUsageJob.class);
@@ -100,7 +94,7 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
                                 entry.setTitle(title);
 
                                 UsageContent usageContent = new UsageContent();
-                                usageContent.setEvent(generateUsageEntry(usageRecord));
+                                usageContent.setEvent(LbaasUsageDataMap.generateUsageEntry(configuration, configRegion, usageRecord));
                                 entry.setContent(usageContent);
                                 entry.getContent().setType(MediaType.APPLICATION_XML);
 
@@ -144,54 +138,6 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
         Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
         processJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.FINISHED);
         LOG.info(String.format("Atom hopper load balancer usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
-    }
-
-    private UsageV1Pojo generateUsageEntry(Usage usageRecord) throws DatatypeConfigurationException, NoSuchAlgorithmException {
-        configRegion = configuration.getString(AtomHopperConfigurationKeys.region);
-        if (configRegion != null) {
-            region = configRegion;
-        }
-
-        UsageV1Pojo usageV1 = new UsageV1Pojo();
-        usageV1.setRegion(AHUSLUtil.mapRegion(region));
-
-        usageV1.setVersion(usageRecord.getEntryVersion().toString());
-        usageV1.setStartTime(AHUSLUtil.processCalendar(usageRecord.getStartTime().getTimeInMillis()));
-        usageV1.setEndTime(AHUSLUtil.processCalendar(usageRecord.getEndTime().getTimeInMillis()));
-        usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.data_center)));
-
-        if (AHUSLUtil.mapEventType(usageRecord) == null) {
-            usageV1.setType(null);
-        } else {
-            usageV1.setType(AHUSLUtil.mapEventType(usageRecord));
-        }
-
-        usageV1.setTenantId(usageRecord.getAccountId().toString());
-        usageV1.setResourceId(usageRecord.getLoadbalancer().getId().toString());
-
-        //Generate UUID
-        UUID uuid = UUIDUtil.genUUID(genUUIDString(usageRecord));
-        usageV1.setId(uuid.toString());
-
-        //LBAAS specific values
-        LBaaSUsagePojo lu = new LBaaSUsagePojo();
-        lu.setAvgConcurrentConnections(usageRecord.getAverageConcurrentConnections());
-        lu.setAvgConcurrentConnectionsSsl(usageRecord.getAverageConcurrentConnectionsSsl());
-        lu.setBandWidthIn(usageRecord.getIncomingTransfer());
-        lu.setBandWidthInSsl(usageRecord.getIncomingTransferSsl());
-        lu.setBandWidthOut(usageRecord.getOutgoingTransfer());
-        lu.setBandWidthOutSsl(usageRecord.getOutgoingTransferSsl());
-        lu.setNumPolls(usageRecord.getNumberOfPolls());
-        lu.setNumVips(usageRecord.getNumVips());
-        lu.setTagsBitmask(usageRecord.getTags());
-        lu.setEventType(usageRecord.getEventType());
-
-        usageV1.getAny().add(lu);
-        return usageV1;
-    }
-
-    private String genUUIDString(Usage usageRecord) {
-        return usageRecord.getId() + "_" + usageRecord.getLoadbalancer().getId() + "_" + region;
     }
 
     private void processJobState(JobName jobName, JobStateVal jobStateVal) {

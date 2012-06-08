@@ -2,7 +2,7 @@
                namespace="http://docs.rackspace.com/usage/lbaas"
                serviceCode="CloudLoadBalancersUsage"
                version="1"
-               resourceTypes="LOADBALANCING">
+               resourceTypes="LOADBALANCERUSAGE">
     <description>
         Lbaas load balancer usage fields.
     </description>
@@ -30,15 +30,15 @@
                unitOfMeasure="B" groupBy="true">
         The amount of ssl bandwidth out in bytes.
     </attribute>
-    <attribute name="numPolls" type="integer" use="required"
+    <attribute name="numPolls" type="int" use="required"
                unitOfMeasure="int" groupBy="true">
         The number of polls per record.
     </attribute>
-    <attribute name="numVips" type="integer" use="required"
+    <attribute name="numVips" type="int" use="required"
                unitOfMeasure="int" groupBy="true">
         The number of vips per record.
     </attribute>
-    <attribute name="tagsBitmask" type="integer" use="required"
+    <attribute name="tagsBitmask" type="int" use="required"
                unitOfMeasure="int" groupBy="true">
         the BitMask tags.
     </attribute>
@@ -46,7 +46,7 @@
                 groupBy="true">
         The event type.
     </attribute>
-    <attribute name="accountId" type="integer" use="required"
+    <attribute name="accountId" type="int" use="required"
                groupBy="true">
         The account id.
     </attribute>

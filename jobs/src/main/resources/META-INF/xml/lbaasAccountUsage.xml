@@ -2,27 +2,27 @@
                namespace="http://docs.rackspace.com/usage/lbaas"
                serviceCode="CloudLoadBalancersAccountUsage"
                version="1"
-               resourceTypes="LOADBALANCING">
+               resourceTypes="ACCOUNTLOADBALANCERUSAGE">
     <description>
         Lbaas load balancer usage fields.
     </description>
-    <attribute name="id" type="integer" use="required"
+    <attribute name="id" type="int" use="required"
                groupBy="true">
         The id associated with the account record.
     </attribute>
-    <attribute name="accountId" type="integer" use="required"
+    <attribute name="accountId" type="int" use="required"
                unitOfMeasure="int" groupBy="true">
         The account id associated with the account record.
     </attribute>
-    <attribute name="numLoadbalancers" type="integer" use="required"
+    <attribute name="numLoadbalancers" type="int" use="required"
                unitOfMeasure="int" groupBy="true">
         The number of load balancers associated with the account record.
     </attribute>
-    <attribute name="numPublicVips" type="integer" use="required"
+    <attribute name="numPublicVips" type="int" use="required"
                unitOfMeasure="int" groupBy="true">
         The number of public virtual ips associated with the account record.
     </attribute>
-    <attribute name="numServicenetVips" type="integer" use="required"
+    <attribute name="numServicenetVips" type="int" use="required"
                unitOfMeasure="int" groupBy="true">
         The amount of ssl bandwidth in, in bytes.
     </attribute>

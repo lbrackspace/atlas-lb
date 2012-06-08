@@ -1,16 +1,13 @@
 package org.openstack.atlas.atom.jobs;
 
-import com.rackspace.docs.core.event.DC;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.atom.config.AtomHopperConfiguration;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
-import org.openstack.atlas.atom.pojo.AccountLBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.EntryPojo;
-import org.openstack.atlas.atom.pojo.UsageV1Pojo;
-import org.openstack.atlas.atom.util.UUIDUtil;
 import org.openstack.atlas.atom.util.AHUSLUtil;
+import org.openstack.atlas.atom.util.LbaasUsageDataMap;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
 import org.openstack.atlas.service.domain.entities.AccountUsage;
@@ -30,12 +27,9 @@ import org.w3._2005.atom.UsageCategory;
 import org.w3._2005.atom.UsageContent;
 
 import javax.ws.rs.core.MediaType;
-import javax.xml.datatype.DatatypeConfigurationException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
 
 public class AtomHopperAccountUsageJob extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(AtomHopperAccountUsageJob.class);
@@ -96,7 +90,7 @@ public class AtomHopperAccountUsageJob extends Job implements StatefulJob {
                             entry.setTitle(title);
 
                             UsageContent usageContent = new UsageContent();
-                            usageContent.setEvent(generateAccountUsageEntry(asausage));
+                            usageContent.setEvent(LbaasUsageDataMap.generateAccountUsageEntry(configuration, configRegion, asausage));
                             entry.setContent(usageContent);
                             entry.getContent().setType(MediaType.APPLICATION_XML);
 
@@ -138,45 +132,6 @@ public class AtomHopperAccountUsageJob extends Job implements StatefulJob {
         Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
         processJobState(JobName.ATOM_ACCOUNT_USAGE_POLLER, JobStateVal.FINISHED);
         LOG.info(String.format("Atom hopper account usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
-    }
-
-    private UsageV1Pojo generateAccountUsageEntry(AccountUsage accountUsage) throws DatatypeConfigurationException, NoSuchAlgorithmException {
-        configRegion = configuration.getString(AtomHopperConfigurationKeys.region);
-        if (configRegion != null) {
-            region = configRegion;
-        }
-
-        UsageV1Pojo usageV1 = new UsageV1Pojo();
-        usageV1.setRegion(AHUSLUtil.mapRegion(region));
-
-        usageV1.setVersion("1");//Rows are not updated...
-        usageV1.setStartTime(AHUSLUtil.processCalendar(accountUsage.getStartTime().getTimeInMillis()));
-        usageV1.setEndTime(AHUSLUtil.processCalendar(accountUsage.getStartTime().getTimeInMillis()));
-
-        usageV1.setType(null); //No events
-        usageV1.setTenantId(accountUsage.getAccountId().toString());
-        usageV1.setResourceId(accountUsage.getId().toString());
-        usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.data_center)));
-
-        //Generate UUID
-        UUID uuid = UUIDUtil.genUUID(genUUIDString(accountUsage));
-        usageV1.setId(uuid.toString());
-
-        //LBaaS account usage
-        AccountLBaaSUsagePojo ausage = new AccountLBaaSUsagePojo();
-        ausage.setAccountId(accountUsage.getAccountId());
-        ausage.setId(accountUsage.getId());
-        ausage.setNumLoadbalancers(accountUsage.getNumLoadBalancers());
-        ausage.setNumPublicVips(accountUsage.getNumPublicVips());
-        ausage.setNumServicenetVips(accountUsage.getNumServicenetVips());
-        ausage.setStartTime(AHUSLUtil.processCalendar(accountUsage.getStartTime().getTimeInMillis()));
-        usageV1.getAny().add(ausage);
-
-        return usageV1;
-    }
-
-    private String genUUIDString(AccountUsage usageRecord) {
-        return usageRecord.getId() + "_" + usageRecord.getAccountId() + "_" + region;
     }
 
     private void processJobState(JobName jobName, JobStateVal jobStateVal) {
