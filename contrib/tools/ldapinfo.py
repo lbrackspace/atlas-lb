@@ -46,11 +46,7 @@ def ldapInfoResp(req):
     obj = json.loads(jsonStr)
     jsonStr = json.dumps(obj,indent=4)
     return jsonStr
-
     
-def prettyXml(xmlIn):
-    return xml.dom.minidom.parseString(xmlIn).toprettyxml().replace("\t","    ")
-
 if __name__ == "__main__":
     (user,passwd) = getuserpass()
     printf("Enter management url: ")
