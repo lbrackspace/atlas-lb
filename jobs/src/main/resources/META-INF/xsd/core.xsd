@@ -25,7 +25,11 @@
 
     <xsd:include schemaLocation="_1.0Core.xsd"/>
 
+          <xsd:import namespace="http://docs.rackspace.com/usage/lbaas/account"
+            schemaLocation="ProductExtension-LBaaSAccount.xsd"/>
 
+    <xsd:import  namespace="http://docs.rackspace.com/usage/lbaas"
+            schemaLocation="ProductExtension-LBaaS.xsd"/>
 
     <!-- Define the element for XSD 1.0 clients -->
     <xsd:element name="event" type="event:V1Element"/>
