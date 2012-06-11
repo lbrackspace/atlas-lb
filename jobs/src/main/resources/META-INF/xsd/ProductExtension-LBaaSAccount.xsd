@@ -14,69 +14,78 @@
             xmlns:p="http://docs.rackspace.com/usage/lbaas/account"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            targetNamespace="http://docs.rackspace.com/usage/lbaas/account">
-   <element name="accountUsage" type="p:CloudAccountLoadBalancersType"/>
-   <complexType name="CloudAccountLoadBalancersType">
-      <annotation>
-         <documentation>
-            <html:p>Lbaas load balancer tenant usage fields.</html:p>
-         </documentation>
-         <appinfo>
-            <usage:core groupByResource="false"/>
-         </appinfo>
-      </annotation>
-      <attribute name="version" type="xsd:string" use="required" fixed="1"/>
-      <attribute name="resourceType" use="required" type="p:ResourceTypes"/>
-      <attribute name="serviceCode" use="required" type="xsd:Name" fixed="CloudLoadBalancers"/>
-      <attribute name="id" use="required" type="xsd:int">
-         <annotation>
+            targetNamespace="http://docs.rackspace.com/usage/lbaas/account"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            usage:schemaLocation="http://docs.rackspace.com/core/usage"
+            saxon:schemaLocation="http://saxon.sf.net/"
+            xsi:schemaLocation="http://xerces.apache.org
+                                        http://www.w3.org/2001/XMLSchema-instance
+                                        http://www.w3.org/2007/XMLSchema-versioning
+                                        http://www.springframework.org/schema/beans
+                                        http://saxon.sf.net/">
+
+    <element name="accountUsage" type="p:CloudAccountLoadBalancersType"/>
+    <complexType name="CloudAccountLoadBalancersType">
+        <annotation>
             <documentation>
-               <html:p>The internal id associated with the tenant record.</html:p>
+                <html:p>Lbaas load balancer tenant usage fields.</html:p>
             </documentation>
             <appinfo>
-               <usage:attributes billable="false"/>
+                <usage:core groupByResource="false"/>
             </appinfo>
-         </annotation>
-      </attribute>
-      <attribute name="numLoadbalancers" use="required" type="xsd:int">
-         <annotation>
+        </annotation>
+        <attribute name="version" type="xsd:string" use="required" fixed="1"/>
+        <attribute name="resourceType" use="required" type="p:ResourceTypes"/>
+        <attribute name="serviceCode" use="required" type="xsd:Name" fixed="CloudLoadBalancers"/>
+        <attribute name="id" use="required" type="xsd:int">
+            <annotation>
+                <documentation>
+                    <html:p>The internal id associated with the tenant record.</html:p>
+                </documentation>
+                <appinfo>
+                    <usage:attributes billable="false"/>
+                </appinfo>
+            </annotation>
+        </attribute>
+        <attribute name="numLoadbalancers" use="required" type="xsd:int">
+            <annotation>
+                <documentation>
+                    <html:p>The number of load balancers associated with the tenant.</html:p>
+                </documentation>
+                <appinfo>
+                    <usage:attributes unitOfMeasure="COUNT" groupBy="true"/>
+                </appinfo>
+            </annotation>
+        </attribute>
+        <attribute name="numPublicVips" use="required" type="xsd:int">
+            <annotation>
+                <documentation>
+                    <html:p>The number of public virtual ips associated with the tenant. record.</html:p>
+                </documentation>
+                <appinfo>
+                    <usage:attributes unitOfMeasure="COUNT" groupBy="true"/>
+                </appinfo>
+            </annotation>
+        </attribute>
+        <attribute name="numServicenetVips" use="required" type="xsd:int">
+            <annotation>
+                <documentation>
+                    <html:p>The amount of ssl bandwidth in, in bytes.</html:p>
+                </documentation>
+                <appinfo>
+                    <usage:attributes unitOfMeasure="COUNT" groupBy="true"/>
+                </appinfo>
+            </annotation>
+        </attribute>
+    </complexType>
+    <simpleType name="ResourceTypes">
+        <annotation>
             <documentation>
-               <html:p>The number of load balancers associated with the tenant.</html:p>
+                <html:p>Resource Types for this product.</html:p>
             </documentation>
-            <appinfo>
-               <usage:attributes unitOfMeasure="COUNT" groupBy="true"/>
-            </appinfo>
-         </annotation>
-      </attribute>
-      <attribute name="numPublicVips" use="required" type="xsd:int">
-         <annotation>
-            <documentation>
-               <html:p>The number of public virtual ips associated with the tenant. record.</html:p>
-            </documentation>
-            <appinfo>
-               <usage:attributes unitOfMeasure="COUNT" groupBy="true"/>
-            </appinfo>
-         </annotation>
-      </attribute>
-      <attribute name="numServicenetVips" use="required" type="xsd:int">
-         <annotation>
-            <documentation>
-               <html:p>The amount of ssl bandwidth in, in bytes.</html:p>
-            </documentation>
-            <appinfo>
-               <usage:attributes unitOfMeasure="COUNT" groupBy="true"/>
-            </appinfo>
-         </annotation>
-      </attribute>
-   </complexType>
-   <simpleType name="ResourceTypes">
-      <annotation>
-         <documentation>
-            <html:p>Resource Types for this product.</html:p>
-         </documentation>
-      </annotation>
-      <restriction base="xsd:token">
-         <enumeration value="TENANT"/>
-      </restriction>
-   </simpleType>
+        </annotation>
+        <restriction base="xsd:token">
+            <enumeration value="TENANT"/>
+        </restriction>
+    </simpleType>
 </xsd:schema>
