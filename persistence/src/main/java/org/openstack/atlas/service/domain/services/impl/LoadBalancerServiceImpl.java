@@ -881,7 +881,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (dbLb.isSticky()) {
                 invalidLbs.add(dbLb);
             } else {
-                processSpecifiedOrDefaultHost(lb);
+                processSpecifiedOrDefaultHost(dbLb);
                 validLbs.add(dbLb);
             }
         }
