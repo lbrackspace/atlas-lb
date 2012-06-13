@@ -1,12 +1,14 @@
 package org.openstack.atlas.atom.util;
 
 import com.rackspace.docs.core.event.DC;
+import com.rackspace.docs.usage.lbaas.ResourceTypes;
+import com.rackspace.docs.usage.lbaas.SslModeEnum;
+import com.rackspace.docs.usage.lbaas.VipTypeEnum;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.pojo.AccountLBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
 import org.openstack.atlas.cfg.Configuration;
-import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.entities.SslMode;
@@ -22,6 +24,7 @@ import java.util.UUID;
  */
 public class LbaasUsageDataMap {
     private static String region = "GLOBAL"; //default..
+    private static String SERVICE_CODE = "CloudLoadBalancers";
 
     public static UsageV1Pojo generateUsageEntry(Configuration configuration, String configRegion, Usage usageRecord) throws DatatypeConfigurationException, NoSuchAlgorithmException {
         configRegion = configuration.getString(AtomHopperConfigurationKeys.region);
@@ -60,15 +63,17 @@ public class LbaasUsageDataMap {
         lu.setBandWidthOutSsl(usageRecord.getOutgoingTransferSsl());
         lu.setNumPolls(usageRecord.getNumberOfPolls());
         lu.setNumVips(usageRecord.getNumVips());
+        lu.setServiceCode(SERVICE_CODE);
+        lu.setResourceType(ResourceTypes.LOADBALANCER);
 
         BitTags bitTags = new BitTags(usageRecord.getTags());
         if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
-            lu.setVipType(VipType.SERVICENET.value());
+            lu.setVipType(VipTypeEnum.SERVICENET);
         } else {
-            lu.setVipType(VipType.PUBLIC.value());
+            lu.setVipType(VipTypeEnum.PUBLIC);
         }
 
-        lu.setSslMode(SslMode.getMode(bitTags).name());
+        lu.setSslMode(SslModeEnum.fromValue(SslMode.getMode(bitTags).name()));
 
         usageV1.getAny().add(lu);
         return usageV1;
@@ -98,11 +103,14 @@ public class LbaasUsageDataMap {
 
         //LBaaS account usage
         AccountLBaaSUsagePojo ausage = new AccountLBaaSUsagePojo();
-        ausage.setId(accountUsage.getId());
         ausage.setNumLoadbalancers(accountUsage.getNumLoadBalancers());
         ausage.setNumPublicVips(accountUsage.getNumPublicVips());
         ausage.setNumServicenetVips(accountUsage.getNumServicenetVips());
+        ausage.setServiceCode(SERVICE_CODE);
+        ausage.setResourceType(com.rackspace.docs.usage.lbaas.account.ResourceTypes.TENANT);
         usageV1.getAny().add(ausage);
+
+
 
         return usageV1;
     }

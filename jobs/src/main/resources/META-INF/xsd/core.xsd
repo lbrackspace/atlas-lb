@@ -15,11 +15,7 @@
         xmlns:event="http://docs.rackspace.com/core/event"
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns:html="http://www.w3.org/1999/xhtml"
-        targetNamespace="http://docs.rackspace.com/core/event"
-        xsi:schemaLocation="
-        http://www.w3.org/2001/XMLSchema/spring-tx-2.5.xsd
-        http://www.springframework.org/schema/beans
-        ">
+        targetNamespace="http://docs.rackspace.com/core/event">
 
     <xsd:include schemaLocation="_1.0Core.xsd"/>
 

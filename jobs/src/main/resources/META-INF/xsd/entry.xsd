@@ -6,17 +6,21 @@
    This schema misses some critical checks that are only performed in the 1.1 version.
    Validation at the usage layer will always use the 1.1 schema.
 -->
-<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:event="http://docs.rackspace.com/core/event" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://www.w3.org/2005/Atom">
+<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:event="http://docs.rackspace.com/core/event"
+            xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
+            elementFormDefault="qualified" attributeFormDefault="unqualified"
+            targetNamespace="http://www.w3.org/2005/Atom">
 
 
-
-    <import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/core/event" schemaLocation="core.xsd"/>
+    <import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/core/event"
+            schemaLocation="core.xsd"/>
 
     <xsd:import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/usage/lbaas/account"
-            schemaLocation="ProductExtension-LBaaSAccount.xsd"/>
+                schemaLocation="ProductExtension-LBaaSAccount.xsd"/>
 
     <xsd:import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/usage/lbaas"
-            schemaLocation="ProductExtension-LBaaS.xsd"/>
+                schemaLocation="ProductExtension-LBaaS.xsd"/>
 
     <element name="entry" type="atom:UsageEntry"/>
 

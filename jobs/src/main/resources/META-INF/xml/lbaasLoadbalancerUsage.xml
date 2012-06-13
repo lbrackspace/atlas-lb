@@ -39,11 +39,11 @@
         The number of vips per load balancer.
     </attribute>
     <attribute name="vipType" type="string" use="required"
-               groupBy="true">
+               groupBy="true" allowedValues="PUBLIC SERVICENET">
         The vip type associated with the load balancer.
     </attribute>
     <attribute name="sslMode" type="string" use="required"
-               groupBy="true">
+               groupBy="true" allowedValues="ON OFF MIXED">
         The mode determining SSL status on the load balancer.
     </attribute>
 </productSchema>

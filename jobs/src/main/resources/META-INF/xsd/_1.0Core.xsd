@@ -10,13 +10,9 @@
             xmlns:xerces="http://xerces.apache.org" xmlns:saxon="http://saxon.sf.net/"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml"
             xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified"
-            attributeFormDefault="unqualified" targetNamespace="http://docs.rackspace.com/core/event"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="http://xerces.apache.org
-                                        http://www.w3.org/2001/XMLSchema-instance
-                                        http://www.w3.org/2007/XMLSchema-versioning
-                                        http://www.springframework.org/schema/beans
-                                        http://saxon.sf.net/">
+            attributeFormDefault="unqualified"
+            targetNamespace="http://docs.rackspace.com/core/event"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <complexType name="EventBase" abstract="true">
         <annotation>

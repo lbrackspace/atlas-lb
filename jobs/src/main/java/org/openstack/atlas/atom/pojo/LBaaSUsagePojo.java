@@ -5,7 +5,7 @@ import com.rackspace.docs.usage.lbaas.CloudLoadBalancersType;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(namespace = "http://docs.rackspace.com/usage/lbaas", name="CloudLoadBalancersType")
+@XmlRootElement(namespace = "http://docs.rackspace.com/usage/lbaas", name="lbaasUsage")
 public class LBaaSUsagePojo extends CloudLoadBalancersType {
 
 }

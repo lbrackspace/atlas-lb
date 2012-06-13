@@ -7,10 +7,6 @@
     <description>
         Lbaas load balancer tenant  usage fields.
     </description>
-    <attribute name="id" type="int" use="required"
-               billable="false">
-        The internal id associated with the tenant.
-    </attribute>
     <attribute name="numLoadbalancers" type="int" use="required"
                unitOfMeasure="COUNT" groupBy="true">
         The number of load balancers associated with the tenant.
