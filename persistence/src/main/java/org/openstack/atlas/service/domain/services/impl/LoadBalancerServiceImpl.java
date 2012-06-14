@@ -584,8 +584,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     public void setStatus(LoadBalancer lb, LoadBalancerStatus status) {
         try {
             loadBalancerRepository.setStatus(lb, status);
-//            LoadBalancer dbLb = loadBalancerRepository.getById(lb.getId());
-            loadBalancerStatusHistoryService.save(lb.getAccountId(), lb.getId(), status);
+            LoadBalancer dbLb = loadBalancerRepository.getById(lb.getId());
+            loadBalancerStatusHistoryService.save(dbLb.getAccountId(), dbLb.getId(), status);
 
         } catch (EntityNotFoundException e) {
             LOG.warn(String.format("Cannot set status for loadbalancer '%d' as it does not exist.", lb.getId()));
@@ -881,8 +881,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (dbLb.isSticky()) {
                 invalidLbs.add(dbLb);
             } else {
-                processSpecifiedOrDefaultHost(dbLb);
-                validLbs.add(dbLb);
+                processSpecifiedOrDefaultHost(lb);
+                validLbs.add(lb);
             }
         }
 
@@ -894,6 +894,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         //Everythings ok, begin update...
         for (LoadBalancer lb : validLbs) {
             setStatus(lb, LoadBalancerStatus.PENDING_UPDATE);
+//            loadBalancerRepository.save(lb);
         }
 
         return validLbs;
