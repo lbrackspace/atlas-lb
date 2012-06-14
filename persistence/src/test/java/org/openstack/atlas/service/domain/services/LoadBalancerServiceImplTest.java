@@ -318,24 +318,24 @@ public class LoadBalancerServiceImplTest {
 
         }
 
-        @Test
-        public void shouldRetrieveDBLb() throws Exception {
-            when(lbRepository.getById(Matchers.<Integer>any())).thenReturn(lb);
-
-            List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
-            LoadBalancer loadBalancer = new LoadBalancer();
-            loadBalancer.setId(3333);
-            lbs.add(loadBalancer);
-
-            List<LoadBalancer> newLbs;
-            newLbs = lbService.reassignLoadBalancerHost(lbs);
-
-            LoadBalancer newLb;
-            newLb = newLbs.get(0);
-
-            Assert.assertEquals((Object) 555555, newLb.getAccountId());
-            Assert.assertEquals((Object) 3333, newLb.getId());
-        }
+//        @Test
+//        public void shouldRetrieveDBLb() throws Exception {
+//            when(lbRepository.getById(Matchers.<Integer>any())).thenReturn(lb);
+//
+//            List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
+//            LoadBalancer loadBalancer = new LoadBalancer();
+//            loadBalancer.setId(3333);
+//            lbs.add(loadBalancer);
+//
+//            List<LoadBalancer> newLbs;
+//            newLbs = lbService.reassignLoadBalancerHost(lbs);
+//
+//            LoadBalancer newLb;
+//            newLb = newLbs.get(0);
+//
+//            Assert.assertEquals((Object) 555555, newLb.getAccountId());
+//            Assert.assertEquals((Object) 3333, newLb.getId());
+//        }
 
         @Test(expected = BadRequestException.class)
         public void shouldFailIfLbisSticky() throws Exception {
