@@ -59,7 +59,7 @@ public class UsageRepository {
                 .setParameter("loadbalancerId", loadBalancerId);
 
         List<Usage> usage = (List<Usage>) query.getResultList();
-        if (usage == null) return null;
+        if (usage == null || usage.isEmpty()) return null;
         return usage.get(0);
     }
 

@@ -586,6 +586,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     public void setStatus(LoadBalancer lb, LoadBalancerStatus status) {
         try {
             loadBalancerRepository.setStatus(lb, status);
+//            LoadBalancer dbLb = loadBalancerRepository.getById(lb.getId());
             loadBalancerStatusHistoryService.save(lb.getAccountId(), lb.getId(), status);
 
         } catch (EntityNotFoundException e) {
@@ -882,8 +883,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (dbLb.isSticky()) {
                 invalidLbs.add(dbLb);
             } else {
-                processSpecifiedOrDefaultHost(lb);
-                validLbs.add(lb);
+                processSpecifiedOrDefaultHost(dbLb);
+                validLbs.add(dbLb);
             }
         }
 
