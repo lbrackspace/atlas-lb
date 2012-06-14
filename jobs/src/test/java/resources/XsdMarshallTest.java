@@ -186,7 +186,7 @@ public class XsdMarshallTest {
 
             //Unmarshall and verify against schema
             JAXBContext jc = JAXBContext.newInstance(UsageEntry.class);
-            Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("jobs/src/main/resources/META-INF/xsd/entry.xsd"));
+            Schema factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new File("src/main/resources/META-INF/xsd/entry.xsd"));
             Unmarshaller unmarshaller = jc.createUnmarshaller();
             unmarshaller.setSchema(factory);
             return unmarshaller;
