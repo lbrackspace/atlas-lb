@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Usage;
 
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
@@ -96,15 +97,19 @@ public class AHUSLUtil {
     /**
      * This method returns XMLGregorinanCalendar based on milliseconds
      *
-     * @param timeInMillis
+     * @param calendar
      * @return
      * @throws DatatypeConfigurationException
      */
-    public static XMLGregorianCalendar processCalendar(long timeInMillis) throws DatatypeConfigurationException {
+    public static XMLGregorianCalendar processCalendar(Calendar calendar) throws DatatypeConfigurationException {
+        //TODO: find a better way to transform.............
         GregorianCalendar gc = new GregorianCalendar();
-        gc.setTimeInMillis(timeInMillis);
-        DatatypeFactory dtf = DatatypeFactory.newInstance();
-        return dtf.newXMLGregorianCalendar(gc);
+        gc.setTimeInMillis(calendar.getTimeInMillis());
+        XMLGregorianCalendar xgc = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
+        xgc.setMillisecond(DatatypeConstants.FIELD_UNDEFINED);
+        xgc.setTimezone(0);
+        System.out.println("XMLGREGORIAN:: " + xgc);
+        return xgc;
     }
 
     /**

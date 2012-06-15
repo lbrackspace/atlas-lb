@@ -904,6 +904,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             String msg = String.format(fmt, errors);
             throw new InsufficientRequestException(msg);
         }
+
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
         VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
         CatalogSSLCertificatesBindingStub certificateCatalogService = serviceStubs.getZxtmCatalogSSLCertificatesBinding();

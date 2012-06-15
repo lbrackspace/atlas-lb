@@ -36,8 +36,8 @@ public class LbaasUsageDataMap {
         usageV1.setRegion(AHUSLUtil.mapRegion(region));
 
         usageV1.setVersion(usageRecord.getEntryVersion().toString());
-        usageV1.setStartTime(AHUSLUtil.processCalendar(usageRecord.getStartTime().getTimeInMillis()));
-        usageV1.setEndTime(AHUSLUtil.processCalendar(usageRecord.getEndTime().getTimeInMillis()));
+        usageV1.setStartTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
+        usageV1.setEndTime(AHUSLUtil.processCalendar(usageRecord.getEndTime()));
         usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.data_center)));
 
         if (AHUSLUtil.mapEventType(usageRecord) == null) {
@@ -89,8 +89,8 @@ public class LbaasUsageDataMap {
         usageV1.setRegion(AHUSLUtil.mapRegion(region));
 
         usageV1.setVersion("1");//Rows are not updated...
-        usageV1.setStartTime(AHUSLUtil.processCalendar(accountUsage.getStartTime().getTimeInMillis()));
-        usageV1.setEndTime(AHUSLUtil.processCalendar(accountUsage.getStartTime().getTimeInMillis()));
+        usageV1.setStartTime(AHUSLUtil.processCalendar(accountUsage.getStartTime()));
+        usageV1.setEndTime(AHUSLUtil.processCalendar(accountUsage.getStartTime()));
 
         usageV1.setType(null); //No events
         usageV1.setTenantId(accountUsage.getAccountId().toString());
