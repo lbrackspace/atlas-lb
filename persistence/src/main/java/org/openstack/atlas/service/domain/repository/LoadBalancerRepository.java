@@ -134,6 +134,7 @@ public class LoadBalancerRepository {
         }
         up.setErrorpage(null);
         entityManager.merge(up);
+        entityManager.remove(up);
         return true;
 
 

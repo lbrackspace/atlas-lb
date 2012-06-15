@@ -1,19 +1,17 @@
 package org.openstack.atlas.jobs;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.events.entities.Alert;
-import org.openstack.atlas.service.domain.events.repository.AlertRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.helpers.AlertHelper;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.util.Calendar;
 import java.util.List;
@@ -41,6 +39,9 @@ public class LoadBalancerDeletionJob extends Job {
                 for (LoadBalancer deleteLb : elbs) {
                     try {
                         LOG.info(String.format("Attempting to remove load balancer with id..'%s' from the database... ", deleteLb.getId()));
+                        //TODO: for legacy bug, remove user_page to prevent manual intervention. once caught up the following line(1) can be removed
+                        loadBalancerRepository.removeErrorPage(deleteLb.getId(), deleteLb.getAccountId());
+
                         loadBalancerRepository.removeExpiredLb(deleteLb.getId());
                         LOG.info(String.format("Successfully removed load balancer with id..'%s' from the database... ", deleteLb.getId()));
                     } catch (Exception e) {

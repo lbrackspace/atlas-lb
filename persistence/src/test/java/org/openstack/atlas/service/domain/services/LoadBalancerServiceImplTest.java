@@ -1,12 +1,5 @@
 package org.openstack.atlas.service.domain.services;
 
-import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
-import org.openstack.atlas.service.domain.repository.AccountLimitRepository;
-import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -14,8 +7,20 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
+import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.repository.*;
+import org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl;
+import org.openstack.atlas.service.domain.services.impl.HostServiceImpl;
+import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
+import org.openstack.atlas.service.domain.services.impl.LoadBalancerStatusHistoryServiceImpl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.mockito.Mockito.mock;
@@ -240,6 +245,151 @@ public class LoadBalancerServiceImplTest {
             loadBalancer.setPort(445);
 
             lbService.prepareForUpdate(loadBalancer);
+
+        }
+    }
+
+    public static class WhenVerifyingReassignHosts {
+        private LoadBalancer lb;
+        LoadBalancerRepository lbRepository;
+        LoadBalancerServiceImpl lbService;
+        HostServiceImpl hostService;
+        ClusterServiceImpl clusterService;
+        ClusterRepository clusterRepository;
+        HostRepository hostRepository;
+        VirtualIpRepository virtualIpRepository;
+        LoadBalancerProtocolObject defaultProtocol;
+
+        LoadBalancerStatusHistoryServiceImpl loadBalancerStatusHistoryService;
+        LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException {
+            lb = new LoadBalancer();
+            lbRepository = mock(LoadBalancerRepository.class);
+            lbService = new LoadBalancerServiceImpl();
+            lbService.setLoadBalancerRepository(lbRepository);
+
+            hostService = new HostServiceImpl();
+            hostService.setLoadBalancerRepository(lbRepository);
+            hostRepository = mock(HostRepository.class);
+            hostService.setHostRepository(hostRepository);
+
+            clusterService = new ClusterServiceImpl();
+            clusterService.setLoadBalancerRepository(lbRepository);
+            clusterRepository = mock(ClusterRepository.class);
+            clusterService.setClusterRepository(clusterRepository);
+
+            virtualIpRepository = mock(VirtualIpRepository.class);
+
+            loadBalancerStatusHistoryRepository = mock(LoadBalancerStatusHistoryRepository.class);
+            loadBalancerStatusHistoryService = new LoadBalancerStatusHistoryServiceImpl();
+            loadBalancerStatusHistoryService.setLoadBalancerStatusHistoryRepository(loadBalancerStatusHistoryRepository);
+
+            hostService.setClusterRepository(clusterRepository);
+            lbService.setHostService(hostService);
+            lbService.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
+            lbService.setVirtualIpRepository(virtualIpRepository);
+
+            lb.setStatus(LoadBalancerStatus.ACTIVE);
+
+            lb.setAccountId(555555);
+            lb.setId(3333);
+            lb.setPort(33);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+
+            Host host = new Host();
+            host.setId(2);
+            host.setHostStatus(HostStatus.ACTIVE);
+
+            Cluster cluster = new Cluster();
+            cluster.setId(3);
+
+            lb.setHost(host);
+
+            when(hostRepository.getById(Matchers.<Integer>any())).thenReturn(host);
+            when(hostRepository.getDefaultActiveHost(Matchers.<Integer>any())).thenReturn(host);
+            when(clusterRepository.getActiveCluster()).thenReturn(cluster);
+            when(hostService.getById(Matchers.<Integer>any())).thenReturn(host);
+            when(loadBalancerStatusHistoryRepository.save(Matchers.<LoadBalancerStatusHistory>anyObject())).thenReturn(new LoadBalancerStatusHistory());
+
+//            when(loadBalancerStatusHistoryService.save(lb.getAccountId(), lb.getId(), status);)
+//            when(lbRepository.testAndSetStatus(Matchers.<Integer>any(), Matchers.<Integer>any(),Matchers.<LoadBalancerStatus>any(), Matchers.<Boolean>any())).thenReturn(true);
+
+        }
+
+//        @Test
+//        public void shouldRetrieveDBLb() throws Exception {
+//            when(lbRepository.getById(Matchers.<Integer>any())).thenReturn(lb);
+//
+//            List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
+//            LoadBalancer loadBalancer = new LoadBalancer();
+//            loadBalancer.setId(3333);
+//            lbs.add(loadBalancer);
+//
+//            List<LoadBalancer> newLbs;
+//            newLbs = lbService.reassignLoadBalancerHost(lbs);
+//
+//            LoadBalancer newLb;
+//            newLb = newLbs.get(0);
+//
+//            Assert.assertEquals((Object) 555555, newLb.getAccountId());
+//            Assert.assertEquals((Object) 3333, newLb.getId());
+//        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldFailIfLbisSticky() throws Exception {
+            when(lbRepository.getById(Matchers.<Integer>any())).thenReturn(lb);
+
+            List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
+            LoadBalancer loadBalancer = new LoadBalancer();
+            loadBalancer.setId(3333);
+            lb.setSticky(true);
+            lbs.add(loadBalancer);
+
+            List<LoadBalancer> newLbs;
+            newLbs = lbService.reassignLoadBalancerHost(lbs);
+
+            LoadBalancer newLb;
+            newLb = newLbs.get(0);
+
+            Assert.assertEquals((Object) 555555, newLb.getAccountId());
+
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldVerifySharedVipLbs() throws Exception {
+
+            List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
+            LoadBalancer loadBalancer = new LoadBalancer();
+            loadBalancer.setId(3333);
+            loadBalancer.setAccountId(55555);
+
+            Set<LoadBalancerJoinVip> jvips = new HashSet<LoadBalancerJoinVip>();
+            LoadBalancerJoinVip jvip = new LoadBalancerJoinVip();
+
+            jvip.setVirtualIp(new VirtualIp());
+            jvip.setId(new LoadBalancerJoinVip.Id(loadBalancer.getId(), 676));
+            jvip.setLoadBalancer(lb);
+            jvips.add(jvip);
+            loadBalancer.setLoadBalancerJoinVipSet(jvips);
+
+            List<LoadBalancer> sharedlbs = new ArrayList<LoadBalancer>();
+            LoadBalancer sharedlb = new LoadBalancer();
+            sharedlb.setId(9844);
+            sharedlbs.add(sharedlb);
+            when(virtualIpRepository.getLoadBalancersByVipId(Matchers.anyInt())).thenReturn(sharedlbs);
+
+            lbs.add(loadBalancer);
+
+            when(lbRepository.getById(Matchers.anyInt())).thenReturn(loadBalancer);
+            List<LoadBalancer> newLbs;
+            newLbs = lbService.reassignLoadBalancerHost(lbs);
+
+            LoadBalancer newLb;
+            newLb = newLbs.get(0);
+
+            Assert.assertEquals((Object) 55555, newLb.getAccountId());
 
         }
     }

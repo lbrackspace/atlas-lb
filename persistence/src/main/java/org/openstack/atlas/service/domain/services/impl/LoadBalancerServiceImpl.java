@@ -532,6 +532,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     public LoadBalancer pseudoDelete(LoadBalancer lb) throws Exception {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
+        //Remove error page...
+        loadBalancerRepository.removeErrorPage(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
         dbLoadBalancer.setStatus(DELETED);
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
 
@@ -585,7 +587,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     public void setStatus(LoadBalancer lb, LoadBalancerStatus status) {
         try {
             loadBalancerRepository.setStatus(lb, status);
-            loadBalancerStatusHistoryService.save(lb.getAccountId(), lb.getId(), status);
+            LoadBalancer dbLb = loadBalancerRepository.getById(lb.getId());
+            loadBalancerStatusHistoryService.save(dbLb.getAccountId(), dbLb.getId(), status);
 
         } catch (EntityNotFoundException e) {
             LOG.warn(String.format("Cannot set status for loadbalancer '%d' as it does not exist.", lb.getId()));
@@ -894,6 +897,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         //Everythings ok, begin update...
         for (LoadBalancer lb : validLbs) {
             setStatus(lb, LoadBalancerStatus.PENDING_UPDATE);
+//            loadBalancerRepository.save(lb);
         }
 
         return validLbs;
