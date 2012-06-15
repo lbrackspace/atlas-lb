@@ -108,7 +108,7 @@ public class AHUSLUtil {
         XMLGregorianCalendar xgc = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
         xgc.setMillisecond(DatatypeConstants.FIELD_UNDEFINED);
         xgc.setTimezone(0);
-        System.out.println("XMLGREGORIAN:: " + xgc);
+//        System.out.println("XMLGREGORIAN:: " + xgc);
         return xgc;
     }
 
