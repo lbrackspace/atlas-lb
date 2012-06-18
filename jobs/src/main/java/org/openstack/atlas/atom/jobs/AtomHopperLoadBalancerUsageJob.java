@@ -76,7 +76,7 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
             List<Integer> accounts = loadBalancerRepository.getAllAccountIds();
             for (int id : accounts) {
                 //Retrieve all non-deleted lbs for account
-                List<AccountLoadBalancer> lbsForAccount = loadBalancerRepository.getAccountNonDeleteLoadBalancers(id);
+                List<AccountLoadBalancer> lbsForAccount = loadBalancerRepository.getAccountLoadBalancers(id);
                 //Walk each lb...
                 for (AccountLoadBalancer lb : lbsForAccount) {
                     try {
