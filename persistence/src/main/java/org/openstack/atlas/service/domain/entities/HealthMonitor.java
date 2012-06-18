@@ -34,6 +34,9 @@ public class HealthMonitor extends Entity implements Serializable {
     @Column(name = "body_regex", length = 128, nullable = true)
     private String bodyRegex;
 
+    @Column(name = "host_header", length = 256, nullable = true)
+    private String hostHeader;
+
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;
     }
@@ -88,6 +91,14 @@ public class HealthMonitor extends Entity implements Serializable {
 
     public void setBodyRegex(String bodyRegex) {
         this.bodyRegex = bodyRegex;
+    }
+
+    public String getHostHeader() {
+        return hostHeader;
+    }
+
+    public void setHostHeader(String hostHeader) {
+        this.hostHeader = hostHeader;
     }
 
     public HealthMonitorType getType() {

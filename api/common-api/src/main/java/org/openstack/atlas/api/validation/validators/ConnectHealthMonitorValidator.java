@@ -1,18 +1,17 @@
 package org.openstack.atlas.api.validation.validators;
 
-import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
-import org.openstack.atlas.api.validation.verifiers.MustBeIntegerInRange;
 import org.openstack.atlas.api.validation.Validator;
 import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.api.validation.verifiers.MustBeIntegerInRange;
 import org.openstack.atlas.api.validation.verifiers.Verifier;
 import org.openstack.atlas.api.validation.verifiers.VerifierResult;
+import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
 
+import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
+import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 import static org.openstack.atlas.api.validation.validators.HealthMonitorValidator.CEILING;
 import static org.openstack.atlas.api.validation.validators.HealthMonitorValidator.FLOOR;
-import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
-import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
 
 public class ConnectHealthMonitorValidator implements ResourceValidator<HealthMonitor> {
 
@@ -39,6 +38,7 @@ public class ConnectHealthMonitorValidator implements ResourceValidator<HealthMo
                 result(validationTarget().getDelay()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Delay for the health monitor must be between %d and %d.", FLOOR, CEILING));
                 result(validationTarget().getTimeout()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Timeout for the health monitor must be between %d and %d.", FLOOR, CEILING));
                 result(validationTarget().getAttemptsBeforeDeactivation()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Attempts before deactivation for the health monitor must be between %d and %d.", FLOOR, CEILING));
+                result(validationTarget().getHostHeader()).must().not().exist().withMessage("Host Header is not supported for CONNECT based health monitors.");
             }
         });
     }

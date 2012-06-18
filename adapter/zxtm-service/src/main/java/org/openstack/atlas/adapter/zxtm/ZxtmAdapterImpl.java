@@ -1752,6 +1752,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getMonitorBinding().setPath(new String[]{monitorName}, new String[]{healthMonitor.getPath()});
             serviceStubs.getMonitorBinding().setStatusRegex(new String[]{monitorName}, new String[]{healthMonitor.getStatusRegex()});
             serviceStubs.getMonitorBinding().setBodyRegex(new String[]{monitorName}, new String[]{healthMonitor.getBodyRegex()});
+            serviceStubs.getMonitorBinding().setHostHeader(new String[]{monitorName}, new String[]{healthMonitor.getHostHeader()});
             if (healthMonitor.getType().equals(HealthMonitorType.HTTPS)) {
                 serviceStubs.getMonitorBinding().setUseSSL(new String[]{monitorName}, new boolean[]{true});
             }

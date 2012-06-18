@@ -151,6 +151,14 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
         } else {
             newMonitor.setBodyRegex(null);
         }
+
+        if (requestMonitor.getHostHeader() != null) {
+            newMonitor.setHostHeader(requestMonitor.getHostHeader());
+        } else if (dbMonitor != null && dbMonitor.getHostHeader() != null) {
+            newMonitor.setHostHeader(dbMonitor.getHostHeader());
+        } else {
+            newMonitor.setHostHeader(null);
+        }
     }
 
     private void setConnectMonitorProperties(HealthMonitor requestMonitor, HealthMonitor dbMonitor, HealthMonitor newMonitor) throws BadRequestException {
