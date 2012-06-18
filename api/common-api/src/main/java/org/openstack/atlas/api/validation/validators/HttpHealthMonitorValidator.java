@@ -1,16 +1,10 @@
 package org.openstack.atlas.api.validation.validators;
 
+import org.openstack.atlas.api.validation.verifiers.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
-import org.openstack.atlas.api.validation.verifiers.HealthMonitorPathVerifier;
-import org.openstack.atlas.api.validation.verifiers.MustBeIntegerInRange;
-import org.openstack.atlas.api.validation.verifiers.MustNotBeEmpty;
 import org.openstack.atlas.api.validation.Validator;
 import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.api.validation.verifiers.CannotExceedSize;
-import org.openstack.atlas.api.validation.verifiers.RegexValidatorVerifier;
-import org.openstack.atlas.api.validation.verifiers.Verifier;
-import org.openstack.atlas.api.validation.verifiers.VerifierResult;
 
 import static org.openstack.atlas.api.validation.validators.HealthMonitorValidator.FLOOR;
 import static org.openstack.atlas.api.validation.validators.HealthMonitorValidator.CEILING;
@@ -40,7 +34,9 @@ public class HttpHealthMonitorValidator implements ResourceValidator<HealthMonit
                 result(validationTarget().getBodyRegex()).if_().exist().then().must().adhereTo(new CannotExceedSize(MAXSTR)).withMessage("bodyRegex" + maxStrMsg);
                 result(validationTarget().getStatusRegex()).if_().exist().then().must().adhereTo(new RegexValidatorVerifier()).withMessage("Must provide a valid status regex");
                 result(validationTarget().getBodyRegex()).if_().exist().then().must().adhereTo(new RegexValidatorVerifier()).withMessage("Must provide a valid body regex");
-                                                    
+                result(validationTarget().getHostHeader()).if_().exist().then().must().adhereTo(new HostNameRegexValidatorVerifier()).withMessage("Must provide a valid host name.");
+                result(validationTarget().getHostHeader()).if_().exist().then().must().adhereTo(new CannotExceedSize(256)).withMessage("Host Header field cannot exceed 256 characters");
+
                 // PUT EXPECTATIONS
                 must().adhereTo(new Verifier<HealthMonitor>() {
                     @Override
