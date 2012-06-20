@@ -38,7 +38,7 @@ public class LbaasUsageDataMap {
         usageV1.setVersion(usageRecord.getEntryVersion().toString());
         usageV1.setStartTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
         usageV1.setEndTime(AHUSLUtil.processCalendar(usageRecord.getEndTime()));
-        usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.data_center)));
+        usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.ahusl_data_center)));
 
         if (AHUSLUtil.mapEventType(usageRecord) == null) {
             usageV1.setType(null);
@@ -95,7 +95,7 @@ public class LbaasUsageDataMap {
         usageV1.setType(null); //No events
         usageV1.setTenantId(accountUsage.getAccountId().toString());
         usageV1.setResourceId(accountUsage.getId().toString());
-        usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.data_center)));
+        usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.ahusl_data_center)));
 
         //Generate UUID
         UUID uuid = UUIDUtil.genUUID(genUUIDString(accountUsage));

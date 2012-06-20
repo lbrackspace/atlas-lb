@@ -3,6 +3,7 @@ package org.openstack.atlas.atom.jobs;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.atom.client.AHUSLClient;
 import org.openstack.atlas.atom.config.AtomHopperConfiguration;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.pojo.EntryPojo;
@@ -16,7 +17,6 @@ import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.pojos.AccountLoadBalancer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
-import org.openstack.atomhopper.AHUSLClient;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
@@ -63,11 +63,9 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
         processJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.IN_PROGRESS);
 
         if (configuration.getString(AtomHopperConfigurationKeys.allow_ahusl).equals("true")) {
-            //URI from config : atomHopper/USL endpoint
-            uri = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
             //Create the threaded client to handle requests...
             try {
-                client = new AHUSLClient(uri);
+                client = new AHUSLClient();
             } catch (Exception e) {
                 LOG.info("The client failed to initialize: " + Arrays.toString(e.getStackTrace()));
             }
