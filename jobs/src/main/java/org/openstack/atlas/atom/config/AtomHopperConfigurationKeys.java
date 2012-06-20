@@ -3,7 +3,7 @@ package org.openstack.atlas.atom.config;
 import org.openstack.atlas.cfg.ConfigurationKey;
 
 public enum AtomHopperConfigurationKeys implements ConfigurationKey {
-    region,
+    ahusl_region,
     allow_ahusl,
     ahusl_data_center,
     atom_hopper_endpoint,

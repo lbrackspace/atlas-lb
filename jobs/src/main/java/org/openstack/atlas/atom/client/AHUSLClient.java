@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 
 public class AHUSLClient {
     private final Log LOG = LogFactory.getLog(AHUSLClient.class);
-    private Configuration configuration = new AtomHopperConfiguration();
+    private static Configuration configuration = new AtomHopperConfiguration();
 
 
     private String endPoint;
@@ -35,8 +35,7 @@ public class AHUSLClient {
      * @throws Exception
      */
     public AHUSLClient() throws Exception {
-        String endPoint = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
-        new AHUSLClient(endPoint, AHUSLClientUtil.createHttpClient());
+        this(configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint), AHUSLClientUtil.createHttpClient());
     }
 
 

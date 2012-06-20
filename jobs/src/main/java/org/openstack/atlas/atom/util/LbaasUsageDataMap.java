@@ -27,7 +27,7 @@ public class LbaasUsageDataMap {
     private static String SERVICE_CODE = "CloudLoadBalancers";
 
     public static UsageV1Pojo generateUsageEntry(Configuration configuration, String configRegion, Usage usageRecord) throws DatatypeConfigurationException, NoSuchAlgorithmException {
-        configRegion = configuration.getString(AtomHopperConfigurationKeys.region);
+        configRegion = configuration.getString(AtomHopperConfigurationKeys.ahusl_region);
         if (configRegion != null) {
             region = configRegion;
         }
@@ -80,7 +80,7 @@ public class LbaasUsageDataMap {
     }
 
     public static UsageV1Pojo generateAccountUsageEntry(Configuration configuration, String configRegion, AccountUsage accountUsage) throws DatatypeConfigurationException, NoSuchAlgorithmException {
-        configRegion = configuration.getString(AtomHopperConfigurationKeys.region);
+        configRegion = configuration.getString(AtomHopperConfigurationKeys.ahusl_region);
         if (configRegion != null) {
             region = configRegion;
         }
