@@ -104,8 +104,9 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
                                 entry.getCategory().add(usageCategory);
 
 
-                                LOG.info(String.format("Uploading to the atomHopper service now..."));
+                                LOG.info(String.format("Start Uploading to the atomHopper service now..."));
                                 ClientResponse response = client.postEntry(entry);
+                                LOG.info(String.format("Finished uploading to the atomHopper service..."));
 
                                 //Notify usage if the record was uploaded or not...
                                 if (response.getStatus() == 201) {
@@ -114,6 +115,7 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
                                     LOG.error("There was an error pushing to the atom hopper service" + response.getStatus());
                                     usageRecord.setNeedsPushed(true);
                                 }
+                                LOG.info("Processing result to the usage table. (Pushed/NotPushed)=" + usageRecord.isNeedsPushed());
                                 usageRepository.updatePushedRecord(usageRecord);
 
                                 String body = AHUSLUtil.processResponseBody(response);
