@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 public class AHUSLUtil {
     private static final Log LOG = LogFactory.getLog(AHUSLUtil.class);
@@ -103,14 +104,27 @@ public class AHUSLUtil {
      */
     public static XMLGregorianCalendar processCalendar(Calendar calendar) throws DatatypeConfigurationException {
         //TODO: find a better way to transform.............
+
+        Calendar retcal = convertCalendar(calendar, TimeZone.getTimeZone("UTC"));
+
         GregorianCalendar gc = new GregorianCalendar();
-        gc.setTimeInMillis(calendar.getTimeInMillis());
+        gc.setTimeInMillis(retcal.getTimeInMillis());
         XMLGregorianCalendar xgc = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
         xgc.setMillisecond(DatatypeConstants.FIELD_UNDEFINED);
         xgc.setTimezone(0);
 //        System.out.println("XMLGREGORIAN:: " + xgc);
         return xgc;
     }
+
+    public static Calendar convertCalendar(final Calendar calendar, final TimeZone timeZone) {
+        Calendar ret = new GregorianCalendar(timeZone);
+        ret.setTimeInMillis(calendar.getTimeInMillis() +
+                timeZone.getOffset(calendar.getTimeInMillis()) -
+                TimeZone.getDefault().getOffset(calendar.getTimeInMillis()));
+        ret.getTime();
+        return ret;
+    }
+
 
     /**
      * This method maps string events to EventType
