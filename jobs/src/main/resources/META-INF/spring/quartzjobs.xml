@@ -247,8 +247,8 @@
 
     <bean id="atomHopperLoadBalancerUsageJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="atomHopperLoadBalancerUsageJob"/>
-        <property name="cronExpression" value="0 0 * * * ?"/>
-        <!--<property name="cronExpression" value="0 */1 * * * ?"/>-->
+        <!--<property name="cronExpression" value="0 0 * * * ?"/>-->
+        <property name="cronExpression" value="0 */10 * * * ?"/>
 
     </bean>
 

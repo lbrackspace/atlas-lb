@@ -1,14 +1,11 @@
 package org.openstack.atlas.atom.jobs;
 
-import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.atom.client.AHUSLClient;
 import org.openstack.atlas.atom.config.AtomHopperConfiguration;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
-import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.util.AHUSLUtil;
-import org.openstack.atlas.atom.util.LbaasUsageDataMap;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
 import org.openstack.atlas.service.domain.entities.JobName;
@@ -21,31 +18,28 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
-import org.w3._2005.atom.Title;
-import org.w3._2005.atom.Type;
-import org.w3._2005.atom.UsageCategory;
-import org.w3._2005.atom.UsageContent;
 
-import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.*;
 
 public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(AtomHopperLoadBalancerUsageJob.class);
 
+    //Configuration
     private Configuration configuration = new AtomHopperConfiguration();
     private LoadBalancerRepository loadBalancerRepository;
     private UsageRepository usageRepository;
 
-    private String region = "GLOBAL"; //default..
-    private final String lbaasTitle = "cloudLoadBalancers"; //default..
-    private final String label = "loadBalancerUsage";
-    private final String author = "LBAAS"; //default..
-    private String configRegion = null;
-    private String uri = null;
+    //ThreadPool
+    private int nTasks = 50;
+    private long n = 1000L;
+    private int tpSize = 15;
+    private int connectionLimit = 20;
 
-    AHUSLClient client;
+    private AHUSLClient client;
 
 
     @Override
@@ -63,8 +57,15 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
         processJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.IN_PROGRESS);
 
         if (configuration.getString(AtomHopperConfigurationKeys.allow_ahusl).equals("true")) {
+
+
+            LOG.info("Setting up the threadPoolExecutor with " + tpSize + " pools");
+            ThreadPoolExecutor tpe = new ThreadPoolExecutor(tpSize, tpSize, 50000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+
+
             //Create the threaded client to handle requests...
             try {
+                LOG.info("Setting up the client...");
                 client = new AHUSLClient();
             } catch (Exception e) {
                 LOG.info("The client failed to initialize: " + Arrays.toString(e.getStackTrace()));
@@ -72,62 +73,67 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
 
             //Grab all accounts a begin processing usage...
             List<Integer> accounts = loadBalancerRepository.getAllAccountIds();
-            for (int id : accounts) {
-                //Retrieve all non-deleted lbs for account
-                List<AccountLoadBalancer> lbsForAccount = loadBalancerRepository.getAccountLoadBalancers(id);
-                //Walk each lb...
-                for (AccountLoadBalancer lb : lbsForAccount) {
+            for (int accountID : accounts) {
+                for (AccountLoadBalancer lb : loadBalancerRepository.getAccountLoadBalancers(accountID)) {
+                    LOG.info("Process lb: " + lb.getLoadBalancerId() + " for account: " + accountID);
+                    int totalUsageRowsToSend = 1;
                     try {
                         //Retrieve usage for account by lbId
-                        List<Usage> lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), AHUSLUtil.getStartCal(), AHUSLUtil.getNow());
+                        List<Usage> lbusages = loadBalancerRepository.getUsageByAccountIdandLbId(accountID, lb.getLoadBalancerId(), AHUSLUtil.getStartCal(), AHUSLUtil.getNow());
+                        List<Usage> processUsage = null;
 
-                        //Walk each load balancer usage record...
-                        for (Usage usageRecord : lbusage) {
-                            if (usageRecord.isNeedsPushed()) {
+                        if (!lbusages.isEmpty()) {
+                            LOG.info("There is " + lbusages.size() + " usage records to process for lb: " + lb.getLoadBalancerId());
+//                            List<Callable<Object>> todo = new ArrayList<Callable<Object>>(lbusages.size());
+                            int taskCounter = 0;
+                            while (totalUsageRowsToSend < lbusages.size()) {
 
-                                EntryPojo entry = new EntryPojo();
-                                Title title = new Title();
-                                title.setType(Type.TEXT);
-                                title.setValue(lbaasTitle);
-                                entry.setTitle(title);
+                                LOG.info("Processing usage into tasks.. task: " + taskCounter);
+                                //Chunk the data into seprate tasks
+                                for (int i = 0; i < nTasks; i++) {
+                                    if (totalUsageRowsToSend != lbusages.size()) {
+                                        processUsage =  new ArrayList<Usage>();
+                                        processUsage.add(lbusages.get(totalUsageRowsToSend));
+                                        totalUsageRowsToSend++;
 
-                                UsageContent usageContent = new UsageContent();
-                                usageContent.setEvent(LbaasUsageDataMap.generateUsageEntry(configuration, configRegion, usageRecord));
-                                entry.setContent(usageContent);
-                                entry.getContent().setType(MediaType.APPLICATION_XML);
-
-                                UsageCategory usageCategory = new UsageCategory();
-                                usageCategory.setLabel(label);
-                                usageCategory.setTerm("plain");
-                                entry.getCategory().add(usageCategory);
-
-
-                                LOG.info(String.format("Start Uploading to the atomHopper service now..."));
-                                ClientResponse response = client.postEntry(entry);
-                                LOG.info(String.format("Finished uploading to the atomHopper service..."));
-
-                                //Notify usage if the record was uploaded or not...
-                                if (response.getStatus() == 201) {
-                                    usageRecord.setNeedsPushed(false);
-                                } else {
-                                    LOG.error("There was an error pushing to the atom hopper service" + response.getStatus());
-                                    usageRecord.setNeedsPushed(true);
+                                    } else {
+                                        break;
+                                    }
                                 }
-                                LOG.info("Processing result to the usage table. (Pushed/NotPushed)=" + usageRecord.isNeedsPushed());
-                                usageRepository.updatePushedRecord(usageRecord);
+                                taskCounter++;
 
-                                String body = AHUSLUtil.processResponseBody(response);
-                                LOG.info(String.format("Status=%s\n", response.getStatus()));
-                                LOG.info(String.format("body %s\n", body));
-                                response.close();
+                                LOG.info("Sending task for lb: " + lb.getLoadBalancerId() + " with " + processUsage.size() + " usage rows for this task to the que...");
+                                tpe.execute(new LoadBalancerAHUSLTask(processUsage, client, usageRepository)); //TODO: Need to move repository deps...
+                                LOG.info("lb: " + lb.getLoadBalancerId() + " sent to the que succesfully... with a total of " + tpe.getTaskCount() + " tasks in the task pool");
+
+//                                LOG.info("Adding to the que pool");
+//                                todo.add(Executors.callable(new LoadBalancerAHUSLTask(processUsage, client, usageRepository)));
+
                             }
+
+//                            List<Future<Object>> answers = tpe.invokeAll(todo);
+//                            LOG.info("This should be true when all has finished processing :: isLastDone: " + answers.get(0));
+                            LOG.info("Done processing usage for lb: " + lb.getLoadBalancerId());
+                            LOG.info("Tasks completed: " + tpe.getCompletedTaskCount() + "Active tasks count: " + tpe.getActiveCount() + "Current tasks in QUE: " + tpe.getTaskCount());
+
+                        } else {
+                            LOG.info("No usage found for account: " + lb.getLoadBalancerId() + " Continue...");
                         }
+
                     } catch (Throwable t) {
                         System.out.printf("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t));
                         LOG.error(String.format("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t)));
                     }
                 }
             }
+            LOG.info("Shutting down the thread pool..");
+            try {
+                tpe.shutdown();
+                tpe.awaitTermination(300, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                LOG.error("There was an error shutting down threadPool: " + AHUSLUtil.getStackTrace(e));
+            }
+            LOG.info("Destroying the client");
             client.destroy();
         }
 
