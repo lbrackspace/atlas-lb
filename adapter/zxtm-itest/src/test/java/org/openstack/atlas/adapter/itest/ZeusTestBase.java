@@ -183,7 +183,7 @@ public class ZeusTestBase {
     }
 
     protected static void shouldBeValidApiVersion() {
-        String ZEUS_API_VERSION = "8.1r1";
+        String ZEUS_API_VERSION = "9.0";
         try {
             Assert.assertEquals(ZEUS_API_VERSION, getServiceStubs().getSystemMachineInfoBinding().getProductVersion());
         } catch (RemoteException e) {
