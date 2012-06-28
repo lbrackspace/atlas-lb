@@ -15,26 +15,13 @@ import org.openstack.atlas.api.helpers.JsonSerializer.ObjectWrapperSerializer;
 import org.openstack.atlas.api.helpers.JsonSerializer.PropertyCollectionSerializer;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.w3.atom.Link;
-/* import org.openstack.atlas.docs.loadbalancers.api.v1.*; STOP splat codeing this. Yes that means you Trevor */
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
-import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
-import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
-import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
-import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+
+/* import org.openstack.atlas.docs.loadbalancers.api.v1.*; STOP splat codeing this. Yes that means you Trevor */
 
 public class JsonObjectMapper extends ObjectMapper {
 
@@ -50,12 +37,12 @@ public class JsonObjectMapper extends ObjectMapper {
 
         Class[] serializerWrapperClasses = new Class[]{HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class,
-            Node.class, RateLimit.class, Errorpage.class,SslTermination.class, Link.class, AllowedDomain.class};
+            Node.class, RateLimit.class, Errorpage.class,SslTermination.class, Link.class, AllowedDomain.class, ContentCaching.class};
 
         Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class, Meta.class,
             ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
-            Errorpage.class, SslTermination.class, Host.class, Link.class, AllowedDomain.class};
+            Errorpage.class, SslTermination.class, Host.class, Link.class, AllowedDomain.class, ContentCaching.class};
 
 
         for (Class wrapperClass : serializerWrapperClasses) {
