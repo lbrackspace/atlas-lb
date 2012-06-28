@@ -44,7 +44,7 @@ CREATE TABLE `host_usage` (
   `snapshot_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `host_usage_host_key` (`host_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=151612 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=153497 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -77,7 +77,7 @@ CREATE TABLE `lb_usage` (
   PRIMARY KEY (`id`),
   KEY `lb_usage_account_key` (`account_id`),
   KEY `lb_usage_lb_key` (`loadbalancer_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1080 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -94,10 +94,16 @@ CREATE TABLE `lb_usage_event` (
   `start_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `num_vips` int(11) NOT NULL DEFAULT '1',
   `event_type` varchar(32) NOT NULL,
+  `last_bandwidth_bytes_in` bigint(20) DEFAULT NULL,
+  `last_bandwidth_bytes_out` bigint(20) DEFAULT NULL,
+  `last_concurrent_conns` int(11) DEFAULT NULL,
+  `last_bandwidth_bytes_in_ssl` bigint(20) DEFAULT NULL,
+  `last_bandwidth_bytes_out_ssl` bigint(20) DEFAULT NULL,
+  `last_concurrent_conns_ssl` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `lb_usage_event_account_key` (`account_id`),
   KEY `lb_usage_event_lb_key` (`loadbalancer_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=207 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -123,4 +129,4 @@ CREATE TABLE `meta` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2012-04-11 19:20:19
+-- Dump completed on 2012-06-28 16:26:55
