@@ -55,123 +55,6 @@ public class LoadBalancerRepository {
         return lb;
     }
 
-    public UserPages getUserPages(Integer lid, Integer aid) {
-        List<UserPages> userPagesList = new ArrayList<UserPages>();
-        UserPages up;
-        String qStr = "FROM UserPages u where u.loadbalancer.id = :lid and u.loadbalancer.accountId = :aid";
-        Query q = entityManager.createQuery(qStr).setParameter("lid", lid).setParameter("aid", aid);
-        userPagesList = q.setMaxResults(1).getResultList();
-        if (userPagesList.size() <= 0) {
-            up = null;
-        } else {
-            up = userPagesList.get(0);
-        }
-        return up;
-    }
-
-    public Defaults getDefaultErrorPage() {
-        List<Defaults> defaultsList = new ArrayList<Defaults>();
-        Defaults up;
-        String qStr = "FROM Defaults d WHERE d.name = :globalError";
-        Query q = entityManager.createQuery(qStr).setParameter("globalError", Constants.DEFAULT_ERRORFILE);
-        defaultsList = q.setMaxResults(1).getResultList();
-        if (defaultsList.size() <= 0) {
-            up = null;
-        } else {
-            up = defaultsList.get(0);
-        }
-        return up;
-    }
-
-    public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException {
-        UserPages up;
-        up = getUserPages(lid, aid);
-        if (up == null) {
-            return null;
-        }
-        return up.getErrorpage();
-    }
-
-    public boolean setErrorPage(Integer lid, Integer aid, String errorpage) throws EntityNotFoundException {
-        boolean out = false;
-        LoadBalancer lb = getByIdAndAccountId(lid, aid);
-        UserPages up = getUserPages(lid, aid);
-        if (up == null) {
-            up = new UserPages();
-            up.setLoadbalancer(lb);
-            up.setErrorpage(errorpage);
-            entityManager.merge(up);
-            return true;
-        } else {
-            up.setErrorpage(errorpage);
-            entityManager.merge(up);
-            return false;
-        }
-    }
-
-    public boolean setDefaultErrorPage(String errorpage) throws EntityNotFoundException {
-        boolean out = false;
-        Defaults up = getDefaultErrorPage();
-        if (up == null) {
-            up = new Defaults();
-            up.setName(Constants.DEFAULT_ERRORFILE);
-            up.setValue(errorpage);
-            entityManager.merge(up);
-            return true;
-        } else {
-            up.setValue(errorpage);
-            entityManager.merge(up);
-            return false;
-        }
-    }
-
-    public boolean removeErrorPage(Integer lid, Integer aid) {
-        UserPages up = getUserPages(lid, aid);
-        if (up == null) {
-            return false;
-        } else if (up.getErrorpage() == null) {
-            return false;
-        }
-        up.setErrorpage(null);
-        entityManager.merge(up);
-        entityManager.remove(up);
-        return true;
-
-
-    }
-
-    public boolean removeSslTermination(Integer lid, Integer aid) {
-        SslTermination up = getSslTermination(lid, aid);
-        if (up == null) {
-            return false;
-        } else {
-            entityManager.remove(up);
-            return true;
-        }
-    }
-
-    public SslTermination getSslTermination(Integer lid, Integer aid) {
-        SslTermination sslTermination = new SslTermination();
-        String qStr = "FROM SslTermination u where u.loadbalancer.id = :lid";
-        Query q = entityManager.createQuery(qStr).setParameter("lid", lid);
-        try {
-            if (!q.getResultList().isEmpty()) {
-                sslTermination = (SslTermination) q.getResultList().get(0);
-            }
-        } catch (IndexOutOfBoundsException iex) {
-            return new SslTermination();
-        }
-        return sslTermination;
-    }
-
-    public SslTermination setSslTermination(Integer lid, Integer aid, SslTermination sslTermination) throws EntityNotFoundException {
-        LoadBalancer lb = getByIdAndAccountId(lid, aid);
-        sslTermination.setLoadbalancer(lb);
-        entityManager.merge(sslTermination);
-        entityManager.flush();
-        return sslTermination;
-    }
-
     public LoadBalancer getByIdAndAccountId(Integer id, Integer accountId) throws EntityNotFoundException {
         LoadBalancer lb;
         lb = getById(id);
@@ -200,6 +83,18 @@ public class LoadBalancerRepository {
     public void removeExpiredLb(int lbId) {
         LoadBalancer lb = entityManager.find(LoadBalancer.class, lbId);
         entityManager.remove(lb);
+    }
+
+    public List<Integer> getLoadbalancerIdsByAccountIDAndUsageNeedsPushed(Integer aid) {
+        List<Integer> lbs;
+        String qStr = "SELECT l.id from LoadBalancer l "
+                + "        WHERE l.accountId = :aid ";
+
+        Query q = entityManager.createQuery(qStr);
+        q.setParameter("aid", aid);
+        lbs = q.getResultList();
+
+        return lbs;
     }
 
     public AccessList getNetworkItemByAccountIdLoadBalancerIdNetworkItemId(Integer aid, Integer lid, Integer nid) throws EntityNotFoundException {
@@ -336,6 +231,12 @@ public class LoadBalancerRepository {
         // TODO: Find more efficient way of making sure loadbalancer exists
         getByIdAndAccountId(loadBalancerId, accountId); // Make sure loadbalancer exists
         return getUsageByLbId(loadBalancerId, startTime, endTime);
+    }
+
+    public List<Usage> getUsageByAccountIdandLbIdNeedsPushed(Integer accountId, Integer loadBalancerId, Calendar startTime, Calendar endTime) throws EntityNotFoundException, DeletedStatusException {
+        // TODO: Find more efficient way of making sure loadbalancer exists
+        getByIdAndAccountId(loadBalancerId, accountId); // Make sure loadbalancer exists
+        return getUsageByLbIdNeedsPushed(loadBalancerId, startTime, endTime);
     }
 
     public void setStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus status) throws EntityNotFoundException {
@@ -988,6 +889,51 @@ public class LoadBalancerRepository {
         return usageList;
     }
 
+    public List<Usage> getUsageByLbIdNeedsPushed(Integer loadBalancerId, Calendar startTime, Calendar endTime) throws EntityNotFoundException, DeletedStatusException {
+        List<Usage> usageList;
+
+        Query query = entityManager.createQuery(
+                "from Usage u where u.loadbalancer.id = :loadBalancerId and u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 order by u.startTime asc").setParameter("loadBalancerId", loadBalancerId).setParameter("startTime", startTime).setParameter("endTime", endTime);
+
+        usageList = query.getResultList();
+
+        if (usageList.isEmpty()) {
+            return new ArrayList<Usage>();
+        }
+
+        return usageList;
+    }
+
+    public List<Usage> getUsageByAccountIdNeedsPushed(Integer accountId, Calendar startTime, Calendar endTime) throws EntityNotFoundException, DeletedStatusException {
+        List<Usage> usageList;
+
+        Query query = entityManager.createQuery(
+                "from Usage u where u.accountId = :accountId and u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 order by u.startTime asc").setParameter("accountId", accountId).setParameter("startTime", startTime).setParameter("endTime", endTime);
+
+        usageList = query.getResultList();
+
+        if (usageList.isEmpty()) {
+            return new ArrayList<Usage>();
+        }
+
+        return usageList;
+    }
+
+    public List<Usage> getAllUsageNeedsPushed(Calendar startTime, Calendar endTime) throws EntityNotFoundException, DeletedStatusException {
+        List<Usage> usageList;
+
+        Query query = entityManager.createQuery(
+                "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 order by u.startTime asc").setParameter("startTime", startTime).setParameter("endTime", endTime);
+
+        usageList = query.getResultList();
+
+        if (usageList.isEmpty()) {
+            return new ArrayList<Usage>();
+        }
+
+        return usageList;
+    }
+
     public Collection<AccountBilling> getAccountBillingForAllAccounts(Calendar startTime, Calendar endTime) {
         Query query;
         List<AccountUsage> accountUsageResults;
@@ -1068,6 +1014,35 @@ public class LoadBalancerRepository {
             loadBalancerBillings.put(lbId, loadBalancerBilling);
         }
         return loadBalancerBilling;
+    }
+
+    public List<AccountUsage> getAccountUsages(Integer accountId, Calendar startTime, Calendar endTime) {
+        Query query;
+        String accountUsageQuery = "select u from AccountUsage u where u.accountId = :accountId and "
+                + "        u.startTime >= :startTime and "
+                + "        u.startTime <= :endTime "
+                + "        and u.needsPushed = 1 "
+                + "        order by u.startTime asc";
+
+        query = entityManager.createQuery(accountUsageQuery);
+        query.setParameter("accountId", accountId);
+        query.setParameter("startTime", startTime);
+        query.setParameter("endTime", endTime);
+        return query.getResultList();
+    }
+
+    public List<AccountUsage> getAllAccountUsagesNeedsPushed(Calendar startTime, Calendar endTime) {
+        Query query;
+        String accountUsageQuery = "select u from AccountUsage u where  "
+                + "        u.startTime >= :startTime and "
+                + "        u.startTime <= :endTime "
+                + "        and u.needsPushed = 1 "
+                + "        order by u.startTime asc";
+
+        query = entityManager.createQuery(accountUsageQuery);
+        query.setParameter("startTime", startTime);
+        query.setParameter("endTime", endTime);
+        return query.getResultList();
     }
 
     public AccountBilling getAccountBilling(Integer accountId, Calendar startTime, Calendar endTime) throws EntityNotFoundException {
@@ -1451,6 +1426,16 @@ public class LoadBalancerRepository {
         return query.getResultList();
     }
 
+    public List<Integer> getAllAccountIdsFromUsage() {
+        Query query = entityManager.createQuery("SELECT distinct l.accountId FROM Usage l");
+        return query.getResultList();
+    }
+
+    public List<Integer> getAllAccountIdsFromAccountUsage() {
+        Query query = entityManager.createQuery("SELECT distinct l.accountId FROM AccountUsage l");
+        return query.getResultList();
+    }
+
     public List<LoadBalancer> getAllWithNode(String nodeAddress, Integer accountId) {
         List<Object> retLoadbalancers = entityManager.createQuery("SELECT l FROM LoadBalancer l, Node n WHERE l.id = n.loadbalancer.id AND l.accountId = :accountId AND n.ipAddress = :address AND l.status <> 'DELETED' AND l.status <> 'PENDING_DELETE'").setParameter("accountId", accountId).setParameter("address", nodeAddress).getResultList();
         List<LoadBalancer> loadbalancers = new ArrayList<LoadBalancer>();
@@ -1506,5 +1491,122 @@ public class LoadBalancerRepository {
 
         List<LoadBalancer> loadBalancersWithStatus = entityManager.createQuery(criteria).getResultList();
         return (loadBalancersWithStatus == null) ? new ArrayList<LoadBalancer>() : loadBalancersWithStatus;
+    }
+
+     public UserPages getUserPages(Integer lid, Integer aid) {
+        List<UserPages> userPagesList = new ArrayList<UserPages>();
+        UserPages up;
+        String qStr = "FROM UserPages u where u.loadbalancer.id = :lid and u.loadbalancer.accountId = :aid";
+        Query q = entityManager.createQuery(qStr).setParameter("lid", lid).setParameter("aid", aid);
+        userPagesList = q.setMaxResults(1).getResultList();
+        if (userPagesList.size() <= 0) {
+            up = null;
+        } else {
+            up = userPagesList.get(0);
+        }
+        return up;
+    }
+
+    public Defaults getDefaultErrorPage() {
+        List<Defaults> defaultsList = new ArrayList<Defaults>();
+        Defaults up;
+        String qStr = "FROM Defaults d WHERE d.name = :globalError";
+        Query q = entityManager.createQuery(qStr).setParameter("globalError", Constants.DEFAULT_ERRORFILE);
+        defaultsList = q.setMaxResults(1).getResultList();
+        if (defaultsList.size() <= 0) {
+            up = null;
+        } else {
+            up = defaultsList.get(0);
+        }
+        return up;
+    }
+
+    public String getErrorPage(Integer lid, Integer aid) throws EntityNotFoundException {
+        UserPages up;
+        up = getUserPages(lid, aid);
+        if (up == null) {
+            return null;
+        }
+        return up.getErrorpage();
+    }
+
+    public boolean setErrorPage(Integer lid, Integer aid, String errorpage) throws EntityNotFoundException {
+        boolean out = false;
+        LoadBalancer lb = getByIdAndAccountId(lid, aid);
+        UserPages up = getUserPages(lid, aid);
+        if (up == null) {
+            up = new UserPages();
+            up.setLoadbalancer(lb);
+            up.setErrorpage(errorpage);
+            entityManager.merge(up);
+            return true;
+        } else {
+            up.setErrorpage(errorpage);
+            entityManager.merge(up);
+            return false;
+        }
+    }
+
+    public boolean setDefaultErrorPage(String errorpage) throws EntityNotFoundException {
+        boolean out = false;
+        Defaults up = getDefaultErrorPage();
+        if (up == null) {
+            up = new Defaults();
+            up.setName(Constants.DEFAULT_ERRORFILE);
+            up.setValue(errorpage);
+            entityManager.merge(up);
+            return true;
+        } else {
+            up.setValue(errorpage);
+            entityManager.merge(up);
+            return false;
+        }
+    }
+
+    public boolean removeErrorPage(Integer lid, Integer aid) {
+        UserPages up = getUserPages(lid, aid);
+        if (up == null) {
+            return false;
+        } else if (up.getErrorpage() == null) {
+            return false;
+        }
+        up.setErrorpage(null);
+        entityManager.merge(up);
+        entityManager.remove(up);
+        return true;
+
+
+    }
+
+    public boolean removeSslTermination(Integer lid, Integer aid) {
+        SslTermination up = getSslTermination(lid, aid);
+        if (up == null) {
+            return false;
+        } else {
+            entityManager.remove(up);
+            return true;
+        }
+    }
+
+    public SslTermination getSslTermination(Integer lid, Integer aid) {
+        SslTermination sslTermination = new SslTermination();
+        String qStr = "FROM SslTermination u where u.loadbalancer.id = :lid";
+        Query q = entityManager.createQuery(qStr).setParameter("lid", lid);
+        try {
+            if (!q.getResultList().isEmpty()) {
+                sslTermination = (SslTermination) q.getResultList().get(0);
+            }
+        } catch (IndexOutOfBoundsException iex) {
+            return new SslTermination();
+        }
+        return sslTermination;
+    }
+
+    public SslTermination setSslTermination(Integer lid, Integer aid, SslTermination sslTermination) throws EntityNotFoundException {
+        LoadBalancer lb = getByIdAndAccountId(lid, aid);
+        sslTermination.setLoadbalancer(lb);
+        entityManager.merge(sslTermination);
+        entityManager.flush();
+        return sslTermination;
     }
 }

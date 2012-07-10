@@ -1,11 +1,12 @@
 package org.openstack.atlas.atom.client;
 
+import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.atom.config.AtomHopperConfiguration;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
-import org.openstack.atlas.atom.util.AHUSLClientUtil;
+import org.openstack.atlas.atom.handler.AHUSLClientHandler;
 import org.openstack.atlas.atom.util.AHUSLUtil;
 import org.openstack.atlas.cfg.Configuration;
 import ru.hh.jersey.hchttpclient.ApacheHttpClient;
@@ -35,7 +36,7 @@ public class AHUSLClient {
      * @throws Exception
      */
     public AHUSLClient() throws Exception {
-        this(configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint), AHUSLClientUtil.createHttpClient());
+        this(configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint), AHUSLClientHandler.createHttpClient());
     }
 
 
@@ -59,8 +60,9 @@ public class AHUSLClient {
                     .accept(MediaType.APPLICATION_XML)
                     .type(MediaType.APPLICATION_ATOM_XML)
                     .post(ClientResponse.class, entry);
+        } catch (ClientHandlerException cpe) {
+            throw new ClientHandlerException(AHUSLUtil.getStackTrace(cpe));
         } catch (Exception ex) {
-            LOG.error("ERROR: ", ex);
             throw new Exception(AHUSLUtil.getStackTrace(ex));
         }
         return response;

@@ -1,22 +1,21 @@
-package org.openstack.atlas.atom.jobs;
+package org.openstack.atlas.atom.tasks;
 
+import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.openstack.atlas.atom.client.AHUSLClient;
 import org.openstack.atlas.atom.config.AtomHopperConfiguration;
+import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
+import org.openstack.atlas.atom.jobs.AtomHopperLoadBalancerUsageJob;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.util.AHUSLUtil;
 import org.openstack.atlas.atom.util.LbaasUsageDataMap;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
-import org.w3._2005.atom.Title;
-import org.w3._2005.atom.Type;
-import org.w3._2005.atom.UsageCategory;
-import org.w3._2005.atom.UsageContent;
 
-import javax.ws.rs.core.MediaType;
 import java.util.Calendar;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -24,16 +23,13 @@ import java.util.List;
 public class LoadBalancerAHUSLTask implements Runnable {
     private final Log LOG = LogFactory.getLog(AtomHopperLoadBalancerUsageJob.class);
 
+    public LoadBalancerAHUSLTask() {
+    }
+
     //Configuration
     private Configuration configuration = new AtomHopperConfiguration();
     private UsageRepository usageRepository;
 
-    //Defaults
-    private String region = "GLOBAL";
-    private final String lbaasTitle = "cloudLoadBalancers";
-    private final String label = "loadBalancerUsage";
-    private String configRegion = null;
-    private String uri = null;
     private List<Usage> lbusages;
 
     private AHUSLClient client;
@@ -58,45 +54,48 @@ public class LoadBalancerAHUSLTask implements Runnable {
             for (Usage usageRecord : lbusages) {
                 if (usageRecord.isNeedsPushed()) {
 
-                    EntryPojo entry = new EntryPojo();
-                    Title title = new Title();
-                    title.setType(Type.TEXT);
-                    title.setValue(lbaasTitle);
-                    entry.setTitle(title);
+                    EntryPojo entry = LbaasUsageDataMap.buildUsageEntry(
+                            usageRecord,
+                            configuration,
+                            configuration.getString(AtomHopperConfigurationKeys.ahusl_region));
 
-                    UsageContent usageContent = new UsageContent();
-                    usageContent.setEvent(LbaasUsageDataMap.generateUsageEntry(configuration, configRegion, usageRecord));
-                    entry.setContent(usageContent);
-                    entry.getContent().setType(MediaType.APPLICATION_XML);
+                    ClientResponse response = null;
 
-                    UsageCategory usageCategory = new UsageCategory();
-                    usageCategory.setLabel(label);
-                    usageCategory.setTerm("plain");
-                    entry.getCategory().add(usageCategory);
-
-
-                    LOG.info(String.format("Start Uploading to the atomHopper service now..."));
-                    ClientResponse response = client.postEntry(entry);
-                    LOG.info(String.format("Finished uploading to the atomHopper service..."));
+                    try {
+//                        LOG.debug(String.format("Start Uploading to the atomHopper service now for account: " + usageRecord.getLoadbalancer().getId()));
+                        response = client.postEntry(entry);
+//                        LOG.info(String.format("Finished uploading to the atomHopper service for account: " + usageRecord.getLoadbalancer().getId()));
+                    } catch (ClientHandlerException che) {
+                        LOG.warn("Could not post entry because client handler exception for load balancer: " + usageRecord.getLoadbalancer().getId() + "Exception: " + AHUSLUtil.getStackTrace(che));
+                    } catch (ConnectionPoolTimeoutException cpe) {
+                        LOG.warn("Could not post entry because of limited connections for load balancer: " + usageRecord.getLoadbalancer().getId() + "Exception: " + AHUSLUtil.getStackTrace(cpe));
+                    }
 
                     //Notify usage if the record was uploaded or not...
-                    if (response.getStatus() == 201) {
+                    if (response != null && response.getStatus() == 201) {
+//                        LOG.debug("Updating needs_pushed: " + false + " for load balancer: " + usageRecord.getLoadbalancer().getId());
                         usageRecord.setNeedsPushed(false);
+                        response.close();
+                    } else if (response != null) {
+                        LOG.error("There was an error pushing to the atom hopper service. status code: " + response.getStatus() + " for load balancer: " + usageRecord.getLoadbalancer().getId());
+                        String body = AHUSLUtil.processResponseBody(response);
+                        LOG.info(String.format("body %s\n", body));
+                        response.close();
+                        usageRecord.setNeedsPushed(true);
                     } else {
-                        LOG.error("There was an error pushing to the atom hopper service" + response.getStatus());
+                        LOG.error("The connection timed out, updating record for re-push for load balancer: " + usageRecord.getLoadbalancer().getId());
                         usageRecord.setNeedsPushed(true);
                     }
-                    LOG.info("Processing result to the usage table. (Pushed/NotPushed)=" + usageRecord.isNeedsPushed());
-//                    usageRepository.updatePushedRecord(usageRecord);
 
-                    String body = AHUSLUtil.processResponseBody(response);
-                    LOG.info(String.format("Status=%s\n", response.getStatus()));
-                    LOG.info(String.format("body %s\n", body));
-                    response.close();
+//                    String body = AHUSLUtil.processResponseBody(response);
+//                    LOG.info(String.format("Status=%s\n", response.getStatus()));
+//                    LOG.info(String.format("body %s\n", body));
                 }
-
             }
+
+            LOG.debug("Batch updating: " + lbusages.size() + " usage rows in the database...");
             usageRepository.batchUpdate(lbusages, false);
+//            LOG.info("Successfully batch updated: " + lbusages.size() + " usage rows in the database...");
         } catch (ConcurrentModificationException cme) {
             System.out.printf("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(cme));
             LOG.warn(String.format("Warning: %s\n", AHUSLUtil.getExtendedStackTrace(cme)));

@@ -64,4 +64,19 @@
     <bean id="usageRepository" class="org.openstack.atlas.service.domain.repository.UsageRepository"
           scope="prototype"/>
 
+
+    <!-- AHUSL -->
+    <bean id="loadBalancerAHUSLTask" class="org.openstack.atlas.atom.tasks.LoadBalancerAHUSLTask"/>
+    <bean id="accountLoadBalancerAHUSLTask" class="org.openstack.atlas.atom.tasks.AccountLoadBalancerAHUSLTask"/>
+    <bean id="threadPoolMonitorService" class="org.openstack.atlas.atom.service.serviceImpl.ThreadPoolMonitorServiceImpl">
+        <property name="monitoringPeriod"  value="5" />
+    </bean>
+    <bean id="rejectedExecutionHandler" class="org.openstack.atlas.atom.handler.RejectedExecutionHandler"/>
+    <bean id="threadPoolExecutorService" class="org.openstack.atlas.atom.service.serviceImpl.ThreadPoolExecutorServiceImpl">
+        <property name="corePoolSize"  value="5" />
+        <property name="maxPoolSize"   value="10" />
+        <property name="keepAliveTime" value="30" />
+        <property name="queueCapacity" value="300" />
+        <property name="rejectedExecutionHandler" ref="rejectedExecutionHandler" />
+    </bean>
 </beans>

@@ -11,4 +11,8 @@ public enum AtomHopperConfigurationKeys implements ConfigurationKey {
     ahusl_time_out,
     ahusl_max_redirects,
     http_protocol,
+    ahusl_pool_task_count,
+    ahusl_pool_max_size,
+    ahusl_pool_core_size,
+    ahusl_pool_conn_timeout
 }

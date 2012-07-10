@@ -1,4 +1,4 @@
-package org.openstack.atlas.atom.util;
+package org.openstack.atlas.atom.handler;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -7,6 +7,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.ClientParamBean;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnManagerParamBean;
+import org.apache.http.conn.params.ConnPerRouteBean;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -16,12 +17,14 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParamBean;
 import org.openstack.atlas.atom.config.AtomHopperConfiguration;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
+import org.openstack.atlas.atom.util.AHUSLUtil;
+import org.openstack.atlas.atom.util.EasySSLSocketFactory;
 import org.openstack.atlas.cfg.Configuration;
 import ru.hh.jersey.hchttpclient.ApacheHttpClient;
 import ru.hh.jersey.hchttpclient.ApacheHttpClientHandler;
 
-public class AHUSLClientUtil {
-    private static final Log LOG = LogFactory.getLog(AHUSLClientUtil.class);
+public class AHUSLClientHandler {
+    private static final Log LOG = LogFactory.getLog(AHUSLClientHandler.class);
     private static Configuration configuration = new AtomHopperConfiguration();
 
     /**
@@ -41,12 +44,13 @@ public class AHUSLClientUtil {
             connParams.setVersion(HttpVersion.HTTP_1_1);
             connParams.setUseExpectContinue(false);
 
-            //Set the ConnmanagerParamBean()
+            //Set the ConnmanagevrParamBean()
             //ConnManagerParamBean() will allow for Java Bean conventions to manipulate the connection manager parameters of HttpParams()
             ConnManagerParamBean poolParams = new ConnManagerParamBean(params);
 
             //How many connections do we want open.
             poolParams.setMaxTotalConnections(Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_max_total_connections)));
+            poolParams.setConnectionsPerRoute(new ConnPerRouteBean(Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_max_total_connections))));
 
             //How long before we timeout
             poolParams.setTimeout(Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_time_out)));
