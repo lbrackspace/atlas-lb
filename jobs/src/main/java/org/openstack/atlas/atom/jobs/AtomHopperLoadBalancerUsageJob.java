@@ -1,51 +1,50 @@
 package org.openstack.atlas.atom.jobs;
 
-import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.atom.client.AHUSLClient;
 import org.openstack.atlas.atom.config.AtomHopperConfiguration;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
-import org.openstack.atlas.atom.pojo.EntryPojo;
+import org.openstack.atlas.atom.handler.RejectedExecutionHandler;
+import org.openstack.atlas.atom.service.ThreadPoolExecutorService;
+import org.openstack.atlas.atom.service.ThreadPoolMonitorService;
+import org.openstack.atlas.atom.tasks.LoadBalancerAHUSLTask;
 import org.openstack.atlas.atom.util.AHUSLUtil;
-import org.openstack.atlas.atom.util.LbaasUsageDataMap;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.entities.Usage;
-import org.openstack.atlas.service.domain.pojos.AccountLoadBalancer;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
-import org.w3._2005.atom.Title;
-import org.w3._2005.atom.Type;
-import org.w3._2005.atom.UsageCategory;
-import org.w3._2005.atom.UsageContent;
 
-import javax.ws.rs.core.MediaType;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(AtomHopperLoadBalancerUsageJob.class);
 
+    ThreadPoolMonitorService threadPoolMonitorService;
+    ThreadPoolExecutorService threadPoolExecutorService;
+
+    //Configuration
     private Configuration configuration = new AtomHopperConfiguration();
     private LoadBalancerRepository loadBalancerRepository;
     private UsageRepository usageRepository;
 
-    private String region = "GLOBAL"; //default..
-    private final String lbaasTitle = "cloudLoadBalancers"; //default..
-    private final String label = "loadBalancerUsage";
-    private final String author = "LBAAS"; //default..
-    private String configRegion = null;
-    private String uri = null;
+    private long nTasks = Long.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_task_count));
+    private int maxPoolSize = Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_max_size));
+    private int corePoolSize = Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_core_size));
+    private long keepAliveTime = Long.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_conn_timeout));
 
-    AHUSLClient client;
+    private AHUSLClient client;
 
 
     @Override
@@ -63,71 +62,62 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
         processJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.IN_PROGRESS);
 
         if (configuration.getString(AtomHopperConfigurationKeys.allow_ahusl).equals("true")) {
-            //Create the threaded client to handle requests...
+
+            LOG.debug("Setting up the threadPoolExecutor with " + maxPoolSize + " pools");
+            ThreadPoolExecutor poolExecutor = threadPoolExecutorService.createNewThreadPool(corePoolSize, maxPoolSize, keepAliveTime, 1000, new RejectedExecutionHandler());
+
+            // ThreadPoolMonitorService is started...
+            threadPoolMonitorService.setExecutor(poolExecutor);
+            Thread monitor = new Thread(threadPoolMonitorService);
+            monitor.start();
+
             try {
+                LOG.debug("Setting up the client...");
                 client = new AHUSLClient();
-            } catch (Exception e) {
-                LOG.info("The client failed to initialize: " + Arrays.toString(e.getStackTrace()));
-            }
 
-            //Grab all accounts a begin processing usage...
-            List<Integer> accounts = loadBalancerRepository.getAllAccountIds();
-            for (int id : accounts) {
-                //Retrieve all non-deleted lbs for account
-                List<AccountLoadBalancer> lbsForAccount = loadBalancerRepository.getAccountLoadBalancers(id);
-                //Walk each lb...
-                for (AccountLoadBalancer lb : lbsForAccount) {
-                    try {
-                        //Retrieve usage for account by lbId
-                        List<Usage> lbusage = loadBalancerRepository.getUsageByAccountIdandLbId(id, lb.getLoadBalancerId(), AHUSLUtil.getStartCal(), AHUSLUtil.getNow());
+                int totalUsageRowsToSend = 0;
+                    List<Usage> lbusages = loadBalancerRepository.getAllUsageNeedsPushed(AHUSLUtil.getStartCal(), AHUSLUtil.getNow());
 
-                        //Walk each load balancer usage record...
-                        for (Usage usageRecord : lbusage) {
-                            if (usageRecord.isNeedsPushed()) {
+                    List<Usage> processUsage;
+                    if (!lbusages.isEmpty()) {
+                        int taskCounter = 0;
+                        while (totalUsageRowsToSend < lbusages.size()) {
+                            processUsage = new ArrayList<Usage>();
 
-                                EntryPojo entry = new EntryPojo();
-                                Title title = new Title();
-                                title.setType(Type.TEXT);
-                                title.setValue(lbaasTitle);
-                                entry.setTitle(title);
+                            LOG.debug("Processing usage into tasks.. task: " + taskCounter);
+                            for (int i = 0; i < nTasks; i++) {
+                                if (totalUsageRowsToSend <= lbusages.size() - 1) {
+                                    processUsage.add(lbusages.get(totalUsageRowsToSend));
+                                    totalUsageRowsToSend++;
 
-                                UsageContent usageContent = new UsageContent();
-                                usageContent.setEvent(LbaasUsageDataMap.generateUsageEntry(configuration, configRegion, usageRecord));
-                                entry.setContent(usageContent);
-                                entry.getContent().setType(MediaType.APPLICATION_XML);
-
-                                UsageCategory usageCategory = new UsageCategory();
-                                usageCategory.setLabel(label);
-                                usageCategory.setTerm("plain");
-                                entry.getCategory().add(usageCategory);
-
-
-                                LOG.info(String.format("Start Uploading to the atomHopper service now..."));
-                                ClientResponse response = client.postEntry(entry);
-                                LOG.info(String.format("Finished uploading to the atomHopper service..."));
-
-                                //Notify usage if the record was uploaded or not...
-                                if (response.getStatus() == 201) {
-                                    usageRecord.setNeedsPushed(false);
                                 } else {
-                                    LOG.error("There was an error pushing to the atom hopper service" + response.getStatus());
-                                    usageRecord.setNeedsPushed(true);
+                                    break;
                                 }
-                                LOG.info("Processing result to the usage table. (Pushed/NotPushed)=" + usageRecord.isNeedsPushed());
-                                usageRepository.updatePushedRecord(usageRecord);
-
-                                String body = AHUSLUtil.processResponseBody(response);
-                                LOG.info(String.format("Status=%s\n", response.getStatus()));
-                                LOG.info(String.format("body %s\n", body));
-                                response.close();
                             }
+
+                            taskCounter++;
+
+                            poolExecutor.execute(new LoadBalancerAHUSLTask(processUsage, client, usageRepository)); //TODO: Need to move repository deps...
                         }
-                    } catch (Throwable t) {
-                        System.out.printf("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t));
-                        LOG.error(String.format("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t)));
+                    } else {
+                        LOG.debug("No usage found for processing at this time...");
                     }
+
+                } catch (Throwable t) {
+                    System.out.printf("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t));
+                    LOG.error(String.format("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t)));
                 }
+
+            try {
+                LOG.debug("Shutting down the thread pool and monitors..");
+                poolExecutor.shutdown();
+                poolExecutor.awaitTermination(300, TimeUnit.SECONDS);
+                threadPoolMonitorService.shutDown();
+            } catch (InterruptedException e) {
+                LOG.error("There was an error shutting down threadPool: " + AHUSLUtil.getStackTrace(e));
             }
+
+            LOG.debug("Destroying the client");
             client.destroy();
         }
 
@@ -152,5 +142,15 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
     @Required
     public void setUsageRepository(UsageRepository usageRepository) {
         this.usageRepository = usageRepository;
+    }
+
+    @Required
+    public void setThreadPoolMonitorService(ThreadPoolMonitorService threadPoolMonitorService) {
+        this.threadPoolMonitorService = threadPoolMonitorService;
+    }
+
+    @Required
+    public void setThreadPoolExecutorService(ThreadPoolExecutorService threadPoolExecutorService) {
+        this.threadPoolExecutorService = threadPoolExecutorService;
     }
 }

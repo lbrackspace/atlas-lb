@@ -1,51 +1,50 @@
 package org.openstack.atlas.atom.jobs;
 
-import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.atom.client.AHUSLClient;
 import org.openstack.atlas.atom.config.AtomHopperConfiguration;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
-import org.openstack.atlas.atom.pojo.EntryPojo;
+import org.openstack.atlas.atom.handler.RejectedExecutionHandler;
+import org.openstack.atlas.atom.service.ThreadPoolExecutorService;
+import org.openstack.atlas.atom.service.ThreadPoolMonitorService;
+import org.openstack.atlas.atom.tasks.AccountLoadBalancerAHUSLTask;
 import org.openstack.atlas.atom.util.AHUSLUtil;
-import org.openstack.atlas.atom.util.LbaasUsageDataMap;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
 import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
-import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.repository.AccountUsageRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
-import org.w3._2005.atom.Title;
-import org.w3._2005.atom.Type;
-import org.w3._2005.atom.UsageCategory;
-import org.w3._2005.atom.UsageContent;
 
-import javax.ws.rs.core.MediaType;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class AtomHopperAccountUsageJob extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(AtomHopperAccountUsageJob.class);
 
+    ThreadPoolMonitorService threadPoolMonitorService;
+    ThreadPoolExecutorService threadPoolExecutorService;
+
+    //Configuration
     private Configuration configuration = new AtomHopperConfiguration();
     private LoadBalancerRepository loadBalancerRepository;
     private AccountUsageRepository accountUsageRepository;
 
-    private String region = "GLOBAL"; //default..
-    private final String lbaasTitle = "cloudLoadBalancers"; //default..
-    private final String author = "LBAAS"; //default..
-    private final String label = "accountLoadBalancerUsage";
-    private String configRegion = null;
-    private String uri = null;
+    private long nTasks = Long.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_task_count));
+    private int maxPoolSize = Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_max_size));
+    private int corePoolSize = Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_core_size));
+    private long keepAliveTime = Long.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_conn_timeout));
 
-    AHUSLClient client;
+    private AHUSLClient client;
 
 
     @Override
@@ -64,78 +63,75 @@ public class AtomHopperAccountUsageJob extends Job implements StatefulJob {
 
         if (configuration.getString(AtomHopperConfigurationKeys.allow_ahusl).equals("true")) {
 
+            LOG.debug("Setting up the threadPoolExecutor with " + maxPoolSize + " pools");
+            ThreadPoolExecutor poolExecutor = threadPoolExecutorService.createNewThreadPool(corePoolSize, maxPoolSize, keepAliveTime, 1000, new RejectedExecutionHandler());
+
+            // ThreadPoolMonitorService is started...
+            threadPoolMonitorService.setExecutor(poolExecutor);
+            Thread monitor = new Thread(threadPoolMonitorService);
+            monitor.start();
+
+
             //Create the threaded client to handle requests...
             try {
                 client = new AHUSLClient();
-            } catch (Exception e) {
-                LOG.error("There was an error instantiating the client" + Arrays.toString(e.getStackTrace()));
-            }
 
-            //Grab all accounts a begin processing usage...
-            List<Integer> accounts = loadBalancerRepository.getAllAccountIds();
-            for (int accountId : accounts) {
-                try {
-                    //Latest AccountUsage record
-                    AccountBilling accountUsage = loadBalancerRepository.getAccountBilling(accountId, AHUSLUtil.getStartCal(), AHUSLUtil.getNow());
+                int totalUsageRowsToSend = 0;
+                List<AccountUsage> accountUsages = loadBalancerRepository.getAllAccountUsagesNeedsPushed(AHUSLUtil.getStartCal(), AHUSLUtil.getNow());
+//                    LOG.debug("There is: " + accountUsages.size() + " usage rows to process for account: " + accountID);
+                List<AccountUsage> processedAccountUsageRecords;
+                if (!accountUsages.isEmpty()) {
+                    int taskCounter = 0;
+                    while (totalUsageRowsToSend < accountUsages.size()) {
+                        processedAccountUsageRecords = new ArrayList<AccountUsage>();
 
-                    //Walk each load balancer usage record...
-                    for (AccountUsage asausage : accountUsage.getAccountUsageRecords()) {
-                        if (asausage.isNeedsPushed()) {
+                        LOG.debug("Processing usage into tasks.. task: " + taskCounter);
+                        for (int i = 0; i < nTasks; i++) {
+                            if (totalUsageRowsToSend <= accountUsages.size() - 1) {
+                                processedAccountUsageRecords.add(accountUsages.get(totalUsageRowsToSend));
+                                totalUsageRowsToSend++;
 
-                            EntryPojo entry = new EntryPojo();
-
-                            Title title = new Title();
-                            title.setType(Type.TEXT);
-                            title.setValue(lbaasTitle);
-                            entry.setTitle(title);
-
-                            UsageContent usageContent = new UsageContent();
-                            usageContent.setEvent(LbaasUsageDataMap.generateAccountUsageEntry(configuration, configRegion, asausage));
-                            entry.setContent(usageContent);
-                            entry.getContent().setType(MediaType.APPLICATION_XML);
-
-                            UsageCategory usageCategory = new UsageCategory();
-                            usageCategory.setLabel(label);
-                            usageCategory.setTerm("plain");
-                            entry.getCategory().add(usageCategory);
-
-                            LOG.info(String.format("Start Uploading to the atomHopper service now..."));
-                            ClientResponse response = client.postEntry(entry);
-                            LOG.info(String.format("Finished uploading to the atomHopper service..."));
-
-
-                            //Notify usage if the record was uploaded or not...
-                            if (response.getStatus() == 201) {
-                                asausage.setNeedsPushed(false);
                             } else {
-                                LOG.error("There was an error pushing to the atom hopper service" + response.getStatus());
-                                asausage.setNeedsPushed(true);
+                                break;
                             }
-
-                            LOG.info("Processing result to the usage table. (Pushed/NotPushed)=" + asausage.isNeedsPushed());
-                            accountUsageRepository.updatePushedRecord(asausage);
-
-                            String body = AHUSLUtil.processResponseBody(response);
-                            LOG.info(String.format("Status=%s\n", response.getStatus()));
-                            LOG.info(String.format("body %s\n", body));
-                            response.close();
                         }
-                    }
-                } catch (Throwable t) {
-                    System.out.printf("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t));
-                    LOG.error(String.format("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t)));
-                }
-            }
-            client.destroy();
-        }
+                        taskCounter++;
 
-        /**
-         * LOG END job-state
-         */
-        Calendar endTime = Calendar.getInstance();
-        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-        processJobState(JobName.ATOM_ACCOUNT_USAGE_POLLER, JobStateVal.FINISHED);
-        LOG.info(String.format("Atom hopper account usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
+                        poolExecutor.execute(new AccountLoadBalancerAHUSLTask(processedAccountUsageRecords, client, accountUsageRepository)); //TODO: Need to move repository deps...
+                    }
+                } else {
+                    LOG.debug("No usage found to process at this time ...");
+                }
+
+            } catch (Throwable t) {
+                System.out.printf("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t));
+                LOG.error(String.format("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t)));
+            }
+
+            try {
+//                while (tpe.getCompletedTaskCount() < tpe.getTaskCount()) {
+//                    LOG.debug("Waiting for " + (tpe.getTaskCount() - tpe.getCompletedTaskCount()) + " tasks to finish...");
+//                    Thread.sleep(600);
+//                }
+                LOG.debug("Shutting down the thread pool and monitors..");
+                poolExecutor.shutdown();
+                poolExecutor.awaitTermination(300, TimeUnit.SECONDS);
+                threadPoolMonitorService.shutDown();
+            } catch (InterruptedException e) {
+                LOG.error("There was an error shutting down threadPool: " + AHUSLUtil.getStackTrace(e));
+            }
+
+            LOG.debug("Destroying the client");
+            client.destroy();
+
+            /**
+             * LOG END job-state
+             */
+            Calendar endTime = Calendar.getInstance();
+            Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
+            processJobState(JobName.ATOM_ACCOUNT_USAGE_POLLER, JobStateVal.FINISHED);
+            LOG.info(String.format("Atom hopper account usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
+        }
     }
 
     private void processJobState(JobName jobName, JobStateVal jobStateVal) {
@@ -150,5 +146,15 @@ public class AtomHopperAccountUsageJob extends Job implements StatefulJob {
     @Required
     public void setAccountUsageRepository(AccountUsageRepository accountUsageRepository) {
         this.accountUsageRepository = accountUsageRepository;
+    }
+
+    @Required
+    public void setThreadPoolMonitorService(ThreadPoolMonitorService threadPoolMonitorService) {
+        this.threadPoolMonitorService = threadPoolMonitorService;
+    }
+
+    @Required
+    public void setThreadPoolExecutorService(ThreadPoolExecutorService threadPoolExecutorService) {
+        this.threadPoolExecutorService = threadPoolExecutorService;
     }
 }

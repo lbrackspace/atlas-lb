@@ -5,7 +5,7 @@
                groupByResource="false"
                resourceTypes="TENANT">
     <description>
-        Lbaas load balancer tenant  usage fields.
+        Lbaas load balancer tenant usage fields.
     </description>
     <attribute name="numLoadbalancers" type="int" use="required"
                unitOfMeasure="COUNT" groupBy="true">
@@ -18,6 +18,6 @@
     </attribute>
     <attribute name="numServicenetVips" type="int" use="required"
                unitOfMeasure="COUNT" groupBy="true">
-        The amount of ssl bandwidth in, in bytes.
+        The number of service net virtual ips associated with the tenant.
     </attribute>
 </productSchema>

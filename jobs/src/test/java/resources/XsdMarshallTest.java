@@ -126,7 +126,7 @@ public class XsdMarshallTest {
                 //core
                 UsageV1Pojo usageV1 = new UsageV1Pojo();
                 usageV1.setDataCenter(DC.DFW_1);
-                usageV1.setResourceName("LoadBalancer");
+                usageV1.setResourceName("Account");
                 usageV1.setVersion("1");
                 usageV1.setTenantId("1");
                 usageV1.setResourceId("546428");
@@ -138,7 +138,7 @@ public class XsdMarshallTest {
                 //product specific
                 AccountLBaaSUsagePojo lu = new AccountLBaaSUsagePojo();
                 lu.setVersion("1");
-                lu.setResourceType(com.rackspace.docs.usage.lbaas.account.ResourceTypes.TENANT);
+//                lu.setResourceType(com.rackspace.docs.usage.lbaas.account.ResourceTypes.TENANT);
                 lu.setServiceCode("CloudLoadBalancers");
                 lu.setNumLoadbalancers(2);
                 lu.setNumPublicVips(2);

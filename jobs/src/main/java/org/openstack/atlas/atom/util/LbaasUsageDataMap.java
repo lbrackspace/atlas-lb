@@ -6,6 +6,7 @@ import com.rackspace.docs.usage.lbaas.SslModeEnum;
 import com.rackspace.docs.usage.lbaas.VipTypeEnum;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.pojo.AccountLBaaSUsagePojo;
+import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
 import org.openstack.atlas.cfg.Configuration;
@@ -14,7 +15,12 @@ import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.entities.SslMode;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
+import org.w3._2005.atom.Title;
+import org.w3._2005.atom.Type;
+import org.w3._2005.atom.UsageCategory;
+import org.w3._2005.atom.UsageContent;
 
+import javax.ws.rs.core.MediaType;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
@@ -23,7 +29,9 @@ import java.util.UUID;
  * Used for mapping values from usage records to generate usage objects...
  */
 public class LbaasUsageDataMap {
-    private static String region = "GLOBAL"; //default..
+    private static String region = "GLOBAL";
+    private static final String label = "loadBalancerUsage";
+    private static final String lbaasTitle = "cloudLoadBalancers";
     private static String SERVICE_CODE = "CloudLoadBalancers";
 
     public static UsageV1Pojo generateUsageEntry(Configuration configuration, String configRegion, Usage usageRecord) throws DatatypeConfigurationException, NoSuchAlgorithmException {
@@ -94,7 +102,7 @@ public class LbaasUsageDataMap {
 
         usageV1.setType(null); //No events
         usageV1.setTenantId(accountUsage.getAccountId().toString());
-        usageV1.setResourceId(accountUsage.getId().toString());
+//        usageV1.setResourceId(accountUsage.getId().toString());
         usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.ahusl_data_center)));
 
         //Generate UUID
@@ -107,9 +115,8 @@ public class LbaasUsageDataMap {
         ausage.setNumPublicVips(accountUsage.getNumPublicVips());
         ausage.setNumServicenetVips(accountUsage.getNumServicenetVips());
         ausage.setServiceCode(SERVICE_CODE);
-        ausage.setResourceType(com.rackspace.docs.usage.lbaas.account.ResourceTypes.TENANT);
+//        ausage.setResourceType(com.rackspace.docs.usage.lbaas.account.ResourceTypes.TENANT);
         usageV1.getAny().add(ausage);
-
 
 
         return usageV1;
@@ -121,5 +128,45 @@ public class LbaasUsageDataMap {
 
     private static String genUUIDString(Usage usageRecord) {
         return usageRecord.getId() + "_" + usageRecord.getLoadbalancer().getId() + "_" + region;
+    }
+
+    public static EntryPojo buildUsageEntry(Usage usageRecord, Configuration configuration, String configRegion) throws NoSuchAlgorithmException, DatatypeConfigurationException {
+        EntryPojo entry = buildEntry();
+
+        UsageContent usageContent = new UsageContent();
+        usageContent.setEvent(LbaasUsageDataMap.generateUsageEntry(configuration, configRegion, usageRecord));
+        entry.setContent(usageContent);
+        entry.getContent().setType(MediaType.APPLICATION_XML);
+
+        entry.getCategory().add(buildUsageCategory());
+        return entry;
+    }
+
+    public static EntryPojo buildAccountUsageEntry(AccountUsage accountUsage, Configuration configuration, String configRegion) throws NoSuchAlgorithmException, DatatypeConfigurationException {
+        EntryPojo entry = buildEntry();
+
+        UsageContent usageContent = new UsageContent();
+        usageContent.setEvent(generateAccountUsageEntry(configuration, configRegion, accountUsage));
+        entry.setContent(usageContent);
+        entry.getContent().setType(MediaType.APPLICATION_XML);
+
+        entry.getCategory().add(buildUsageCategory());
+        return entry;
+    }
+
+    private static EntryPojo buildEntry() {
+        EntryPojo entry = new EntryPojo();
+        Title title = new Title();
+        title.setType(Type.TEXT);
+        title.setValue(lbaasTitle);
+        entry.setTitle(title);
+        return entry;
+    }
+
+    private static UsageCategory buildUsageCategory() {
+        UsageCategory usageCategory = new UsageCategory();
+        usageCategory.setLabel(label);
+        usageCategory.setTerm("plain");
+        return usageCategory;
     }
 }

@@ -67,9 +67,13 @@ public class UsageRepository {
     }
 
     public void batchUpdate(List<Usage> usages) {
+        batchUpdate(usages, true);
+    }
+
+    public void batchUpdate(List<Usage> usages, boolean isUsageUpdate) {
         LOG.info(String.format("batchUpdate() called with %d records", usages.size()));
 
-        String query = generateBatchUpdateQuery(usages);
+        String query = generateBatchUpdateQuery(usages, isUsageUpdate);
         entityManager.createNativeQuery(query).executeUpdate();
     }
 
@@ -86,49 +90,128 @@ public class UsageRepository {
     }
 
     private String generateBatchUpdateQuery(List<Usage> usages) {
+       return generateBatchUpdateQuery(usages, true);
+    }
+
+    private String generateBatchUpdateQuery(List<Usage> usages, boolean isUsageUpdate) {
         final StringBuilder sb = new StringBuilder();
         sb.append("REPLACE INTO lb_usage(id, loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed) values");
-        sb.append(generateFormattedValues(usages));
+        sb.append(generateFormattedValues(usages, isUsageUpdate));
         return sb.toString();
     }
 
+//    private String generateFormattedValues(List<Usage> usages) {
+//        StringBuilder sb = new StringBuilder();
+//
+//        for (Usage usage : usages) {
+//            sb.append("(");
+//            if (usage.getId() != null) {
+//                sb.append(usage.getId()).append(",");
+//            }
+//            sb.append(usage.getLoadbalancer().getId()).append(",");
+//            sb.append(usage.getAccountId()).append(",");
+//            sb.append(usage.getAverageConcurrentConnections()).append(",");
+//            sb.append(usage.getIncomingTransfer()).append(",");
+//            sb.append(usage.getOutgoingTransfer()).append(",");
+//            sb.append(usage.getAverageConcurrentConnectionsSsl()).append(",");
+//            sb.append(usage.getIncomingTransferSsl()).append(",");
+//            sb.append(usage.getOutgoingTransferSsl()).append(",");
+//
+//            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//            String startTime = formatter.format(usage.getStartTime().getTime());
+//            sb.append("'").append(startTime).append("',");
+//
+//            String endTime = formatter.format(usage.getEndTime().getTime());
+//            sb.append("'").append(endTime).append("',");
+//
+//            sb.append(usage.getNumberOfPolls()).append(",");
+//            sb.append(usage.getNumVips()).append(",");
+//            sb.append(usage.getTags()).append(",");
+//            if (usage.getEventType() == null) {
+//                sb.append(usage.getEventType()).append(",");
+//            } else {
+//                sb.append("'").append(usage.getEventType()).append("'").append(",");
+//            }
+//
+//            //Used for keeping track of updated rows
+//            int versionBump;
+//            if (usage.getEntryVersion() == null) {
+//                //new record
+//                versionBump = 0;
+//            } else {
+//                versionBump = usage.getEntryVersion();
+//            }
+//            versionBump += 1;
+//            sb.append(versionBump);
+//            sb.append(",");
+//            //Mark as not pushed so job can update the AHUSL
+//            sb.append(1);
+//            sb.append("),");
+//
+//        }
+//        if (sb.toString().endsWith(",")) {
+//            sb.deleteCharAt(sb.lastIndexOf(","));
+//        }
+//        return sb.toString();
+//    }
+
     private String generateFormattedValues(List<Usage> usages) {
+        return generateFormattedValues(usages, true);
+    }
+
+    private String generateFormattedValues(List<Usage> usages, boolean isUpdate) {
         StringBuilder sb = new StringBuilder();
 
         for (Usage usage : usages) {
-            sb.append("(");
-            if (usage.getId() != null) {
-                sb.append(usage.getId()).append(",");
-            }
-            sb.append(usage.getLoadbalancer().getId()).append(",");
-            sb.append(usage.getAccountId()).append(",");
-            sb.append(usage.getAverageConcurrentConnections()).append(",");
-            sb.append(usage.getIncomingTransfer()).append(",");
-            sb.append(usage.getOutgoingTransfer()).append(",");
-            sb.append(usage.getAverageConcurrentConnectionsSsl()).append(",");
-            sb.append(usage.getIncomingTransferSsl()).append(",");
-            sb.append(usage.getOutgoingTransferSsl()).append(",");
+            sb.append(generateBaseFormattedValue(usage));
+            sb.append(generateUpdatedFormattedValue(usage, isUpdate));
+        }
+        if (sb.toString().endsWith(",")) {
+            sb.deleteCharAt(sb.lastIndexOf(","));
+        }
+        return sb.toString();
+    }
 
-            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String startTime = formatter.format(usage.getStartTime().getTime());
-            sb.append("'").append(startTime).append("',");
+    private String generateBaseFormattedValue(Usage usage) {
+        StringBuilder sb = new StringBuilder();
 
-            String endTime = formatter.format(usage.getEndTime().getTime());
-            sb.append("'").append(endTime).append("',");
+        sb.append("(");
+        if (usage.getId() != null) {
+            sb.append(usage.getId()).append(",");
+        }
+        sb.append(usage.getLoadbalancer().getId()).append(",");
+        sb.append(usage.getAccountId()).append(",");
+        sb.append(usage.getAverageConcurrentConnections()).append(",");
+        sb.append(usage.getIncomingTransfer()).append(",");
+        sb.append(usage.getOutgoingTransfer()).append(",");
+        sb.append(usage.getAverageConcurrentConnectionsSsl()).append(",");
+        sb.append(usage.getIncomingTransferSsl()).append(",");
+        sb.append(usage.getOutgoingTransferSsl()).append(",");
 
-            sb.append(usage.getNumberOfPolls()).append(",");
-            sb.append(usage.getNumVips()).append(",");
-            sb.append(usage.getTags()).append(",");
-            if (usage.getEventType() == null) {
-                sb.append(usage.getEventType()).append(",");
-            } else {
-                sb.append("'").append(usage.getEventType()).append("'").append(",");
-            }
+        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String startTime = formatter.format(usage.getStartTime().getTime());
+        sb.append("'").append(startTime).append("',");
 
-            //Used for keeping track of updated rows
+        String endTime = formatter.format(usage.getEndTime().getTime());
+        sb.append("'").append(endTime).append("',");
+
+        sb.append(usage.getNumberOfPolls()).append(",");
+        sb.append(usage.getNumVips()).append(",");
+        sb.append(usage.getTags()).append(",");
+        if (usage.getEventType() == null) {
+            sb.append(usage.getEventType()).append(",");
+        } else {
+            sb.append("'").append(usage.getEventType()).append("'").append(",");
+        }
+
+        return sb.toString();
+    }
+
+    private String generateUpdatedFormattedValue(Usage usage, boolean isUsageUpdate) {
+        StringBuilder sb = new StringBuilder();
+        if (isUsageUpdate) {
             int versionBump;
             if (usage.getEntryVersion() == null) {
-                //new record
                 versionBump = 0;
             } else {
                 versionBump = usage.getEntryVersion();
@@ -139,11 +222,15 @@ public class UsageRepository {
             //Mark as not pushed so job can update the AHUSL
             sb.append(1);
             sb.append("),");
+            return sb.toString();
+        } else {
+            sb.append(usage.getEntryVersion());
+            sb.append(",");
+            //Mark as not pushed so job can update the AHUSL
+            sb.append(usage.isNeedsPushed());
+            sb.append("),");
+        }
 
-        }
-        if (sb.toString().endsWith(",")) {
-            sb.deleteCharAt(sb.lastIndexOf(","));
-        }
         return sb.toString();
     }
 
