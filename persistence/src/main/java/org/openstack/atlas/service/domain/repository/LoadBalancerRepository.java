@@ -67,6 +67,10 @@ public class LoadBalancerRepository {
         return lb;
     }
 
+    public void detach(Object entity) {
+        entityManager.detach(entity);
+    }
+
     public List<LoadBalancer> getExpiredLbs() {
         Calendar threeMonthsAgo = Calendar.getInstance();
         threeMonthsAgo.add(Calendar.DATE, -90);
