@@ -67,10 +67,6 @@ public class LoadBalancerRepository {
         return lb;
     }
 
-    public void clear(Object entity) {
-        entityManager.clear();
-    }
-
     public void detach(Object entity) {
         entityManager.detach(entity);
     }
