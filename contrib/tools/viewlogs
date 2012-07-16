@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+
+import pkset
+import time
+import datetime
+import sys
+import os
+
+
+def printf(format,*args): sys.stdout.write(format%args)
+def fprintf(fp,format,*args): fp.write(format%args)
+
+def validsetbuck():
+    out = ""
+    valid_name_list = list(valid_names)
+    valid_name_list.sort()
+    for name in valid_name_list[:-1]:
+        out += "%s|"%(name)
+    out += "%s"%(valid_name_list[-1])
+    return out
+
+def usage(prog):
+    printf("Usage is %s <%s>\n",prog,validsetbuck())
+    printf("Read the logs so far\n")
+    printf("\n")
+
+valid_names = pkset.valid_names
+
+if __name__=="__main__":
+
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<2:
+        usage(prog)
+        sys.exit()
+    release = sys.argv[1]
+    if release.lower() not in valid_names:
+        usage(prog)
+        sys.exit()
+    try:
+        pstats = pkset.load_cpickle()
+    except IOError:
+        pstats = {}
+
+    if not pstats.has_key(release):
+        pstats[release] = {}
+    
+    keys = pkset.rkeys(pstats,release)
+    for i in xrange(1,len(keys)):
+        fs_old = pstats[release][keys[i-1]]["fstats"]
+        fs_new = pstats[release][keys[i]]["fstats"]
+        logdate = keys[i]
+        printf("%s:\n",pkset.dt2str(logdate))
+        printf("--------------------------------------------\n")
+        (remove_list,add_list,recent_list) = pkset.difffiles(fs_old,fs_new)
+        add_set = set(add_list)
+        for remove_name in remove_list:
+            printf("  < %s\n",remove_name)
+        for add_name in add_list:
+            printf("  > %s\n",add_name)
+        for recent_name in recent_list:
+            if recent_name in add_set:
+                printf("  * %s\n",recent_name)
+        printf("\n")
+
+
+

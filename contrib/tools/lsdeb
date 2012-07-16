@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+import traceback
+import sys
+import os
+
+
+def excuse():
+    except_message = traceback.format_exc()
+    stack_message  = string.join(traceback.format_exc(),sep="")
+    return "Exception:\n" + except_message + "Stack Frame:\n" + stack_message
+
+
+def lsdeb(arg,dirname,fnames):
+    for fname in fnames:
+        ext = os.path.splitext(fname)[1].lower()
+        if ext in [ ".deb",".dsc"]:
+            pyc_file = os.path.join(dirname,fname)
+            print pyc_file
+
+os.path.walk(".",lsdeb,tuple())
+

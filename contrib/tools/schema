@@ -1,0 +1,481 @@
+#!/usr/bin/env python
+
+from optparse import OptionParser
+from collections import deque
+from subprocess import PIPE
+import re
+import sys
+import os
+import shutil
+import glob
+import traceback
+from warnings import filterwarnings, resetwarnings
+import MySQLdb
+import subprocess
+
+def printf(format,*args): sys.stdout.write(format%args)
+def fprintf(fp,format,*args): fp.write(format%args)
+
+def chop(line):
+    out = line.replace("\r","").replace("\n","")
+    return out
+
+def get_ds(asapath,passwordfile,dbnames):
+    a = AsaAdmin(asapath=asapath,passwordfile=passwordfile)
+    ds = a.get_ds(dbnames)
+    return ds
+
+def load_schema(path):
+    graph = {}
+    files = os.listdir(path)
+    max_schema = "1"
+
+    for file in files:
+        match = re.match("([0-9]+)-([0-9]+).sql", file)
+        if match != None:
+            src_node = match.group(1)
+            dst_node = match.group(2)
+
+            if graph.has_key(src_node):
+                graph[src_node].append(dst_node)
+            else:
+                graph[src_node] = [ dst_node ]
+
+            if not graph.has_key(dst_node):
+                graph[dst_node] = []
+
+            if int(dst_node) > int(max_schema):
+                max_schema = dst_node
+
+    return (graph, max_schema)
+
+def bfs(g, start):
+    queue, enqueued = deque([(None, start)]), set([start])
+    while queue:
+        parent, n = queue.popleft()
+        yield parent, n
+        new = set(g[n]) - enqueued
+        enqueued |= new
+        queue.extend([(n, child) for child in new])
+
+def dfs(g, start):
+    stack, enqueued = [(None, start)], set([start])
+    while stack:
+        parent, n = stack.pop()
+        yield parent, n
+        new = set(g[n]) - enqueued
+        enqueued |= new
+        stack.extend([(n, child) for child in new])
+
+def shortest_path(g, start, end):
+    parents = {}
+    for parent, child in bfs(g, start):
+        parents[child] = parent
+        if child == end:
+            revpath = [end]
+            while True:
+                parent = parents[child]
+                revpath.append(parent)
+                if parent == start:
+                    break
+                child = parent
+            return list(reversed(revpath))
+    return None # or raise appropriate exception
+
+def execute_upgrade(datasource, dbinfo, file):
+    db = MySQLdb.connect(host = dbinfo[datasource]["host"],
+                         port = int(dbinfo[datasource]["port"]),
+                         user = dbinfo[datasource]["username"],
+                         passwd = dbinfo[datasource]["password"],
+                         db = dbinfo[datasource]["db"])
+    c = db.cursor()
+
+    filterwarnings('ignore', category = MySQLdb.Warning)
+    
+    f = open(file, "r")
+    contents = f.read()
+    f.close()
+
+    # this is naive
+    commands = contents.split(";")
+
+    for command in commands:
+        prog = re.compile("/\*.*?\*/", re.DOTALL)
+        command = prog.sub("", command)
+
+        prog = re.compile("^--.*$", re.MULTILINE)
+        command = prog.sub("", command)
+        
+        command = str.strip(command)
+        if len(command) > 0:
+            try:
+                c.execute(command)
+                db.commit()
+                sys.stdout.write(".") # omg, pythong for the fail
+                sys.stdout.flush()
+                
+            except Exception, e:
+                print "\n\nOh noes!  Something broke!  You got a backup, right?\n\nFile:  %s\nSQL:   %s\nError: %s" % (file, command, e)
+                db.rollback()
+                sys.exit(1)
+        
+    print ""
+    db.commit()
+    db.close()
+    
+    
+def get_src_schema(datasource, dbinfo):
+    try:
+        db = MySQLdb.connect(host = dbinfo[datasource]["host"],
+                             port = int(dbinfo[datasource]["port"]),
+                             user = dbinfo[datasource]["username"],
+                             passwd = dbinfo[datasource]["password"],
+                             db = dbinfo[datasource]["db"])
+
+        c = db.cursor()
+
+        c.execute("select meta_value from meta where meta_key='version'")
+        result = c.fetchone()
+
+        return str(result[0])
+    except MySQLdb.OperationalError, err:
+        if err[0] == 1049:
+            print "Database %s does not exist.  Create and give privs" % (datasource,)
+            sys.exit(1)
+        else:
+            print "Error in get_src_schema: %s" % (err,)
+            sys.exit(1)
+
+    except MySQLdb.ProgrammingError, err:
+        if err[0] == 1146:  # meta table 
+            return "0"
+        else:
+            print "Error in get_src_schema: %s" % (err,)
+            sys.exit(1)
+
+def chomp(line):
+    return line.replace("\r","").replace("\n","")
+
+def full_path(path_in):
+    return os.path.abspath(os.path.expanduser(path_in))
+
+class AsaAdmin(object):
+    boolmap = {"true":True,"false":False}
+    jstr  = r"resources\.jdbc\-resource\.jdbc\/([^\.]+)\.jndi\-name\=jdbc\/(.*)"
+    jestr = r"servers\.server\.server\.resource\-ref\.jdbc\/([^\.]+)\.enabled\=(.*)"
+    pnstr = r"resources\.jdbc\-resource\.jdbc\/([^\.]+)\.pool\-name\=(.*)"
+    ppstr = r"resources\.jdbc\-connection\-pool\.(.*)\.property\.(.*)\=(.*)"    
+    ustr  = r"resources\.jdbc\-connection\-pool\.(.*).property\.(.*)\=jdbc\:mysql\:\/\/(.*):([0-9]+)\/(.*)"
+    poolname_re = re.compile(pnstr)
+    jndi_re = re.compile(jstr)
+    jndienabled_re = re.compile(jestr)
+    pool_re = re.compile(ppstr)
+    url_re = re.compile(ustr)
+
+    def __init__(self,asapath="/opt/glassfish/bin",passwordfile=None):
+        self.asapath = os.path.join(full_path(asapath),"asadmin")
+        self.results = []
+        self.jndi = Container(Jndi)
+        self.pools = Container(Pool)
+        if(passwordfile):
+            self.passwordfile = full_path(passwordfile)
+        else:
+          self.passwordfile = None
+        
+    def runget(self,params):
+        args = [self.asapath,"get"]
+        args.extend(params)
+        if self.passwordfile:
+            args.append("--passwordfile")
+            args.append(self.passwordfile)
+        try:
+            po = subprocess.Popen(args,stdout=PIPE,stderr=PIPE)
+        except OSError:
+            printf("Could not execute %s\n",args[0])
+            printf("Please specify the correct path via the -g option\n\n")
+            parser.print_help()
+            sys.exit()
+        self.results = [chomp(l) for l in po.stdout.readlines()]
+        po.stderr.read()
+        po.wait()
+
+    def report_ds(self,dbs):
+        dset = set(dbs)
+        sout = {}
+        out = {}
+
+        jndi_by_poolname = {}
+        for (k,v) in self.jndi.container.items():
+            if v.poolname != None:
+                jndi_by_poolname[v.poolname] = v
+        dup_format = """db "%s" was found in pools "%s" and "%s"\n"""
+
+        for (poolname,pool) in self.pools.container.items():
+            if pool.db in dset:
+                if jndi_by_poolname.has_key(poolname):
+                    p = pool
+                    j = jndi_by_poolname[poolname]
+                    if j.enabled:
+                        if sout.has_key(pool.db):
+                            printf("Duplicate db found in JDBC Resources\n")
+                            args = (pool.db,sout[pool.db]["poolname"],poolname)
+                            printf(dup_format,*args)
+                            printf("can not proceed. Please disable the ")
+                            printf("duplicate. pool via the GUI\n")
+                            sys.exit()
+                        sout[pool.db]={}
+                        sout[pool.db]["pool"] = pool
+                        sout[pool.db]["poolname"]=poolname
+        for (k,v) in sout.items():
+            pool = sout[k]["pool"]
+            out[k] = {}
+            for key in ["host","port","username","db","password"]:
+                out[k][key] = getattr(pool,key,None)
+        return out
+
+    def get_ds(self,dbs):
+        self.runget(["*"])
+        self.setjndi()
+        ds = self.report_ds(dbs)
+        return ds
+
+    def setjndi(self):
+        for line in self.results:
+            m = AsaAdmin.jndi_re.match(line)
+            if m:
+                self.jndi.get(m.group(1)).name=m.group(2)
+
+            m = AsaAdmin.jndienabled_re.match(line)
+            if m:
+                self.jndi.get(m.group(1)).enabled = AsaAdmin.boolmap[m.group(2).lower()]
+            
+            m = AsaAdmin.poolname_re.match(line)
+            if m:
+                self.jndi.get(m.group(1)).poolname=m.group(2)
+
+            m = AsaAdmin.pool_re.match(line)
+            if m:
+                self.pools.get(m.group(1)).setbyasaprop(m.group(2),m.group(3))
+
+            m = AsaAdmin.url_re.match(line)
+            if m:
+                poolname = m.group(1)
+                p = self.pools.get(poolname)
+                p.setvalue("host",m.group(3))
+                p.setvalue("port", m.group(4))
+                p.setvalue("db",m.group(5))
+
+class Jndi(object):
+    def __init__(self):
+        self.name = ""
+        self.enabled = False
+        self.poolname = ""
+
+    def __repr__(self):
+        args = (self.name,self.enabled,self.poolname)
+        return "{name=\"%s\", enabled=\"%s\", poolname\"%s\"}"%args
+
+class Pool(object):
+    attrnames = ["host","port","username","db","password","url","username"]
+    attrmap = {"user":"username",
+               "url":"url",
+               "password":"password"}
+
+    def __init__(self):
+        for k in Pool.attrnames:
+            setattr(self,k,None)
+
+    def setvalue(self,name,value):
+        if name.lower() in Pool.attrnames:
+            setattr(self,name.lower(),value)
+
+    def setbyasaprop(self,name,value):
+        key = name.lower()
+        if Pool.attrmap.has_key(key):
+            mappedkey = Pool.attrmap[key]
+            self.setvalue(mappedkey,value)
+        
+
+    def __repr__(self):
+        format = "{"
+        args = []
+        for k in Pool.attrnames:
+            format += " %s=%%s"%k
+            args.append(getattr(self,k,None))
+        format += " }"
+        return format%tuple(args)
+
+class Container(object):
+    def __init__(self,aClass):
+        self.container = {}
+        self.aClass = aClass
+
+    def get(self,name):
+        if not self.container.has_key(name):
+            self.container[name] = self.aClass()
+        return self.container[name]
+
+    def clear(self):
+        self.container = {}
+
+def test_re(pattern,line):
+    test_pattern = re.compile(pattern)
+    m = test_pattern.match(line)
+    if m:
+        return m.groups()
+    else:
+        return False
+
+if __name__ == "__main__":
+    parser = OptionParser()
+    parser.add_option("-c", "--configfile", nargs=1, help="Specify a config file", default="/etc/rackspace-cloud/lbaas/jndi.xml")
+    parser.add_option("-d", "--datasource", nargs=1, action="append", help="Specify a datasource")
+    parser.add_option("-p", "--passwordfile",nargs=1,help="Path to asadmin password file", default=None)
+    parser.add_option("-g", "--asapath",nargs=1,help="Path to asaadmin program",default="/opt/glassfish/bin")
+    parser.add_option("-s", "--schemadir", nargs=1, help="Specify a schema dir", default="/opt/rackspace-cloud/lbaas/rs-lb-restapi/schema")
+    parser.add_option("-a", "--all", action="store_true", help="all datasources", default=False)
+    parser.add_option("-b", "--begin", nargs=1, help="beginning version")
+    parser.add_option("-e", "--end", nargs=1, help="ending version")
+    parser.add_option("-t", "--test", action="store_true", help="test only, do not run migration", default=False)
+    parser.add_option("-y", "--force", action="store_true", help="Skip the safty (Y/N) check and continue anyways",default=False)
+
+    (options, args) = parser.parse_args()
+
+    schema_path = full_path(options.schemadir)    
+    dbnames = [f for f in os.listdir(schema_path) if os.path.isdir(os.path.join(schema_path,f))]
+    databases = get_ds(options.asapath,options.passwordfile,dbnames)
+    if not databases:
+        print "Can't read jdbc connection info"
+        sys.exit(1)
+    missing = set(dbnames) - set(databases.keys())
+    if missing:
+        printf("Warning can't migrate dbs:")
+        for m in missing:
+            printf("%s ",m)
+        printf("SKIPPING\n")
+
+    if options.all:
+        options.datasource = databases.keys()
+    
+    # make sure we are working with a good datasource
+    bad_datasource = False
+    if not options.datasource:
+        bad_datasource = True
+    else:
+        for ds in options.datasource:
+            if not ds in databases.keys():
+                bad_datasource = True
+
+    if bad_datasource:
+        print "Must specify a datasource (-d, --datasource). or -a to include all of them. Valid datasources:\n"
+        for ds in databases:
+            print "  %s" % ds
+        sys.exit(1)
+
+    # We have the connection info, now build a graph of possible upgrades
+    if not options.schemadir:
+        print "Must specify a schemadir (-s, --schemadir) corresponding to the datasource"
+        sys.exit(1)
+
+    # build the graph for this schem
+    print "Getting graphs:"
+    for ds in options.datasource:
+        schema_path = os.path.join(full_path(options.schemadir), ds)
+        (graph, max_schema) = load_schema(schema_path)
+        databases[ds]["max_schema"] = max_schema
+        databases[ds]["graph"] = graph
+        print " - %s: complete" % (ds,)
+
+# some sanity checks... make sure max_schemas are the same
+    print "Finding max schema:"
+    max_schema = databases[options.datasource[0]]["max_schema"]
+    for ds in options.datasource:
+        print " - %s: %s" % (ds, databases[ds]["max_schema"])
+        if databases[ds]["max_schema"] != max_schema:
+            print "Schemas vary between datasources"
+            sys.exit(1)
+
+# set the end schema
+    if options.end:
+        dst_schema = str(options.end)
+    else:
+        dst_schema = max_schema
+
+# now, verify that the start schema is correct
+    print "Finding start schema"
+    min_schema = get_src_schema(options.datasource[0], databases)
+    for ds in options.datasource:
+        this_schema = get_src_schema(ds, databases)
+        print " - %s: %s" % (ds, this_schema)
+        if this_schema != min_schema:
+            print "existing schemas vary between datasources"
+            sys.exit(1)
+        
+    if options.begin:
+        src_schema = str(options.begin)
+    else:
+        src_schema = min_schema
+
+    if src_schema == dst_schema:
+        print "Nothing to do."
+        sys.exit(0)
+
+    print "Solving for schema migration from %s -> %s" % (src_schema, dst_schema)
+
+# check we can resolve between src and destination
+    sample_path = shortest_path(databases[options.datasource[0]]["graph"], src_schema, dst_schema)
+
+    if sample_path == None:
+        print "Error: can't solve for schema migration from %s -> %s" % (src_schema, dst_schema)
+        sys.exit(1)
+
+    for ds in options.datasource:
+        databases[ds]["path"] = shortest_path(databases[ds]["graph"], src_schema, dst_schema)
+        print "Datasource %s" % (ds,)
+
+        print "Moving from schema %s to %s:" % (src_schema, dst_schema)
+        current = None
+        for node in databases[ds]["path"]:
+             if current:
+                 print " - %s-%s.sql" % (current, node)
+             current = node
+    
+        if databases[ds]["path"] != sample_path:
+            print "Differing migrations between data sources"
+            sys.exit(1)
+
+
+    if options.test:
+        print "Done with Harmless test"
+        sys.exit(0)
+    printf("\n\n")
+    printf("Getting ready to mangle databases: \n")
+    for dbname in dbnames:
+        host  = databases[dbname]["host"]
+        user  = databases[dbname]["username"]
+        db    = databases[dbname]["db"]
+        port  = databases[dbname]["port"]
+        args = (host,port,db)
+        printf("    mysql://%s:%s/%s\n",*args)
+
+    if not options.force:
+        printf("Are you sure you want to proceed(Y/N): ")
+        response = sys.stdin.readline()
+        if chop(response).lower() != "y":
+            printf("Ok chickening out see you later\n")
+            sys.exit()
+    else:
+        printf("--force flag found skipping warning prompt\n")
+
+
+    print "Running migrations"
+    for ds in options.datasource:
+        current = None
+        print " - %s" % (ds,)
+        for node in databases[ds]["path"]:
+            if current:
+                print "   %s -> %s: " % (current, node),
+                file = "%s/%s/%s-%s.sql" % (options.schemadir, ds, current, node)
+                execute_upgrade(ds, databases, file)
+            current = node
+    sys.exit(0)

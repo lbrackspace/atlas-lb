@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+
+import pkset
+import time
+import datetime
+import sys
+import os
+
+
+def printf(format,*args): sys.stdout.write(format%args)
+def fprintf(fp,format,*args): fp.write(format%args)
+
+def validsetbuck():
+    out = ""
+    valid_name_list = list(valid_names)
+    valid_name_list.sort()
+    for name in valid_name_list[:-1]:
+        out += "%s|"%(name)
+    out += "%s"%(valid_name_list[-1])
+    return out
+
+def usage(prog):
+    printf("Usage is %s <%s>\n",prog,validsetbuck())
+    printf("Mark the latest deb packages as being apart of this release\n")
+    printf("\n")
+
+valid_names = pkset.valid_names
+
+if __name__=="__main__":
+
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<2:
+        usage(prog)
+        sys.exit()
+    release = sys.argv[1]
+    if release.lower() not in valid_names:
+        usage(prog)
+        sys.exit()
+
+    try:
+        pstats = pkset.load_cpickle()
+    except IOError:
+        pstats = {}
+    if not pstats.has_key(release):
+        pstats[release] = {}
+
+    now = pkset.now()
+
+    pstats[release][now] = {}
+
+    pstats[release][now]["fstats"] = pkset.listdir(".",{})
+    pkset.save_cpickle(pstats)
