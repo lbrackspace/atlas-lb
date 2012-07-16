@@ -67,6 +67,14 @@ public class LoadBalancerRepository {
         return lb;
     }
 
+    public void clear(Object entity) {
+        entityManager.clear();
+    }
+
+    public void detach(Object entity) {
+        entityManager.detach(entity);
+    }
+
     public List<LoadBalancer> getExpiredLbs() {
         Calendar threeMonthsAgo = Calendar.getInstance();
         threeMonthsAgo.add(Calendar.DATE, -90);
@@ -973,7 +981,7 @@ public class LoadBalancerRepository {
         }
 
 //        TODO: Need to add a record for lb's that don't have usage but are non-deleted
-        
+
         for (Usage lbUsageResult : lbUsageResults) {
             Integer accountId = lbUsageResult.getLoadbalancer().getAccountId();
             Integer lbId = lbUsageResult.getLoadbalancer().getId();
@@ -1493,7 +1501,7 @@ public class LoadBalancerRepository {
         return (loadBalancersWithStatus == null) ? new ArrayList<LoadBalancer>() : loadBalancersWithStatus;
     }
 
-     public UserPages getUserPages(Integer lid, Integer aid) {
+    public UserPages getUserPages(Integer lid, Integer aid) {
         List<UserPages> userPagesList = new ArrayList<UserPages>();
         UserPages up;
         String qStr = "FROM UserPages u where u.loadbalancer.id = :lid and u.loadbalancer.accountId = :aid";

@@ -153,6 +153,8 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     @Transactional
     public LoadBalancer updateNode(LoadBalancer msgLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         LoadBalancer oldLbNodes = loadBalancerRepository.getByIdAndAccountId(msgLb.getId(), msgLb.getAccountId());
+        //Prevent hibernate flushing updated object on failure...
+        loadBalancerRepository.detach(oldLbNodes);
 
         Node nodeToUpdate = msgLb.getNodes().iterator().next();
         if (!loadBalancerContainsNode(oldLbNodes, nodeToUpdate)) {
