@@ -19,6 +19,7 @@
         <module>cidr</module>
         <module>ca</module>
         <module>crypto-tool</module>
+        <module>rest-clients</module>
     </modules>
 
     <!-- <properties>
