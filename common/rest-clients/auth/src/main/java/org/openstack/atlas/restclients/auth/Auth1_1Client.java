@@ -22,6 +22,19 @@ public class Auth1_1Client {
     private String endPoint;
     private RootElementUserCredentials userCredentials;
 
+    @Override
+    public String toString() {
+        String user = null;
+        String key = null;
+        if (userCredentials != null) {
+            user = userCredentials.getUsername();
+            key = userCredentials.getKey();
+        }
+        String fmt = "{ user=\"%s\" key=\"%s\" endPoint\"%s\" }";
+        String msg = String.format(fmt, user, key, endPoint);
+        return msg;
+    }
+
     public Auth1_1Client(String endPoint, String user, String key) {
         this.endPoint = endPoint;
         userCredentials = new RootElementUserCredentials();
@@ -32,7 +45,8 @@ public class Auth1_1Client {
     public AuthData getAuthData() throws IOException {
         Object resp = getAuthResponse();
         if (!(resp instanceof AuthData)) {
-            String fmt = "was expecting AuthData object but got %s object on in call to /auth";
+            String fmt = "was expecting AuthData object but got "
+                    + "%s object on in call to /auth";
             String msg = String.format(fmt, resp.getClass().getName());
             throw new IOException(msg);
         }
@@ -42,9 +56,12 @@ public class Auth1_1Client {
 
     public Object getAuthResponse() {
         Client client = new Client();
-        Builder reqBuilder = client.resource(endPoint).path("/auth").
-                type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
-        ClientResponse resp = reqBuilder.post(ClientResponse.class, userCredentials);
+        Builder reqBuilder = client.resource(endPoint).
+                path("/auth").
+                type(MediaType.APPLICATION_XML).
+                accept(MediaType.APPLICATION_XML);
+        ClientResponse resp = reqBuilder.post(ClientResponse.class,
+                userCredentials);
         Object out = getAuthResponseEntity(resp);
         return out;
     }
@@ -71,11 +88,13 @@ public class Auth1_1Client {
                     String body = IOUtils.toString(is, "UTF-8");
                     // At this point no telling what this problemis is so just throw
                     // an exception and let some one else deal with it.
-                    String fmt = "Error validating user unknown response from Auth: %s";
+                    String fmt = "Error validating user "
+                            + "unknown response from Auth: %s";
                     String msg = String.format(fmt, body);
                     throw new RuntimeException(msg);
                 } catch (IOException ex) {
-                    throw new RuntimeException("Error fetching Auth token, Error reading resp from auth");
+                    throw new RuntimeException("Error fetching Auth token, "
+                            + "Error reading resp from auth");
                 }
         }
         return out;

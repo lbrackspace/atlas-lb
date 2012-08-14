@@ -35,13 +35,13 @@
 
     <modules>
         <module>common</module>
-        <module>data-model</module>
+<!--        <module>data-model</module>
         <module>persistence</module>
         <module>adapter</module>
         <module>api</module>
         <module>logs</module>
         <module>jobs</module>
-        <module>migration</module>
+        <module>migration</module> -->
     </modules>
 
     <build>

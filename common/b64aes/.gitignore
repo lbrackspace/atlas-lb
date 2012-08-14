@@ -1,0 +1,7 @@
+target/*
+.classpath
+.project
+*.iml
+*.pyc
+*.class
+*.json
