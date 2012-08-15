@@ -25,13 +25,14 @@ import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class UsagePollerTest {
+
     public static class WhenGettingLoadbalancerIdsFromVirtualServerNames {
         private LoadBalancerUsagePollerThread usagePollerThread;
         private List<String> loadbalancerNames;
 
         @Before
         public void standUp() {
-            usagePollerThread = new LoadBalancerUsagePollerThread(null, "thread", null, null, null, null);
+            usagePollerThread = new LoadBalancerUsagePollerThread(null, "thread", null, null, null, null, null);
             loadbalancerNames = new ArrayList<String>();
 
             loadbalancerNames.add("1_1");
@@ -83,7 +84,7 @@ public class UsagePollerTest {
             when(mockedHostRepository.getLoadBalancersWithStatus(Matchers.anyInt(), Matchers.eq(LoadBalancerStatus.ACTIVE)))
                     .thenReturn(loadBalancersForHost);
 
-            usagePollerJob = new LoadBalancerUsagePollerThread(null, "thread", null, mockedLoadBalancerAdapter, mockedHostRepository, null);
+            usagePollerJob = new LoadBalancerUsagePollerThread(null, "thread", null, mockedLoadBalancerAdapter, mockedHostRepository, null, null);
         }
 
         @Test

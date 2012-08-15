@@ -9,8 +9,10 @@ import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
 import org.openstack.atlas.usage.BatchAction;
@@ -36,14 +38,16 @@ public class LoadBalancerUsagePollerThread extends Thread {
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
     private HostRepository hostRepository;
     private LoadBalancerUsageRepository usageRepository;
+    private UsageRepository rollUpUsageRepository;
 
-    public LoadBalancerUsagePollerThread(LoadBalancerRepository loadBalancerRepository, String threadName, Host host, ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter, HostRepository hostRepository, LoadBalancerUsageRepository usageRepository) {
+    public LoadBalancerUsagePollerThread(LoadBalancerRepository loadBalancerRepository, String threadName, Host host, ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter, HostRepository hostRepository, LoadBalancerUsageRepository usageRepository, UsageRepository rollUpUsageRepository) {
         super(threadName);
         this.loadBalancerRepository = loadBalancerRepository;
         this.host = host;
         this.reverseProxyLoadBalancerAdapter = reverseProxyLoadBalancerAdapter;
-        this.usageRepository = usageRepository;
         this.hostRepository = hostRepository;
+        this.usageRepository = usageRepository;
+        this.rollUpUsageRepository = rollUpUsageRepository;
     }
 
     @Override
@@ -195,8 +199,10 @@ public class LoadBalancerUsagePollerThread extends Thread {
         Calendar pollTime = Calendar.getInstance();
         Map<Integer, Integer> lbIdAccountIdMap = ZxtmNameHelper.stripLbIdAndAccountIdFromZxtmName(loadBalancerNameMaps);
         List<LoadBalancerUsage> usages = usageRepository.getMostRecentUsageForLoadBalancers(lbIdAccountIdMap.keySet());
+        List<Usage> rollUpUsages = rollUpUsageRepository.getMostRecentUsageForLoadBalancers(lbIdAccountIdMap.keySet());
         Map<Integer, LoadBalancerUsage> usagesAsMap = convertUsagesToMap(usages);
-        UsagesForPollingDatabase usagesForDatabase = new UsagesForPollingDatabase(loadBalancerRepository, loadBalancerNameMaps, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl, pollTime, usagesAsMap).invoke();
+        Map<Integer, Usage> rollupUsagesAsMap = convertRollupUsagesToMap(rollUpUsages);
+        UsagesForPollingDatabase usagesForDatabase = new UsagesForPollingDatabase(loadBalancerRepository, loadBalancerNameMaps, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl, pollTime, usagesAsMap, rollupUsagesAsMap).invoke();
 
         if (!usagesForDatabase.getRecordsToInsert().isEmpty())
             usageRepository.batchCreate(usagesForDatabase.getRecordsToInsert());
@@ -208,6 +214,14 @@ public class LoadBalancerUsagePollerThread extends Thread {
         Map<Integer, LoadBalancerUsage> usagesAsMap = new HashMap<Integer, LoadBalancerUsage>();
         for (LoadBalancerUsage usage : usages) {
             usagesAsMap.put(usage.getLoadbalancerId(), usage);
+        }
+        return usagesAsMap;
+    }
+
+    private Map<Integer, Usage> convertRollupUsagesToMap(List<Usage> usages) {
+        Map<Integer, Usage> usagesAsMap = new HashMap<Integer, Usage>();
+        for (Usage usage : usages) {
+            usagesAsMap.put(usage.getLoadbalancer().getId(), usage);
         }
         return usagesAsMap;
     }

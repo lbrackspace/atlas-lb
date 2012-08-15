@@ -2,6 +2,7 @@ package org.openstack.atlas.usage.logic;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.entities.VirtualIpType;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
@@ -25,11 +26,12 @@ public class UsagesForPollingDatabase {
     private Map<String, Long> bytesOutMapSsl;
     private Map<String, Integer> currentConnectionsMapSsl;
     private Calendar pollTime;
-    private Map<Integer, LoadBalancerUsage> usagesAsMap;
+    private Map<Integer, LoadBalancerUsage> hourlyUsagesAsMap;
+    private Map<Integer, Usage> rollupUsagesAsMap;
     private List<LoadBalancerUsage> recordsToInsert;
     private List<LoadBalancerUsage> recordsToUpdate;
 
-    public UsagesForPollingDatabase(LoadBalancerRepository loadBalancerRepository, Collection<LoadBalancerNameMap> loadBalancerNameMaps, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap, Map<String, Long> bytesInMapSsl, Map<String, Long> bytesOutMapSsl, Map<String, Integer> currentConnectionsMapSsl, Calendar pollTime, Map<Integer, LoadBalancerUsage> usagesAsMap) {
+    public UsagesForPollingDatabase(LoadBalancerRepository loadBalancerRepository, Collection<LoadBalancerNameMap> loadBalancerNameMaps, Map<String, Long> bytesInMap, Map<String, Long> bytesOutMap, Map<String, Integer> currentConnectionsMap, Map<String, Long> bytesInMapSsl, Map<String, Long> bytesOutMapSsl, Map<String, Integer> currentConnectionsMapSsl, Calendar pollTime, Map<Integer, LoadBalancerUsage> hourlyUsagesAsMap, Map<Integer, Usage> rollupUsageAsMap) {
         this.loadBalancerRepository = loadBalancerRepository;
         this.loadBalancerNameMaps = loadBalancerNameMaps;
         this.bytesInMap = bytesInMap;
@@ -39,7 +41,8 @@ public class UsagesForPollingDatabase {
         this.bytesOutMapSsl = bytesOutMapSsl;
         this.currentConnectionsMapSsl = currentConnectionsMapSsl;
         this.pollTime = pollTime;
-        this.usagesAsMap = usagesAsMap;
+        this.hourlyUsagesAsMap = hourlyUsagesAsMap;
+        this.rollupUsagesAsMap = rollupUsageAsMap;
     }
 
     public List<LoadBalancerUsage> getRecordsToInsert() {
@@ -59,12 +62,14 @@ public class UsagesForPollingDatabase {
                 Integer accountId = loadBalancerNameMap.getAccountId();
                 Integer lbId = loadBalancerNameMap.getLoadBalancerId();
 
-                if (!usagesAsMap.containsKey(lbId)) {
+                if (!hourlyUsagesAsMap.containsKey(lbId)) {
                     // Case 1: No record exists at all. Create one.
                     LoadBalancerUsage newRecord = createNewUsageRecord(loadBalancerNameMap, accountId, lbId);
+                    // If rollup usage exists we need to copy tags over
+                    if(rollupUsagesAsMap.containsKey(lbId)) newRecord.setTags(rollupUsagesAsMap.get(lbId).getTags());
                     recordsToInsert.add(newRecord);
                 } else {
-                    LoadBalancerUsage currentRecord = usagesAsMap.get(lbId);
+                    LoadBalancerUsage currentRecord = hourlyUsagesAsMap.get(lbId);
                     if (currentRecord.getEndTime().get(Calendar.HOUR_OF_DAY) != pollTime.get(Calendar.HOUR_OF_DAY) && pollTime.after(currentRecord.getEndTime())) {
                         // Case 2: A record exists but need to create new one because current hour is later than endTime hour.
                         LoadBalancerUsage newRecord = createNewUsageRecord(loadBalancerNameMap, accountId, lbId);

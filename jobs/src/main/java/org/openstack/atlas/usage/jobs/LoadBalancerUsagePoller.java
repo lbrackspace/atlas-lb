@@ -10,6 +10,7 @@ import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
@@ -32,6 +33,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
     private LoadBalancerRepository loadBalancerRepository;
     private HostRepository hostRepository;
     private LoadBalancerUsageRepository hourlyUsageRepository;
+    private UsageRepository rollupUsageRepository;
     private LoadBalancerUsageEventRepository usageEventRepository;
     private final int BATCH_SIZE = 100;
 
@@ -53,6 +55,11 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
     @Required
     public void setHourlyUsageRepository(LoadBalancerUsageRepository hourlyUsageRepository) {
         this.hourlyUsageRepository = hourlyUsageRepository;
+    }
+
+    @Required
+    public void setRollupUsageRepository(UsageRepository rollupUsageRepository) {
+        this.rollupUsageRepository = rollupUsageRepository;
     }
 
     @Required
@@ -249,7 +256,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
         }
 
         for (final Host host : hosts) {
-            LoadBalancerUsagePollerThread thread = new LoadBalancerUsagePollerThread(loadBalancerRepository, host.getName() + "-poller-thread", host, reverseProxyLoadBalancerAdapter, hostRepository, hourlyUsageRepository);
+            LoadBalancerUsagePollerThread thread = new LoadBalancerUsagePollerThread(loadBalancerRepository, host.getName() + "-poller-thread", host, reverseProxyLoadBalancerAdapter, hostRepository, hourlyUsageRepository, rollupUsageRepository);
             threads.add(thread);
             thread.start();
         }

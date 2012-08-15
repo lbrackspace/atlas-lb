@@ -46,6 +46,7 @@
                 <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
                 <entry key="hostRepository" value-ref="hostRepository"/>
                 <entry key="hourlyUsageRepository" value-ref="hourlyUsageRepository"/>
+                <entry key="rollupUsageRepository" value-ref="rollupUsageRepository"/>
                 <entry key="usageEventRepository" value-ref="usageEventRepository"/>
                 <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>

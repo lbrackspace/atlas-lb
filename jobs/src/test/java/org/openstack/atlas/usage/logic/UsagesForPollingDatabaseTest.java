@@ -1,26 +1,97 @@
 package org.openstack.atlas.usage.logic;
 
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
+import org.mockito.Matchers;
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.entities.VirtualIp;
+import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.usage.helpers.LoadBalancerNameMap;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 public class UsagesForPollingDatabaseTest {
+
+    public static class WhenCreatingANewRecord {
+        private UsagesForPollingDatabase usagesForDatabase;
+        private Map<String, Long> bytesInMap;
+        private Map<String, Long> bytesOutMap;
+        private Map<String, Integer> currentConnectionsMap;
+        private Map<String, Long> bytesInMapSsl;
+        private Map<String, Long> bytesOutMapSsl;
+        private Map<String, Integer> currentConnectionsMapSsl;
+        private Map<Integer, LoadBalancerUsage> usagesAsMap;
+        private Map<Integer, Usage> rollupUsagesAsMap;
+        private String zxtmName;
+        private String zxtmSslName;
+        private Collection<LoadBalancerNameMap> loadBalancerNameMapCollection;
+        private LoadBalancerNameMap loadBalancerNameMap;
+        private LoadBalancerUsage currentUsage;
+        private Usage latestRolledUpUsageRecord;
+        private LoadBalancerRepository loadBalancerRepository;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, DeletedStatusException {
+            loadBalancerRepository = mock(LoadBalancerRepository.class);
+            zxtmName = "1234_1234";
+            zxtmSslName = ZxtmNameBuilder.genSslVSName(zxtmName);
+            loadBalancerNameMapCollection = new ArrayList<LoadBalancerNameMap>();
+            loadBalancerNameMap = new LoadBalancerNameMap();
+            loadBalancerNameMap.setLoadBalancerId(1234);
+            loadBalancerNameMap.setAccountId(1234);
+            loadBalancerNameMap.setNonSslVirtualServerName(zxtmName);
+            loadBalancerNameMap.setSslVirtualServerName(zxtmSslName);
+            loadBalancerNameMapCollection.add(loadBalancerNameMap);
+            bytesInMap = new HashMap<String, Long>();
+            bytesInMapSsl = new HashMap<String, Long>();
+            bytesOutMap = new HashMap<String, Long>();
+            bytesOutMapSsl = new HashMap<String, Long>();
+            currentConnectionsMap = new HashMap<String, Integer>();
+            currentConnectionsMapSsl = new HashMap<String, Integer>();
+            usagesAsMap = new HashMap<Integer, LoadBalancerUsage>();
+            bytesInMap.put(zxtmName, 100l);
+            bytesInMapSsl.put(ZxtmNameBuilder.genSslVSName(zxtmName), 100l);
+            bytesOutMap.put(zxtmName, 200l);
+            bytesOutMapSsl.put(ZxtmNameBuilder.genSslVSName(zxtmName), 200l);
+            currentConnectionsMap.put(zxtmName, 50);
+            currentConnectionsMapSsl.put(ZxtmNameBuilder.genSslVSName(zxtmName), 50);
+
+            latestRolledUpUsageRecord = new Usage();
+            latestRolledUpUsageRecord.setAccountId(1234);
+            latestRolledUpUsageRecord.setLoadbalancer(new LoadBalancer());
+            latestRolledUpUsageRecord.getLoadbalancer().setId(1234);
+            latestRolledUpUsageRecord.setTags(5);
+
+            rollupUsagesAsMap = new HashMap<Integer, Usage>();
+            rollupUsagesAsMap.put(1234, latestRolledUpUsageRecord);
+            when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(new HashSet<VirtualIp>());
+            usagesForDatabase = new UsagesForPollingDatabase(loadBalancerRepository, loadBalancerNameMapCollection, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl, null, usagesAsMap, rollupUsagesAsMap);
+        }
+
+        @Test
+        public void shouldCopyTagsFromLatestRolledUpUsageRecord() {
+            usagesForDatabase.invoke();
+            Assert.assertEquals(1, usagesForDatabase.getRecordsToInsert().size());
+            final LoadBalancerUsage loadBalancerUsage = usagesForDatabase.getRecordsToInsert().get(0);
+            Assert.assertEquals(latestRolledUpUsageRecord.getTags(), loadBalancerUsage.getTags());
+        }
+
+    }
+
     public static class WhenUpdatingCurrentRecord {
         private UsagesForPollingDatabase usagesForDatabase;
         private Map<String, Long> bytesInMap;
@@ -30,6 +101,7 @@ public class UsagesForPollingDatabaseTest {
         private Map<String, Long> bytesOutMapSsl;
         private Map<String, Integer> currentConnectionsMapSsl;
         private Map<Integer, LoadBalancerUsage> usagesAsMap;
+        private Map<Integer, Usage> rollupUsagesAsMap;
         private String zxtmName;
         private String zxtmSslName;
         private LoadBalancerNameMap loadBalancerNameMap;
@@ -75,7 +147,7 @@ public class UsagesForPollingDatabaseTest {
             currentUsage.setNumVips(1);
 
             usagesAsMap.put(1234, currentUsage);
-            usagesForDatabase = new UsagesForPollingDatabase(null, null, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl, null, usagesAsMap);
+            usagesForDatabase = new UsagesForPollingDatabase(null, null, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl, null, usagesAsMap, rollupUsagesAsMap);
         }
 
         @Test
@@ -131,6 +203,7 @@ public class UsagesForPollingDatabaseTest {
         private Map<String, Long> bytesOutMapSsl;
         private Map<String, Integer> currentConnectionsMapSsl;
         private Map<Integer, LoadBalancerUsage> usagesAsMap;
+        private Map<Integer, Usage> rollupUsagesAsMap;
         private String zxtmName;
 
         @Before
@@ -150,9 +223,9 @@ public class UsagesForPollingDatabaseTest {
             currentConnectionsMap.put(zxtmName, 50);
             currentConnectionsMapSsl.put(zxtmName, 50);
 
-            usagesForDatabase = new UsagesForPollingDatabase(null, null, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl, null, usagesAsMap);
+            usagesForDatabase = new UsagesForPollingDatabase(null, null, bytesInMap, bytesOutMap, currentConnectionsMap, bytesInMapSsl, bytesOutMapSsl, currentConnectionsMapSsl, null, usagesAsMap, rollupUsagesAsMap);
         }
-        
+
         @Test
         public void shouldCalculateCumBandwidthBytesInWhenUsageIsZero() {
             LoadBalancerUsage usageRecord = new LoadBalancerUsage();
