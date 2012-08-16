@@ -221,11 +221,14 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         LOG.info("Verifying unique ports against SSL termination securePort ");
         if (dbLoadBalancer.hasSsl()) {
             SslTermination ssl = dbLoadBalancer.getSslTermination();
-            if (ssl.getSecurePort() != loadBalancer.getPort()) {
-                LOG.info(String.format("Load balancer port:%d  and SSL Termination port:%d are unique, continue...", loadBalancer.getPort(), ssl.getSecurePort()));
-            } else {
+            if (loadBalancer.getPort() != null && loadBalancer.getPort() == ssl.getSecurePort()) {
                 LOG.error("Cannot update load balancer port as it is currently in use by ssl termination.");
                 throw new BadRequestException(String.format("Port currently assigned to SSL termination for this load balancer. Please try another port."));
+            } else if (ssl.getSecurePort() == dbLoadBalancer.getPort()) {
+                LOG.error("Cannot update load balancer port as it is currently in use by ssl termination.");
+                throw new BadRequestException(String.format("Port currently assigned to SSL termination for this load balancer. Please try another port."));
+            } else {
+                LOG.info(String.format("Load balancer port:%d  and SSL Termination port:%d are unique, continue...", loadBalancer.getPort(), ssl.getSecurePort()));
             }
         }
 
