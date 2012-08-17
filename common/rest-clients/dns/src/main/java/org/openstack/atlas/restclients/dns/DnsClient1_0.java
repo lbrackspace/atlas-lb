@@ -110,6 +110,12 @@ public class DnsClient1_0 {
         return delPtrRecordBaseMethod(domainId,deviceUrl,serviceName,ip,"x-auth-token",token,endPoint);
     }
 
+    public ClientResponse delPtrRecordMan(Integer domainId,String deviceUrl,String serviceName,String ip) throws UnsupportedEncodingException{
+        String authKey = "authorization";
+        String authValue = encodeBasicAuth();
+        return delPtrRecordBaseMethod(domainId,deviceUrl,serviceName,ip,authKey,authValue,adminEndPoint);
+    }
+
     private ClientResponse delPtrRecordBaseMethod(Integer domainId, String deviceUrl, String serviceName, String ip,
         String authKey, String authValue,String endPoint) {
         String url = String.format("/%d/rdns/%s", accountId, serviceName);
