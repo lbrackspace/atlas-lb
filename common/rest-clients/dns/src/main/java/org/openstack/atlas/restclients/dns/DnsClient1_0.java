@@ -61,7 +61,7 @@ public class DnsClient1_0 {
         rb = rb.type(MediaType.APPLICATION_XML);
         rb = rb.header("x-auth-token", this.token);
         ClientResponse resp = rb.get(ClientResponse.class);
-        
+
         return resp;
     }
 
@@ -106,52 +106,29 @@ public class DnsClient1_0 {
         return resp;
     }
 
-    public Object delPtrRecord(Integer domainId,String deviceUrl,String serviceName,String ip){
-        String url = String.format("/%d/rdns/%s",accountId,serviceName);
+    public ClientResponse delPtrRecordPub(Integer domainId,String deviceUrl,String serviceName,String ip){
+        return delPtrRecordBaseMethod(domainId,deviceUrl,serviceName,ip,"x-auth-token",token,endPoint);
+    }
+
+    private ClientResponse delPtrRecordBaseMethod(Integer domainId, String deviceUrl, String serviceName, String ip,
+        String authKey, String authValue,String endPoint) {
+        String url = String.format("/%d/rdns/%s", accountId, serviceName);
         Client client = new Client();
         WebResource wr = client.resource(endPoint).path(url);
-        wr = wr.queryParam("href",deviceUrl);
-        if(ip != null){
-            wr = wr.queryParam("ip",ip);
+        wr = wr.queryParam("href", deviceUrl);
+        if (ip != null) {
+            wr = wr.queryParam("ip", ip);
         }
         Builder rb = wr.accept(MediaType.APPLICATION_XML);
         rb = rb.type(MediaType.APPLICATION_XML);
-        rb.header("x-auth-token",token);
+        rb.header(authKey, authValue);
         ClientResponse resp = rb.delete(ClientResponse.class);
         return resp;
     }
 
-    private Object getDomainsEntity(ClientResponse resp) {
-        Object out;
-        int sc = resp.getClientResponseStatus().getStatusCode();
-        switch (sc) {
-            case 200:
-                out = resp.getEntity(Domains.class);
-                break;
-            case 400:
-            case 401:
-            case 404:
-            case 406:
-            case 413:
-            case 500:
-            case 503:
-                out = resp.getEntity(DnsFault.class);
-                break;
-            default:
-                InputStream is = resp.getEntityInputStream();
-                try {
-                    String body = IOUtils.toString(is, "UTF-8");
-                    String fmt = "Error reading domains from Dns service: %s";
-                    String msg = String.format(fmt, body);
-                    throw new RuntimeException(msg);
-                } catch (IOException ex) {
-                    throw new RuntimeException("Error reading response from Dns service");
-                }
-        }
-        return out;
-    }
 
-    public Object getDomains() {
+
+    public ClientResponse getDomains() {
         return getDomains(null, null, null);
     }
 
