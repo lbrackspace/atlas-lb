@@ -12,16 +12,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
-import org.openstack.atlas.restclients.dns.objects.CustomObjects.RootElementRdns;
-import org.openstack.atlas.restclients.dns.objects.DnsFault;
-import org.openstack.atlas.util.b64aes.Base64;
+import org.openstack.atlas.restclients.dns.pub.objects.Record;
+import org.openstack.atlas.restclients.dns.pub.objects.Rdns;
+import org.openstack.atlas.restclients.dns.pub.objects.RecordType;
+import org.openstack.atlas.restclients.dns.pub.objects.RecordsList;
 
-import org.openstack.atlas.restclients.dns.objects.RecordsList;
-import org.openstack.atlas.restclients.dns.objects.Rdns;
-import org.openstack.atlas.restclients.dns.objects.Domains;
-import org.openstack.atlas.restclients.dns.objects.LinkType;
-import org.openstack.atlas.restclients.dns.objects.Record;
-import org.openstack.atlas.restclients.dns.objects.RecordType;
+import org.openstack.atlas.util.b64aes.Base64;
+import org.w3._2005.atom.Link;
+
 
 public class DnsClient1_0 {
 
@@ -80,15 +78,15 @@ public class DnsClient1_0 {
 
     public ClientResponse addPtrRecord(Integer domainId, String deviceUrl,
             String serviceName, String name, String ip, Integer ttl) {
-        RootElementRdns rdnsRequest = new RootElementRdns();
-        LinkType link = new LinkType();
+        Rdns rdnsRequest = new Rdns();
+        Link link = new Link();
         rdnsRequest.setLink(link);
         link.setHref(deviceUrl);
         link.setRel(serviceName);  // Use "cloudLoadBalancers"
         RecordsList records = new RecordsList();
         rdnsRequest.setRecordsList(records);
         Record ptr = new Record();
-        records.getRecord().add(ptr);
+        records.getRecords().add(ptr);
         ptr.setName(name);
         if (ttl != null) {
             ptr.setTtl(ttl);

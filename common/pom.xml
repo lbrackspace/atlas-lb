@@ -14,11 +14,11 @@
     <packaging>pom</packaging>
 
     <modules>
-<!--        <module>configuration</module>
+        <module>configuration</module>
         <module>util</module>
         <module>cidr</module>
         <module>ca</module>
-        <module>crypto-tool</module> -->
+        <module>crypto-tool</module>
         <module>debug</module>
         <module>b64aes</module>
         <module>rest-clients</module>

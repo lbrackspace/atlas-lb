@@ -1,15 +1,15 @@
 package org.openstack.atlas.restclients.dns.exp;
 
-import org.openstack.atlas.restclients.dns.objects.CustomObjects.DnsMockObjectGenerator;
+import org.openstack.atlas.restclients.dns.helpers.DnsMockObjectGenerator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.openstack.atlas.restclients.dns.objects.CustomObjects.RootElementRdns;
-import org.openstack.atlas.restclients.dns.objects.Rdns;
-import org.openstack.atlas.restclients.dns.objects.Record;
+import org.openstack.atlas.restclients.dns.pub.objects.Rdns;
+import org.openstack.atlas.restclients.dns.pub.objects.Record;
+
 import org.openstack.atlas.util.debug.Debug;
 
 public class JaxbExpTest {
@@ -49,18 +49,18 @@ public class JaxbExpTest {
     @Test
     public void testDeserialize() throws Exception {
         Object obj;
-        RootElementRdns rdns;
+        Rdns rdns;
         String exMsg;
         try {
-            obj = JaxbExp.deserialize(RootElementRdns.class, xmlIn);
+            obj = JaxbExp.deserialize(Rdns.class, xmlIn);
         } catch (Exception ex) {
             exMsg = Debug.getEST(ex);
             fail("Could not deseialize\n" + exMsg);
             return;
         }
-            rdns = (RootElementRdns) obj;
-            Record home = rdns.getRecordsList().getRecord().get(0);
-            Record someDomain = rdns.getRecordsList().getRecord().get(1);
+            rdns = (Rdns) obj;
+            Record home = rdns.getRecordsList().getRecords().get(0);
+            Record someDomain = rdns.getRecordsList().getRecords().get(1);
             assertEquals(home.getName(), "www.home.org");
             assertEquals(someDomain.getName(), "www.somedomain.org");
             assertEquals(home.getData(), "127.0.0.1");
@@ -69,7 +69,7 @@ public class JaxbExpTest {
 
     @Test
     public void testSerialize() throws Exception {
-        RootElementRdns rdns = DnsMockObjectGenerator.newRootElementRdns();
+        Rdns rdns = DnsMockObjectGenerator.newRdns();
         String xml;
         String exMsg;
         try {

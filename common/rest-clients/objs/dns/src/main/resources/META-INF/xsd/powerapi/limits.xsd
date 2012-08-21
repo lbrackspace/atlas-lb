@@ -1,4 +1,10 @@
-<xs:schema xmlns:html="http://www.w3.org/1999/xhtml" xmlns:limits="http://docs.openstack.org/common/api/v1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://docs.openstack.org/common/api/v1.0">
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema elementFormDefault="qualified" attributeFormDefault="unqualified"
+           targetNamespace="http://docs.openstack.org/common/api/v1.0"
+           xmlns:limits="http://docs.openstack.org/common/api/v1.0"
+           xmlns:html="http://www.w3.org/1999/xhtml"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
     <!-- Enumeration and SimpleType definitions -->
     <xs:simpleType name="HttpMethod">
@@ -6,23 +12,24 @@
             <xs:documentation>
                 <html:p>
                     The HttpMethod simple type defines a string
-                    enumeration of HTTP method verbs as outlined in <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC2616</a>
+                    enumeration of HTTP method verbs as outlined in <a
+                    href="http://www.ietf.org/rfc/rfc2616.txt">RFC2616</a>
                     section 9.
                 </html:p>
             </xs:documentation>
         </xs:annotation>
         
         <xs:restriction base="xs:string">
-            <xs:enumeration value="GET"/>
-            <xs:enumeration value="DELETE"/>
-            <xs:enumeration value="POST"/>
-            <xs:enumeration value="PUT"/>
-            <xs:enumeration value="HEAD"/>
-            <xs:enumeration value="OPTIONS"/>
-            <xs:enumeration value="CONNECT"/>
-            <xs:enumeration value="TRACE"/>
+            <xs:enumeration value="GET" />
+            <xs:enumeration value="DELETE" />
+            <xs:enumeration value="POST" />
+            <xs:enumeration value="PUT" />
+            <xs:enumeration value="HEAD" />
+            <xs:enumeration value="OPTIONS" />
+            <xs:enumeration value="CONNECT" />
+            <xs:enumeration value="TRACE" />
             
-            <xs:enumeration value="ALL"/>
+            <xs:enumeration value="ALL" />
         </xs:restriction>
     </xs:simpleType>
 
@@ -39,16 +46,16 @@
         </xs:annotation>
         
         <xs:restriction base="xs:string">
-            <xs:enumeration value="SECOND"/>
-            <xs:enumeration value="MINUTE"/>
-            <xs:enumeration value="HOUR"/>
-            <xs:enumeration value="DAY"/>
+            <xs:enumeration value="SECOND" />
+            <xs:enumeration value="MINUTE" />
+            <xs:enumeration value="HOUR" />
+            <xs:enumeration value="DAY" />
         </xs:restriction>
     </xs:simpleType>
     
     
     <!-- Live limit definitions -->
-    <xs:element name="limits" type="limits:Limits"/>
+    <xs:element name="limits" type="limits:Limits" />
 
     <xs:complexType name="Limits">
         <xs:annotation>
@@ -60,9 +67,9 @@
         </xs:annotation>
         
         <xs:sequence>
-            <xs:element maxOccurs="1" minOccurs="0" name="rates" type="limits:RateLimitList"/>
-            <xs:element maxOccurs="1" minOccurs="0" name="absolute" type="limits:AbsoluteLimitList"/>
-            <xs:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
+            <xs:element name="rates" type="limits:RateLimitList" minOccurs="0" maxOccurs="1" />
+            <xs:element name="absolute" type="limits:AbsoluteLimitList" minOccurs="0" maxOccurs="1"  />
+            <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
         </xs:sequence>
         <xs:anyAttribute namespace="##other" processContents="lax"/>
     </xs:complexType>
@@ -77,8 +84,8 @@
         </xs:annotation>
 
         <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="1" name="limit" type="limits:AbsoluteLimit"/>
-            <xs:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
+            <xs:element name="limit" type="limits:AbsoluteLimit" minOccurs="1" maxOccurs="unbounded" />
+            <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
         </xs:sequence>
         <xs:anyAttribute namespace="##other" processContents="lax"/>
     </xs:complexType>
@@ -94,8 +101,8 @@
         </xs:annotation>
         
         <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="1" name="rate" type="limits:ResourceRateLimits"/>
-            <xs:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
+            <xs:element name="rate" type="limits:ResourceRateLimits" minOccurs="1" maxOccurs="unbounded" />
+            <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
         </xs:sequence>
         <xs:anyAttribute namespace="##other" processContents="lax"/>
     </xs:complexType>
@@ -112,8 +119,8 @@
         </xs:annotation>
         
         <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="1" name="limit" type="limits:RateLimit"/>
-            <xs:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
+            <xs:element name="limit" type="limits:RateLimit" minOccurs="1" maxOccurs="unbounded" />
+            <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
         </xs:sequence>
     
         <xs:attribute name="uri" type="xs:string" use="required">
@@ -141,7 +148,8 @@
                             regular expressions are only guaranteed to
                             work with the Java Standard Edition 6
                             Regular Expression Engine. Please see the
-                            <html:a href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html">JAPI
+                            <html:a
+                            href="http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html">JAPI
                             documentation</html:a> for more
                             information.
                         </html:div>
@@ -165,7 +173,7 @@
         </xs:annotation>
 
         <xs:sequence>
-            <xs:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
+            <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
@@ -206,7 +214,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
+            <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
         </xs:sequence>
         <xs:attribute name="verb" type="limits:HttpMethod" use="required">
             <xs:annotation>
@@ -272,4 +280,3 @@
         <xs:anyAttribute namespace="##other" processContents="lax"/>
     </xs:complexType>
 </xs:schema>
-

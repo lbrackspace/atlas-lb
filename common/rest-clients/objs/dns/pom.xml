@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.openstack.atlas</groupId>
+        <artifactId>atlas-parent</artifactId>
+        <version>1.14.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>atlas-restclients-objs-dns</artifactId>
+    <name>Openstack :: Atlas :: Rest Clients :: Objects :: Dns </name>
+
+    <packaging>jar</packaging>
+
+
+    <dependencies>
+    </dependencies>
+
+    <build>
+        <plugins>
+             <plugin>
+                 <inherited>true</inherited>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-compiler-plugin</artifactId>
+                 <configuration>
+                     <source>1.6</source>
+                     <target>1.6</target>
+                     <optimize>false</optimize>
+                     <debug>true</debug>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>1.3</version>
+
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jvnet.jaxb2-commons</groupId>
+                        <artifactId>collection-setter-injector</artifactId>
+                        <version>1.0</version>
+                    </dependency>
+                </dependencies>
+
+                <executions>
+                    <execution>
+                        <id>generate-dns-api-sources</id>
+                        <configuration>
+                            <staleFile>target/dns.staleFile</staleFile>
+                            <extension>true</extension>
+                            <schemaDirectory>
+                                ${basedir}/src/main/resources/META-INF/xsd
+                            </schemaDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <schemaFiles>DNSApi.xsd,DNSManagementApi.xsd</schemaFiles>
+                            <arguments>-Xcollection-setter-injector</arguments>
+                            <bindingDirectory>${basedir}/src/main/resources/META-INF/xsd</bindingDirectory>
+                            <bindingFiles>bindings.xjb,mgmtBindings.xjb</bindingFiles>
+                        </configuration>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

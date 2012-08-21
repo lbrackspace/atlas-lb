@@ -28,38 +28,24 @@
             <artifactId>junit</artifactId>
             <version>4.8.2</version>
         </dependency>
+        <dependency>
+            <artifactId>atlas-restclients-objs-auth</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                    <goals>
-                        <goal>xjc</goal>
-                    </goals>
-                </execution>
-            </executions>
-            <configuration>
-                <packageName>org.openstack.atlas.restclients.auth.objects</packageName> <!-- The name of your generated source package -->
-            </configuration>
-        </plugin>
-                <plugin>
-                    <artifactId>maven-assembly-plugin</artifactId>
+               <plugin>
+                    <inherited>true</inherited>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
-                        <descriptorRefs>
-                            <descriptorRef>jar-with-dependencies</descriptorRef>
-                        </descriptorRefs>
-                        <finalName>${project.artifactId}-${project.version}-assembly</finalName>
-                        <appendAssemblyId>false</appendAssemblyId>
+                        <source>1.6</source>
+                        <target>1.6</target>
+                        <optimize>false</optimize>
+                        <debug>true</debug>
                     </configuration>
                 </plugin>
         </plugins>

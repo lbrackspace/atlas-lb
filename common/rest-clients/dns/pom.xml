@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>atlas-dns-client</artifactId>
-    <name>Openstack :: Atlas :: dns Client</name>
+    <name>Openstack :: Atlas :: Dns Client</name>
 
     <packaging>jar</packaging>
 
@@ -53,41 +53,26 @@
             <artifactId>atlas-debug</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-restclients-objs-dns</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                    <goals>
-                        <goal>xjc</goal>
-                    </goals>
-                </execution>
-            </executions>
-            <configuration>
-                <packageName>org.openstack.atlas.restclients.dns.objects</packageName> <!-- The name of your generated source package -->
-            </configuration>
-        </plugin>
-                <plugin>
-                    <artifactId>maven-assembly-plugin</artifactId>
+               <plugin>
+                    <inherited>true</inherited>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
-                        <descriptorRefs>
-                            <descriptorRef>jar-with-dependencies</descriptorRef>
-                        </descriptorRefs>
-                        <finalName>${project.artifactId}-${project.version}-assembly</finalName>
-                        <appendAssemblyId>false</appendAssemblyId>
+                        <source>1.6</source>
+                        <target>1.6</target>
+                        <optimize>false</optimize>
+                        <debug>true</debug>
                     </configuration>
                 </plugin>
-
         </plugins>
     </build>
 </project>
