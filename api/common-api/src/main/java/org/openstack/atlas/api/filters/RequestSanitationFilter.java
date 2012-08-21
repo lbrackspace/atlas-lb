@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Enumeration;
 
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 
@@ -28,7 +29,11 @@ public class RequestSanitationFilter implements Filter {
             HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
 
-            if (httpServletRequest.getHeader(ACCEPT) == null || httpServletRequest.getHeader(ACCEPT).equals("")) {
+            String accepth = httpServletRequest.getHeader(ACCEPT);
+            Enumeration accepths = httpServletRequest.getHeaderNames();
+            Enumeration accepthss = httpServletRequest.getHeaders(ACCEPT);
+
+            if (httpServletRequest.getHeader(ACCEPT) == null || httpServletRequest.getHeader(ACCEPT).equals("*/*") || httpServletRequest.getHeader(ACCEPT).equals("")) {
                 enhancedHttpRequest.overideHeader(ACCEPT);
                 enhancedHttpRequest.addHeader(ACCEPT, DEFAULT_ACCEPT_HEADER);
             } else {
