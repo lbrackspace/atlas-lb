@@ -21,7 +21,6 @@
         <module>crypto-tool</module>
         <module>debug</module>
         <module>b64aes</module>
-        <module>rest-clients</module>
     </modules>
 
     <!-- <properties>
