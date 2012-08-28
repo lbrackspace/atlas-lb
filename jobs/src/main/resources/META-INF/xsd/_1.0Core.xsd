@@ -207,6 +207,7 @@
             <enumeration value="SUSPEND"/>
             <enumeration value="UNSUSPEND"/>
             <enumeration value="EXTENDED"/>
+            <enumeration value="EXTENDED"/>
         </restriction>
     </simpleType>
 

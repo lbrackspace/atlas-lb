@@ -2,12 +2,16 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
 import org.openstack.atlas.service.domain.services.*;
-import org.openstack.atlas.service.domain.services.helpers.*;
+import org.openstack.atlas.service.domain.services.helpers.AlertType;
+import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
+import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
+import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
@@ -18,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
-import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
+import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.*;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.BUILD;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DELETED;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.*;
@@ -124,7 +128,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         try {
             //check for TCP protocol and port before adding default, since TCP protocol has no default
-            verifyTCPProtocolandPort(lb);
+            verifyTCPUDPProtocolandPort(lb);
             addDefaultValues(lb);
             //V1-B-17728 allowing ip SP for non-http protocols
             verifySessionPersistence(lb);
@@ -262,6 +266,42 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         if (loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(dbLoadBalancer.getProtocol())) {
+            verifyTCPUDPProtocolandPort(loadBalancer);
+
+            boolean isValidProto = true;
+            if (checkLBProtocol(loadBalancer)) {
+                if (loadBalancer.getPort() != null) {
+                    dbLoadBalancer.setPort(loadBalancer.getPort());
+                } else {
+                    dbLoadBalancer.setPort(ProtocolPortBindings.getPortByKey(loadBalancer.getProtocol().toString()));
+                }
+
+                for (LoadBalancerJoinVip vip : dbLoadBalancer.getLoadBalancerJoinVipSet()) {
+                    List<LoadBalancer> sharedLbs = virtualIpRepository.getLoadBalancersByVipId(vip.getVirtualIp().getId());
+                    List<LoadBalancer> sharedLbsToCheck = new ArrayList<LoadBalancer>();
+
+                    for (LoadBalancer lb : sharedLbs) {
+                      if (!lb.getId().equals(loadBalancer.getId())) {
+                          sharedLbsToCheck.add(lb);
+                      }
+                    }
+                    isValidProto = verifySharedVipProtocols(sharedLbsToCheck, loadBalancer);
+                }
+
+                for (LoadBalancerJoinVip6 vip6 : dbLoadBalancer.getLoadBalancerJoinVip6Set()) {
+                    List<LoadBalancer> sharedLbs = virtualIpv6Repository.getLoadBalancersByVipId(vip6.getVirtualIp().getId());
+                    List<LoadBalancer> sharedLbsToCheck = new ArrayList<LoadBalancer>();
+
+                    for (LoadBalancer lb : sharedLbs) {
+                      if (!lb.getId().equals(loadBalancer.getId())) {
+                          sharedLbsToCheck.add(lb);
+                      }
+                    }
+                    isValidProto = verifySharedVipProtocols(sharedLbsToCheck, loadBalancer);
+                }
+            }
+
+            if (!isValidProto) throw new BadRequestException("Protocol is not valid. Please verify shared virtual ips and the ports being shared.");
 
             //check for health monitor type and allow update only if protocol matches health monitory type for HTTP and HTTPS
             if (dbLoadBalancer.getHealthMonitor() != null) {
@@ -680,11 +720,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
 
-    private void verifyTCPProtocolandPort(LoadBalancer queueLb) throws TCPProtocolUnknownPortException {
-        if (queueLb.getProtocol() != null && (queueLb.getProtocol().equals(LoadBalancerProtocol.TCP) || queueLb.getProtocol().equals(LoadBalancerProtocol.TCP_CLIENT_FIRST))) {
-            LOG.info("TCP Protocol detected. Port must exists");
+    private void verifyTCPUDPProtocolandPort(LoadBalancer queueLb) throws TCPProtocolUnknownPortException {
+        if (queueLb.getProtocol() != null && (queueLb.getProtocol().equals(LoadBalancerProtocol.TCP) || queueLb.getProtocol().equals(LoadBalancerProtocol.TCP_CLIENT_FIRST)) || (queueLb.getProtocol().equals(LoadBalancerProtocol.UDP) || (queueLb.getProtocol().equals(LoadBalancerProtocol.UDP_STREAM)))) {
+            LOG.info("TCP and UDP Protocol detected. Port must exists");
             if (queueLb.getPort() == null) {
-                throw new TCPProtocolUnknownPortException("Must Provide port for TCP Protocol.");
+                throw new TCPProtocolUnknownPortException("Must provide port for TCP and UDP protocols.");
             }
         }
     }
@@ -806,12 +846,19 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private Set<LoadBalancerJoinVip> getSharedIpv4Vips(VirtualIp vipConfig, List<VirtualIp> vipsOnAccount, LoadBalancer loadBalancer) throws AccountMismatchException, UniqueLbPortViolationException {
         Set<LoadBalancerJoinVip> sharedVips = new HashSet<LoadBalancerJoinVip>();
         boolean belongsToProperAccount = false;
+        String uniqueMsg = "Another load balancer is currently using the requested port with the shared virtual ip.";
 
         // Verify this is a valid virtual ip to share
         for (VirtualIp vipOnAccount : vipsOnAccount) {
             if (vipOnAccount.getId().equals(vipConfig.getId())) {
                 if (virtualIpService.isIpv4VipPortCombinationInUse(vipOnAccount, loadBalancer.getPort())) {
-                    throw new UniqueLbPortViolationException("Another load balancer is currently using the requested port with the shared virtual ip.");
+                    if (!checkLBProtocol(loadBalancer)) {
+                        throw new UniqueLbPortViolationException(uniqueMsg);
+                    } else {
+                        if (!verifySharedVipProtocols(vipOnAccount, loadBalancer))
+                            throw new UniqueLbPortViolationException(uniqueMsg);
+
+                    }
                 }
 
                 belongsToProperAccount = true;
@@ -830,12 +877,18 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private Set<LoadBalancerJoinVip6> getSharedIpv6Vips(VirtualIpv6 vipConfig, List<VirtualIpv6> vipsOnAccount, LoadBalancer loadBalancer) throws AccountMismatchException, UniqueLbPortViolationException {
         Set<LoadBalancerJoinVip6> sharedVips = new HashSet<LoadBalancerJoinVip6>();
         boolean belongsToProperAccount = false;
+        String uniqueMsg = "Another load balancer is currently using the requested port with the shared virtual ip.";
 
         // Verify this is a valid virtual ip to share
         for (VirtualIpv6 vipOnAccount : vipsOnAccount) {
             if (vipOnAccount.getId().equals(vipConfig.getId())) {
                 if (virtualIpService.isIpv6VipPortCombinationInUse(vipOnAccount, loadBalancer.getPort())) {
-                    throw new UniqueLbPortViolationException("Another load balancer is currently using the requested port with the shared virtual ip.");
+                    if (!checkLBProtocol(loadBalancer)) {
+                        throw new UniqueLbPortViolationException(uniqueMsg);
+                    } else {
+                        if (!verifySharedVip6Protocols(vipOnAccount, loadBalancer))
+                            throw new UniqueLbPortViolationException(uniqueMsg);
+                    }
                 }
 
                 belongsToProperAccount = true;
@@ -849,6 +902,55 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             throw new AccountMismatchException("Invalid requesting account for the shared virtual ip.");
         }
         return sharedVips;
+    }
+
+    private boolean checkLBProtocol(LoadBalancer loadBalancer) {
+        return loadBalancer.getProtocol() == LoadBalancerProtocol.TCP || loadBalancer.getProtocol() == LoadBalancerProtocol.DNS_TCP
+                || loadBalancer.getProtocol() == LoadBalancerProtocol.DNS_UDP || loadBalancer.getProtocol() == LoadBalancerProtocol.UDP || loadBalancer.getProtocol() == LoadBalancerProtocol.UDP_STREAM || loadBalancer.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST;
+    }
+
+    private boolean verifySharedVipProtocols(VirtualIp vip, LoadBalancer loadBalancer) {
+        return verifySharedVipProtocols(virtualIpService.getLoadBalancerByVipId(vip.getId()), loadBalancer);
+    }
+
+    private boolean verifySharedVip6Protocols(VirtualIpv6 vip6, LoadBalancer loadBalancer) {
+        return verifySharedVipProtocols(virtualIpv6Repository.getLoadBalancersByVipId(vip6.getId()), loadBalancer);
+    }
+
+    private boolean verifySharedVipProtocols(List<LoadBalancer> sharedLbs, LoadBalancer loadBalancer) {
+        int invalidProtos = 0;
+
+        for (LoadBalancer lb : sharedLbs) {
+            if (!checkLBProtocol(lb)) {
+                invalidProtos++;
+            } else {
+                if (!verifyProtoGroups(lb, loadBalancer)) {
+                    invalidProtos++;
+                }
+            }
+        }
+        return invalidProtos < 1;
+    }
+
+    private boolean verifyProtoGroups(LoadBalancer lbToCheck, LoadBalancer lbBeingShared) {
+        if ((lbBeingShared.getProtocol() == DNS_TCP && lbToCheck.getProtocol() == DNS_UDP)
+                || (lbBeingShared.getProtocol() == DNS_UDP && lbToCheck.getProtocol() == DNS_TCP)) {
+            return true;
+        } else if (lbBeingShared.getProtocol() == UDP_STREAM
+                && (lbToCheck.getProtocol() == LoadBalancerProtocol.TCP || lbToCheck.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST)) {
+            return true;
+        } else if (lbBeingShared.getProtocol() == LoadBalancerProtocol.UDP
+                && (lbToCheck.getProtocol() == LoadBalancerProtocol.TCP || lbToCheck.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST)) {
+            return true;
+        } else if (lbToCheck.getProtocol() == UDP_STREAM
+                && (lbBeingShared.getProtocol() == LoadBalancerProtocol.TCP || lbBeingShared.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST)) {
+            return true;
+        } else if (lbToCheck.getProtocol() == LoadBalancerProtocol.UDP
+                && (lbBeingShared.getProtocol() == LoadBalancerProtocol.TCP || lbBeingShared.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST)) {
+            return true;
+        }
+
+        return false;
     }
 
     @Transactional

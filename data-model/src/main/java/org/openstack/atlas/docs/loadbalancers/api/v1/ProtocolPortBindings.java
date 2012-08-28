@@ -66,4 +66,15 @@ public final class ProtocolPortBindings {
         return keysAsArray;
     }
 
+    public static int getPortByKey(String key) {
+        for(Map.Entry<String,Integer> entry: protocolPortMap.entrySet()) {
+            if (entry.getKey().equals(key)) {
+                return entry.getValue();
+            }
+        }
+
+        //Cant find protocol....
+        return 0;
+    }
+
 }

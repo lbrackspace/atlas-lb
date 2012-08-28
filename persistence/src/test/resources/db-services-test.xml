@@ -17,7 +17,7 @@
     </bean>
 
     <bean id="entityManagerFactory1" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-        <property name="persistenceXmlLocation" value="lb-persistence-test.xml"/>
+        <property name="persistenceXmlLocation" value="/lb-persistence-test.xml"/>
         <property name="persistenceUnitName" value="loadbalancing"/>
         <property name="dataSource" ref="loadbalancingDataSource"/>
     </bean>
@@ -29,7 +29,7 @@
 
     <bean id="loadbalancingDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
  		<property name="driverClassName" value="com.mysql.jdbc.Driver"/>
- 		<property name="url" value="jdbc:mysql://173.203.200.79:3306/loadbalancing"/>
+ 		<property name="url" value="jdbc:mysql://10.12.99.45:3306/loadbalancing"/>
  		<property name="username" value="${username}"/>
  		<property name="password" value="${password}"/>
  	</bean>

@@ -20,7 +20,7 @@ import java.util.Set;
 public class SslTerminationServiceImplIntegrationTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {"classpath:db-services-test-bak.xml"})
+    @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
     @Transactional
     public static class WhenCreatingLoadBalancer {
 
