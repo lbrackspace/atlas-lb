@@ -16,6 +16,7 @@ import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
+import org.openstack.atlas.service.domain.services.impl.BaseService;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +35,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.DNS_TCP;
+import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.DNS_UDP;
+import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.UDP_STREAM;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DELETED;
 
 @Repository
@@ -1383,7 +1387,12 @@ public class LoadBalancerRepository {
 
             for (LoadBalancerJoinVip entryWithPortToCheckAgainst : entriesWithPortsToCheckAgainst) {
                 if (entryWithPortToCheckAgainst.getPort().equals(newPort)) {
-                    isValidPort = false;
+                    if (!checkLBProtocol(loadBalancer)) {
+                        isValidPort = false;
+                    } else {
+                        if (!verifyProtoGroups(entryWithPortToCheckAgainst.getLoadBalancer(), loadBalancer))
+                            isValidPort = false;
+                    }
                 }
             }
         }
@@ -1397,7 +1406,12 @@ public class LoadBalancerRepository {
 
             for (LoadBalancerJoinVip6 entryWithPortToCheckAgainst6 : entriesWithPortsToCheckAgainst6) {
                 if (entryWithPortToCheckAgainst6.getPort().equals(newPort)) {
-                    isValidPort = false;
+                    if (!checkLBProtocol(loadBalancer)) {
+                        isValidPort = false;
+                    } else {
+                        if (!verifyProtoGroups(entryWithPortToCheckAgainst6.getLoadBalancer(), loadBalancer))
+                            isValidPort = false;
+                    }
                 }
             }
         }
@@ -1612,5 +1626,56 @@ public class LoadBalancerRepository {
         entityManager.merge(sslTermination);
         entityManager.flush();
         return sslTermination;
+    }
+
+
+    //TODO: put this somewhre else
+    private boolean checkLBProtocol(LoadBalancer loadBalancer) {
+        return loadBalancer.getProtocol() == LoadBalancerProtocol.TCP || loadBalancer.getProtocol() == LoadBalancerProtocol.DNS_TCP
+                || loadBalancer.getProtocol() == LoadBalancerProtocol.DNS_UDP || loadBalancer.getProtocol() == LoadBalancerProtocol.UDP || loadBalancer.getProtocol() == LoadBalancerProtocol.UDP_STREAM || loadBalancer.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST;
+    }
+//
+//    public boolean verifySharedVipProtocols(VirtualIp vip, LoadBalancer loadBalancer) {
+//        return verifySharedVipProtocols(virtualIpRepository.getLoadBalancersByVipId(vip.getId()), loadBalancer);
+//    }
+//
+//    public boolean verifySharedVip6Protocols(VirtualIpv6 vip6, LoadBalancer loadBalancer) {
+//        return verifySharedVipProtocols(virtualIpv6Repository.getLoadBalancersByVipId(vip6.getId()), loadBalancer);
+//    }
+
+//    public boolean verifySharedVipProtocols(List<LoadBalancer> sharedLbs, LoadBalancer loadBalancer) {
+//        int invalidProtos = 0;
+//
+//        for (LoadBalancer lb : sharedLbs) {
+//            if (!checkLBProtocol(lb)) {
+//                invalidProtos++;
+//            } else {
+//                if (!verifyProtoGroups(lb, loadBalancer)) {
+//                    invalidProtos++;
+//                }
+//            }
+//        }
+//        return invalidProtos < 1;
+//    }
+
+    public boolean verifyProtoGroups(LoadBalancer lbToCheck, LoadBalancer lbBeingShared) {
+        if ((lbBeingShared.getProtocol() == DNS_TCP && lbToCheck.getProtocol() == DNS_UDP)
+                || (lbBeingShared.getProtocol() == DNS_UDP && lbToCheck.getProtocol() == DNS_TCP)) {
+            return true;
+        } else if (lbBeingShared.getProtocol() == UDP_STREAM
+                && (lbToCheck.getProtocol() == LoadBalancerProtocol.TCP || lbToCheck.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST)) {
+            return true;
+        } else if (lbBeingShared.getProtocol() == LoadBalancerProtocol.UDP
+                && (lbToCheck.getProtocol() == LoadBalancerProtocol.TCP || lbToCheck.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST)) {
+            return true;
+        } else if (lbToCheck.getProtocol() == UDP_STREAM
+                && (lbBeingShared.getProtocol() == LoadBalancerProtocol.TCP || lbBeingShared.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST)) {
+            return true;
+        } else if (lbToCheck.getProtocol() == LoadBalancerProtocol.UDP
+                && (lbBeingShared.getProtocol() == LoadBalancerProtocol.TCP || lbBeingShared.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST)) {
+            return true;
+        }
+
+        return false;
     }
 }

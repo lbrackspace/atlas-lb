@@ -19,12 +19,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Ignore
+
 @RunWith(Enclosed.class)
 public class LoadBalancerServiceImplIntegrationTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {"classpath:db-services-test-bak.xml"})
+    @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
     @Transactional
     public static class WhenCreatingLoadBalancer {
 
@@ -103,6 +103,36 @@ public class LoadBalancerServiceImplIntegrationTest {
         }
 
         @Test
+        public void shouldAllowUDPTCPVariationsOnSamePort() throws Exception {
+            loadBalancer.setPort(50);
+            loadBalancer.setProtocol(LoadBalancerProtocol.UDP);
+            LoadBalancer dbLb = loadBalancerService.create(loadBalancer);
+
+            LoadBalancer lb2 = loadBalancer;
+            lb2.setPort(50);
+            lb2.setProtocol(LoadBalancerProtocol.TCP);
+            LoadBalancer dbLb2 = loadBalancerService.create(lb2);
+
+            Assert.assertEquals(LoadBalancerProtocol.UDP, dbLb.getProtocol());
+            Assert.assertEquals(LoadBalancerProtocol.TCP, dbLb2.getProtocol());
+
+            Assert.assertEquals(true, dbLb.getPort().compareTo(50));
+            Assert.assertEquals(true, dbLb2.getPort().compareTo(50));
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldFailNONUDPTCPVariationsOnSamePort() throws Exception {
+            loadBalancer.setPort(50);
+            loadBalancer.setProtocol(LoadBalancerProtocol.UDP);
+            LoadBalancer dbLb = loadBalancerService.create(loadBalancer);
+
+            LoadBalancer lb2 = loadBalancer;
+            lb2.setPort(50);
+            lb2.setProtocol(LoadBalancerProtocol.HTTP);
+            LoadBalancer dbLb2 = loadBalancerService.create(lb2);
+        }
+
+        @Test
         public void shouldGetFullLoadBalancerListFromNodeAddress() {
             //TODO: Add integration testing for accountid/loadbalancers?nodeaddress=10.1.1.1 when core refactoring
             Assert.assertTrue(true);
@@ -110,7 +140,7 @@ public class LoadBalancerServiceImplIntegrationTest {
 
             //TODO:Move..
         @RunWith(SpringJUnit4ClassRunner.class)
-        @ContextConfiguration(locations = {"classpath:db-services-test-bak.xml"})
+        @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
         @Transactional
         public static class WhenBatchDeletingLoadBalancer {
 

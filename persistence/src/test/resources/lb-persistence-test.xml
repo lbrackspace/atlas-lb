@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
+
+    <persistence-unit name="loadbalancing" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <jta-data-source>jdbc/loadBalancerDB</jta-data-source>
+        <class>org.openstack.atlas.service.domain.entities.AccessList</class>
+        <class>org.openstack.atlas.service.domain.entities.AccessListType</class>
+        <class>org.openstack.atlas.service.domain.entities.Cluster</class>
+        <class>org.openstack.atlas.service.domain.entities.GroupRateLimit</class>
+        <class>org.openstack.atlas.service.domain.entities.AccountGroup</class>
+        <class>org.openstack.atlas.service.domain.entities.ConnectionLimit</class>
+        <class>org.openstack.atlas.service.domain.entities.Entity</class>
+        <class>org.openstack.atlas.service.domain.entities.HealthMonitor</class>
+        <class>org.openstack.atlas.service.domain.entities.HealthMonitorType</class>
+        <class>org.openstack.atlas.service.domain.entities.Host</class>
+        <class>org.openstack.atlas.service.domain.entities.HostStatus</class>
+        <class>org.openstack.atlas.service.domain.entities.Backup</class>
+        <class>org.openstack.atlas.service.domain.entities.IpVersion</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadBalancer</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadBalancerProtocol</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadBalancerProtocolObject</class>
+        <class>org.openstack.atlas.service.domain.entities.RateLimit</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadBalancerStatus</class>
+        <class>org.openstack.atlas.service.domain.entities.Node</class>
+        <class>org.openstack.atlas.service.domain.entities.NodeCondition</class>
+        <class>org.openstack.atlas.service.domain.entities.NodeStatus</class>
+        <class>org.openstack.atlas.service.domain.entities.SessionPersistence</class>
+        <class>org.openstack.atlas.service.domain.entities.SessionPersistenceObject</class>
+        <class>org.openstack.atlas.service.domain.entities.Suspension</class>
+        <class>org.openstack.atlas.service.domain.entities.Usage</class>
+        <class>org.openstack.atlas.service.domain.entities.AccountUsage</class>
+        <class>org.openstack.atlas.service.domain.entities.VirtualIp</class>
+        <class>org.openstack.atlas.service.domain.entities.VirtualIpv6</class>
+        <class>org.openstack.atlas.service.domain.entities.TrafficScripts</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithmObject</class>
+        <class>org.openstack.atlas.service.domain.entities.Ticket</class>
+        <class>org.openstack.atlas.service.domain.entities.BlacklistItem</class>
+        <class>org.openstack.atlas.service.domain.entities.BlacklistType</class>
+        <class>org.openstack.atlas.service.domain.entities.Account</class>
+        <class>org.openstack.atlas.service.domain.entities.AccountLimit</class>
+        <class>org.openstack.atlas.service.domain.entities.LimitType</class>
+        <class>org.openstack.atlas.service.domain.entities.JobState</class>
+        <class>org.openstack.atlas.service.domain.entities.UserPages</class>
+        <class>org.openstack.atlas.service.domain.entities.SslTermination</class>
+        <class>org.openstack.atlas.service.domain.entities.Defaults</class>
+        <class>org.openstack.atlas.service.domain.entities.AllowedDomain</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</class>
+        <class>org.openstack.atlas.service.domain.entities.NodeMeta</class>
+        <class>org.openstack.atlas.service.domain.entities.LoadBalancerStatusHistory</class>
+
+        <class>org.openstack.atlas.service.domain.events.entities.Event</class>
+        <class>org.openstack.atlas.service.domain.events.entities.Alert</class>
+        <class>org.openstack.atlas.service.domain.events.entities.AlertStatus</class>
+        <class>org.openstack.atlas.service.domain.events.entities.AccessListEvent</class>
+        <class>org.openstack.atlas.service.domain.events.entities.ConnectionLimitEvent</class>
+        <class>org.openstack.atlas.service.domain.events.entities.HealthMonitorEvent</class>
+        <class>org.openstack.atlas.service.domain.events.entities.LoadBalancerEvent</class>
+        <class>org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent</class>
+        <class>org.openstack.atlas.service.domain.events.entities.NodeEvent</class>
+        <class>org.openstack.atlas.service.domain.events.entities.VirtualIpEvent</class>
+        <class>org.openstack.atlas.service.domain.events.entities.SessionPersistenceEvent</class>
+
+        <!-- Hibernate Properties -->
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
+            <property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.SunONETransactionManagerLookup"/>
+            <property name="hibernate.transaction.flush_before_completion" value="false"/>
+            <property name="hibernate.connection.autocommit" value="false"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.connection.release_mode" value="auto"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+        </properties>
+    </persistence-unit>
+</persistence>

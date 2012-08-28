@@ -27,7 +27,7 @@ import org.junit.Ignore;
 public class AccessListServiceImplIntegrationTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {"classpath:db-services-test-bak.xml"})
+    @ContextConfiguration(locations = {"classpath:db-services-test.xml"})
     @Transactional
     public static class WhenAddingAccessLists {
 
