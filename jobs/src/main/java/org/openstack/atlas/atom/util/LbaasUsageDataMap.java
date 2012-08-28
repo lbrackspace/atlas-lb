@@ -1,6 +1,7 @@
 package org.openstack.atlas.atom.util;
 
 import com.rackspace.docs.core.event.DC;
+import com.rackspace.docs.core.event.EventType;
 import com.rackspace.docs.usage.lbaas.ResourceTypes;
 import com.rackspace.docs.usage.lbaas.SslModeEnum;
 import com.rackspace.docs.usage.lbaas.VipTypeEnum;
@@ -33,6 +34,7 @@ public class LbaasUsageDataMap {
     private static final String label = "loadBalancerUsage";
     private static final String lbaasTitle = "cloudLoadBalancers";
     private static String SERVICE_CODE = "CloudLoadBalancers";
+    private static final String version = "1";
 
     public static UsageV1Pojo generateUsageEntry(Configuration configuration, String configRegion, Usage usageRecord) throws DatatypeConfigurationException, NoSuchAlgorithmException {
         configRegion = configuration.getString(AtomHopperConfigurationKeys.ahusl_region);
@@ -43,13 +45,14 @@ public class LbaasUsageDataMap {
         UsageV1Pojo usageV1 = new UsageV1Pojo();
         usageV1.setRegion(AHUSLUtil.mapRegion(region));
 
-        usageV1.setVersion(usageRecord.getEntryVersion().toString());
+        usageV1.setVersion(version);
         usageV1.setStartTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
         usageV1.setEndTime(AHUSLUtil.processCalendar(usageRecord.getEndTime()));
         usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.ahusl_data_center)));
 
+
         if (AHUSLUtil.mapEventType(usageRecord) == null) {
-            usageV1.setType(null);
+            usageV1.setType(EventType.USAGE);
         } else {
             usageV1.setType(AHUSLUtil.mapEventType(usageRecord));
         }
@@ -73,6 +76,7 @@ public class LbaasUsageDataMap {
         lu.setNumVips(usageRecord.getNumVips());
         lu.setServiceCode(SERVICE_CODE);
         lu.setResourceType(ResourceTypes.LOADBALANCER);
+        lu.setVersion(usageRecord.getEntryVersion().toString());
 
         BitTags bitTags = new BitTags(usageRecord.getTags());
         if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
@@ -100,7 +104,7 @@ public class LbaasUsageDataMap {
         usageV1.setStartTime(AHUSLUtil.processCalendar(accountUsage.getStartTime()));
         usageV1.setEndTime(AHUSLUtil.processCalendar(accountUsage.getStartTime()));
 
-        usageV1.setType(null); //No events
+        usageV1.setType(EventType.USAGE); //No events
         usageV1.setTenantId(accountUsage.getAccountId().toString());
 //        usageV1.setResourceId(accountUsage.getId().toString());
         usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.ahusl_data_center)));
@@ -115,6 +119,7 @@ public class LbaasUsageDataMap {
         ausage.setNumPublicVips(accountUsage.getNumPublicVips());
         ausage.setNumServicenetVips(accountUsage.getNumServicenetVips());
         ausage.setServiceCode(SERVICE_CODE);
+        ausage.setVersion("1");
 //        ausage.setResourceType(com.rackspace.docs.usage.lbaas.account.ResourceTypes.TENANT);
         usageV1.getAny().add(ausage);
 
