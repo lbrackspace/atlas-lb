@@ -1,3 +1,4 @@
+use loadbalancing;
 
 drop index virtual_ip_port on loadbalancer_virtualip;
 
