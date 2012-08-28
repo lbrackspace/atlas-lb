@@ -9,4 +9,4 @@ drop index virtualip6_port on loadbalancer_virtualipv6;
 alter table loadbalancer_virtualipv6 add CONSTRAINT `loadbalancer_virtualipv6_ibfk_1` FOREIGN KEY (`loadbalancer_id`) REFERENCES `loadbalancer` (`id`);
 alter table loadbalancer_virtualipv6 add CONSTRAINT `loadbalancer_virtualipv6_ibfk_2` FOREIGN KEY (`virtualip6_id`) REFERENCES `virtual_ip_ipv6` (`id`);
 
-update `meta` set `meta_value` = '?' where `meta_key`='version';
+update `meta` set `meta_value` = '46' where `meta_key`='version';
