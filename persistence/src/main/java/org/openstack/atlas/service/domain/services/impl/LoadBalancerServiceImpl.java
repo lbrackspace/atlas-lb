@@ -249,8 +249,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 loadBalancerRepository.updatePortInJoinTable(loadBalancer);
                 dbLoadBalancer.setPort(loadBalancer.getPort());
             } else {
-                LOG.error("Cannot update load balancer port as it is currently in use by another virtual ip.");
-                throw new BadRequestException(String.format("Port currently assigned to one of the virtual ips. Please try another port."));
+                LOG.error("Cannot update load balancer port as it is currently in use by another virtual ip and could be in conflict with the load balancer protocol.");
+                throw new BadRequestException(String.format("Port currently assigned to one of the virtual ips. Please verify protocol/port combinations."));
             }
         }
 
@@ -843,7 +843,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
     }
 
-    private Set<LoadBalancerJoinVip> getSharedIpv4Vips(VirtualIp vipConfig, List<VirtualIp> vipsOnAccount, LoadBalancer loadBalancer) throws AccountMismatchException, UniqueLbPortViolationException {
+    private Set<LoadBalancerJoinVip> getSharedIpv4Vips(VirtualIp vipConfig, List<VirtualIp> vipsOnAccount, LoadBalancer loadBalancer) throws AccountMismatchException, UniqueLbPortViolationException, BadRequestException {
         Set<LoadBalancerJoinVip> sharedVips = new HashSet<LoadBalancerJoinVip>();
         boolean belongsToProperAccount = false;
         String uniqueMsg = "Another load balancer is currently using the requested port with the shared virtual ip.";
@@ -856,7 +856,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                         throw new UniqueLbPortViolationException(uniqueMsg);
                     } else {
                         if (!verifySharedVipProtocols(vipOnAccount, loadBalancer))
-                            throw new UniqueLbPortViolationException(uniqueMsg);
+                            throw new BadRequestException("The requesting load balancer is in conflict with the shared virtual ip port/protocol combination. Please refer to documentation for more info.");
 
                     }
                 }
@@ -874,7 +874,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return sharedVips;
     }
 
-    private Set<LoadBalancerJoinVip6> getSharedIpv6Vips(VirtualIpv6 vipConfig, List<VirtualIpv6> vipsOnAccount, LoadBalancer loadBalancer) throws AccountMismatchException, UniqueLbPortViolationException {
+    private Set<LoadBalancerJoinVip6> getSharedIpv6Vips(VirtualIpv6 vipConfig, List<VirtualIpv6> vipsOnAccount, LoadBalancer loadBalancer) throws AccountMismatchException, UniqueLbPortViolationException, BadRequestException {
         Set<LoadBalancerJoinVip6> sharedVips = new HashSet<LoadBalancerJoinVip6>();
         boolean belongsToProperAccount = false;
         String uniqueMsg = "Another load balancer is currently using the requested port with the shared virtual ip.";
@@ -887,7 +887,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                         throw new UniqueLbPortViolationException(uniqueMsg);
                     } else {
                         if (!verifySharedVip6Protocols(vipOnAccount, loadBalancer))
-                            throw new UniqueLbPortViolationException(uniqueMsg);
+                            throw new BadRequestException("The requesting load balancer is in conflict with the shared virtual ip port/protocol combination. Please refer to documentation for more info.");
                     }
                 }
 
