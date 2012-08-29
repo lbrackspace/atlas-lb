@@ -11,15 +11,17 @@ import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBException;
 import org.apache.commons.io.IOUtils;
+import org.openstack.atlas.restclients.dns.exp.JaxbExp;
 import org.openstack.atlas.restclients.dns.pub.objects.Record;
 import org.openstack.atlas.restclients.dns.pub.objects.Rdns;
 import org.openstack.atlas.restclients.dns.pub.objects.RecordType;
 import org.openstack.atlas.restclients.dns.pub.objects.RecordsList;
 
 import org.openstack.atlas.util.b64aes.Base64;
+import org.openstack.atlas.util.debug.Debug;
 import org.w3._2005.atom.Link;
-
 
 public class DnsClient1_0 {
 
@@ -47,6 +49,27 @@ public class DnsClient1_0 {
         this.token = token;
     }
 
+    public ClientResponse getDomain(Integer domainId, Boolean showRecords,
+            Boolean showSubDomains,
+            Integer limit, Integer offset) {
+        String url = String.format("/%d/domains/%d", accountId, domainId);
+        Client client = new Client();
+        WebResource wr = client.resource(endPoint).path(url);
+        wr = addLimitOffsetParams(wr, limit, offset);
+        if (showRecords != null) {
+            wr.queryParam("showRecords", showRecords ? "true" : "false");
+        }
+        if (showSubDomains != null) {
+            wr.queryParam("showSubDomains", showSubDomains ? "true" : "false");
+        }
+
+        Builder rb = wr.accept(MediaType.APPLICATION_XML);
+        rb = rb.type(MediaType.APPLICATION_XML);
+        rb.header("x-auth-token", this.token);
+        ClientResponse resp = rb.get(ClientResponse.class);
+        return resp;
+    }
+
     public ClientResponse getDomains(String name, Integer limit, Integer offset) {
         Client client = new Client();
         String url = String.format("/%d/domains", accountId);
@@ -59,7 +82,6 @@ public class DnsClient1_0 {
         rb = rb.type(MediaType.APPLICATION_XML);
         rb = rb.header("x-auth-token", this.token);
         ClientResponse resp = rb.get(ClientResponse.class);
-
         return resp;
     }
 
@@ -95,6 +117,13 @@ public class DnsClient1_0 {
         ptr.setType(RecordType.PTR);
 
         String url = String.format("/%d/rdns", accountId);
+        try {
+            String fullUrl = String.format("%s%s", endPoint, url);
+            String xml = JaxbExp.serialize(rdnsRequest);
+            nop();
+        } catch (JAXBException ex) {
+        }
+
         Client client = new Client();
         WebResource wr = client.resource(endPoint).path(url);
         Builder rb = wr.accept(MediaType.APPLICATION_XML);
@@ -104,18 +133,18 @@ public class DnsClient1_0 {
         return resp;
     }
 
-    public ClientResponse delPtrRecordPub(Integer domainId,String deviceUrl,String serviceName,String ip){
-        return delPtrRecordBaseMethod(domainId,deviceUrl,serviceName,ip,"x-auth-token",token,endPoint);
+    public ClientResponse delPtrRecordPub(Integer domainId, String deviceUrl, String serviceName, String ip) {
+        return delPtrRecordBaseMethod(domainId, deviceUrl, serviceName, ip, "x-auth-token", token, endPoint);
     }
 
-    public ClientResponse delPtrRecordMan(Integer domainId,String deviceUrl,String serviceName,String ip) throws UnsupportedEncodingException{
+    public ClientResponse delPtrRecordMan(Integer domainId, String deviceUrl, String serviceName, String ip) throws UnsupportedEncodingException {
         String authKey = "authorization";
         String authValue = encodeBasicAuth();
-        return delPtrRecordBaseMethod(domainId,deviceUrl,serviceName,ip,authKey,authValue,adminEndPoint);
+        return delPtrRecordBaseMethod(domainId, deviceUrl, serviceName, ip, authKey, authValue, adminEndPoint);
     }
 
     private ClientResponse delPtrRecordBaseMethod(Integer domainId, String deviceUrl, String serviceName, String ip,
-        String authKey, String authValue,String endPoint) {
+            String authKey, String authValue, String endPoint) {
         String url = String.format("/%d/rdns/%s", accountId, serviceName);
         Client client = new Client();
         WebResource wr = client.resource(endPoint).path(url);
@@ -129,8 +158,6 @@ public class DnsClient1_0 {
         ClientResponse resp = rb.delete(ClientResponse.class);
         return resp;
     }
-
-
 
     public ClientResponse getDomains() {
         return getDomains(null, null, null);
@@ -206,5 +233,29 @@ public class DnsClient1_0 {
         String msg = String.format(fmt, endPoint, accountId, token, adminEndPoint,
                 adminUser, adminPasswd);
         return msg;
+    }
+
+    private static String getEST(Throwable th) {
+        Throwable t;
+        StringBuilder sb = new StringBuilder(4096);
+        Exception currEx;
+        String msg;
+
+        t = th;
+        while (t != null) {
+            if (t instanceof Exception) {
+                currEx = (Exception) t;
+                sb.append(String.format("Exception: %s:%s\n", currEx.getMessage(), currEx.getClass().getName()));
+                for (StackTraceElement se : currEx.getStackTrace()) {
+                    sb.append(String.format("%s\n", se.toString()));
+                }
+                sb.append("\n");
+                t = t.getCause();
+            }
+        }
+        return sb.toString();
+    }
+
+    private static void nop() {
     }
 }
