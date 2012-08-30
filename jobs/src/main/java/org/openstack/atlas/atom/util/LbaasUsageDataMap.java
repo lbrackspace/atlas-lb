@@ -100,7 +100,7 @@ public class LbaasUsageDataMap {
         UsageV1Pojo usageV1 = new UsageV1Pojo();
         usageV1.setRegion(AHUSLUtil.mapRegion(region));
 
-        usageV1.setVersion("1");//Rows are not updated...
+        usageV1.setVersion(version);//Rows are not updated...
         usageV1.setStartTime(AHUSLUtil.processCalendar(accountUsage.getStartTime()));
         usageV1.setEndTime(AHUSLUtil.processCalendar(accountUsage.getStartTime()));
 
@@ -119,7 +119,7 @@ public class LbaasUsageDataMap {
         ausage.setNumPublicVips(accountUsage.getNumPublicVips());
         ausage.setNumServicenetVips(accountUsage.getNumServicenetVips());
         ausage.setServiceCode(SERVICE_CODE);
-        ausage.setVersion("1");
+        ausage.setVersion(version);
 //        ausage.setResourceType(com.rackspace.docs.usage.lbaas.account.ResourceTypes.TENANT);
         usageV1.getAny().add(ausage);
 
