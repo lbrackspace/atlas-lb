@@ -21,5 +21,10 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     stats,
     ttl,
     ssl_termination,
-    memcached_servers;
+    memcached_servers,
+    lbaas_url,
+    rdns_crypto_key,
+    rdns_admin_url,
+    rdns_admin_user,
+    rdns_admin_passwd;
 }

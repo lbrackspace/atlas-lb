@@ -3,6 +3,7 @@ package org.openstack.atlas.api.mgmt.resources;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudit;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudits;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfStrings;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
@@ -26,8 +27,17 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
 public class AuditResource extends ManagementDependencyProvider {
+
     private static Log LOG = LogFactory.getLog(AuditResource.class.getName());
 
+    @GET
+    @Path("config")
+    @Produces({APPLICATION_JSON, APPLICATION_XML})
+    public Response retrieveConfigs() {
+        ListOfStrings lstr = new ListOfStrings();
+        lstr.getStrings().add("Test");
+        return Response.status(200).entity(lstr).build();
+    }
 
     @GET
     @Path("status")
@@ -44,23 +54,25 @@ public class AuditResource extends ManagementDependencyProvider {
             LoadBalancerAudit loadBalancerAudit;
             //TODO: dozer map it...
             if (status != null) {
-            List<LoadBalancer> loadBalancers = loadBalancerService.getLoadBalancersForAudit(status, changedCal);
-            for (LoadBalancer lb : loadBalancers) {
-                loadBalancerAudit = new LoadBalancerAudit();
-                org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts alerts = null;
-                for (Alert domainCl : alertService.getByLoadBalancerId(lb.getId())) {
-                    alerts = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts();
-                    alerts.getAlerts().add(getDozerMapper().map(domainCl, org.openstack.atlas.docs.loadbalancers.api.management.v1.Alert.class, "SIMPLE_ALERT"));
+                List<LoadBalancer> loadBalancers = loadBalancerService.getLoadBalancersForAudit(status, changedCal);
+                for (LoadBalancer lb : loadBalancers) {
+                    loadBalancerAudit = new LoadBalancerAudit();
+                    org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts alerts = null;
+                    for (Alert domainCl : alertService.getByLoadBalancerId(lb.getId())) {
+                        alerts = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts();
+                        alerts.getAlerts().add(getDozerMapper().map(domainCl, org.openstack.atlas.docs.loadbalancers.api.management.v1.Alert.class, "SIMPLE_ALERT"));
+                    }
+                    loadBalancerAudit.setId(lb.getId());
+                    loadBalancerAudit.setCreated(lb.getCreated());
+                    loadBalancerAudit.setUpdated(lb.getUpdated());
+                    loadBalancerAudit.setStatus(lb.getStatus().toString());
+                    if (alerts == null) {
+                        alerts = new Alerts();
+                    }
+                    loadBalancerAudit.getAlertAudits().add(alerts);
+                    loadBalancerAudits.getLoadBalancerAudits().add(loadBalancerAudit);
                 }
-                loadBalancerAudit.setId(lb.getId());
-                loadBalancerAudit.setCreated(lb.getCreated());
-                loadBalancerAudit.setUpdated(lb.getUpdated());
-                loadBalancerAudit.setStatus(lb.getStatus().toString());
-                    if (alerts == null) alerts = new Alerts();
-                loadBalancerAudit.getAlertAudits().add(alerts);
-                loadBalancerAudits.getLoadBalancerAudits().add(loadBalancerAudit);
-            }
-            return Response.status(200).entity(loadBalancerAudits).build();
+                return Response.status(200).entity(loadBalancerAudits).build();
             } else {
                 BadRequestException badRequestException = new BadRequestException("Must supply a status to query against.");
                 return ResponseFactory.getErrorResponse(badRequestException, null, null);

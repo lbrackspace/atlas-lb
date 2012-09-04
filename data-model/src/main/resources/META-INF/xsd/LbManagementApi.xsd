@@ -505,11 +505,17 @@
         <xsd:attribute name="eventType" type="xsd:string" use="optional"/>
     </xsd:complexType>
 
-    <!-- Testing types. Throw the below test types when going to production -->
     <xsd:element name="listOfInts" type="tns:listOfInts"/>
     <xsd:complexType name="listOfInts">
         <xsd:sequence>
             <xsd:element name="ints" type="xsd:int" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="listOfStrings" type="tns:listOfStrings"/>
+    <xsd:complexType name="listOfStrings">
+        <xsd:sequence>
+            <xsd:element name="strings" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
