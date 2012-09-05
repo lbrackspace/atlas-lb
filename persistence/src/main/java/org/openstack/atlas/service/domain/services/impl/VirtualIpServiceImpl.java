@@ -490,12 +490,14 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     private void reclaimVirtualIp(LoadBalancer lb, VirtualIp virtualIp) {
         if (!isVipAllocatedToAnotherLoadBalancer(lb, virtualIp)) {
+            // insert del PTR code here
             virtualIpRepository.deallocateVirtualIp(virtualIp);
         }
     }
 
     private void reclaimIpv6VirtualIp(LoadBalancer lb, VirtualIpv6 virtualIpv6) {
         if (!isIpv6VipAllocatedToAnotherLoadBalancer(lb, virtualIpv6)) {
+            // insert del PTR code here
             virtualIpv6Repository.deleteVirtualIp(virtualIpv6);
         }
     }

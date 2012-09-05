@@ -1,7 +1,9 @@
 
 package org.openstack.atlas.util.b64aes;
 
-public class PaddingException extends Exception{
+import java.io.IOException;
+
+public class PaddingException extends IOException{
     public PaddingException(){
        super();
     }

@@ -1,5 +1,17 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.util.debug.Debug;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudit;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudits;
@@ -13,7 +25,7 @@ import org.openstack.atlas.api.config.RestApiConfiguration;
 import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.openstack.atlas.util.b64aes.Aes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -22,6 +34,7 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import org.openstack.atlas.util.b64aes.PaddingException;
 
 import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
 import static javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML;
@@ -53,6 +66,16 @@ public class AuditResource extends ManagementDependencyProvider {
             }
             lstr.getStrings().add(String.format("%s=%s", keyStr, valueStr));
         }
+        String ctext = conf.getString(PublicApiServiceConfigurationKeys.rdns_admin_passwd);
+        String rDnsKey = conf.getString(PublicApiServiceConfigurationKeys.rdns_crypto_key);
+        String ptext = "????";
+        try {
+            ptext = Aes.b64decrypt_str(ctext, rDnsKey);
+        } catch (Exception ex) {
+            String exMsg = Debug.getEST(ex);
+            Logger.getLogger(AuditResource.class.getName()).log(Level.SEVERE, exMsg, ex);
+        }
+        lstr.getStrings().add(String.format("%s=%s", "Decrypted_rdns_passwd", ptext));
         return Response.status(200).entity(lstr).build();
     }
 
