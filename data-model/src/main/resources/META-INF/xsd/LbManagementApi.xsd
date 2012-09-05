@@ -734,7 +734,11 @@
     <xsd:element name="loadBalancerServiceEvent" type="tns:loadBalancerServiceEvent"/>
     <xsd:complexType name="loadBalancerServiceEvent">
         <xsd:complexContent>
-            <xsd:extension base="tns:event"/>
+            <xsd:extension base="tns:event">
+                <xsd:sequence>
+                    <xsd:element name="detailedMessage" type="xsd:string" minOccurs="0" />
+                </xsd:sequence>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
 

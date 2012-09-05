@@ -40,6 +40,10 @@ import org.openstack.atlas.util.ip.IPv4Cidrs as IPv4Cidrs
 import org.openstack.atlas.util.ip.IPv4Cidr  as IPv4Cidr
 import org.openstack.atlas.util.ip.IPv4      as IPv4
 
+import org.openstack.atlas.service.domain.events.entities.EventType as EventType
+import org.openstack.atlas.service.domain.events.entities.CategoryType as CategoryType
+import org.openstack.atlas.service.domain.events.entities.EventSeverity as EventSeverity
+
 from lbentities import *
 
 bigInteger2IPv6 = IPv6.bigInteger2IPv6
