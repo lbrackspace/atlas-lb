@@ -9,6 +9,8 @@ import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
+import org.openstack.atlas.api.config.RestApiConfiguration;
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -34,8 +36,23 @@ public class AuditResource extends ManagementDependencyProvider {
     @Path("config")
     @Produces({APPLICATION_JSON, APPLICATION_XML})
     public Response retrieveConfigs() {
+        RestApiConfiguration conf = new RestApiConfiguration();
         ListOfStrings lstr = new ListOfStrings();
-        lstr.getStrings().add("Test");
+        if (!isUserInRole("cp,ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
+        PublicApiServiceConfigurationKeys[] keys = PublicApiServiceConfigurationKeys.values();
+        for (int i = 0; i < keys.length; i++) {
+            PublicApiServiceConfigurationKeys key = keys[i];
+            String keyStr = key.toString();
+            String valueStr;
+            try {
+                valueStr = conf.getString(key);
+            } catch (Exception ex) {
+                valueStr = "????";
+            }
+            lstr.getStrings().add(String.format("%s=%s", keyStr, valueStr));
+        }
         return Response.status(200).entity(lstr).build();
     }
 
