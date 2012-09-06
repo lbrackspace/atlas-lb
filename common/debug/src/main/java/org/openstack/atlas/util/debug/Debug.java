@@ -57,15 +57,15 @@ public class Debug {
     public static String getExtendedStackTrace(Throwable th) {
         Throwable t;
         StringBuilder sb = new StringBuilder(PAGESIZE);
-        Exception currEx;
+        Throwable currThrowable;
         String msg;
 
         t = th;
         while (t != null) {
-            if (t instanceof Exception) {
-                currEx = (Exception) t;
-                sb.append(String.format("\"%s\":\"%s\"\n", currEx.getClass().getName(), currEx.getMessage()));
-                for (StackTraceElement se : currEx.getStackTrace()) {
+            if (t instanceof Throwable) {
+                currThrowable = (Throwable) t;
+                sb.append(String.format("\"%s\":\"%s\"\n", currThrowable.getClass().getName(), currThrowable.getMessage()));
+                for (StackTraceElement se : currThrowable.getStackTrace()) {
                     sb.append(String.format("%s\n", se.toString()));
                 }
                 sb.append("\n");

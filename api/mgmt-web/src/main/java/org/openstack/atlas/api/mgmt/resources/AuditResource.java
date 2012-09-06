@@ -1,17 +1,12 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.util.config.MossoConfigValues;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.osgi.cfg.commons.ApacheCommonsConfiguration;
+import org.openstack.atlas.util.config.LbConfiguration;
 import org.openstack.atlas.util.debug.Debug;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudit;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudits;
@@ -34,7 +29,7 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import org.openstack.atlas.util.b64aes.PaddingException;
+
 
 import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
 import static javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML;
@@ -46,36 +41,39 @@ public class AuditResource extends ManagementDependencyProvider {
     private static Log LOG = LogFactory.getLog(AuditResource.class.getName());
 
     @GET
-    @Path("config")
+    @Path("lbconfig")
+    @Produces({APPLICATION_JSON,APPLICATION_XML})
+    public Response retrieveLbConfig(){
+        LbConfiguration conf = new LbConfiguration();
+        MossoConfigValues[] keys = MossoConfigValues.values();
+        if(!isUserInRole("cp,ops,support")){
+            return ResponseFactory.accessDenied();
+        }
+        ListOfStrings lstr = retriveConfig(conf, keys);
+        return Response.status(200).entity(lstr).build();
+    }
+
+    @GET
+    @Path("restconfig")
     @Produces({APPLICATION_JSON, APPLICATION_XML})
-    public Response retrieveConfigs() {
+    public Response retrieveRestConfig() {
         RestApiConfiguration conf = new RestApiConfiguration();
-        ListOfStrings lstr = new ListOfStrings();
         if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
         PublicApiServiceConfigurationKeys[] keys = PublicApiServiceConfigurationKeys.values();
-        for (int i = 0; i < keys.length; i++) {
-            PublicApiServiceConfigurationKeys key = keys[i];
-            String keyStr = key.toString();
-            String valueStr;
-            try {
-                valueStr = conf.getString(key);
-            } catch (Exception ex) {
-                valueStr = "????";
-            }
-            lstr.getStrings().add(String.format("%s=%s", keyStr, valueStr));
-        }
+        ListOfStrings lstr = retriveConfig(conf, keys);
         String ctext = conf.getString(PublicApiServiceConfigurationKeys.rdns_admin_passwd);
         String rDnsKey = conf.getString(PublicApiServiceConfigurationKeys.rdns_crypto_key);
-        String ptext = "????";
+        String ptext;
         try {
             ptext = Aes.b64decrypt_str(ctext, rDnsKey);
         } catch (Exception ex) {
             String exMsg = Debug.getEST(ex);
+            ptext = "????";
             Logger.getLogger(AuditResource.class.getName()).log(Level.SEVERE, exMsg, ex);
         }
-        lstr.getStrings().add(String.format("%s=%s", "Decrypted_rdns_passwd", ptext));
+        //lstr.getStrings().add(String.format("%s=%s", "Decrypted_rdns_passwd", ptext));
         return Response.status(200).entity(lstr).build();
     }
 
@@ -120,5 +118,21 @@ public class AuditResource extends ManagementDependencyProvider {
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
+    }
+    private ListOfStrings retriveConfig(ApacheCommonsConfiguration conf, ConfigurationKey[] keys) {
+        int i;
+        ListOfStrings lstr = new ListOfStrings();
+        for (i = 0; i < keys.length; i++) {
+            ConfigurationKey key = keys[i];
+            String keyStr = key.toString();
+            String valueStr;
+            try{
+                valueStr = conf.getString(key);
+            }catch(Exception ex){
+                valueStr = "????";
+            }
+            lstr.getStrings().add(String.format("%s=%s",keyStr,valueStr));
+        }
+        return lstr;
     }
 }

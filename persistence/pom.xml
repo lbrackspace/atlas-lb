@@ -72,6 +72,11 @@
             <artifactId>atlas-ca-rsa</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-dns-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

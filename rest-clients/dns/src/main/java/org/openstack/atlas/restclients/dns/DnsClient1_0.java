@@ -4,15 +4,12 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.WebResource;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBException;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.restclients.dns.exp.JaxbExp;
 import org.openstack.atlas.restclients.dns.pub.objects.Record;
 import org.openstack.atlas.restclients.dns.pub.objects.Rdns;
@@ -25,7 +22,7 @@ import org.w3._2005.atom.Link;
 
 public class DnsClient1_0 {
 
-    private static final Logger log = Logger.getLogger(DnsClient1_0.class.getName());
+    private static final Log LOG = LogFactory.getLog(DnsClient1_0.class);
     private String token = "";
     private String endPoint = "";
     private Integer accountId = -1;
@@ -133,17 +130,15 @@ public class DnsClient1_0 {
         return resp;
     }
 
-    public ClientResponse delPtrRecordPub(Integer domainId, String deviceUrl, String serviceName, String ip) {
-        return delPtrRecordBaseMethod(domainId, deviceUrl, serviceName, ip, "x-auth-token", token, endPoint);
+    public ClientResponse delPtrRecordPub(String deviceUrl, String serviceName, String ip) {
+        return delPtrRecordBaseMethod(deviceUrl, serviceName, ip, "x-auth-token", token, endPoint);
     }
 
-    public ClientResponse delPtrRecordMan(Integer domainId, String deviceUrl, String serviceName, String ip) throws UnsupportedEncodingException {
-        String authKey = "authorization";
-        String authValue = encodeBasicAuth();
-        return delPtrRecordBaseMethod(domainId, deviceUrl, serviceName, ip, authKey, authValue, adminEndPoint);
+    public ClientResponse delPtrRecordMan(String deviceUrl, String serviceName, String ip) throws UnsupportedEncodingException {
+        return delPtrRecordBaseMethod(deviceUrl, serviceName, ip, "authorization", encodeBasicAuth(), adminEndPoint);
     }
 
-    private ClientResponse delPtrRecordBaseMethod(Integer domainId, String deviceUrl, String serviceName, String ip,
+    private ClientResponse delPtrRecordBaseMethod(String deviceUrl, String serviceName, String ip,
             String authKey, String authValue, String endPoint) {
         String url = String.format("/%d/rdns/%s", accountId, serviceName);
         Client client = new Client();
