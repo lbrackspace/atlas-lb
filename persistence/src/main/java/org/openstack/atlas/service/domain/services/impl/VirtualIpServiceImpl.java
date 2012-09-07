@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import org.openstack.atlas.service.domain.services.helpers.RdnsHelper;
 
 @Service
 public class VirtualIpServiceImpl extends BaseService implements VirtualIpService {
@@ -490,14 +491,14 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     private void reclaimVirtualIp(LoadBalancer lb, VirtualIp virtualIp) {
         if (!isVipAllocatedToAnotherLoadBalancer(lb, virtualIp)) {
-            // insert del PTR code here
+            RdnsHelper.newRdnsHelper().delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
             virtualIpRepository.deallocateVirtualIp(virtualIp);
         }
     }
 
     private void reclaimIpv6VirtualIp(LoadBalancer lb, VirtualIpv6 virtualIpv6) {
         if (!isIpv6VipAllocatedToAnotherLoadBalancer(lb, virtualIpv6)) {
-            // insert del PTR code here
+            RdnsHelper.newRdnsHelper().delPtrRecord(lb.getAccountId(), lb.getId(), virtualIpv6.getDerivedIpString());
             virtualIpv6Repository.deleteVirtualIp(virtualIpv6);
         }
     }

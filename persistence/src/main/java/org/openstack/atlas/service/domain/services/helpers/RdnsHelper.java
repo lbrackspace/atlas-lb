@@ -38,6 +38,11 @@ public class RdnsHelper {
         }
     }
 
+    // Cause typing "newRdnsHelper().delPtrRecord(aid,lid,ip) doesn't looks as "
+    // silly as  of "(new RdnsHelper()).delPtrRecord(aid,lid,ip)"
+    public static RdnsHelper newRdnsHelper(){
+        return new RdnsHelper();
+    }
 
     @Override
     public String toString() {
