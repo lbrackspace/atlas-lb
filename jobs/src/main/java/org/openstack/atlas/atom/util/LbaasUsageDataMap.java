@@ -47,8 +47,7 @@ public class LbaasUsageDataMap {
 
         usageV1.setVersion(version);
         usageV1.setStartTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
-        usageV1.setEndTime(AHUSLUtil.processCalendar(usageRecord.getEndTime()));
-        usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.ahusl_data_center)));
+
 
 
         if (AHUSLUtil.mapEventType(usageRecord) == null) {
@@ -61,7 +60,7 @@ public class LbaasUsageDataMap {
         usageV1.setResourceId(usageRecord.getLoadbalancer().getId().toString());
 
         //Generate UUID
-        UUID uuid = UUIDUtil.genUUID(genUUIDString(usageRecord));
+        UUID uuid = UUIDUtil.genUUIDMD5(genUUIDString(usageRecord));
         usageV1.setId(uuid.toString());
 
         //LBAAS specific values
@@ -102,8 +101,10 @@ public class LbaasUsageDataMap {
         usageV1.setRegion(AHUSLUtil.mapRegion(region));
 
         usageV1.setVersion(version);//Rows are not updated...
-        usageV1.setStartTime(AHUSLUtil.processCalendar(accountUsage.getStartTime()));
-        usageV1.setEndTime(AHUSLUtil.processCalendar(accountUsage.getStartTime()));
+//        usageV1.setStartTime(AHUSLUtil.processCalendar(accountUsage.getStartTime()));
+//        usageV1.setEndTime(AHUSLUtil.processCalendar(accountUsage.getStartTime()));
+
+        usageV1.setEventTime(AHUSLUtil.processCalendar(accountUsage.getStartTime()));
 
         usageV1.setType(EventType.USAGE); //No events
         usageV1.setTenantId(accountUsage.getAccountId().toString());
@@ -111,7 +112,7 @@ public class LbaasUsageDataMap {
         usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.ahusl_data_center)));
 
         //Generate UUID
-        UUID uuid = UUIDUtil.genUUID(genUUIDString(accountUsage));
+        UUID uuid = UUIDUtil.genUUIDMD5(genUUIDString(accountUsage));
         usageV1.setId(uuid.toString());
 
         //LBaaS account usage

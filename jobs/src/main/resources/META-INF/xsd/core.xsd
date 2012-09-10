@@ -6,36 +6,33 @@
    This schema misses some critical checks that are only performed in the 1.1 version.
    Validation at the usage layer will always use the 1.1 schema.
 -->
-<xsd:schema
-        elementFormDefault="qualified"
-        attributeFormDefault="unqualified"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:tx="http://www.springframework.org/schema/tx"
-        xmlns="http://www.w3.org/2001/XMLSchema/spring-tx-2.5.xsd"
-        xmlns:event="http://docs.rackspace.com/core/event"
-        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-        xmlns:html="http://www.w3.org/1999/xhtml"
-        targetNamespace="http://docs.rackspace.com/core/event">
+<schema
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:event="http://docs.rackspace.com/core/event"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    targetNamespace="http://docs.rackspace.com/core/event">
 
-    <xsd:include schemaLocation="_1.0Core.xsd"/>
-
-          <xsd:import namespace="http://docs.rackspace.com/usage/lbaas/account"
+    <include schemaLocation="_1.0Core.xsd"/>
+    <xsd:import namespace="http://docs.rackspace.com/usage/lbaas/account"
             schemaLocation="ProductExtension-LBaaSAccount.xsd"/>
 
     <xsd:import  namespace="http://docs.rackspace.com/usage/lbaas"
             schemaLocation="ProductExtension-LBaaS.xsd"/>
 
     <!-- Define the element for XSD 1.0 clients -->
-    <xsd:element name="event" type="event:V1Element"/>
+    <element name="event" type="event:V1Element"/>
 
-    <xsd:complexType name="V1Element">
-        <xsd:complexContent>
-            <xsd:restriction base="event:EventV1">
-                <xsd:sequence>
-                    <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
-                </xsd:sequence>
-                <xsd:attribute name="version" type="xsd:string" use="required" fixed="1"/>
-            </xsd:restriction>
-        </xsd:complexContent>
-    </xsd:complexType>
-</xsd:schema>
+    <complexType name="V1Element">
+        <complexContent>
+            <restriction base="event:EventV1">
+                <sequence>
+                    <any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
+                </sequence>
+                <attribute name="version" type="xsd:string" use="required" fixed="1"/>
+            </restriction>
+        </complexContent>
+    </complexType>
+</schema>

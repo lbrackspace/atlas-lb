@@ -45,7 +45,7 @@ public class XsdMarshallTest {
             String uString = "DFW" + "234" + "2346";
             try {
                 cal = Calendar.getInstance();
-                uuid = UUIDUtil.genUUID(uString);
+                uuid = UUIDUtil.genUUIDSHA256(uString);
             } catch (NoSuchAlgorithmException e) {
                 Assert.fail(e.getLocalizedMessage());
             }
