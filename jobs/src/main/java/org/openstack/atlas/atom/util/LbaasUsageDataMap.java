@@ -76,7 +76,8 @@ public class LbaasUsageDataMap {
         lu.setNumVips(usageRecord.getNumVips());
         lu.setServiceCode(SERVICE_CODE);
         lu.setResourceType(ResourceTypes.LOADBALANCER);
-        lu.setVersion(usageRecord.getEntryVersion().toString());
+//        lu.setVersion(usageRecord.getEntryVersion().toString());
+        lu.setVersion(version);
 
         BitTags bitTags = new BitTags(usageRecord.getTags());
         if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
