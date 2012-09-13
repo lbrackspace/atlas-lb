@@ -48,4 +48,8 @@
                groupBy="true" allowedValues="ON OFF MIXED">
         The mode determining SSL status on the load balancer.
     </attribute>
+    <attribute name="status" type="string"
+               allowedValues="ACTIVE SUSPENDED" >
+        The mode determining SSL status on the load balancer.
+    </attribute>
 </productSchema>

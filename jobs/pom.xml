@@ -157,7 +157,6 @@
                     <schemaIncludes>
                         <include>entry.xsd</include>
                         <include>ProductExtension-LBaaS.xsd</include>
-                        <include>ProductExtension-LBaaSAccount.xsd</include>
                     </schemaIncludes>
                 </configuration>
                 <executions>

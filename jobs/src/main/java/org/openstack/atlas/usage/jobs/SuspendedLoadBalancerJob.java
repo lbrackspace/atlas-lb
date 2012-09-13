@@ -57,7 +57,8 @@ public class SuspendedLoadBalancerJob extends Job implements StatefulJob {
                 usage.setAccountId(suspendedLoadBalancer.getAccountId());
                 if (recentUsage != null) usage.setTags(recentUsage.getTags());
                 if (recentUsage != null) usage.setNumVips(recentUsage.getNumVips());
-                usage.setStartTime(now);
+                // if (recentUsage != null) usage.setStartTime(recentUsage.getEndTime() + 1 second);
+                // else usage.setStartTime(suspendedLoadBalancer.getUpdated()); // Log a warning
                 usage.setEndTime(now);
                 usagesToCreate.add(usage);
             }

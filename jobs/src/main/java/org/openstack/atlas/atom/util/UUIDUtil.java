@@ -25,7 +25,7 @@ public class UUIDUtil {
      * @return the generated UUID
      * @throws NoSuchAlgorithmException
      */
-    public static UUID genUUIDMD5(String uuidString) throws NoSuchAlgorithmException {
+    public static UUID genUUIDMD5Hash(String uuidString) throws NoSuchAlgorithmException {
         byte[] sum = sha256(uuidString);
         return UUID.nameUUIDFromBytes(sum);
     }

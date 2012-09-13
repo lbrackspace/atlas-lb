@@ -1,5 +1,6 @@
 package org.openstack.atlas.atom.util;
 
+import com.rackspace.docs.core.event.DC;
 import com.rackspace.docs.core.event.EventType;
 import com.rackspace.docs.usage.lbaas.ResourceTypes;
 import com.rackspace.docs.usage.lbaas.SslModeEnum;
@@ -52,25 +53,27 @@ public class LbaasUsageDataMap {
         }
 
         UsageV1Pojo usageV1 = new UsageV1Pojo();
-        usageV1.setRegion(AHUSLUtil.mapRegion(region));
-
         usageV1.setVersion(version);
-        usageV1.setStartTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
+        usageV1.setRegion(AHUSLUtil.mapRegion(region));
+        usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.ahusl_data_center)));
 
         if (AHUSLUtil.mapEventType(usageRecord) == null) {
             usageV1.setType(EventType.USAGE);
+            usageV1.setStartTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
+            usageV1.setEndTime(AHUSLUtil.processCalendar(usageRecord.getEndTime()));
         } else {
             usageV1.setType(AHUSLUtil.mapEventType(usageRecord));
+            usageV1.setEventTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
         }
 
         usageV1.setTenantId(usageRecord.getAccountId().toString());
         usageV1.setResourceId(usageRecord.getLoadbalancer().getId().toString());
 
         //Generate UUID
-        UUID uuid = UUIDUtil.genUUIDMD5(genUUIDString(usageRecord));
+        UUID uuid = UUIDUtil.genUUIDMD5Hash(genUUIDString(usageRecord));
         usageV1.setId(uuid.toString());
 
-        usageV1.getAny().add(buildLbaas(usageRecord));
+        usageV1.getAny().add(buildLbaasUsageRecord(usageRecord));
         return usageV1;
     }
 
@@ -94,21 +97,19 @@ public class LbaasUsageDataMap {
         return usageCategory;
     }
 
-    private static LBaaSUsagePojo buildLbaas(Usage usageRecord) {
+    private static LBaaSUsagePojo buildLbaasUsageRecord(Usage usageRecord) {
         //LBAAS specific values
         LBaaSUsagePojo lu = new LBaaSUsagePojo();
         lu.setAvgConcurrentConnections(usageRecord.getAverageConcurrentConnections());
         lu.setAvgConcurrentConnectionsSsl(usageRecord.getAverageConcurrentConnectionsSsl());
-        lu.setBandWidthIn(usageRecord.getIncomingTransfer());
+        lu.setBandWidthOutSsl(usageRecord.getOutgoingTransferSsl());
         lu.setBandWidthInSsl(usageRecord.getIncomingTransferSsl());
         lu.setBandWidthOut(usageRecord.getOutgoingTransfer());
-        lu.setBandWidthOutSsl(usageRecord.getOutgoingTransferSsl());
+        lu.setBandWidthIn(usageRecord.getIncomingTransfer());
+        lu.setResourceType(ResourceTypes.LOADBALANCER);
         lu.setNumPolls(usageRecord.getNumberOfPolls());
         lu.setNumVips(usageRecord.getNumVips());
         lu.setServiceCode(SERVICE_CODE);
-        lu.setResourceType(ResourceTypes.LOADBALANCER);
-//        lu.setVersion(usageRecord.getEntryVersion().toString());
-        lu.setVersion(version);
 
         BitTags bitTags = new BitTags(usageRecord.getTags());
         if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
@@ -116,8 +117,8 @@ public class LbaasUsageDataMap {
         } else {
             lu.setVipType(VipTypeEnum.PUBLIC);
         }
-
         lu.setSslMode(SslModeEnum.fromValue(SslMode.getMode(bitTags).name()));
+
         return lu;
     }
 }
