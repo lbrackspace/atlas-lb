@@ -62,7 +62,8 @@ public class LbaasUsageDataMap {
             usageV1.setStartTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
             usageV1.setEndTime(AHUSLUtil.processCalendar(usageRecord.getEndTime()));
         } else {
-            usageV1.setType(AHUSLUtil.mapEventType(usageRecord));
+//            usageV1.setType(AHUSLUtil.mapEventType(usageRecord));
+            usageV1.setType(EventType.USAGE);
             usageV1.setEventTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
         }
 
@@ -110,6 +111,7 @@ public class LbaasUsageDataMap {
         lu.setNumPolls(usageRecord.getNumberOfPolls());
         lu.setNumVips(usageRecord.getNumVips());
         lu.setServiceCode(SERVICE_CODE);
+        lu.setVersion(version);
 
         BitTags bitTags = new BitTags(usageRecord.getTags());
         if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
