@@ -20,6 +20,7 @@ import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepo
 import org.openstack.atlas.usage.BatchAction;
 import org.openstack.atlas.usage.ExecutionUtilities;
 import org.openstack.atlas.usage.logic.UsageCalculator;
+import org.openstack.atlas.usage.logic.UsageEventProcessor;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
@@ -77,6 +78,15 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
         LOG.info("Processing usage events...");
 
         List<LoadBalancerUsageEvent> usageEventEntries = usageEventRepository.getAllUsageEventEntriesInOrder();
+        UsageEventProcessor usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, loadBalancerRepository);
+        usageEventProcessor.process();
+        usageEventProcessor.getUsagesToCreate(); // TODO: Create
+        usageEventProcessor.getUsagesToUpdate(); // TODO: Update
+
+        //
+        //
+        //
+
         List<LoadBalancerUsage> usagesToCreate = new ArrayList<LoadBalancerUsage>();
         List<LoadBalancerUsage> usagesToUpdate = new ArrayList<LoadBalancerUsage>();
         Map<Integer, List<LoadBalancerUsage>> newEventUsageMap = new HashMap<Integer, List<LoadBalancerUsage>>();

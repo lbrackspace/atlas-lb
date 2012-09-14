@@ -36,6 +36,23 @@ public class LoadBalancerUsageEvent extends Entity implements Serializable {
     @Column(name = "last_concurrent_conns_ssl", nullable = true)
     Integer lastConcurrentConnectionsSsl;
 
+    public LoadBalancerUsageEvent() {
+    }
+
+    public LoadBalancerUsageEvent(Integer accountId, Integer loadbalancerId, Calendar startTime, Integer numVips, String eventType, Long lastBandwidthBytesOut, Long lastBandwidthBytesIn, Integer lastConcurrentConnections, Long lastBandwidthBytesOutSsl, Long lastBandwidthBytesInSsl, Integer lastConcurrentConnectionsSsl) {
+        this.accountId = accountId;
+        this.loadbalancerId = loadbalancerId;
+        this.startTime = startTime;
+        this.numVips = numVips;
+        this.eventType = eventType;
+        this.lastBandwidthBytesOut = lastBandwidthBytesOut;
+        this.lastBandwidthBytesIn = lastBandwidthBytesIn;
+        this.lastConcurrentConnections = lastConcurrentConnections;
+        this.lastBandwidthBytesOutSsl = lastBandwidthBytesOutSsl;
+        this.lastBandwidthBytesInSsl = lastBandwidthBytesInSsl;
+        this.lastConcurrentConnectionsSsl = lastConcurrentConnectionsSsl;
+    }
+
     public Integer getAccountId() {
         return accountId;
     }
