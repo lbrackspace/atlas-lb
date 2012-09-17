@@ -95,7 +95,7 @@ def getmigrationLs(dirname):
     fformat = "-rw-r--r-- 1 root root %i %s %s %s"
     files_out.append("drwxr-xr-x 2 root root  4096 2011-08-17 22:09 ./")
     files_out.append("drwxr-xr-x 2 root root  4096 2011-08-17 22:09 ../")
-    for file_name in os.listdir(dirname):
+    for file_name in sorted(os.listdir(dirname)):
         full_path = os.path.join(dirname,file_name)
         m = migration_re.match(file_name)
         if not m or not os.path.isfile(full_path):
