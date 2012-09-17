@@ -230,7 +230,7 @@ public class UsageEventProcessor {
     }
 
     public static List<LoadBalancerUsage> createBufferRecordsIfNeeded(LoadBalancerUsage recentUsage, LoadBalancerUsage nextUsage) {
-        assert(nextUsage.getStartTime().after(recentUsage.getEndTime())); // TODO: Figure out how to handle this error case.
+//        assert(nextUsage.getStartTime().after(recentUsage.getEndTime())); // TODO: Figure out how to handle this error case.
 
         List<LoadBalancerUsage> bufferRecords = new ArrayList<LoadBalancerUsage>();
 
@@ -290,7 +290,7 @@ public class UsageEventProcessor {
     }
 
     public static Calendar calculateEndTime(Calendar recentUsageEndTime, Calendar nextUsageStartTime) {
-        assert(nextUsageStartTime.after(recentUsageEndTime)); // TODO: Figure out how to handle this error case.
+//        assert(nextUsageStartTime.after(recentUsageEndTime)); // TODO: Figure out how to handle this error case.
 
         if (recentUsageEndTime.get(Calendar.HOUR_OF_DAY) == nextUsageStartTime.get(Calendar.HOUR_OF_DAY)
                 && recentUsageEndTime.get(Calendar.DAY_OF_MONTH) == nextUsageStartTime.get(Calendar.DAY_OF_MONTH)
@@ -349,7 +349,7 @@ public class UsageEventProcessor {
 
         for (Integer loadBalancerId : loadBalancerIds) {
             LoadBalancerUsage mostRecentUsageForLoadBalancer = hourlyUsageRepository.getMostRecentUsageForLoadBalancer(loadBalancerId);
-            recentUsageMap.put(loadBalancerId, mostRecentUsageForLoadBalancer);
+            if(mostRecentUsageForLoadBalancer != null) recentUsageMap.put(loadBalancerId, mostRecentUsageForLoadBalancer);
         }
 
         return recentUsageMap;

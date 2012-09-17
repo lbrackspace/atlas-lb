@@ -2,7 +2,6 @@ package org.openstack.atlas.usage.logic;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -24,8 +23,14 @@ import static org.mockito.Mockito.when;
 @RunWith(Enclosed.class)
 public class UsageEventProcessorTest {
 
+    private static void printUsageRecords(String testCase, List<LoadBalancerUsage> usageRecords) {
+        for (LoadBalancerUsage usageRecord : usageRecords) {
+            System.out.println(String.format("[%s] Usage Record: %s - %s (%s)", testCase, usageRecord.getStartTime().getTime(), usageRecord.getEndTime().getTime(), usageRecord.getEventType()));
+        }
+    }
+
     @RunWith(MockitoJUnitRunner.class)
-    public static class WhenEventsAreBackToBackBetweenPolls {
+    public static class WhenProcessingWithNoRecentRecords {
         @Mock
         private LoadBalancerUsageRepository hourlyUsageRepository;
         @Mock
@@ -59,14 +64,125 @@ public class UsageEventProcessorTest {
         }
 
         @Test
-        public void shouldCreateProperTimestampsWhenProcessed() {
+        public void shouldSucceedWhenEventsAreBackToBackWithinTheSameHour() {
             usageEventProcessor.process();
             final List<LoadBalancerUsage> usagesToCreate = usageEventProcessor.getUsagesToCreate();
 
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToCreate);
+
+            Assert.assertEquals(2, usagesToCreate.size());
             Assert.assertEquals(loadBalancerUsageCreateEvent.getStartTime(), usagesToCreate.get(0).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(0).getEndTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(1).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(1).getEndTime());
+        }
+
+        @Test
+        public void shouldSucceedWhenEventsOccurInDifferentHours() {
+            sslOnEventTime.set(Calendar.HOUR_OF_DAY, 4);
+
+            usageEventProcessor.process();
+            final List<LoadBalancerUsage> usagesToCreate = usageEventProcessor.getUsagesToCreate();
+
+            printUsageRecords("shouldSucceedWhenEventsOccurInDifferentHours", usagesToCreate);
+
+            Assert.assertEquals(3, usagesToCreate.size());
+            Assert.assertEquals(loadBalancerUsageCreateEvent.getStartTime(), usagesToCreate.get(0).getStartTime());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(1).getEndTime());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(2).getStartTime());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(2).getEndTime());
+        }
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenProcessingWithRecentRecords {
+        @Mock
+        private LoadBalancerUsageRepository hourlyUsageRepository;
+        @Mock
+        private LoadBalancerRepository loadBalancerRepository;
+        private UsageEventProcessor usageEventProcessor;
+
+        private final int accountId = 1234;
+        private final int loadBalancerId = 1;
+        private LoadBalancerUsage mostRecentUsage;
+        private Calendar sslOnEventTime;
+        private LoadBalancerUsageEvent loadBalancerUsageSslOnEvent;
+        private LoadBalancerUsageEvent loadBalancerUsageSslOffEvent;
+        private Calendar sslOffEventTime;
+        private List<LoadBalancerUsageEvent> usageEventEntries;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, DeletedStatusException {
+            sslOnEventTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 35, 45);
+            sslOffEventTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 50, 10);
+
+            loadBalancerUsageSslOnEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOnEventTime, 1, "SSL_ONLY_ON", null, null, null, null, null, null);
+            loadBalancerUsageSslOffEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOffEventTime, 1, "SSL_OFF", null, null, null, null, null, null);
+
+            usageEventEntries = new ArrayList<LoadBalancerUsageEvent>();
+            usageEventEntries.add(loadBalancerUsageSslOnEvent);
+            usageEventEntries.add(loadBalancerUsageSslOffEvent);
+
+            usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, loadBalancerRepository);
+
+            mostRecentUsage = new LoadBalancerUsage();
+            mostRecentUsage.setAccountId(accountId);
+            mostRecentUsage.setLoadbalancerId(loadBalancerId);
+            mostRecentUsage.setEventType("CREATE_LOADBALANCER");
+            mostRecentUsage.setStartTime(new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 33, 10));
+            mostRecentUsage.setEndTime(new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 33, 10));
+
+            when(hourlyUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>eq(loadBalancerId))).thenReturn(mostRecentUsage);
+            when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(new HashSet<VirtualIp>());
+        }
+
+        @Test
+        public void shouldSucceedWhenEventsAreBackToBackWithinTheSameHour() {
+            usageEventProcessor.process();
+            final List<LoadBalancerUsage> usagesToUpdate = usageEventProcessor.getUsagesToUpdate();
+            final List<LoadBalancerUsage> usagesToCreate = usageEventProcessor.getUsagesToCreate();
+
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToUpdate);
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToCreate);
+
+            Assert.assertEquals(1, usagesToUpdate.size());
+            Assert.assertEquals(2, usagesToCreate.size());
+
+            Assert.assertEquals(mostRecentUsage.getStartTime(), usagesToUpdate.get(0).getStartTime());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToUpdate.get(0).getEndTime());
+
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(0).getStartTime());
+            Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(0).getEndTime());
+            Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(1).getStartTime());
+            Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(1).getEndTime());
+        }
+
+        @Test
+        public void shouldSucceedWhenEventsOccurInDifferentHours() {
+            sslOnEventTime.set(Calendar.HOUR_OF_DAY, 4);
+            sslOffEventTime.set(Calendar.HOUR_OF_DAY, 5);
+
+            usageEventProcessor.process();
+            final List<LoadBalancerUsage> usagesToUpdate = usageEventProcessor.getUsagesToUpdate();
+            final List<LoadBalancerUsage> usagesToCreate = usageEventProcessor.getUsagesToCreate();
+
+            printUsageRecords("shouldSucceedWhenEventsOccurInDifferentHours", usagesToUpdate);
+            printUsageRecords("shouldSucceedWhenEventsOccurInDifferentHours", usagesToCreate);
+
+            Assert.assertEquals(1, usagesToUpdate.size());
+            Assert.assertEquals(4, usagesToCreate.size());
+
+            Assert.assertEquals(mostRecentUsage.getStartTime(), usagesToUpdate.get(0).getStartTime());
+            Assert.assertEquals(usagesToCreate.get(0).getStartTime().getTimeInMillis() - 1, usagesToUpdate.get(0).getEndTime().getTimeInMillis());
+
+            Assert.assertEquals(usagesToUpdate.get(0).getEndTime().getTimeInMillis() + 1, usagesToCreate.get(0).getStartTime().getTimeInMillis());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(0).getEndTime());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(1).getStartTime());
+            Assert.assertEquals(usagesToCreate.get(2).getStartTime().getTimeInMillis() - 1, usagesToCreate.get(1).getEndTime().getTimeInMillis());
+            Assert.assertEquals(usagesToCreate.get(1).getEndTime().getTimeInMillis() + 1, usagesToCreate.get(2).getStartTime().getTimeInMillis());
+            Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(2).getEndTime());
+            Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(3).getStartTime());
+            Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(3).getEndTime());
         }
     }
 
@@ -125,7 +241,7 @@ public class UsageEventProcessorTest {
             Assert.assertEquals(lb1EndTime.getTimeInMillis(), bufferRecords.get(0).getStartTime().getTimeInMillis());
             Assert.assertEquals(lb2StartTime.getTimeInMillis(), bufferRecords.get(0).getEndTime().getTimeInMillis());
 
-            printBufferRecords("Case 1", bufferRecords);
+            printUsageRecords("shouldCreateContiguousBufferRecordsCase1", bufferRecords);
         }
 
         /*
@@ -151,7 +267,7 @@ public class UsageEventProcessorTest {
             Assert.assertEquals(lb1EndTime.getTimeInMillis(), bufferRecords.get(0).getStartTime().getTimeInMillis());
             Assert.assertEquals(lb2StartTime.getTimeInMillis() - 1, bufferRecords.get(0).getEndTime().getTimeInMillis());
 
-            printBufferRecords("Case 2", bufferRecords);
+            printUsageRecords("shouldCreateContiguousBufferRecordsCase2", bufferRecords);
         }
 
         /*
@@ -181,7 +297,7 @@ public class UsageEventProcessorTest {
             Assert.assertEquals(hourMark.getTimeInMillis(), bufferRecords.get(1).getStartTime().getTimeInMillis());
             Assert.assertEquals(lb2StartTime.getTimeInMillis(), bufferRecords.get(1).getEndTime().getTimeInMillis());
 
-            printBufferRecords("Case 3", bufferRecords);
+            printUsageRecords("shouldCreateContiguousBufferRecordsCase3", bufferRecords);
         }
 
         /*
@@ -205,13 +321,8 @@ public class UsageEventProcessorTest {
 
             Assert.assertEquals(26, bufferRecords.size());
 
-            printBufferRecords("Case 4", bufferRecords);
+            printUsageRecords("shouldCreateContiguousBufferRecordsCase4", bufferRecords);
         }
 
-        private void printBufferRecords(String testCase, List<LoadBalancerUsage> bufferRecords) {
-            for (LoadBalancerUsage bufferRecord : bufferRecords) {
-                System.out.println(String.format("(%s) Buffer Record: %s - %s", testCase, bufferRecord.getStartTime().getTime(), bufferRecord.getEndTime().getTime()));
-            }
-        }
     }
 }
