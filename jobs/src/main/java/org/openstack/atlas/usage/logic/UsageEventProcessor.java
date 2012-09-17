@@ -18,8 +18,6 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
-import org.openstack.atlas.usage.BatchAction;
-import org.openstack.atlas.usage.ExecutionUtilities;
 import org.openstack.atlas.usage.helpers.LoadBalancerNameMap;
 
 import java.util.*;
@@ -207,6 +205,10 @@ public class UsageEventProcessor {
                 // New records may be needed if we are near the hour mark or if poller goes down.
                 List<LoadBalancerUsage> bufferRecords = createBufferRecordsIfNeeded(recentUsage, loadBalancerUsages.get(0));
                 if (!bufferRecords.isEmpty()) usagesToCreate.addAll(bufferRecords);
+
+                UsageEvent usageEvent = UsageEvent.valueOf(loadBalancerUsages.get(0).getEventType());
+                int updatedTags = calculateTags(recentUsage.getAccountId(), lbId, usageEvent, recentUsage);
+                loadBalancerUsages.get(0).setTags(updatedTags);
             }
 
             for (int i=0; i < loadBalancerUsages.size(); i++) {
@@ -221,6 +223,11 @@ public class UsageEventProcessor {
 
                     List<LoadBalancerUsage> bufferRecords = createBufferRecordsIfNeeded(firstUsage, secondUsage);
                     if (!bufferRecords.isEmpty()) usagesToCreate.addAll(bufferRecords);
+
+                    // Update the tags to the proper tags.
+                    UsageEvent usageEvent = UsageEvent.valueOf(secondUsage.getEventType());
+                    int updatedTags = calculateTags(firstUsage.getAccountId(), lbId, usageEvent, firstUsage);
+                    secondUsage.setTags(updatedTags);
                 } else {
                     // Add last record whose timestamps are the same.
                     usagesToCreate.add(loadBalancerUsages.get(i));
@@ -229,12 +236,12 @@ public class UsageEventProcessor {
         }
     }
 
-    public static List<LoadBalancerUsage> createBufferRecordsIfNeeded(LoadBalancerUsage recentUsage, LoadBalancerUsage nextUsage) {
-//        assert(nextUsage.getStartTime().after(recentUsage.getEndTime())); // TODO: Figure out how to handle this error case.
+    public static List<LoadBalancerUsage> createBufferRecordsIfNeeded(LoadBalancerUsage previousUsage, LoadBalancerUsage nextUsage) {
+        if(nextUsage.getStartTime().before(previousUsage.getEndTime())) throw new RuntimeException("Usages are not in order!");
 
         List<LoadBalancerUsage> bufferRecords = new ArrayList<LoadBalancerUsage>();
 
-        Calendar previousRecordsEndTime = (Calendar) recentUsage.getEndTime().clone();
+        Calendar previousRecordsEndTime = (Calendar) previousUsage.getEndTime().clone();
         Calendar nextUsagesStartTime = (Calendar) nextUsage.getStartTime().clone();
 
         while(previousRecordsEndTime.before(nextUsagesStartTime)) {
@@ -248,20 +255,20 @@ public class UsageEventProcessor {
                         && previousRecordsEndTime.get(Calendar.YEAR) == nextUsagesStartTime.get(Calendar.YEAR)
                         ) {
                     // We need a buffer record for the beginning of the hour.
-                    LoadBalancerUsage newBufferRecord = instantiateAndPopulateBufferRecord(recentUsage, previousRecordsEndTime, nextUsagesStartTime);
+                    LoadBalancerUsage newBufferRecord = instantiateAndPopulateBufferRecord(previousUsage, previousRecordsEndTime, nextUsagesStartTime);
                     bufferRecords.add(newBufferRecord);
                     previousRecordsEndTime = (Calendar) nextUsagesStartTime.clone();
                 } else if(previousRecordsEndTime.getTimeInMillis() != nextUsagesStartTime.getTimeInMillis()) {
                     // We need a buffer record for the whole hour.
                     Calendar newEndTimeForBufferRecord = calculateEndTime(previousRecordsEndTime, nextUsagesStartTime);
-                    LoadBalancerUsage newBufferRecord = instantiateAndPopulateBufferRecord(recentUsage, previousRecordsEndTime, newEndTimeForBufferRecord);
+                    LoadBalancerUsage newBufferRecord = instantiateAndPopulateBufferRecord(previousUsage, previousRecordsEndTime, newEndTimeForBufferRecord);
                     bufferRecords.add(newBufferRecord);
                     previousRecordsEndTime = (Calendar) newEndTimeForBufferRecord.clone();
                 }
             } else {
                 // We need a buffer record for the end of the hour.
                 Calendar newEndTimeForBufferRecord = calculateEndTime(previousRecordsEndTime, nextUsagesStartTime);
-                LoadBalancerUsage newBufferRecord = instantiateAndPopulateBufferRecord(recentUsage, previousRecordsEndTime, newEndTimeForBufferRecord);
+                LoadBalancerUsage newBufferRecord = instantiateAndPopulateBufferRecord(previousUsage, previousRecordsEndTime, newEndTimeForBufferRecord);
                 bufferRecords.add(newBufferRecord);
                 previousRecordsEndTime = (Calendar) newEndTimeForBufferRecord.clone();
             }
@@ -290,7 +297,7 @@ public class UsageEventProcessor {
     }
 
     public static Calendar calculateEndTime(Calendar recentUsageEndTime, Calendar nextUsageStartTime) {
-//        assert(nextUsageStartTime.after(recentUsageEndTime)); // TODO: Figure out how to handle this error case.
+        if(nextUsageStartTime.before(recentUsageEndTime)) throw new RuntimeException("Usages are not in order!");
 
         if (recentUsageEndTime.get(Calendar.HOUR_OF_DAY) == nextUsageStartTime.get(Calendar.HOUR_OF_DAY)
                 && recentUsageEndTime.get(Calendar.DAY_OF_MONTH) == nextUsageStartTime.get(Calendar.DAY_OF_MONTH)
@@ -355,18 +362,7 @@ public class UsageEventProcessor {
         return recentUsageMap;
     }
 
-    private LoadBalancerUsage getPreviousHourlyUsageRecord(LoadBalancerUsageEvent usageEventEntry, Map<Integer, List<LoadBalancerUsage>> newEventUsageMap) {
-        // return previous event that has yet to be created if it exists
-        if (newEventUsageMap.containsKey(usageEventEntry.getLoadbalancerId())) {
-            List<LoadBalancerUsage> loadBalancerUsagesForLb = newEventUsageMap.get(usageEventEntry.getLoadbalancerId());
-            return (LoadBalancerUsage) loadBalancerUsagesForLb.toArray()[loadBalancerUsagesForLb.size()-1];
-        }
-
-        // will return null if it doesn't exist
-        return hourlyUsageRepository.getMostRecentUsageForLoadBalancer(usageEventEntry.getLoadbalancerId());
-    }
-
-    public int getTags(Integer accountId, Integer lbId, UsageEvent usageEvent, LoadBalancerUsage recentUsage) {
+    public int calculateTags(Integer accountId, Integer lbId, UsageEvent usageEvent, LoadBalancerUsage recentUsage) {
         BitTags tags;
 
         if (recentUsage != null) {

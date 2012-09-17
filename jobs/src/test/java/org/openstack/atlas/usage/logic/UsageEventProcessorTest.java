@@ -12,6 +12,8 @@ import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.usage.BitTag;
+import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
@@ -25,7 +27,7 @@ public class UsageEventProcessorTest {
 
     private static void printUsageRecords(String testCase, List<LoadBalancerUsage> usageRecords) {
         for (LoadBalancerUsage usageRecord : usageRecords) {
-            System.out.println(String.format("[%s] Usage Record: %s - %s (%s)", testCase, usageRecord.getStartTime().getTime(), usageRecord.getEndTime().getTime(), usageRecord.getEventType()));
+            System.out.println(String.format("[%s] Usage Record: %s - %s (Tags: %d, Event: %s)", testCase, usageRecord.getStartTime().getTime(), usageRecord.getEndTime().getTime(), usageRecord.getTags(), usageRecord.getEventType()));
         }
     }
 
@@ -51,7 +53,7 @@ public class UsageEventProcessorTest {
             sslOnEventTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 33, 45);
 
             loadBalancerUsageCreateEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, createEventTime, 1, "CREATE_LOADBALANCER", null, null, null, null, null, null);
-            loadBalancerUsageSslOnEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOnEventTime, 1, "SSL_ONLY_ON", null, null, null, null, null, null);
+            loadBalancerUsageSslOnEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOnEventTime, 1, "SSL_MIXED_ON", null, null, null, null, null, null);
 
             usageEventEntries = new ArrayList<LoadBalancerUsageEvent>();
             usageEventEntries.add(loadBalancerUsageCreateEvent);
@@ -75,6 +77,9 @@ public class UsageEventProcessorTest {
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(0).getEndTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(1).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(1).getEndTime());
+
+            Assert.assertEquals(0, usagesToCreate.get(0).getTags().intValue());
+            Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SSL_MIXED_MODE.tagValue(), usagesToCreate.get(1).getTags().intValue());
         }
 
         @Test
@@ -91,6 +96,10 @@ public class UsageEventProcessorTest {
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(1).getEndTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(2).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(2).getEndTime());
+
+            Assert.assertEquals(0, usagesToCreate.get(0).getTags().intValue());
+            Assert.assertEquals(0, usagesToCreate.get(1).getTags().intValue());
+            Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SSL_MIXED_MODE.tagValue(), usagesToCreate.get(2).getTags().intValue());
         }
     }
 
@@ -131,6 +140,7 @@ public class UsageEventProcessorTest {
             mostRecentUsage.setEventType("CREATE_LOADBALANCER");
             mostRecentUsage.setStartTime(new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 33, 10));
             mostRecentUsage.setEndTime(new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 33, 10));
+            mostRecentUsage.setTags(BitTag.SERVICENET_LB.tagValue());
 
             when(hourlyUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>eq(loadBalancerId))).thenReturn(mostRecentUsage);
             when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(new HashSet<VirtualIp>());
@@ -150,11 +160,14 @@ public class UsageEventProcessorTest {
 
             Assert.assertEquals(mostRecentUsage.getStartTime(), usagesToUpdate.get(0).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToUpdate.get(0).getEndTime());
-
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(0).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(0).getEndTime());
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(1).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(1).getEndTime());
+
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToUpdate.get(0).getTags().intValue());
+            Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(0).getTags().intValue());
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(1).getTags().intValue());
         }
 
         @Test
@@ -183,6 +196,12 @@ public class UsageEventProcessorTest {
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(2).getEndTime());
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(3).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(3).getEndTime());
+
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToUpdate.get(0).getTags().intValue());
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(0).getTags().intValue());
+            Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(1).getTags().intValue());
+            Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(2).getTags().intValue());
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(3).getTags().intValue());
         }
     }
 
@@ -237,11 +256,13 @@ public class UsageEventProcessorTest {
 
             final List<LoadBalancerUsage> bufferRecords = UsageEventProcessor.createBufferRecordsIfNeeded(lbUsage1, lbUsage2);
 
+            printUsageRecords("shouldCreateContiguousBufferRecordsCase1", bufferRecords);
+
             Assert.assertEquals(1, bufferRecords.size());
             Assert.assertEquals(lb1EndTime.getTimeInMillis(), bufferRecords.get(0).getStartTime().getTimeInMillis());
             Assert.assertEquals(lb2StartTime.getTimeInMillis(), bufferRecords.get(0).getEndTime().getTimeInMillis());
 
-            printUsageRecords("shouldCreateContiguousBufferRecordsCase1", bufferRecords);
+            Assert.assertEquals(lbUsage1.getTags(), bufferRecords.get(0).getTags());
         }
 
         /*
@@ -263,11 +284,13 @@ public class UsageEventProcessorTest {
 
             final List<LoadBalancerUsage> bufferRecords = UsageEventProcessor.createBufferRecordsIfNeeded(lbUsage1, lbUsage2);
 
+            printUsageRecords("shouldCreateContiguousBufferRecordsCase2", bufferRecords);
+
             Assert.assertEquals(1, bufferRecords.size());
             Assert.assertEquals(lb1EndTime.getTimeInMillis(), bufferRecords.get(0).getStartTime().getTimeInMillis());
             Assert.assertEquals(lb2StartTime.getTimeInMillis() - 1, bufferRecords.get(0).getEndTime().getTimeInMillis());
 
-            printUsageRecords("shouldCreateContiguousBufferRecordsCase2", bufferRecords);
+            Assert.assertEquals(lbUsage1.getTags(), bufferRecords.get(0).getTags());
         }
 
         /*
@@ -291,13 +314,16 @@ public class UsageEventProcessorTest {
 
             final List<LoadBalancerUsage> bufferRecords = UsageEventProcessor.createBufferRecordsIfNeeded(lbUsage1, lbUsage2);
 
+            printUsageRecords("shouldCreateContiguousBufferRecordsCase3", bufferRecords);
+
             Assert.assertEquals(2, bufferRecords.size());
             Assert.assertEquals(lb1EndTime.getTimeInMillis(), bufferRecords.get(0).getStartTime().getTimeInMillis());
             Assert.assertEquals(hourMark.getTimeInMillis() - 1, bufferRecords.get(0).getEndTime().getTimeInMillis());
             Assert.assertEquals(hourMark.getTimeInMillis(), bufferRecords.get(1).getStartTime().getTimeInMillis());
             Assert.assertEquals(lb2StartTime.getTimeInMillis(), bufferRecords.get(1).getEndTime().getTimeInMillis());
 
-            printUsageRecords("shouldCreateContiguousBufferRecordsCase3", bufferRecords);
+            Assert.assertEquals(lbUsage1.getTags(), bufferRecords.get(0).getTags());
+            Assert.assertEquals(lbUsage1.getTags(), bufferRecords.get(1).getTags());
         }
 
         /*
@@ -319,9 +345,13 @@ public class UsageEventProcessorTest {
 
             final List<LoadBalancerUsage> bufferRecords = UsageEventProcessor.createBufferRecordsIfNeeded(lbUsage1, lbUsage2);
 
+            printUsageRecords("shouldCreateContiguousBufferRecordsCase4", bufferRecords);
+
             Assert.assertEquals(26, bufferRecords.size());
 
-            printUsageRecords("shouldCreateContiguousBufferRecordsCase4", bufferRecords);
+            for (LoadBalancerUsage bufferRecord : bufferRecords) {
+                Assert.assertEquals(lbUsage1.getTags(), bufferRecord.getTags());
+            }
         }
 
     }
