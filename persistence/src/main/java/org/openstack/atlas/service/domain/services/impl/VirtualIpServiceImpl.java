@@ -1,5 +1,9 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import com.sun.jersey.api.client.ClientResponse;
+import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
@@ -22,13 +26,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import org.openstack.atlas.service.domain.events.entities.CategoryType;
+import org.openstack.atlas.service.domain.events.entities.EventSeverity;
+import org.openstack.atlas.service.domain.events.entities.EventType;
+import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent;
 import org.openstack.atlas.service.domain.services.helpers.RdnsHelper;
+import org.openstack.atlas.util.debug.Debug;
 
 @Service
 public class VirtualIpServiceImpl extends BaseService implements VirtualIpService {
+
     private final Log LOG = LogFactory.getLog(VirtualIpServiceImpl.class);
     private AccountLimitService accountLimitService;
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+    private static final String DEL_PTR_BAD_TITLE = "Delete PTR on Virtual IP Fail";
 
     @Required
     public void setAccountLimitService(AccountLimitService accountLimitService) {
@@ -70,7 +81,6 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     public List<org.openstack.atlas.service.domain.entities.LoadBalancer> getLoadBalancerByVipAddress(String address) {
         return virtualIpRepository.getLoadBalancerByVipAddress(address);
     }
-
 
     @Override
     public List<LoadBalancer> getLoadBalancerByVip6Address(String address) throws IPStringConversionException, EntityNotFoundException {
@@ -491,15 +501,82 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     private void reclaimVirtualIp(LoadBalancer lb, VirtualIp virtualIp) {
         if (!isVipAllocatedToAnotherLoadBalancer(lb, virtualIp)) {
-            RdnsHelper.newRdnsHelper().delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
+            delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
             virtualIpRepository.deallocateVirtualIp(virtualIp);
         }
     }
 
     private void reclaimIpv6VirtualIp(LoadBalancer lb, VirtualIpv6 virtualIpv6) {
+        String ip;
+        int aid = lb.getAccountId();
+        int lid = lb.getId();
+        RdnsHelper rdns = RdnsHelper.newRdnsHelper();
+        LoadBalancerServiceEvent lbe;
         if (!isIpv6VipAllocatedToAnotherLoadBalancer(lb, virtualIpv6)) {
-            RdnsHelper.newRdnsHelper().delPtrRecord(lb.getAccountId(), lb.getId(), virtualIpv6.getDerivedIpString());
+            try {
+                ip = virtualIpv6.getDerivedIpString();
+                delPtrRecord(aid, lid, ip);
+            } catch (IPStringConversionException ex) {
+                String stackTrace = Debug.getEST(ex);
+                String fmt = "Error while attempting to delete PTR record for"
+                        + " Virtual IPv6 address for lb %s\n";
+                String msg = String.format(fmt, rdns.buildDeviceUri(lb.getAccountId(), lb.getId()));
+                LOG.error(msg + "Exception: "+ stackTrace,ex);
+                lbe = newBadDelPtrEvent(aid,lid,msg,stackTrace);
+                loadBalancerRepository.save(lbe);
+            }
             virtualIpv6Repository.deleteVirtualIp(virtualIpv6);
+        }
+    }
+
+    private LoadBalancerServiceEvent newBadDelPtrEvent(int aid, int lid, String msg, String detailedMsg) {
+        LoadBalancerServiceEvent lbe = new LoadBalancerServiceEvent();
+        lbe.setAccountId(aid);
+        lbe.setLoadbalancerId(lid);
+        lbe.setTitle(DEL_PTR_BAD_TITLE);
+        lbe.setDescription(msg);
+        lbe.setType(EventType.DELETE_VIRTUAL_IP);
+        lbe.setSeverity(EventSeverity.WARNING);
+        lbe.setCategory(CategoryType.DELETE);
+        lbe.setRelativeUri(RdnsHelper.newRdnsHelper().relativeUri(aid, lid));
+        lbe.setCreated(Calendar.getInstance());
+        if (detailedMsg != null) {
+            lbe.setDetailedMessage(detailedMsg);
+        }
+        return lbe;
+    }
+
+    @Transactional
+    private void delPtrRecord(int aid, int lid, String ip) {
+        RdnsHelper rdns = RdnsHelper.newRdnsHelper();
+        ClientResponse resp;
+        int httpStatus;
+        String lbUrl = rdns.buildDeviceUri(aid, lid);
+        try {
+            resp = rdns.delPtrRecord(aid, lid, ip);
+        } catch (Exception ex) {
+            String stackTrace = Debug.getEST(ex);
+            String msg = "Exception caught while attempting to delete ptr " + ""
+                    + "for ip " + ip
+                    + " on loadbalancer "
+                    + lbUrl + "\n";
+            LOG.error(msg + stackTrace, ex);
+            LoadBalancerServiceEvent lbe = newBadDelPtrEvent(aid, lid, msg,
+                    "Exception: " + stackTrace);
+            loadBalancerEventRepository.save(lbe);
+            return;
+        }
+
+        int statusCode = resp.getStatus();
+        if (statusCode / 100 != 2) {
+            String fmt = "Error rDNS returned http status code %d when trying "
+                    + "attempting to delete PTR record for ip %s for on loadbalancer %s\n";
+            String msg = String.format(fmt, statusCode, ip, lbUrl);
+            String body = resp.getEntity(String.class);
+            LOG.error(msg + "ResponseBody: " + ((body == null) ? "" : body));
+            LoadBalancerServiceEvent lbe = newBadDelPtrEvent(aid, lid, msg, body);
+            loadBalancerEventRepository.save(lbe);
+            return;
         }
     }
 
@@ -619,7 +696,9 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     public void addAccountRecord(Integer accountId) throws NoSuchAlgorithmException {
         Set<Integer> accountsInAccountTable = new HashSet<Integer>(virtualIpv6Repository.getAccountIdsAlreadyShaHashed());
 
-        if (accountsInAccountTable.contains(accountId)) return;
+        if (accountsInAccountTable.contains(accountId)) {
+            return;
+        }
 
         Account account = new Account();
         String accountIdStr = String.format("%d", accountId);

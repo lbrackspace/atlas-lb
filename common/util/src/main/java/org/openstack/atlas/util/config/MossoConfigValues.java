@@ -19,7 +19,7 @@ public enum MossoConfigValues implements ConfigurationKey {
     /**
      * The base url for this services public endpoint
      */
-    lbaas_url,
+    base_uri,
 
     /**
      * The crypto key used to encrypt the rdns_admin_passwd

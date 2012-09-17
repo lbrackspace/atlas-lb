@@ -21,7 +21,7 @@ public class RdnsHelper {
 
     public RdnsHelper() {
         LbConfiguration conf = new LbConfiguration();
-        lbaasBaseUrl = conf.getString(MossoConfigValues.lbaas_url);
+        lbaasBaseUrl = conf.getString(MossoConfigValues.base_uri);
         rdnsUrl = conf.getString(MossoConfigValues.rdns_admin_url);
         rdnsUser = conf.getString(MossoConfigValues.rdns_admin_user);
 
@@ -58,6 +58,10 @@ public class RdnsHelper {
 
     public String buildDeviceUri(int aid,int lid){
         return String.format("%s/%d/loadbalancers/%d",lbaasBaseUrl,aid,lid);
+    }
+
+    public String relativeUri(int aid,int lid){
+        return String.format("/%d/loadbalancers/%d",aid,lid);
     }
 
     public String getLbaasBaseUrl() {
