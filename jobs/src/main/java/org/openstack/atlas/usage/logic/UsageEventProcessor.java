@@ -2,47 +2,26 @@ package org.openstack.atlas.usage.logic;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
-import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.entities.VirtualIpType;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
-import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
-import org.openstack.atlas.usage.helpers.LoadBalancerNameMap;
 
 import java.util.*;
 
 public class UsageEventProcessor {
     private final Log LOG = LogFactory.getLog(UsageEventProcessor.class);
-    private final int BATCH_SIZE = 100;
 
-    private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
-    private HostRepository hostRepository;
     private LoadBalancerUsageRepository hourlyUsageRepository;
-    private UsageRepository rollupUsageRepository;
-    private LoadBalancerUsageEventRepository usageEventRepository;
-
     private LoadBalancerRepository loadBalancerRepository;
-    private Collection<LoadBalancerNameMap> loadBalancerNameMaps;
-    private Map<String, Long> bytesInMap;
-    private Map<String, Long> bytesOutMap;
-    private Map<String, Integer> currentConnectionsMap;
-    private Map<String, Long> bytesInMapSsl;
-    private Map<String, Long> bytesOutMapSsl;
-    private Map<String, Integer> currentConnectionsMapSsl;
-    private Calendar pollTime;
-    private Map<Integer, LoadBalancerUsage> hourlyUsagesAsMap;
-    private Map<Integer, Usage> rollupUsagesAsMap;
+
     private List<LoadBalancerUsage> usagesToCreate;
     private List<LoadBalancerUsage> usagesToUpdate;
     private List<LoadBalancerUsageEvent> inOrderUsageEventEntries;
@@ -64,129 +43,14 @@ public class UsageEventProcessor {
     }
 
     public UsageEventProcessor process() {
-        LOG.info("Processing usage events...");
+        LOG.info(String.format("Processing %d usage events...", inOrderUsageEventEntries.size()));
 
         Map<Integer, List<LoadBalancerUsage>> newEventUsageMap = createEventUsageMap();
         Map<Integer, LoadBalancerUsage> recentUsageMap = createRecentUsageMap(newEventUsageMap.keySet());
 
         updateTimestampsAndTagsForUsages(newEventUsageMap, recentUsageMap);
 
-
-        //
-        //
-        //
-        //
-
-
-
-/*        for (LoadBalancerUsageEvent usageEventEntry : inOrderUsageEventEntries) {
-            UsageEvent usageEvent = UsageEvent.valueOf(usageEventEntry.getEventType());
-            LoadBalancerUsage previousHourlyUsageRecord = getPreviousHourlyUsageRecord(usageEventEntry, newEventUsageMap);
-
-            int updatedTags = getTags(usageEventEntry.getAccountId(), usageEventEntry.getLoadbalancerId(), usageEvent, previousHourlyUsageRecord);
-
-            Calendar eventTime;
-            if (previousHourlyUsageRecord != null && previousHourlyUsageRecord.getEndTime().after(usageEventEntry.getStartTime())) {
-                eventTime = Calendar.getInstance();
-            } else {
-                eventTime = usageEventEntry.getStartTime();
-            }
-
-            LoadBalancerUsage newUsage = new LoadBalancerUsage();
-            newUsage.setAccountId(usageEventEntry.getAccountId());
-            newUsage.setLoadbalancerId(usageEventEntry.getLoadbalancerId());
-            newUsage.setNumVips(usageEventEntry.getNumVips());
-            newUsage.setStartTime(eventTime);
-            newUsage.setEndTime(eventTime);
-            newUsage.setNumberOfPolls(0);
-            newUsage.setTags(updatedTags);
-            newUsage.setEventType(usageEventEntry.getEventType());
-
-            if (previousHourlyUsageRecord != null) {
-                Integer oldNumPolls = previousHourlyUsageRecord.getNumberOfPolls();
-                Integer newNumPolls = (previousHourlyUsageRecord.getId() != null) ? oldNumPolls + 1 : 1; // If it hasn't been created then its only 1 poll
-
-                if (usageEventEntry.getLastBandwidthBytesIn() != null) {
-                    previousHourlyUsageRecord.setCumulativeBandwidthBytesIn(UsageCalculator.calculateCumBandwidthBytesIn(previousHourlyUsageRecord, usageEventEntry.getLastBandwidthBytesIn()));
-                    previousHourlyUsageRecord.setLastBandwidthBytesIn(usageEventEntry.getLastBandwidthBytesIn());
-                    previousHourlyUsageRecord.setEndTime(eventTime);
-                }
-                if (usageEventEntry.getLastBandwidthBytesOut() != null) {
-                    previousHourlyUsageRecord.setCumulativeBandwidthBytesOut(UsageCalculator.calculateCumBandwidthBytesOut(previousHourlyUsageRecord, usageEventEntry.getLastBandwidthBytesOut()));
-                    previousHourlyUsageRecord.setLastBandwidthBytesOut(usageEventEntry.getLastBandwidthBytesOut());
-                    previousHourlyUsageRecord.setEndTime(eventTime);
-                }
-                if (usageEventEntry.getLastBandwidthBytesInSsl() != null) {
-                    previousHourlyUsageRecord.setCumulativeBandwidthBytesInSsl(UsageCalculator.calculateCumBandwidthBytesInSsl(previousHourlyUsageRecord, usageEventEntry.getLastBandwidthBytesInSsl()));
-                    previousHourlyUsageRecord.setLastBandwidthBytesInSsl(usageEventEntry.getLastBandwidthBytesInSsl());
-                    previousHourlyUsageRecord.setEndTime(eventTime);
-                }
-                if (usageEventEntry.getLastBandwidthBytesOutSsl() != null) {
-                    previousHourlyUsageRecord.setCumulativeBandwidthBytesOutSsl(UsageCalculator.calculateCumBandwidthBytesOutSsl(previousHourlyUsageRecord, usageEventEntry.getLastBandwidthBytesOutSsl()));
-                    previousHourlyUsageRecord.setLastBandwidthBytesOutSsl(usageEventEntry.getLastBandwidthBytesOutSsl());
-                    previousHourlyUsageRecord.setEndTime(eventTime);
-                }
-                if (usageEventEntry.getLastConcurrentConnections() != null) {
-                    if(UsageEvent.SSL_ONLY_ON.name().equals(previousHourlyUsageRecord.getEventType())) {
-                        previousHourlyUsageRecord.setAverageConcurrentConnections(0.0);
-                    } else {
-                        previousHourlyUsageRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(previousHourlyUsageRecord.getAverageConcurrentConnections(), oldNumPolls, usageEventEntry.getLastConcurrentConnections()));
-                    }
-                    previousHourlyUsageRecord.setNumberOfPolls(newNumPolls);
-                    previousHourlyUsageRecord.setEndTime(eventTime);
-                }
-                if (usageEventEntry.getLastConcurrentConnectionsSsl() != null) {
-                    if(UsageEvent.SSL_OFF.name().equals(previousHourlyUsageRecord.getEventType())) {
-                        previousHourlyUsageRecord.setAverageConcurrentConnectionsSsl(0.0);
-                    } else {
-                        previousHourlyUsageRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(previousHourlyUsageRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, usageEventEntry.getLastConcurrentConnectionsSsl()));
-                    }
-                    previousHourlyUsageRecord.setNumberOfPolls(newNumPolls);
-                    previousHourlyUsageRecord.setEndTime(eventTime);
-                }
-
-                if (previousHourlyUsageRecord.getId() != null) {
-                    usagesToUpdate.add(previousHourlyUsageRecord);
-                }
-
-                newUsage.setLastBandwidthBytesIn(previousHourlyUsageRecord.getLastBandwidthBytesIn());
-                newUsage.setLastBandwidthBytesInSsl(previousHourlyUsageRecord.getLastBandwidthBytesInSsl());
-                newUsage.setLastBandwidthBytesOut(previousHourlyUsageRecord.getLastBandwidthBytesOut());
-                newUsage.setLastBandwidthBytesOutSsl(previousHourlyUsageRecord.getLastBandwidthBytesOutSsl());
-            }
-
-            if (newEventUsageMap.containsKey(newUsage.getLoadbalancerId())) {
-                newEventUsageMap.get(newUsage.getLoadbalancerId()).add(newUsage);
-            } else {
-                List<LoadBalancerUsage> recentUsagesForLb = new ArrayList<LoadBalancerUsage>();
-                recentUsagesForLb.add(newUsage);
-                newEventUsageMap.put(newUsage.getLoadbalancerId(), recentUsagesForLb);
-            }
-        }
-
-        // Move usages over to array
-        for (Integer lbId : newEventUsageMap.keySet()) {
-            for (LoadBalancerUsage loadBalancerUsage : newEventUsageMap.get(lbId)) {
-                usagesToCreate.add(loadBalancerUsage);
-            }
-        }
-
-        if (!usagesToCreate.isEmpty()) hourlyUsageRepository.batchCreate(usagesToCreate);
-        if (!usagesToUpdate.isEmpty()) hourlyUsageRepository.batchUpdate(usagesToUpdate);
-
-        try {
-            BatchAction<LoadBalancerUsageEvent> deleteEventUsagesAction = new BatchAction<LoadBalancerUsageEvent>() {
-                public void execute(Collection<LoadBalancerUsageEvent> usageEventEntries) throws Exception {
-                    usageEventRepository.batchDelete(usageEventEntries);
-                }
-            };
-            ExecutionUtilities.executeInBatches(inOrderUsageEventEntries, BATCH_SIZE, deleteEventUsagesAction);
-        } catch (Exception e) {
-            LOG.error("Exception occurred while deleting usage event entries.", e);
-        }
-
-        LOG.info(String.format("%d usage events processed.", usagesToCreate.size()));*/
-
+        LOG.info(String.format("%d usage events processed.", inOrderUsageEventEntries.size()));
         return this;
     }
 
@@ -196,32 +60,37 @@ public class UsageEventProcessor {
 
             if (recentUsageMap.containsKey(lbId)) {
                 final LoadBalancerUsage recentUsage = recentUsageMap.get(lbId);
+                final LoadBalancerUsage firstNewUsage = loadBalancerUsages.get(0);
 
                 // Update recent usage end time
-                Calendar newEndTimeForRecentUsage = calculateEndTime(recentUsage.getEndTime(), loadBalancerUsages.get(0).getStartTime());
+                Calendar newEndTimeForRecentUsage = calculateEndTime(recentUsage.getEndTime(), firstNewUsage.getStartTime());
                 recentUsage.setEndTime(newEndTimeForRecentUsage);
                 usagesToUpdate.add(recentUsage);
 
                 // New records may be needed if we are near the hour mark or if poller goes down.
-                List<LoadBalancerUsage> bufferRecords = createBufferRecordsIfNeeded(recentUsage, loadBalancerUsages.get(0));
+                List<LoadBalancerUsage> bufferRecords = createBufferRecordsIfNeeded(recentUsage, firstNewUsage);
+                mutateCumulativeFields(recentUsage, bufferRecords, firstNewUsage);
                 if (!bufferRecords.isEmpty()) usagesToCreate.addAll(bufferRecords);
 
-                UsageEvent usageEvent = UsageEvent.valueOf(loadBalancerUsages.get(0).getEventType());
+                // Update the tags to the proper tags.
+                UsageEvent usageEvent = UsageEvent.valueOf(firstNewUsage.getEventType());
                 int updatedTags = calculateTags(recentUsage.getAccountId(), lbId, usageEvent, recentUsage);
-                loadBalancerUsages.get(0).setTags(updatedTags);
+                firstNewUsage.setTags(updatedTags);
             }
 
-            for (int i=0; i < loadBalancerUsages.size(); i++) {
-                if (i < loadBalancerUsages.size()-1) {
+            for (int i = 0; i < loadBalancerUsages.size(); i++) {
+                if (i < loadBalancerUsages.size() - 1) {
                     LoadBalancerUsage firstUsage = loadBalancerUsages.get(i);
-                    LoadBalancerUsage secondUsage = loadBalancerUsages.get(i+1);
+                    LoadBalancerUsage secondUsage = loadBalancerUsages.get(i + 1);
 
                     // Update firstUsage end time add it to the create list
                     Calendar newEndTimeForRecentUsage = calculateEndTime(firstUsage.getEndTime(), secondUsage.getStartTime());
                     firstUsage.setEndTime(newEndTimeForRecentUsage);
                     usagesToCreate.add(firstUsage);
 
+                    // New records may be needed if we are near the hour mark or if poller goes down.
                     List<LoadBalancerUsage> bufferRecords = createBufferRecordsIfNeeded(firstUsage, secondUsage);
+                    mutateCumulativeFields(firstUsage, bufferRecords, secondUsage);
                     if (!bufferRecords.isEmpty()) usagesToCreate.addAll(bufferRecords);
 
                     // Update the tags to the proper tags.
@@ -236,20 +105,45 @@ public class UsageEventProcessor {
         }
     }
 
+    private void mutateCumulativeFields(LoadBalancerUsage previousUsage, List<LoadBalancerUsage> bufferRecords, LoadBalancerUsage nextUsage) {
+        if (bufferRecords.isEmpty()) {
+            if (previousUsage.getLastBandwidthBytesIn() != null && nextUsage.getLastBandwidthBytesIn() != null) {
+                final Long updatedCumBandwidthBytesIn = UsageCalculator.calculateCumBandwidthBytesIn(previousUsage, nextUsage.getLastBandwidthBytesIn());
+                previousUsage.setCumulativeBandwidthBytesIn(updatedCumBandwidthBytesIn);
+            }
+
+            if (previousUsage.getLastBandwidthBytesInSsl() != null && nextUsage.getLastBandwidthBytesInSsl() != null) {
+                final Long updatedCumBandwidthBytesInSsl = UsageCalculator.calculateCumBandwidthBytesInSsl(previousUsage, nextUsage.getLastBandwidthBytesInSsl());
+                previousUsage.setCumulativeBandwidthBytesInSsl(updatedCumBandwidthBytesInSsl);
+            }
+
+            if (previousUsage.getLastBandwidthBytesOut() != null && nextUsage.getLastBandwidthBytesOut() != null) {
+                final Long updatedCumBandwidthBytesOut = UsageCalculator.calculateCumBandwidthBytesOut(previousUsage, nextUsage.getLastBandwidthBytesOut());
+                previousUsage.setCumulativeBandwidthBytesOut(updatedCumBandwidthBytesOut);
+            }
+
+            if (previousUsage.getLastBandwidthBytesOutSsl() != null && nextUsage.getLastBandwidthBytesOutSsl() != null) {
+                final Long updatedCumBandwidthBytesOutSsl = UsageCalculator.calculateCumBandwidthBytesOutSsl(previousUsage, nextUsage.getLastBandwidthBytesOutSsl());
+                previousUsage.setCumulativeBandwidthBytesOutSsl(updatedCumBandwidthBytesOutSsl);
+            }
+        }
+    }
+
     public static List<LoadBalancerUsage> createBufferRecordsIfNeeded(LoadBalancerUsage previousUsage, LoadBalancerUsage nextUsage) {
-        if(nextUsage.getStartTime().before(previousUsage.getEndTime())) throw new RuntimeException("Usages are not in order!");
+        if (nextUsage.getStartTime().before(previousUsage.getEndTime()))
+            throw new RuntimeException("Usages are not in order!");
 
         List<LoadBalancerUsage> bufferRecords = new ArrayList<LoadBalancerUsage>();
 
         Calendar previousRecordsEndTime = (Calendar) previousUsage.getEndTime().clone();
         Calendar nextUsagesStartTime = (Calendar) nextUsage.getStartTime().clone();
 
-        while(previousRecordsEndTime.before(nextUsagesStartTime)) {
-            if(isEndOfHour(previousRecordsEndTime)) {
+        while (previousRecordsEndTime.before(nextUsagesStartTime)) {
+            if (isEndOfHour(previousRecordsEndTime)) {
                 // Move previousRecordsEndTime to next hour since we don't need a buffer for this hour.
                 previousRecordsEndTime.add(Calendar.MILLISECOND, 1);
 
-                if(previousRecordsEndTime.before(nextUsagesStartTime)
+                if (previousRecordsEndTime.before(nextUsagesStartTime)
                         && previousRecordsEndTime.get(Calendar.HOUR_OF_DAY) == nextUsagesStartTime.get(Calendar.HOUR_OF_DAY)
                         && previousRecordsEndTime.get(Calendar.DAY_OF_MONTH) == nextUsagesStartTime.get(Calendar.DAY_OF_MONTH)
                         && previousRecordsEndTime.get(Calendar.YEAR) == nextUsagesStartTime.get(Calendar.YEAR)
@@ -258,7 +152,7 @@ public class UsageEventProcessor {
                     LoadBalancerUsage newBufferRecord = instantiateAndPopulateBufferRecord(previousUsage, previousRecordsEndTime, nextUsagesStartTime);
                     bufferRecords.add(newBufferRecord);
                     previousRecordsEndTime = (Calendar) nextUsagesStartTime.clone();
-                } else if(previousRecordsEndTime.getTimeInMillis() != nextUsagesStartTime.getTimeInMillis()) {
+                } else if (previousRecordsEndTime.getTimeInMillis() != nextUsagesStartTime.getTimeInMillis()) {
                     // We need a buffer record for the whole hour.
                     Calendar newEndTimeForBufferRecord = calculateEndTime(previousRecordsEndTime, nextUsagesStartTime);
                     LoadBalancerUsage newBufferRecord = instantiateAndPopulateBufferRecord(previousUsage, previousRecordsEndTime, newEndTimeForBufferRecord);
@@ -273,7 +167,7 @@ public class UsageEventProcessor {
                 previousRecordsEndTime = (Calendar) newEndTimeForBufferRecord.clone();
             }
         }
-        
+
         return bufferRecords;
     }
 
@@ -281,10 +175,6 @@ public class UsageEventProcessor {
         LoadBalancerUsage newBufferRecord = new LoadBalancerUsage();
         newBufferRecord.setAccountId(recentUsage.getAccountId());
         newBufferRecord.setLoadbalancerId(recentUsage.getLoadbalancerId());
-        newBufferRecord.setLastBandwidthBytesIn(recentUsage.getLastBandwidthBytesIn());
-        newBufferRecord.setLastBandwidthBytesInSsl(recentUsage.getLastBandwidthBytesInSsl());
-        newBufferRecord.setLastBandwidthBytesOut(recentUsage.getLastBandwidthBytesOut());
-        newBufferRecord.setLastBandwidthBytesOutSsl(recentUsage.getLastBandwidthBytesOutSsl());
         newBufferRecord.setTags(recentUsage.getTags());
         newBufferRecord.setNumVips(recentUsage.getNumVips());
         newBufferRecord.setStartTime((Calendar) previousRecordsEndTime.clone());
@@ -297,7 +187,7 @@ public class UsageEventProcessor {
     }
 
     public static Calendar calculateEndTime(Calendar recentUsageEndTime, Calendar nextUsageStartTime) {
-        if(nextUsageStartTime.before(recentUsageEndTime)) throw new RuntimeException("Usages are not in order!");
+        if (nextUsageStartTime.before(recentUsageEndTime)) throw new RuntimeException("Usages are not in order!");
 
         if (recentUsageEndTime.get(Calendar.HOUR_OF_DAY) == nextUsageStartTime.get(Calendar.HOUR_OF_DAY)
                 && recentUsageEndTime.get(Calendar.DAY_OF_MONTH) == nextUsageStartTime.get(Calendar.DAY_OF_MONTH)
@@ -305,7 +195,7 @@ public class UsageEventProcessor {
                 && recentUsageEndTime.get(Calendar.YEAR) == nextUsageStartTime.get(Calendar.YEAR)) {
             return nextUsageStartTime;
         }
-        
+
         // Return a new end time that reaches the very end of the hour
         Calendar newEndTime = Calendar.getInstance();
         newEndTime.setTime(recentUsageEndTime.getTime());
@@ -320,29 +210,12 @@ public class UsageEventProcessor {
 
         for (LoadBalancerUsageEvent inOrderUsageEventEntry : inOrderUsageEventEntries) {
             Integer key = inOrderUsageEventEntry.getLoadbalancerId();
-            if(newEventUsageMap.containsKey(key)) {
-                LoadBalancerUsage newUsage = new LoadBalancerUsage();
-                newUsage.setAccountId(inOrderUsageEventEntry.getAccountId());
-                newUsage.setLoadbalancerId(inOrderUsageEventEntry.getLoadbalancerId());
-                newUsage.setNumVips(inOrderUsageEventEntry.getNumVips());
-                newUsage.setStartTime(inOrderUsageEventEntry.getStartTime());
-                newUsage.setEndTime(inOrderUsageEventEntry.getStartTime()); // Will most likely change in 2nd pass
-                newUsage.setNumberOfPolls(0);
-                newUsage.setTags(0); // Will most likely change in 2nd pass
-                newUsage.setEventType(inOrderUsageEventEntry.getEventType());
-
+            if (newEventUsageMap.containsKey(key)) {
+                LoadBalancerUsage newUsage = createNewUsageFromEvent(inOrderUsageEventEntry);
                 newEventUsageMap.get(key).add(newUsage);
             } else {
                 List<LoadBalancerUsage> usages = new ArrayList<LoadBalancerUsage>();
-                LoadBalancerUsage newUsage = new LoadBalancerUsage();
-                newUsage.setAccountId(inOrderUsageEventEntry.getAccountId());
-                newUsage.setLoadbalancerId(inOrderUsageEventEntry.getLoadbalancerId());
-                newUsage.setNumVips(inOrderUsageEventEntry.getNumVips());
-                newUsage.setStartTime(inOrderUsageEventEntry.getStartTime());
-                newUsage.setEndTime(inOrderUsageEventEntry.getStartTime()); // Will most likely change in 2nd pass
-                newUsage.setNumberOfPolls(0);
-                newUsage.setTags(0); // Will most likely change in 2nd pass
-                newUsage.setEventType(inOrderUsageEventEntry.getEventType());
+                LoadBalancerUsage newUsage = createNewUsageFromEvent(inOrderUsageEventEntry);
                 usages.add(newUsage);
                 newEventUsageMap.put(key, usages);
             }
@@ -351,12 +224,32 @@ public class UsageEventProcessor {
         return newEventUsageMap;
     }
 
+    public LoadBalancerUsage createNewUsageFromEvent(LoadBalancerUsageEvent inOrderUsageEventEntry) {
+        LoadBalancerUsage newUsage = new LoadBalancerUsage();
+
+        newUsage.setAccountId(inOrderUsageEventEntry.getAccountId());
+        newUsage.setLoadbalancerId(inOrderUsageEventEntry.getLoadbalancerId());
+        newUsage.setNumVips(inOrderUsageEventEntry.getNumVips());
+        newUsage.setStartTime(inOrderUsageEventEntry.getStartTime());
+        newUsage.setEndTime(inOrderUsageEventEntry.getStartTime()); // Will most likely change in 2nd pass
+        newUsage.setNumberOfPolls(0);
+        newUsage.setTags(0); // Will most likely change in 2nd pass
+        newUsage.setEventType(inOrderUsageEventEntry.getEventType());
+        newUsage.setLastBandwidthBytesIn(inOrderUsageEventEntry.getLastBandwidthBytesIn());
+        newUsage.setLastBandwidthBytesInSsl(inOrderUsageEventEntry.getLastBandwidthBytesInSsl());
+        newUsage.setLastBandwidthBytesOut(inOrderUsageEventEntry.getLastBandwidthBytesOut());
+        newUsage.setLastBandwidthBytesOutSsl(inOrderUsageEventEntry.getLastBandwidthBytesOutSsl());
+
+        return newUsage;
+    }
+
     public Map<Integer, LoadBalancerUsage> createRecentUsageMap(Set<Integer> loadBalancerIds) {
         Map<Integer, LoadBalancerUsage> recentUsageMap = new HashMap<Integer, LoadBalancerUsage>();
 
         for (Integer loadBalancerId : loadBalancerIds) {
             LoadBalancerUsage mostRecentUsageForLoadBalancer = hourlyUsageRepository.getMostRecentUsageForLoadBalancer(loadBalancerId);
-            if(mostRecentUsageForLoadBalancer != null) recentUsageMap.put(loadBalancerId, mostRecentUsageForLoadBalancer);
+            if (mostRecentUsageForLoadBalancer != null)
+                recentUsageMap.put(loadBalancerId, mostRecentUsageForLoadBalancer);
         }
 
         return recentUsageMap;

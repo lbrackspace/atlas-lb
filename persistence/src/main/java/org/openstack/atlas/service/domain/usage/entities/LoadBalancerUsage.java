@@ -22,20 +22,20 @@ public class LoadBalancerUsage extends Entity implements Serializable {
     Long cumulativeBandwidthBytesIn = 0L;
     @Column(name = "cum_bandwidth_bytes_out", nullable = false)
     Long cumulativeBandwidthBytesOut = 0L;
-    @Column(name = "last_bandwidth_bytes_in", nullable = false)
-    Long lastBandwidthBytesIn = 0L;
-    @Column(name = "last_bandwidth_bytes_out", nullable = false)
-    Long lastBandwidthBytesOut = 0L;
+    @Column(name = "last_bandwidth_bytes_in", nullable = true)
+    Long lastBandwidthBytesIn;
+    @Column(name = "last_bandwidth_bytes_out", nullable = true)
+    Long lastBandwidthBytesOut;
     @Column(name = "avg_concurrent_conns_ssl", nullable = false)
     Double averageConcurrentConnectionsSsl = 0.0;
     @Column(name = "cum_bandwidth_bytes_in_ssl", nullable = false)
     Long cumulativeBandwidthBytesInSsl = 0L;
     @Column(name = "cum_bandwidth_bytes_out_ssl", nullable = false)
     Long cumulativeBandwidthBytesOutSsl = 0L;
-    @Column(name = "last_bandwidth_bytes_in_ssl", nullable = false)
-    Long lastBandwidthBytesInSsl = 0L;
-    @Column(name = "last_bandwidth_bytes_out_ssl", nullable = false)
-    Long lastBandwidthBytesOutSsl = 0L;
+    @Column(name = "last_bandwidth_bytes_in_ssl", nullable = true)
+    Long lastBandwidthBytesInSsl;
+    @Column(name = "last_bandwidth_bytes_out_ssl", nullable = true)
+    Long lastBandwidthBytesOutSsl;
     @Column(name = "start_time", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     Calendar startTime;
@@ -50,7 +50,6 @@ public class LoadBalancerUsage extends Entity implements Serializable {
     Integer tags = 0;
     @Column(name = "event_type", nullable = true)
     String eventType;
-
 
     public Integer getAccountId() {
         return accountId;
@@ -194,5 +193,29 @@ public class LoadBalancerUsage extends Entity implements Serializable {
 
     public void setEventType(String eventType) {
         this.eventType = eventType;
+    }
+
+    @Override
+    public String toString() {
+        return "LoadBalancerUsage{" +
+                "accountId=" + accountId +
+                ", loadbalancerId=" + loadbalancerId +
+                ", averageConcurrentConnections=" + averageConcurrentConnections +
+                ", cumulativeBandwidthBytesIn=" + cumulativeBandwidthBytesIn +
+                ", cumulativeBandwidthBytesOut=" + cumulativeBandwidthBytesOut +
+                ", lastBandwidthBytesIn=" + lastBandwidthBytesIn +
+                ", lastBandwidthBytesOut=" + lastBandwidthBytesOut +
+                ", averageConcurrentConnectionsSsl=" + averageConcurrentConnectionsSsl +
+                ", cumulativeBandwidthBytesInSsl=" + cumulativeBandwidthBytesInSsl +
+                ", cumulativeBandwidthBytesOutSsl=" + cumulativeBandwidthBytesOutSsl +
+                ", lastBandwidthBytesInSsl=" + lastBandwidthBytesInSsl +
+                ", lastBandwidthBytesOutSsl=" + lastBandwidthBytesOutSsl +
+                ", startTime=" + startTime.getTime() +
+                ", endTime=" + endTime.getTime() +
+                ", numberOfPolls=" + numberOfPolls +
+                ", numVips=" + numVips +
+                ", tags=" + tags +
+                ", eventType='" + eventType + '\'' +
+                "} " + super.toString();
     }
 }

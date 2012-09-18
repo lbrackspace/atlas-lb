@@ -64,7 +64,7 @@ public class CreateLoadBalancerListener extends BaseListener {
             loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
 
             // Notify usage processor
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
             return;
 
         }
@@ -87,7 +87,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         addAtomEntriesForAccessList(queueLb, dbLoadBalancer);
 
         // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
 
         LOG.info(String.format("Created load balancer '%d' successfully.", dbLoadBalancer.getId()));
     }

@@ -99,7 +99,7 @@ public class SyncListener extends BaseListener {
                         notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
 
                         // Notify usage processor
-                        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+                        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
                     }
                 } catch (Exception e) {
                     String msg = "Error re-creating loadbalancer in SyncListener():";
@@ -143,7 +143,7 @@ public class SyncListener extends BaseListener {
                             notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
 
                             // Notify usage processor
-                            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+                            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
                             if (dbLoadBalancer.isUsingSsl()) {
                                 if (dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
                                     usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);

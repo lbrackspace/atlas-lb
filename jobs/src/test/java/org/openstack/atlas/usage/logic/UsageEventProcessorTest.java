@@ -13,7 +13,6 @@ import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.usage.BitTag;
-import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
@@ -27,7 +26,7 @@ public class UsageEventProcessorTest {
 
     private static void printUsageRecords(String testCase, List<LoadBalancerUsage> usageRecords) {
         for (LoadBalancerUsage usageRecord : usageRecords) {
-            System.out.println(String.format("[%s] Usage Record: %s - %s (Tags: %d, Event: %s)", testCase, usageRecord.getStartTime().getTime(), usageRecord.getEndTime().getTime(), usageRecord.getTags(), usageRecord.getEventType()));
+            System.out.println(String.format("[%s] Usage Record: %s - %s (Tags: %d, Event: %s, Last Bytes In: %d, Last Bytes In Ssl: %d, Last Bytes Out: %d, Last Bytes Out Ssl: %d, Cumulative Bytes In: %d, Cumulative Bytes In Ssl: %d, Cumulative Bytes Out: %d, Cumulative Bytes Out Ssl: %d)", testCase, usageRecord.getStartTime().getTime(), usageRecord.getEndTime().getTime(), usageRecord.getTags(), usageRecord.getEventType(), usageRecord.getLastBandwidthBytesIn(), usageRecord.getLastBandwidthBytesInSsl(), usageRecord.getLastBandwidthBytesOut(), usageRecord.getLastBandwidthBytesOutSsl(), usageRecord.getCumulativeBandwidthBytesIn(), usageRecord.getCumulativeBandwidthBytesInSsl(), usageRecord.getCumulativeBandwidthBytesOut(), usageRecord.getCumulativeBandwidthBytesOutSsl()));
         }
     }
 
@@ -52,8 +51,8 @@ public class UsageEventProcessorTest {
             createEventTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 33, 10);
             sslOnEventTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 33, 45);
 
-            loadBalancerUsageCreateEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, createEventTime, 1, "CREATE_LOADBALANCER", null, null, null, null, null, null);
-            loadBalancerUsageSslOnEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOnEventTime, 1, "SSL_MIXED_ON", null, null, null, null, null, null);
+            loadBalancerUsageCreateEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, createEventTime, 1, "CREATE_LOADBALANCER", 0l, 0l, 0, 0l, 0l, 0);
+            loadBalancerUsageSslOnEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOnEventTime, 1, "SSL_MIXED_ON", 100l, 100l, 1, 0l, 0l, 0);
 
             usageEventEntries = new ArrayList<LoadBalancerUsageEvent>();
             usageEventEntries.add(loadBalancerUsageCreateEvent);
@@ -73,13 +72,26 @@ public class UsageEventProcessorTest {
             printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToCreate);
 
             Assert.assertEquals(2, usagesToCreate.size());
+
+            // Check timestamps
             Assert.assertEquals(loadBalancerUsageCreateEvent.getStartTime(), usagesToCreate.get(0).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(0).getEndTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(1).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(1).getEndTime());
 
+            // Check tags
             Assert.assertEquals(0, usagesToCreate.get(0).getTags().intValue());
             Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SSL_MIXED_MODE.tagValue(), usagesToCreate.get(1).getTags().intValue());
+
+            // Check usage
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesIn(), usagesToCreate.get(0).getCumulativeBandwidthBytesIn());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesInSsl(), usagesToCreate.get(0).getCumulativeBandwidthBytesInSsl());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesOut(), usagesToCreate.get(0).getCumulativeBandwidthBytesOut());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesOutSsl(), usagesToCreate.get(0).getCumulativeBandwidthBytesOutSsl());
+            Assert.assertEquals(new Double(0), usagesToCreate.get(0).getAverageConcurrentConnections());
+            Assert.assertEquals(new Double(0), usagesToCreate.get(0).getAverageConcurrentConnectionsSsl());
+            Assert.assertEquals(new Integer(0), usagesToCreate.get(0).getNumberOfPolls());
+
         }
 
         @Test
@@ -92,14 +104,28 @@ public class UsageEventProcessorTest {
             printUsageRecords("shouldSucceedWhenEventsOccurInDifferentHours", usagesToCreate);
 
             Assert.assertEquals(3, usagesToCreate.size());
+
+            // Check timestamps
             Assert.assertEquals(loadBalancerUsageCreateEvent.getStartTime(), usagesToCreate.get(0).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(1).getEndTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(2).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(2).getEndTime());
 
+            // Check tags
             Assert.assertEquals(0, usagesToCreate.get(0).getTags().intValue());
             Assert.assertEquals(0, usagesToCreate.get(1).getTags().intValue());
             Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SSL_MIXED_MODE.tagValue(), usagesToCreate.get(2).getTags().intValue());
+
+            // Check usage
+            for (LoadBalancerUsage loadBalancerUsage : usagesToCreate) {
+                Assert.assertEquals(new Long(0), loadBalancerUsage.getCumulativeBandwidthBytesIn());
+                Assert.assertEquals(new Long(0), loadBalancerUsage.getCumulativeBandwidthBytesInSsl());
+                Assert.assertEquals(new Long(0), loadBalancerUsage.getCumulativeBandwidthBytesOut());
+                Assert.assertEquals(new Long(0), loadBalancerUsage.getCumulativeBandwidthBytesOutSsl());
+                Assert.assertEquals(new Double(0), loadBalancerUsage.getAverageConcurrentConnections());
+                Assert.assertEquals(new Double(0), loadBalancerUsage.getAverageConcurrentConnectionsSsl());
+                Assert.assertEquals(new Integer(0), loadBalancerUsage.getNumberOfPolls());
+            }
         }
     }
 
@@ -125,8 +151,8 @@ public class UsageEventProcessorTest {
             sslOnEventTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 35, 45);
             sslOffEventTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 50, 10);
 
-            loadBalancerUsageSslOnEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOnEventTime, 1, "SSL_ONLY_ON", null, null, null, null, null, null);
-            loadBalancerUsageSslOffEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOffEventTime, 1, "SSL_OFF", null, null, null, null, null, null);
+            loadBalancerUsageSslOnEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOnEventTime, 1, "SSL_ONLY_ON", 100l, 100l, 1, 0l, 0l, 0);
+            loadBalancerUsageSslOffEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOffEventTime, 1, "SSL_OFF", 200l, 200l, 1, 100l, 100l, 0);
 
             usageEventEntries = new ArrayList<LoadBalancerUsageEvent>();
             usageEventEntries.add(loadBalancerUsageSslOnEvent);
@@ -141,6 +167,10 @@ public class UsageEventProcessorTest {
             mostRecentUsage.setStartTime(new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 33, 10));
             mostRecentUsage.setEndTime(new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 33, 10));
             mostRecentUsage.setTags(BitTag.SERVICENET_LB.tagValue());
+            mostRecentUsage.setLastBandwidthBytesIn(0l);
+            mostRecentUsage.setLastBandwidthBytesInSsl(0l);
+            mostRecentUsage.setLastBandwidthBytesOut(0l);
+            mostRecentUsage.setLastBandwidthBytesOutSsl(0l);
 
             when(hourlyUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>eq(loadBalancerId))).thenReturn(mostRecentUsage);
             when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(new HashSet<VirtualIp>());
@@ -158,6 +188,7 @@ public class UsageEventProcessorTest {
             Assert.assertEquals(1, usagesToUpdate.size());
             Assert.assertEquals(2, usagesToCreate.size());
 
+            // Check timestamps
             Assert.assertEquals(mostRecentUsage.getStartTime(), usagesToUpdate.get(0).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToUpdate.get(0).getEndTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(0).getStartTime());
@@ -165,9 +196,35 @@ public class UsageEventProcessorTest {
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(1).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(1).getEndTime());
 
+            // Check tags
             Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToUpdate.get(0).getTags().intValue());
             Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(0).getTags().intValue());
             Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(1).getTags().intValue());
+
+            // Check usage
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesIn(), usagesToUpdate.get(0).getCumulativeBandwidthBytesIn());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesInSsl(), usagesToUpdate.get(0).getCumulativeBandwidthBytesInSsl());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesOut(), usagesToUpdate.get(0).getCumulativeBandwidthBytesOut());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesOutSsl(), usagesToUpdate.get(0).getCumulativeBandwidthBytesOutSsl());
+            Assert.assertEquals(new Double(0), usagesToUpdate.get(0).getAverageConcurrentConnections());
+            Assert.assertEquals(new Double(0), usagesToUpdate.get(0).getAverageConcurrentConnectionsSsl());
+            Assert.assertEquals(new Integer(0), usagesToUpdate.get(0).getNumberOfPolls());
+
+            Assert.assertEquals(new Long(loadBalancerUsageSslOffEvent.getLastBandwidthBytesIn() - loadBalancerUsageSslOnEvent.getLastBandwidthBytesIn()), usagesToCreate.get(0).getCumulativeBandwidthBytesIn());
+            Assert.assertEquals(new Long(loadBalancerUsageSslOffEvent.getLastBandwidthBytesInSsl() - loadBalancerUsageSslOnEvent.getLastBandwidthBytesInSsl()), usagesToCreate.get(0).getCumulativeBandwidthBytesInSsl());
+            Assert.assertEquals(new Long(loadBalancerUsageSslOffEvent.getLastBandwidthBytesOut() - loadBalancerUsageSslOnEvent.getLastBandwidthBytesOut()), usagesToCreate.get(0).getCumulativeBandwidthBytesOut());
+            Assert.assertEquals(new Long(loadBalancerUsageSslOffEvent.getLastBandwidthBytesOutSsl() - loadBalancerUsageSslOnEvent.getLastBandwidthBytesOutSsl()), usagesToCreate.get(0).getCumulativeBandwidthBytesOutSsl());
+            Assert.assertEquals(new Double(0), usagesToCreate.get(0).getAverageConcurrentConnections());
+            Assert.assertEquals(new Double(0), usagesToCreate.get(0).getAverageConcurrentConnectionsSsl());
+            Assert.assertEquals(new Integer(0), usagesToCreate.get(0).getNumberOfPolls());
+
+            Assert.assertEquals(new Long(0), usagesToCreate.get(1).getCumulativeBandwidthBytesIn());
+            Assert.assertEquals(new Long(0), usagesToCreate.get(1).getCumulativeBandwidthBytesInSsl());
+            Assert.assertEquals(new Long(0), usagesToCreate.get(1).getCumulativeBandwidthBytesOut());
+            Assert.assertEquals(new Long(0), usagesToCreate.get(1).getCumulativeBandwidthBytesOutSsl());
+            Assert.assertEquals(new Double(0), usagesToCreate.get(1).getAverageConcurrentConnections());
+            Assert.assertEquals(new Double(0), usagesToCreate.get(1).getAverageConcurrentConnectionsSsl());
+            Assert.assertEquals(new Integer(0), usagesToCreate.get(1).getNumberOfPolls());
         }
 
         @Test
@@ -185,6 +242,7 @@ public class UsageEventProcessorTest {
             Assert.assertEquals(1, usagesToUpdate.size());
             Assert.assertEquals(4, usagesToCreate.size());
 
+            // Check timestamps
             Assert.assertEquals(mostRecentUsage.getStartTime(), usagesToUpdate.get(0).getStartTime());
             Assert.assertEquals(usagesToCreate.get(0).getStartTime().getTimeInMillis() - 1, usagesToUpdate.get(0).getEndTime().getTimeInMillis());
 
@@ -197,11 +255,23 @@ public class UsageEventProcessorTest {
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(3).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(3).getEndTime());
 
+            // Check tags
             Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToUpdate.get(0).getTags().intValue());
             Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(0).getTags().intValue());
             Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(1).getTags().intValue());
             Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(2).getTags().intValue());
             Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(3).getTags().intValue());
+
+            // Check usage
+            for (LoadBalancerUsage loadBalancerUsage : usagesToCreate) {
+                Assert.assertEquals(new Long(0), loadBalancerUsage.getCumulativeBandwidthBytesIn());
+                Assert.assertEquals(new Long(0), loadBalancerUsage.getCumulativeBandwidthBytesInSsl());
+                Assert.assertEquals(new Long(0), loadBalancerUsage.getCumulativeBandwidthBytesOut());
+                Assert.assertEquals(new Long(0), loadBalancerUsage.getCumulativeBandwidthBytesOutSsl());
+                Assert.assertEquals(new Double(0), loadBalancerUsage.getAverageConcurrentConnections());
+                Assert.assertEquals(new Double(0), loadBalancerUsage.getAverageConcurrentConnectionsSsl());
+                Assert.assertEquals(new Integer(0), loadBalancerUsage.getNumberOfPolls());
+            }
         }
     }
 
