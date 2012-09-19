@@ -12,7 +12,7 @@ import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.jobs.AtomHopperLoadBalancerUsageJob;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.util.AHUSLUtil;
-import org.openstack.atlas.atom.util.LbaasUsageDataMap;
+import org.openstack.atlas.atom.mapper.LbaasUsageDataMapper;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
@@ -65,7 +65,7 @@ public class LoadBalancerAHUSLTask implements Runnable {
                 for (Usage usageRecord : lbusages) {
                     if (usageRecord.isNeedsPushed()) {
 
-                        EntryPojo entry = LbaasUsageDataMap.buildUsageEntry(
+                        EntryPojo entry = LbaasUsageDataMapper.buildUsageEntry(
                                 usageRecord,
                                 configuration,
                                 configuration.getString(AtomHopperConfigurationKeys.ahusl_region));

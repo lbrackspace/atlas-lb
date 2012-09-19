@@ -8,48 +8,48 @@
     </description>
     <attribute name="avgConcurrentConnections" type="double" use="required"
                aggregateFunction="CUMULATIVE_AVG" frequencyAttribute='numPolls'
-               unitOfMeasure="COUNT" groupBy="true">
+               unitOfMeasure="COUNT">
         The amount of conncurrent connections.
     </attribute>
     <attribute name="avgConcurrentConnectionsSsl" type="double" use="required"
                aggregateFunction="CUMULATIVE_AVG" frequencyAttribute='numPolls'
-               unitOfMeasure="COUNT" groupBy="true">
+               unitOfMeasure="COUNT">
         The amount of conncurrent ssl connections.
     </attribute>
     <attribute name="bandWidthIn" type="long" use="required"
-               unitOfMeasure="B" aggregateFunction="SUM" groupBy="true">
+               unitOfMeasure="B" aggregateFunction="SUM">
         The amount of bandwidth in, in bytes.
     </attribute>
     <attribute name="bandWidthOut" type="long" use="required"
-               unitOfMeasure="B" aggregateFunction="SUM" groupBy="true">
+               unitOfMeasure="B" aggregateFunction="SUM">
         The amount of bandwidth out in bytes.
     </attribute>
     <attribute name="bandWidthInSsl" type="long" use="required"
-               unitOfMeasure="B" aggregateFunction="SUM" groupBy="true">
+               unitOfMeasure="B" aggregateFunction="SUM">
         The amount of ssl bandwidth in, in bytes.
     </attribute>
     <attribute name="bandWidthOutSsl" type="long" use="required"
-               unitOfMeasure="B" aggregateFunction="SUM" groupBy="true">
+               unitOfMeasure="B" aggregateFunction="SUM">
         The amount of ssl bandwidth out in bytes.
     </attribute>
     <attribute name="numPolls" type="int" use="required"
-               unitOfMeasure="COUNT" groupBy="true">
+               unitOfMeasure="COUNT">
         The number of polls per load balancer.
     </attribute>
     <attribute name="numVips" type="int" use="required"
-               unitOfMeasure="COUNT" groupBy="true">
+               billable="false" unitOfMeasure="COUNT">
         The number of vips per load balancer.
     </attribute>
     <attribute name="vipType" type="string" use="required"
-               groupBy="true" allowedValues="PUBLIC SERVICENET">
+               allowedValues="PUBLIC SERVICENET">
         The vip type associated with the load balancer.
     </attribute>
     <attribute name="sslMode" type="string" use="required"
-               groupBy="true" allowedValues="ON OFF MIXED">
+               allowedValues="ON OFF MIXED">
         The mode determining SSL status on the load balancer.
     </attribute>
-    <attribute name="status" type="string"
-               allowedValues="ACTIVE SUSPENDED" >
-        The mode determining SSL status on the load balancer.
+    <attribute name="status" type="string" use="required"
+               allowedValues="ACTIVE SUSPENDED">
+        Is the load balancer currently active?
     </attribute>
 </productSchema>

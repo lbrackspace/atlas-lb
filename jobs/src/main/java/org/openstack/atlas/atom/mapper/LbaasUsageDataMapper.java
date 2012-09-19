@@ -1,14 +1,17 @@
-package org.openstack.atlas.atom.util;
+package org.openstack.atlas.atom.mapper;
 
 import com.rackspace.docs.core.event.DC;
 import com.rackspace.docs.core.event.EventType;
 import com.rackspace.docs.usage.lbaas.ResourceTypes;
 import com.rackspace.docs.usage.lbaas.SslModeEnum;
+import com.rackspace.docs.usage.lbaas.StatusEnum;
 import com.rackspace.docs.usage.lbaas.VipTypeEnum;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
+import org.openstack.atlas.atom.util.AHUSLUtil;
+import org.openstack.atlas.atom.util.UUIDUtil;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.entities.SslMode;
@@ -27,7 +30,7 @@ import java.util.UUID;
 /**
  * Used for mapping values from usage records to generate usage objects...
  */
-public class LbaasUsageDataMap {
+public class LbaasUsageDataMapper {
     private static String region = "GLOBAL";
     private static final String label = "loadBalancerUsage";
     private static final String lbaasTitle = "cloudLoadBalancers";
@@ -38,7 +41,7 @@ public class LbaasUsageDataMap {
         EntryPojo entry = buildEntry();
 
         UsageContent usageContent = new UsageContent();
-        usageContent.setEvent(LbaasUsageDataMap.generateUsageEntry(configuration, configRegion, usageRecord));
+        usageContent.setEvent(LbaasUsageDataMapper.generateUsageEntry(configuration, configRegion, usageRecord));
         entry.setContent(usageContent);
         entry.getContent().setType(MediaType.APPLICATION_XML);
 
@@ -55,20 +58,20 @@ public class LbaasUsageDataMap {
         UsageV1Pojo usageV1 = new UsageV1Pojo();
         usageV1.setVersion(version);
         usageV1.setRegion(AHUSLUtil.mapRegion(region));
+        usageV1.setTenantId(usageRecord.getAccountId().toString());
+        usageV1.setResourceId(usageRecord.getLoadbalancer().getId().toString());
         usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.ahusl_data_center)));
 
-        if (AHUSLUtil.mapEventType(usageRecord) == null) {
+        EventType usageRecordEventType = AHUSLUtil.mapEventType(usageRecord);
+        if (usageRecordEventType != null && (usageRecordEventType.equals(EventType.DELETE) ||
+                usageRecordEventType.equals(EventType.SUSPEND))) {
+            usageV1.setType(usageRecordEventType);
+            usageV1.setEventTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
+        } else {
             usageV1.setType(EventType.USAGE);
             usageV1.setStartTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
             usageV1.setEndTime(AHUSLUtil.processCalendar(usageRecord.getEndTime()));
-        } else {
-//            usageV1.setType(AHUSLUtil.mapEventType(usageRecord));
-            usageV1.setType(EventType.USAGE);
-            usageV1.setEventTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
         }
-
-        usageV1.setTenantId(usageRecord.getAccountId().toString());
-        usageV1.setResourceId(usageRecord.getLoadbalancer().getId().toString());
 
         //Generate UUID
         UUID uuid = UUIDUtil.genUUIDMD5Hash(genUUIDString(usageRecord));
@@ -98,7 +101,7 @@ public class LbaasUsageDataMap {
         return usageCategory;
     }
 
-    private static LBaaSUsagePojo buildLbaasUsageRecord(Usage usageRecord) {
+    private static LBaaSUsagePojo buildLbaasUsageRecord(Usage usageRecord) throws DatatypeConfigurationException {
         //LBAAS specific values
         LBaaSUsagePojo lu = new LBaaSUsagePojo();
         lu.setAvgConcurrentConnections(usageRecord.getAverageConcurrentConnections());
@@ -112,6 +115,9 @@ public class LbaasUsageDataMap {
         lu.setNumVips(usageRecord.getNumVips());
         lu.setServiceCode(SERVICE_CODE);
         lu.setVersion(version);
+
+        StatusEnum status = (AHUSLUtil.mapEventType(usageRecord) == null && AHUSLUtil.mapEventType(usageRecord).equals(EventType.SUSPEND)) ? StatusEnum.SUSPENDED : StatusEnum.ACTIVE;
+        lu.setStatus(status);
 
         BitTags bitTags = new BitTags(usageRecord.getTags());
         if (bitTags.isTagOn(BitTag.SERVICENET_LB)) {
