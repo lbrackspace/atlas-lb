@@ -63,8 +63,8 @@ public class LbaasUsageDataMapper {
         usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.ahusl_data_center)));
 
         EventType usageRecordEventType = AHUSLUtil.mapEventType(usageRecord);
-        if (usageRecordEventType != null && (usageRecordEventType.equals(EventType.DELETE) ||
-                usageRecordEventType.equals(EventType.SUSPEND))) {
+        if (usageRecordEventType != null && (usageRecordEventType.equals(EventType.DELETE))) {
+            //Tracked only in AH... not sent to billing...
             usageV1.setType(usageRecordEventType);
             usageV1.setEventTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
         } else {
@@ -116,7 +116,7 @@ public class LbaasUsageDataMapper {
         lu.setServiceCode(SERVICE_CODE);
         lu.setVersion(version);
 
-        StatusEnum status = (AHUSLUtil.mapEventType(usageRecord) == null && AHUSLUtil.mapEventType(usageRecord).equals(EventType.SUSPEND)) ? StatusEnum.SUSPENDED : StatusEnum.ACTIVE;
+        StatusEnum status = (AHUSLUtil.mapEventType(usageRecord) != null && AHUSLUtil.mapEventType(usageRecord).equals(EventType.SUSPEND)) ? StatusEnum.SUSPENDED : StatusEnum.ACTIVE;
         lu.setStatus(status);
 
         BitTags bitTags = new BitTags(usageRecord.getTags());

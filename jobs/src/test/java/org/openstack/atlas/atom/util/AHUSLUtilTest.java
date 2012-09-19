@@ -11,20 +11,34 @@ import org.openstack.atlas.service.domain.entities.Usage;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Calendar;
 
 @RunWith(Enclosed.class)
 public class AHUSLUtilTest {
+    public static class WhenConvertingCalToXMLGregorianCal {
+
+        @Before
+        public void standUp() {
+
+        }
+
+        @Test
+        public void shouldConvertCal() throws DatatypeConfigurationException {
+            Calendar cal = Calendar.getInstance();
+            AHUSLUtil.processCalendar(cal);
+        }
+    }
+
     public static class WhenMappingEventType {
         String baseEvent;
         Usage baseUsage;
 
         @Before
         public void standUp() {
-            //UUID=(Region, resourceID, tenantID)
+            //UUID=(recordID, resourceID, region)
             baseEvent = "DFW";
             baseUsage = new Usage();
             baseUsage.setEventType("CREATE_LOADBALANCER");
-
         }
 
         @Test
@@ -78,7 +92,6 @@ public class AHUSLUtilTest {
 
         @Before
         public void standUp() {
-            //UUID=(Region, resourceID, tenantID)
             baseRegion = "DFW";
         }
 
