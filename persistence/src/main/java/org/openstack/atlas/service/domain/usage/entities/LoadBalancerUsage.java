@@ -51,6 +51,30 @@ public class LoadBalancerUsage extends Entity implements Serializable {
     @Column(name = "event_type", nullable = true)
     String eventType;
 
+    public LoadBalancerUsage() {
+    }
+
+    public LoadBalancerUsage(Integer accountId, Integer loadbalancerId, Double averageConcurrentConnections, Long cumulativeBandwidthBytesIn, Long cumulativeBandwidthBytesOut, Long lastBandwidthBytesIn, Long lastBandwidthBytesOut, Double averageConcurrentConnectionsSsl, Long cumulativeBandwidthBytesInSsl, Long cumulativeBandwidthBytesOutSsl, Long lastBandwidthBytesInSsl, Long lastBandwidthBytesOutSsl, Calendar startTime, Calendar endTime, Integer numberOfPolls, Integer numVips, Integer tags, String eventType) {
+        this.accountId = accountId;
+        this.loadbalancerId = loadbalancerId;
+        this.averageConcurrentConnections = averageConcurrentConnections;
+        this.cumulativeBandwidthBytesIn = cumulativeBandwidthBytesIn;
+        this.cumulativeBandwidthBytesOut = cumulativeBandwidthBytesOut;
+        this.lastBandwidthBytesIn = lastBandwidthBytesIn;
+        this.lastBandwidthBytesOut = lastBandwidthBytesOut;
+        this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
+        this.cumulativeBandwidthBytesInSsl = cumulativeBandwidthBytesInSsl;
+        this.cumulativeBandwidthBytesOutSsl = cumulativeBandwidthBytesOutSsl;
+        this.lastBandwidthBytesInSsl = lastBandwidthBytesInSsl;
+        this.lastBandwidthBytesOutSsl = lastBandwidthBytesOutSsl;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.numberOfPolls = numberOfPolls;
+        this.numVips = numVips;
+        this.tags = tags;
+        this.eventType = eventType;
+    }
+
     public Integer getAccountId() {
         return accountId;
     }

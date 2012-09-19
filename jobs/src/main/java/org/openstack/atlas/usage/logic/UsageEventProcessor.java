@@ -2,6 +2,7 @@ package org.openstack.atlas.usage.logic;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.entities.VirtualIpType;
 import org.openstack.atlas.service.domain.events.UsageEvent;
@@ -182,7 +183,7 @@ public class UsageEventProcessor {
         return newBufferRecord;
     }
 
-    private static boolean isEndOfHour(Calendar calendar) {
+    public static boolean isEndOfHour(Calendar calendar) {
         return calendar.get(Calendar.MINUTE) == 59 && calendar.get(Calendar.SECOND) == 59 && calendar.get(Calendar.MILLISECOND) == 999;
     }
 
@@ -205,7 +206,7 @@ public class UsageEventProcessor {
         return newEndTime;
     }
 
-    public Map<Integer, List<LoadBalancerUsage>> createEventUsageMap() {
+    private Map<Integer, List<LoadBalancerUsage>> createEventUsageMap() {
         Map<Integer, List<LoadBalancerUsage>> newEventUsageMap = new HashMap<Integer, List<LoadBalancerUsage>>();
 
         for (LoadBalancerUsageEvent inOrderUsageEventEntry : inOrderUsageEventEntries) {
