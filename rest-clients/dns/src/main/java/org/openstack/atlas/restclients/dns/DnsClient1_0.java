@@ -147,12 +147,17 @@ public class DnsClient1_0 {
         if (ip != null) {
             wr = wr.queryParam("ip", ip);
         }
+        String logMsg = "CALLING DELETE " + wr.toString();
+        LOG.info(logMsg);
+        System.out.printf("%s\n",logMsg);
         Builder rb = wr.accept(MediaType.APPLICATION_XML);
         rb = rb.type(MediaType.APPLICATION_XML);
         rb.header(authKey, authValue);
         ClientResponse resp = rb.delete(ClientResponse.class);
+
         return resp;
     }
+
 
     public ClientResponse getDomains() {
         return getDomains(null, null, null);
@@ -222,7 +227,7 @@ public class DnsClient1_0 {
 
     @Override
     public String toString() {
-        String fmt = "{ endPoint=\"%s\",accountId=\"%d\" token=\"%s\""
+        String fmt = "{ endPoint=\"%s\",accountId=\"%d\" token=\"%s\","
                 + "adminEndPoint=\"%s\" adminUser = \"%s\", "
                 + "adminPasswd = \"%s\" }";
         String msg = String.format(fmt, endPoint, accountId, token, adminEndPoint,
