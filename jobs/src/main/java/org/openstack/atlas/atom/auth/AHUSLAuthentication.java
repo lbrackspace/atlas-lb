@@ -40,12 +40,12 @@ public class AHUSLAuthentication {
     }
 
     public User retrieveKey(String userName) throws KeyStoneException, URISyntaxException {
-        LOG.info("Retrieving LBaaS Usage Auth Key...");
+        LOG.info("Retrieving LBaaS Usage Auth Key for User: " + userName);
         return keyStoneAdminClient.getUserKey(userName);
     }
 
     public AuthData retrieveToken(String userName, String key) throws KeyStoneException, URISyntaxException {
-        LOG.info("Retrieving LBaaS Usage Auth Token...");
+        LOG.info("Retrieving LBaaS Usage Auth Token for User: " + userName);
         return keyStoneClient.authenticateUser(userName, key);
     }
 

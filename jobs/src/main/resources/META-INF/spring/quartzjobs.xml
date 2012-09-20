@@ -19,18 +19,18 @@
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
-                <ref bean="lbUsagePollerTrigger"/>
-                <ref bean="accountUsagePollerTrigger"/>
-                <ref bean="hostUsagePollerTrigger"/>
-                <ref bean="lbUsageRollupJobTrigger"/>
-                <ref bean="rateLimitDeletionJobTrigger"/>
-                <ref bean="lbDeletionJobTrigger"/>
-                <ref bean="dailyDeletionJobTrigger"/>
-                <ref bean="eventsDeletionJobTrigger"/>
-                <ref bean="atomAlertDeletionJobTrigger"/>
-                <ref bean="hostEndpointPollerJobTrigger"/>
+                <!--<ref bean="lbUsagePollerTrigger"/>-->
+                <!--<ref bean="accountUsagePollerTrigger"/>-->
+                <!--<ref bean="hostUsagePollerTrigger"/>-->
+                <!--<ref bean="lbUsageRollupJobTrigger"/>-->
+                <!--<ref bean="rateLimitDeletionJobTrigger"/>-->
+                <!--<ref bean="lbDeletionJobTrigger"/>-->
+                <!--<ref bean="dailyDeletionJobTrigger"/>-->
+                <!--<ref bean="eventsDeletionJobTrigger"/>-->
+                <!--<ref bean="atomAlertDeletionJobTrigger"/>-->
+                <!--<ref bean="hostEndpointPollerJobTrigger"/>-->
                 <ref bean="atomHopperLoadBalancerUsageJobTrigger"/>
-                <ref bean="suspendedLbJobTrigger"/>
+                <!--<ref bean="suspendedLbJobTrigger"/>-->
             </list>
         </property>
     </bean>
