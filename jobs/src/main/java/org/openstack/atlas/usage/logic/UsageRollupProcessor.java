@@ -174,7 +174,15 @@ public class UsageRollupProcessor {
                     contiguousUsages.add(firstUsage);
                     contiguousUsages.addAll(bufferRecords);
                 } else {
-                    contiguousUsages.add(loadBalancerUsagesForId.get(i));
+                    LoadBalancerUsage lastUsage = loadBalancerUsagesForId.get(i);
+
+                    Calendar maxedOutEndTime = (Calendar) lastUsage.getEndTime().clone();
+                    maxedOutEndTime.set(Calendar.MINUTE, 59);
+                    maxedOutEndTime.set(Calendar.SECOND, 59);
+                    maxedOutEndTime.set(Calendar.MILLISECOND, 999);
+                    lastUsage.setEndTime(maxedOutEndTime);
+
+                    contiguousUsages.add(lastUsage);
                 }
             }
 
@@ -227,6 +235,35 @@ public class UsageRollupProcessor {
         }
 
         return usagesForDayList;
+    }
+
+    private List<UsagesForDay> generateUsagesPerHourList(List<LoadBalancerUsage> usages) {
+        List<UsagesForDay> usagesPerHourList = new ArrayList<UsagesForDay>();
+
+        for (LoadBalancerUsage usage : usages) {
+            String timeZoneCode = configuration.getString(ConfigurationKeys.usage_timezone_code);
+            Calendar endTimeForTimeZone = TimeZoneHelper.getCalendarForTimeZone(usage.getEndTime(), TimeZone.getTimeZone(timeZoneCode));
+            int dayOfYear = endTimeForTimeZone.get(Calendar.DAY_OF_YEAR);
+            int hourOfDay = endTimeForTimeZone.get(Calendar.HOUR_OF_DAY);
+
+            boolean addedUsageRecord = false;
+            for (UsagesForDay usagesForHourOfYear : usagesPerHourList) {
+                if (usagesForHourOfYear.getDayOfYear() == dayOfYear && usagesForHourOfYear.getHourOfDay() == hourOfDay) {
+                    usagesForHourOfYear.getUsages().add(usage);
+                    addedUsageRecord = true;
+                }
+            }
+
+            if (!addedUsageRecord) {
+                UsagesForDay usagesForDay = new UsagesForDay();
+                usagesForDay.setDayOfYear(dayOfYear);
+                usagesForDay.setHourOfDay(hourOfDay);
+                usagesForDay.getUsages().add(usage);
+                usagesPerHourList.add(usagesForDay);
+            }
+        }
+
+        return usagesPerHourList;
     }
 
     private Map<Integer, Usage> createRecentUsageMap(Set<Integer> loadBalancerIds) {

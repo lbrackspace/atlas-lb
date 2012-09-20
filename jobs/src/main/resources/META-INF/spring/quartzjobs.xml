@@ -23,14 +23,14 @@
                 <ref bean="accountUsagePollerTrigger"/>
                 <ref bean="hostUsagePollerTrigger"/>
                 <ref bean="lbUsageRollupJobTrigger"/>
-                <ref bean="rateLimitDeletionJobTrigger"/>
-                <ref bean="lbDeletionJobTrigger"/>
+                <!--<ref bean="rateLimitDeletionJobTrigger"/>-->
+                <!--<ref bean="lbDeletionJobTrigger"/>-->
                 <ref bean="dailyDeletionJobTrigger"/>
                 <ref bean="eventsDeletionJobTrigger"/>
-                <ref bean="atomAlertDeletionJobTrigger"/>
+                <!--<ref bean="atomAlertDeletionJobTrigger"/>-->
                 <ref bean="hostEndpointPollerJobTrigger"/>
-                <ref bean="atomHopperLoadBalancerUsageJobTrigger"/>
-                <ref bean="atomHopperAccountUsageJobTrigger"/>
+                <!--<ref bean="atomHopperLoadBalancerUsageJobTrigger"/>-->
+                <!--<ref bean="atomHopperAccountUsageJobTrigger"/>-->
                 <ref bean="suspendedLbJobTrigger"/>
             </list>
         </property>

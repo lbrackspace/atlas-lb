@@ -75,6 +75,27 @@ public class LoadBalancerUsage extends Entity implements Serializable {
         this.eventType = eventType;
     }
 
+    public LoadBalancerUsage(LoadBalancerUsage other) {
+        this.accountId = other.accountId;
+        this.loadbalancerId = other.loadbalancerId;
+        this.averageConcurrentConnections = other.averageConcurrentConnections;
+        this.cumulativeBandwidthBytesIn = other.cumulativeBandwidthBytesIn;
+        this.cumulativeBandwidthBytesOut = other.cumulativeBandwidthBytesOut;
+        this.lastBandwidthBytesIn = other.lastBandwidthBytesIn;
+        this.lastBandwidthBytesOut = other.lastBandwidthBytesOut;
+        this.averageConcurrentConnectionsSsl = other.averageConcurrentConnectionsSsl;
+        this.cumulativeBandwidthBytesInSsl = other.cumulativeBandwidthBytesInSsl;
+        this.cumulativeBandwidthBytesOutSsl = other.cumulativeBandwidthBytesOutSsl;
+        this.lastBandwidthBytesInSsl = other.lastBandwidthBytesInSsl;
+        this.lastBandwidthBytesOutSsl = other.lastBandwidthBytesOutSsl;
+        this.startTime = (Calendar) other.startTime.clone();
+        this.endTime = (Calendar) other.endTime.clone();
+        this.numberOfPolls = other.numberOfPolls;
+        this.numVips = other.numVips;
+        this.tags = other.tags;
+        this.eventType = other.eventType;
+    }
+
     public Integer getAccountId() {
         return accountId;
     }
@@ -242,4 +263,5 @@ public class LoadBalancerUsage extends Entity implements Serializable {
                 ", eventType='" + eventType + '\'' +
                 "} " + super.toString();
     }
+
 }

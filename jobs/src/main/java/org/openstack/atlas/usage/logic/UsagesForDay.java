@@ -7,6 +7,7 @@ import java.util.List;
 
 public class UsagesForDay {
     private int dayOfYear;
+    private int hourOfDay;
     private List<LoadBalancerUsage> usages;
 
     public int getDayOfYear() {
@@ -15,6 +16,14 @@ public class UsagesForDay {
 
     public void setDayOfYear(int dayOfYear) {
         this.dayOfYear = dayOfYear;
+    }
+
+    public int getHourOfDay() {
+        return hourOfDay;
+    }
+
+    public void setHourOfDay(int hourOfDay) {
+        this.hourOfDay = hourOfDay;
     }
 
     public List<LoadBalancerUsage> getUsages() {

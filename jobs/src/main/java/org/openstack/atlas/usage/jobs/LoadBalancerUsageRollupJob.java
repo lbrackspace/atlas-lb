@@ -45,7 +45,7 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
 
         try {
             Calendar rollupTimeMarker = Calendar.getInstance();
-            rollupTimeMarker.add(Calendar.HOUR_OF_DAY, -1); // Leaves at least one hour of data in the database. Ensures bitmask/numVips gets copied over
+            rollupTimeMarker.add(Calendar.HOUR_OF_DAY, -1); // Leaves at least one hour of data in the polling database. Ensures bitmask/numVips gets copied over
 
             LOG.info("Retrieving usage entries to process from polling DB...");
             List<LoadBalancerUsage> pollingUsages = pollingUsageRepository.getAllRecordsBeforeTimeInOrder(rollupTimeMarker);
