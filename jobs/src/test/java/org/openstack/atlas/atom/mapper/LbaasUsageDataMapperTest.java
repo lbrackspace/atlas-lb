@@ -170,5 +170,14 @@ public class LbaasUsageDataMapperTest {
 
             Assert.assertEquals(StatusEnum.ACTIVE, lbaasEntry.getStatus());
         }
+
+        @Test
+        public void shouldSetEventTimeForDELETE() throws DatatypeConfigurationException, NoSuchAlgorithmException {
+            usageRecord1.setEventType("DELETE_LOADBALANCER");
+            EntryPojo entry = LbaasUsageDataMapper.buildUsageEntry(usageRecord1, configuration, "DFW");
+            Assert.assertNotNull(entry.getContent().getEvent().getEventTime());
+            Assert.assertNull(entry.getContent().getEvent().getStartTime());
+            Assert.assertNull(entry.getContent().getEvent().getEndTime());
+        }
     }
 }

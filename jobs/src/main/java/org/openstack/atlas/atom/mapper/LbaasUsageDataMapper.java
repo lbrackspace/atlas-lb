@@ -35,7 +35,7 @@ public class LbaasUsageDataMapper {
     private static final String label = "loadBalancerUsage";
     private static final String lbaasTitle = "cloudLoadBalancers";
     private static String SERVICE_CODE = "CloudLoadBalancers";
-    private static final String version = "1";
+    private static final String version = "1"; //SCHEMA VERSIONS found in META-INF/xml and META-INF/xsd
 
     public static EntryPojo buildUsageEntry(Usage usageRecord, Configuration configuration, String configRegion) throws NoSuchAlgorithmException, DatatypeConfigurationException {
         EntryPojo entry = buildEntry();
@@ -64,7 +64,6 @@ public class LbaasUsageDataMapper {
 
         EventType usageRecordEventType = AHUSLUtil.mapEventType(usageRecord);
         if (usageRecordEventType != null && (usageRecordEventType.equals(EventType.DELETE))) {
-            //Tracked only in AH... not sent to billing...
             usageV1.setType(usageRecordEventType);
             usageV1.setEventTime(AHUSLUtil.processCalendar(usageRecord.getStartTime()));
         } else {
