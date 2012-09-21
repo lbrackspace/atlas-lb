@@ -67,7 +67,6 @@
 
     <!-- AHUSL -->
     <bean id="loadBalancerAHUSLTask" class="org.openstack.atlas.atom.tasks.LoadBalancerAHUSLTask"/>
-    <bean id="accountLoadBalancerAHUSLTask" class="org.openstack.atlas.atom.tasks.AccountLoadBalancerAHUSLTask"/>
     <bean id="threadPoolMonitorService" class="org.openstack.atlas.atom.service.serviceImpl.ThreadPoolMonitorServiceImpl">
         <property name="monitoringPeriod"  value="5" />
     </bean>

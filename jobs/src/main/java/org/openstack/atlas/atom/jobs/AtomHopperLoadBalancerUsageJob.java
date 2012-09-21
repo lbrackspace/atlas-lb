@@ -64,10 +64,10 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
         if (configuration.getString(AtomHopperConfigurationKeys.allow_ahusl).equals("true")) {
 
             LOG.debug("Setting up the threadPoolExecutor with " + maxPoolSize + " pools");
-            ThreadPoolExecutor poolExecutor = threadPoolExecutorService.createNewThreadPool(corePoolSize, maxPoolSize, keepAliveTime, 1000, new RejectedExecutionHandler());
+            ThreadPoolExecutor taskExecutor = threadPoolExecutorService.createNewThreadPool(corePoolSize, maxPoolSize, keepAliveTime, 1000, new RejectedExecutionHandler());
 
             // ThreadPoolMonitorService is started...
-            threadPoolMonitorService.setExecutor(poolExecutor);
+            threadPoolMonitorService.setExecutor(taskExecutor);
             Thread monitor = new Thread(threadPoolMonitorService);
             monitor.start();
 
@@ -97,7 +97,7 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
 
                             taskCounter++;
 
-                            poolExecutor.execute(new LoadBalancerAHUSLTask(processUsage, client, usageRepository)); //TODO: Need to move repository deps...
+                            taskExecutor.execute(new LoadBalancerAHUSLTask(processUsage, client, usageRepository)); //TODO: Need to move repository deps...
                         }
                     } else {
                         LOG.debug("No usage found for processing at this time...");
@@ -110,8 +110,8 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
 
             try {
                 LOG.debug("Shutting down the thread pool and monitors..");
-                poolExecutor.shutdown();
-                poolExecutor.awaitTermination(300, TimeUnit.SECONDS);
+                taskExecutor.shutdown();
+                taskExecutor.awaitTermination(300, TimeUnit.SECONDS);
                 threadPoolMonitorService.shutDown();
             } catch (InterruptedException e) {
                 LOG.error("There was an error shutting down threadPool: " + AHUSLUtil.getStackTrace(e));

@@ -72,7 +72,7 @@ public class AHUSLUtil {
      */
     public static Calendar getStartCal() {
         Calendar c = getNow();
-        c.add(Calendar.MONTH, -2);
+        c.add(Calendar.MONTH, -6);
         return c;
     }
 
