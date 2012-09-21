@@ -17,6 +17,7 @@ import org.openstack.atlas.service.domain.entities.Usage;
 import org.w3._2005.atom.Type;
 
 import javax.xml.datatype.DatatypeConfigurationException;
+import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 
 @RunWith(Enclosed.class)
@@ -86,7 +87,7 @@ public class LbaasUsageDataMapperTest {
             EntryPojo entry = LbaasUsageDataMapper.buildUsageEntry(usageRecord1, configuration, "ORD");
             LBaaSUsagePojo lbaasEntry = (LBaaSUsagePojo) entry.getContent().getEvent().getAny().get(0);
 
-            Assert.assertEquals((Object) usageRecord1.getIncomingTransfer(), lbaasEntry.getBandWidthIn());
+            Assert.assertEquals((Object) BigInteger.valueOf(usageRecord1.getIncomingTransfer()), lbaasEntry.getBandWidthIn());
         }
 
         @Test
@@ -94,7 +95,7 @@ public class LbaasUsageDataMapperTest {
             EntryPojo entry = LbaasUsageDataMapper.buildUsageEntry(usageRecord1, configuration, "ORD");
             LBaaSUsagePojo lbaasEntry = (LBaaSUsagePojo) entry.getContent().getEvent().getAny().get(0);
 
-            Assert.assertEquals((Object) usageRecord1.getIncomingTransferSsl(), lbaasEntry.getBandWidthInSsl());
+            Assert.assertEquals((Object) BigInteger.valueOf(usageRecord1.getIncomingTransferSsl()), lbaasEntry.getBandWidthInSsl());
         }
 
         @Test
@@ -102,7 +103,7 @@ public class LbaasUsageDataMapperTest {
             EntryPojo entry = LbaasUsageDataMapper.buildUsageEntry(usageRecord1, configuration, "ORD");
             LBaaSUsagePojo lbaasEntry = (LBaaSUsagePojo) entry.getContent().getEvent().getAny().get(0);
 
-            Assert.assertEquals((Object) usageRecord1.getOutgoingTransfer(), lbaasEntry.getBandWidthOut());
+            Assert.assertEquals((Object) BigInteger.valueOf(usageRecord1.getOutgoingTransfer()), lbaasEntry.getBandWidthOut());
         }
 
         @Test
@@ -110,7 +111,7 @@ public class LbaasUsageDataMapperTest {
             EntryPojo entry = LbaasUsageDataMapper.buildUsageEntry(usageRecord1, configuration, "ORD");
             LBaaSUsagePojo lbaasEntry = (LBaaSUsagePojo) entry.getContent().getEvent().getAny().get(0);
 
-            Assert.assertEquals((Object) usageRecord1.getOutgoingTransferSsl(), lbaasEntry.getBandWidthOutSsl());
+            Assert.assertEquals((Object) BigInteger.valueOf(usageRecord1.getOutgoingTransferSsl()), lbaasEntry.getBandWidthOutSsl());
         }
 
         @Test

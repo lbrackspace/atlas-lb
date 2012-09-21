@@ -16,19 +16,19 @@
                unitOfMeasure="COUNT">
         The amount of conncurrent ssl connections.
     </attribute>
-    <attribute name="bandWidthIn" type="long" use="required"
+    <attribute name="bandWidthIn" type="unsignedLong" use="required"
                unitOfMeasure="B" aggregateFunction="SUM">
         The amount of bandwidth in, in bytes.
     </attribute>
-    <attribute name="bandWidthOut" type="long" use="required"
+    <attribute name="bandWidthOut" type="unsignedLong" use="required"
                unitOfMeasure="B" aggregateFunction="SUM">
         The amount of bandwidth out in bytes.
     </attribute>
-    <attribute name="bandWidthInSsl" type="long" use="required"
+    <attribute name="bandWidthInSsl" type="unsignedLong" use="required"
                unitOfMeasure="B" aggregateFunction="SUM">
         The amount of ssl bandwidth in, in bytes.
     </attribute>
-    <attribute name="bandWidthOutSsl" type="long" use="required"
+    <attribute name="bandWidthOutSsl" type="unsignedLong" use="required"
                unitOfMeasure="B" aggregateFunction="SUM">
         The amount of ssl bandwidth out in bytes.
     </attribute>

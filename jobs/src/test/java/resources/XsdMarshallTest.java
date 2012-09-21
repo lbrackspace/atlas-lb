@@ -33,6 +33,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.UUID;
@@ -201,7 +202,10 @@ public class XsdMarshallTest {
         private LBaaSUsagePojo buildProductEntry(String version) {
             LBaaSUsagePojo lu = new LBaaSUsagePojo();
             lu.setVersion(version);
-            lu.setBandWidthIn(4);
+            lu.setBandWidthIn(BigInteger.valueOf(4));
+            lu.setBandWidthInSsl(BigInteger.valueOf(4));
+            lu.setBandWidthOut(BigInteger.valueOf(4));
+            lu.setBandWidthOutSsl(BigInteger.valueOf(4));
             lu.setAvgConcurrentConnections(30000);
             lu.setResourceType(ResourceTypes.LOADBALANCER);
             lu.setServiceCode("CloudLoadBalancers");
