@@ -5,7 +5,7 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UsagesForDay {
+public class UsagesForHour {
     private int dayOfYear;
     private int hourOfDay;
     private List<LoadBalancerUsage> usages;

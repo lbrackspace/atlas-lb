@@ -48,7 +48,7 @@ public class UsageRollupProcessor {
 
         Map<Integer, List<LoadBalancerUsage>> newUsageMap = generateLbIdUsagesMap(inOrderPollingUsages);
         Map<Integer, Usage> recentUsageMap = createRecentUsageMap(newUsageMap.keySet());
-        Map<Integer, List<UsagesForDay>> contiguousDailyUsageMap = generateContiguousLbIdUsagesMap(newUsageMap, recentUsageMap);
+        Map<Integer, List<UsagesForHour>> contiguousDailyUsageMap = generateContiguousLbIdUsagesMap(newUsageMap, recentUsageMap);
 
         updateTimestampsAndTagsForUsages(contiguousDailyUsageMap, recentUsageMap);
 
@@ -56,19 +56,21 @@ public class UsageRollupProcessor {
         return this;
     }
 
-    private void updateTimestampsAndTagsForUsages(Map<Integer, List<UsagesForDay>> newUsageMap, Map<Integer, Usage> recentUsageMap) {
+    private void updateTimestampsAndTagsForUsages(Map<Integer, List<UsagesForHour>> newUsageMap, Map<Integer, Usage> recentUsageMap) {
         final String timeZoneCode = configuration.getString(ConfigurationKeys.usage_timezone_code);
 
         for (Integer lbId : newUsageMap.keySet()) {
             final Usage recentUsage = recentUsageMap.get(lbId);
 
-            for (UsagesForDay usagesForDay : newUsageMap.get(lbId)) {
+            for (UsagesForHour usagesForHour : newUsageMap.get(lbId)) {
                 List<Usage> mergedUsageRecords;
 
-                if (recentUsage != null && usagesForDay.getDayOfYear() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getEndTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.DAY_OF_YEAR)) {
-                    mergedUsageRecords = mergeUsageRecords(usagesForDay.getUsages(), recentUsage);
+                if (recentUsage != null 
+                        && usagesForHour.getDayOfYear() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getEndTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.DAY_OF_YEAR)
+                        && usagesForHour.getHourOfDay() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getEndTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.HOUR_OF_DAY)) {
+                    mergedUsageRecords = mergeUsageRecords(usagesForHour.getUsages(), recentUsage);
                 } else {
-                    mergedUsageRecords = mergeUsageRecords(usagesForDay.getUsages(), null);
+                    mergedUsageRecords = mergeUsageRecords(usagesForHour.getUsages(), null);
                 }
 
                 for (Usage mergedUsageRecord : mergedUsageRecords) {
@@ -152,8 +154,8 @@ public class UsageRollupProcessor {
         return mergedUsageRecords;
     }
 
-    public Map<Integer, List<UsagesForDay>> generateContiguousLbIdUsagesMap(Map<Integer, List<LoadBalancerUsage>> newUsageMap, Map<Integer, Usage> recentUsageMap) {
-        Map<Integer, List<UsagesForDay>> lbIdUsageMap = new HashMap<Integer, List<UsagesForDay>>();
+    public Map<Integer, List<UsagesForHour>> generateContiguousLbIdUsagesMap(Map<Integer, List<LoadBalancerUsage>> newUsageMap, Map<Integer, Usage> recentUsageMap) {
+        Map<Integer, List<UsagesForHour>> lbIdUsageMap = new HashMap<Integer, List<UsagesForHour>>();
 
         for (Integer lbId : newUsageMap.keySet()) {
             List<LoadBalancerUsage> contiguousUsages = new ArrayList<LoadBalancerUsage>();
@@ -186,8 +188,8 @@ public class UsageRollupProcessor {
                 }
             }
 
-            List<UsagesForDay> contiguousUsagesByDay = generateUsagesForDayList(contiguousUsages);
-            lbIdUsageMap.put(lbId, contiguousUsagesByDay);
+            List<UsagesForHour> contiguousUsagesByHour = generateUsagesPerHourList(contiguousUsages);
+            lbIdUsageMap.put(lbId, contiguousUsagesByHour);
         }
 
         return lbIdUsageMap;
@@ -210,35 +212,8 @@ public class UsageRollupProcessor {
         return lbIdUsageMap;
     }
 
-    private List<UsagesForDay> generateUsagesForDayList(List<LoadBalancerUsage> usages) {
-        List<UsagesForDay> usagesForDayList = new ArrayList<UsagesForDay>();
-
-        for (LoadBalancerUsage usage : usages) {
-            String timeZoneCode = configuration.getString(ConfigurationKeys.usage_timezone_code);
-            Calendar endTimeForTimeZone = TimeZoneHelper.getCalendarForTimeZone(usage.getEndTime(), TimeZone.getTimeZone(timeZoneCode));
-            int dayOfYear = endTimeForTimeZone.get(Calendar.DAY_OF_YEAR);
-
-            boolean addedUsageRecord = false;
-            for (UsagesForDay usagesForDay : usagesForDayList) {
-                if (usagesForDay.getDayOfYear() == dayOfYear) {
-                    usagesForDay.getUsages().add(usage);
-                    addedUsageRecord = true;
-                }
-            }
-
-            if (!addedUsageRecord) {
-                UsagesForDay usagesForDay = new UsagesForDay();
-                usagesForDay.setDayOfYear(dayOfYear);
-                usagesForDay.getUsages().add(usage);
-                usagesForDayList.add(usagesForDay);
-            }
-        }
-
-        return usagesForDayList;
-    }
-
-    private List<UsagesForDay> generateUsagesPerHourList(List<LoadBalancerUsage> usages) {
-        List<UsagesForDay> usagesPerHourList = new ArrayList<UsagesForDay>();
+    private List<UsagesForHour> generateUsagesPerHourList(List<LoadBalancerUsage> usages) {
+        List<UsagesForHour> usagesPerHourList = new ArrayList<UsagesForHour>();
 
         for (LoadBalancerUsage usage : usages) {
             String timeZoneCode = configuration.getString(ConfigurationKeys.usage_timezone_code);
@@ -247,7 +222,7 @@ public class UsageRollupProcessor {
             int hourOfDay = endTimeForTimeZone.get(Calendar.HOUR_OF_DAY);
 
             boolean addedUsageRecord = false;
-            for (UsagesForDay usagesForHourOfYear : usagesPerHourList) {
+            for (UsagesForHour usagesForHourOfYear : usagesPerHourList) {
                 if (usagesForHourOfYear.getDayOfYear() == dayOfYear && usagesForHourOfYear.getHourOfDay() == hourOfDay) {
                     usagesForHourOfYear.getUsages().add(usage);
                     addedUsageRecord = true;
@@ -255,11 +230,11 @@ public class UsageRollupProcessor {
             }
 
             if (!addedUsageRecord) {
-                UsagesForDay usagesForDay = new UsagesForDay();
-                usagesForDay.setDayOfYear(dayOfYear);
-                usagesForDay.setHourOfDay(hourOfDay);
-                usagesForDay.getUsages().add(usage);
-                usagesPerHourList.add(usagesForDay);
+                UsagesForHour usagesForHour = new UsagesForHour();
+                usagesForHour.setDayOfYear(dayOfYear);
+                usagesForHour.setHourOfDay(hourOfDay);
+                usagesForHour.getUsages().add(usage);
+                usagesPerHourList.add(usagesForHour);
             }
         }
 

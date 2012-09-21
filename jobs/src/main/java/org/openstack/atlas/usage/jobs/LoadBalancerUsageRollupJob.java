@@ -44,8 +44,12 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
         jobStateService.updateJobState(JobName.LB_USAGE_ROLLUP, JobStateVal.IN_PROGRESS);
 
         try {
+            // Leaves at least one hour of data in the polling database. Ensures bitmask/numVips gets copied over and all events are accounted for.
             Calendar rollupTimeMarker = Calendar.getInstance();
-            rollupTimeMarker.add(Calendar.HOUR_OF_DAY, -1); // Leaves at least one hour of data in the polling database. Ensures bitmask/numVips gets copied over
+            rollupTimeMarker.add(Calendar.HOUR_OF_DAY, -1);
+            rollupTimeMarker.set(Calendar.MINUTE, 0);
+            rollupTimeMarker.set(Calendar.SECOND, 0);
+            rollupTimeMarker.set(Calendar.MILLISECOND, 0);
 
             LOG.info("Retrieving usage entries to process from polling DB...");
             List<LoadBalancerUsage> pollingUsages = pollingUsageRepository.getAllRecordsBeforeTimeInOrder(rollupTimeMarker);
