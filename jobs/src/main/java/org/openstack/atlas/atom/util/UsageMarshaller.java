@@ -36,12 +36,4 @@ public class UsageMarshaller {
         String xml = st.toString();
         return xml;
     }
-
-//    public static String marshallUsage(UsageV1Pojo usageV1) throws JAXBException {
-//        return marshallObject(usageV1);
-//    }
-//
-//    public static String marshallEntry(EntryPojo entry) throws JAXBException {
-//        return marshallObject(entry);
-//    }
 }

@@ -1,5 +1,7 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.util.debug.Debug;
+import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfInts;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.UserRole;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LdapGroup;
@@ -28,6 +30,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import java.util.Calendar;
+import org.openstack.atlas.service.domain.events.entities.CategoryType;
+import org.openstack.atlas.service.domain.events.entities.EventSeverity;
+import org.openstack.atlas.service.domain.events.entities.EventType;
 
 import static org.openstack.atlas.api.mgmt.helpers.StubFactory.newNetInterface;
 
@@ -164,10 +169,40 @@ public class StubResource extends ManagementDependencyProvider {
 
     @GET
     @Path("alloweddomain")
-    public Response getAllowedDomain(){
+    public Response getAllowedDomain() {
         AllowedDomain ad = new AllowedDomain();
         ad.setName("somedomain.org");
         return Response.status(200).entity(ad).build();
+    }
 
+    @GET
+    @Path("loadBalancerServiceEvents")
+    public Response getLoadBalancerServiceEvent() {
+        org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents dEvents = new org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents();
+        org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerServiceEvents rEvents = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerServiceEvents();
+        LoadBalancerServiceEvent lbSe;
+        for (int i = 0; i < 3; i++) {
+            lbSe = new LoadBalancerServiceEvent();
+            lbSe.setAccountId(1000);
+            lbSe.setAuthor("Some Author");
+            lbSe.setCategory(CategoryType.UPDATE);
+            lbSe.setCreated(Calendar.getInstance());
+            lbSe.setDescription(String.format("lb %d", i));
+            lbSe.setId(i);
+            lbSe.setRelativeUri("SomeUri");
+            lbSe.setSeverity(EventSeverity.INFO);
+            lbSe.setTitle("No Title");
+            lbSe.setType(EventType.BUILD_LOADBALANCER);
+            try {
+                throw new Exception(String.format("Exception for lb %d", i));
+            } catch (Exception ex) {
+                if (i % 2 == 1) {
+                    lbSe.setDetailedMessage(Debug.getEST(ex));
+                }
+            }
+            dEvents.getLoadBalancerServiceEvents().add(lbSe);
+            rEvents = dozerMapper.map(dEvents, rEvents.getClass());
+        }
+        return Response.status(200).entity(rEvents).build();
     }
 }

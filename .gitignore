@@ -1,5 +1,6 @@
 ## java specific
 !.gitignore
+.idea
 *.iml
 *.iws
 *.ipr
@@ -11,6 +12,7 @@
 classes/
 */target/*
 */*/target
+*/*/*/target/*
 
 ## generic files to ignore
 *~

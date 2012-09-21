@@ -20,6 +20,7 @@ import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepo
 import org.openstack.atlas.usage.BatchAction;
 import org.openstack.atlas.usage.ExecutionUtilities;
 import org.openstack.atlas.usage.logic.UsageCalculator;
+import org.openstack.atlas.usage.logic.UsageEventProcessor;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
@@ -74,107 +75,19 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
     }
 
     private void processUsageEvents() {
-        LOG.info("Processing usage events...");
-
         List<LoadBalancerUsageEvent> usageEventEntries = usageEventRepository.getAllUsageEventEntriesInOrder();
-        List<LoadBalancerUsage> usagesToCreate = new ArrayList<LoadBalancerUsage>();
-        List<LoadBalancerUsage> usagesToUpdate = new ArrayList<LoadBalancerUsage>();
-        Map<Integer, List<LoadBalancerUsage>> newEventUsageMap = new HashMap<Integer, List<LoadBalancerUsage>>();
+        UsageEventProcessor usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, loadBalancerRepository);
 
-        for (LoadBalancerUsageEvent usageEventEntry : usageEventEntries) {
-            UsageEvent usageEvent = UsageEvent.valueOf(usageEventEntry.getEventType());
-            LoadBalancerUsage previousUsageRecord = getPreviousUsageRecord(usageEventEntry, newEventUsageMap);
+        usageEventProcessor.process();
 
-            int updatedTags = getTags(usageEventEntry.getAccountId(), usageEventEntry.getLoadbalancerId(), usageEvent, previousUsageRecord);
+        List<LoadBalancerUsage> usagesToCreate = usageEventProcessor.getUsagesToCreate();
+        List<LoadBalancerUsage> usagesToUpdate = usageEventProcessor.getUsagesToUpdate();
 
-            Calendar eventTime;
-            if (previousUsageRecord != null && previousUsageRecord.getEndTime().after(usageEventEntry.getStartTime())) {
-                eventTime = Calendar.getInstance();
-            } else {
-                eventTime = usageEventEntry.getStartTime();
-            }
-
-            LoadBalancerUsage newUsage = new LoadBalancerUsage();
-            newUsage.setAccountId(usageEventEntry.getAccountId());
-            newUsage.setLoadbalancerId(usageEventEntry.getLoadbalancerId());
-            newUsage.setNumVips(usageEventEntry.getNumVips());
-            newUsage.setStartTime(eventTime);
-            newUsage.setEndTime(eventTime);
-            newUsage.setNumberOfPolls(0);
-            newUsage.setTags(updatedTags);
-            newUsage.setEventType(usageEventEntry.getEventType());
-
-            if (previousUsageRecord != null) {
-                Integer oldNumPolls = previousUsageRecord.getNumberOfPolls();
-                Integer newNumPolls = (previousUsageRecord.getId() != null) ? oldNumPolls + 1 : 1; // If it hasn't been created then its only 1 poll
-
-                if (usageEventEntry.getLastBandwidthBytesIn() != null) {
-                    previousUsageRecord.setCumulativeBandwidthBytesIn(UsageCalculator.calculateCumBandwidthBytesIn(previousUsageRecord, usageEventEntry.getLastBandwidthBytesIn()));
-                    previousUsageRecord.setLastBandwidthBytesIn(usageEventEntry.getLastBandwidthBytesIn());
-                    previousUsageRecord.setEndTime(eventTime);
-                }
-                if (usageEventEntry.getLastBandwidthBytesOut() != null) {
-                    previousUsageRecord.setCumulativeBandwidthBytesOut(UsageCalculator.calculateCumBandwidthBytesOut(previousUsageRecord, usageEventEntry.getLastBandwidthBytesOut()));
-                    previousUsageRecord.setLastBandwidthBytesOut(usageEventEntry.getLastBandwidthBytesOut());
-                    previousUsageRecord.setEndTime(eventTime);
-                }
-                if (usageEventEntry.getLastBandwidthBytesInSsl() != null) {
-                    previousUsageRecord.setCumulativeBandwidthBytesInSsl(UsageCalculator.calculateCumBandwidthBytesInSsl(previousUsageRecord, usageEventEntry.getLastBandwidthBytesInSsl()));
-                    previousUsageRecord.setLastBandwidthBytesInSsl(usageEventEntry.getLastBandwidthBytesInSsl());
-                    previousUsageRecord.setEndTime(eventTime);
-                }
-                if (usageEventEntry.getLastBandwidthBytesOutSsl() != null) {
-                    previousUsageRecord.setCumulativeBandwidthBytesOutSsl(UsageCalculator.calculateCumBandwidthBytesOutSsl(previousUsageRecord, usageEventEntry.getLastBandwidthBytesOutSsl()));
-                    previousUsageRecord.setLastBandwidthBytesOutSsl(usageEventEntry.getLastBandwidthBytesOutSsl());
-                    previousUsageRecord.setEndTime(eventTime);
-                }
-                if (usageEventEntry.getLastConcurrentConnections() != null) {
-                    if(UsageEvent.SSL_ONLY_ON.name().equals(previousUsageRecord.getEventType())) {
-                        previousUsageRecord.setAverageConcurrentConnections(0.0);
-                    } else {
-                        previousUsageRecord.setAverageConcurrentConnections(UsageCalculator.calculateNewAverage(previousUsageRecord.getAverageConcurrentConnections(), oldNumPolls, usageEventEntry.getLastConcurrentConnections()));
-                    }
-                    previousUsageRecord.setNumberOfPolls(newNumPolls);
-                    previousUsageRecord.setEndTime(eventTime);
-                }
-                if (usageEventEntry.getLastConcurrentConnectionsSsl() != null) {
-                    if(UsageEvent.SSL_OFF.name().equals(previousUsageRecord.getEventType())) {
-                        previousUsageRecord.setAverageConcurrentConnectionsSsl(0.0);
-                    } else {
-                        previousUsageRecord.setAverageConcurrentConnectionsSsl(UsageCalculator.calculateNewAverage(previousUsageRecord.getAverageConcurrentConnectionsSsl(), oldNumPolls, usageEventEntry.getLastConcurrentConnectionsSsl()));
-                    }
-                    previousUsageRecord.setNumberOfPolls(newNumPolls);
-                    previousUsageRecord.setEndTime(eventTime);
-                }
-
-                if (previousUsageRecord.getId() != null) {
-                    usagesToUpdate.add(previousUsageRecord);
-                }
-
-                newUsage.setLastBandwidthBytesIn(previousUsageRecord.getLastBandwidthBytesIn());
-                newUsage.setLastBandwidthBytesInSsl(previousUsageRecord.getLastBandwidthBytesInSsl());
-                newUsage.setLastBandwidthBytesOut(previousUsageRecord.getLastBandwidthBytesOut());
-                newUsage.setLastBandwidthBytesOutSsl(previousUsageRecord.getLastBandwidthBytesOutSsl());
-            }
-
-            if (newEventUsageMap.containsKey(newUsage.getLoadbalancerId())) {
-                newEventUsageMap.get(newUsage.getLoadbalancerId()).add(newUsage);
-            } else {
-                List<LoadBalancerUsage> recentUsagesForLb = new ArrayList<LoadBalancerUsage>();
-                recentUsagesForLb.add(newUsage);
-                newEventUsageMap.put(newUsage.getLoadbalancerId(), recentUsagesForLb);
-            }
-        }
-
-        // Move usages over to array
-        for (Integer lbId : newEventUsageMap.keySet()) {
-            for (LoadBalancerUsage loadBalancerUsage : newEventUsageMap.get(lbId)) {
-                usagesToCreate.add(loadBalancerUsage);
-            }
-        }
-
-        if (!usagesToCreate.isEmpty()) hourlyUsageRepository.batchCreate(usagesToCreate);
         if (!usagesToUpdate.isEmpty()) hourlyUsageRepository.batchUpdate(usagesToUpdate);
+        LOG.info(String.format("%d records updated.", usagesToUpdate.size()));
+        
+        if (!usagesToCreate.isEmpty()) hourlyUsageRepository.batchCreate(usagesToCreate);
+        LOG.info(String.format("%d records created.", usagesToCreate.size()));
 
         try {
             BatchAction<LoadBalancerUsageEvent> deleteEventUsagesAction = new BatchAction<LoadBalancerUsageEvent>() {
@@ -183,60 +96,10 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
                 }
             };
             ExecutionUtilities.executeInBatches(usageEventEntries, BATCH_SIZE, deleteEventUsagesAction);
+            LOG.info(String.format("%d records deleted.", usageEventEntries.size()));
         } catch (Exception e) {
             LOG.error("Exception occurred while deleting usage event entries.", e);
         }
-
-        LOG.info(String.format("%d usage events processed.", usagesToCreate.size()));
-    }
-
-    private LoadBalancerUsage getPreviousUsageRecord(LoadBalancerUsageEvent usageEventEntry, Map<Integer, List<LoadBalancerUsage>> newEventUsageMap) {
-        // return previous event that has yet to be created
-        if (newEventUsageMap.containsKey(usageEventEntry.getLoadbalancerId())) {
-            List<LoadBalancerUsage> loadBalancerUsagesForLb = newEventUsageMap.get(usageEventEntry.getLoadbalancerId());
-            return (LoadBalancerUsage) loadBalancerUsagesForLb.toArray()[loadBalancerUsagesForLb.size()-1];
-        }
-
-        return hourlyUsageRepository.getMostRecentUsageForLoadBalancer(usageEventEntry.getLoadbalancerId());
-    }
-
-    private int getTags(Integer accountId, Integer lbId, UsageEvent usageEvent, LoadBalancerUsage recentUsage) {
-        BitTags tags;
-
-        if (recentUsage != null) {
-            tags = new BitTags(recentUsage.getTags());
-        } else {
-            tags = new BitTags();
-        }
-
-        switch (usageEvent) {
-            case CREATE_LOADBALANCER:
-                tags.flipAllTagsOff();
-                break;
-            case DELETE_LOADBALANCER:
-                tags.flipTagOff(BitTag.SSL);
-                tags.flipTagOff(BitTag.SSL_MIXED_MODE);
-                break;
-            case SSL_OFF:
-                tags.flipTagOff(BitTag.SSL);
-                tags.flipTagOff(BitTag.SSL_MIXED_MODE);
-                break;
-            case SSL_ONLY_ON:
-                tags.flipTagOn(BitTag.SSL);
-                tags.flipTagOff(BitTag.SSL_MIXED_MODE);
-                break;
-            case SSL_MIXED_ON:
-                tags.flipTagOn(BitTag.SSL);
-                tags.flipTagOn(BitTag.SSL_MIXED_MODE);
-                break;
-            default:
-        }
-
-        if (isServiceNetLoadBalancer(accountId, lbId)) {
-            tags.flipTagOn(BitTag.SERVICENET_LB);
-        }
-
-        return tags.getBitTags();
     }
 
     private void startUsagePoller() {
@@ -280,23 +143,6 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
             LOG.info(String.format("Usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
             jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FINISHED);
         }
-    }
-
-    private boolean isServiceNetLoadBalancer(Integer accountId, Integer lbId) {
-        try {
-            final Set<VirtualIp> vipsByAccountIdLoadBalancerId = loadBalancerRepository.getVipsByAccountIdLoadBalancerId(accountId, lbId);
-
-            for (VirtualIp virtualIp : vipsByAccountIdLoadBalancerId) {
-                if (virtualIp.getVipType().equals(VirtualIpType.SERVICENET)) return true;
-            }
-
-        } catch (EntityNotFoundException e) {
-            return false;
-        } catch (DeletedStatusException e) {
-            return false;
-        }
-
-        return false;
     }
 
 }

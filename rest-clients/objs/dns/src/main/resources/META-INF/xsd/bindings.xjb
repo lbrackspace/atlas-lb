@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<bindings xmlns="http://java.sun.com/xml/ns/jaxb"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+          version="2.1" extensionBindingPrefixes="xjc" 
+          schemaLocation="DNSApi.xsd">
+
+	<schemaBindings>
+		<package name="org.openstack.atlas.restclients.dns.pub.objects"/>
+	</schemaBindings>
+	<globalBindings>
+		<xjc:simple/>
+		<xjc:serializable uid="532512316" />
+		<xjc:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
+				      adapter="org.openstack.atlas.restclients.dns.helpers.DateTimeAdapter" />
+		<xjc:javaType name="java.util.Calendar" xmlType="xsd:date"
+				      adapter="org.openstack.atlas.restclients.dns.helpers.DateAdapter" />
+	</globalBindings>
+</bindings>
+

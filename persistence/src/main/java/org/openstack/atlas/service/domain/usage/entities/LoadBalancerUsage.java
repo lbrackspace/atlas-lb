@@ -22,20 +22,20 @@ public class LoadBalancerUsage extends Entity implements Serializable {
     Long cumulativeBandwidthBytesIn = 0L;
     @Column(name = "cum_bandwidth_bytes_out", nullable = false)
     Long cumulativeBandwidthBytesOut = 0L;
-    @Column(name = "last_bandwidth_bytes_in", nullable = false)
-    Long lastBandwidthBytesIn = 0L;
-    @Column(name = "last_bandwidth_bytes_out", nullable = false)
-    Long lastBandwidthBytesOut = 0L;
+    @Column(name = "last_bandwidth_bytes_in", nullable = true)
+    Long lastBandwidthBytesIn;
+    @Column(name = "last_bandwidth_bytes_out", nullable = true)
+    Long lastBandwidthBytesOut;
     @Column(name = "avg_concurrent_conns_ssl", nullable = false)
     Double averageConcurrentConnectionsSsl = 0.0;
     @Column(name = "cum_bandwidth_bytes_in_ssl", nullable = false)
     Long cumulativeBandwidthBytesInSsl = 0L;
     @Column(name = "cum_bandwidth_bytes_out_ssl", nullable = false)
     Long cumulativeBandwidthBytesOutSsl = 0L;
-    @Column(name = "last_bandwidth_bytes_in_ssl", nullable = false)
-    Long lastBandwidthBytesInSsl = 0L;
-    @Column(name = "last_bandwidth_bytes_out_ssl", nullable = false)
-    Long lastBandwidthBytesOutSsl = 0L;
+    @Column(name = "last_bandwidth_bytes_in_ssl", nullable = true)
+    Long lastBandwidthBytesInSsl;
+    @Column(name = "last_bandwidth_bytes_out_ssl", nullable = true)
+    Long lastBandwidthBytesOutSsl;
     @Column(name = "start_time", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     Calendar startTime;
@@ -51,6 +51,50 @@ public class LoadBalancerUsage extends Entity implements Serializable {
     @Column(name = "event_type", nullable = true)
     String eventType;
 
+    public LoadBalancerUsage() {
+    }
+
+    public LoadBalancerUsage(Integer accountId, Integer loadbalancerId, Double averageConcurrentConnections, Long cumulativeBandwidthBytesIn, Long cumulativeBandwidthBytesOut, Long lastBandwidthBytesIn, Long lastBandwidthBytesOut, Double averageConcurrentConnectionsSsl, Long cumulativeBandwidthBytesInSsl, Long cumulativeBandwidthBytesOutSsl, Long lastBandwidthBytesInSsl, Long lastBandwidthBytesOutSsl, Calendar startTime, Calendar endTime, Integer numberOfPolls, Integer numVips, Integer tags, String eventType) {
+        this.accountId = accountId;
+        this.loadbalancerId = loadbalancerId;
+        this.averageConcurrentConnections = averageConcurrentConnections;
+        this.cumulativeBandwidthBytesIn = cumulativeBandwidthBytesIn;
+        this.cumulativeBandwidthBytesOut = cumulativeBandwidthBytesOut;
+        this.lastBandwidthBytesIn = lastBandwidthBytesIn;
+        this.lastBandwidthBytesOut = lastBandwidthBytesOut;
+        this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
+        this.cumulativeBandwidthBytesInSsl = cumulativeBandwidthBytesInSsl;
+        this.cumulativeBandwidthBytesOutSsl = cumulativeBandwidthBytesOutSsl;
+        this.lastBandwidthBytesInSsl = lastBandwidthBytesInSsl;
+        this.lastBandwidthBytesOutSsl = lastBandwidthBytesOutSsl;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.numberOfPolls = numberOfPolls;
+        this.numVips = numVips;
+        this.tags = tags;
+        this.eventType = eventType;
+    }
+
+    public LoadBalancerUsage(LoadBalancerUsage other) {
+        this.accountId = other.accountId;
+        this.loadbalancerId = other.loadbalancerId;
+        this.averageConcurrentConnections = other.averageConcurrentConnections;
+        this.cumulativeBandwidthBytesIn = other.cumulativeBandwidthBytesIn;
+        this.cumulativeBandwidthBytesOut = other.cumulativeBandwidthBytesOut;
+        this.lastBandwidthBytesIn = other.lastBandwidthBytesIn;
+        this.lastBandwidthBytesOut = other.lastBandwidthBytesOut;
+        this.averageConcurrentConnectionsSsl = other.averageConcurrentConnectionsSsl;
+        this.cumulativeBandwidthBytesInSsl = other.cumulativeBandwidthBytesInSsl;
+        this.cumulativeBandwidthBytesOutSsl = other.cumulativeBandwidthBytesOutSsl;
+        this.lastBandwidthBytesInSsl = other.lastBandwidthBytesInSsl;
+        this.lastBandwidthBytesOutSsl = other.lastBandwidthBytesOutSsl;
+        this.startTime = (Calendar) other.startTime.clone();
+        this.endTime = (Calendar) other.endTime.clone();
+        this.numberOfPolls = other.numberOfPolls;
+        this.numVips = other.numVips;
+        this.tags = other.tags;
+        this.eventType = other.eventType;
+    }
 
     public Integer getAccountId() {
         return accountId;
@@ -195,4 +239,29 @@ public class LoadBalancerUsage extends Entity implements Serializable {
     public void setEventType(String eventType) {
         this.eventType = eventType;
     }
+
+    @Override
+    public String toString() {
+        return "LoadBalancerUsage{" +
+                "accountId=" + accountId +
+                ", loadbalancerId=" + loadbalancerId +
+                ", averageConcurrentConnections=" + averageConcurrentConnections +
+                ", cumulativeBandwidthBytesIn=" + cumulativeBandwidthBytesIn +
+                ", cumulativeBandwidthBytesOut=" + cumulativeBandwidthBytesOut +
+                ", lastBandwidthBytesIn=" + lastBandwidthBytesIn +
+                ", lastBandwidthBytesOut=" + lastBandwidthBytesOut +
+                ", averageConcurrentConnectionsSsl=" + averageConcurrentConnectionsSsl +
+                ", cumulativeBandwidthBytesInSsl=" + cumulativeBandwidthBytesInSsl +
+                ", cumulativeBandwidthBytesOutSsl=" + cumulativeBandwidthBytesOutSsl +
+                ", lastBandwidthBytesInSsl=" + lastBandwidthBytesInSsl +
+                ", lastBandwidthBytesOutSsl=" + lastBandwidthBytesOutSsl +
+                ", startTime=" + startTime.getTime() +
+                ", endTime=" + endTime.getTime() +
+                ", numberOfPolls=" + numberOfPolls +
+                ", numVips=" + numVips +
+                ", tags=" + tags +
+                ", eventType='" + eventType + '\'' +
+                "} " + super.toString();
+    }
+
 }

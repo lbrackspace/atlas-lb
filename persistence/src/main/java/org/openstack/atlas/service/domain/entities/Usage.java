@@ -6,7 +6,7 @@ import java.util.Calendar;
 
 @javax.persistence.Entity
 @Table(name="lb_usage")
-public class  Usage extends Entity implements Serializable {
+public class Usage extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
 
     @ManyToOne
@@ -44,6 +44,28 @@ public class  Usage extends Entity implements Serializable {
     private Integer entryVersion;
     @Column(name = "needs_pushed", nullable = false)
     private boolean needsPushed;
+
+    public Usage() {
+    }
+
+    public Usage(LoadBalancer loadbalancer, Double averageConcurrentConnections, Long incomingTransfer, Long outgoingTransfer, Double averageConcurrentConnectionsSsl, Long incomingTransferSsl, Long outgoingTransferSsl, Calendar startTime, Calendar endTime, Integer numberOfPolls, Integer numVips, Integer tags, String eventType, Integer accountId, Integer entryVersion, boolean needsPushed) {
+        this.loadbalancer = loadbalancer;
+        this.averageConcurrentConnections = averageConcurrentConnections;
+        this.incomingTransfer = incomingTransfer;
+        this.outgoingTransfer = outgoingTransfer;
+        this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
+        this.incomingTransferSsl = incomingTransferSsl;
+        this.outgoingTransferSsl = outgoingTransferSsl;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.numberOfPolls = numberOfPolls;
+        this.numVips = numVips;
+        this.tags = tags;
+        this.eventType = eventType;
+        this.accountId = accountId;
+        this.entryVersion = entryVersion;
+        this.needsPushed = needsPushed;
+    }
 
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;
@@ -171,5 +193,22 @@ public class  Usage extends Entity implements Serializable {
 
     public void setNeedsPushed(boolean needsPushed) {
         this.needsPushed = needsPushed;
+    }
+
+    public static Usage createNullUsageRecord() {
+        Usage currUsageRecord = new Usage();
+        currUsageRecord.setAccountId(null);
+        currUsageRecord.setLoadbalancer(null);
+        currUsageRecord.setAverageConcurrentConnections(null);
+        currUsageRecord.setAverageConcurrentConnectionsSsl(null);
+        currUsageRecord.setIncomingTransfer(null);
+        currUsageRecord.setIncomingTransferSsl(null);
+        currUsageRecord.setOutgoingTransfer(null);
+        currUsageRecord.setOutgoingTransferSsl(null);
+        currUsageRecord.setNumberOfPolls(0);
+        currUsageRecord.setNumVips(null);
+        currUsageRecord.setTags(0);
+        currUsageRecord.setEventType(null);
+        return currUsageRecord;
     }
 }

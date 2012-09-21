@@ -36,6 +36,7 @@
     <modules>
         <module>common</module>
         <module>data-model</module>
+        <module>rest-clients</module>
         <module>persistence</module>
         <module>adapter</module>
         <module>api</module>
@@ -79,7 +80,7 @@
         <cxf.version>2.5.1</cxf.version>
         <com.zxtm.service.version>1.1.0</com.zxtm.service.version>
         <com.rackspace.cloud.lb.zxtmadapter.version>${project.version}</com.rackspace.cloud.lb.zxtmadapter.version>
-        <mockito.version>1.8.5</mockito.version>
+        <mockito.version>1.9.0-rc1</mockito.version>
     </properties>
 
     <dependencyManagement>

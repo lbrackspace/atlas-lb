@@ -12,6 +12,7 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.Zone;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 
 import java.io.IOException;
+import org.openstack.atlas.util.debug.Debug;
 
 public class JsonObjectMapperTest {
 
@@ -103,13 +104,13 @@ public class JsonObjectMapperTest {
     }
 
     @Test
-    public void shouldMapErrorPageDeserialize() throws IOException{
+    public void shouldMapErrorPageDeserialize() throws IOException {
         String expected = "<html>Buzzoff!!!</html>";
-        String epJson = String.format("{\"errorpage\":{\"content\":\"%s\"}}\"",expected);
+        String epJson = String.format("{\"errorpage\":{\"content\":\"%s\"}}\"", expected);
         Errorpage errorpage;
-        errorpage = mapper.readValue(epJson,Errorpage.class);
+        errorpage = mapper.readValue(epJson, Errorpage.class);
         nop();
-        Assert.assertEquals(expected,errorpage.getContent());
+        Assert.assertEquals(expected, errorpage.getContent());
     }
 
     @Test
@@ -217,7 +218,15 @@ public class JsonObjectMapperTest {
     @Test
     public void shouldDoSomeThing() throws IOException {
         StubResource stub = new StubResource();
-        LoadBalancer loadBalancer = (LoadBalancer) stub.stubLoadBalancer().getEntity();
+        LoadBalancer loadBalancer = null;
+        String exMsg;
+        try {
+            loadBalancer = (LoadBalancer) stub.stubLoadBalancer().getEntity();
+        } catch (Throwable th) {
+            exMsg = Debug.getEST(th);
+            System.out.printf("Error %s\n",exMsg);
+            nop();
+        }
         LoadBalancers loadbalancers = (LoadBalancers) stub.stubLoadBalancers().getEntity();
         Nodes nodes = (Nodes) stub.stubNodes().getEntity();
         AccessList accessList = (AccessList) stub.stubAccessList().getEntity();

@@ -11,9 +11,33 @@ public enum MossoConfigValues implements ConfigurationKey {
      * The alt crypto key for data cryptography
      */
     hm_crypto_key,
-
     /**
      * The crypto key for sensitive data cryptography
      */
-    hm_crypto_key_alt;
+    hm_crypto_key_alt,
+
+    /**
+     * The base url for this services public endpoint
+     */
+    base_uri,
+
+    /**
+     * The crypto key used to encrypt the rdns_admin_passwd
+     */
+    rdns_crypto_key,
+
+    /**
+     * The endpoint for the management dns service. Used to delete PTR records
+     */
+    rdns_admin_url,
+
+    /**
+     * The management user for the rDNS service
+     */
+    rdns_admin_user,
+
+    /**
+     * The base64 encrypted password for the rDNS user
+     */
+    rdns_admin_passwd;
 }
