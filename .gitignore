@@ -12,6 +12,7 @@
 classes/
 */target/*
 */*/target
+*/*/*/target/*
 
 ## generic files to ignore
 *~

@@ -1,4 +1,4 @@
-package resources;
+package org.openstack.atlas.atom.util;
 
 import com.rackspace.docs.core.event.DC;
 import com.rackspace.docs.core.event.EventType;
@@ -15,9 +15,6 @@ import org.junit.runner.RunWith;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.pojo.LBaaSUsagePojo;
 import org.openstack.atlas.atom.pojo.UsageV1Pojo;
-import org.openstack.atlas.atom.util.AHUSLUtil;
-import org.openstack.atlas.atom.util.UUIDUtil;
-import org.openstack.atlas.atom.util.UsageMarshaller;
 import org.w3._2005.atom.*;
 import org.xml.sax.SAXException;
 
@@ -40,7 +37,7 @@ import java.util.UUID;
 
 
 @RunWith(Enclosed.class)
-public class XsdMarshallTest {
+public class UsageMarshallerTest {
     public static class WhenMarshallingGeneratedXML {
         private UUID uuid;
         private Calendar cal;

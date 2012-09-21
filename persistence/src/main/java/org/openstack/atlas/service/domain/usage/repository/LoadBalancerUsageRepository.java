@@ -15,10 +15,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -66,13 +63,20 @@ public class LoadBalancerUsageRepository {
         return (LoadBalancerUsage) usages.get(0);
     }
 
-    public List<LoadBalancerUsage> getAllRecordsBefore(Calendar time) {
-        Query query = entityManager.createQuery("SELECT u FROM LoadBalancerUsage u WHERE u.endTime < :endTime ORDER BY u.endTime ASC")
-                .setParameter("endTime", time);
+    public List<LoadBalancerUsage> getAllRecordsBeforeTimeInOrder(Calendar time) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerUsage> criteria = builder.createQuery(LoadBalancerUsage.class);
+        Root<LoadBalancerUsage> loadBalancerUsageRoot = criteria.from(LoadBalancerUsage.class);
 
-        List<LoadBalancerUsage> usage = (List<LoadBalancerUsage>) query.getResultList();
-        if (usage == null) return new ArrayList<LoadBalancerUsage>();
-        return usage;
+        Predicate endTimeBeforeTime = builder.lessThan(loadBalancerUsageRoot.get(LoadBalancerUsage_.endTime), time);
+        Order startTimeOrder = builder.asc(loadBalancerUsageRoot.get(LoadBalancerUsage_.startTime));
+
+        criteria.select(loadBalancerUsageRoot);
+        criteria.where(endTimeBeforeTime);
+        criteria.orderBy(startTimeOrder);
+
+        List<LoadBalancerUsage> usageEvents = entityManager.createQuery(criteria).getResultList();
+        return (usageEvents == null) ? new ArrayList<LoadBalancerUsage>() : usageEvents;
     }
 
     public void deleteAllRecordsBefore(Calendar time) {

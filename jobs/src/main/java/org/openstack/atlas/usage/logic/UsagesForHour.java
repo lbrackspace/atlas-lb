@@ -5,8 +5,9 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UsagesForDay {
+public class UsagesForHour {
     private int dayOfYear;
+    private int hourOfDay;
     private List<LoadBalancerUsage> usages;
 
     public int getDayOfYear() {
@@ -15,6 +16,14 @@ public class UsagesForDay {
 
     public void setDayOfYear(int dayOfYear) {
         this.dayOfYear = dayOfYear;
+    }
+
+    public int getHourOfDay() {
+        return hourOfDay;
+    }
+
+    public void setHourOfDay(int hourOfDay) {
+        this.hourOfDay = hourOfDay;
     }
 
     public List<LoadBalancerUsage> getUsages() {

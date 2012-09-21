@@ -19,6 +19,7 @@ public class AHUSLClient {
 
 
     private String endPoint;
+    private static final String TOKEN_HEADER = "X-AUTH-TOKEN" ;
     private ApacheHttpClient client;
 
     public AHUSLClient(String endPoint, ApacheHttpClient client) {
@@ -58,6 +59,29 @@ public class AHUSLClient {
         try {
             response = client.resource(endPoint)
                     .accept(MediaType.APPLICATION_XML)
+                    .type(MediaType.APPLICATION_ATOM_XML)
+                    .post(ClientResponse.class, entry);
+        } catch (ClientHandlerException cpe) {
+            throw new ClientHandlerException(AHUSLUtil.getStackTrace(cpe));
+        } catch (Exception ex) {
+            throw new Exception(AHUSLUtil.getStackTrace(ex));
+        }
+        return response;
+    }
+
+    /**
+     * This method will take an xml bean based object and POST it to the specified endpoint of the Atom-Hopper service using
+     * X-AUTH-TOKEN Header to identify the service..
+     *
+     * @param entry the object to post
+     * @return the ClientResponse
+     */
+    public ClientResponse postEntryWithToken(Object entry, String token) throws Exception {
+        ClientResponse response = null;
+        try {
+            response = client.resource(endPoint)
+                    .accept(MediaType.APPLICATION_XML)
+                    .header(TOKEN_HEADER, token)
                     .type(MediaType.APPLICATION_ATOM_XML)
                     .post(ClientResponse.class, entry);
         } catch (ClientHandlerException cpe) {

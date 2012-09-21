@@ -1,4 +1,4 @@
-package org.openstack.atlas.usage;
+package org.openstack.atlas;
 
 import org.junit.Test;
 import org.openstack.atlas.usage.BatchAction;

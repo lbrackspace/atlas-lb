@@ -8,39 +8,39 @@ public class UsageCalculator {
         return (oldAverage * oldDivisor + newDataPoint) / newDivisor;
     }
 
-    public static Long calculateCumBandwidthBytesIn(LoadBalancerUsage currentRecord, Long currentSnapshotValue) {
-        if (currentSnapshotValue == null) return currentRecord.getCumulativeBandwidthBytesIn();
-        if (currentSnapshotValue >= currentRecord.getLastBandwidthBytesIn()) {
-            return currentRecord.getCumulativeBandwidthBytesIn() + currentSnapshotValue - currentRecord.getLastBandwidthBytesIn();
+    public static Long calculateCumBandwidthBytesIn(LoadBalancerUsage mostRecentRecord, Long currentSnapshotValue) {
+        if (currentSnapshotValue == null || mostRecentRecord.getLastBandwidthBytesIn() == null) return mostRecentRecord.getCumulativeBandwidthBytesIn();
+        if (currentSnapshotValue >= mostRecentRecord.getLastBandwidthBytesIn()) {
+            return mostRecentRecord.getCumulativeBandwidthBytesIn() + currentSnapshotValue - mostRecentRecord.getLastBandwidthBytesIn();
         } else {
-            return currentRecord.getCumulativeBandwidthBytesIn() + currentSnapshotValue;
+            return mostRecentRecord.getCumulativeBandwidthBytesIn() + currentSnapshotValue;
         }
     }
 
-    public static Long calculateCumBandwidthBytesInSsl(LoadBalancerUsage currentRecord, Long currentSnapshotValue) {
-        if (currentSnapshotValue == null) return currentRecord.getCumulativeBandwidthBytesInSsl();
-        if (currentSnapshotValue >= currentRecord.getLastBandwidthBytesInSsl()) {
-            return currentRecord.getCumulativeBandwidthBytesInSsl() + currentSnapshotValue - currentRecord.getLastBandwidthBytesInSsl();
+    public static Long calculateCumBandwidthBytesInSsl(LoadBalancerUsage mostRecentRecord, Long currentSnapshotValue) {
+        if (currentSnapshotValue == null || mostRecentRecord.getLastBandwidthBytesInSsl() == null) return mostRecentRecord.getCumulativeBandwidthBytesInSsl();
+        if (currentSnapshotValue >= mostRecentRecord.getLastBandwidthBytesInSsl()) {
+            return mostRecentRecord.getCumulativeBandwidthBytesInSsl() + currentSnapshotValue - mostRecentRecord.getLastBandwidthBytesInSsl();
         } else {
-            return currentRecord.getCumulativeBandwidthBytesInSsl() + currentSnapshotValue;
+            return mostRecentRecord.getCumulativeBandwidthBytesInSsl() + currentSnapshotValue;
         }
     }
 
-    public static Long calculateCumBandwidthBytesOut(LoadBalancerUsage currentRecord, Long currentSnapshotValue) {
-        if (currentSnapshotValue == null) return currentRecord.getCumulativeBandwidthBytesOut();
-        if (currentSnapshotValue >= currentRecord.getLastBandwidthBytesOut()) {
-            return currentRecord.getCumulativeBandwidthBytesOut() + currentSnapshotValue - currentRecord.getLastBandwidthBytesOut();
+    public static Long calculateCumBandwidthBytesOut(LoadBalancerUsage mostRecentRecord, Long currentSnapshotValue) {
+        if (currentSnapshotValue == null || mostRecentRecord.getLastBandwidthBytesOut() == null) return mostRecentRecord.getCumulativeBandwidthBytesOut();
+        if (currentSnapshotValue >= mostRecentRecord.getLastBandwidthBytesOut()) {
+            return mostRecentRecord.getCumulativeBandwidthBytesOut() + currentSnapshotValue - mostRecentRecord.getLastBandwidthBytesOut();
         } else {
-            return currentRecord.getCumulativeBandwidthBytesOut() + currentSnapshotValue;
+            return mostRecentRecord.getCumulativeBandwidthBytesOut() + currentSnapshotValue;
         }
     }
 
-    public static Long calculateCumBandwidthBytesOutSsl(LoadBalancerUsage currentRecord, Long currentSnapshotValue) {
-        if (currentSnapshotValue == null) return currentRecord.getCumulativeBandwidthBytesOutSsl();
-        if (currentSnapshotValue >= currentRecord.getLastBandwidthBytesOutSsl()) {
-            return currentRecord.getCumulativeBandwidthBytesOutSsl() + currentSnapshotValue - currentRecord.getLastBandwidthBytesOutSsl();
+    public static Long calculateCumBandwidthBytesOutSsl(LoadBalancerUsage mostRecentRecord, Long currentSnapshotValue) {
+        if (currentSnapshotValue == null || mostRecentRecord.getLastBandwidthBytesOutSsl() == null) return mostRecentRecord.getCumulativeBandwidthBytesOutSsl();
+        if (currentSnapshotValue >= mostRecentRecord.getLastBandwidthBytesOutSsl()) {
+            return mostRecentRecord.getCumulativeBandwidthBytesOutSsl() + currentSnapshotValue - mostRecentRecord.getLastBandwidthBytesOutSsl();
         } else {
-            return currentRecord.getCumulativeBandwidthBytesOutSsl() + currentSnapshotValue;
+            return mostRecentRecord.getCumulativeBandwidthBytesOutSsl() + currentSnapshotValue;
         }
     }
 }
