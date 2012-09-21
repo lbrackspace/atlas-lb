@@ -19,18 +19,17 @@
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
-                <!--<ref bean="lbUsagePollerTrigger"/>-->
-                <!--<ref bean="accountUsagePollerTrigger"/>-->
-                <!--<ref bean="hostUsagePollerTrigger"/>-->
-                <!--<ref bean="lbUsageRollupJobTrigger"/>-->
-                <!--<ref bean="rateLimitDeletionJobTrigger"/>-->
-                <!--<ref bean="lbDeletionJobTrigger"/>-->
-                <!--<ref bean="dailyDeletionJobTrigger"/>-->
-                <!--<ref bean="eventsDeletionJobTrigger"/>-->
-                <!--<ref bean="atomAlertDeletionJobTrigger"/>-->
-                <!--<ref bean="hostEndpointPollerJobTrigger"/>-->
-                <ref bean="atomHopperLoadBalancerUsageJobTrigger"/>
-                <!--<ref bean="suspendedLbJobTrigger"/>-->
+                <ref bean="lbUsagePollerTrigger"/>
+                <ref bean="lbUsageRollupJobTrigger"/>
+                <ref bean="accountUsagePollerTrigger"/>
+                <ref bean="hostUsagePollerTrigger"/>
+                <ref bean="rateLimitDeletionJobTrigger"/>
+                <ref bean="lbDeletionJobTrigger"/>
+                <ref bean="dailyDeletionJobTrigger"/>
+                <ref bean="eventsDeletionJobTrigger"/>
+                <ref bean="atomAlertDeletionJobTrigger"/>
+                <ref bean="hostEndpointPollerJobTrigger"/>
+                <ref bean="suspendedLbJobTrigger"/>
             </list>
         </property>
     </bean>
@@ -99,16 +98,19 @@
         <!-- run every 5 mins -->
     </bean>
 
-    <!--USAGE ROLLUP JOB CONFIG-->
+    <!--USAGE ROLLUP AND ATOM HOPPER JOB CONFIG-->
     <bean name="lbUsageRollupJob" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass"
                   value="org.openstack.atlas.usage.jobs.LoadBalancerUsageRollupJob"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="pollingUsageRepository" value-ref="hourlyUsageRepository"/>
-                <entry key="rollUpUsageRepository" value-ref="rollupUsageRepository"/>
                 <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="usageRepository" value-ref="usageRepository"/>
+                <entry key="pollingUsageRepository" value-ref="hourlyUsageRepository"/>
+                <entry key="threadPoolMonitorService" value-ref="threadPoolMonitorService"/>
+                <entry key="threadPoolExecutorService" value-ref="threadPoolExecutorService"/>
+                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
             </map>
         </property>
     </bean>
@@ -230,32 +232,6 @@
         <property name="jobDetail" ref="lbDeletionJob"/>
         <property name="cronExpression" value="0 */15 * * * ?"/>
         <!-- run every 15 mins -->
-    </bean>
-
-    <!--Atom Hopper LoadBalancer Usage JOB CONFIG-->
-    <bean name="atomHopperLoadBalancerUsageJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"
-                  value="org.openstack.atlas.atom.jobs.AtomHopperLoadBalancerUsageJob"/>
-        <property name="jobDataAsMap">
-            <map>
-                <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
-                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
-                <entry key="usageRepository" value-ref="usageRepository"/>
-                <entry key="hostRepository" value-ref="hostRepository"/>
-                <entry key="jobStateService" value-ref="jobStateService"/>
-                <entry key="threadPoolMonitorService" value-ref="threadPoolMonitorService"/>
-                <entry key="threadPoolExecutorService" value-ref="threadPoolExecutorService"/>
-            </map>
-        </property>
-
-    </bean>
-
-    <bean id="atomHopperLoadBalancerUsageJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-        <property name="jobDetail" ref="atomHopperLoadBalancerUsageJob"/>
-        <!--<property name="cronExpression" value="0 0 * * * ?"/>-->
-        <!--<property name="cronExpression" value="0 */10 * * * ?"/>-->
-        <property name="cronExpression" value="${ahusl.job.interval}" />
-
     </bean>
 
     <!--SUSPENDED LOAD BALANCER JOB CONFIG-->

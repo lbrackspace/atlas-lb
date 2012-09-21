@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+@Deprecated // Moved code to LoadBalancerUsageRollupJob
 public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(AtomHopperLoadBalancerUsageJob.class);
 
