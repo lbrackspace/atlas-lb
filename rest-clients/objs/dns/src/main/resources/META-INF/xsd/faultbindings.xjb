@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<bindings xmlns="http://java.sun.com/xml/ns/jaxb"
+          xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+          version="2.1" extensionBindingPrefixes="xjc" 
+          schemaLocation="DNSApiFaults.xsd">
+
+	<schemaBindings>
+		<package name="com.rackspace.cloud.dns.api.faults"/>
+	</schemaBindings>
+	<globalBindings>
+		<xjc:simple/>
+		<xjc:serializable uid="532512316" />
+		<xjc:javaType name="java.util.Calendar" xmlType="xsd:dateTime"
+				      adapter="com.rackspace.cloud.dns.helpers.bean.DateTimeAdapter" />
+		<xjc:javaType name="java.util.Calendar" xmlType="xsd:date"
+				      adapter="com.rackspace.cloud.dns.helpers.bean.DateAdapter" />
+	</globalBindings>
+</bindings>
+

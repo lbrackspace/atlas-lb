@@ -1,5 +1,6 @@
 ## java specific
 !.gitignore
+.idea
 *.iml
 *.iws
 *.ipr

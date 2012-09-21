@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema targetNamespace="http://www.w3.org/2005/Atom" elementFormDefault="qualified" attributeFormDefault="unqualified"
+    xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="link" type="atom:linkType"/>
+    <xs:complexType name="linkType" mixed="true">
+        <xs:attribute name="href" use="required" type="xs:anyURI" />
+        <xs:attribute name="rel" type="xs:string" use="optional" />
+        <xs:attribute name="type" use="optional" type="xs:string" />
+        <xs:attribute name="hreflang" use="optional" type="xs:NMTOKEN" />
+        <xs:attribute name="title" use="optional" type="xs:string" />
+        <xs:attribute name="length" use="optional" type="xs:positiveInteger" />
+    </xs:complexType>
+</xs:schema>

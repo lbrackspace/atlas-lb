@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://docs.rackspacecloud.com/dns/api/management/v1.0"
+    xmlns:tns="http://docs.rackspacecloud.com/dns/api/management/v1.0" xmlns:papi="http://docs.rackspacecloud.com/dns/api/v1.0"
+    xmlns:limits="http://docs.openstack.org/common/api/v1.0"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:import schemaLocation="DNSApi.xsd" namespace="http://docs.rackspacecloud.com/dns/api/v1.0" />
+    <xsd:import schemaLocation="powerapi/limits.xsd" namespace="http://docs.openstack.org/common/api/v1.0" />
+
+    <xsd:element name="domain" type="tns:domain" />
+    <xsd:complexType name="domain">
+        <xsd:complexContent>
+            <xsd:extension base="papi:domain">
+                <xsd:attribute name="nameServer" type="xsd:string" use="optional" />
+                <xsd:attribute name="refresh" type="xsd:int" use="optional" />
+                <xsd:attribute name="minTTL" type="xsd:int" use="optional" />
+                <xsd:attribute name="expiry" type="xsd:int" use="optional" />
+                <xsd:attribute name="serialNumber" type="xsd:long" use="optional" />
+                <xsd:attribute name="updateRetry" type="xsd:int" use="optional" />
+                <xsd:attribute name="externalOwnerId" type="xsd:string" use="optional" />
+                <xsd:attribute name="createdBy" type="xsd:string" use="optional" />
+                <xsd:attribute name="updatedBy" type="xsd:string" use="optional" />
+				<!--  xsd:attribute name="includeClients" type="xsd:boolean" use="optional" default="false"/ -->
+				<!--  xsd:attribute name="includeSubdomains" type="xsd:boolean" use="optional" default="false"/ -->
+           </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="record" type="tns:record" />
+    <xsd:complexType name="record">
+        <xsd:complexContent>
+            <xsd:extension base="papi:record">
+                <xsd:attribute name="createdBy" type="xsd:string" use="optional" />
+                <xsd:attribute name="updatedBy" type="xsd:string" use="optional" />
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="domainsWrapper" type="tns:domainsWrapper" />
+    <xsd:complexType name="domainsWrapper">
+        <xsd:sequence>
+            <xsd:element ref="tns:domain" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+        <xsd:attribute name="clonerTemplateDomainId" type="xsd:int" use="optional" />
+        <xsd:attribute name="totalEntries" type="xsd:int" use="optional" />
+    </xsd:complexType>
+    
+    <xsd:simpleType name="groupLimitType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="rate_limit"/>
+            <xsd:enumeration value="domain_limit"/>
+            <xsd:enumeration value="domain_record_limit"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:element name="groupLimitTypes" type="tns:groupLimitTypes" />
+    <xsd:complexType name="groupLimitTypes">
+        <xsd:sequence>
+            <xsd:element name="limitType" type="tns:groupLimitType" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:element name="groupLimit" type="tns:groupLimit" />
+     <xsd:complexType name="groupLimit">
+        <xsd:sequence>
+        		<xsd:element name="account" type="xsd:int" minOccurs="0" />
+                <xsd:element name="name" type="xsd:string" minOccurs="0" />
+                <xsd:element name="description" type="xsd:string" minOccurs="0" />
+                <xsd:element name="type" type="tns:groupLimitType" minOccurs="0" />
+                <xsd:element name="limitUnit" type="xsd:string" minOccurs="0" />
+                <xsd:element name="limitValue" type="xsd:int" minOccurs="0" />
+                <xsd:element name="isDefault" type="xsd:string" minOccurs="0" />
+                <xsd:element name="limits" type="limits:RateLimitList" minOccurs="0" maxOccurs="1"/>
+       </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:element name="groupLimits" type="tns:groupLimits"/>
+    <xsd:complexType name="groupLimits">
+        <xsd:sequence>
+            <xsd:element name="groupLimit" type="tns:groupLimit" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+</xsd:schema>

@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://docs.rackspacecloud.com/dns/api/v1.0"
+    xmlns:tns="http://docs.rackspacecloud.com/dns/api/v1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:atom="http://www.w3.org/2005/Atom">
+
+    <xsd:import schemaLocation="atom.xsd" namespace="http://www.w3.org/2005/Atom" />
+
+    <xsd:element name="domains" type="tns:domains" />
+    <xsd:complexType name="domains">
+        <xsd:sequence>
+            <xsd:element name="domain" type="tns:domain" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="2" />
+        </xsd:sequence>
+        <xsd:attribute name="totalEntries" type="xsd:int" use="optional" />
+    </xsd:complexType>
+
+    <xsd:element name="subdomains" type="tns:subdomains" />
+    <xsd:complexType name="subdomains">
+        <xsd:sequence>
+            <xsd:element name="domain" type="tns:domain" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="2" />
+        </xsd:sequence>
+        <xsd:attribute name="totalEntries" type="xsd:int" use="optional" />
+    </xsd:complexType>
+
+    <xsd:element name="domain" type="tns:domain" />
+    <xsd:complexType name="domain">
+        <xsd:sequence>
+            <xsd:element ref="tns:nameservers" minOccurs="0"/>
+            <xsd:element ref="tns:recordsList" minOccurs="0"/>
+            <xsd:element ref="tns:subdomains"  minOccurs="0"/>
+            <xsd:element name="contents" type="xsd:string"  minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:attribute name="accountId" type="xsd:int"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="ttl" type="xsd:int"/>
+        <xsd:attribute name="emailAddress" type="xsd:string"/>
+        <xsd:attribute name="status" type="tns:dnsStatus"/>
+        <xsd:attribute name="updated" type="xsd:dateTime"/>
+        <xsd:attribute name="created" type="xsd:dateTime"/>
+        <xsd:attribute name="owner" type="xsd:string"/>
+       	<xsd:attribute name="contentType" type="tns:dnsContentFileType"/>
+       	<xsd:attribute name="comment" type="xsd:string"/>
+    </xsd:complexType>
+        <xsd:simpleType name="dnsContentFileType">
+        	<xsd:restriction base="xsd:string">
+            	<xsd:enumeration value="BIND_9" />
+        	</xsd:restriction>
+    	</xsd:simpleType>
+    
+    <xsd:element name="nameservers" type="tns:nameservers" />
+    <xsd:complexType name="nameservers">
+        <xsd:sequence>
+            <xsd:element name="nameserver" type="tns:nameserver" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="nameserver">
+        <xsd:attribute name="name" type="xsd:string" />
+    </xsd:complexType>
+
+    <xsd:element name="recordsList" type="tns:recordsList" />
+    <xsd:complexType name="recordsList">
+        <xsd:sequence>
+            <xsd:element name="record" type="tns:record" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="2" />
+        </xsd:sequence>
+        <xsd:attribute name="totalEntries" type="xsd:int" use="optional" />
+    </xsd:complexType>
+
+    <xsd:element name="record" type="tns:record" />
+
+    <xsd:complexType name="record">
+        <xsd:attribute name="id" type="xsd:string" use="optional" />
+        <xsd:attribute name="type" type="tns:recordType" />
+        <xsd:attribute name="name" type="xsd:string" />
+        <xsd:attribute name="data" type="xsd:string" />
+        <xsd:attribute name="ttl" type="xsd:int" use="optional" />
+        <xsd:attribute name="priority" type="xsd:int" use="optional" />
+        <xsd:attribute name="status" type="tns:dnsStatus" use="optional" />
+        <xsd:attribute name="updated" type="xsd:dateTime" use="optional" />
+        <xsd:attribute name="created" type="xsd:dateTime" use="optional" />
+        <xsd:attribute name="comment" type="xsd:string"  use="optional"/>
+    </xsd:complexType>
+
+    <xsd:element name="rdns" type="tns:rdns"/>
+    <xsd:complexType name="rdns">
+        <xsd:sequence>
+            <xsd:element ref="atom:link" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="recordsList" type="tns:recordsList" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:simpleType name="publicRecordType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="A" />
+            <xsd:enumeration value="CNAME" />
+            <xsd:enumeration value="TXT" />
+            <xsd:enumeration value="NS" />
+            <xsd:enumeration value="AAAA" />
+            <xsd:enumeration value="MX" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="recordType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="A" />
+            <xsd:enumeration value="CNAME" />
+            <xsd:enumeration value="TXT" />
+            <xsd:enumeration value="NS" />
+            <xsd:enumeration value="AAAA" />
+            <xsd:enumeration value="MX" />
+            <xsd:enumeration value="SRV" />
+            <xsd:enumeration value="PTR" />
+            <xsd:enumeration value="SOA" />
+            <xsd:enumeration value="DKIM" />
+            <xsd:enumeration value="DNAME" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+
+    <xsd:simpleType name="dnsStatus">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="INITIALIZED"/>
+            <xsd:enumeration value="ACTIVE" />
+            <xsd:enumeration value="ERROR" />
+            <xsd:enumeration value="PENDING" />
+            <xsd:enumeration value="SUSPENDED" />
+            <xsd:enumeration value="DELETED" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:element name="changes" type="tns:changes" />
+    <xsd:complexType name="changes">
+        <xsd:sequence>
+            <xsd:element ref="tns:change" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="2" />
+        </xsd:sequence>
+        <xsd:attribute name="totalEntries" type="xsd:int"/>
+        <xsd:attribute name="from" type="xsd:dateTime"/>
+        <xsd:attribute name="to" type="xsd:dateTime"/>
+    </xsd:complexType>
+
+    <xsd:element name="change" type="tns:change" />
+    <xsd:complexType name="change">
+        <xsd:sequence>
+            <xsd:element ref="tns:changeDetail" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="accountId" type="xsd:int"/>
+        <xsd:attribute name="domain" type="xsd:string" />
+        <xsd:attribute name="targetId" type="xsd:int"/>
+        <xsd:attribute name="targetType" type="xsd:string"/>
+        <xsd:attribute name="action" type="xsd:string" />
+        <xsd:attribute name="changeDate" type="xsd:dateTime" />
+    </xsd:complexType>
+    
+    <xsd:element name="changeDetail" type="tns:changeDetail"/>
+    <xsd:complexType name="changeDetail">
+        <xsd:attribute name="field" type="xsd:string"/>
+        <xsd:attribute name="originalValue" type="xsd:string"/>
+        <xsd:attribute name="newValue" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:element name="recordTypes" type="tns:recordTypes" />
+    <xsd:complexType name="recordTypes">
+        <xsd:sequence>
+            <xsd:element name="recordType" type="tns:recordType" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:simpleType name="asyncStatus">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="INITIALIZED" />
+            <xsd:enumeration value="RUNNING" />
+            <xsd:enumeration value="COMPLETED" />
+            <xsd:enumeration value="ERROR" />
+            <xsd:enumeration value="CANCELED" />
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="verb">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="GET"/>
+            <xsd:enumeration value="POST"/>
+            <xsd:enumeration value="PUT"/>
+            <xsd:enumeration value="DELETE"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:element name="asyncResponse" type="tns:asyncResponse"/>
+    <xsd:complexType name="asyncResponse">
+        <xsd:sequence>
+            <xsd:element name="jobId" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+            <xsd:element name="callbackUrl" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+            <xsd:element name="status" minOccurs="1" maxOccurs="1" type="tns:asyncStatus"/>
+            <xsd:element name="requestUrl" minOccurs="0" maxOccurs="1" type="xsd:anyURI"/>
+            <xsd:element name="verb" minOccurs="0" maxOccurs="1" type="tns:verb"/>
+            <xsd:element name="request" minOccurs="0" maxOccurs="1" type="xsd:string"/>
+            <xsd:element name="response" minOccurs="0" maxOccurs="1" type="xsd:anySimpleType"/> 
+            <xsd:element name="error" minOccurs="0" maxOccurs="1" type="tns:dnsFault"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="asyncJobsStatus" type="tns:asyncJobsStatus" />
+   	<xsd:complexType name="asyncJobsStatus">
+        <xsd:sequence>
+            <xsd:element name="asyncResponse" type="tns:asyncResponse" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="2" />
+        </xsd:sequence>
+        <xsd:attribute name="totalEntries" type="xsd:int" use="optional" />
+   </xsd:complexType>
+
+        
+    <xsd:element name="dnsFault" type="tns:dnsFault"/>
+    <xsd:complexType name="dnsFault">
+        <xsd:sequence>
+            <xsd:element name="message" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+            <xsd:element name="details" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+        </xsd:sequence>
+        <xsd:attribute name="code" type="xsd:int" />
+    </xsd:complexType>
+
+    <xsd:element name="badRequest" type="tns:badRequest"/>
+    <xsd:complexType name="badRequest">
+        <xsd:complexContent>
+            <xsd:extension base="tns:dnsFault">
+                <xsd:sequence>
+                    <xsd:element name="validationErrors" minOccurs="1" maxOccurs="1" type="tns:validationErrors"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="validationErrors">
+        <xsd:sequence>
+            <xsd:element name="messages" type="xsd:string" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="itemNotFound" type="tns:itemNotFound"/>
+    <xsd:complexType name="itemNotFound">
+        <xsd:complexContent>
+            <xsd:extension base="tns:dnsFault"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:element name="itemAlreadyExists" type="tns:itemAlreadyExists"/>
+    <xsd:complexType name="itemAlreadyExists">
+        <xsd:complexContent>
+            <xsd:extension base="tns:dnsFault"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:element name="overLimit" type="tns:overLimit"/>
+    <xsd:complexType name="overLimit">
+        <xsd:complexContent>
+            <xsd:extension base="tns:dnsFault"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="serviceUnavailable" type="tns:serviceUnavailable"/>
+    <xsd:complexType name="serviceUnavailable">
+        <xsd:complexContent>
+            <xsd:extension base="tns:dnsFault"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="internalServerError" type="tns:internalServerError"/>
+    <xsd:complexType name="internalServerError">
+        <xsd:complexContent>
+            <xsd:extension base="tns:dnsFault"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:element name="unauthorized" type="tns:unauthorized"/>
+    <xsd:complexType name="unauthorized">
+        <xsd:complexContent>
+            <xsd:extension base="tns:dnsFault"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:element name="deleteFault" type="tns:deleteFault"/>
+    <xsd:complexType name="deleteFault">
+        <xsd:complexContent>
+            <xsd:extension base="tns:dnsFault">
+                <xsd:sequence>
+                    <xsd:element name="failedItems" type="tns:validationFaults" minOccurs="1" maxOccurs="1" nillable="false"/>   
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="validationFaults">
+        <xsd:sequence>
+            <xsd:element name="fault" type="tns:dnsFault" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>

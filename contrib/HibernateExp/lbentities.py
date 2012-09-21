@@ -42,7 +42,9 @@ import org.openstack.atlas.service.domain.entities.UserPages as UserPages
 import org.openstack.atlas.service.domain.entities.SslTermination as SslTermination
 import org.openstack.atlas.service.domain.entities.Defaults as Defaults
 import org.openstack.atlas.service.domain.entities.AllowedDomain as AllowedDomain
-import org.openstack.atlas.service.domain.entities.Meta as Meta
+import org.openstack.atlas.service.domain.entities.LoadbalancerMeta as LoadbalancerMeta
+import org.openstack.atlas.service.domain.entities.NodeMeta as NodeMeta
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatusHistory as LoadBalancerStatusHistory
 import org.openstack.atlas.service.domain.events.entities.Event as Event
 import org.openstack.atlas.service.domain.events.entities.Alert as Alert
 import org.openstack.atlas.service.domain.events.entities.AlertStatus as AlertStatus
