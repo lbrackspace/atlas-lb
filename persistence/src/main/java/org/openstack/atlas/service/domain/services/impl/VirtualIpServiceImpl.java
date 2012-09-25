@@ -508,9 +508,9 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     private void reclaimIpv6VirtualIp(LoadBalancer lb, VirtualIpv6 virtualIpv6) {
         String ip;
-        int aid = lb.getAccountId();
+        /*int aid = lb.getAccountId();
         int lid = lb.getId();
-        RdnsHelper rdns = RdnsHelper.newRdnsHelper();
+        RdnsHelper rdns = RdnsHelper.newRdnsHelper();*/
         LoadBalancerServiceEvent lbe;
         if (!isIpv6VipAllocatedToAnotherLoadBalancer(lb, virtualIpv6)) {
             /*try {
