@@ -2,8 +2,10 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import com.sun.jersey.api.client.ClientResponse;
 import java.io.UnsupportedEncodingException;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ws.rs.core.MultivaluedMap;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
@@ -26,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import org.openstack.atlas.restclients.dns.StaticDNSClientUtils;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
@@ -36,10 +39,12 @@ import org.openstack.atlas.util.debug.Debug;
 @Service
 public class VirtualIpServiceImpl extends BaseService implements VirtualIpService {
 
+    private static final int SB_INIT_SIZE = 1024 * 8;
     private final Log LOG = LogFactory.getLog(VirtualIpServiceImpl.class);
     private AccountLimitService accountLimitService;
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-    private static final String DEL_PTR_BAD_TITLE = "Delete PTR on Virtual IP Fail";
+    private static final String DEL_PTR_FAILED = "Delete PTR on Virtual IP Fail";
+    private static final String DEL_PTR_PASSED = "Delete PTR on Virtual IP Passed";
 
     @Required
     public void setAccountLimitService(AccountLimitService accountLimitService) {
@@ -493,52 +498,51 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         virtualIpRepository.persist(obj);
     }
 
-    @Override
-    @Transactional
-    public void nop() {
-        no_op();
-    }
-
     private void reclaimVirtualIp(LoadBalancer lb, VirtualIp virtualIp) {
         if (!isVipAllocatedToAnotherLoadBalancer(lb, virtualIp)) {
-            //delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
+            delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
             virtualIpRepository.deallocateVirtualIp(virtualIp);
         }
     }
 
     private void reclaimIpv6VirtualIp(LoadBalancer lb, VirtualIpv6 virtualIpv6) {
         String ip;
-        /*int aid = lb.getAccountId();
+        int aid = lb.getAccountId();
         int lid = lb.getId();
-        RdnsHelper rdns = RdnsHelper.newRdnsHelper();*/
+        RdnsHelper rdns = RdnsHelper.newRdnsHelper(aid);
         LoadBalancerServiceEvent lbe;
         if (!isIpv6VipAllocatedToAnotherLoadBalancer(lb, virtualIpv6)) {
-            /*try {
+            try {
                 ip = virtualIpv6.getDerivedIpString();
                 delPtrRecord(aid, lid, ip);
             } catch (IPStringConversionException ex) {
                 String stackTrace = Debug.getEST(ex);
                 String fmt = "Error while attempting to delete PTR record for"
                         + " Virtual IPv6 address for lb %s\n";
-                String msg = String.format(fmt, rdns.buildDeviceUri(lb.getAccountId(), lb.getId()));
-                LOG.error(msg + "Exception: "+ stackTrace,ex);
-                lbe = newBadDelPtrEvent(aid,lid,msg,stackTrace);
+                String msg = String.format(fmt, rdns.buildDeviceUri(aid, lid));
+                LOG.error(msg + "Exception: " + stackTrace, ex);
+                lbe = newDelPtrEvent(aid, lid, msg, stackTrace, true);
                 loadBalancerRepository.save(lbe);
-            }*/
+            }
             virtualIpv6Repository.deleteVirtualIp(virtualIpv6);
         }
     }
 
-    private LoadBalancerServiceEvent newBadDelPtrEvent(int aid, int lid, String msg, String detailedMsg) {
+    private LoadBalancerServiceEvent newDelPtrEvent(int aid, int lid, String msg, String detailedMsg, boolean failed) {
         LoadBalancerServiceEvent lbe = new LoadBalancerServiceEvent();
         lbe.setAccountId(aid);
         lbe.setLoadbalancerId(lid);
-        lbe.setTitle(DEL_PTR_BAD_TITLE);
+        if (failed) {
+            lbe.setTitle(DEL_PTR_FAILED);
+            lbe.setSeverity(EventSeverity.WARNING);
+        } else {
+            lbe.setTitle(DEL_PTR_PASSED);
+            lbe.setSeverity(EventSeverity.INFO);
+        }
         lbe.setDescription(msg);
         lbe.setType(EventType.DELETE_VIRTUAL_IP);
-        lbe.setSeverity(EventSeverity.WARNING);
         lbe.setCategory(CategoryType.DELETE);
-        lbe.setRelativeUri(RdnsHelper.newRdnsHelper().relativeUri(aid, lid));
+        lbe.setRelativeUri(RdnsHelper.newRdnsHelper(aid).relativeUri(aid, lid));
         lbe.setCreated(Calendar.getInstance());
         if (detailedMsg != null) {
             lbe.setDetailedMessage(detailedMsg);
@@ -548,33 +552,46 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     @Transactional
     private void delPtrRecord(int aid, int lid, String ip) {
-        RdnsHelper rdns = RdnsHelper.newRdnsHelper();
+        RdnsHelper rdns = RdnsHelper.newRdnsHelper(aid);
         ClientResponse resp;
-        int httpStatus;
+        String msg;
+        String fmt;
+        String respStr;
         String lbUrl = rdns.buildDeviceUri(aid, lid);
         try {
-            resp = rdns.delPtrRecord(aid, lid, ip);
+            resp = rdns.delPtrPubRecord(lid, ip);
         } catch (Exception ex) {
             String stackTrace = Debug.getEST(ex);
-            String msg = "Exception caught while attempting to delete ptr " + ""
+            msg = "Exception rDNS caught while attempting to delete ptr " + ""
                     + "for ip " + ip
                     + " on loadbalancer "
                     + lbUrl + "\n";
             LOG.error(msg + stackTrace, ex);
-            LoadBalancerServiceEvent lbe = newBadDelPtrEvent(aid, lid, msg,
-                    "Exception: " + stackTrace);
+            LoadBalancerServiceEvent lbe = newDelPtrEvent(aid, lid, msg,
+                    "Exception: " + stackTrace, true);
             loadBalancerEventRepository.save(lbe);
             return;
         }
 
         int statusCode = resp.getStatus();
+
+
         if (statusCode / 100 != 2) {
-            String fmt = "Error rDNS returned http status code %d when trying "
+            fmt = "ERROR rDNS returned http status code %d when trying "
                     + "attempting to delete PTR record for ip %s for on loadbalancer %s\n";
-            String msg = String.format(fmt, statusCode, ip, lbUrl);
-            String body = resp.getEntity(String.class);
-            LOG.error(msg + "ResponseBody: " + ((body == null) ? "" : body));
-            LoadBalancerServiceEvent lbe = newBadDelPtrEvent(aid, lid, msg, body);
+            msg = String.format(fmt, statusCode, ip, lbUrl);
+            respStr = StaticDNSClientUtils.clientResponseToString(resp);
+            LOG.error(msg + respStr);
+            System.out.printf("%s%s\n", msg, respStr);
+            LoadBalancerServiceEvent lbe = newDelPtrEvent(aid, lid, msg, respStr, true);
+            loadBalancerEventRepository.save(lbe);
+            return;
+        } else {
+            respStr = StaticDNSClientUtils.clientResponseToString(resp);
+            fmt = "SUCCESS rDNS DELETING PTR for account=%d loadbalancerId=%d\n%s";
+            msg = String.format(fmt, aid, lid, respStr);
+            LoadBalancerServiceEvent lbe = newDelPtrEvent(aid,lid,msg,respStr,false);
+            LOG.info(msg);
             loadBalancerEventRepository.save(lbe);
             return;
         }
@@ -633,9 +650,6 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             }
         }
         return false;
-    }
-
-    private void no_op() {
     }
 
     @Override
