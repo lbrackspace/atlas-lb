@@ -36,7 +36,7 @@ public class UsageRollupProcessorTest {
 
         for (int i = 0; i < usages.size(); i++) {
             if (firstUsage != null && secondUsage != null) {
-                Assert.assertEquals(firstUsage.getEndTime().getTimeInMillis(), secondUsage.getStartTime().getTimeInMillis() - 1, 1);
+                Assert.assertEquals(firstUsage.getEndTime().getTimeInMillis(), secondUsage.getStartTime().getTimeInMillis(), 0);
             }
 
             if( i < usages.size() - 1) {
@@ -97,10 +97,10 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(sslOnUsageStartTime, usagesToCreate.get(0).getEndTime());
             Assert.assertEquals(sslOnUsageStartTime, usagesToCreate.get(1).getStartTime());
             Assert.assertEquals(sslOnUsageEndTime.get(Calendar.DAY_OF_YEAR), usagesToCreate.get(1).getEndTime().get(Calendar.DAY_OF_YEAR));
-            Assert.assertEquals(sslOnUsageEndTime.get(Calendar.HOUR_OF_DAY), usagesToCreate.get(1).getEndTime().get(Calendar.HOUR_OF_DAY));
-            Assert.assertEquals(59, usagesToCreate.get(1).getEndTime().get(Calendar.MINUTE));
-            Assert.assertEquals(59, usagesToCreate.get(1).getEndTime().get(Calendar.SECOND));
-            Assert.assertEquals(999, usagesToCreate.get(1).getEndTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(sslOnUsageEndTime.get(Calendar.HOUR_OF_DAY) + 1, usagesToCreate.get(1).getEndTime().get(Calendar.HOUR_OF_DAY));
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.MILLISECOND));
 
             // Check tags
             Assert.assertEquals(0, usagesToCreate.get(0).getTags().intValue());
@@ -142,10 +142,10 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(createUsageStartTime, usagesToCreate.get(0).getStartTime());
             Assert.assertEquals(sslOnUsageStartTime, usagesToCreate.get(2).getStartTime());
             Assert.assertEquals(sslOnUsageEndTime.get(Calendar.DAY_OF_YEAR), usagesToCreate.get(2).getEndTime().get(Calendar.DAY_OF_YEAR));
-            Assert.assertEquals(sslOnUsageEndTime.get(Calendar.HOUR_OF_DAY), usagesToCreate.get(2).getEndTime().get(Calendar.HOUR_OF_DAY));
-            Assert.assertEquals(59, usagesToCreate.get(2).getEndTime().get(Calendar.MINUTE));
-            Assert.assertEquals(59, usagesToCreate.get(2).getEndTime().get(Calendar.SECOND));
-            Assert.assertEquals(999, usagesToCreate.get(2).getEndTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(sslOnUsageEndTime.get(Calendar.HOUR_OF_DAY) + 1, usagesToCreate.get(2).getEndTime().get(Calendar.HOUR_OF_DAY));
+            Assert.assertEquals(0, usagesToCreate.get(2).getEndTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, usagesToCreate.get(2).getEndTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, usagesToCreate.get(2).getEndTime().get(Calendar.MILLISECOND));
 
             // Check tags
             Assert.assertEquals(0, usagesToCreate.get(0).getTags().intValue());
@@ -194,10 +194,10 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(createUsageStartTime, usagesToCreate.get(0).getStartTime());
             Assert.assertEquals(sslOnUsageStartTime, usagesToCreate.get(25).getStartTime());
             Assert.assertEquals(sslOnUsageEndTime.get(Calendar.DAY_OF_YEAR), usagesToCreate.get(25).getEndTime().get(Calendar.DAY_OF_YEAR));
-            Assert.assertEquals(sslOnUsageEndTime.get(Calendar.HOUR_OF_DAY), usagesToCreate.get(25).getEndTime().get(Calendar.HOUR_OF_DAY));
-            Assert.assertEquals(59, usagesToCreate.get(25).getEndTime().get(Calendar.MINUTE));
-            Assert.assertEquals(59, usagesToCreate.get(25).getEndTime().get(Calendar.SECOND));
-            Assert.assertEquals(999, usagesToCreate.get(25).getEndTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(sslOnUsageEndTime.get(Calendar.HOUR_OF_DAY) + 1, usagesToCreate.get(25).getEndTime().get(Calendar.HOUR_OF_DAY));
+            Assert.assertEquals(0, usagesToCreate.get(25).getEndTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, usagesToCreate.get(25).getEndTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, usagesToCreate.get(25).getEndTime().get(Calendar.MILLISECOND));
 
             // Check tags
             Assert.assertEquals(0, usagesToCreate.get(0).getTags().intValue());
@@ -288,10 +288,10 @@ public class UsageRollupProcessorTest {
 
             Assert.assertEquals(sslOnUsageStartTime, usagesToCreate.get(1).getStartTime());
             Assert.assertEquals(sslOnUsageEndTime.get(Calendar.DAY_OF_YEAR), usagesToCreate.get(1).getEndTime().get(Calendar.DAY_OF_YEAR));
-            Assert.assertEquals(sslOnUsageEndTime.get(Calendar.HOUR_OF_DAY), usagesToCreate.get(1).getEndTime().get(Calendar.HOUR_OF_DAY));
-            Assert.assertEquals(59, usagesToCreate.get(1).getEndTime().get(Calendar.MINUTE));
-            Assert.assertEquals(59, usagesToCreate.get(1).getEndTime().get(Calendar.SECOND));
-            Assert.assertEquals(999, usagesToCreate.get(1).getEndTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(sslOnUsageEndTime.get(Calendar.HOUR_OF_DAY) + 1, usagesToCreate.get(1).getEndTime().get(Calendar.HOUR_OF_DAY));
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.MILLISECOND));
 
             // Check tags
             Assert.assertEquals(0, usagesToUpdate.get(0).getTags().intValue());
@@ -347,10 +347,10 @@ public class UsageRollupProcessorTest {
 
             Assert.assertEquals(sslOnUsageStartTime, usagesToCreate.get(25).getStartTime());
             Assert.assertEquals(sslOnUsageEndTime.get(Calendar.DAY_OF_YEAR), usagesToCreate.get(25).getEndTime().get(Calendar.DAY_OF_YEAR));
-            Assert.assertEquals(sslOnUsageEndTime.get(Calendar.HOUR_OF_DAY), usagesToCreate.get(25).getEndTime().get(Calendar.HOUR_OF_DAY));
-            Assert.assertEquals(59, usagesToCreate.get(25).getEndTime().get(Calendar.MINUTE));
-            Assert.assertEquals(59, usagesToCreate.get(25).getEndTime().get(Calendar.SECOND));
-            Assert.assertEquals(999, usagesToCreate.get(25).getEndTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(sslOnUsageEndTime.get(Calendar.HOUR_OF_DAY) + 1, usagesToCreate.get(25).getEndTime().get(Calendar.HOUR_OF_DAY));
+            Assert.assertEquals(0, usagesToCreate.get(25).getEndTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, usagesToCreate.get(25).getEndTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, usagesToCreate.get(25).getEndTime().get(Calendar.MILLISECOND));
 
             // Check tags
             Assert.assertEquals(0, usagesToUpdate.get(0).getTags().intValue());
@@ -435,6 +435,63 @@ public class UsageRollupProcessorTest {
 
             Assert.assertEquals(1, usagesToUpdate.size());
             Assert.assertEquals(40, usagesToCreate.size());
+
+            // Check timestamps
+            assertTimestampsAreContiguous(usagesToUpdate);
+            assertTimestampsAreContiguous(usagesToCreate);
+        }
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenProcessingWithARecentRecordCase3 {
+        @Mock
+        private UsageRepository rollUpUsageRepository;
+        private UsageRollupProcessor usageRollupProcessor;
+
+        private final int accountId = 1234;
+        private final int loadBalancerId = 1;
+        private LoadBalancerUsage regularUsageRecord;
+        private Calendar createUsageStartTime;
+        private Calendar createUsageEndTime;
+        private Calendar regularUsageStartTime;
+        private Calendar regularUsageEndTime;
+        private List<LoadBalancerUsage> inOrderUsages;
+        private Usage recentUsage;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, DeletedStatusException {
+            createUsageStartTime = new GregorianCalendar(2012, Calendar.SEPTEMBER, 25, 16, 8, 16);
+            createUsageEndTime = new GregorianCalendar(2012, Calendar.SEPTEMBER, 25, 16, 59, 59);
+            regularUsageStartTime = new GregorianCalendar(2012, Calendar.SEPTEMBER, 25, 17, 3, 40);
+            regularUsageEndTime = new GregorianCalendar(2012, Calendar.SEPTEMBER, 25, 17, 58, 39);
+
+            LoadBalancer lb = new LoadBalancer();
+            lb.setId(loadBalancerId);
+            recentUsage = new Usage(lb, 9.09090909090908, 26500l, 783835032l, 0.0, 0l, 0l, createUsageStartTime, createUsageEndTime, 11, 1, 0, "CREATE_LOADBALANCER", accountId, 1, true);
+            recentUsage.setId(1234);
+            regularUsageRecord = new LoadBalancerUsage(accountId, loadBalancerId, 0.0, 1038l, 3073l, 27538l, 783838105l, 0.0, 0l, 0l, null, null, regularUsageStartTime, regularUsageEndTime, 12, 1, 0, null);
+
+            inOrderUsages = new ArrayList<LoadBalancerUsage>();
+            inOrderUsages.add(regularUsageRecord);
+
+            usageRollupProcessor = new UsageRollupProcessor(inOrderUsages, rollUpUsageRepository);
+
+            List<Usage> recentUsages = new ArrayList<Usage>();
+            recentUsages.add(recentUsage);
+            when(rollUpUsageRepository.getMostRecentUsageForLoadBalancers(Matchers.<Collection<Integer>>any())).thenReturn(recentUsages);
+        }
+
+        @Test
+        public void shouldSucceedWhenUsagesAreBackToBackWithinTheSameHour() {
+            usageRollupProcessor.process();
+            final List<Usage> usagesToUpdate = usageRollupProcessor.getUsagesToUpdate();
+            final List<Usage> usagesToCreate = usageRollupProcessor.getUsagesToCreate();
+
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToUpdate);
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToCreate);
+
+            Assert.assertEquals(1, usagesToUpdate.size());
+            Assert.assertEquals(1, usagesToCreate.size());
 
             // Check timestamps
             assertTimestampsAreContiguous(usagesToUpdate);

@@ -141,9 +141,6 @@ public class UsageEventProcessor {
 
         while (previousRecordsEndTime.before(nextUsagesStartTime)) {
             if (isEndOfHour(previousRecordsEndTime)) {
-                // Move previousRecordsEndTime to next hour since we don't need a buffer for this hour.
-                previousRecordsEndTime.add(Calendar.MILLISECOND, 1);
-
                 if (previousRecordsEndTime.before(nextUsagesStartTime)
                         && previousRecordsEndTime.get(Calendar.HOUR_OF_DAY) == nextUsagesStartTime.get(Calendar.HOUR_OF_DAY)
                         && previousRecordsEndTime.get(Calendar.DAY_OF_MONTH) == nextUsagesStartTime.get(Calendar.DAY_OF_MONTH)
@@ -184,7 +181,8 @@ public class UsageEventProcessor {
     }
 
     public static boolean isEndOfHour(Calendar calendar) {
-        return calendar.get(Calendar.MINUTE) == 59 && calendar.get(Calendar.SECOND) == 59 && calendar.get(Calendar.MILLISECOND) == 999;
+//        return calendar.get(Calendar.MINUTE) == 59 && calendar.get(Calendar.SECOND) == 59 && calendar.get(Calendar.MILLISECOND) == 999;
+        return calendar.get(Calendar.MINUTE) == 0 && calendar.get(Calendar.SECOND) == 0 && calendar.get(Calendar.MILLISECOND) == 0;
     }
 
     public static Calendar calculateEndTime(Calendar recentUsageEndTime, Calendar nextUsageStartTime) {
@@ -203,6 +201,7 @@ public class UsageEventProcessor {
         newEndTime.set(Calendar.MINUTE, 59);
         newEndTime.set(Calendar.SECOND, 59);
         newEndTime.set(Calendar.MILLISECOND, 999);
+        newEndTime.add(Calendar.MILLISECOND, 1);
         return newEndTime;
     }
 

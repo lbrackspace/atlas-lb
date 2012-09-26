@@ -244,13 +244,13 @@ public class UsageEventProcessorTest {
 
             // Check timestamps
             Assert.assertEquals(mostRecentUsage.getStartTime(), usagesToUpdate.get(0).getStartTime());
-            Assert.assertEquals(usagesToCreate.get(0).getStartTime().getTimeInMillis() - 1, usagesToUpdate.get(0).getEndTime().getTimeInMillis());
+            Assert.assertEquals(usagesToCreate.get(0).getStartTime().getTimeInMillis(), usagesToUpdate.get(0).getEndTime().getTimeInMillis());
 
-            Assert.assertEquals(usagesToUpdate.get(0).getEndTime().getTimeInMillis() + 1, usagesToCreate.get(0).getStartTime().getTimeInMillis());
+            Assert.assertEquals(usagesToUpdate.get(0).getEndTime().getTimeInMillis(), usagesToCreate.get(0).getStartTime().getTimeInMillis());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(0).getEndTime());
             Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(1).getStartTime());
-            Assert.assertEquals(usagesToCreate.get(2).getStartTime().getTimeInMillis() - 1, usagesToCreate.get(1).getEndTime().getTimeInMillis());
-            Assert.assertEquals(usagesToCreate.get(1).getEndTime().getTimeInMillis() + 1, usagesToCreate.get(2).getStartTime().getTimeInMillis());
+            Assert.assertEquals(usagesToCreate.get(2).getStartTime().getTimeInMillis(), usagesToCreate.get(1).getEndTime().getTimeInMillis());
+            Assert.assertEquals(usagesToCreate.get(1).getEndTime().getTimeInMillis(), usagesToCreate.get(2).getStartTime().getTimeInMillis());
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(2).getEndTime());
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(3).getStartTime());
             Assert.assertEquals(loadBalancerUsageSslOffEvent.getStartTime(), usagesToCreate.get(3).getEndTime());
@@ -358,7 +358,7 @@ public class UsageEventProcessorTest {
 
             Assert.assertEquals(1, bufferRecords.size());
             Assert.assertEquals(lb1EndTime.getTimeInMillis(), bufferRecords.get(0).getStartTime().getTimeInMillis());
-            Assert.assertEquals(lb2StartTime.getTimeInMillis() - 1, bufferRecords.get(0).getEndTime().getTimeInMillis());
+            Assert.assertEquals(lb2StartTime.getTimeInMillis(), bufferRecords.get(0).getEndTime().getTimeInMillis());
 
             Assert.assertEquals(lbUsage1.getTags(), bufferRecords.get(0).getTags());
         }
@@ -388,7 +388,7 @@ public class UsageEventProcessorTest {
 
             Assert.assertEquals(2, bufferRecords.size());
             Assert.assertEquals(lb1EndTime.getTimeInMillis(), bufferRecords.get(0).getStartTime().getTimeInMillis());
-            Assert.assertEquals(hourMark.getTimeInMillis() - 1, bufferRecords.get(0).getEndTime().getTimeInMillis());
+            Assert.assertEquals(hourMark.getTimeInMillis(), bufferRecords.get(0).getEndTime().getTimeInMillis());
             Assert.assertEquals(hourMark.getTimeInMillis(), bufferRecords.get(1).getStartTime().getTimeInMillis());
             Assert.assertEquals(lb2StartTime.getTimeInMillis(), bufferRecords.get(1).getEndTime().getTimeInMillis());
 

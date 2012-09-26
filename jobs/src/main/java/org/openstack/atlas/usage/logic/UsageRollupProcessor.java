@@ -66,8 +66,8 @@ public class UsageRollupProcessor {
                 List<Usage> mergedUsageRecords;
 
                 if (recentUsage != null 
-                        && usagesForHour.getDayOfYear() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getEndTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.DAY_OF_YEAR)
-                        && usagesForHour.getHourOfDay() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getEndTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.HOUR_OF_DAY)) {
+                        && usagesForHour.getDayOfYear() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getStartTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.DAY_OF_YEAR)
+                        && usagesForHour.getHourOfDay() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getStartTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.HOUR_OF_DAY)) {
                     mergedUsageRecords = mergeUsageRecords(usagesForHour.getUsages(), recentUsage);
                 } else {
                     mergedUsageRecords = mergeUsageRecords(usagesForHour.getUsages(), null);
@@ -182,6 +182,7 @@ public class UsageRollupProcessor {
                     maxedOutEndTime.set(Calendar.MINUTE, 59);
                     maxedOutEndTime.set(Calendar.SECOND, 59);
                     maxedOutEndTime.set(Calendar.MILLISECOND, 999);
+                    maxedOutEndTime.add(Calendar.MILLISECOND, 1);
                     lastUsage.setEndTime(maxedOutEndTime);
 
                     contiguousUsages.add(lastUsage);
@@ -217,9 +218,9 @@ public class UsageRollupProcessor {
 
         for (LoadBalancerUsage usage : usages) {
             String timeZoneCode = configuration.getString(ConfigurationKeys.usage_timezone_code);
-            Calendar endTimeForTimeZone = TimeZoneHelper.getCalendarForTimeZone(usage.getEndTime(), TimeZone.getTimeZone(timeZoneCode));
-            int dayOfYear = endTimeForTimeZone.get(Calendar.DAY_OF_YEAR);
-            int hourOfDay = endTimeForTimeZone.get(Calendar.HOUR_OF_DAY);
+            Calendar startTimeForTimeZone = TimeZoneHelper.getCalendarForTimeZone(usage.getStartTime(), TimeZone.getTimeZone(timeZoneCode));
+            int dayOfYear = startTimeForTimeZone.get(Calendar.DAY_OF_YEAR);
+            int hourOfDay = startTimeForTimeZone.get(Calendar.HOUR_OF_DAY);
 
             boolean addedUsageRecord = false;
             for (UsagesForHour usagesForHourOfYear : usagesPerHourList) {
@@ -264,9 +265,6 @@ public class UsageRollupProcessor {
 
         while (previousRecordsEndTime.before(nextUsagesStartTime)) {
             if (UsageEventProcessor.isEndOfHour(previousRecordsEndTime)) {
-                // Move previousRecordsEndTime to next hour since we don't need a buffer for this hour.
-                previousRecordsEndTime.add(Calendar.MILLISECOND, 1);
-
                 if (previousRecordsEndTime.before(nextUsagesStartTime)
                         && previousRecordsEndTime.get(Calendar.HOUR_OF_DAY) == nextUsagesStartTime.get(Calendar.HOUR_OF_DAY)
                         && previousRecordsEndTime.get(Calendar.DAY_OF_MONTH) == nextUsagesStartTime.get(Calendar.DAY_OF_MONTH)

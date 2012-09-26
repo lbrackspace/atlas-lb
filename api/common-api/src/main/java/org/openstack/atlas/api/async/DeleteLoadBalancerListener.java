@@ -81,10 +81,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
 
-            // Notify usage processor with a usage event
-            if (dbLoadBalancer.hasSsl()) {
-                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
-            }
+            // Notify usage processor
             usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
 
             return;
@@ -94,9 +91,6 @@ public class DeleteLoadBalancerListener extends BaseListener {
             LOG.debug(String.format("Deleting load balancer '%d' ssl termination in database...", dbLoadBalancer.getId()));
             sslTerminationService.deleteSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
             LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in database.", dbLoadBalancer.getId()));
-
-            // Notify usage processor with a usage event
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
         }
 
         dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);
