@@ -35,8 +35,8 @@ public class UsageRepository {
 
         Query query = entityManager.createNativeQuery("SELECT a.* " +
                 "FROM lb_usage a, " +
-                "(SELECT loadbalancer_id, max(end_time) as end_time FROM lb_usage WHERE loadbalancer_id in (:loadbalancerIds) GROUP BY loadbalancer_id) b " +
-                "WHERE a.loadbalancer_id in (:loadbalancerIds) and a.loadbalancer_id = b.loadbalancer_id and a.end_time = b.end_time;", Usage.class)
+                "(SELECT loadbalancer_id, max(start_time) as start_time FROM lb_usage WHERE loadbalancer_id in (:loadbalancerIds) GROUP BY loadbalancer_id) b " +
+                "WHERE a.loadbalancer_id in (:loadbalancerIds) and a.loadbalancer_id = b.loadbalancer_id and a.start_time = b.start_time;", Usage.class)
                 .setParameter("loadbalancerIds", loadBalancerIds);
 
         List<Usage> usage = (List<Usage>) query.getResultList();
@@ -50,8 +50,8 @@ public class UsageRepository {
 
         Query query = entityManager.createNativeQuery("SELECT a.* " +
                 "FROM lb_usage a, " +
-                "(SELECT loadbalancer_id, max(end_time) as end_time FROM lb_usage WHERE loadbalancer_id = :loadbalancerId GROUP BY loadbalancer_id) b " +
-                "WHERE a.loadbalancer_id = :loadbalancerId and a.loadbalancer_id = b.loadbalancer_id and a.end_time = b.end_time;", Usage.class)
+                "(SELECT loadbalancer_id, max(start_time) as start_time FROM lb_usage WHERE loadbalancer_id = :loadbalancerId GROUP BY loadbalancer_id) b " +
+                "WHERE a.loadbalancer_id = :loadbalancerId and a.loadbalancer_id = b.loadbalancer_id and a.start_time = b.start_time;", Usage.class)
                 .setParameter("loadbalancerId", loadBalancerId);
 
         List<Usage> usage = (List<Usage>) query.getResultList();
