@@ -6,6 +6,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
@@ -135,16 +136,16 @@ public class AHUSLUtil {
      */
     public static EventType mapEventType(Usage usageRecord) throws DatatypeConfigurationException {
         if (usageRecord.getEventType() != null) {
-            if (usageRecord.getEventType().equals("CREATE_LOADBALANCER")) {
+            if (usageRecord.getEventType().equals(UsageEvent.CREATE_LOADBALANCER.name())) {
                 return EventType.CREATE;
-            } else if (usageRecord.getEventType().equals("DELETE_LOADBALANCER")) {
+            } else if (usageRecord.getEventType().equals(UsageEvent.DELETE_LOADBALANCER.name())) {
                 return EventType.DELETE;
-            } else if (usageRecord.getEventType().equals("SUSPEND_LOADBALANCER")) {
+            } else if (usageRecord.getEventType().equals(UsageEvent.SUSPEND_LOADBALANCER.name())) {
                 return EventType.SUSPEND;
-            } else if (usageRecord.getEventType().equals("UNSUSPEND_LOADBANCER")) {
+            } else if (usageRecord.getEventType().equals(UsageEvent.SUSPENDED_LOADBALANCER.name())) {
+                return EventType.SUSPEND;
+            } else if (usageRecord.getEventType().equals(UsageEvent.UNSUSPEND_LOADBALANCER.name())) {
                 return EventType.UNSUSPEND;
-            } else if (usageRecord.getEventType().equals("UPDATE_LOADBALANCER")) {
-                return EventType.UPDATE;
             }
         }
         return null;
