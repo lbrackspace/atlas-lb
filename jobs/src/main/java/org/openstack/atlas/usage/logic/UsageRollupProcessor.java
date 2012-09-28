@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.Tier;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
@@ -98,11 +99,13 @@ public class UsageRollupProcessor {
             boolean aUsageHasNoPolls = (usageRecordToMerge.getNumberOfPolls() == 0 || latestCustomerFacingRecord.getNumberOfPolls() == 0);
 
             if (((latestCustomerFacingRecord.getEventType() == null && usageRecordToMerge.getEventType() == null)
-                    || (latestCustomerFacingRecord.getEventType() != null && usageRecordToMerge.getEventType() == null))
+                    || (latestCustomerFacingRecord.getEventType() != null && usageRecordToMerge.getEventType() == null)
+                    || (UsageEvent.SUSPEND_LOADBALANCER.name().equals(latestCustomerFacingRecord.getEventType()) && UsageEvent.SUSPEND_LOADBALANCER.name().equals(usageRecordToMerge.getEventType()))
+                    || (UsageEvent.SUSPENDED_LOADBALANCER.name().equals(latestCustomerFacingRecord.getEventType()) && UsageEvent.SUSPENDED_LOADBALANCER.name().equals(usageRecordToMerge.getEventType())))
                     && usageRecordToMerge.getTags().equals(latestCustomerFacingRecord.getTags())
                     && usageRecordToMerge.getNumVips().equals(latestCustomerFacingRecord.getNumVips())
                     && (usageToMergeTier.equals(currUsageTier) || aUsageHasNoPolls)) {
-                // Merge records if tags, vips and tier are the same and eventsType are both null or first is not null and second is
+                // Merge records if tags, vips and tier are the same and eventsType are both null or first is not null and second is...or the have the same suspension event type
                 Double currUsageCcs = latestCustomerFacingRecord.getAverageConcurrentConnections();
                 Double currUsageCcsSsl = latestCustomerFacingRecord.getAverageConcurrentConnectionsSsl();
                 Integer currUsagePolls = latestCustomerFacingRecord.getNumberOfPolls();
@@ -189,7 +192,7 @@ public class UsageRollupProcessor {
                 }
             }
 
-            List<UsagesForHour> contiguousUsagesByHour = generateUsagesPerHourList(contiguousUsages);
+            List<UsagesForHour> contiguousUsagesByHour = generateUsagesPerHourList(contiguousUsages, recentUsage);
             lbIdUsageMap.put(lbId, contiguousUsagesByHour);
         }
 
@@ -213,7 +216,7 @@ public class UsageRollupProcessor {
         return lbIdUsageMap;
     }
 
-    private List<UsagesForHour> generateUsagesPerHourList(List<LoadBalancerUsage> usages) {
+    private List<UsagesForHour> generateUsagesPerHourList(List<LoadBalancerUsage> usages, Usage recentUsage) {
         List<UsagesForHour> usagesPerHourList = new ArrayList<UsagesForHour>();
 
         for (LoadBalancerUsage usage : usages) {
@@ -236,6 +239,21 @@ public class UsageRollupProcessor {
                 usagesForHour.setHourOfDay(hourOfDay);
                 usagesForHour.getUsages().add(usage);
                 usagesPerHourList.add(usagesForHour);
+            }
+        }
+
+        // Update suspended loadbalancer events to suspend loadbalancer events if in the same hour. Due to the creation of buffer records.
+        for (UsagesForHour usagesForHour : usagesPerHourList) {
+            boolean suspendStatus = false;
+
+            if(recentUsage != null && recentUsage.getStartTime().get(Calendar.HOUR_OF_DAY) == usagesForHour.getHourOfDay()
+                    && recentUsage.getStartTime().get(Calendar.DAY_OF_YEAR) == usagesForHour.getDayOfYear()) {
+                suspendStatus = true;
+            }
+
+            for (LoadBalancerUsage loadBalancerUsage : usagesForHour.getUsages()) {
+                if (UsageEvent.SUSPEND_LOADBALANCER.name().equals(loadBalancerUsage.getEventType())) suspendStatus = true;
+                if (suspendStatus && UsageEvent.SUSPENDED_LOADBALANCER.name().equals(loadBalancerUsage.getEventType())) loadBalancerUsage.setEventType(UsageEvent.SUSPEND_LOADBALANCER.name());
             }
         }
 
@@ -301,6 +319,9 @@ public class UsageRollupProcessor {
         newBufferRecord.setNumVips(recentUsage.getNumVips());
         newBufferRecord.setStartTime((Calendar) previousRecordsEndTime.clone());
         newBufferRecord.setEndTime((Calendar) newEndTimeForBufferRecord.clone());
+        if(UsageEvent.SUSPEND_LOADBALANCER.name().equals(recentUsage.getEventType()) || UsageEvent.SUSPENDED_LOADBALANCER.name().equals(recentUsage.getEventType())) {
+            newBufferRecord.setEventType(UsageEvent.SUSPENDED_LOADBALANCER.name());
+        }
         return newBufferRecord;
     }
 }

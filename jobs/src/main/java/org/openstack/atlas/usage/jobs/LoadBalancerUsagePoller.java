@@ -76,7 +76,7 @@ public class LoadBalancerUsagePoller extends Job implements StatefulJob {
 
     private void processUsageEvents() {
         List<LoadBalancerUsageEvent> usageEventEntries = usageEventRepository.getAllUsageEventEntriesInOrder();
-        UsageEventProcessor usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, loadBalancerRepository);
+        UsageEventProcessor usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, rollupUsageRepository, loadBalancerRepository);
 
         usageEventProcessor.process();
 

@@ -8,10 +8,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
@@ -30,10 +33,12 @@ public class UsageEventProcessorTest {
         }
     }
 
-    @RunWith(MockitoJUnitRunner.class)
+       @RunWith(MockitoJUnitRunner.class)
     public static class WhenProcessingWithNoRecentRecords {
         @Mock
         private LoadBalancerUsageRepository hourlyUsageRepository;
+        @Mock
+        private UsageRepository rollupUsageRepository;
         @Mock
         private LoadBalancerRepository loadBalancerRepository;
         private UsageEventProcessor usageEventProcessor;
@@ -58,9 +63,10 @@ public class UsageEventProcessorTest {
             usageEventEntries.add(loadBalancerUsageCreateEvent);
             usageEventEntries.add(loadBalancerUsageSslOnEvent);
 
-            usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, loadBalancerRepository);
+            usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, rollupUsageRepository, loadBalancerRepository);
 
             when(hourlyUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenReturn(null);
+            when(rollupUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenReturn(null);
             when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(new HashSet<VirtualIp>());
         }
 
@@ -129,10 +135,88 @@ public class UsageEventProcessorTest {
         }
     }
 
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenProcessingWithRecentRollupRecordsAndNoRecentHourlyRecords {
+        @Mock
+        private LoadBalancerUsageRepository hourlyUsageRepository;
+        @Mock
+        private UsageRepository rollupUsageRepository;
+        @Mock
+        private LoadBalancerRepository loadBalancerRepository;
+        private UsageEventProcessor usageEventProcessor;
+
+        private final int accountId = 1234;
+        private final int loadBalancerId = 1;
+        private Usage loadBalancerUsageCreateEvent;
+        private LoadBalancerUsageEvent loadBalancerUsageSslOnEvent;
+        private Calendar createEventStartTime;
+        private Calendar createEventEndTime;
+        private Calendar sslOnEventTime;
+        private List<LoadBalancerUsageEvent> usageEventEntries;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, DeletedStatusException {
+            createEventStartTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 33, 10);
+            createEventEndTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 4, 0, 0);
+            sslOnEventTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 7, 33, 45);
+
+            LoadBalancer lb = new LoadBalancer();
+            lb.setAccountId(accountId);
+            lb.setId(loadBalancerId);
+
+            loadBalancerUsageCreateEvent = new Usage(lb, 0.0, 0l, 0l, 0.0, 0l, 0l, createEventStartTime, createEventEndTime, 5, 1, BitTag.SERVICENET_LB.tagValue(), "CREATE_LOADBALANCER", accountId, 0, false);
+            loadBalancerUsageSslOnEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOnEventTime, 1, "SSL_MIXED_ON", 100l, 100l, 1, 0l, 0l, 0);
+
+            usageEventEntries = new ArrayList<LoadBalancerUsageEvent>();
+            usageEventEntries.add(loadBalancerUsageSslOnEvent);
+
+            usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, rollupUsageRepository, loadBalancerRepository);
+
+            when(hourlyUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenReturn(null);
+            when(rollupUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenReturn(loadBalancerUsageCreateEvent);
+            when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(new HashSet<VirtualIp>());
+        }
+
+        @Test
+        public void shouldSucceedWhenEventsAreBackToBackWithinTheSameHour() {
+            usageEventProcessor.process();
+            final List<LoadBalancerUsage> usagesToCreate = usageEventProcessor.getUsagesToCreate();
+
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToCreate);
+
+            Assert.assertEquals(1, usagesToCreate.size());
+
+            // Check timestamps
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(0).getStartTime());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getStartTime(), usagesToCreate.get(0).getEndTime());
+
+            // Check tags
+            Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SSL_MIXED_MODE.tagValue() + BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(0).getTags().intValue());
+
+            // Check usage
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesIn(), usagesToCreate.get(0).getLastBandwidthBytesIn());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesInSsl(), usagesToCreate.get(0).getLastBandwidthBytesInSsl());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesOut(), usagesToCreate.get(0).getLastBandwidthBytesOut());
+            Assert.assertEquals(loadBalancerUsageSslOnEvent.getLastBandwidthBytesOutSsl(), usagesToCreate.get(0).getLastBandwidthBytesOutSsl());
+            Assert.assertEquals(new Long(0), usagesToCreate.get(0).getCumulativeBandwidthBytesIn());
+            Assert.assertEquals(new Long(0), usagesToCreate.get(0).getCumulativeBandwidthBytesInSsl());
+            Assert.assertEquals(new Long(0), usagesToCreate.get(0).getCumulativeBandwidthBytesOut());
+            Assert.assertEquals(new Long(0), usagesToCreate.get(0).getCumulativeBandwidthBytesOutSsl());
+            Assert.assertEquals(new Double(0), usagesToCreate.get(0).getAverageConcurrentConnections());
+            Assert.assertEquals(new Double(0), usagesToCreate.get(0).getAverageConcurrentConnectionsSsl());
+            Assert.assertEquals(new Integer(0), usagesToCreate.get(0).getNumberOfPolls());
+
+        }
+
+    }
+
     @RunWith(MockitoJUnitRunner.class)
     public static class WhenProcessingWithRecentRecords {
         @Mock
         private LoadBalancerUsageRepository hourlyUsageRepository;
+        @Mock
+        private UsageRepository rollupUsageRepository;
         @Mock
         private LoadBalancerRepository loadBalancerRepository;
         private UsageEventProcessor usageEventProcessor;
@@ -158,7 +242,7 @@ public class UsageEventProcessorTest {
             usageEventEntries.add(loadBalancerUsageSslOnEvent);
             usageEventEntries.add(loadBalancerUsageSslOffEvent);
 
-            usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, loadBalancerRepository);
+            usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, rollupUsageRepository, loadBalancerRepository);
 
             mostRecentUsage = new LoadBalancerUsage();
             mostRecentUsage.setAccountId(accountId);

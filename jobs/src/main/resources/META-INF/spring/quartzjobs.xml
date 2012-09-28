@@ -29,7 +29,6 @@
                 <ref bean="eventsDeletionJobTrigger"/>
                 <ref bean="atomAlertDeletionJobTrigger"/>
                 <ref bean="hostEndpointPollerJobTrigger"/>
-                <ref bean="suspendedLbJobTrigger"/>
             </list>
         </property>
     </bean>
@@ -108,6 +107,7 @@
                 <entry key="jobStateService" value-ref="jobStateService"/>
                 <entry key="usageRepository" value-ref="usageRepository"/>
                 <entry key="pollingUsageRepository" value-ref="hourlyUsageRepository"/>
+                <entry key="usageEventRepository" value-ref="usageEventRepository"/>
                 <entry key="threadPoolMonitorService" value-ref="threadPoolMonitorService"/>
                 <entry key="threadPoolExecutorService" value-ref="threadPoolExecutorService"/>
                 <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
@@ -234,22 +234,4 @@
         <!-- run every 15 mins -->
     </bean>
 
-    <!--SUSPENDED LOAD BALANCER JOB CONFIG-->
-    <bean name="suspendedLbJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"
-                  value="org.openstack.atlas.usage.jobs.SuspendedLoadBalancerJob"/>
-        <property name="jobDataAsMap">
-            <map>
-                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
-                <entry key="rollUpUsageRepository" value-ref="rollupUsageRepository"/>
-                <entry key="alertRepository" value-ref="alertRepository"/>
-                <entry key="jobStateService" value-ref="jobStateService"/>
-            </map>
-        </property>
-    </bean>
-    <bean id="suspendedLbJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-        <property name="jobDetail" ref="suspendedLbJob"/>
-        <property name="cronExpression" value="0 0 0 * * ?"/>
-        <!-- run every night at midnight -->
-    </bean>
 </beans>

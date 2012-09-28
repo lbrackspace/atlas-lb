@@ -9,6 +9,7 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
@@ -22,14 +23,16 @@ public class UsageEventProcessor {
 
     private LoadBalancerUsageRepository hourlyUsageRepository;
     private LoadBalancerRepository loadBalancerRepository;
+    private UsageRepository rollupUsageRepository;
 
     private List<LoadBalancerUsage> usagesToCreate;
     private List<LoadBalancerUsage> usagesToUpdate;
     private List<LoadBalancerUsageEvent> inOrderUsageEventEntries;
 
-    public UsageEventProcessor(List<LoadBalancerUsageEvent> inOrderUsageEventEntries, LoadBalancerUsageRepository hourlyUsageRepository, LoadBalancerRepository loadBalancerRepository) {
+    public UsageEventProcessor(List<LoadBalancerUsageEvent> inOrderUsageEventEntries, LoadBalancerUsageRepository hourlyUsageRepository, UsageRepository rollupUsageRepository, LoadBalancerRepository loadBalancerRepository) {
         this.inOrderUsageEventEntries = inOrderUsageEventEntries;
         this.hourlyUsageRepository = hourlyUsageRepository;
+        this.rollupUsageRepository = rollupUsageRepository;
         this.loadBalancerRepository = loadBalancerRepository;
         this.usagesToCreate = new ArrayList<LoadBalancerUsage>();
         this.usagesToUpdate = new ArrayList<LoadBalancerUsage>();
@@ -77,6 +80,16 @@ public class UsageEventProcessor {
                 UsageEvent usageEvent = UsageEvent.valueOf(firstNewUsage.getEventType());
                 int updatedTags = calculateTags(recentUsage.getAccountId(), lbId, usageEvent, recentUsage);
                 firstNewUsage.setTags(updatedTags);
+            } else {
+                final Usage recentUsage = rollupUsageRepository.getMostRecentUsageForLoadBalancer(lbId);
+                if (recentUsage != null) {
+                    final LoadBalancerUsage firstNewUsage = loadBalancerUsages.get(0);
+
+                    // Update the tags to the proper tags.
+                    UsageEvent usageEvent = UsageEvent.valueOf(firstNewUsage.getEventType());
+                    int updatedTags = calculateTags(recentUsage.getAccountId(), lbId, usageEvent, recentUsage);
+                    firstNewUsage.setTags(updatedTags);
+                }
             }
 
             for (int i = 0; i < loadBalancerUsages.size(); i++) {
@@ -255,6 +268,18 @@ public class UsageEventProcessor {
         return recentUsageMap;
     }
 
+    public int calculateTags(Integer accountId, Integer lbId, UsageEvent usageEvent, Usage recentUsage) {
+        BitTags tags;
+
+        if (recentUsage != null) {
+            tags = new BitTags(recentUsage.getTags());
+        } else {
+            tags = new BitTags();
+        }
+
+        return calculateTags(accountId, lbId, usageEvent, tags);
+    }
+
     public int calculateTags(Integer accountId, Integer lbId, UsageEvent usageEvent, LoadBalancerUsage recentUsage) {
         BitTags tags;
 
@@ -263,6 +288,12 @@ public class UsageEventProcessor {
         } else {
             tags = new BitTags();
         }
+
+        return calculateTags(accountId, lbId, usageEvent, tags);
+    }
+
+    public int calculateTags(Integer accountId, Integer lbId, UsageEvent usageEvent, BitTags bitTags) {
+        BitTags tags = new BitTags(bitTags.getBitTags());
 
         switch (usageEvent) {
             case CREATE_LOADBALANCER:

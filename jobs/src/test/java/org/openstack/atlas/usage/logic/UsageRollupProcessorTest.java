@@ -1,5 +1,6 @@
 package org.openstack.atlas.usage.logic;
 
+import com.rackspace.docs.core.event.EventType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -11,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
@@ -45,7 +47,6 @@ public class UsageRollupProcessorTest {
             }
         }
     }
-
 
     @RunWith(MockitoJUnitRunner.class)
     public static class WhenProcessingWithNoRecentRecords {
@@ -496,6 +497,96 @@ public class UsageRollupProcessorTest {
             // Check timestamps
             assertTimestampsAreContiguous(usagesToUpdate);
             assertTimestampsAreContiguous(usagesToCreate);
+        }
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenProcessingSuspendedRecords {
+        @Mock
+        private UsageRepository rollUpUsageRepository;
+        private UsageRollupProcessor usageRollupProcessor;
+
+        private final int accountId = 1234;
+        private final int loadBalancerId = 1;
+        private LoadBalancerUsage regularUsageRecord;
+        private Calendar createUsageStartTime;
+        private Calendar createUsageEndTime;
+        private Calendar regularUsageStartTime;
+        private Calendar regularUsageEndTime;
+        private List<LoadBalancerUsage> inOrderUsages;
+        private Usage recentUsage;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, DeletedStatusException {
+            createUsageStartTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 33, 10);
+            createUsageEndTime = new GregorianCalendar(2012, Calendar.JUNE, 1, 3, 58, 26);
+            regularUsageStartTime = new GregorianCalendar(2012, Calendar.JUNE, 2, 4, 3, 10);
+            regularUsageEndTime = new GregorianCalendar(2012, Calendar.JUNE, 2, 4, 58, 26);
+
+            LoadBalancer lb = new LoadBalancer();
+            lb.setId(loadBalancerId);
+            recentUsage = new Usage(lb, 0.0, 0l, 0l, 0.0, 0l, 0l, createUsageStartTime, createUsageEndTime, 0, 1, BitTag.SERVICENET_LB.tagValue(), "SUSPEND_LOADBALANCER", accountId, 0, false);
+            recentUsage.setId(1234);
+            regularUsageRecord = new LoadBalancerUsage(accountId, loadBalancerId, 0.0, 0l, 0l, 0l, 0l, 0.0, 0l, 0l, 0l, 0l, regularUsageStartTime, regularUsageEndTime, 0, 1, BitTag.SERVICENET_LB.tagValue(), "SUSPENDED_LOADBALANCER");
+
+            inOrderUsages = new ArrayList<LoadBalancerUsage>();
+            inOrderUsages.add(regularUsageRecord);
+
+            usageRollupProcessor = new UsageRollupProcessor(inOrderUsages, rollUpUsageRepository);
+
+            List<Usage> recentUsages = new ArrayList<Usage>();
+            recentUsages.add(recentUsage);
+            when(rollUpUsageRepository.getMostRecentUsageForLoadBalancers(Matchers.<Collection<Integer>>any())).thenReturn(recentUsages);
+        }
+
+        @Test
+        public void shouldSucceed() {
+            usageRollupProcessor.process();
+            final List<Usage> usagesToUpdate = usageRollupProcessor.getUsagesToUpdate();
+            final List<Usage> usagesToCreate = usageRollupProcessor.getUsagesToCreate();
+
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToUpdate);
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToCreate);
+
+            Assert.assertEquals(1, usagesToUpdate.size());
+            Assert.assertEquals(25, usagesToCreate.size());
+
+            // Check timestamps
+            assertTimestampsAreContiguous(usagesToUpdate);
+            assertTimestampsAreContiguous(usagesToCreate);
+            Assert.assertEquals(createUsageStartTime, usagesToUpdate.get(0).getStartTime());
+
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.MILLISECOND));
+
+            // Check tags
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToUpdate.get(0).getTags().intValue());
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), usagesToCreate.get(1).getTags().intValue());
+
+            // Check usage
+            Assert.assertEquals(new Long(0), usagesToUpdate.get(0).getIncomingTransfer());
+            Assert.assertEquals(new Long(0), usagesToUpdate.get(0).getIncomingTransferSsl());
+            Assert.assertEquals(new Long(0), usagesToUpdate.get(0).getOutgoingTransfer());
+            Assert.assertEquals(new Long(0), usagesToUpdate.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(new Double(0), usagesToUpdate.get(0).getAverageConcurrentConnections());
+            Assert.assertEquals(new Double(0), usagesToUpdate.get(0).getAverageConcurrentConnectionsSsl());
+            Assert.assertEquals(new Integer(0), usagesToUpdate.get(0).getNumberOfPolls());
+
+            for (Usage usage : usagesToCreate) {
+                Assert.assertEquals(new Long(0), usage.getIncomingTransfer());
+                Assert.assertEquals(new Long(0), usage.getIncomingTransferSsl());
+                Assert.assertEquals(new Long(0), usage.getOutgoingTransfer());
+                Assert.assertEquals(new Long(0), usage.getOutgoingTransferSsl());
+                Assert.assertEquals(new Double(0), usage.getAverageConcurrentConnections());
+                Assert.assertEquals(new Double(0), usage.getAverageConcurrentConnectionsSsl());
+                Assert.assertEquals(new Integer(0), usage.getNumberOfPolls());                
+            }
+
+            // Check that events are all SUSPENDED_LOADBALANCER
+            for (Usage usage : usagesToCreate) {
+                Assert.assertEquals(UsageEvent.SUSPENDED_LOADBALANCER.name(), usage.getEventType());
+            }
         }
     }
 }

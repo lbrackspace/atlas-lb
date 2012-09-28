@@ -14,12 +14,13 @@ import org.openstack.atlas.atom.tasks.LoadBalancerAHUSLTask;
 import org.openstack.atlas.atom.util.AHUSLUtil;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
-import org.openstack.atlas.service.domain.entities.JobName;
-import org.openstack.atlas.service.domain.entities.JobStateVal;
-import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
+import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
 import org.openstack.atlas.usage.logic.UsageRollupProcessor;
 import org.quartz.JobExecutionContext;
@@ -42,6 +43,9 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
 
     // Rollup Dependencies
     private LoadBalancerUsageRepository pollingUsageRepository;
+
+    // Suspended Load Balancer Dependencies
+    private LoadBalancerUsageEventRepository usageEventRepository;
 
     // Atom Hopper Pusher Dependencies
     private Configuration configuration = new AtomHopperConfiguration();
@@ -68,6 +72,11 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
     }
 
     @Required
+    public void setUsageEventRepository(LoadBalancerUsageEventRepository usageEventRepository) {
+        this.usageEventRepository = usageEventRepository;
+    }
+
+    @Required
     public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
         this.loadBalancerRepository = loadBalancerRepository;
     }
@@ -84,8 +93,35 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        addSuspendedUsageEvents();
         rollupUsage();
         pushUsageToAtomHopper();
+    }
+
+    private void addSuspendedUsageEvents() {
+        Calendar startTime = Calendar.getInstance();
+        LOG.info(String.format("Usage rollup job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
+        jobStateService.updateJobState(JobName.SUSPENDED_LB_JOB, JobStateVal.IN_PROGRESS);
+
+        try {
+            final Calendar now = Calendar.getInstance();
+            List<LoadBalancer> suspendedLoadBalancers = loadBalancerRepository.getLoadBalancersWithStatus(LoadBalancerStatus.SUSPENDED);
+
+            for (LoadBalancer suspendedLoadBalancer : suspendedLoadBalancers) {
+                LoadBalancerUsageEvent newSuspendedEvent = new LoadBalancerUsageEvent(suspendedLoadBalancer.getAccountId(), suspendedLoadBalancer.getId(), now, suspendedLoadBalancer.getLoadBalancerJoinVipSet().size(), UsageEvent.SUSPENDED_LOADBALANCER.name(), null, null, null, null, null, null);
+                LOG.debug(String.format("Adding suspended usage event for load balancer '%d'...", suspendedLoadBalancer.getId()));
+                usageEventRepository.create(newSuspendedEvent);
+            }
+        } catch (Exception e) {
+            LOG.error("Suspended load balancer job failed!", e);
+            jobStateService.updateJobState(JobName.SUSPENDED_LB_JOB, JobStateVal.FAILED);
+            return;
+        }
+
+        Calendar endTime = Calendar.getInstance();
+        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
+        jobStateService.updateJobState(JobName.SUSPENDED_LB_JOB, JobStateVal.FINISHED);
+        LOG.info(String.format("Suspended load balancer job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 
     private void rollupUsage() {
