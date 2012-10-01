@@ -1,9 +1,7 @@
 package org.openstack.atlas.usage.logic;
 
-import com.rackspace.docs.core.event.EventType;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -41,7 +39,7 @@ public class UsageRollupProcessorTest {
                 Assert.assertEquals(firstUsage.getEndTime().getTimeInMillis(), secondUsage.getStartTime().getTimeInMillis(), 0);
             }
 
-            if( i < usages.size() - 1) {
+            if (i < usages.size() - 1) {
                 firstUsage = usages.get(i);
                 secondUsage = usages.get(i + 1);
             }
@@ -580,7 +578,7 @@ public class UsageRollupProcessorTest {
                 Assert.assertEquals(new Long(0), usage.getOutgoingTransferSsl());
                 Assert.assertEquals(new Double(0), usage.getAverageConcurrentConnections());
                 Assert.assertEquals(new Double(0), usage.getAverageConcurrentConnectionsSsl());
-                Assert.assertEquals(new Integer(0), usage.getNumberOfPolls());                
+                Assert.assertEquals(new Integer(0), usage.getNumberOfPolls());
             }
 
             // Check that events are all SUSPENDED_LOADBALANCER

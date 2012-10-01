@@ -119,8 +119,12 @@ public class UsageEventProcessor {
         }
     }
 
-    private void mutateCumulativeFields(LoadBalancerUsage previousUsage, List<LoadBalancerUsage> bufferRecords, LoadBalancerUsage nextUsage) {
-        if (bufferRecords.isEmpty()) {
+    public static void mutateCumulativeFields(LoadBalancerUsage previousUsage, List<LoadBalancerUsage> bufferRecords, LoadBalancerUsage nextUsage) {
+        final int MILLISECONDS_PER_HOUR = 60000;
+        // Update cumulative fields if the previousUsage and nextUsage are less than an hour apart or if there are no buffer records.
+        // This prevents usage records from having a ton of usage if we weren't polling for an extended period of time, but ensures
+        // that we properly calculate cumulative fields.
+        if (bufferRecords.isEmpty() || Math.abs(nextUsage.getStartTime().getTimeInMillis() - previousUsage.getEndTime().getTimeInMillis()) < MILLISECONDS_PER_HOUR) {
             if (previousUsage.getLastBandwidthBytesIn() != null && nextUsage.getLastBandwidthBytesIn() != null) {
                 final Long updatedCumBandwidthBytesIn = UsageCalculator.calculateCumBandwidthBytesIn(previousUsage, nextUsage.getLastBandwidthBytesIn());
                 previousUsage.setCumulativeBandwidthBytesIn(updatedCumBandwidthBytesIn);
