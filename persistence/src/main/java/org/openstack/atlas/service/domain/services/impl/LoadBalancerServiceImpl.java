@@ -574,7 +574,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     public LoadBalancer pseudoDelete(LoadBalancer lb) throws Exception {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
-        //Remove error page...
+        //Remove error page
         loadBalancerRepository.removeErrorPage(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
         dbLoadBalancer.setStatus(DELETED);
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);

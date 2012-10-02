@@ -63,6 +63,8 @@
           scope="prototype"/>
     <bean id="usageRepository" class="org.openstack.atlas.service.domain.repository.UsageRepository"
           scope="prototype"/>
+    <bean id="sslTerminationRepository" class="org.openstack.atlas.service.domain.repository.SslTerminationRepository"
+          scope="prototype"/>
 
 
     <!-- AHUSL -->

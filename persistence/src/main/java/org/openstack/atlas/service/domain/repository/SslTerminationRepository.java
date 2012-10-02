@@ -28,6 +28,7 @@ public class SslTerminationRepository {
             return false;
         } else {
             entityManager.remove(up);
+            entityManager.flush();
             return true;
         }
     }

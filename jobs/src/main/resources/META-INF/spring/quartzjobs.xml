@@ -222,6 +222,7 @@
             <map>
                 <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
                 <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
+                <entry key="sslTerminationRepository" value-ref="sslTerminationRepository"/>
                 <entry key="hostRepository" value-ref="hostRepository"/>
                 <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
