@@ -16,7 +16,7 @@ import org.openstack.atlas.usage.helpers.TimeZoneHelper;
 import java.util.*;
 
 public class UsageRollupProcessor {
-    private final Log LOG = LogFactory.getLog(UsageRollupProcessor.class);
+    private static final Log LOG = LogFactory.getLog(UsageRollupProcessor.class);
 
     private UsageRepository rollUpUsageRepository;
 
@@ -273,8 +273,10 @@ public class UsageRollupProcessor {
     }
 
     public static List<LoadBalancerUsage> createBufferRecordsIfNeeded(Usage previousUsage, LoadBalancerUsage nextUsage) {
-        if (nextUsage.getStartTime().before(previousUsage.getEndTime()))
-            throw new RuntimeException("Usages are not in order!");
+        if (nextUsage.getStartTime().before(previousUsage.getEndTime())) {
+            LOG.error(String.format("Usages are out of order! Usage id: %d, Usage endTime: %s, Next Usage id: %d, Next usage startTime: %s,", previousUsage.getId(), previousUsage.getEndTime().getTime(), nextUsage.getId(), nextUsage.getStartTime().getTime()));
+//            throw new RuntimeException("Usages are not in order!");
+        }
 
         List<LoadBalancerUsage> bufferRecords = new ArrayList<LoadBalancerUsage>();
 

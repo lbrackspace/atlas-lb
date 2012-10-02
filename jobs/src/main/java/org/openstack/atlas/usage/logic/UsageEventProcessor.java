@@ -19,7 +19,7 @@ import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepo
 import java.util.*;
 
 public class UsageEventProcessor {
-    private final Log LOG = LogFactory.getLog(UsageEventProcessor.class);
+    private static final Log LOG = LogFactory.getLog(UsageEventProcessor.class);
 
     private LoadBalancerUsageRepository hourlyUsageRepository;
     private LoadBalancerRepository loadBalancerRepository;
@@ -148,8 +148,10 @@ public class UsageEventProcessor {
     }
 
     public static List<LoadBalancerUsage> createBufferRecordsIfNeeded(LoadBalancerUsage previousUsage, LoadBalancerUsage nextUsage) {
-        if (nextUsage.getStartTime().before(previousUsage.getEndTime()))
-            throw new RuntimeException("Usages are not in order!");
+        if (nextUsage.getStartTime().before(previousUsage.getEndTime())) {
+            LOG.error(String.format("Usages are out of order! Usage id: %d, Usage endTime: %s, Next Usage id: %d, Next usage startTime: %s,", previousUsage.getId(), previousUsage.getEndTime().getTime(), nextUsage.getId(), nextUsage.getStartTime().getTime()));
+//            throw new RuntimeException("cd!");
+        }
 
         List<LoadBalancerUsage> bufferRecords = new ArrayList<LoadBalancerUsage>();
 
@@ -203,7 +205,10 @@ public class UsageEventProcessor {
     }
 
     public static Calendar calculateEndTime(Calendar recentUsageEndTime, Calendar nextUsageStartTime) {
-        if (nextUsageStartTime.before(recentUsageEndTime)) throw new RuntimeException("Usages are not in order!");
+        if (nextUsageStartTime.before(recentUsageEndTime)) {
+            LOG.error(String.format("Usages are out of order! nextUsageStartTime: %s, recentUsageEndTime: %s,", nextUsageStartTime.getTime(), recentUsageEndTime.getTime()));
+//            throw new RuntimeException("Usages are not in order!");
+        }
 
         if (recentUsageEndTime.get(Calendar.HOUR_OF_DAY) == nextUsageStartTime.get(Calendar.HOUR_OF_DAY)
                 && recentUsageEndTime.get(Calendar.DAY_OF_MONTH) == nextUsageStartTime.get(Calendar.DAY_OF_MONTH)
