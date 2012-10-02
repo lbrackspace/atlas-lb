@@ -29,11 +29,15 @@ public class UsageEventProcessorTest {
 
     private static void printUsageRecords(String testCase, List<LoadBalancerUsage> usageRecords) {
         for (LoadBalancerUsage usageRecord : usageRecords) {
-            System.out.println(String.format("[%s] Usage Record: %s - %s (Tags: %d, Event: %s, Last Bytes In: %d, Last Bytes In Ssl: %d, Last Bytes Out: %d, Last Bytes Out Ssl: %d, Cumulative Bytes In: %d, Cumulative Bytes In Ssl: %d, Cumulative Bytes Out: %d, Cumulative Bytes Out Ssl: %d)", testCase, usageRecord.getStartTime().getTime(), usageRecord.getEndTime().getTime(), usageRecord.getTags(), usageRecord.getEventType(), usageRecord.getLastBandwidthBytesIn(), usageRecord.getLastBandwidthBytesInSsl(), usageRecord.getLastBandwidthBytesOut(), usageRecord.getLastBandwidthBytesOutSsl(), usageRecord.getCumulativeBandwidthBytesIn(), usageRecord.getCumulativeBandwidthBytesInSsl(), usageRecord.getCumulativeBandwidthBytesOut(), usageRecord.getCumulativeBandwidthBytesOutSsl()));
+            printUsageRecord(testCase, usageRecord);
         }
     }
 
-       @RunWith(MockitoJUnitRunner.class)
+    private static void printUsageRecord(String testCase, LoadBalancerUsage usageRecord) {
+        System.out.println(String.format("[%s] Usage Record: %s - %s (Tags: %d, Event: %s, Last Bytes In: %d, Last Bytes In Ssl: %d, Last Bytes Out: %d, Last Bytes Out Ssl: %d, Cumulative Bytes In: %d, Cumulative Bytes In Ssl: %d, Cumulative Bytes Out: %d, Cumulative Bytes Out Ssl: %d)", testCase, usageRecord.getStartTime().getTime(), usageRecord.getEndTime().getTime(), usageRecord.getTags(), usageRecord.getEventType(), usageRecord.getLastBandwidthBytesIn(), usageRecord.getLastBandwidthBytesInSsl(), usageRecord.getLastBandwidthBytesOut(), usageRecord.getLastBandwidthBytesOutSsl(), usageRecord.getCumulativeBandwidthBytesIn(), usageRecord.getCumulativeBandwidthBytesInSsl(), usageRecord.getCumulativeBandwidthBytesOut(), usageRecord.getCumulativeBandwidthBytesOutSsl()));
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
     public static class WhenProcessingWithNoRecentRecords {
         @Mock
         private LoadBalancerUsageRepository hourlyUsageRepository;
@@ -381,10 +385,10 @@ public class UsageEventProcessorTest {
             lbUsage2 = new LoadBalancerUsage();
             lbUsage2.setAccountId(1234);
             lbUsage2.setLoadbalancerId(1);
-            lbUsage2.setLastBandwidthBytesIn(1234l);
-            lbUsage2.setLastBandwidthBytesInSsl(12345l);
-            lbUsage2.setLastBandwidthBytesOut(123456l);
-            lbUsage2.setLastBandwidthBytesOutSsl(1234567l);
+            lbUsage2.setLastBandwidthBytesIn(1235l);
+            lbUsage2.setLastBandwidthBytesInSsl(12346l);
+            lbUsage2.setLastBandwidthBytesOut(123457l);
+            lbUsage2.setLastBandwidthBytesOutSsl(1234568l);
             lbUsage2.setTags(5);
             lbUsage2.setNumVips(1);
             lbUsage2.setStartTime(null);
@@ -409,8 +413,11 @@ public class UsageEventProcessorTest {
             lbUsage2.setEndTime(lb2EndTime);
 
             final List<LoadBalancerUsage> bufferRecords = UsageEventProcessor.createBufferRecordsIfNeeded(lbUsage1, lbUsage2);
+            UsageEventProcessor.mutateCumulativeFields(lbUsage1, bufferRecords, lbUsage2);
 
+            printUsageRecord("shouldCreateContiguousBufferRecordsCase1", lbUsage1);
             printUsageRecords("shouldCreateContiguousBufferRecordsCase1", bufferRecords);
+            printUsageRecord("shouldCreateContiguousBufferRecordsCase1", lbUsage2);
 
             Assert.assertEquals(1, bufferRecords.size());
             Assert.assertEquals(lb1EndTime.getTimeInMillis(), bufferRecords.get(0).getStartTime().getTimeInMillis());
