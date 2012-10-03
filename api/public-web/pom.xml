@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-    <version>1.15.15</version>    </parent>
+    <version>1.15.16-SNAPSHOT</version>    </parent>
 
     <artifactId>atlas-public-web</artifactId>
     <name>Openstack :: Atlas :: API :: Public REST API</name>
