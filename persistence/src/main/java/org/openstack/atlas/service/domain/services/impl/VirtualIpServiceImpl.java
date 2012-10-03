@@ -500,7 +500,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     private void reclaimVirtualIp(LoadBalancer lb, VirtualIp virtualIp) {
         if (!isVipAllocatedToAnotherLoadBalancer(lb, virtualIp)) {
-            delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
+            //delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
             virtualIpRepository.deallocateVirtualIp(virtualIp);
         }
     }
@@ -509,10 +509,10 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         String ip;
         int aid = lb.getAccountId();
         int lid = lb.getId();
-        RdnsHelper rdns = RdnsHelper.newRdnsHelper(aid);
+        //RdnsHelper rdns = RdnsHelper.newRdnsHelper(aid);
         LoadBalancerServiceEvent lbe;
         if (!isIpv6VipAllocatedToAnotherLoadBalancer(lb, virtualIpv6)) {
-            try {
+          /*  try {
                 ip = virtualIpv6.getDerivedIpString();
                 delPtrRecord(aid, lid, ip);
             } catch (IPStringConversionException ex) {
@@ -523,7 +523,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
                 LOG.error(msg + "Exception: " + stackTrace, ex);
                 lbe = newDelPtrEvent(aid, lid, msg, stackTrace, true);
                 loadBalancerRepository.save(lbe);
-            }
+            }*/
             virtualIpv6Repository.deleteVirtualIp(virtualIpv6);
         }
     }
