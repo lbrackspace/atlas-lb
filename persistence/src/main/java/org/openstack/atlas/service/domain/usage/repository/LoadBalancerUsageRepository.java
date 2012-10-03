@@ -1,13 +1,10 @@
 package org.openstack.atlas.service.domain.usage.repository;
 
-import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent_;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage_;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,7 +65,7 @@ public class LoadBalancerUsageRepository {
         CriteriaQuery<LoadBalancerUsage> criteria = builder.createQuery(LoadBalancerUsage.class);
         Root<LoadBalancerUsage> loadBalancerUsageRoot = criteria.from(LoadBalancerUsage.class);
 
-        Predicate endTimeBeforeTime = builder.lessThan(loadBalancerUsageRoot.get(LoadBalancerUsage_.endTime), time);
+        Predicate endTimeBeforeTime = builder.lessThanOrEqualTo(loadBalancerUsageRoot.get(LoadBalancerUsage_.endTime), time);
         Order startTimeOrder = builder.asc(loadBalancerUsageRoot.get(LoadBalancerUsage_.startTime));
 
         criteria.select(loadBalancerUsageRoot);
@@ -79,8 +76,8 @@ public class LoadBalancerUsageRepository {
         return (usageEvents == null) ? new ArrayList<LoadBalancerUsage>() : usageEvents;
     }
 
-    public void deleteAllRecordsBefore(Calendar time) {
-        Query query = entityManager.createQuery("DELETE LoadBalancerUsage u WHERE u.endTime < :timestamp")
+    public void deleteAllRecordsBeforeOrEqualTo(Calendar time) {
+        Query query = entityManager.createQuery("DELETE LoadBalancerUsage u WHERE u.endTime <= :timestamp")
                 .setParameter("timestamp", time, TemporalType.TIMESTAMP);
         int numRowsDeleted = query.executeUpdate();
         LOG.info(String.format("Deleted %d rows with endTime before %s", numRowsDeleted, time.getTime()));
@@ -96,7 +93,7 @@ public class LoadBalancerUsageRepository {
     public void deleteOldRecords() {
         Calendar deletePoint = Calendar.getInstance();
         deletePoint.add(Calendar.DATE, -NUM_DAYS_RETENTION);
-        deleteAllRecordsBefore(deletePoint);
+        deleteAllRecordsBeforeOrEqualTo(deletePoint);
     }
 
     public void batchCreate(List<LoadBalancerUsage> usages) {

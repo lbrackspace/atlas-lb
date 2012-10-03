@@ -93,8 +93,8 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        addSuspendedUsageEvents();
         rollupUsage();
+        addSuspendedUsageEvents();
         pushUsageToAtomHopper();
     }
 
@@ -177,7 +177,7 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
                 }
             }
             LOG.info("Deleting processed usage entries...");
-            pollingUsageRepository.deleteAllRecordsBefore(rollupTimeMarker);
+            pollingUsageRepository.deleteAllRecordsBeforeOrEqualTo(rollupTimeMarker);
         } catch (Exception e) {
             LOG.error("Usage rollup job failed!", e);
             jobStateService.updateJobState(JobName.LB_USAGE_ROLLUP, JobStateVal.FAILED);

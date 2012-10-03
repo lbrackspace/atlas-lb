@@ -66,7 +66,7 @@ public class UsageRollupProcessor {
             for (UsagesForHour usagesForHour : newUsageMap.get(lbId)) {
                 List<Usage> mergedUsageRecords;
 
-                if (recentUsage != null 
+                if (recentUsage != null
                         && usagesForHour.getDayOfYear() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getStartTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.DAY_OF_YEAR)
                         && usagesForHour.getHourOfDay() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getStartTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.HOUR_OF_DAY)) {
                     mergedUsageRecords = mergeUsageRecords(usagesForHour.getUsages(), recentUsage);
@@ -181,12 +181,16 @@ public class UsageRollupProcessor {
                 } else {
                     LoadBalancerUsage lastUsage = loadBalancerUsagesForId.get(i);
 
-                    Calendar maxedOutEndTime = (Calendar) lastUsage.getEndTime().clone();
-                    maxedOutEndTime.set(Calendar.MINUTE, 59);
-                    maxedOutEndTime.set(Calendar.SECOND, 59);
-                    maxedOutEndTime.set(Calendar.MILLISECOND, 999);
-                    maxedOutEndTime.add(Calendar.MILLISECOND, 1);
-                    lastUsage.setEndTime(maxedOutEndTime);
+                    if (lastUsage.getEndTime().get(Calendar.MINUTE) != 0
+                            || lastUsage.getEndTime().get(Calendar.SECOND) != 0
+                            || lastUsage.getEndTime().get(Calendar.MILLISECOND) != 0) {
+                        Calendar maxedOutEndTime = (Calendar) lastUsage.getEndTime().clone();
+                        maxedOutEndTime.set(Calendar.MINUTE, 59);
+                        maxedOutEndTime.set(Calendar.SECOND, 59);
+                        maxedOutEndTime.set(Calendar.MILLISECOND, 999);
+                        maxedOutEndTime.add(Calendar.MILLISECOND, 1);
+                        lastUsage.setEndTime(maxedOutEndTime);
+                    }
 
                     contiguousUsages.add(lastUsage);
                 }
@@ -246,14 +250,16 @@ public class UsageRollupProcessor {
         for (UsagesForHour usagesForHour : usagesPerHourList) {
             boolean suspendStatus = false;
 
-            if(recentUsage != null && recentUsage.getStartTime().get(Calendar.HOUR_OF_DAY) == usagesForHour.getHourOfDay()
+            if (recentUsage != null && recentUsage.getStartTime().get(Calendar.HOUR_OF_DAY) == usagesForHour.getHourOfDay()
                     && recentUsage.getStartTime().get(Calendar.DAY_OF_YEAR) == usagesForHour.getDayOfYear()) {
                 suspendStatus = true;
             }
 
             for (LoadBalancerUsage loadBalancerUsage : usagesForHour.getUsages()) {
-                if (UsageEvent.SUSPEND_LOADBALANCER.name().equals(loadBalancerUsage.getEventType())) suspendStatus = true;
-                if (suspendStatus && UsageEvent.SUSPENDED_LOADBALANCER.name().equals(loadBalancerUsage.getEventType())) loadBalancerUsage.setEventType(UsageEvent.SUSPEND_LOADBALANCER.name());
+                if (UsageEvent.SUSPEND_LOADBALANCER.name().equals(loadBalancerUsage.getEventType()))
+                    suspendStatus = true;
+                if (suspendStatus && UsageEvent.SUSPENDED_LOADBALANCER.name().equals(loadBalancerUsage.getEventType()))
+                    loadBalancerUsage.setEventType(UsageEvent.SUSPEND_LOADBALANCER.name());
             }
         }
 
@@ -321,7 +327,7 @@ public class UsageRollupProcessor {
         newBufferRecord.setNumVips(recentUsage.getNumVips());
         newBufferRecord.setStartTime((Calendar) previousRecordsEndTime.clone());
         newBufferRecord.setEndTime((Calendar) newEndTimeForBufferRecord.clone());
-        if(UsageEvent.SUSPEND_LOADBALANCER.name().equals(recentUsage.getEventType()) || UsageEvent.SUSPENDED_LOADBALANCER.name().equals(recentUsage.getEventType())) {
+        if (UsageEvent.SUSPEND_LOADBALANCER.name().equals(recentUsage.getEventType()) || UsageEvent.SUSPENDED_LOADBALANCER.name().equals(recentUsage.getEventType())) {
             newBufferRecord.setEventType(UsageEvent.SUSPENDED_LOADBALANCER.name());
         }
         return newBufferRecord;

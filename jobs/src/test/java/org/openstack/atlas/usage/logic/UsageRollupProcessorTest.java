@@ -2,6 +2,7 @@ package org.openstack.atlas.usage.logic;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -219,6 +220,66 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(new Double(0), usagesToCreate.get(25).getAverageConcurrentConnections());
             Assert.assertEquals(new Double(0), usagesToCreate.get(25).getAverageConcurrentConnectionsSsl());
             Assert.assertEquals(new Integer(0), usagesToCreate.get(25).getNumberOfPolls());
+        }
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenProcessingWithNoRecentRecordsSuspendedCase {
+        @Mock
+        private UsageRepository rollUpUsageRepository;
+        private UsageRollupProcessor usageRollupProcessor;
+
+        private final int accountId = 1234;
+        private final int loadBalancerId = 1;
+        private LoadBalancerUsage loadBalancerUsageCreate;
+        private LoadBalancerUsage loadBalancerUsageSslOn;
+        private Calendar createUsageStartTime;
+        private Calendar createUsageEndTime;
+        private Calendar suspendUsageStartTime;
+        private Calendar suspendUsageEndTime;
+        private List<LoadBalancerUsage> inOrderUsages;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, DeletedStatusException {
+            createUsageStartTime = new GregorianCalendar(2012, Calendar.OCTOBER, 3, 16, 49, 36);
+            createUsageEndTime = new GregorianCalendar(2012, Calendar.OCTOBER, 3, 16, 49, 42);
+            suspendUsageStartTime = new GregorianCalendar(2012, Calendar.OCTOBER, 3, 16, 49, 42);
+            suspendUsageEndTime = new GregorianCalendar(2012, Calendar.OCTOBER, 3, 17, 0, 0);
+
+            loadBalancerUsageCreate = new LoadBalancerUsage(accountId, loadBalancerId, 0.0, 0l, 0l, 0l, 0l, 0.0, 0l, 0l, 0l, 0l, createUsageStartTime, createUsageEndTime, 0, 1, 0, UsageEvent.CREATE_LOADBALANCER.name());
+            loadBalancerUsageSslOn = new LoadBalancerUsage(accountId, loadBalancerId, 0.0, 0l, 0l, 0l, 0l, 0.0, 0l, 0l, null, null, suspendUsageStartTime, suspendUsageEndTime, 0, 1, 0, UsageEvent.SUSPEND_LOADBALANCER.name());
+
+            inOrderUsages = new ArrayList<LoadBalancerUsage>();
+            inOrderUsages.add(loadBalancerUsageCreate);
+            inOrderUsages.add(loadBalancerUsageSslOn);
+
+            usageRollupProcessor = new UsageRollupProcessor(inOrderUsages, rollUpUsageRepository);
+
+            when(rollUpUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenReturn(null);
+        }
+
+        @Test
+        public void shouldSucceedWhenUsagesAreBackToBackWithinTheSameHour() {
+            usageRollupProcessor.process();
+            final List<Usage> usagesToUpdate = usageRollupProcessor.getUsagesToUpdate();
+            final List<Usage> usagesToCreate = usageRollupProcessor.getUsagesToCreate();
+
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToUpdate);
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToCreate);
+
+            Assert.assertEquals(0, usagesToUpdate.size());
+            Assert.assertEquals(2, usagesToCreate.size());
+
+            // Check timestamps
+            assertTimestampsAreContiguous(usagesToCreate);
+            Assert.assertEquals(createUsageStartTime, usagesToCreate.get(0).getStartTime());
+            Assert.assertEquals(suspendUsageStartTime, usagesToCreate.get(0).getEndTime());
+            Assert.assertEquals(suspendUsageStartTime, usagesToCreate.get(1).getStartTime());
+            Assert.assertEquals(suspendUsageEndTime.get(Calendar.DAY_OF_YEAR), usagesToCreate.get(1).getEndTime().get(Calendar.DAY_OF_YEAR));
+            Assert.assertEquals(suspendUsageEndTime.get(Calendar.HOUR_OF_DAY), usagesToCreate.get(1).getEndTime().get(Calendar.HOUR_OF_DAY));
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.MILLISECOND));
         }
     }
 
