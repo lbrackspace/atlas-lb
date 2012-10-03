@@ -13,7 +13,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>auth</module>
         <module>dns</module>
     </modules>
 
