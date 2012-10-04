@@ -268,7 +268,11 @@ public class UsageEventProcessor {
         newUsage.setLoadbalancerId(inOrderUsageEventEntry.getLoadbalancerId());
         newUsage.setNumVips(inOrderUsageEventEntry.getNumVips());
         newUsage.setStartTime(inOrderUsageEventEntry.getStartTime());
-        newUsage.setEndTime(inOrderUsageEventEntry.getStartTime()); // Will most likely change in 2nd pass
+        newUsage.setEndTime(inOrderUsageEventEntry.getStartTime());
+        if(inOrderUsageEventEntry.getEventType().equals(UsageEvent.SUSPEND_LOADBALANCER.name()) ||
+                inOrderUsageEventEntry.getEventType().equals(UsageEvent.SUSPENDED_LOADBALANCER.name())) {
+            newUsage.getEndTime().add(Calendar.SECOND, 1);
+        }
         newUsage.setNumberOfPolls(0);
         newUsage.setTags(0); // Will most likely change in 2nd pass
         newUsage.setEventType(inOrderUsageEventEntry.getEventType());
