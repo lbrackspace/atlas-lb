@@ -2,7 +2,6 @@ package org.openstack.atlas.usage.logic;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -280,6 +279,61 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.MINUTE));
             Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.SECOND));
             Assert.assertEquals(0, usagesToCreate.get(1).getEndTime().get(Calendar.MILLISECOND));
+        }
+    }
+
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenProcessingWithNoRecentRecordsSuspendedCase2 {
+        @Mock
+        private UsageRepository rollUpUsageRepository;
+        private UsageRollupProcessor usageRollupProcessor;
+
+        private final int accountId = 1234;
+        private final int loadBalancerId = 1;
+        private LoadBalancerUsage loadBalancerSuspended1;
+        private LoadBalancerUsage loadBalancerSuspended2;
+        private Calendar suspendedStartTime1;
+        private Calendar suspendedEndTime1;
+        private Calendar suspendedStartTime2;
+        private Calendar suspendedEndTime2;
+        private List<LoadBalancerUsage> inOrderUsages;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, DeletedStatusException {
+            suspendedStartTime1 = new GregorianCalendar(2012, Calendar.OCTOBER, 4, 0, 0, 0);
+            suspendedEndTime1 = new GregorianCalendar(2012, Calendar.OCTOBER, 4, 0, 0, 45);
+            suspendedStartTime2 = new GregorianCalendar(2012, Calendar.OCTOBER, 4, 0, 0, 45);
+            suspendedEndTime2 = new GregorianCalendar(2012, Calendar.OCTOBER, 4, 1, 0, 0);
+
+            loadBalancerSuspended1 = new LoadBalancerUsage(accountId, loadBalancerId, 0.0, 0l, 0l, null, null, 0.0, 0l, 0l, null, null, suspendedStartTime1, suspendedEndTime1, 0, 1, 0, UsageEvent.SUSPENDED_LOADBALANCER.name());
+            loadBalancerSuspended2 = new LoadBalancerUsage(accountId, loadBalancerId, 0.0, 0l, 0l, null, null, 0.0, 0l, 0l, null, null, suspendedStartTime2, suspendedEndTime2, 0, 1, 0, UsageEvent.SUSPENDED_LOADBALANCER.name());
+
+            inOrderUsages = new ArrayList<LoadBalancerUsage>();
+            inOrderUsages.add(loadBalancerSuspended1);
+            inOrderUsages.add(loadBalancerSuspended2);
+
+            usageRollupProcessor = new UsageRollupProcessor(inOrderUsages, rollUpUsageRepository);
+
+            when(rollUpUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenReturn(null);
+        }
+
+        @Test
+        public void shouldSucceedWhenUsagesAreBackToBackWithinTheSameHour() {
+            usageRollupProcessor.process();
+            final List<Usage> usagesToUpdate = usageRollupProcessor.getUsagesToUpdate();
+            final List<Usage> usagesToCreate = usageRollupProcessor.getUsagesToCreate();
+
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToUpdate);
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToCreate);
+
+            Assert.assertEquals(0, usagesToUpdate.size());
+            Assert.assertEquals(1, usagesToCreate.size());
+
+            // Check timestamps
+            assertTimestampsAreContiguous(usagesToCreate);
+            Assert.assertEquals(suspendedStartTime1, usagesToCreate.get(0).getStartTime());
+            Assert.assertEquals(suspendedEndTime2, usagesToCreate.get(0).getEndTime());
         }
     }
 

@@ -68,8 +68,10 @@ public class UsageEventProcessor {
 
                 // Update recent usage end time
                 Calendar newEndTimeForRecentUsage = calculateEndTime(recentUsage.getEndTime(), firstNewUsage.getStartTime());
-                recentUsage.setEndTime(newEndTimeForRecentUsage);
-                usagesToUpdate.add(recentUsage);
+                if(!recentUsage.getEndTime().equals(newEndTimeForRecentUsage)) {
+                    recentUsage.setEndTime(newEndTimeForRecentUsage);
+                    usagesToUpdate.add(recentUsage);
+                }
 
                 // New records may be needed if we are near the hour mark or if poller goes down.
                 List<LoadBalancerUsage> bufferRecords = createBufferRecordsIfNeeded(recentUsage, firstNewUsage);
@@ -196,11 +198,13 @@ public class UsageEventProcessor {
         newBufferRecord.setNumVips(recentUsage.getNumVips());
         newBufferRecord.setStartTime((Calendar) previousRecordsEndTime.clone());
         newBufferRecord.setEndTime((Calendar) newEndTimeForBufferRecord.clone());
+        if (UsageEvent.SUSPEND_LOADBALANCER.name().equals(recentUsage.getEventType()) || UsageEvent.SUSPENDED_LOADBALANCER.name().equals(recentUsage.getEventType())) {
+            newBufferRecord.setEventType(UsageEvent.SUSPENDED_LOADBALANCER.name());
+        }
         return newBufferRecord;
     }
 
     public static boolean isEndOfHour(Calendar calendar) {
-//        return calendar.get(Calendar.MINUTE) == 59 && calendar.get(Calendar.SECOND) == 59 && calendar.get(Calendar.MILLISECOND) == 999;
         return calendar.get(Calendar.MINUTE) == 0 && calendar.get(Calendar.SECOND) == 0 && calendar.get(Calendar.MILLISECOND) == 0;
     }
 
@@ -213,17 +217,28 @@ public class UsageEventProcessor {
         if (recentUsageEndTime.get(Calendar.HOUR_OF_DAY) == nextUsageStartTime.get(Calendar.HOUR_OF_DAY)
                 && recentUsageEndTime.get(Calendar.DAY_OF_MONTH) == nextUsageStartTime.get(Calendar.DAY_OF_MONTH)
                 && recentUsageEndTime.get(Calendar.MONTH) == nextUsageStartTime.get(Calendar.MONTH)
-                && recentUsageEndTime.get(Calendar.YEAR) == nextUsageStartTime.get(Calendar.YEAR)) {
+                && recentUsageEndTime.get(Calendar.YEAR) == nextUsageStartTime.get(Calendar.YEAR)
+                && (recentUsageEndTime.get(Calendar.MINUTE) != 0
+                || recentUsageEndTime.get(Calendar.SECOND) != 0
+                || recentUsageEndTime.get(Calendar.MILLISECOND) != 0)) {
             return nextUsageStartTime;
         }
 
         // Return a new end time that reaches the very end of the hour
         Calendar newEndTime = Calendar.getInstance();
         newEndTime.setTime(recentUsageEndTime.getTime());
-        newEndTime.set(Calendar.MINUTE, 59);
-        newEndTime.set(Calendar.SECOND, 59);
-        newEndTime.set(Calendar.MILLISECOND, 999);
-        newEndTime.add(Calendar.MILLISECOND, 1);
+        if ((recentUsageEndTime.get(Calendar.HOUR_OF_DAY) != nextUsageStartTime.get(Calendar.HOUR_OF_DAY)
+                || recentUsageEndTime.get(Calendar.DAY_OF_MONTH) != nextUsageStartTime.get(Calendar.DAY_OF_MONTH)
+                || recentUsageEndTime.get(Calendar.MONTH) != nextUsageStartTime.get(Calendar.MONTH)
+                || recentUsageEndTime.get(Calendar.YEAR) != nextUsageStartTime.get(Calendar.YEAR))
+                ||(newEndTime.get(Calendar.MINUTE) != 0
+                || newEndTime.get(Calendar.SECOND) != 0
+                || newEndTime.get(Calendar.MILLISECOND) != 0)) {
+            newEndTime.set(Calendar.MINUTE, 59);
+            newEndTime.set(Calendar.SECOND, 59);
+            newEndTime.set(Calendar.MILLISECOND, 999);
+            newEndTime.add(Calendar.MILLISECOND, 1);
+        }
         return newEndTime;
     }
 

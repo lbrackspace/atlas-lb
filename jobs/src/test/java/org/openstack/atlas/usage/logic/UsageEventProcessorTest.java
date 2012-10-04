@@ -11,6 +11,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -361,6 +362,147 @@ public class UsageEventProcessorTest {
                 Assert.assertEquals(new Integer(0), loadBalancerUsage.getNumberOfPolls());
             }
         }
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenProcessingSuspendedLoadBalancerWithRecentRecords {
+        @Mock
+        private LoadBalancerUsageRepository hourlyUsageRepository;
+        @Mock
+        private UsageRepository rollupUsageRepository;
+        @Mock
+        private LoadBalancerRepository loadBalancerRepository;
+        private UsageEventProcessor usageEventProcessor;
+
+        private final int accountId = 1234;
+        private final int loadBalancerId = 1;
+        private LoadBalancerUsage mostRecentUsage;
+        private Calendar manualSuspendedEventTime;
+        private LoadBalancerUsageEvent loadBalancerUsageManualSuspendedEvent;
+        private List<LoadBalancerUsageEvent> usageEventEntries;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, DeletedStatusException {
+            manualSuspendedEventTime = new GregorianCalendar(2012, Calendar.OCTOBER, 4, 0, 0, 45);
+
+            loadBalancerUsageManualSuspendedEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, manualSuspendedEventTime, 1, UsageEvent.SUSPENDED_LOADBALANCER.name(), null, null, null, null, null, null);
+
+            usageEventEntries = new ArrayList<LoadBalancerUsageEvent>();
+            usageEventEntries.add(loadBalancerUsageManualSuspendedEvent);
+
+            usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, rollupUsageRepository, loadBalancerRepository);
+
+            mostRecentUsage = new LoadBalancerUsage();
+            mostRecentUsage.setAccountId(accountId);
+            mostRecentUsage.setLoadbalancerId(loadBalancerId);
+            mostRecentUsage.setEventType(UsageEvent.SUSPEND_LOADBALANCER.name());
+            mostRecentUsage.setStartTime(new GregorianCalendar(2012, Calendar.OCTOBER, 3, 23, 54, 12));
+            mostRecentUsage.setEndTime(new GregorianCalendar(2012, Calendar.OCTOBER, 4, 0, 0, 0));
+            mostRecentUsage.setTags(0);
+            mostRecentUsage.setLastBandwidthBytesIn(0l);
+            mostRecentUsage.setLastBandwidthBytesInSsl(0l);
+            mostRecentUsage.setLastBandwidthBytesOut(0l);
+            mostRecentUsage.setLastBandwidthBytesOutSsl(0l);
+
+            when(hourlyUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>eq(loadBalancerId))).thenReturn(mostRecentUsage);
+            when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(new HashSet<VirtualIp>());
+        }
+
+        @Test
+        public void shouldSucceed() {
+            usageEventProcessor.process();
+            final List<LoadBalancerUsage> usagesToUpdate = usageEventProcessor.getUsagesToUpdate();
+            final List<LoadBalancerUsage> usagesToCreate = usageEventProcessor.getUsagesToCreate();
+
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToUpdate);
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToCreate);
+
+            Assert.assertEquals(0, usagesToUpdate.size());
+            Assert.assertEquals(2, usagesToCreate.size());
+
+            // Check timestamps
+            Assert.assertEquals(0, usagesToCreate.get(0).getStartTime().get(Calendar.HOUR_OF_DAY));
+            Assert.assertEquals(0, usagesToCreate.get(0).getStartTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, usagesToCreate.get(0).getStartTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, usagesToCreate.get(0).getStartTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(manualSuspendedEventTime, usagesToCreate.get(0).getEndTime());
+            Assert.assertEquals(manualSuspendedEventTime, usagesToCreate.get(1).getStartTime());
+            Assert.assertEquals(manualSuspendedEventTime, usagesToCreate.get(1).getEndTime());
+        }
+
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenProcessingSuspendedLoadBalancerWithRecentRecordsCase2 {
+        @Mock
+        private LoadBalancerUsageRepository hourlyUsageRepository;
+        @Mock
+        private UsageRepository rollupUsageRepository;
+        @Mock
+        private LoadBalancerRepository loadBalancerRepository;
+        private UsageEventProcessor usageEventProcessor;
+
+        private final int accountId = 1234;
+        private final int loadBalancerId = 1;
+        private LoadBalancerUsage mostRecentUsage;
+        private Calendar manualSuspendedEventTime;
+        private LoadBalancerUsageEvent loadBalancerUsageManualSuspendedEvent;
+        private List<LoadBalancerUsageEvent> usageEventEntries;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, DeletedStatusException {
+            manualSuspendedEventTime = new GregorianCalendar(2012, Calendar.OCTOBER, 4, 0, 0, 45);
+
+            loadBalancerUsageManualSuspendedEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, manualSuspendedEventTime, 1, UsageEvent.SUSPENDED_LOADBALANCER.name(), null, null, null, null, null, null);
+
+            usageEventEntries = new ArrayList<LoadBalancerUsageEvent>();
+            usageEventEntries.add(loadBalancerUsageManualSuspendedEvent);
+
+            usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, rollupUsageRepository, loadBalancerRepository);
+
+            mostRecentUsage = new LoadBalancerUsage();
+            mostRecentUsage.setAccountId(accountId);
+            mostRecentUsage.setLoadbalancerId(loadBalancerId);
+            mostRecentUsage.setEventType(UsageEvent.SUSPEND_LOADBALANCER.name());
+            mostRecentUsage.setStartTime(new GregorianCalendar(2012, Calendar.OCTOBER, 3, 23, 54, 12));
+            mostRecentUsage.setEndTime(new GregorianCalendar(2012, Calendar.OCTOBER, 3, 23, 54, 12));
+            mostRecentUsage.setTags(0);
+            mostRecentUsage.setLastBandwidthBytesIn(0l);
+            mostRecentUsage.setLastBandwidthBytesInSsl(0l);
+            mostRecentUsage.setLastBandwidthBytesOut(0l);
+            mostRecentUsage.setLastBandwidthBytesOutSsl(0l);
+
+            when(hourlyUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>eq(loadBalancerId))).thenReturn(mostRecentUsage);
+            when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(new HashSet<VirtualIp>());
+        }
+
+        @Test
+        public void shouldSucceed() {
+            usageEventProcessor.process();
+            final List<LoadBalancerUsage> usagesToUpdate = usageEventProcessor.getUsagesToUpdate();
+            final List<LoadBalancerUsage> usagesToCreate = usageEventProcessor.getUsagesToCreate();
+
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToUpdate);
+            printUsageRecords("shouldSucceedWhenEventsAreBackToBackWithinTheSameHour", usagesToCreate);
+
+            Assert.assertEquals(1, usagesToUpdate.size());
+            Assert.assertEquals(2, usagesToCreate.size());
+
+            // Check timestamps
+            Assert.assertEquals(0, usagesToUpdate.get(0).getEndTime().get(Calendar.HOUR_OF_DAY));
+            Assert.assertEquals(0, usagesToUpdate.get(0).getEndTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, usagesToUpdate.get(0).getEndTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, usagesToUpdate.get(0).getEndTime().get(Calendar.MILLISECOND));
+
+            Assert.assertEquals(0, usagesToCreate.get(0).getStartTime().get(Calendar.HOUR_OF_DAY));
+            Assert.assertEquals(0, usagesToCreate.get(0).getStartTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, usagesToCreate.get(0).getStartTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, usagesToCreate.get(0).getStartTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(manualSuspendedEventTime, usagesToCreate.get(0).getEndTime());
+            Assert.assertEquals(manualSuspendedEventTime, usagesToCreate.get(1).getStartTime());
+            Assert.assertEquals(manualSuspendedEventTime, usagesToCreate.get(1).getEndTime());
+        }
+
     }
 
     public static class WhenCreatingBufferRecords {
