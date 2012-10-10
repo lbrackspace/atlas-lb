@@ -43,8 +43,8 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     private final Log LOG = LogFactory.getLog(VirtualIpServiceImpl.class);
     private AccountLimitService accountLimitService;
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-    private static final String DEL_PTR_FAILED = "Delete PTR on Virtual IP Fail";
-    private static final String DEL_PTR_PASSED = "Delete PTR on Virtual IP Passed";
+    public static final String DEL_PTR_FAILED = "Delete PTR on Virtual IP Fail";
+    public static final String DEL_PTR_PASSED = "Delete PTR on Virtual IP Passed";
 
     @Required
     public void setAccountLimitService(AccountLimitService accountLimitService) {
@@ -500,7 +500,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     private void reclaimVirtualIp(LoadBalancer lb, VirtualIp virtualIp) {
         if (!isVipAllocatedToAnotherLoadBalancer(lb, virtualIp)) {
-            //delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
+            delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
             virtualIpRepository.deallocateVirtualIp(virtualIp);
         }
     }
