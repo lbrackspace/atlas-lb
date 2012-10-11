@@ -43,8 +43,8 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     private final Log LOG = LogFactory.getLog(VirtualIpServiceImpl.class);
     private AccountLimitService accountLimitService;
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-    private static final String DEL_PTR_FAILED = "Delete PTR on Virtual IP Fail";
-    private static final String DEL_PTR_PASSED = "Delete PTR on Virtual IP Passed";
+    public static final String DEL_PTR_FAILED = "Delete PTR on Virtual IP Fail";
+    public static final String DEL_PTR_PASSED = "Delete PTR on Virtual IP Passed";
 
     @Required
     public void setAccountLimitService(AccountLimitService accountLimitService) {
@@ -500,7 +500,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     private void reclaimVirtualIp(LoadBalancer lb, VirtualIp virtualIp) {
         if (!isVipAllocatedToAnotherLoadBalancer(lb, virtualIp)) {
-            //delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
+            delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
             virtualIpRepository.deallocateVirtualIp(virtualIp);
         }
     }
@@ -509,10 +509,10 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         String ip;
         int aid = lb.getAccountId();
         int lid = lb.getId();
-        //RdnsHelper rdns = RdnsHelper.newRdnsHelper(aid);
+        RdnsHelper rdns = RdnsHelper.newRdnsHelper(aid);
         LoadBalancerServiceEvent lbe;
         if (!isIpv6VipAllocatedToAnotherLoadBalancer(lb, virtualIpv6)) {
-          /*  try {
+            try {
                 ip = virtualIpv6.getDerivedIpString();
                 delPtrRecord(aid, lid, ip);
             } catch (IPStringConversionException ex) {
@@ -521,14 +521,14 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
                         + " Virtual IPv6 address for lb %s\n";
                 String msg = String.format(fmt, rdns.buildDeviceUri(aid, lid));
                 LOG.error(msg + "Exception: " + stackTrace, ex);
-                lbe = newDelPtrEvent(aid, lid, msg, stackTrace, true);
+                lbe = newDelPtrEvent(aid, lid, "null", msg, stackTrace, true);
                 loadBalancerRepository.save(lbe);
-            }*/
+            }
             virtualIpv6Repository.deleteVirtualIp(virtualIpv6);
         }
     }
 
-    private LoadBalancerServiceEvent newDelPtrEvent(int aid, int lid, String msg, String detailedMsg, boolean failed) {
+    private LoadBalancerServiceEvent newDelPtrEvent(int aid, int lid, String ip, String msg, String detailedMsg, boolean failed) {
         LoadBalancerServiceEvent lbe = new LoadBalancerServiceEvent();
         lbe.setAccountId(aid);
         lbe.setLoadbalancerId(lid);
@@ -539,7 +539,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             lbe.setTitle(DEL_PTR_PASSED);
             lbe.setSeverity(EventSeverity.INFO);
         }
-        lbe.setDescription(msg);
+        lbe.setDescription(String.format("ip{%s}|%s", ip, msg));
         lbe.setType(EventType.DELETE_VIRTUAL_IP);
         lbe.setCategory(CategoryType.DELETE);
         lbe.setRelativeUri(RdnsHelper.newRdnsHelper(aid).relativeUri(aid, lid));
@@ -567,7 +567,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
                     + " on loadbalancer "
                     + lbUrl + "\n";
             LOG.error(msg + stackTrace, ex);
-            LoadBalancerServiceEvent lbe = newDelPtrEvent(aid, lid, msg,
+            LoadBalancerServiceEvent lbe = newDelPtrEvent(aid, lid, ip, msg,
                     "Exception: " + stackTrace, true);
             loadBalancerEventRepository.save(lbe);
             return;
@@ -583,14 +583,14 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             respStr = StaticDNSClientUtils.clientResponseToString(resp);
             LOG.error(msg + respStr);
             System.out.printf("%s%s\n", msg, respStr);
-            LoadBalancerServiceEvent lbe = newDelPtrEvent(aid, lid, msg, respStr, true);
+            LoadBalancerServiceEvent lbe = newDelPtrEvent(aid, lid, ip, msg, respStr, true);
             loadBalancerEventRepository.save(lbe);
             return;
         } else {
             respStr = StaticDNSClientUtils.clientResponseToString(resp);
             fmt = "SUCCESS rDNS DELETING PTR for account=%d loadbalancerId=%d\n%s";
             msg = String.format(fmt, aid, lid, respStr);
-            LoadBalancerServiceEvent lbe = newDelPtrEvent(aid,lid,msg,respStr,false);
+            LoadBalancerServiceEvent lbe = newDelPtrEvent(aid, lid, ip, msg, respStr, false);
             LOG.info(msg);
             loadBalancerEventRepository.save(lbe);
             return;

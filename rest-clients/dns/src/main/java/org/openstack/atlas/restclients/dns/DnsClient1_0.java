@@ -86,7 +86,7 @@ public class DnsClient1_0 {
         return resp;
     }
 
-    public ClientResponse getPtrRecords(Integer domainId, String deviceUrl, String serviceName, Integer limit, Integer offset) {
+    public ClientResponse getPtrRecords(String deviceUrl, String serviceName, Integer limit, Integer offset) {
         Client client = new Client();
         String authKey = "x-auth-token";
         String url = String.format("/%d/rdns/%s", accountId, serviceName);
@@ -104,9 +104,11 @@ public class DnsClient1_0 {
         return resp;
     }
 
-    public ClientResponse addPtrRecord(Integer domainId, String deviceUrl,
+    public ClientResponse addPtrRecord(String deviceUrl,
             String serviceName, String name, String ip, Integer ttl) {
         Rdns rdnsRequest = new Rdns();
+        String fmt;
+        String msg;
         String authKey = "x-auth-token";
         Link link = new Link();
         rdnsRequest.setLink(link);
@@ -124,19 +126,20 @@ public class DnsClient1_0 {
         ptr.setType(RecordType.PTR);
 
         String url = String.format("/%d/rdns", accountId);
+        String xml;
         try {
-            String fullUrl = String.format("%s%s", endPoint, url);
-            String xml = JaxbExp.serialize(rdnsRequest);
+            xml = JaxbExp.serialize(rdnsRequest);
             nop();
         } catch (JAXBException ex) {
+            xml = "ERROR";
         }
-
         Client client = new Client();
         WebResource wr = client.resource(endPoint).path(url);
         Builder rb = wr.accept(MediaType.APPLICATION_XML);
-        String logMsg = String.format("USEING CRED %s:%s CALLING POST %s",authKey,token,wr.toString());
-        LOG.info(logMsg);
-        System.out.printf("%s\n", logMsg);
+        fmt = "USEING CRED %s:%s CALLING POST %s\nbody=%s";
+        msg = String.format(fmt,authKey,token,wr.toString(),xml);
+        LOG.info(msg);
+        System.out.printf("%s\n", msg);
         rb = rb.type(MediaType.APPLICATION_XML);
         rb = rb.header(authKey, token);
         ClientResponse resp = rb.post(ClientResponse.class, rdnsRequest);

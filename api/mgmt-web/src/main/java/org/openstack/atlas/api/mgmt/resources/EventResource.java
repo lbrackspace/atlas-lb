@@ -19,6 +19,23 @@ import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
 public class EventResource extends ManagementDependencyProvider {
 
     @GET
+    @Path("loadbalancers/{id: [1-9][0-9]*}/ptr")
+    public Response getPtrEventsByLoadBalancer(@PathParam("id") int loadbalancerId) {
+        if (!isUserInRole("cp,ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
+        org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents dEvents;
+        LoadBalancerServiceEvents rEvents = new LoadBalancerServiceEvents();
+        try {
+            dEvents = getEventRepository().getAllPTREventsByLoadBalancer(loadbalancerId);
+            rEvents = getDozerMapper().map(dEvents, rEvents.getClass());
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }
+        return Response.status(200).entity(rEvents).build();
+    }
+
+    @GET
     @Path("account/{id: [1-9][0-9]*}/loadbalancer")
     public Response getRecentLoadBalancerEvents(@PathParam("id") int accountId, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate) {
         if (!isUserInRole("cp,ops,support")) {

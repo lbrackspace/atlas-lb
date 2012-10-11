@@ -16,6 +16,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.*;
+import static org.openstack.atlas.service.domain.services.impl.VirtualIpServiceImpl.DEL_PTR_FAILED;
+import static org.openstack.atlas.service.domain.services.impl.VirtualIpServiceImpl.DEL_PTR_PASSED;
 
 @Repository
 @Transactional
@@ -66,6 +68,25 @@ public class LoadBalancerEventRepository {
         entityManager.persist(sessionPersistenceEvent);
     }
 
+    public LoadBalancerServiceEvents getAllPTREventsByLoadBalancer(Integer loadbalancerId) {
+        String qStr = "SELECT e FROM LoadBalancerServiceEvent e "
+                + "where e.loadbalancerId = :loadbalancerId and e.type = :type";
+        Query q = entityManager.createQuery(qStr).setParameter("loadbalancerId", loadbalancerId).setParameter("type",EventType.DELETE_VIRTUAL_IP);
+        List<LoadBalancerServiceEvent> events = q.getResultList();
+        LoadBalancerServiceEvents lbsEvents = new LoadBalancerServiceEvents();
+        for(LoadBalancerServiceEvent event : events){
+            String title = event.getTitle();
+            if(title == null){
+                continue;
+            }
+            if(title.equals(DEL_PTR_FAILED) || title.equals(DEL_PTR_PASSED)){
+                lbsEvents.getLoadBalancerServiceEvents().add(event);
+            }
+        }
+        lbsEvents.setLoadbalancerId(loadbalancerId);
+        return lbsEvents;
+    }
+
     public List<LoadBalancerServiceEvent> getAllEventsForAccount(Integer accountId, Integer page) {
         Query query = entityManager.createQuery("SELECT evt FROM LoadBalancerServiceEvent evt where evt.accountId = :accountId order by evt.created desc").setParameter("accountId", accountId).setMaxResults(PAGE_SIZE);
 
@@ -77,9 +98,8 @@ public class LoadBalancerEventRepository {
     }
 
     public LoadBalancerServiceEvents getAllEventsForUsername(String username, Integer page, Calendar startDate, Calendar endDate) {
-        Query query = entityManager.createQuery("SELECT lbe FROM LoadBalancerEvent lbe WHERE lbe.author = :author AND lbe.created BETWEEN :startDate AND :endDate ORDER BY lbe.created ASC")
-                .setParameter("author", username).setParameter("startDate", startDate).setParameter("endDate", endDate);
-        
+        Query query = entityManager.createQuery("SELECT lbe FROM LoadBalancerEvent lbe WHERE lbe.author = :author AND lbe.created BETWEEN :startDate AND :endDate ORDER BY lbe.created ASC").setParameter("author", username).setParameter("startDate", startDate).setParameter("endDate", endDate);
+
         /*
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<LoadBalancerServiceEvent> query = builder.createQuery(LoadBalancerServiceEvent.class);
@@ -88,7 +108,7 @@ public class LoadBalancerEventRepository {
         Predicate timeRange = builder.between(root.get(LoadBalancerServiceEvent_.created), startDate, endDate);
         query.where(userEvents, timeRange);
         query.select(root);
-        */
+         */
         List<LoadBalancerServiceEvent> lsv = query.getResultList();
         LoadBalancerServiceEvents events = new LoadBalancerServiceEvents();
         events.getLoadBalancerServiceEvents().addAll(lsv);
@@ -200,27 +220,27 @@ public class LoadBalancerEventRepository {
 
         qMid.append(" and created >= :startDate ");
 
-        if(startDate != null) {
+        if (startDate != null) {
             startCal = DateTimeTools.parseDate(startDate);
-            DateTimeTools.setCalendarAttrs(startCal,null,null,null,0,0,0); // Early morning
-        }else{
+            DateTimeTools.setCalendarAttrs(startCal, null, null, null, 0, 0, 0); // Early morning
+        } else {
             startCal = Calendar.getInstance();
-            startCal.add(Calendar.DAY_OF_MONTH,-60);
-            DateTimeTools.setCalendarAttrs(startCal,null,null,null,0,0,0); // Early morning
+            startCal.add(Calendar.DAY_OF_MONTH, -60);
+            DateTimeTools.setCalendarAttrs(startCal, null, null, null, 0, 0, 0); // Early morning
         }
 
-        if(endDate != null) {
+        if (endDate != null) {
             endCal = DateTimeTools.parseDate(endDate);
-            DateTimeTools.setCalendarAttrs(endCal,null,null,null,23,59,59); // Midnight;
+            DateTimeTools.setCalendarAttrs(endCal, null, null, null, 23, 59, 59); // Midnight;
             qMid.append(" and created <= :endDate ");
         }
 
         qStr = String.format("%s%s%s", qHead, qMid.toString(), qTail);
-        q = entityManager.createQuery(qStr).setParameter("accountId",accountId);
+        q = entityManager.createQuery(qStr).setParameter("accountId", accountId);
 
-        q.setParameter("startDate",startCal);
-        if(endDate != null) {
-            q.setParameter("endDate",endCal);
+        q.setParameter("startDate", startCal);
+        if (endDate != null) {
+            q.setParameter("endDate", endCal);
         }
 
         resultList = q.getResultList();
@@ -269,29 +289,25 @@ public class LoadBalancerEventRepository {
         qTail = " order by created";
         qMid.append(" and created >= :startDate ");
 
-        if(startDate != null) {
+        if (startDate != null) {
             startCal = DateTimeTools.parseDate(startDate);
-            DateTimeTools.setCalendarAttrs(startCal,null,null,null,0,0,0); // Early morning
-        }else{
+            DateTimeTools.setCalendarAttrs(startCal, null, null, null, 0, 0, 0); // Early morning
+        } else {
             startCal = Calendar.getInstance();
-            startCal.add(Calendar.DAY_OF_MONTH,-1);
-            DateTimeTools.setCalendarAttrs(startCal,null,null,null,0,0,0); // Early morning
+            startCal.add(Calendar.DAY_OF_MONTH, -1);
+            DateTimeTools.setCalendarAttrs(startCal, null, null, null, 0, 0, 0); // Early morning
         }
 
-        if(endDate != null) {
+        if (endDate != null) {
             endCal = DateTimeTools.parseDate(endDate);
-            DateTimeTools.setCalendarAttrs(endCal,null,null,null,23,59,59); // Midnight;
+            DateTimeTools.setCalendarAttrs(endCal, null, null, null, 23, 59, 59); // Midnight;
             qMid.append(" and created <= :endDate ");
         }
 
         qStr = String.format("%s%s%s", qHead, qMid.toString(), qTail);
-        q = entityManager.createQuery(qStr)
-                .setParameter("accountId",lb.getAccountId())
-                .setParameter("lbId", lb.getId())
-                .setMaxResults(MAX_SERVICE_EVENT)
-                .setParameter("startDate", startCal);
-        if(endDate != null) {
-            q.setParameter("endDate",endCal);
+        q = entityManager.createQuery(qStr).setParameter("accountId", lb.getAccountId()).setParameter("lbId", lb.getId()).setMaxResults(MAX_SERVICE_EVENT).setParameter("startDate", startCal);
+        if (endDate != null) {
+            q.setParameter("endDate", endCal);
         }
 
         resultList = q.getResultList();
