@@ -58,9 +58,10 @@ public class RdnsHelper {
         rdnsPublicUrl = conf.getString(MossoConfigValues.rdns_public_url);
         rdnsAdminUrl = conf.getString(MossoConfigValues.rdns_admin_url);
         rdnsAdminUser = conf.getString(MossoConfigValues.rdns_admin_user);
-        authAdminUrl = conf.getString(MossoConfigValues.auth_management_uri);
-        authPublicUrl = conf.getString(MossoConfigValues.auth_public_uri);
+        authAdminUrl = conf.getString(MossoConfigValues.auth_management_uri);       
         authAdminUser = conf.getString(MossoConfigValues.basic_auth_user);
+        //authPublicUrl = conf.getString(MossoConfigValues.auth_public_uri);
+        authPublicUrl = authAdminUrl; // So wayne doesn't need to duplicate configs.
         authAdminKey = conf.getString(MossoConfigValues.basic_auth_key);
 
         String key = conf.getString(MossoConfigValues.rdns_crypto_key);
