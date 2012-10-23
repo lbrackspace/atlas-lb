@@ -536,8 +536,8 @@ public class LoadBalancerRepository {
                 + "c.name, "
                 + "c.dataCenter "
                 + "from LoadBalancer l "
-                + "join l.loadBalancerJoinVipSet v4 "
-                + "join l.loadBalancerJoinVip6Set v6  "
+                + "left join l.loadBalancerJoinVipSet v4 "
+                + "left join l.loadBalancerJoinVip6Set v6  "
                 + "join l.host h "
                 + "join h.cluster c "
                 + "where l.accountId=:accountId";
@@ -555,7 +555,20 @@ public class LoadBalancerRepository {
             extendedAccountLoadBalancer.setClusterName((String) t[7]);
             extendedAccountLoadBalancer.setRegion((DataCenter) t[8]);
 
-            extendedAccountLoadBalancer.setVirtualIpDozerWrapper(new VirtualIpDozerWrapper(v4.getLoadBalancer().getLoadBalancerJoinVipSet(),v6.getLoadBalancer().getLoadBalancerJoinVip6Set()));
+            Set<LoadBalancerJoinVip> v4Set;
+            if (v4 == null || v4.getLoadBalancer().getLoadBalancerJoinVipSet().isEmpty() || v4.getLoadBalancer().getLoadBalancerJoinVipSet() == null) {
+                v4Set = new HashSet<LoadBalancerJoinVip>();
+            } else {
+                v4Set = v4.getLoadBalancer().getLoadBalancerJoinVipSet();
+            }
+            Set<LoadBalancerJoinVip6> v6Set;
+            if (v6 == null || v6.getLoadBalancer().getLoadBalancerJoinVip6Set().isEmpty() || v6.getLoadBalancer().getLoadBalancerJoinVip6Set() == null) {
+                v6Set = new  HashSet<LoadBalancerJoinVip6>();
+            } else {
+                v6Set = v6.getLoadBalancer().getLoadBalancerJoinVip6Set();
+            }
+
+            extendedAccountLoadBalancer.setVirtualIpDozerWrapper(new VirtualIpDozerWrapper(v4Set,v6Set));
             extendedAccountLoadBalancers.add(extendedAccountLoadBalancer);
         }
         return new ArrayList<ExtendedAccountLoadBalancer>(extendedAccountLoadBalancers);
