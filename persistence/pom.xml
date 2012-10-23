@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-    <version>1.15.20-SNAPSHOT</version>    </parent>
+        <version>1.15.20-SNAPSHOT</version>
+    </parent>
 
     <artifactId>atlas-persistence</artifactId>
     <name>Openstack :: Atlas :: Persistence</name>
@@ -76,6 +78,7 @@
             <artifactId>atlas-dns-client</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.openstack.client.keystone</groupId>
             <artifactId>java-keystone</artifactId>
@@ -85,6 +88,11 @@
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
             <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.6.5</version>
         </dependency>
     </dependencies>
     <build>
@@ -127,13 +135,13 @@
                     <tasks>
                         <taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask">
                             <classpath>
-                                <path refid="maven.runtime.classpath" />
-                                <path refid="maven.plugin.classpath" />
+                                <path refid="maven.runtime.classpath"/>
+                                <path refid="maven.plugin.classpath"/>
                             </classpath>
                         </taskdef>
                         <instrument verbose="true">
                             <fileset dir="${project.build.outputDirectory}/org/openstack/atlas/service/domain">
-                                <include name="entities/*.class" />
+                                <include name="entities/*.class"/>
                             </fileset>
                         </instrument>
                     </tasks>

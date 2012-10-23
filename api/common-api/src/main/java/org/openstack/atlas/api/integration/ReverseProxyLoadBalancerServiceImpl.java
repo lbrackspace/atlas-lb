@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.integration;
 
-import org.openstack.atlas.api.cache.AtlasCache;
+import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.api.helpers.CacheKeyGen;
 import org.openstack.atlas.api.helpers.DateHelpers;
 import org.openstack.atlas.cfg.Configuration;

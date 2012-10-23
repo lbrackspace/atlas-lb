@@ -16,7 +16,6 @@ import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
-import org.openstack.atlas.service.domain.services.impl.BaseService;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,10 +23,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
+import javax.persistence.metamodel.MapAttribute;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DateFormat;
@@ -351,6 +348,13 @@ public class LoadBalancerRepository {
         vips = entityManager.createQuery(query).setParameter("loadBalancerId", loadBalancerId).getResultList();
         return vips;
     }
+    public List<LoadBalancerJoinVip6> getVips6ByLoadBalancerId(Integer loadBalancerId) {
+        List<LoadBalancerJoinVip6> vips;
+        String query = "select j from LoadBalancerJoinVip6 j where j.loadBalancer.id = :loadBalancerId";
+        //String query = "select l.virtualIps from LoadBalancer l where l.id = :loadBalancerId";
+        vips = entityManager.createQuery(query).setParameter("loadBalancerId", loadBalancerId).getResultList();
+        return vips;
+    }
 
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
                                                       String status, LbQueryStatus queryStatus, Calendar changedSince,
@@ -472,9 +476,9 @@ public class LoadBalancerRepository {
         return loadbalancers;
     }
 
+
     // For Jira https://jira.mosso.com/browse/SITESLB-220
-    public List<AccountLoadBalancer> getAccountLoadBalancers(
-            int accountId) { // Jira: https://jira.mosso.com/browse/SITESLB-220
+    public List<AccountLoadBalancer> getAccountLoadBalancers(int accountId) { // Jira: https://jira.mosso.com/browse/SITESLB-220
         List<AccountLoadBalancer> accountLoadBalancers = new ArrayList<AccountLoadBalancer>();
         List<Object> hResults;
         String queryStr = "select l.id, "
@@ -502,6 +506,64 @@ public class LoadBalancerRepository {
             accountLoadBalancers.add(accountLoadBalancer);
         }
         return accountLoadBalancers;
+    }
+
+    //For V1-B-34873
+    public ArrayList<ExtendedAccountLoadBalancer> getExtendedAccountLoadBalancers(int accountId) {
+
+//        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+//        CriteriaQuery<LoadBalancer> criteria = builder.createQuery(LoadBalancer.class);
+//        Root<LoadBalancer> lbRoot = criteria.from(LoadBalancer.class);
+//
+//        Join<LoadBalancer, Set<LoadBalancerJoinVip>> loadBalancerJoinVip = lbRoot.join("loadBalancerJoinVipSet", JoinType.LEFT);
+//        Join<LoadBalancer, Set<LoadBalancerJoinVip6>> loadBalancerJoinVip6 = lbRoot.join("loadBalancerJoinVip6Set", JoinType.LEFT);
+//        Join<LoadBalancer, Host> host = lbRoot.join("host", JoinType.LEFT);
+//        Join<LoadBalancer, Cluster> cluster = host.join("cluster", JoinType.LEFT);
+//        Predicate isAccount = builder.equal(lbRoot.get(LoadBalancer_.accountId), accountId);
+//        criteria.select(lbRoot);
+//        criteria.where(isAccount);
+
+        List<ExtendedAccountLoadBalancer> extendedAccountLoadBalancers = new ArrayList<ExtendedAccountLoadBalancer>();
+        List<Object> hResults;
+        String queryStr =
+                "select l.id, "
+                + "l.name, "
+                + "l.status, "
+                + "l.protocol, "
+                + "v4, "
+                + "v6, "
+                + "c.id, "
+                + "c.name, "
+                + "c.dataCenter "
+                + "from LoadBalancer l "
+                + "join l.loadBalancerJoinVipSet v4 "
+                + "join l.loadBalancerJoinVip6Set v6  "
+                + "join l.host h "
+                + "join h.cluster c "
+                + "where l.accountId=:accountId";
+        hResults = entityManager.createQuery(queryStr).setParameter("accountId", accountId).getResultList();
+        for (Object row : hResults) {
+            Object[] t = (Object[]) row;
+            ExtendedAccountLoadBalancer extendedAccountLoadBalancer = new ExtendedAccountLoadBalancer();
+            extendedAccountLoadBalancer.setLoadBalancerId((Integer) t[0]);
+            extendedAccountLoadBalancer.setLoadBalancerName((String) t[1]);
+            extendedAccountLoadBalancer.setStatus(t[2].toString());
+            extendedAccountLoadBalancer.setProtocol(t[3].toString());
+            LoadBalancerJoinVip v4 = (LoadBalancerJoinVip) t[4];
+            LoadBalancerJoinVip6 v6 = (LoadBalancerJoinVip6) t[5];
+            extendedAccountLoadBalancer.setClusterId((Integer) t[6]);
+            extendedAccountLoadBalancer.setClusterName((String) t[7]);
+            extendedAccountLoadBalancer.setRegion((DataCenter) t[8]);
+
+            extendedAccountLoadBalancer.setVirtualIpDozerWrapper(new VirtualIpDozerWrapper(v4.getLoadBalancer().getLoadBalancerJoinVipSet(),v6.getLoadBalancer().getLoadBalancerJoinVip6Set()));
+            extendedAccountLoadBalancers.add(extendedAccountLoadBalancer);
+        }
+        return new ArrayList<ExtendedAccountLoadBalancer>(extendedAccountLoadBalancers);
+    }
+
+    private VirtualIpDozerWrapper getVipWrapperByLbId(int lbId) {
+         return new VirtualIpDozerWrapper(new HashSet<LoadBalancerJoinVip>(getVipsByLoadBalancerId(lbId)),
+                 new HashSet<LoadBalancerJoinVip6>(getVips6ByLoadBalancerId(lbId)));
     }
 
     // For Jira https://jira.mosso.com/browse/SITESLB-220

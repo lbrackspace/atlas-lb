@@ -67,6 +67,14 @@
         <xsd:attribute name="accountId" type="xsd:int"/>
     </xsd:complexType>
 
+    <xsd:element name="extendedAccountLoadbalancers" type="tns:extendedAccountLoadbalancers"/>
+    <xsd:complexType name="extendedAccountLoadbalancers">
+        <xsd:sequence>
+            <xsd:element name="extendedAccountLoadbalancer" type="tns:extendedAccountLoadbalancer" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="accountId" type="xsd:int"/>
+    </xsd:complexType>
+
     <xsd:element name="blacklist" type="tns:blacklist"/>
     <xsd:complexType name="blacklist">
         <xsd:sequence>
@@ -99,6 +107,20 @@
         <xsd:attribute name="loadBalancerStatus" type="xsd:string"/>
         <xsd:attribute name="protocol" type="xsd:string"/>
         <xsd:attribute name="status" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:element name="extendedAccountLoadbalancer" type="tns:extendedAccountLoadbalancer"/>
+    <xsd:complexType name="extendedAccountLoadbalancer">
+        <xsd:sequence>
+            <xsd:element name="virtualIps" type="tns:virtualIps" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="loadBalancerId" type="xsd:int"/>
+        <xsd:attribute name="loadBalancerName" type="xsd:string"/>
+        <xsd:attribute name="clusterId" type="xsd:int"/>
+        <xsd:attribute name="clusterName" type="xsd:string"/>
+        <xsd:attribute name="protocol" type="xsd:string"/>
+        <xsd:attribute name="status" type="xsd:string"/>
+        <xsd:attribute name="region" type="tns:dataCenter"/>
     </xsd:complexType>
 
     <xsd:element name="accountInCluster" type="tns:accountInCluster"/>

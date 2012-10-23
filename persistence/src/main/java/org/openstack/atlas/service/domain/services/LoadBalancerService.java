@@ -5,6 +5,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.pojos.AccountLoadBalancer;
+import org.openstack.atlas.service.domain.pojos.ExtendedAccountLoadBalancer;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
 
 import java.util.Calendar;
@@ -17,6 +18,8 @@ public interface LoadBalancerService {
     LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException;
 
     List<AccountLoadBalancer> getAccountLoadBalancers(Integer accountId);
+
+    List<ExtendedAccountLoadBalancer> getExtendedAccountLoadBalancer(Integer accountId);
 
     List<LoadBalancer> getLoadbalancersGeneric(Integer accountId, String status, LbQueryStatus qs, Calendar changedCal, Integer offset, Integer limit, Integer marker) throws BadRequestException;
 

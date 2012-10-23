@@ -1,10 +1,13 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancer;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancers;
-import org.openstack.atlas.service.domain.entities.GroupRateLimit;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancers;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ExtendedAccountLoadbalancer;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ExtendedAccountLoadbalancers;
+import org.openstack.atlas.service.domain.entities.GroupRateLimit;
+import org.openstack.atlas.service.domain.pojos.ExtendedAccountLoadBalancer;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -43,6 +46,31 @@ public class AccountResource extends ManagementDependencyProvider {
             for (org.openstack.atlas.service.domain.pojos.AccountLoadBalancer daccountLoadBalancer : daccountLoadBalancers) {
                 raccountLoadBalancer = getDozerMapper().map(daccountLoadBalancer, AccountLoadBalancer.class);
                 raccountLoadBalancers.getAccountLoadBalancers().add(raccountLoadBalancer);
+            }
+            return Response.status(200).entity(raccountLoadBalancers).build();
+
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @GET
+    @Path("extendedloadbalancers")
+    // Implements V1-B-34873
+    public Response retrieveExtendedAccountLoadBalancers() {
+        if (!isUserInRole("cp,ops,support,billing")) {
+            return ResponseFactory.accessDenied();
+        }
+
+        ExtendedAccountLoadbalancer raccountLoadBalancer;
+        ExtendedAccountLoadbalancers raccountLoadBalancers = new ExtendedAccountLoadbalancers();
+        List<ExtendedAccountLoadBalancer> daccountLoadBalancerExtendedAccountLoadBalancers;
+        raccountLoadBalancers.setAccountId(id);
+        try {
+            daccountLoadBalancerExtendedAccountLoadBalancers = loadBalancerService.getExtendedAccountLoadBalancer(id);
+            for (ExtendedAccountLoadBalancer daccountLoadBalancerExtendedAccountLoadBalancer : daccountLoadBalancerExtendedAccountLoadBalancers) {
+                raccountLoadBalancer = getDozerMapper().map(daccountLoadBalancerExtendedAccountLoadBalancer, ExtendedAccountLoadbalancer.class, "SIMPLE_VIP_CPLB");
+                raccountLoadBalancers.getExtendedAccountLoadbalancers().add(raccountLoadBalancer);
             }
             return Response.status(200).entity(raccountLoadBalancers).build();
 

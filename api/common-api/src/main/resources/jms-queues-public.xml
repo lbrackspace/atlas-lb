@@ -8,7 +8,7 @@
 
     <bean id="configuration" class="org.openstack.atlas.api.config.RestApiConfiguration"/>
 
-    <bean id="atlasCache" class="org.openstack.atlas.api.cache.AtlasCache" scope="singleton">
+    <bean id="atlasCache" class="org.openstack.atlas.service.domain.cache.AtlasCache" scope="singleton">
         <constructor-arg index="0" ref="configuration"/>
     </bean>
 
@@ -37,6 +37,7 @@
         <property name="accountLimitService" ref="accountLimitService"/>
         <property name="nodeService" ref="nodeService" />
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService" />
+        <property name="atlasCache" ref="atlasCache"/>
     </bean>
     <bean id="clusterService" class="org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl" parent="baseService" >
         <property name="virtualIpService" ref="virtualIpService"/>
