@@ -5,6 +5,8 @@ import org.dozer.DozerBeanMapper;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
 import org.openstack.atlas.service.domain.entities.GroupRateLimit;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
@@ -19,6 +21,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
+@RunWith(Enclosed.class)
 public class AccountsResourceTest {
     public static class whenRetrievingAccountDetails {
         private ManagementAsyncService asyncService;
