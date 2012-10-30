@@ -103,6 +103,16 @@ public class AtomFeedAdapter implements FeedSourceAdapter {
                     nextLink.setHref(entryBuilder.buildCompleteUri(String.format("/%d/loadbalancers/%d/nodes.atom", accountId, loadBalancerId), baseUri));
                 }
                 break;
+            case NODE_SERVICE_FEED:
+                feed.setTitle("Node Service Feed");
+                feed.setId(String.format("%d-loadbalancers-%d-nodeservice", accountId, loadBalancerId));
+                if (prevLink != null) {
+                    prevLink.setHref(entryBuilder.buildCompleteUri(String.format("/%d/loadbalancers/%d/nodes/events.atom", accountId, loadBalancerId), baseUri));
+                }
+                if (nextLink != null) {
+                    nextLink.setHref(entryBuilder.buildCompleteUri(String.format("/%d/loadbalancers/%d/nodes/events.atom", accountId, loadBalancerId), baseUri));
+                }
+                break;
             case NODE_FEED:
                 Integer nodeId = (Integer) attributes.get("nodeId");
                 feed.setTitle("Node Feed");

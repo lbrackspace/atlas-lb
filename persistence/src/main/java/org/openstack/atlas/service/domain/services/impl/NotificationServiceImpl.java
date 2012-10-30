@@ -16,6 +16,14 @@ public class NotificationServiceImpl extends BaseService implements Notification
         loadBalancerEventRepository.save(nE);
 
         LoadBalancerServiceEvent lsE = AtomHelper.createloadBalancerServiceEvent(userName, accountId, loadbalancerId, title, desc, eventType, category, severity, nodeId);
+        loadBalancerEventRepository.save(lsE);    }
+
+    @Transactional
+    public void saveNodeServiceEvent(String userName, Integer accountId, Integer loadbalancerId, Integer nodeId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity, String detailedMessage) {
+        NodeServiceEvent nE = AtomHelper.createNodeServiceEvent(userName, accountId, loadbalancerId, nodeId, title, desc, eventType, category, severity, detailedMessage);
+        loadBalancerEventRepository.save(nE);
+
+        LoadBalancerServiceEvent lsE = AtomHelper.createloadBalancerServiceEvent(userName, accountId, loadbalancerId, title, desc, eventType, category, severity, nodeId);
         loadBalancerEventRepository.save(lsE);
     }
 

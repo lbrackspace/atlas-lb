@@ -723,25 +723,11 @@
         <xsd:attribute name="comment" type="xsd:string"/>
     </xsd:complexType>
 
-    <xsd:element name="event" type="tns:event"/>
-    <xsd:complexType name="event">
-        <xsd:attribute name="id" type="xsd:int"/>
-        <xsd:attribute name="loadbalancerId" type="xsd:int"/>
-        <xsd:attribute name="accountId" type="xsd:int"/>
-        <xsd:attribute name="author" type="xsd:string"/>
-        <xsd:attribute name="title" type="xsd:string"/>
-        <xsd:attribute name="description" type="xsd:string"/>
-        <xsd:attribute name="type" type="xsd:string"/>
-        <xsd:attribute name="category" type="xsd:string"/>
-        <xsd:attribute name="severity" type="xsd:string"/>
-        <xsd:attribute name="relativeUri" type="xsd:string"/>
-        <xsd:attribute name="created" type="xsd:string"/>
-    </xsd:complexType>
 
     <xsd:element name="loadBalancerEvent" type="tns:loadBalancerEvent"/>
     <xsd:complexType name="loadBalancerEvent">
         <xsd:complexContent>
-            <xsd:extension base="tns:event"/>
+            <xsd:extension base="papi:event"/>
         </xsd:complexContent>
     </xsd:complexType>
 
@@ -756,7 +742,7 @@
     <xsd:element name="loadBalancerServiceEvent" type="tns:loadBalancerServiceEvent"/>
     <xsd:complexType name="loadBalancerServiceEvent">
         <xsd:complexContent>
-            <xsd:extension base="tns:event">
+            <xsd:extension base="papi:event">
                 <xsd:sequence>
                     <xsd:element name="detailedMessage" type="xsd:string" minOccurs="0" />
                 </xsd:sequence>

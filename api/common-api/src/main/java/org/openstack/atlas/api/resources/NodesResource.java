@@ -8,10 +8,12 @@ import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.events.entities.NodeServiceEvent;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.operations.Operation;
@@ -35,7 +37,7 @@ public class NodesResource extends CommonDependencyProvider {
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveNodes(@QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker, @QueryParam("page") Integer page) {
         if (requestHeaders.getRequestHeader("Accept").get(0).equals(APPLICATION_ATOM_XML)) {
-            return getFeedResponse(page);
+            return getFeedResponse(page, FeedType.NODES_FEED);
         }
 
         Set<Node> dnodes;
@@ -128,6 +130,30 @@ public class NodesResource extends CommonDependencyProvider {
         }
     }
 
+
+    @GET
+    @Path("events")
+    @Produces({APPLICATION_XML, APPLICATION_JSON,APPLICATION_ATOM_XML})
+    public Response retrieveNodeEvents(@QueryParam("page") Integer page) {
+        if (requestHeaders.getRequestHeader("Accept").get(0).equals(APPLICATION_ATOM_XML)) {
+            return getFeedResponse(page, FeedType.NODE_SERVICE_FEED);
+        }
+
+        List<NodeServiceEvent> dEvents;
+        NodeServiceEvents rEvents = new NodeServiceEvents();
+        try {
+            dEvents = loadBalancerEventRepository.getNodeServiceEvents(accountId, loadBalancerId, page);
+
+            for (NodeServiceEvent event : dEvents) {
+                rEvents.getNodeServiceEvents().add(dozerMapper.map(event, org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvent.class));
+            }
+
+            return Response.status(200).entity(rEvents).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
     @Path("{id: [-+]?[1-9][0-9]*}")
     public NodeResource retrieveNodeResource(@PathParam("id") int id) {
         nodeResource.setRequestHeaders(requestHeaders);
@@ -137,9 +163,9 @@ public class NodesResource extends CommonDependencyProvider {
         return nodeResource;
     }
 
-    private Response getFeedResponse(Integer page) {
+    private Response getFeedResponse(Integer page, FeedType feedType) {
         Map<String, Object> feedAttributes = new HashMap<String, Object>();
-        feedAttributes.put("feedType", FeedType.NODES_FEED);
+        feedAttributes.put("feedType", feedType);
         feedAttributes.put("accountId", accountId);
         feedAttributes.put("loadBalancerId", loadBalancerId);
         feedAttributes.put("page", page);

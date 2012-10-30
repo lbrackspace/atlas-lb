@@ -16,6 +16,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.*;
+
 import static org.openstack.atlas.service.domain.services.impl.VirtualIpServiceImpl.DEL_PTR_FAILED;
 import static org.openstack.atlas.service.domain.services.impl.VirtualIpServiceImpl.DEL_PTR_PASSED;
 
@@ -60,6 +61,10 @@ public class LoadBalancerEventRepository {
         entityManager.persist(nodeEvent);
     }
 
+    public void save(NodeServiceEvent nodeServiceEvent) {
+        entityManager.persist(nodeServiceEvent);
+    }
+
     public void save(VirtualIpEvent virtualIpEvent) {
         entityManager.persist(virtualIpEvent);
     }
@@ -71,15 +76,15 @@ public class LoadBalancerEventRepository {
     public LoadBalancerServiceEvents getAllPTREventsByLoadBalancer(Integer loadbalancerId) {
         String qStr = "SELECT e FROM LoadBalancerServiceEvent e "
                 + "where e.loadbalancerId = :loadbalancerId and e.type = :type";
-        Query q = entityManager.createQuery(qStr).setParameter("loadbalancerId", loadbalancerId).setParameter("type",EventType.DELETE_VIRTUAL_IP);
+        Query q = entityManager.createQuery(qStr).setParameter("loadbalancerId", loadbalancerId).setParameter("type", EventType.DELETE_VIRTUAL_IP);
         List<LoadBalancerServiceEvent> events = q.getResultList();
         LoadBalancerServiceEvents lbsEvents = new LoadBalancerServiceEvents();
-        for(LoadBalancerServiceEvent event : events){
+        for (LoadBalancerServiceEvent event : events) {
             String title = event.getTitle();
-            if(title == null){
+            if (title == null) {
                 continue;
             }
-            if(title.equals(DEL_PTR_FAILED) || title.equals(DEL_PTR_PASSED)){
+            if (title.equals(DEL_PTR_FAILED) || title.equals(DEL_PTR_PASSED)) {
                 lbsEvents.getLoadBalancerServiceEvents().add(event);
             }
         }
@@ -137,6 +142,16 @@ public class LoadBalancerEventRepository {
 
     public List<NodeEvent> getNodeEvents(Integer accountId, Integer loadbalancerId, Integer nodeId, Integer page) {
         Query query = entityManager.createQuery("SELECT evt FROM NodeEvent evt where evt.accountId = :accountId and evt.loadbalancerId = :loadbalancerId and evt.nodeId = :nodeId order by evt.created desc").setParameter("accountId", accountId).setParameter("loadbalancerId", loadbalancerId).setParameter("nodeId", nodeId).setMaxResults(PAGE_SIZE);
+
+        if (page != null && page > 0) {
+            query = query.setFirstResult((page - 1) * PAGE_SIZE);
+        }
+
+        return query.getResultList();
+    }
+
+    public List<NodeServiceEvent> getNodeServiceEvents(Integer accountId, Integer loadbalancerId, Integer page) {
+        Query query = entityManager.createQuery("SELECT evt FROM NodeServiceEvent evt where evt.accountId = :accountId and evt.loadbalancerId = :loadbalancerId order by evt.created desc").setParameter("accountId", accountId).setParameter("loadbalancerId", loadbalancerId).setMaxResults(PAGE_SIZE);
 
         if (page != null && page > 0) {
             query = query.setFirstResult((page - 1) * PAGE_SIZE);
