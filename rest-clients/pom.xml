@@ -15,7 +15,6 @@
 
     <modules>
         <module>objs</module>
-        <module>auth</module>
         <module>dns</module>
     </modules>
 

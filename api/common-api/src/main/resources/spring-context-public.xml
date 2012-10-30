@@ -46,6 +46,7 @@
           scope="request">
         <property name="asyncService" ref="loadBalancingAsyncService"/>
         <property name="lbRepository" ref="loadBalancerRepository"/>
+        <property name="loadBalancerEventRepository" ref="loadBalancerEventRepository"/>
         <property name="dozerMapper" ref="dozerBeanMapper"/>
         <property name="atomFeedAdapter" ref="atomFeedAdapter"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>

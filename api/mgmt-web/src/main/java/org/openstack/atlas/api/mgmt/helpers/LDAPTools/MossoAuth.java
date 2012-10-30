@@ -15,6 +15,7 @@ import javax.naming.directory.Attribute;
 
 public class MossoAuth {
 
+    private static final int PAGESIZE = 4096;
     private MossoAuthConfig config;
     private Map<String, GroupConfig> groupMap;
     private Map<String, ClassConfig> classMap;
@@ -37,6 +38,7 @@ public class MossoAuth {
         ClassConfig uc;
         LdapContext ctx;
         String udn;
+        nop();
         NamingEnumeration<SearchResult> results;
         if (user == null || passwd == null || user.equals("") || passwd.equals("")) {
             return false; // Prevents annonymouse binds.
@@ -63,6 +65,7 @@ public class MossoAuth {
     public Set<String> getGroups(String user, String passwd) throws NamingException, IOException {
         int i;
         int j;
+        nop();
         LdapContext ctx;
         NamingEnumeration<SearchResult> answer;
         SearchControls ctls = new SearchControls();
@@ -119,7 +122,9 @@ public class MossoAuth {
     }
 
     public static final String escapeFilter(String filter) {
-        StringBuffer sb = new StringBuffer(); // If using JDK >= 1.5 consider using StringBuilder
+        StringBuilder sb;
+        nops();
+        sb = new StringBuilder(PAGESIZE);
         for (int i = 0; i < filter.length(); i++) {
             char curChar = filter.charAt(i);
             switch (curChar) {
@@ -146,7 +151,9 @@ public class MossoAuth {
     }
 
     public static String escapeDn(String name) {
-        StringBuffer sb = new StringBuffer(); // If using JDK >= 1.5 consider using StringBuilder
+        StringBuilder sb;
+        nops();
+        sb = new StringBuilder();
         if ((name.length() > 0) && ((name.charAt(0) == ' ') || (name.charAt(0) == '#'))) {
             sb.append('\\'); // add the leading backslash if needed
         }
@@ -200,5 +207,8 @@ public class MossoAuth {
     }
 
     private void nop() {
+    }
+
+    private static void nops() {
     }
 }

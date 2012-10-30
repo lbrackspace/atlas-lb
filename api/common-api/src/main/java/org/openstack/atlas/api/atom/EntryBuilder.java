@@ -56,6 +56,17 @@ public class EntryBuilder {
                 }
 
                 break;
+            case NODE_SERVICE_FEED:
+                List<NodeServiceEvent> lbNodeServiceEvents = eventRepository.getNodeServiceEvents(accountId, loadBalancerId, page);
+
+                for (NodeServiceEvent event : lbNodeServiceEvents) {
+                    Entry entry = createGenericEntry(event, baseUri);
+                    entry.setSummary(event.getDescription());
+                    entry.setContent("Details: " + event.getDetailedMessage());
+                    entries.add(entry);
+                }
+
+                break;
             case NODE_FEED:
                 Integer nodeId = (Integer) attributes.get("nodeId");
                 List<NodeEvent> nodeEvents = eventRepository.getNodeEvents(accountId, loadBalancerId, nodeId, page);

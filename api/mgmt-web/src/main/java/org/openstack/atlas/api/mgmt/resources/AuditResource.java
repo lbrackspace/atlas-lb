@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.service.domain.services.helpers.RdnsHelper;
 import org.openstack.atlas.util.config.MossoConfigValues;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.osgi.cfg.commons.ApacheCommonsConfiguration;
@@ -42,11 +43,12 @@ public class AuditResource extends ManagementDependencyProvider {
 
     @GET
     @Path("lbconfig")
-    @Produces({APPLICATION_JSON,APPLICATION_XML})
-    public Response retrieveLbConfig(){
+    @Produces({APPLICATION_JSON, APPLICATION_XML})
+    public Response retrieveLbConfig() {
+        RdnsHelper rdns = new RdnsHelper(911); // Not a real account
         LbConfiguration conf = new LbConfiguration();
         MossoConfigValues[] keys = MossoConfigValues.values();
-        if(!isUserInRole("cp,ops,support")){
+        if (!isUserInRole("ops")) {
             return ResponseFactory.accessDenied();
         }
         ListOfStrings lstr = retriveConfig(conf, keys);
@@ -57,8 +59,9 @@ public class AuditResource extends ManagementDependencyProvider {
     @Path("restconfig")
     @Produces({APPLICATION_JSON, APPLICATION_XML})
     public Response retrieveRestConfig() {
+        RdnsHelper rdns = new RdnsHelper(911); // Not a real account
         RestApiConfiguration conf = new RestApiConfiguration();
-        if (!isUserInRole("cp,ops,support")) {
+        if (!isUserInRole("ops")) {
             return ResponseFactory.accessDenied();
         }
         PublicApiServiceConfigurationKeys[] keys = PublicApiServiceConfigurationKeys.values();
@@ -119,6 +122,7 @@ public class AuditResource extends ManagementDependencyProvider {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
     }
+
     private ListOfStrings retriveConfig(ApacheCommonsConfiguration conf, ConfigurationKey[] keys) {
         int i;
         ListOfStrings lstr = new ListOfStrings();
@@ -126,12 +130,12 @@ public class AuditResource extends ManagementDependencyProvider {
             ConfigurationKey key = keys[i];
             String keyStr = key.toString();
             String valueStr;
-            try{
+            try {
                 valueStr = conf.getString(key);
-            }catch(Exception ex){
+            } catch (Exception ex) {
                 valueStr = "????";
             }
-            lstr.getStrings().add(String.format("%s=%s",keyStr,valueStr));
+            lstr.getStrings().add(String.format("%s=%s", keyStr, valueStr));
         }
         return lstr;
     }

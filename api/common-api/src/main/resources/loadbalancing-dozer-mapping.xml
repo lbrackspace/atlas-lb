@@ -319,6 +319,30 @@
             <b>nodeMetadata</b>
         </field>
     </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.management.v1.NodeServiceEvent</class-a>
+        <class-b>org.openstack.atlas.service.domain.events.entities.NodeServiceEvent</class-b>
+         <field>
+            <a>nodeId</a>
+            <b>nodeId</b>
+        </field>
+        <field>
+            <a>detailedMessage</a>
+            <b>detailedMessage</b>
+        </field>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.management.v1.NodeServiceEvents</class-a>
+        <class-b>org.openstack.atlas.service.domain.events.pojos.NodeServiceEvents</class-b>
+        <field>
+            <a>nodeServiceEvents</a>
+            <b>nodeServiceEvents</b>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.management.v1.NodeServiceEvent</a-hint>
+            <b-hint>org.openstack.atlas.service.domain.events.entities.NodeServiceEvent</b-hint>
+        </field>
+    </mapping>
     
     <mapping map-null="false" map-id="HIDE_NODE_META">
         <class-a>org.openstack.atlas.service.domain.entities.Node</class-a>

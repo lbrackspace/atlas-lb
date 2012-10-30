@@ -82,5 +82,4 @@ public interface VirtualIpService {
 
     public String getVirtualIpv6String(VirtualIpv6 vip6) throws IPStringConversionException;
 
-    public void nop(); // Yes its stupid but it makes testing a lot easier
 }

@@ -5,8 +5,11 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.WebResource;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import java.util.Map.Entry;
 import javax.xml.bind.JAXBException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,9 +26,10 @@ import org.w3._2005.atom.Link;
 public class DnsClient1_0 {
 
     private static final Log LOG = LogFactory.getLog(DnsClient1_0.class);
+    private static final int SB_INIT_SIZE = 1024 * 4;
+    private int accountId = -1;
     private String token = "";
     private String endPoint = "";
-    private Integer accountId = -1;
     private String adminEndPoint = "";
     private String adminUser = "";
     private String adminPasswd = "";
@@ -40,7 +44,7 @@ public class DnsClient1_0 {
         this.adminPasswd = adminPasswd;
     }
 
-    public DnsClient1_0(String endPoint, String token, Integer accountId) {
+    public DnsClient1_0(String endPoint, String token, int accountId) {
         this.endPoint = endPoint;
         this.accountId = accountId;
         this.token = token;
@@ -82,22 +86,30 @@ public class DnsClient1_0 {
         return resp;
     }
 
-    public ClientResponse getPtrRecords(Integer domainId, String deviceUrl, String serviceName, Integer limit, Integer offset) {
+    public ClientResponse getPtrRecords(String deviceUrl, String serviceName, Integer limit, Integer offset) {
         Client client = new Client();
+        String authKey = "x-auth-token";
         String url = String.format("/%d/rdns/%s", accountId, serviceName);
         WebResource wr = client.resource(endPoint).path(url);
         wr = addLimitOffsetParams(wr, limit, offset);
         wr = wr.queryParam("href", deviceUrl);
+
+        String logMsg = String.format("USEING CRED %s:%s CALLING GET %s",authKey,token,wr.toString());
+        LOG.info(logMsg);
+        System.out.printf("%s\n", logMsg);
         Builder rb = wr.accept(MediaType.APPLICATION_XML);
         rb = rb.type(MediaType.APPLICATION_XML);
-        rb = rb.header("x-auth-token", this.token);
+        rb = rb.header(authKey, this.token);
         ClientResponse resp = rb.get(ClientResponse.class);
         return resp;
     }
 
-    public ClientResponse addPtrRecord(Integer domainId, String deviceUrl,
+    public ClientResponse addPtrRecord(String deviceUrl,
             String serviceName, String name, String ip, Integer ttl) {
         Rdns rdnsRequest = new Rdns();
+        String fmt;
+        String msg;
+        String authKey = "x-auth-token";
         Link link = new Link();
         rdnsRequest.setLink(link);
         link.setHref(deviceUrl);
@@ -114,18 +126,22 @@ public class DnsClient1_0 {
         ptr.setType(RecordType.PTR);
 
         String url = String.format("/%d/rdns", accountId);
+        String xml;
         try {
-            String fullUrl = String.format("%s%s", endPoint, url);
-            String xml = JaxbExp.serialize(rdnsRequest);
+            xml = JaxbExp.serialize(rdnsRequest);
             nop();
         } catch (JAXBException ex) {
+            xml = "ERROR";
         }
-
         Client client = new Client();
         WebResource wr = client.resource(endPoint).path(url);
         Builder rb = wr.accept(MediaType.APPLICATION_XML);
+        fmt = "USEING CRED %s:%s CALLING POST %s\nbody=%s";
+        msg = String.format(fmt,authKey,token,wr.toString(),xml);
+        LOG.info(msg);
+        System.out.printf("%s\n", msg);
         rb = rb.type(MediaType.APPLICATION_XML);
-        rb = rb.header("x-auth-token", token);
+        rb = rb.header(authKey, token);
         ClientResponse resp = rb.post(ClientResponse.class, rdnsRequest);
         return resp;
     }
@@ -147,17 +163,15 @@ public class DnsClient1_0 {
         if (ip != null) {
             wr = wr.queryParam("ip", ip);
         }
-        String logMsg = "CALLING DELETE " + wr.toString();
+        String logMsg = String.format("USEING CRED %s:%s CALLING DELETE %s",authKey,authValue,wr.toString());
         LOG.info(logMsg);
-        System.out.printf("%s\n",logMsg);
+        System.out.printf("%s\n", logMsg);
         Builder rb = wr.accept(MediaType.APPLICATION_XML);
         rb = rb.type(MediaType.APPLICATION_XML);
         rb.header(authKey, authValue);
         ClientResponse resp = rb.delete(ClientResponse.class);
-
         return resp;
     }
-
 
     public ClientResponse getDomains() {
         return getDomains(null, null, null);
@@ -173,8 +187,9 @@ public class DnsClient1_0 {
         return wr;
     }
 
+
     public String encodeBasicAuth() throws UnsupportedEncodingException {
-        return "BASIC " + Base64.encode(adminUser + ":" + adminPasswd);
+        return StaticDNSClientUtils.encodeBasicAuth(adminUser,adminPasswd);
     }
 
     public String getToken() {

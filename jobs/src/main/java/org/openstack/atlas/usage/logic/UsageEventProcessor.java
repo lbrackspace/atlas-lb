@@ -9,6 +9,7 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
@@ -18,18 +19,20 @@ import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepo
 import java.util.*;
 
 public class UsageEventProcessor {
-    private final Log LOG = LogFactory.getLog(UsageEventProcessor.class);
+    private static final Log LOG = LogFactory.getLog(UsageEventProcessor.class);
 
     private LoadBalancerUsageRepository hourlyUsageRepository;
     private LoadBalancerRepository loadBalancerRepository;
+    private UsageRepository rollupUsageRepository;
 
     private List<LoadBalancerUsage> usagesToCreate;
     private List<LoadBalancerUsage> usagesToUpdate;
     private List<LoadBalancerUsageEvent> inOrderUsageEventEntries;
 
-    public UsageEventProcessor(List<LoadBalancerUsageEvent> inOrderUsageEventEntries, LoadBalancerUsageRepository hourlyUsageRepository, LoadBalancerRepository loadBalancerRepository) {
+    public UsageEventProcessor(List<LoadBalancerUsageEvent> inOrderUsageEventEntries, LoadBalancerUsageRepository hourlyUsageRepository, UsageRepository rollupUsageRepository, LoadBalancerRepository loadBalancerRepository) {
         this.inOrderUsageEventEntries = inOrderUsageEventEntries;
         this.hourlyUsageRepository = hourlyUsageRepository;
+        this.rollupUsageRepository = rollupUsageRepository;
         this.loadBalancerRepository = loadBalancerRepository;
         this.usagesToCreate = new ArrayList<LoadBalancerUsage>();
         this.usagesToUpdate = new ArrayList<LoadBalancerUsage>();
@@ -65,8 +68,10 @@ public class UsageEventProcessor {
 
                 // Update recent usage end time
                 Calendar newEndTimeForRecentUsage = calculateEndTime(recentUsage.getEndTime(), firstNewUsage.getStartTime());
-                recentUsage.setEndTime(newEndTimeForRecentUsage);
-                usagesToUpdate.add(recentUsage);
+                if(!recentUsage.getEndTime().equals(newEndTimeForRecentUsage)) {
+                    recentUsage.setEndTime(newEndTimeForRecentUsage);
+                    usagesToUpdate.add(recentUsage);
+                }
 
                 // New records may be needed if we are near the hour mark or if poller goes down.
                 List<LoadBalancerUsage> bufferRecords = createBufferRecordsIfNeeded(recentUsage, firstNewUsage);
@@ -77,6 +82,16 @@ public class UsageEventProcessor {
                 UsageEvent usageEvent = UsageEvent.valueOf(firstNewUsage.getEventType());
                 int updatedTags = calculateTags(recentUsage.getAccountId(), lbId, usageEvent, recentUsage);
                 firstNewUsage.setTags(updatedTags);
+            } else {
+                final Usage recentUsage = rollupUsageRepository.getMostRecentUsageForLoadBalancer(lbId);
+                if (recentUsage != null) {
+                    final LoadBalancerUsage firstNewUsage = loadBalancerUsages.get(0);
+
+                    // Update the tags to the proper tags.
+                    UsageEvent usageEvent = UsageEvent.valueOf(firstNewUsage.getEventType());
+                    int updatedTags = calculateTags(recentUsage.getAccountId(), lbId, usageEvent, recentUsage);
+                    firstNewUsage.setTags(updatedTags);
+                }
             }
 
             for (int i = 0; i < loadBalancerUsages.size(); i++) {
@@ -106,8 +121,12 @@ public class UsageEventProcessor {
         }
     }
 
-    private void mutateCumulativeFields(LoadBalancerUsage previousUsage, List<LoadBalancerUsage> bufferRecords, LoadBalancerUsage nextUsage) {
-        if (bufferRecords.isEmpty()) {
+    public static void mutateCumulativeFields(LoadBalancerUsage previousUsage, List<LoadBalancerUsage> bufferRecords, LoadBalancerUsage nextUsage) {
+        final int MILLISECONDS_PER_HOUR = 60000;
+        // Update cumulative fields if the previousUsage and nextUsage are less than an hour apart or if there are no buffer records.
+        // This prevents usage records from having a ton of usage if we weren't polling for an extended period of time, but ensures
+        // that we properly calculate cumulative fields.
+        if (bufferRecords.isEmpty() || Math.abs(nextUsage.getStartTime().getTimeInMillis() - previousUsage.getEndTime().getTimeInMillis()) < MILLISECONDS_PER_HOUR) {
             if (previousUsage.getLastBandwidthBytesIn() != null && nextUsage.getLastBandwidthBytesIn() != null) {
                 final Long updatedCumBandwidthBytesIn = UsageCalculator.calculateCumBandwidthBytesIn(previousUsage, nextUsage.getLastBandwidthBytesIn());
                 previousUsage.setCumulativeBandwidthBytesIn(updatedCumBandwidthBytesIn);
@@ -131,8 +150,10 @@ public class UsageEventProcessor {
     }
 
     public static List<LoadBalancerUsage> createBufferRecordsIfNeeded(LoadBalancerUsage previousUsage, LoadBalancerUsage nextUsage) {
-        if (nextUsage.getStartTime().before(previousUsage.getEndTime()))
-            throw new RuntimeException("Usages are not in order!");
+        if (nextUsage.getStartTime().before(previousUsage.getEndTime())) {
+            LOG.error(String.format("Usages are out of order! Usage id: %d, Usage endTime: %s, Next Usage id: %d, Next usage startTime: %s,", previousUsage.getId(), previousUsage.getEndTime().getTime(), nextUsage.getId(), nextUsage.getStartTime().getTime()));
+//            throw new RuntimeException("cd!");
+        }
 
         List<LoadBalancerUsage> bufferRecords = new ArrayList<LoadBalancerUsage>();
 
@@ -141,9 +162,6 @@ public class UsageEventProcessor {
 
         while (previousRecordsEndTime.before(nextUsagesStartTime)) {
             if (isEndOfHour(previousRecordsEndTime)) {
-                // Move previousRecordsEndTime to next hour since we don't need a buffer for this hour.
-                previousRecordsEndTime.add(Calendar.MILLISECOND, 1);
-
                 if (previousRecordsEndTime.before(nextUsagesStartTime)
                         && previousRecordsEndTime.get(Calendar.HOUR_OF_DAY) == nextUsagesStartTime.get(Calendar.HOUR_OF_DAY)
                         && previousRecordsEndTime.get(Calendar.DAY_OF_MONTH) == nextUsagesStartTime.get(Calendar.DAY_OF_MONTH)
@@ -180,29 +198,47 @@ public class UsageEventProcessor {
         newBufferRecord.setNumVips(recentUsage.getNumVips());
         newBufferRecord.setStartTime((Calendar) previousRecordsEndTime.clone());
         newBufferRecord.setEndTime((Calendar) newEndTimeForBufferRecord.clone());
+        if (UsageEvent.SUSPEND_LOADBALANCER.name().equals(recentUsage.getEventType()) || UsageEvent.SUSPENDED_LOADBALANCER.name().equals(recentUsage.getEventType())) {
+            newBufferRecord.setEventType(UsageEvent.SUSPENDED_LOADBALANCER.name());
+        }
         return newBufferRecord;
     }
 
     public static boolean isEndOfHour(Calendar calendar) {
-        return calendar.get(Calendar.MINUTE) == 59 && calendar.get(Calendar.SECOND) == 59 && calendar.get(Calendar.MILLISECOND) == 999;
+        return calendar.get(Calendar.MINUTE) == 0 && calendar.get(Calendar.SECOND) == 0 && calendar.get(Calendar.MILLISECOND) == 0;
     }
 
     public static Calendar calculateEndTime(Calendar recentUsageEndTime, Calendar nextUsageStartTime) {
-        if (nextUsageStartTime.before(recentUsageEndTime)) throw new RuntimeException("Usages are not in order!");
+        if (nextUsageStartTime.before(recentUsageEndTime)) {
+            LOG.error(String.format("Usages are out of order! nextUsageStartTime: %s, recentUsageEndTime: %s,", nextUsageStartTime.getTime(), recentUsageEndTime.getTime()));
+//            throw new RuntimeException("Usages are not in order!");
+        }
 
         if (recentUsageEndTime.get(Calendar.HOUR_OF_DAY) == nextUsageStartTime.get(Calendar.HOUR_OF_DAY)
                 && recentUsageEndTime.get(Calendar.DAY_OF_MONTH) == nextUsageStartTime.get(Calendar.DAY_OF_MONTH)
                 && recentUsageEndTime.get(Calendar.MONTH) == nextUsageStartTime.get(Calendar.MONTH)
-                && recentUsageEndTime.get(Calendar.YEAR) == nextUsageStartTime.get(Calendar.YEAR)) {
+                && recentUsageEndTime.get(Calendar.YEAR) == nextUsageStartTime.get(Calendar.YEAR)
+                && (recentUsageEndTime.get(Calendar.MINUTE) != 0
+                || recentUsageEndTime.get(Calendar.SECOND) != 0
+                || recentUsageEndTime.get(Calendar.MILLISECOND) != 0)) {
             return nextUsageStartTime;
         }
 
         // Return a new end time that reaches the very end of the hour
         Calendar newEndTime = Calendar.getInstance();
         newEndTime.setTime(recentUsageEndTime.getTime());
-        newEndTime.set(Calendar.MINUTE, 59);
-        newEndTime.set(Calendar.SECOND, 59);
-        newEndTime.set(Calendar.MILLISECOND, 999);
+        if ((recentUsageEndTime.get(Calendar.HOUR_OF_DAY) != nextUsageStartTime.get(Calendar.HOUR_OF_DAY)
+                || recentUsageEndTime.get(Calendar.DAY_OF_MONTH) != nextUsageStartTime.get(Calendar.DAY_OF_MONTH)
+                || recentUsageEndTime.get(Calendar.MONTH) != nextUsageStartTime.get(Calendar.MONTH)
+                || recentUsageEndTime.get(Calendar.YEAR) != nextUsageStartTime.get(Calendar.YEAR))
+                ||(newEndTime.get(Calendar.MINUTE) != 0
+                || newEndTime.get(Calendar.SECOND) != 0
+                || newEndTime.get(Calendar.MILLISECOND) != 0)) {
+            newEndTime.set(Calendar.MINUTE, 59);
+            newEndTime.set(Calendar.SECOND, 59);
+            newEndTime.set(Calendar.MILLISECOND, 999);
+            newEndTime.add(Calendar.MILLISECOND, 1);
+        }
         return newEndTime;
     }
 
@@ -232,7 +268,11 @@ public class UsageEventProcessor {
         newUsage.setLoadbalancerId(inOrderUsageEventEntry.getLoadbalancerId());
         newUsage.setNumVips(inOrderUsageEventEntry.getNumVips());
         newUsage.setStartTime(inOrderUsageEventEntry.getStartTime());
-        newUsage.setEndTime(inOrderUsageEventEntry.getStartTime()); // Will most likely change in 2nd pass
+        newUsage.setEndTime(inOrderUsageEventEntry.getStartTime());
+        if(inOrderUsageEventEntry.getEventType().equals(UsageEvent.SUSPEND_LOADBALANCER.name()) ||
+                inOrderUsageEventEntry.getEventType().equals(UsageEvent.SUSPENDED_LOADBALANCER.name())) {
+            newUsage.getEndTime().add(Calendar.SECOND, 1);
+        }
         newUsage.setNumberOfPolls(0);
         newUsage.setTags(0); // Will most likely change in 2nd pass
         newUsage.setEventType(inOrderUsageEventEntry.getEventType());
@@ -256,6 +296,18 @@ public class UsageEventProcessor {
         return recentUsageMap;
     }
 
+    public int calculateTags(Integer accountId, Integer lbId, UsageEvent usageEvent, Usage recentUsage) {
+        BitTags tags;
+
+        if (recentUsage != null) {
+            tags = new BitTags(recentUsage.getTags());
+        } else {
+            tags = new BitTags();
+        }
+
+        return calculateTags(accountId, lbId, usageEvent, tags);
+    }
+
     public int calculateTags(Integer accountId, Integer lbId, UsageEvent usageEvent, LoadBalancerUsage recentUsage) {
         BitTags tags;
 
@@ -264,6 +316,12 @@ public class UsageEventProcessor {
         } else {
             tags = new BitTags();
         }
+
+        return calculateTags(accountId, lbId, usageEvent, tags);
+    }
+
+    public int calculateTags(Integer accountId, Integer lbId, UsageEvent usageEvent, BitTags bitTags) {
+        BitTags tags = new BitTags(bitTags.getBitTags());
 
         switch (usageEvent) {
             case CREATE_LOADBALANCER:

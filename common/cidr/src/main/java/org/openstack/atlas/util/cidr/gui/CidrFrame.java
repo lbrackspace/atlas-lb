@@ -119,7 +119,7 @@ public class CidrFrame extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(ipRangeField, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(validateButton, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)))
+                        .addComponent(validateButton, javax.swing.GroupLayout.PREFERRED_SIZE, 162, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         CidrListPanelLayout.setVerticalGroup(
@@ -138,10 +138,10 @@ public class CidrFrame extends javax.swing.JFrame {
                     .addComponent(isContainedButton)
                     .addComponent(ipRangeField)
                     .addComponent(validateButton))
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(33, Short.MAX_VALUE))
         );
 
-        ResultsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Results", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12))); // NOI18N
+        ResultsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Results"));
 
         resultsTextArea.setColumns(20);
         resultsTextArea.setEditable(false);
@@ -179,7 +179,6 @@ public class CidrFrame extends javax.swing.JFrame {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("IPv6 Crap"));
 
-        ipv6Field.setBackground(new java.awt.Color(255, 255, 255));
         ipv6Field.setEditable(false);
         ipv6Field.setFont(new java.awt.Font("DejaVu Sans Mono", 1, 13));
         ipv6Field.setText("0000:0000:0000:0000:0000:0000:0000:0000");
@@ -271,7 +270,8 @@ public class CidrFrame extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        pack();
+        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds((screenSize.width-902)/2, (screenSize.height-781)/2, 902, 781);
     }// </editor-fold>//GEN-END:initComponents
 
     private void isContainedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isContainedButtonActionPerformed

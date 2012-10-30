@@ -8,7 +8,6 @@ import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.handler.RejectedExecutionHandler;
 import org.openstack.atlas.atom.service.ThreadPoolExecutorService;
 import org.openstack.atlas.atom.service.ThreadPoolMonitorService;
-import org.openstack.atlas.atom.tasks.LoadBalancerAHUSLTask;
 import org.openstack.atlas.atom.util.AHUSLUtil;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
@@ -98,7 +97,7 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
 
                             taskCounter++;
 
-                            taskExecutor.execute(new LoadBalancerAHUSLTask(processUsage, client, usageRepository)); //TODO: Need to move repository deps...
+//                            taskExecutor.execute(new LoadBalancerAHUSLTask(processUsage, client, usageRepository)); //TODO: Need to move repository deps...
                         }
                     } else {
                         LOG.debug("No usage found for processing at this time...");

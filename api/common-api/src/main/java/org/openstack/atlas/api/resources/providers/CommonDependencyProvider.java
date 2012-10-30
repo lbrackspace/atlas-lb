@@ -9,6 +9,7 @@ import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
+import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.ServiceUnavailableException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -56,6 +57,7 @@ public class CommonDependencyProvider {
     protected SslTerminationService sslTerminationService;
     protected AllowedDomainsService allowedDomainsService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+    protected LoadBalancerEventRepository loadBalancerEventRepository;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
 
     public ReverseProxyLoadBalancerService getReverseProxyLoadBalancerService() {
@@ -112,6 +114,14 @@ public class CommonDependencyProvider {
 
     public void setNodeMetadataService(NodeMetadataService nodeMetadataService) {
         this.nodeMetadataService = nodeMetadataService;
+    }
+
+    public LoadBalancerEventRepository getLoadBalancerEventRepository() {
+        return loadBalancerEventRepository;
+    }
+
+    public void setLoadBalancerEventRepository(LoadBalancerEventRepository loadBalancerEventRepository) {
+        this.loadBalancerEventRepository = loadBalancerEventRepository;
     }
 
     public void setNodeService(NodeService nodeService) {

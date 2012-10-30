@@ -220,14 +220,14 @@ public class CaFrame extends javax.swing.JFrame {
             .addGroup(keyGenTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(rsaGenPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(514, Short.MAX_VALUE))
+                .addContainerGap(515, Short.MAX_VALUE))
         );
         keyGenTabLayout.setVerticalGroup(
             keyGenTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(keyGenTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(rsaGenPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(665, Short.MAX_VALUE))
+                .addContainerGap(683, Short.MAX_VALUE))
         );
 
         appTabs.addTab("Key Generation", keyGenTab);
@@ -362,7 +362,7 @@ public class CaFrame extends javax.swing.JFrame {
                         .addGroup(lsRSAPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(newCsrKeySizeTextField))))
-                .addContainerGap(209, Short.MAX_VALUE))
+                .addContainerGap(182, Short.MAX_VALUE))
         );
         lsRSAPanelLayout.setVerticalGroup(
             lsRSAPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -395,8 +395,8 @@ public class CaFrame extends javax.swing.JFrame {
                     .addGroup(csrOptionsPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(csrOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(csrFnButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
-                            .addComponent(keyFnButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))
+                            .addComponent(csrFnButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                            .addComponent(keyFnButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(csrOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(keyFN2)
@@ -431,7 +431,7 @@ public class CaFrame extends javax.swing.JFrame {
                 .addGroup(csrGenTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(csrOptionsPanel, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(csrSubjectPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 734, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(461, Short.MAX_VALUE))
+                .addContainerGap(434, Short.MAX_VALUE))
         );
         csrGenTabLayout.setVerticalGroup(
             csrGenTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -440,7 +440,7 @@ public class CaFrame extends javax.swing.JFrame {
                 .addComponent(csrSubjectPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(csrOptionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(147, Short.MAX_VALUE))
+                .addContainerGap(213, Short.MAX_VALUE))
         );
 
         appTabs.addTab("CSR Generation", csrGenTab);
@@ -520,7 +520,7 @@ public class CaFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(x509OptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(x509OptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(isSerialNumberSpecified, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+                        .addComponent(isSerialNumberSpecified, javax.swing.GroupLayout.PREFERRED_SIZE, 167, Short.MAX_VALUE)
                         .addComponent(jLabel11, javax.swing.GroupLayout.Alignment.TRAILING))
                     .addGroup(x509OptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addComponent(setOutputCrtFileButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -603,14 +603,14 @@ public class CaFrame extends javax.swing.JFrame {
             .addGroup(csrSigningTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(CSRSigningPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(450, Short.MAX_VALUE))
+                .addContainerGap(453, Short.MAX_VALUE))
         );
         csrSigningTabLayout.setVerticalGroup(
             csrSigningTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(csrSigningTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(CSRSigningPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(299, Short.MAX_VALUE))
+                .addContainerGap(333, Short.MAX_VALUE))
         );
 
         appTabs.addTab("CSR Signing", csrSigningTab);
@@ -708,7 +708,7 @@ public class CaFrame extends javax.swing.JFrame {
                             .addComponent(subjectCertFN)
                             .addComponent(issuerCertFN, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)))
                     .addComponent(verifyIssuerAndSubjectCertButton, javax.swing.GroupLayout.PREFERRED_SIZE, 368, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
         keycertandchainPanelLayout.setVerticalGroup(
             keycertandchainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -789,19 +789,19 @@ public class CaFrame extends javax.swing.JFrame {
                                 .addComponent(jLabel13)
                                 .addGap(18, 18, 18)
                                 .addComponent(clearKeyButton, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(5, 5, 5)
-                                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE))
+                                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel14)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(clearCertButton, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel15)
                                 .addGap(18, 18, 18)
@@ -839,7 +839,7 @@ public class CaFrame extends javax.swing.JFrame {
                 .addGroup(VerifyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(VerifyPanelLayout.createSequentialGroup()
                         .addComponent(verifyKeyCertPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(518, Short.MAX_VALUE))
+                        .addContainerGap(519, Short.MAX_VALUE))
                     .addGroup(VerifyPanelLayout.createSequentialGroup()
                         .addComponent(keycertandchainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(518, 518, 518))
@@ -856,7 +856,7 @@ public class CaFrame extends javax.swing.JFrame {
                 .addComponent(keycertandchainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap(52, Short.MAX_VALUE))
         );
 
         appTabs.addTab("Verification", VerifyPanel);
@@ -913,14 +913,14 @@ public class CaFrame extends javax.swing.JFrame {
                 .addGroup(debugPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(debugPanelLayout.createSequentialGroup()
                         .addGroup(debugPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1162, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1163, Short.MAX_VALUE)
                             .addGroup(debugPanelLayout.createSequentialGroup()
                                 .addComponent(setMysteryFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(mysteryFN, javax.swing.GroupLayout.DEFAULT_SIZE, 959, Short.MAX_VALUE)))
+                                .addComponent(mysteryFN, javax.swing.GroupLayout.DEFAULT_SIZE, 960, Short.MAX_VALUE)))
                         .addContainerGap())
                     .addGroup(debugPanelLayout.createSequentialGroup()
-                        .addComponent(clearDebugButton, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                        .addComponent(clearDebugButton, javax.swing.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(debugStateButton, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -943,7 +943,7 @@ public class CaFrame extends javax.swing.JFrame {
                     .addComponent(debugStateButton)
                     .addComponent(identifyFileButton)
                     .addComponent(MultiParseFileButton))
-                .addContainerGap(181, Short.MAX_VALUE))
+                .addContainerGap(193, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout DebugTabLayout = new javax.swing.GroupLayout(DebugTab);
@@ -982,7 +982,8 @@ public class CaFrame extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        pack();
+        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds((screenSize.width-1254)/2, (screenSize.height-880)/2, 1254, 880);
     }// </editor-fold>//GEN-END:initComponents
 
     private void identifyFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_identifyFileButtonActionPerformed

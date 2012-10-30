@@ -62,6 +62,7 @@
         <class>org.openstack.atlas.service.domain.events.entities.LoadBalancerEvent</class>
         <class>org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent</class>
         <class>org.openstack.atlas.service.domain.events.entities.NodeEvent</class>
+        <class>org.openstack.atlas.service.domain.events.entities.NodeServiceEvent</class>
         <class>org.openstack.atlas.service.domain.events.entities.VirtualIpEvent</class>
         <class>org.openstack.atlas.service.domain.events.entities.SessionPersistenceEvent</class>
 

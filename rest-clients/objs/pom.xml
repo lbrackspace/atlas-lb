@@ -6,7 +6,7 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
         <version>1.16.0-SNAPSHOT</version>
-    </parent>
+   </parent>
 
     <artifactId>atlas-restclients-objects</artifactId>
     <name>Openstack :: Atlas :: Rest Clients :: Objects</name>
@@ -14,7 +14,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>auth</module>
         <module>dns</module>
     </modules>
 

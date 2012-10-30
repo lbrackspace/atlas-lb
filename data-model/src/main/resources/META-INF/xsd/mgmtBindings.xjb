@@ -146,6 +146,12 @@
         <bindings scd="~tns:accountLoadBalancer">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancer"/>
         </bindings>
+        <bindings scd="~tns:extendedAccountLoadBalancers">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.management.v1.ExtendedAccountLoadBalancers"/>
+        </bindings>
+        <bindings scd="~tns:extendedAccountLoadBalancer">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.management.v1.ExtendedAccountLoadBalancer"/>
+        </bindings>
         <bindings scd="~tns:accountLoadBalancerLimits">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerLimits"/>
         </bindings>

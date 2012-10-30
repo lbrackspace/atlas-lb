@@ -44,12 +44,16 @@ import org.openstack.atlas.service.domain.events.entities.EventType as EventType
 import org.openstack.atlas.service.domain.events.entities.CategoryType as CategoryType
 import org.openstack.atlas.service.domain.events.entities.EventSeverity as EventSeverity
 
+import org.openstack.atlas.service.domain.services.impl.VirtualIpServiceImpl as VirtualIpServiceImpl
+
 from lbentities import *
 
 bigInteger2IPv6 = IPv6.bigInteger2IPv6
 
-import java.math.BigInteger as BigInteger
+DEL_PTR_FAILED = VirtualIpServiceImpl.DEL_PTR_FAILED
+DEL_PTR_PASSED = VirtualIpServiceImpl.DEL_PTR_PASSED
 
+import java.math.BigInteger as BigInteger
 import java.util.Date
 import java.util.Calendar
 import java.util.Set
@@ -1694,6 +1698,16 @@ def newCrt(bits,subj,caKey,caCrt,**kw):
     crt = CertUtils.signCSR(csr,caKey,caCrt,730,None)
     return (key,csr,crt)
 
+def loadbalancerWithPTREvents():
+    qStr  = ""
+    qStr += "SELECT distinct(ev.loadbalancerId) "
+    qStr += "from LoadBalancerServiceEvent ev"
+    qStr += " where ev.title in ('%s','%s')"%(DEL_PTR_FAILED,DEL_PTR_PASSED)
+    qStr += " order by ev.loadbalancerId "
+    lbIds = []
+    for lbId in qq(qStr):
+        lbIds.append(lbId)
+    return lbIds
 
 def toPem(obj):
     if isinstance(obj,RsaPair):

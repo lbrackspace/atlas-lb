@@ -3,15 +3,18 @@ package org.openstack.atlas.service.domain.services.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
+import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
+import org.openstack.atlas.service.domain.pojos.ExtendedAccountLoadBalancer;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
 import org.openstack.atlas.service.domain.services.*;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
 import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.openstack.atlas.service.domain.util.CacheKeyGen;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
@@ -36,6 +39,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private HostService hostService;
     private NodeService nodeService;
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+    private AtlasCache atlasCache;
 
 
     @Required
@@ -66,6 +70,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Required
     public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
         this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
+    }
+
+    @Required
+    public void setAtlasCache(AtlasCache atlasCache) {
+        this.atlasCache = atlasCache;
     }
 
     @Override
@@ -281,9 +290,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     List<LoadBalancer> sharedLbsToCheck = new ArrayList<LoadBalancer>();
 
                     for (LoadBalancer lb : sharedLbs) {
-                      if (!lb.getId().equals(loadBalancer.getId())) {
-                          sharedLbsToCheck.add(lb);
-                      }
+                        if (!lb.getId().equals(loadBalancer.getId())) {
+                            sharedLbsToCheck.add(lb);
+                        }
                     }
                     isValidProto = verifySharedVipProtocols(sharedLbsToCheck, loadBalancer);
                 }
@@ -293,15 +302,16 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     List<LoadBalancer> sharedLbsToCheck = new ArrayList<LoadBalancer>();
 
                     for (LoadBalancer lb : sharedLbs) {
-                      if (!lb.getId().equals(loadBalancer.getId())) {
-                          sharedLbsToCheck.add(lb);
-                      }
+                        if (!lb.getId().equals(loadBalancer.getId())) {
+                            sharedLbsToCheck.add(lb);
+                        }
                     }
                     isValidProto = verifySharedVipProtocols(sharedLbsToCheck, loadBalancer);
                 }
             }
 
-            if (!isValidProto) throw new BadRequestException("Protocol is not valid. Please verify shared virtual ips and the ports being shared.");
+            if (!isValidProto)
+                throw new BadRequestException("Protocol is not valid. Please verify shared virtual ips and the ports being shared.");
 
             //check for health monitor type and allow update only if protocol matches health monitory type for HTTP and HTTPS
             if (dbLoadBalancer.getHealthMonitor() != null) {
@@ -419,6 +429,24 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Override
     public List<org.openstack.atlas.service.domain.pojos.AccountLoadBalancer> getAccountLoadBalancers(Integer accountId) {
         return loadBalancerRepository.getAccountLoadBalancers(accountId);
+    }
+
+    @Override
+    public List<ExtendedAccountLoadBalancer> getExtendedAccountLoadBalancer(Integer accountId) {
+        String key = CacheKeyGen.generateKeyName(accountId);
+        ArrayList<ExtendedAccountLoadBalancer> extendedAccountLoadBalancers;
+        boolean b = atlasCache.containsKey(key);
+        extendedAccountLoadBalancers = (ArrayList<ExtendedAccountLoadBalancer>) atlasCache.get(key);
+        if (extendedAccountLoadBalancers == null) {
+            LOG.debug("Setting ExtendedLoadBalancers in cache for: " + " at " + Calendar.getInstance().getTime().toString());
+            extendedAccountLoadBalancers = loadBalancerRepository.getExtendedAccountLoadBalancers(accountId);
+            atlasCache.set(key, extendedAccountLoadBalancers);
+        } else {
+            LOG.debug("Retrieved ExtendedLoadBalancers from cache for: " + accountId + " at " + Calendar.getInstance().getTime().toString());
+            return extendedAccountLoadBalancers;
+        }
+
+        return extendedAccountLoadBalancers;
     }
 
     @Override
@@ -574,7 +602,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     public LoadBalancer pseudoDelete(LoadBalancer lb) throws Exception {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
-        //Remove error page...
+        //Remove error page
         loadBalancerRepository.removeErrorPage(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
         dbLoadBalancer.setStatus(DELETED);
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);

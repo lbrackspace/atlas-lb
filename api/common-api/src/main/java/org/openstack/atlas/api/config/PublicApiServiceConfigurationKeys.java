@@ -5,6 +5,7 @@ import org.openstack.atlas.cfg.ConfigurationKey;
 public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     auth_callback_uri,
     auth_management_uri,
+    auth_public_uri,
     basic_auth_user,
     basic_auth_key,
     base_uri,
@@ -24,6 +25,7 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     memcached_servers,
     rdns_crypto_key,
     rdns_admin_url,
+    rdns_public_url,
     rdns_admin_user,
-    rdns_admin_passwd;
+    rdns_admin_passwd,
 }

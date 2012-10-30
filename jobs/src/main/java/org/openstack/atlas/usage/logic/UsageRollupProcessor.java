@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.Tier;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
@@ -15,7 +16,7 @@ import org.openstack.atlas.usage.helpers.TimeZoneHelper;
 import java.util.*;
 
 public class UsageRollupProcessor {
-    private final Log LOG = LogFactory.getLog(UsageRollupProcessor.class);
+    private static final Log LOG = LogFactory.getLog(UsageRollupProcessor.class);
 
     private UsageRepository rollUpUsageRepository;
 
@@ -65,9 +66,9 @@ public class UsageRollupProcessor {
             for (UsagesForHour usagesForHour : newUsageMap.get(lbId)) {
                 List<Usage> mergedUsageRecords;
 
-                if (recentUsage != null 
-                        && usagesForHour.getDayOfYear() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getEndTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.DAY_OF_YEAR)
-                        && usagesForHour.getHourOfDay() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getEndTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.HOUR_OF_DAY)) {
+                if (recentUsage != null
+                        && usagesForHour.getDayOfYear() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getStartTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.DAY_OF_YEAR)
+                        && usagesForHour.getHourOfDay() == TimeZoneHelper.getCalendarForTimeZone(recentUsage.getStartTime(), TimeZone.getTimeZone(timeZoneCode)).get(Calendar.HOUR_OF_DAY)) {
                     mergedUsageRecords = mergeUsageRecords(usagesForHour.getUsages(), recentUsage);
                 } else {
                     mergedUsageRecords = mergeUsageRecords(usagesForHour.getUsages(), null);
@@ -98,11 +99,13 @@ public class UsageRollupProcessor {
             boolean aUsageHasNoPolls = (usageRecordToMerge.getNumberOfPolls() == 0 || latestCustomerFacingRecord.getNumberOfPolls() == 0);
 
             if (((latestCustomerFacingRecord.getEventType() == null && usageRecordToMerge.getEventType() == null)
-                    || (latestCustomerFacingRecord.getEventType() != null && usageRecordToMerge.getEventType() == null))
+                    || (latestCustomerFacingRecord.getEventType() != null && usageRecordToMerge.getEventType() == null)
+                    || (UsageEvent.SUSPEND_LOADBALANCER.name().equals(latestCustomerFacingRecord.getEventType()) && UsageEvent.SUSPEND_LOADBALANCER.name().equals(usageRecordToMerge.getEventType()))
+                    || (UsageEvent.SUSPENDED_LOADBALANCER.name().equals(latestCustomerFacingRecord.getEventType()) && UsageEvent.SUSPENDED_LOADBALANCER.name().equals(usageRecordToMerge.getEventType())))
                     && usageRecordToMerge.getTags().equals(latestCustomerFacingRecord.getTags())
                     && usageRecordToMerge.getNumVips().equals(latestCustomerFacingRecord.getNumVips())
                     && (usageToMergeTier.equals(currUsageTier) || aUsageHasNoPolls)) {
-                // Merge records if tags, vips and tier are the same and eventsType are both null or first is not null and second is
+                // Merge records if tags, vips and tier are the same and eventsType are both null or first is not null and second is...or the have the same suspension event type
                 Double currUsageCcs = latestCustomerFacingRecord.getAverageConcurrentConnections();
                 Double currUsageCcsSsl = latestCustomerFacingRecord.getAverageConcurrentConnectionsSsl();
                 Integer currUsagePolls = latestCustomerFacingRecord.getNumberOfPolls();
@@ -178,17 +181,22 @@ public class UsageRollupProcessor {
                 } else {
                     LoadBalancerUsage lastUsage = loadBalancerUsagesForId.get(i);
 
-                    Calendar maxedOutEndTime = (Calendar) lastUsage.getEndTime().clone();
-                    maxedOutEndTime.set(Calendar.MINUTE, 59);
-                    maxedOutEndTime.set(Calendar.SECOND, 59);
-                    maxedOutEndTime.set(Calendar.MILLISECOND, 999);
-                    lastUsage.setEndTime(maxedOutEndTime);
+                    if (lastUsage.getEndTime().get(Calendar.MINUTE) != 0
+                            || lastUsage.getEndTime().get(Calendar.SECOND) != 0
+                            || lastUsage.getEndTime().get(Calendar.MILLISECOND) != 0) {
+                        Calendar maxedOutEndTime = (Calendar) lastUsage.getEndTime().clone();
+                        maxedOutEndTime.set(Calendar.MINUTE, 59);
+                        maxedOutEndTime.set(Calendar.SECOND, 59);
+                        maxedOutEndTime.set(Calendar.MILLISECOND, 999);
+                        maxedOutEndTime.add(Calendar.MILLISECOND, 1);
+                        lastUsage.setEndTime(maxedOutEndTime);
+                    }
 
                     contiguousUsages.add(lastUsage);
                 }
             }
 
-            List<UsagesForHour> contiguousUsagesByHour = generateUsagesPerHourList(contiguousUsages);
+            List<UsagesForHour> contiguousUsagesByHour = generateUsagesPerHourList(contiguousUsages, recentUsage);
             lbIdUsageMap.put(lbId, contiguousUsagesByHour);
         }
 
@@ -212,14 +220,14 @@ public class UsageRollupProcessor {
         return lbIdUsageMap;
     }
 
-    private List<UsagesForHour> generateUsagesPerHourList(List<LoadBalancerUsage> usages) {
+    private List<UsagesForHour> generateUsagesPerHourList(List<LoadBalancerUsage> usages, Usage recentUsage) {
         List<UsagesForHour> usagesPerHourList = new ArrayList<UsagesForHour>();
 
         for (LoadBalancerUsage usage : usages) {
             String timeZoneCode = configuration.getString(ConfigurationKeys.usage_timezone_code);
-            Calendar endTimeForTimeZone = TimeZoneHelper.getCalendarForTimeZone(usage.getEndTime(), TimeZone.getTimeZone(timeZoneCode));
-            int dayOfYear = endTimeForTimeZone.get(Calendar.DAY_OF_YEAR);
-            int hourOfDay = endTimeForTimeZone.get(Calendar.HOUR_OF_DAY);
+            Calendar startTimeForTimeZone = TimeZoneHelper.getCalendarForTimeZone(usage.getStartTime(), TimeZone.getTimeZone(timeZoneCode));
+            int dayOfYear = startTimeForTimeZone.get(Calendar.DAY_OF_YEAR);
+            int hourOfDay = startTimeForTimeZone.get(Calendar.HOUR_OF_DAY);
 
             boolean addedUsageRecord = false;
             for (UsagesForHour usagesForHourOfYear : usagesPerHourList) {
@@ -235,6 +243,23 @@ public class UsageRollupProcessor {
                 usagesForHour.setHourOfDay(hourOfDay);
                 usagesForHour.getUsages().add(usage);
                 usagesPerHourList.add(usagesForHour);
+            }
+        }
+
+        // Update suspended loadbalancer events to suspend loadbalancer events if in the same hour. Due to the creation of buffer records.
+        for (UsagesForHour usagesForHour : usagesPerHourList) {
+            boolean suspendStatus = false;
+
+            if (recentUsage != null && recentUsage.getStartTime().get(Calendar.HOUR_OF_DAY) == usagesForHour.getHourOfDay()
+                    && recentUsage.getStartTime().get(Calendar.DAY_OF_YEAR) == usagesForHour.getDayOfYear()) {
+                suspendStatus = true;
+            }
+
+            for (LoadBalancerUsage loadBalancerUsage : usagesForHour.getUsages()) {
+                if (UsageEvent.SUSPEND_LOADBALANCER.name().equals(loadBalancerUsage.getEventType()))
+                    suspendStatus = true;
+                if (suspendStatus && UsageEvent.SUSPENDED_LOADBALANCER.name().equals(loadBalancerUsage.getEventType()))
+                    loadBalancerUsage.setEventType(UsageEvent.SUSPEND_LOADBALANCER.name());
             }
         }
 
@@ -254,8 +279,10 @@ public class UsageRollupProcessor {
     }
 
     public static List<LoadBalancerUsage> createBufferRecordsIfNeeded(Usage previousUsage, LoadBalancerUsage nextUsage) {
-        if (nextUsage.getStartTime().before(previousUsage.getEndTime()))
-            throw new RuntimeException("Usages are not in order!");
+        if (nextUsage.getStartTime().before(previousUsage.getEndTime())) {
+            LOG.error(String.format("Usages are out of order! Usage id: %d, Usage endTime: %s, Next Usage id: %d, Next usage startTime: %s,", previousUsage.getId(), previousUsage.getEndTime().getTime(), nextUsage.getId(), nextUsage.getStartTime().getTime()));
+//            throw new RuntimeException("Usages are not in order!");
+        }
 
         List<LoadBalancerUsage> bufferRecords = new ArrayList<LoadBalancerUsage>();
 
@@ -264,9 +291,6 @@ public class UsageRollupProcessor {
 
         while (previousRecordsEndTime.before(nextUsagesStartTime)) {
             if (UsageEventProcessor.isEndOfHour(previousRecordsEndTime)) {
-                // Move previousRecordsEndTime to next hour since we don't need a buffer for this hour.
-                previousRecordsEndTime.add(Calendar.MILLISECOND, 1);
-
                 if (previousRecordsEndTime.before(nextUsagesStartTime)
                         && previousRecordsEndTime.get(Calendar.HOUR_OF_DAY) == nextUsagesStartTime.get(Calendar.HOUR_OF_DAY)
                         && previousRecordsEndTime.get(Calendar.DAY_OF_MONTH) == nextUsagesStartTime.get(Calendar.DAY_OF_MONTH)
@@ -303,6 +327,9 @@ public class UsageRollupProcessor {
         newBufferRecord.setNumVips(recentUsage.getNumVips());
         newBufferRecord.setStartTime((Calendar) previousRecordsEndTime.clone());
         newBufferRecord.setEndTime((Calendar) newEndTimeForBufferRecord.clone());
+        if (UsageEvent.SUSPEND_LOADBALANCER.name().equals(recentUsage.getEventType()) || UsageEvent.SUSPENDED_LOADBALANCER.name().equals(recentUsage.getEventType())) {
+            newBufferRecord.setEventType(UsageEvent.SUSPENDED_LOADBALANCER.name());
+        }
         return newBufferRecord;
     }
 }

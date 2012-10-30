@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.security.NoSuchAlgorithmException;
@@ -38,7 +39,7 @@ public class AHUSLUtilTest {
             //UUID=(recordID, resourceID, region)
             baseEvent = "DFW";
             baseUsage = new Usage();
-            baseUsage.setEventType("CREATE_LOADBALANCER");
+            baseUsage.setEventType(UsageEvent.CREATE_LOADBALANCER.name());
         }
 
         @Test
@@ -50,23 +51,15 @@ public class AHUSLUtilTest {
         @Test
         public void shouldMapDeleteEvent() throws NoSuchAlgorithmException, DatatypeConfigurationException {
             baseUsage = new Usage();
-            baseUsage.setEventType("DELETE_LOADBALANCER");
+            baseUsage.setEventType(UsageEvent.DELETE_LOADBALANCER.name());
             EventType eventType = AHUSLUtil.mapEventType(baseUsage);
             Assert.assertEquals(EventType.DELETE, eventType);
         }
 
         @Test
-        public void shouldMapUpUpdate() throws NoSuchAlgorithmException, DatatypeConfigurationException {
-            baseUsage = new Usage();
-            baseUsage.setEventType("UPDATE_LOADBALANCER");
-            EventType eventType = AHUSLUtil.mapEventType(baseUsage);
-            Assert.assertEquals(EventType.UPDATE, eventType);
-        }
-
-        @Test
         public void shouldMapSuspend() throws NoSuchAlgorithmException, DatatypeConfigurationException {
             baseUsage = new Usage();
-            baseUsage.setEventType("SUSPEND_LOADBALANCER");
+            baseUsage.setEventType(UsageEvent.SUSPEND_LOADBALANCER.name());
             EventType eventType = AHUSLUtil.mapEventType(baseUsage);
             Assert.assertEquals(EventType.SUSPEND, eventType);
         }
@@ -74,7 +67,7 @@ public class AHUSLUtilTest {
         @Test
         public void shouldMapUnSuspend() throws NoSuchAlgorithmException, DatatypeConfigurationException {
             baseUsage = new Usage();
-            baseUsage.setEventType("UNSUSPEND_LOADBANCER");
+            baseUsage.setEventType(UsageEvent.UNSUSPEND_LOADBALANCER.name());
             EventType eventType = AHUSLUtil.mapEventType(baseUsage);
             Assert.assertEquals(EventType.UNSUSPEND, eventType);
         }
