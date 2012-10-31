@@ -107,6 +107,11 @@ public class CallbackHelperTest {
             Assert.assertEquals("2001:4801:79f1:1:22d6:5749:0:3a", address);
         }
 
+        @Test(expected = Exception.class)
+        public void shouldFailForBadParamLine() throws Exception {
+            callbackHelper = new CallbackHelper("bad param line");
+        }
+
         @Test
         public void shouldReturnNodeWorkingTag() throws EntityNotFoundException, BadRequestException {
             Assert.assertEquals("nodeworking", CallbackHelper.NODE_WORKING_TAG);

@@ -7,8 +7,10 @@ import org.openstack.atlas.service.domain.events.entities.*;
 import org.openstack.atlas.service.domain.events.pojos.AccountLoadBalancerServiceEvents;
 import org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.CustomQuery;
 import org.openstack.atlas.service.domain.pojos.DateTimeToolException;
 import org.openstack.atlas.service.domain.pojos.DateTimeTools;
+import org.openstack.atlas.service.domain.pojos.QueryParameter;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -150,13 +152,50 @@ public class LoadBalancerEventRepository {
         return query.getResultList();
     }
 
-    public List<NodeServiceEvent> getNodeServiceEvents(Integer accountId, Integer loadbalancerId, Integer page) {
-        Query query = entityManager.createQuery("SELECT evt FROM NodeServiceEvent evt where evt.accountId = :accountId and evt.loadbalancerId = :loadbalancerId order by evt.created desc").setParameter("accountId", accountId).setParameter("loadbalancerId", loadbalancerId).setMaxResults(PAGE_SIZE);
+    public List<NodeServiceEvent> getNodeServiceEvents(Integer accountId, Integer loadbalancerId, Integer page, Integer... p) {
+        Integer offset = 0;
+        Integer limit = 100;
+        Integer marker = 0;
 
-        if (page != null && page > 0) {
-            query = query.setFirstResult((page - 1) * PAGE_SIZE);
+        CustomQuery cq;
+        String selectClause = "SELECT evt FROM NodeServiceEvent evt";
+        cq = new CustomQuery(selectClause);
+
+        cq.addParam("evt.accountId", "=", "accountId", accountId);
+        cq.addParam("evt.loadbalancerId", "=", "loadbalancerId", loadbalancerId);
+
+        if (p.length >= 2) {
+            offset = p[0];
+            limit = p[1];
+            marker = p[2];
+            int i = 0;
+            if (offset == null) {
+                offset = 0;
+            }
+            if (limit == null || limit > 100) {
+                limit = 100;
+            }
+            if (marker == null) {
+                marker = 0;
+            }
+            cq.addParam("evt.nodeId", ">=", "nodeId", marker);
         }
 
+        String qStr = cq.getQueryString();
+
+        Query query = entityManager.createQuery(qStr);
+
+        for (QueryParameter param : cq.getQueryParameters()) {
+            query.setParameter(param.getPname(), param.getValue());
+        }
+
+        //ATOM
+        if (page != null && page > 0) {
+            query.setFirstResult((page - 1) * PAGE_SIZE);
+        } else {
+            query.setFirstResult(offset);
+        }
+        query.setMaxResults(limit);
         return query.getResultList();
     }
 

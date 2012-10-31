@@ -134,7 +134,7 @@ public class NodesResource extends CommonDependencyProvider {
     @GET
     @Path("events")
     @Produces({APPLICATION_XML, APPLICATION_JSON,APPLICATION_ATOM_XML})
-    public Response retrieveNodeEvents(@QueryParam("page") Integer page) {
+    public Response retrieveNodeEvents(@QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker, @QueryParam("page") Integer page) {
         if (requestHeaders.getRequestHeader("Accept").get(0).equals(APPLICATION_ATOM_XML)) {
             return getFeedResponse(page, FeedType.NODE_SERVICE_FEED);
         }
@@ -142,7 +142,7 @@ public class NodesResource extends CommonDependencyProvider {
         List<NodeServiceEvent> dEvents;
         NodeServiceEvents rEvents = new NodeServiceEvents();
         try {
-            dEvents = loadBalancerEventRepository.getNodeServiceEvents(accountId, loadBalancerId, page);
+            dEvents = loadBalancerEventRepository.getNodeServiceEvents(accountId, loadBalancerId, page, offset, limit, marker);
 
             for (NodeServiceEvent event : dEvents) {
                 rEvents.getNodeServiceEvents().add(dozerMapper.map(event, org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvent.class));
