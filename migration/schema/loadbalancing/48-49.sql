@@ -28,4 +28,6 @@ CREATE TABLE IF NOT EXISTS `node_service_event` (
   INDEX loadbalancer_id_idx(loadbalancer_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE `loadbalancer` ADD `timeout` INT(3) DEFAULT 30 AFTER `status`;
+
 update `meta` set `meta_value` = '49' where `meta_key`='version';

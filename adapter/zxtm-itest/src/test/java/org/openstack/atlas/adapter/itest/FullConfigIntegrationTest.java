@@ -32,6 +32,7 @@ public class FullConfigIntegrationTest extends ZeusTestBase {
     public void createFullyConfiguredLoadBalancer() {
         lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
         lb.setSessionPersistence(HTTP_COOKIE);
+        lb.setTimeout(99);
 
         HealthMonitor monitor = new HealthMonitor();
         monitor.setType(HealthMonitorType.CONNECT);

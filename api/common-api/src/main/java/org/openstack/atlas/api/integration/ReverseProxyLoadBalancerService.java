@@ -29,6 +29,8 @@ public interface ReverseProxyLoadBalancerService {
 
     void updatePort(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, Exception;
 
+    void updateTimeout(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, Exception;
+
     void updateProtocol(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, Exception;
 
     void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;

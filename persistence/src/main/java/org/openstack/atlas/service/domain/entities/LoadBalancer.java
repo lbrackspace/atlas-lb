@@ -49,6 +49,9 @@ public class LoadBalancer extends Entity implements Serializable {
     private Integer port;
     @Column(name = "account_id", nullable = false, length = 32)
     private Integer accountId;
+    @Column(name = "timeout", nullable = false)
+    private Integer timeout;
+
     @Column(name = "connection_logging", nullable = false)
     private Boolean connectionLogging;
     @Column(name = "content_caching", nullable = false)
@@ -270,6 +273,14 @@ public class LoadBalancer extends Entity implements Serializable {
 
     public void setStatus(LoadBalancerStatus status) {
         this.status = status;
+    }
+
+    public Integer getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(Integer timeout) {
+        this.timeout = timeout;
     }
 
     private static String valueOrNull(Object obj) {

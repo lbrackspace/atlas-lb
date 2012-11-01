@@ -115,6 +115,24 @@ public class UpdateLoadBalancerListener extends BaseListener {
             }
         }
 
+        if (queueLb.getTimeout() != null) {
+            LOG.debug("Updating loadbalancer timeout to " + dbLoadBalancer.getTimeout() + " in zeus...");
+            try {
+                LOG.debug(String.format("Updating timeout for load balancer '%d' to '%d' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getTimeout()));
+                reverseProxyLoadBalancerService.updateTimeout(dbLoadBalancer);
+                LOG.debug(String.format("Successfully updated timeout for load balancer '%d' to '%d' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getTimeout()));
+                atomSummary.append("timeout: '").append(dbLoadBalancer.getTimeout()).append("', ");
+            } catch (Exception e) {
+                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+
+                String alertDescription = String.format("Error updating timeout for load balancer '%d' to '%d' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getTimeout());
+                LOG.error(alertDescription, e);
+                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+                sendErrorToEventResource(queueLb);
+                return;
+            }
+        }
+
         if (queueLb.getName() != null) {
             LOG.debug("Updating loadbalancer name to " + queueLb.getName());
             LOG.debug(String.format("Successfully updated name for load balancer '%d' to '%s'.", queueLb.getId(), queueLb.getName()));

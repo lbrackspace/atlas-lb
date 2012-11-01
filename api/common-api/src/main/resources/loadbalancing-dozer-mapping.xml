@@ -296,6 +296,10 @@
             <a>status</a>
             <b>status</b>
         </field>
+        <field>
+            <a>timeout</a>
+            <b>timeout</b>
+        </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
             <a>updated</a>
             <b>updated</b>

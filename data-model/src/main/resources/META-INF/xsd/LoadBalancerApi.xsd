@@ -45,6 +45,7 @@
         <xsd:attribute name="protocol" type="xsd:string"/>
         <xsd:attribute name="port" type="xsd:int"/>
         <xsd:attribute name="status" type="xsd:string"/>
+        <xsd:attribute name="timeout" type="xsd:int"/>
         <xsd:attribute name="isSticky" type="xsd:boolean"/>
         <xsd:attribute name="nodeCount" type="xsd:int"/>
     </xsd:complexType>

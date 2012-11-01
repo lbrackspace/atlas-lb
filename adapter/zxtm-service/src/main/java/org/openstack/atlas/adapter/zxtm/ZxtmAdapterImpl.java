@@ -111,6 +111,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 //            }
             updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
 
+
+            if (lb.getTimeout() != null) {
+                updateTimeout(config, lb);
+            }
+
             //Added rules for HTTP LB
             if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
                 TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
@@ -1214,6 +1219,16 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         if (loadBalancer.hasSsl()) {
             updateRateLimit(config, ZxtmNameBuilder.genSslVSName(loadBalancer), rateLimit);
         }
+    }
+
+    @Override
+    public void updateTimeout(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        final String poolName = ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        if (loadBalancer.getTimeout() != null) {
+                serviceStubs.getPoolBinding().setMaxReplyTime(new String[]{poolName}, new UnsignedInt[]{new UnsignedInt(loadBalancer.getTimeout())});
+            }
     }
 
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, String vsName, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {

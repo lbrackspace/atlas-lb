@@ -16,6 +16,8 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
     private Validator<LoadBalancer> validator;
     private final int MIN_PORT = 1;
     private final int MAX_PORT = 65535;
+    final int MIN_TIMEOUT = 30;
+    private final int MAX_TIMEOUT = 120;
     private final int LB_NAME_LENGTH = 128;
 
     public LoadBalancerValidator() {
@@ -26,6 +28,7 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getAlgorithm()).if_().exist().then().must().adhereTo(new MustBeInArray(AlgorithmType.values())).withMessage("Load balancer algorithm is invalid. Please specify a valid algorithm.");
 
                 result(validationTarget().getPort()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MIN_PORT, MAX_PORT)).withMessage("Load balancer port is invalid. Please specify a valid port.");
+                result(validationTarget().getTimeout()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MIN_TIMEOUT, MAX_TIMEOUT)).withMessage("Load balancer timeout is invalid. Please specify a valid timeout value.");
                 result(validationTarget().getId()).must().not().exist().withMessage("Load balancer id field cannot be modified.");
                 result(validationTarget().getStatus()).must().not().exist().withMessage("Load balancer status field cannot be modified.");
                 result(validationTarget().getLoadBalancerUsage()).must().beEmptyOrNull().withMessage("Load balancer current usage field cannot be modified.");
@@ -66,9 +69,9 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                     @Override
                     public VerifierResult verify(LoadBalancer obj) {
                         return new VerifierResult(obj.getName() != null || obj.getAlgorithm() != null || obj.getPort() != null
-                                || obj.getProtocol() != null || obj.getConnectionLogging() != null);
+                                || obj.getProtocol() != null || obj.getConnectionLogging() != null || obj.getTimeout() != null);
                     }
-                }).forContext(PUT).withMessage("The load balancer must have at least one of the following to update: name, algorithm, protocol, port.");
+                }).forContext(PUT).withMessage("The load balancer must have at least one of the following to update: name, algorithm, protocol, port or timeout.");
                 result(validationTarget().getNodes()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/nodes to configure nodes.");
                 result(validationTarget().getMetadata()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/metadata to configure metadata.");
                 result(validationTarget().getVirtualIps()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/virtualips/{virtual ip id} to configure a virtual ip.");

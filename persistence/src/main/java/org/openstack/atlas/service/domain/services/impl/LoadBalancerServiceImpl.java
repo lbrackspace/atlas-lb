@@ -274,6 +274,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             dbLoadBalancer.setAlgorithm(loadBalancer.getAlgorithm());
         }
 
+         if (loadBalancer.getTimeout() != null && !loadBalancer.getTimeout().equals(dbLoadBalancer.getTimeout())) {
+            LOG.debug("Updating loadbalancer timeout to " + loadBalancer.getTimeout());
+            dbLoadBalancer.setTimeout(loadBalancer.getTimeout());
+        }
+
         if (loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(dbLoadBalancer.getProtocol())) {
             verifyTCPUDPProtocolandPort(loadBalancer);
 

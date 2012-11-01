@@ -74,6 +74,23 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     @Test
+    public void updateTimeout() {
+        try {
+            UnsignedInt[] mrt1 = getServiceStubs().getPoolBinding().getMaxReplyTime(new String[]{poolName()});
+            Assert.assertEquals(new UnsignedInt(30), mrt1[0]);
+
+            lb.setTimeout(50);
+            zxtmAdapter.updateTimeout(config, lb);
+
+            UnsignedInt[] mrt = getServiceStubs().getPoolBinding().getMaxReplyTime(new String[]{poolName()});
+            Assert.assertEquals(new UnsignedInt(50), mrt[0]);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void updateProtocolVerifyXFHeaders() {
         try {
             lb.setProtocol(HTTPS);

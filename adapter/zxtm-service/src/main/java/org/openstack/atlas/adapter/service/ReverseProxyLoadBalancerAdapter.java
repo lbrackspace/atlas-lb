@@ -32,6 +32,9 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void updatePort(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Integer port)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
+    public void updateTimeout(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+
     public void setLoadBalancingAlgorithm(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, LoadBalancerAlgorithm algorithm)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 

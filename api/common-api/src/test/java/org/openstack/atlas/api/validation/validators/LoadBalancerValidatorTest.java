@@ -1,24 +1,21 @@
 package org.openstack.atlas.api.validation.validators;
 
-import static org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition.ENABLED;
-import static org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType.HTTP_COOKIE;
-import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
-import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.GregorianCalendar;
-
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
-import junit.framework.Assert;
-import org.openstack.atlas.api.validation.results.ValidatorResult;
-
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+
+import java.util.GregorianCalendar;
+
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
+import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
+import static org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition.ENABLED;
+import static org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType.HTTP_COOKIE;
 
 @RunWith(Enclosed.class)
 public class LoadBalancerValidatorTest {
@@ -324,6 +321,27 @@ public class LoadBalancerValidatorTest {
             ValidatorResult result = validator.validate(lb, POST);
             assertFalse(result.passedValidation());
         }
+
+        @Test
+        public void shouldRejectTimeoutOverValue() {
+            lb.setTimeout(150);
+            ValidatorResult result = validator.validate(lb, POST);
+            assertFalse(result.passedValidation());
+        }
+
+        @Test
+        public void shouldRejectTimeoutUnderValue() {
+            lb.setTimeout(20);
+            ValidatorResult result = validator.validate(lb, POST);
+            assertFalse(result.passedValidation());
+        }
+
+        @Test
+        public void shouldAcceptValidTimeout() {
+            lb.setTimeout(70);
+            ValidatorResult result = validator.validate(lb, POST);
+            assertTrue(result.passedValidation());
+        }
 	}
 
 	public static class whenValidatingPut {
@@ -352,6 +370,14 @@ public class LoadBalancerValidatorTest {
 			ValidatorResult result = validator
 					.validate(new LoadBalancer(), PUT);
 			assertFalse(result.passedValidation());
+		}
+
+        @Test
+		public void shouldPassWhenOnlyTimeoutToUpdate() {
+            lb.setTimeout(50);
+			ValidatorResult result = validator
+					.validate(lb, PUT);
+			assertTrue(result.passedValidation());
 		}
 
 		@Test
@@ -495,6 +521,27 @@ public class LoadBalancerValidatorTest {
             lb.setName("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
             ValidatorResult result = validator.validate(lb, PUT);
             assertFalse(result.passedValidation());
+        }
+
+        @Test
+        public void shouldRejectTimeoutOverValue() {
+            lb.setTimeout(150);
+            ValidatorResult result = validator.validate(lb, PUT);
+            assertFalse(result.passedValidation());
+        }
+
+        @Test
+        public void shouldRejectTimeoutUnderValue() {
+            lb.setTimeout(20);
+            ValidatorResult result = validator.validate(lb, PUT);
+            assertFalse(result.passedValidation());
+        }
+
+        @Test
+        public void shouldAcceptValidTimeout() {
+            lb.setTimeout(70);
+            ValidatorResult result = validator.validate(lb, PUT);
+            assertTrue(result.passedValidation());
         }
 	}
 }
