@@ -1,6 +1,6 @@
 use `loadbalancing`;
 
-ALTER TABLE `alert` CHANGE  `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE `alert` CHANGE  `created` `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 CREATE TABLE IF NOT EXISTS `node_service_event` (
   `id` int(11) NOT NULL auto_increment,
