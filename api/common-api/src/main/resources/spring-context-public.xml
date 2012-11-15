@@ -36,11 +36,59 @@
     </util:map>
     <!-- END NAMESPACE PREFIX CONFIGURATION-->
 
+    <!--FILTERS-->
+    <!--REPOSE HANDLES AUTH AND RATELIMITS..-->
+    <!--<bean id="authTokenValidator" class="org.openstack.atlas.api.auth.AuthTokenValidator"-->
+    <!--scope="singleton">-->
+    <!--<constructor-arg index="0" ref="configuration"/>-->
+    <!--</bean>-->
+    <!--<bean id="rateLimitingFilter"-->
+    <!--class="com.rackspace.cloud.jee.filters.limits.rate.RateLimitingFilter"-->
+    <!--scope="request"/>-->
+
+    <bean id="requestSanitationFilter"
+          class="org.openstack.atlas.api.filters.RequestSanitationFilter"
+          scope="request"/>
+    <bean id="authenticationFilter"
+          class="org.openstack.atlas.api.filters.AuthenticationFilter"
+          scope="request" init-method="startConfig">
+        <constructor-arg index="0">
+            <bean class="org.openstack.atlas.api.helpers.UrlAccountIdExtractor" scope="request"/>
+        </constructor-arg>
+    </bean>
+    <bean id="groupsSanitationFilter"
+          class="org.openstack.atlas.api.filters.GroupsSanitationFilter"
+          scope="request">
+    </bean>
+    <!--<bean id="rolesFilter"-->
+          <!--class="org.openstack.atlas.api.filters.RolesFilter"-->
+          <!--scope="request">-->
+    <!--</bean>-->
+    <bean id="validationFilter"
+          class="org.openstack.atlas.api.filters.ValidationFilter"
+          scope="request">
+        <property name="fPkg" value="org.openstack.atlas.docs.loadbalancers.api.v1.faults"/>
+        <property name="pPkg" value="org.openstack.atlas.docs.loadbalancers.api.v1"/>
+        <property name="pXSD" value="META-INF/xsd/LoadBalancerApi.xsd"/>
+        <property name="fXSD" value="META-INF/xsd/LoadBalancerApiFaults.xsd"/>
+    </bean>
+    <bean id="jsonValidationFilter"
+          class="org.openstack.atlas.api.filters.JsonValidationFilter"
+          init-method="startConfig"
+          scope="request"
+          parent="validationFilter"/>
+    <bean id="xmlValidationFilter"
+          class="org.openstack.atlas.api.filters.XmlValidationFilter"
+          init-method="startConfig"
+          scope="request"
+          parent="validationFilter"/>
+
     <bean id="objectMapper" class="org.openstack.atlas.api.helpers.JsonObjectMapper"
           init-method="init"/>
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider">
         <property name="mapper" ref="objectMapper"/>
     </bean>
+
     <bean id="commonDependencyProvider"
           class="org.openstack.atlas.api.resources.providers.CommonDependencyProvider"
           scope="request">
@@ -134,9 +182,9 @@
                           scope="request"/>
                 </property>
                 <property name="allowedDomainsResource">
-                    <bean  class="org.openstack.atlas.api.resources.AllowedDomainsResource"
-                           parent="commonDependencyProvider"
-                           scope="request" />
+                    <bean class="org.openstack.atlas.api.resources.AllowedDomainsResource"
+                          parent="commonDependencyProvider"
+                          scope="request"/>
                 </property>
             </bean>
         </property>
@@ -175,17 +223,17 @@
             <bean class="org.openstack.atlas.api.resources.NodeResource"
                   parent="commonDependencyProvider"
                   scope="request">
-            <property name="nodeMetadataResource">
-                <bean class="org.openstack.atlas.api.resources.NodeMetadataResource"
-                      parent="commonDependencyProvider"
-                      scope="request">
-                    <property name="nodeMetaResource">
-                        <bean class="org.openstack.atlas.api.resources.NodeMetaResource"
-                              parent="commonDependencyProvider"
-                              scope="request"/>
-                    </property>
-                </bean>
-            </property>
+                <property name="nodeMetadataResource">
+                    <bean class="org.openstack.atlas.api.resources.NodeMetadataResource"
+                          parent="commonDependencyProvider"
+                          scope="request">
+                        <property name="nodeMetaResource">
+                            <bean class="org.openstack.atlas.api.resources.NodeMetaResource"
+                                  parent="commonDependencyProvider"
+                                  scope="request"/>
+                        </property>
+                    </bean>
+                </property>
             </bean>
         </property>
     </bean>
@@ -244,57 +292,6 @@
           parent="commonDependencyProvider"
           scope="request"/>
 
-    <!--FILTER SETTINGS-->
-    <!--<bean id="authTokenValidator" class="org.openstack.atlas.api.auth.AuthTokenValidator"-->
-    <!--scope="singleton">-->
-    <!--<constructor-arg index="0" ref="configuration"/>-->
-    <!--</bean>-->
-
-    <bean id="requestSanitationFilter"
-          class="org.openstack.atlas.api.filters.RequestSanitationFilter"
-          scope="request"/>
-    <bean id="authenticationFilter"
-          class="org.openstack.atlas.api.filters.AuthenticationFilter"
-          scope="request" init-method="startConfig">
-        <constructor-arg index="0">
-            <bean class="org.openstack.atlas.api.auth.AuthTokenValidator">
-                <constructor-arg index="0" ref="configuration"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg index="1">
-            <bean class="org.openstack.atlas.api.helpers.UrlAccountIdExtractor" scope="request"/>
-        </constructor-arg>
-        <property name="userCache" ref="userCache"/>
-    </bean>
-    <bean id="groupRateLimitFilter"
-          class="org.openstack.atlas.api.filters.GroupRateLimitFilter"
-          scope="request">
-        <constructor-arg>
-            <bean class="org.openstack.atlas.api.helpers.UrlAccountIdExtractor"/>
-        </constructor-arg>
-        <property name="groupRepository" ref="groupRepository"/>
-    </bean>
-    <bean id="rateLimitingFilter"
-          class="com.rackspace.cloud.jee.filters.limits.rate.RateLimitingFilter"
-          scope="request"/>
-    <bean id="validationFilter"
-          class="org.openstack.atlas.api.filters.ValidationFilter"
-          scope="request">
-        <property name="fPkg" value="org.openstack.atlas.docs.loadbalancers.api.v1.faults"/>
-        <property name="pPkg" value="org.openstack.atlas.docs.loadbalancers.api.v1"/>
-        <property name="pXSD" value="META-INF/xsd/LoadBalancerApi.xsd"/>
-        <property name="fXSD" value="META-INF/xsd/LoadBalancerApiFaults.xsd"/>
-    </bean>
-    <bean id="jsonValidationFilter"
-          class="org.openstack.atlas.api.filters.JsonValidationFilter"
-          init-method="startConfig"
-          scope="request"
-          parent="validationFilter"/>
-    <bean id="xmlValidationFilter"
-          class="org.openstack.atlas.api.filters.XmlValidationFilter"
-          init-method="startConfig"
-          scope="request"
-          parent="validationFilter"/>
 
     <!--ATOM BEANS-->
     <bean id="paginationHelper" class="org.openstack.atlas.api.helpers.PaginationHelper">
