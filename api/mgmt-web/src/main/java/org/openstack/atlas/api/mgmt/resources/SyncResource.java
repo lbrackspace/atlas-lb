@@ -1,5 +1,8 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.SyncLocation;
@@ -35,7 +38,11 @@ public class SyncResource extends ManagementDependencyProvider {
             }   */
 
 
-            loadBalancerService.get(loadBalancerId);
+            LoadBalancer lb = loadBalancerService.get(loadBalancerId);
+            if (lb.getStatus().equals(LoadBalancerStatus.SUSPENDED)) {
+                BadRequestException bre = new BadRequestException("Cannot Sync a Suspended Load Balancer, Please Check With Operations For Further Information...");
+                return ResponseFactory.getErrorResponse(bre, null, null);
+            }
             getManagementAsyncService().callAsyncLoadBalancingOperation(Operation.SYNC, req);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
