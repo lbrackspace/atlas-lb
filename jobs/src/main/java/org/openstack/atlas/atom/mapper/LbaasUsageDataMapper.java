@@ -61,6 +61,7 @@ public class LbaasUsageDataMapper {
         usageV1.setRegion(AHUSLUtil.mapRegion(region));
         usageV1.setTenantId(usageRecord.getAccountId().toString());
         usageV1.setResourceId(usageRecord.getLoadbalancer().getId().toString());
+        usageV1.setResourceName(usageRecord.getLoadbalancer().getName());
         usageV1.setDataCenter(DC.fromValue(configuration.getString(AtomHopperConfigurationKeys.ahusl_data_center)));
 
         EventType usageRecordEventType = AHUSLUtil.mapEventType(usageRecord);
