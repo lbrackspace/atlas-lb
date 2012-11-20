@@ -1516,7 +1516,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         final String rollBackMessage = "Update connection logging request canceled.";
         final String nonHttpLogFormat = "%v %t %h %A:%p %n %B %b %T";
-        final String httpLogFormat = "%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\"";
+        final String httpLogFormat = "%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n";
 
         if (isConnectionLogging) {
             LOG.debug(String.format("ENABLING logging for virtual server '%s'...", virtualServerName));
