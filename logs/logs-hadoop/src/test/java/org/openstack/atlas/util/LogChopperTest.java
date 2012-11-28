@@ -48,7 +48,7 @@ public class LogChopperTest extends TestCase {
 
     @Test
     public void testHTTPWithIPSimple() throws Exception {
-        String testLineWithIP = "554867_15815 toolbar.lavasoft.com 213.184.198.10 - - [27/Jan/2012:07:41:37 +0000] \"GET /malwaresitelist/data/120126162223-l.zip HTTP/1.0\" 200 1136 \"-\" \"SimpleGet\" 10.1.1.1";
+        String testLineWithIP = "554867_15815 toolbar.lavasoft.com 213.184.198.10 - - [27/Jan/2012:07:41:37 +0000] \"GET /malwaresitelist/data/120126162223-l.zip HTTP/1.0\" 200 1136 \"-\" \"SimpleGet\" 10.1.1.1:8080";
         LbLogsWritable logsWritableWithip = LogChopper.getLbLogStats(testLineWithIP);
         Assert.assertEquals(testLineWithIP, logsWritableWithip.getLogline());
     }
@@ -63,6 +63,20 @@ public class LogChopperTest extends TestCase {
     @Test
     public void testHTTPWithIPV6Compression() throws Exception {
         String testLineWithIv6P = "554867_15815 toolbar.lavasoft.com 213.184.198.10 - - [27/Jan/2012:07:41:37 +0000] \"GET /malwaresitelist/data/120126162223-l.zip HTTP/1.0\" 200 1136 \"-\" \"SimpleGet\" 2607:f0d0:1002:51::4";
+        LbLogsWritable logsWritableWithip = LogChopper.getLbLogStats(testLineWithIv6P);
+        Assert.assertEquals(testLineWithIv6P, logsWritableWithip.getLogline());
+    }
+
+    @Test
+    public void testHTTPWithIPV6Brackets() throws Exception {
+        String testLineWithIv6P = "554867_15815 toolbar.lavasoft.com 213.184.198.10 - - [27/Jan/2012:07:41:37 +0000] \"GET /malwaresitelist/data/120126162223-l.zip HTTP/1.0\" 200 1136 \"-\" \"SimpleGet\" [2607:f0d0:1002:0051:0000:0000:0000:0004]:80";
+        LbLogsWritable logsWritableWithip = LogChopper.getLbLogStats(testLineWithIv6P);
+        Assert.assertEquals(testLineWithIv6P, logsWritableWithip.getLogline());
+    }
+
+    @Test
+    public void testHTTPWithIPV6CompressionBrackets() throws Exception {
+        String testLineWithIv6P = "554867_15815 toolbar.lavasoft.com 213.184.198.10 - - [27/Jan/2012:07:41:37 +0000] \"GET /malwaresitelist/data/120126162223-l.zip HTTP/1.0\" 200 1136 \"-\" \"SimpleGet\" [2607:f0d0:1002:51::4]:9090";
         LbLogsWritable logsWritableWithip = LogChopper.getLbLogStats(testLineWithIv6P);
         Assert.assertEquals(testLineWithIv6P, logsWritableWithip.getLogline());
     }
