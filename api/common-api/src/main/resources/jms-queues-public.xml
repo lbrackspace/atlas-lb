@@ -7,6 +7,7 @@
     <import resource="db-usage-services.xml"/>
 
     <bean id="configuration" class="org.openstack.atlas.api.config.RestApiConfiguration"/>
+    <bean id="mgmtConfiguration" class="org.openstack.atlas.api.mgmt.config.ManagementApiConfiguration"/>
 
     <bean id="atlasCache" class="org.openstack.atlas.service.domain.cache.AtlasCache" scope="singleton">
         <constructor-arg index="0" ref="configuration"/>

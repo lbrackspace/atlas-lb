@@ -48,10 +48,6 @@ public class ManageAuthFilter implements Filter {
     private static final Pattern jsonUriPattern = Pattern.compile(".*\\.json$", Pattern.CASE_INSENSITIVE);
     private static final Pattern xmlUriPattern = Pattern.compile(".*\\.xml$", Pattern.CASE_INSENSITIVE);
 
-    private final String rolesHeader = "X-Roles";
-    private final String X_AUTH_USER_NAME = "X-PP-User";
-    private final String X_PP_GROUPS = "X-PP-Groups";
-
 
     static {
         invalidAuth = new BadRequest();
@@ -74,40 +70,6 @@ public class ManageAuthFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest sreq, ServletResponse sresp, FilterChain fc) throws IOException, ServletException {
-        HttpServletRequest httpServletRequest = (HttpServletRequest) sreq;
-
-        String username = (httpServletRequest.getHeader(X_AUTH_USER_NAME) != null
-                ? httpServletRequest.getHeader(X_AUTH_USER_NAME).split(";")[0]
-                : null);
-
-        String roles = httpServletRequest.getHeader(rolesHeader);
-        if (roles == null || roles.isEmpty()) {
-            ldapFilter(sreq, sresp, fc);
-        }
-
-        HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
-        enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
-        enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, username);
-        fc.doFilter(enhancedHttpRequest, sresp);
-        return;
-    }
-
-    public void startConfig() { // Spring should have already initialized the cache
-        ldapCache.setTtl(mossoAuth.getConfig().getTtl());
-    }
-
-    private String pojo2xml(Object pojo) throws JAXBException {
-        String result;
-        StringWriter sw = new StringWriter();
-        Marshaller m = this.xmlJsonConfig.getfCtx().createMarshaller();
-        m.setSchema(this.xmlJsonConfig.getfSchema());
-        m.marshal(pojo, sw);
-        result = sw.toString();
-        return result;
-    }
-
-    //Deprecated
-    private void ldapFilter(ServletRequest sreq, ServletResponse sresp, FilterChain fc) throws IOException, ServletException {
         int purged;
         String user;
         String password;
@@ -121,7 +83,7 @@ public class ManageAuthFilter implements Filter {
         HttpHeadersTools httpTools = new HttpHeadersTools(hreq, hresp);
         LOG.info(String.format("Requesting URL: %s", hreq.getRequestURI()));
         purged = ldapCache.cleanExpiredByCount(); // Prevent unchecked entries from Living forever
-        if (purged > 0) {
+        if(purged>0){
             LOG.info(String.format("cleaning eDir cache: purged %d stale entries", purged));
         }
         String[] splitUrl = hreq.getRequestURL().toString().split(hreq.getContextPath());
@@ -237,6 +199,20 @@ public class ManageAuthFilter implements Filter {
         }
 
         return;
+    }
+
+    public void startConfig() { // Spring should have already initialized the cache
+        ldapCache.setTtl(mossoAuth.getConfig().getTtl());
+    }
+
+    private String pojo2xml(Object pojo) throws JAXBException {
+        String result;
+        StringWriter sw = new StringWriter();
+        Marshaller m = this.xmlJsonConfig.getfCtx().createMarshaller();
+        m.setSchema(this.xmlJsonConfig.getfSchema());
+        m.marshal(pojo, sw);
+        result = sw.toString();
+        return result;
     }
 
     private String pojo2json(Object pojo) throws IOException {

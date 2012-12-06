@@ -54,14 +54,22 @@
     <!--FILTERS-->
     <bean id="headerEnhancerFilter"
           class="org.openstack.atlas.api.mgmt.filters.HeaderEnhancerFilter" scope="request"/>
+    <bean id="manageIdentityAuthFilter"
+          class="org.openstack.atlas.api.mgmt.filters.ManageIdentityAuthFilter"
+          init-method="startConfig"
+          scope="request">
+        <property name="identityAuth" ref="identityAuth"/>
+        <property name="xmlJsonConfig" ref="xmlJsonConfig"/>
+    </bean>
     <bean id="manageAuthFilter"
           class="org.openstack.atlas.api.mgmt.filters.ManageAuthFilter"
           init-method="startConfig"
-          scope="singleton">
+          scope="request">
         <property name="xmlJsonConfig" ref="xmlJsonConfig"/>
         <property name="mossoAuth" ref="mossoAuth"/>
         <property name="ldapCache" ref="ldapCache"/>
     </bean>
+
 
     <bean id="xmlJsonConfig"
           class="org.openstack.atlas.api.mgmt.filters.helpers.XmlJsonConfig"
@@ -70,6 +78,15 @@
         <property name="fXsd" value="META-INF/xsd/LoadBalancerApiFaults.xsd"/>
         <property name="fPkg" value="org.openstack.atlas.docs.loadbalancers.api.v1.faults"/>
         <property name="mapper" ref="objectMapper"/>
+    </bean>
+
+    <bean id="identityAuth" class="org.openstack.atlas.api.mgmt.helpers.LDAPTools.IdentityAuth">
+        <property name="identityAuthConfig" ref="identityAuthConfig"/>
+    </bean>
+
+    <bean id="identityAuthConfig" class="org.openstack.atlas.api.mgmt.helpers.LDAPTools.IdentityAuthConfig">
+        <constructor-arg index="0" ref="mgmtConfiguration"/>
+
     </bean>
 
     <!--RESOURCES-->
