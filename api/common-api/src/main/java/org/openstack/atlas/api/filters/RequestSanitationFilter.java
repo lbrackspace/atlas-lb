@@ -33,7 +33,8 @@ public class RequestSanitationFilter implements Filter {
             HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
             HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
 
-            String uri = httpServletRequest.getRequestURI();
+            String uri = httpServletRequest.getRequestURL().toString();
+            uri = uri + "?" + httpServletRequest.getQueryString();
             if (verifyWADLRequest(uri)) {
                 LOG.debug("WADL request detected. ");
                 enhancedHttpRequest.addHeader(X_WADL, "true");
@@ -60,7 +61,6 @@ public class RequestSanitationFilter implements Filter {
         this.filterConfig = null;
     }
 
-    //TODO: check if whitelist in client-auth(repose) will allow header to be set if whitelist item matches(beneficial here)
     private boolean verifyWADLRequest(String uri) {
         //Repose will let this request through
         //based on regex, we want to tag and

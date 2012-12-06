@@ -57,13 +57,6 @@ public class AuthenticationFilter implements Filter {
                     : null); //We are not using the 'quality' portion... 'username;q=1.0'
             String accountId = httpServletRequest.getHeader(X_AUTH_TENANT_ID);
 
-            //...safety net?
-            if (accountId == null || username == null || token == null) {
-                if (httpServletRequest.getHeader("x-wadl").equals("false")) {
-                sendUnauthorizedResponse(httpServletRequest, httpServletResponse, "Unauthorized user access, please attempt request again.");
-                }
-            }
-
             try {
                 if (username != null) {
                     //Rewrite headers to include only the username, no subs or quality at this time..
@@ -82,7 +75,7 @@ public class AuthenticationFilter implements Filter {
             }
         }
 
-        LOG.info("Request authentication failed, passing control to the servlet.");
+        LOG.info("Request authentication succeeded, passing control to the servlet.");
         filterChain.doFilter(servletRequest, servletResponse);
     }
 
