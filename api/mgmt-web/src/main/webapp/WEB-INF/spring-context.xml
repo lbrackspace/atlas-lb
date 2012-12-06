@@ -54,13 +54,14 @@
     <!--FILTERS-->
     <bean id="headerEnhancerFilter"
           class="org.openstack.atlas.api.mgmt.filters.HeaderEnhancerFilter" scope="request"/>
-    <bean id="manageIdentityAuthFilter"
-          class="org.openstack.atlas.api.mgmt.filters.ManageIdentityAuthFilter"
-          init-method="startConfig"
-          scope="request">
-        <property name="identityAuth" ref="identityAuth"/>
-        <property name="xmlJsonConfig" ref="xmlJsonConfig"/>
-    </bean>
+    <!--Use for RBAC in mgmt, not complete-->
+    <!--<bean id="manageIdentityAuthFilter"-->
+          <!--class="org.openstack.atlas.api.mgmt.filters.ManageIdentityAuthFilter"-->
+          <!--init-method="startConfig"-->
+          <!--scope="request">-->
+        <!--<property name="identityAuth" ref="identityAuth"/>-->
+        <!--<property name="xmlJsonConfig" ref="xmlJsonConfig"/>-->
+    <!--</bean>-->
     <bean id="manageAuthFilter"
           class="org.openstack.atlas.api.mgmt.filters.ManageAuthFilter"
           init-method="startConfig"
