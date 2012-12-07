@@ -47,7 +47,7 @@ public class AuthenticationFilter implements Filter {
 
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        if (servletRequest instanceof HttpServletRequest) {
+         if (servletRequest instanceof HttpServletRequest) {
             HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
 
@@ -58,7 +58,7 @@ public class AuthenticationFilter implements Filter {
             String accountId = httpServletRequest.getHeader(X_AUTH_TENANT_ID);
 
             try {
-                if (username != null) {
+                if (username != null && accountId != null) {
                     //Rewrite headers to include only the username, no subs or quality at this time..
                     HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
                     enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
@@ -66,6 +66,9 @@ public class AuthenticationFilter implements Filter {
                     LOG.info(String.format("Request successfully authenticated, passing control to the servlet. Account: %s Token: %s Username: %s", accountId, token, username));
                     filterChain.doFilter(enhancedHttpRequest, servletResponse);
                     return;
+                } else {
+                    handleWadlRequest(httpServletRequest, httpServletResponse);
+                    //Handle un-authorized access here when we use query param for wadl
                 }
             } catch (RuntimeException e) {
                 String exceptMsg = getExtendedStackTrace(e);
@@ -75,8 +78,8 @@ public class AuthenticationFilter implements Filter {
             }
         }
 
-        LOG.info("Request authentication succeeded, passing control to the servlet.");
-        filterChain.doFilter(servletRequest, servletResponse);
+//        LOG.info("Request authentication succeeded, passing control to the servlet.");
+//        filterChain.doFilter(servletRequest, servletResponse);
     }
 
     private void sendUnauthorizedResponse(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, String message) throws IOException {
@@ -104,6 +107,24 @@ public class AuthenticationFilter implements Filter {
             mapper.getDeserializationConfig().setAnnotationIntrospector(introspector);
             mapper.getSerializationConfig().setAnnotationIntrospector(introspector);
             mapper.writeValue(httpServletResponse.getWriter(), unauthorized);
+        }
+    }
+
+    //Temp for fix in Repose to handle query params horrible things happen here
+    private void handleWadlRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException, ServletException {
+        try {
+            if (httpServletRequest.getRequestURL().toString().contains("application.wadl")
+                    || httpServletRequest.getQueryString().contains("wadl")) {
+                HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
+                String root = httpServletRequest.getRequestURI().split("/application.wadl")[0];
+                RequestDispatcher dispatcher = enhancedHttpRequest.getRequestDispatcher(
+                        "/00000/loadbalancers?_wadl");//have to forward to resource other then root...
+                dispatcher.forward(enhancedHttpRequest, httpServletResponse);
+            } else {
+                sendUnauthorizedResponse(httpServletRequest, httpServletResponse, "User not authenticated, please retry the request with valid auth credentials. ");
+            }
+        } catch (Exception ex) {
+            sendUnauthorizedResponse(httpServletRequest, httpServletResponse, "User not authenticated, please retry the request with valid auth credentials. ");
         }
     }
 

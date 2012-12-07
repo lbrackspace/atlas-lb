@@ -34,7 +34,6 @@ public class RequestSanitationFilter implements Filter {
             HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
 
             String uri = httpServletRequest.getRequestURL().toString();
-            uri = uri + "?" + httpServletRequest.getQueryString();
             if (verifyWADLRequest(uri)) {
                 LOG.debug("WADL request detected. ");
                 enhancedHttpRequest.addHeader(X_WADL, "true");
