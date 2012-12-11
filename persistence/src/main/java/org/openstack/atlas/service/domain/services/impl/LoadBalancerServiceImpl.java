@@ -672,6 +672,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     public void addDefaultValues(LoadBalancer loadBalancer) {
+        final Integer TIMEOUT_DEFAULT = 30;
+
         loadBalancer.setStatus(BUILD);
         NodesHelper.setNodesToStatus(loadBalancer, NodeStatus.ONLINE);
         if (loadBalancer.getAlgorithm() == null) {
@@ -698,6 +700,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (node.getWeight() == null) {
                 node.setWeight(Constants.DEFAULT_NODE_WEIGHT);
             }
+        }
+
+        if (loadBalancer.getTimeout() == null) {
+            loadBalancer.setTimeout(TIMEOUT_DEFAULT);
         }
     }
 
