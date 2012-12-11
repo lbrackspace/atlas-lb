@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.integration;
 
-import org.apache.axis.AxisFault;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ObjectExistsException;
@@ -16,7 +15,6 @@ import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public interface ReverseProxyLoadBalancerService {
@@ -32,6 +30,8 @@ public interface ReverseProxyLoadBalancerService {
     void updateTimeout(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, Exception;
 
     void updateProtocol(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, Exception;
+
+    void updateHalfClosed(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, Exception;
 
     void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
 

@@ -36,6 +36,8 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getCreated()).must().not().exist().withMessage("Load balancer created field cannot be modified.");
                 result(validationTarget().getUpdated()).must().not().exist().withMessage("Load balancer updated field cannot be modified.");
                 result(validationTarget().getName()).if_().exist().then().must().adhereTo(new MustHaveLengthVerifier(LB_NAME_LENGTH)).withMessage("Load Balancer name must be less than or equal to " + LB_NAME_LENGTH);
+                result(validationTarget().isHalfClosed()).if_().exist().then().must().adhereTo(new MustBeBooleanVerifier()).withMessage("Must provide valid boolean value of either true or false. ");
+
 
                 // POST EXPECTATIONS
                 result(validationTarget().getName()).must().exist().forContext(POST).withMessage("Must provide a name for the load balancer.");
@@ -81,7 +83,6 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getAccessList()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/accesslist to configure access lists.");
                 result(validationTarget().getConnectionLogging()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/connecitonlogging to configure connection logging.");
                 result(validationTarget().getContentCaching()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/contentcaching to configure content caching.");
-
             }
         });
     }

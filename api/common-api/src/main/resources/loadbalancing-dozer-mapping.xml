@@ -22,97 +22,6 @@
         </custom-converters>
     </configuration>
 
-
-    <mapping map-null="false">
-        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor</class-a>
-        <class-b>org.openstack.atlas.service.domain.entities.HealthMonitor</class-b>
-        <field-exclude>
-            <a>id</a>
-            <b>id</b>
-        </field-exclude>
-    </mapping>
-
-    <mapping map-null="false">
-        <class-a>
-            org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</class-a>
-        <class-b>org.openstack.atlas.service.domain.entities.SslTermination</class-b>
-        <field-exclude>
-            <a>id</a>
-            <b>id</b>
-        </field-exclude>
-        <field>
-        <a get-method="isEnabled">enabled</a>
-        <b get-method="isEnabled">enabled</b>
-        </field>
-        <field>
-        <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
-        <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
-        </field>
-    </mapping>
-
-    <mapping map-id="DISPLAY_SSL">
-       <class-a>
-            org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</class-a>
-        <class-b>org.openstack.atlas.service.domain.entities.SslTermination</class-b>
-        <field-exclude>
-            <a>id</a>
-            <b>id</b>
-        </field-exclude>
-        <field-exclude>
-            <a>privatekey</a>
-            <b>privatekey</b>
-        </field-exclude>
-        <field-exclude>
-            <a>certificate</a>
-            <b>certificate</b>
-        </field-exclude>
-        <field-exclude>
-            <a>intermediateCertificate</a>
-            <b>intermediateCertificate</b>
-        </field-exclude>
-        <field>
-        <a get-method="isEnabled">enabled</a>
-        <b get-method="isEnabled">enabled</b>
-        </field>
-        <field>
-        <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
-        <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
-        </field>
-    </mapping>
-
-    <mapping map-null="false">
-        <class-a>org.openstack.atlas.service.domain.pojos.Stats</class-a>
-        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.Stats</class-b>
-        <field>
-            <a>connectTimeOut</a>
-            <b>connectTimeOut</b>
-        </field>
-        <field>
-            <a>connectError</a>
-            <b>connectError</b>
-        </field>
-        <field>
-            <a>connectFailure</a>
-            <b>connectFailure</b>
-        </field>
-        <field>
-            <a>dataTimedOut</a>
-            <b>dataTimedOut</b>
-        </field>
-        <field>
-            <a>keepAliveTimedOut</a>
-            <b>keepAliveTimedOut</b>
-        </field>
-        <field>
-            <a>maxConn</a>
-            <b>maxConn</b>
-        </field>
-        <field-exclude>
-            <a>id</a>
-            <b>id</b>
-        </field-exclude>
-    </mapping>
-
     <mapping map-id="DELETED_LB" type="one-way" wildcard="false" map-null="false">
         <class-a>org.openstack.atlas.service.domain.entities.LoadBalancer</class-a>
         <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.LoadBalancerFactory">
@@ -174,12 +83,12 @@
             <b>name</b>
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
-            <a>status</a>
-            <b>status</b>
-        </field>
-        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
             <a>protocol</a>
             <b>protocol</b>
+        </field>
+        <field>
+            <a get-method="isHalfClosed">halfClosed</a>
+            <b get-method="isHalfClosed">halfClosed</b>
         </field>
         <field>
             <a>port</a>
@@ -196,6 +105,14 @@
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CollectionCountConverter">
             <a>nodes</a>
             <b>nodeCount</b>
+        </field>
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+            <a>status</a>
+            <b>status</b>
+        </field>
+        <field>
+            <a>timeout</a>
+            <b>timeout</b>
         </field>
         <!--<field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">-->
         <!--<a>connectionLogging</a>-->
@@ -259,6 +176,10 @@
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
             <a>protocol</a>
             <b>protocol</b>
+        </field>
+        <field>
+            <a get-method="isHalfClosed">halfClosed</a>
+            <b get-method="isHalfClosed">halfClosed</b>
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">
             <a>connectionLogging</a>
@@ -481,6 +402,97 @@
             <a>tags</a>
             <b>vipType</b>
         </field>
+    </mapping>
+
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.HealthMonitor</class-b>
+        <field-exclude>
+            <a>id</a>
+            <b>id</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>
+            org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.SslTermination</class-b>
+        <field-exclude>
+            <a>id</a>
+            <b>id</b>
+        </field-exclude>
+        <field>
+        <a get-method="isEnabled">enabled</a>
+        <b get-method="isEnabled">enabled</b>
+        </field>
+        <field>
+        <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
+        <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
+        </field>
+    </mapping>
+
+    <mapping map-id="DISPLAY_SSL">
+       <class-a>
+            org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.SslTermination</class-b>
+        <field-exclude>
+            <a>id</a>
+            <b>id</b>
+        </field-exclude>
+        <field-exclude>
+            <a>privatekey</a>
+            <b>privatekey</b>
+        </field-exclude>
+        <field-exclude>
+            <a>certificate</a>
+            <b>certificate</b>
+        </field-exclude>
+        <field-exclude>
+            <a>intermediateCertificate</a>
+            <b>intermediateCertificate</b>
+        </field-exclude>
+        <field>
+        <a get-method="isEnabled">enabled</a>
+        <b get-method="isEnabled">enabled</b>
+        </field>
+        <field>
+        <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
+        <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
+        </field>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.service.domain.pojos.Stats</class-a>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.Stats</class-b>
+        <field>
+            <a>connectTimeOut</a>
+            <b>connectTimeOut</b>
+        </field>
+        <field>
+            <a>connectError</a>
+            <b>connectError</b>
+        </field>
+        <field>
+            <a>connectFailure</a>
+            <b>connectFailure</b>
+        </field>
+        <field>
+            <a>dataTimedOut</a>
+            <b>dataTimedOut</b>
+        </field>
+        <field>
+            <a>keepAliveTimedOut</a>
+            <b>keepAliveTimedOut</b>
+        </field>
+        <field>
+            <a>maxConn</a>
+            <b>maxConn</b>
+        </field>
+        <field-exclude>
+            <a>id</a>
+            <b>id</b>
+        </field-exclude>
     </mapping>
 
 </mappings>

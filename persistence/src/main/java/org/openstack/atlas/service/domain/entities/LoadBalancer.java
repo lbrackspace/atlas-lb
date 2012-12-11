@@ -20,57 +20,79 @@ public class LoadBalancer extends Entity implements Serializable {
     private final static long serialVersionUID = 532512316L;
     @Column(name = "name", length = 128)
     private String name;
+
     @OneToMany(mappedBy = "loadBalancer", fetch = FetchType.EAGER)
     private Set<LoadBalancerJoinVip> loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
+
     @OneToMany(mappedBy = "loadBalancer", fetch = FetchType.EAGER)
     private Set<LoadBalancerJoinVip6> loadBalancerJoinVip6Set = new HashSet<LoadBalancerJoinVip6>();
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
     @OrderBy("id")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<Node> nodes = new HashSet<Node>();
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.LAZY)
     @OrderBy("id")
     private Set<Usage> usage = new HashSet<Usage>();
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
     @OrderBy("id")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<AccessList> accessLists = new HashSet<AccessList>();
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
     @OrderBy("id")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<LoadbalancerMeta> loadbalancerMetadata = new HashSet<LoadbalancerMeta>();
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "host_id", nullable = true)
     private Host host;
+
     @Column(name = "algorithm", nullable = false)
     @Enumerated(EnumType.STRING)
     private LoadBalancerAlgorithm algorithm;
+
     @Column(name = "port", nullable = false)
     private Integer port;
+
     @Column(name = "account_id", nullable = false, length = 32)
     private Integer accountId;
+
     @Column(name = "timeout", nullable = false)
     private Integer timeout;
 
     @Column(name = "connection_logging", nullable = false)
     private Boolean connectionLogging;
+
     @Column(name = "content_caching", nullable = false)
     private Boolean contentCaching;
+
     @JoinColumn(name = "protocol", nullable = false)
     @Enumerated(EnumType.STRING)
     private LoadBalancerProtocol protocol;
+
+    @Column(name = "half_closed", nullable = false)
+    private Boolean halfClosed;
+
     @JoinColumn(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private LoadBalancerStatus status;
+
     @JoinColumn(name = "sessionPersistence", nullable = false)
     @Enumerated(EnumType.STRING)
     private SessionPersistence sessionPersistence;
+
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private ConnectionLimit connectionLimit;
+
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private HealthMonitor healthMonitor;
+
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private Suspension suspension;
+
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private RateLimit rateLimit;
 
@@ -83,16 +105,21 @@ public class LoadBalancer extends Entity implements Serializable {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar created;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar updated;
+
     @Column(name = "is_sticky", nullable = false)
     private boolean isSticky;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
     @OrderBy("ticketId")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<Ticket> tickets = new HashSet<Ticket>();
+
     @Transient
     private VirtualIpDozerWrapper virtualIpDozerWrapper;
+
     @Transient
     private SourceAddresses sourceAddresses;
 
@@ -257,6 +284,17 @@ public class LoadBalancer extends Entity implements Serializable {
 
     public void setProtocol(LoadBalancerProtocol protocol) {
         this.protocol = protocol;
+    }
+
+    public Boolean isHalfClosed() {
+        if (halfClosed == null) {
+            halfClosed = false;
+        }
+        return halfClosed;
+    }
+
+    public void setHalfClosed(Boolean halfClosed) {
+        this.halfClosed = halfClosed;
     }
 
     public Integer getPort() {
