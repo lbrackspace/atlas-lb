@@ -287,9 +287,6 @@ public class LoadBalancer extends Entity implements Serializable {
     }
 
     public Boolean isHalfClosed() {
-        if (halfClosed == null) {
-            halfClosed = false;
-        }
         return halfClosed;
     }
 

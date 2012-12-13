@@ -142,10 +142,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             //V1-B-17728 allowing ip SP for non-http protocols
             verifySessionPersistence(lb);
             verifyProtocolAndHealthMonitorType(lb);
+            verifyHalfCloseSupport(lb);
             verifyContentCaching(lb);
             setHostForNewLoadBalancer(lb);
             setVipConfigForLoadBalancer(lb);
-            verifyHalfCloseSupport(lb);
         } catch (UniqueLbPortViolationException e) {
             LOG.warn("The port of the new LB is the same as the LB to which you wish to share a virtual ip.");
             throw e;
@@ -714,6 +714,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (node.getWeight() == null) {
                 node.setWeight(Constants.DEFAULT_NODE_WEIGHT);
             }
+        }
+
+        if (loadBalancer.isHalfClosed() == null) {
+            loadBalancer.setHalfClosed(false);
         }
     }
 
