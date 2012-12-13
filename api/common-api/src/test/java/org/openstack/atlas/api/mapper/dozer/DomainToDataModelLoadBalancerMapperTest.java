@@ -157,6 +157,18 @@ public class DomainToDataModelLoadBalancerMapperTest {
         }
 
         @Test
+        public void should_map_half_close() {
+            Assert.assertEquals(true, dataModelLoadBalancer.isHalfClosed());
+        }
+
+        @Test
+        public void should_map_half_close_when_false() {
+            loadBalancer.setHalfClosed(false);
+            dataModelLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class);
+            Assert.assertEquals(false, dataModelLoadBalancer.isHalfClosed());
+        }
+
+        @Test
         public void should_map_all_loadbalancer_enumerations() {
             Assert.assertTrue(dataModelLoadBalancer.getStatus().equals("PENDING_UPDATE"));
             Assert.assertTrue(dataModelLoadBalancer.getProtocol().equals("IMAPv4"));
@@ -569,6 +581,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
         loadBalancer.setId(100);
         loadBalancer.setName("LB 1");
         loadBalancer.setPort(9999);
+        loadBalancer.setHalfClosed(true);
 
         loadBalancer.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
         loadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);

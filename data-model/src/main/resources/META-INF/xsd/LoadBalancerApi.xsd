@@ -43,6 +43,7 @@
         <xsd:attribute name="name" type="xsd:string"/>
         <xsd:attribute name="algorithm" type="xsd:string"/>
         <xsd:attribute name="protocol" type="xsd:string"/>
+        <xsd:attribute name="halfClosed" type="xsd:boolean"/>
         <xsd:attribute name="port" type="xsd:int"/>
         <xsd:attribute name="status" type="xsd:string"/>
         <xsd:attribute name="timeout" type="xsd:int"/>

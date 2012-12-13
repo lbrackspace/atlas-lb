@@ -230,6 +230,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
             updateAccessList(config, lb);
         }
+
+        if (lb.isHalfClosed() != null) {
+            updateHalfClosed(config, lb);
+        }
     }
 
     private void isVSListeningOnAllAddresses(ZxtmServiceStubs serviceStubs, String virtualServerName, String poolName) throws RemoteException, VirtualServerListeningOnAllAddressesException {
@@ -1825,6 +1829,20 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         if (loadBalancer.hasSsl()) {
             updateAccessList(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
+    }
+
+    @Override
+    public void updateHalfClosed(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
+        final String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+
+        try {
+        LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualSecureServerName, loadBalancer.isHalfClosed()));
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualSecureServerName}, new boolean[]{loadBalancer.isHalfClosed()});
+        } catch (Exception e) {
+            LOG.error("Could not update half close support for virtual server: " + virtualSecureServerName);
+        }
+
     }
 
     private void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String protectionClassName)
