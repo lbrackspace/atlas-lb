@@ -137,6 +137,7 @@ public class LoadBalancerServiceImplTest {
             Assert.assertEquals(defaultProtocol.getPort(), lb.getPort());
             Assert.assertEquals(SessionPersistence.NONE, lb.getSessionPersistence());
             Assert.assertEquals(LoadBalancerStatus.BUILD, lb.getStatus());
+            Assert.assertEquals(false, lb.isHalfClosed());
         }
 
         @Test

@@ -71,9 +71,9 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                     @Override
                     public VerifierResult verify(LoadBalancer obj) {
                         return new VerifierResult(obj.getName() != null || obj.getAlgorithm() != null || obj.getPort() != null
-                                || obj.getProtocol() != null || obj.getConnectionLogging() != null || obj.getTimeout() != null);
+                                || obj.getProtocol() != null || obj.getConnectionLogging() != null || obj.getTimeout() != null || obj.isHalfClosed() != null);
                     }
-                }).forContext(PUT).withMessage("The load balancer must have at least one of the following to update: name, algorithm, protocol, port or timeout.");
+                }).forContext(PUT).withMessage("The load balancer must have at least one of the following to update: name, algorithm, protocol, port, timeout or halfClosed.");
                 result(validationTarget().getNodes()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/nodes to configure nodes.");
                 result(validationTarget().getMetadata()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/metadata to configure metadata.");
                 result(validationTarget().getVirtualIps()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/virtualips/{virtual ip id} to configure a virtual ip.");

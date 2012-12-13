@@ -281,11 +281,17 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         if (loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(dbLoadBalancer.getProtocol())) {
-            verifyTCPUDPProtocolandPort(loadBalancer);
-            verifyHalfCloseSupport(loadBalancer);
+            verifyTCPUDPProtocolandPort(loadBalancer, dbLoadBalancer);
+
+            if (loadBalancer.isHalfClosed() != null) {
+                verifyHalfCloseSupport(loadBalancer);
+            } else {
+                verifyHalfCloseSupport(loadBalancer, dbLoadBalancer.isHalfClosed());
+            }
 
             boolean isValidProto = true;
             if (checkLBProtocol(loadBalancer)) {
+                //Move
                 if (loadBalancer.getPort() != null) {
                     dbLoadBalancer.setPort(loadBalancer.getPort());
                 } else {
@@ -763,7 +769,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
 
-    private void verifyTCPUDPProtocolandPort(LoadBalancer queueLb) throws TCPProtocolUnknownPortException {
+    private void verifyTCPUDPProtocolandPort(LoadBalancer queueLb, LoadBalancer dbLb) throws TCPProtocolUnknownPortException {
         if (queueLb.getProtocol() != null && (queueLb.getProtocol().equals(LoadBalancerProtocol.TCP) || queueLb.getProtocol().equals(LoadBalancerProtocol.TCP_CLIENT_FIRST)) || (queueLb.getProtocol().equals(LoadBalancerProtocol.UDP) || (queueLb.getProtocol().equals(LoadBalancerProtocol.UDP_STREAM)))) {
             LOG.info("TCP and UDP Protocol detected. Port must exists");
             if (queueLb.getPort() == null) {
@@ -772,9 +778,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
     }
 
+    private void verifyTCPUDPProtocolandPort(LoadBalancer queueLb) throws TCPProtocolUnknownPortException {
+        verifyTCPUDPProtocolandPort(queueLb, null);
+    }
+
     private void verifyHalfCloseSupport(LoadBalancer lb, boolean isHalfClose) throws BadRequestException {
         if (isHalfClose) {
-            if (lb.getProtocol() == null && !(lb.getProtocol().equals(LoadBalancerProtocol.TCP) || lb.getProtocol().equals(LoadBalancerProtocol.TCP_CLIENT_FIRST))) {
+            if (lb.getProtocol() != null && !(lb.getProtocol().equals(LoadBalancerProtocol.TCP) || lb.getProtocol().equals(LoadBalancerProtocol.TCP_CLIENT_FIRST))) {
                 LOG.debug("TCP or TCP_CLIENT_FIRST Protocol only allowed with Half Close Support and will not be enabled at this time. ");
                 throw new BadRequestException("Must provide valid protocol for half close support, please view documentation for more details. ", new Exception("Half Close support and Load Balancer protocol not valid. "));
             }

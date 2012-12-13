@@ -87,10 +87,6 @@
             <b>protocol</b>
         </field>
         <field>
-            <a get-method="isHalfClosed">halfClosed</a>
-            <b get-method="isHalfClosed">halfClosed</b>
-        </field>
-        <field>
             <a>port</a>
             <b>port</b>
         </field>
