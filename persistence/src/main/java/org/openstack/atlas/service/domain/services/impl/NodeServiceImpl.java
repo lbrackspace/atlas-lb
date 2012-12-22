@@ -189,6 +189,9 @@ public class NodeServiceImpl extends BaseService implements NodeService {
                 if (nodeToUpdate.getWeight() != null) {
                     n.setWeight(nodeToUpdate.getWeight());
                 }
+                if (nodeToUpdate.getType() != null) {
+                    n.setType(nodeToUpdate.getType());
+                }
                 n.setToBeUpdated(true);
                 nodeBeingUpdated = n;
                 break;

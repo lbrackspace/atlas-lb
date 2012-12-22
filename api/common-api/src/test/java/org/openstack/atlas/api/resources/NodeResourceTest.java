@@ -158,5 +158,11 @@ public class NodeResourceTest {
             Response resp = nodeResource.updateNode(gnode);
             Assert.assertEquals(500, resp.getStatus());
         }
+
+        //Really need to get resource tests working... testing manually for now for node secondary update to primary when user not supplying type issue.
+        @Test
+        public void shouldReturnDBValueIfTypeNull() throws Exception {
+            //Test it when i look back into why resource tests are broken at some point
+        }
     }
 }
