@@ -12,6 +12,7 @@ public final class LogChopper {
     private static final Log LOGGER = LogFactory.getLog(LogChopper.class);
 
     private static final Pattern HTTP_LB_LOG_PATTERN = Pattern.compile("^((\\S+) (\\S+) (\\S+) (\\S+) (\\S+) \\[(\\d+\\/\\w+\\/\\d+:\\d+:\\d+:\\d+) \\S+\\] \"(\\S+ \\S.*)(HTTP\\/1\\.\\d*)\" (\\S+) (\\d+) \"(.*)\" \"(.*)\")$");
+    private static final Pattern HTTP_LB_LOG_PATTERN_IP = Pattern.compile("^((\\S+) (\\S+) (\\S+) (\\S+) (\\S+) \\[(\\d+\\/\\w+\\/\\d+:\\d+:\\d+:\\d+) \\S+\\] \"(\\S+ \\S.*)(HTTP\\/1\\.\\d*)\" (\\S+) (\\d+) \"(.*)\" \"(.*)\" (\\S+))$");
     private static final Pattern NON_HTTP_LB_LOG_PATTERN = Pattern.compile("^((\\S+) \\[(\\d+\\/\\w+\\/\\d+:\\d+:\\d+:\\d+) \\S+\\] (\\S+) (\\S+) (\\S+) (\\S+) (\\S+) (\\S+))$");
 
     private LogChopper() {
@@ -19,6 +20,7 @@ public final class LogChopper {
 
     public static LbLogsWritable getLbLogStats(String logline) throws Exception {
         Matcher matcher = HTTP_LB_LOG_PATTERN.matcher(logline);
+        Matcher matcherIP = HTTP_LB_LOG_PATTERN_IP.matcher(logline);
         boolean matchFound = matcher.find();
         String date;
 
@@ -26,6 +28,11 @@ public final class LogChopper {
             date = matcher.group(7);
             String sourceIp = matcher.group(4);
             return parseLogLine(logline, matcher, matchFound, date, sourceIp);
+        } else if (matcherIP.find()) {
+            matchFound = true;
+            date = matcherIP.group(7);
+            String sourceIp = matcherIP.group(4);
+            return parseLogLine(logline, matcherIP, matchFound, date, sourceIp);
         } else {
             matcher = NON_HTTP_LB_LOG_PATTERN.matcher(logline);
             matchFound = matcher.find();

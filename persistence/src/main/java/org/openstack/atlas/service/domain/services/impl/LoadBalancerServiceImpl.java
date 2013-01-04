@@ -142,6 +142,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             //V1-B-17728 allowing ip SP for non-http protocols
             verifySessionPersistence(lb);
             verifyProtocolAndHealthMonitorType(lb);
+            verifyHalfCloseSupport(lb);
             verifyContentCaching(lb);
             setHostForNewLoadBalancer(lb);
             setVipConfigForLoadBalancer(lb);
@@ -274,16 +275,23 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             dbLoadBalancer.setAlgorithm(loadBalancer.getAlgorithm());
         }
 
-         if (loadBalancer.getTimeout() != null && !loadBalancer.getTimeout().equals(dbLoadBalancer.getTimeout())) {
+        if (loadBalancer.getTimeout() != null && !loadBalancer.getTimeout().equals(dbLoadBalancer.getTimeout())) {
             LOG.debug("Updating loadbalancer timeout to " + loadBalancer.getTimeout());
             dbLoadBalancer.setTimeout(loadBalancer.getTimeout());
         }
 
         if (loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(dbLoadBalancer.getProtocol())) {
-            verifyTCPUDPProtocolandPort(loadBalancer);
+            verifyTCPUDPProtocolandPort(loadBalancer, dbLoadBalancer);
+
+            if (loadBalancer.isHalfClosed() != null) {
+                verifyHalfCloseSupport(loadBalancer);
+            } else {
+                verifyHalfCloseSupport(loadBalancer, dbLoadBalancer.isHalfClosed());
+            }
 
             boolean isValidProto = true;
             if (checkLBProtocol(loadBalancer)) {
+                //Move
                 if (loadBalancer.getPort() != null) {
                     dbLoadBalancer.setPort(loadBalancer.getPort());
                 } else {
@@ -317,6 +325,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
             if (!isValidProto)
                 throw new BadRequestException("Protocol is not valid. Please verify shared virtual ips and the ports being shared.");
+
 
             //check for health monitor type and allow update only if protocol matches health monitory type for HTTP and HTTPS
             if (dbLoadBalancer.getHealthMonitor() != null) {
@@ -367,6 +376,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         LOG.debug(String.format("Verifying connectionLogging and contentCaching... if enabled, they are valid only with HTTP protocol.."));
         verifyProtocolLoggingAndCaching(loadBalancer, dbLoadBalancer);
+
+        //V1-B-27058 12-10-12
+        LOG.debug("Update half close support in load balancer service impl");
+        if (loadBalancer.isHalfClosed() != null) {
+            verifyHalfCloseSupport(dbLoadBalancer, loadBalancer.isHalfClosed());
+            dbLoadBalancer.setHalfClosed(loadBalancer.isHalfClosed());
+        }
 
 
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
@@ -672,6 +688,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     public void addDefaultValues(LoadBalancer loadBalancer) {
+        final Integer TIMEOUT_DEFAULT = 30;
+
         loadBalancer.setStatus(BUILD);
         NodesHelper.setNodesToStatus(loadBalancer, NodeStatus.ONLINE);
         if (loadBalancer.getAlgorithm() == null) {
@@ -698,6 +716,14 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (node.getWeight() == null) {
                 node.setWeight(Constants.DEFAULT_NODE_WEIGHT);
             }
+        }
+
+        if (loadBalancer.getTimeout() == null) {
+            loadBalancer.setTimeout(TIMEOUT_DEFAULT);
+        }
+
+        if (loadBalancer.isHalfClosed() == null) {
+            loadBalancer.setHalfClosed(false);
         }
     }
 
@@ -753,12 +779,32 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
 
-    private void verifyTCPUDPProtocolandPort(LoadBalancer queueLb) throws TCPProtocolUnknownPortException {
+    private void verifyTCPUDPProtocolandPort(LoadBalancer queueLb, LoadBalancer dbLb) throws TCPProtocolUnknownPortException {
         if (queueLb.getProtocol() != null && (queueLb.getProtocol().equals(LoadBalancerProtocol.TCP) || queueLb.getProtocol().equals(LoadBalancerProtocol.TCP_CLIENT_FIRST)) || (queueLb.getProtocol().equals(LoadBalancerProtocol.UDP) || (queueLb.getProtocol().equals(LoadBalancerProtocol.UDP_STREAM)))) {
             LOG.info("TCP and UDP Protocol detected. Port must exists");
             if (queueLb.getPort() == null) {
                 throw new TCPProtocolUnknownPortException("Must provide port for TCP and UDP protocols.");
             }
+        }
+    }
+
+    private void verifyTCPUDPProtocolandPort(LoadBalancer queueLb) throws TCPProtocolUnknownPortException {
+        verifyTCPUDPProtocolandPort(queueLb, null);
+    }
+
+    private void verifyHalfCloseSupport(LoadBalancer lb, boolean isHalfClose) throws BadRequestException {
+        if (isHalfClose) {
+            if (lb.getProtocol() != null && !(lb.getProtocol().equals(LoadBalancerProtocol.TCP) || lb.getProtocol().equals(LoadBalancerProtocol.TCP_CLIENT_FIRST))) {
+                LOG.debug("TCP or TCP_CLIENT_FIRST Protocol only allowed with Half Close Support and will not be enabled at this time. ");
+                throw new BadRequestException("Must provide valid protocol for half close support, please view documentation for more details. ", new Exception("Half Close support and Load Balancer protocol not valid. "));
+            }
+            LOG.debug("Half Close support will be enabled for load balancer ");
+        }
+    }
+
+    private void verifyHalfCloseSupport(LoadBalancer lb) throws BadRequestException {
+        if (lb.isHalfClosed() != null) {
+            verifyHalfCloseSupport(lb, lb.isHalfClosed());
         }
     }
 

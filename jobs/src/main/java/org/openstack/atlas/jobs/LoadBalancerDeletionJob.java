@@ -44,18 +44,18 @@ public class LoadBalancerDeletionJob extends Job {
             LOG.info(String.format("There are '%s' expired load balancers...", elbs.size()));
             if (!elbs.isEmpty()) {
                 for (LoadBalancer deleteLb : elbs) {
+                    LOG.info(String.format("Attempting to remove load balancer with id..'%s' from the database... ", deleteLb.getId()));
+                    //TODO: for legacy bug, remove user_page to prevent manual intervention. once caught up the following line(1) can be removed
+                    loadBalancerRepository.removeErrorPage(deleteLb.getId(), deleteLb.getAccountId());
                     try {
-                        LOG.info(String.format("Attempting to remove load balancer with id..'%s' from the database... ", deleteLb.getId()));
-                        //TODO: for legacy bug, remove user_page to prevent manual intervention. once caught up the following line(1) can be removed
-                        loadBalancerRepository.removeErrorPage(deleteLb.getId(), deleteLb.getAccountId());
                         sslTerminationRepository.removeSslTermination(deleteLb.getId(), deleteLb.getAccountId());
-
-                        loadBalancerRepository.removeExpiredLb(deleteLb.getId());
-                        LOG.info(String.format("Successfully removed load balancer with id..'%s' from the database... ", deleteLb.getId()));
                     } catch (Exception e) {
-                        Alert alert = AlertHelper.createAlert(deleteLb.getAccountId(), deleteLb.getId(), e, AlertType.DATABASE_FAILURE.name(), e.getMessage());
-                        alertRepository.save(alert);
+                        LOG.debug("SSL Termination is not found for load balancer: " + deleteLb.getId());
+                        //No need for alert here, causing logging clutter for no benefits... 11/07/12
+//                        Alert alert = AlertHelper.createAlert(deleteLb.getAccountId(), deleteLb.getId(), e, AlertType.DATABASE_FAILURE.name(), e.getMessage());
+//                        alertRepository.save(alert);
                     }
+                    loadBalancerRepository.removeExpiredLb(deleteLb.getId());
                 }
             }
         } catch (Exception e) {

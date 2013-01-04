@@ -8,6 +8,7 @@ import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeType;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
@@ -58,6 +59,12 @@ public class NodeResource extends CommonDependencyProvider {
         try {
             node.setId(id);
             org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer apiLb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
+
+            //BANDAIDed V1-D-10515:
+            if (node.getType() == null) {
+              node.setType(NodeType.valueOf(
+                      nodeService.getNodeByAccountIdLoadBalancerIdNodeId(accountId, loadBalancerId, id).getType().toString()));
+            }
 
             apiLb.getNodes().add(node);
             LoadBalancer domainLb = dozerMapper.map(apiLb, LoadBalancer.class);
