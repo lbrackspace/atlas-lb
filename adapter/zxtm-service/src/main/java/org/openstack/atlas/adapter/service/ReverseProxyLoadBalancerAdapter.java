@@ -29,6 +29,9 @@ public interface ReverseProxyLoadBalancerAdapter {
     public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
+    public void updateHalfClosed(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+
     public void updatePort(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Integer port)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 

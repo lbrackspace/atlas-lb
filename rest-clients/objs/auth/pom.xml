@@ -5,7 +5,11 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
+<<<<<<< HEAD
+        <version>1.17.0-SNAPSHOT</version>
+=======
         <version>1.16.4-SNAPSHOT</version>
+>>>>>>> 1.16-candidate
     </parent>
     <artifactId>atlas-restclients-objs-auth</artifactId>
     <name>Openstack :: Atlas :: Rest Clients :: Objects :: Auth </name>

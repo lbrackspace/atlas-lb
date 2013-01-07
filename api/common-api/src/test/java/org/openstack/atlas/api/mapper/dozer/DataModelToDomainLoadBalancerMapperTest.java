@@ -39,6 +39,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
             loadBalancer.setPort(9999);
 
             loadBalancer.setProtocol("IMAPv4");
+            loadBalancer.setHalfClosed(true);
             loadBalancer.setAlgorithm("ROUND_ROBIN");
             loadBalancer.setStatus("SUSPENDED");
 
@@ -139,6 +140,18 @@ public class DataModelToDomainLoadBalancerMapperTest {
             Assert.assertEquals(new GregorianCalendar(2010, 10, 10), domainLoadBalancer.getCreated());
             Assert.assertEquals(new GregorianCalendar(2010, 12, 10), domainLoadBalancer.getUpdated());
             Assert.assertEquals(true, domainLoadBalancer.isConnectionLogging());
+        }
+
+        @Test
+        public void should_map_half_close() {
+            Assert.assertEquals(true, domainLoadBalancer.isHalfClosed());
+        }
+
+        @Test
+        public void should_map_half_close_false() {
+            loadBalancer.setHalfClosed(false);
+            domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
+            Assert.assertEquals(false, domainLoadBalancer.isHalfClosed());
         }
 
         @Test
