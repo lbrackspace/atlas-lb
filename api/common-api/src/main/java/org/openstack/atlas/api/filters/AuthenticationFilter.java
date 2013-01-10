@@ -47,14 +47,14 @@ public class AuthenticationFilter implements Filter {
 
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-         if (servletRequest instanceof HttpServletRequest) {
+        if (servletRequest instanceof HttpServletRequest) {
             HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
 
             String token = httpServletRequest.getHeader(X_AUTH_TOKEN);
             String username = (httpServletRequest.getHeader(X_AUTH_USER_NAME) != null
                     ? httpServletRequest.getHeader(X_AUTH_USER_NAME).split(";")[0]
-                    : null); //We are not using the 'quality' portion... 'username;q=1.0'
+                    : null);
             String accountId = httpServletRequest.getHeader(X_AUTH_TENANT_ID);
 
             try {
