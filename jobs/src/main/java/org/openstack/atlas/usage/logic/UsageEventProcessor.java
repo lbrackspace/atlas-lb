@@ -100,6 +100,9 @@ public class UsageEventProcessor {
                     LoadBalancerUsage secondUsage = loadBalancerUsages.get(i + 1);
 
                     // Update firstUsage end time add it to the create list
+                    UsageEvent firstUsageEvent = UsageEvent.valueOf(firstUsage.getEventType());
+                    int firstUsageTags = calculateTags(firstUsage.getAccountId(), lbId, firstUsageEvent, firstUsage);
+                    firstUsage.setTags(firstUsageTags);
                     Calendar newEndTimeForRecentUsage = calculateEndTime(firstUsage.getEndTime(), secondUsage.getStartTime());
                     firstUsage.setEndTime(newEndTimeForRecentUsage);
                     usagesToCreate.add(firstUsage);
