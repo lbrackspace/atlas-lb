@@ -117,8 +117,13 @@ public class UsageEventProcessor {
                     int updatedTags = calculateTags(firstUsage.getAccountId(), lbId, usageEvent, firstUsage);
                     secondUsage.setTags(updatedTags);
                 } else {
+                    LoadBalancerUsage usage = loadBalancerUsages.get(i);
+                    UsageEvent usageEvent = UsageEvent.valueOf(usage.getEventType());
+                    int updatedUsageTags = calculateTags(usage.getAccountId(), lbId, usageEvent, usage);
+                    usage.setTags(updatedUsageTags);
+
                     // Add last record whose timestamps are the same.
-                    usagesToCreate.add(loadBalancerUsages.get(i));
+                    usagesToCreate.add(usage);
                 }
             }
         }

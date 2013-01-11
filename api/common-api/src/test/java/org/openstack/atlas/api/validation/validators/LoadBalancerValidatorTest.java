@@ -555,7 +555,7 @@ public class LoadBalancerValidatorTest {
         public void shouldRejectSslTerminationElement() {
             lb.setSslTermination(new SslTermination());
             ValidatorResult result = validator.validate(lb, PUT);
-            assertFalse(result.passedValidation());
+            assertFalse (result.passedValidation());
         }
 	}
 }
