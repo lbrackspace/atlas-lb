@@ -58,7 +58,7 @@ public class AuthenticationFilter implements Filter {
             String accountId = httpServletRequest.getHeader(X_AUTH_TENANT_ID);
 
             try {
-                if (username != null && accountId != null) {
+                if (username != null && accountId != null && token != null) {
                     //Rewrite headers to include only the username, no subs or quality at this time..
                     HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
                     enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
