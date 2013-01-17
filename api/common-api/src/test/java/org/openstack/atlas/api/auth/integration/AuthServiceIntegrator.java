@@ -1,16 +1,11 @@
 package org.openstack.atlas.api.auth.integration;
 
 import org.junit.*;
-import org.openstack.atlas.api.auth.*;
-import org.openstack.atlas.api.auth.integration.helpers.FileUtil;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-
+import org.openstack.atlas.api.auth.AuthTokenValidator;
+import org.openstack.atlas.api.auth.integration.helpers.FileUtil;
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.client.keystone.KeyStoneAdminClient;
 import org.openstack.client.keystone.KeyStoneClient;
@@ -18,7 +13,12 @@ import org.openstack.client.keystone.KeyStoneException;
 import org.openstack.client.keystone.auth.AuthData;
 import org.openstack.client.keystone.user.User;
 
-import static org.mockito.Mockito.*;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 @Ignore
 //Run with proper credentials in 'test.properties' requires auth url, basic auth username and password.
