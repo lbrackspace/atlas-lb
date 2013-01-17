@@ -5,8 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-<version>1.17.3</version>
-    </parent>
+          <version>1.17.4-SNAPSHOT</version>    </parent>
 
     <artifactId>atlas-rest-clients</artifactId>
     <name>Openstack :: Atlas :: Rest Clients</name>
