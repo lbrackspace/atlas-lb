@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-          <version>1.17.4</version>    </parent>
+          <version>1.17.5-SNAPSHOT</version>    </parent>
 
     <artifactId>atlas-zxtm-stubs</artifactId>
     <name>Openstack :: Atlas :: Adapter :: ZXTM Stubs</name>
