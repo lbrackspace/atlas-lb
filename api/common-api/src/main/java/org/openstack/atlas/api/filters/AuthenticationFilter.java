@@ -100,17 +100,17 @@ public class AuthenticationFilter implements Filter {
             if (username != null && accountId != null && token != null && authorization != null) {
                 String decoded = Base64.decode(authorization.split(" ")[1]);
                 if (decoded.equals(configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_user)
-                                + ":" + configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_key))) {
+                        + ":" + configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_key))) {
                     HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
                     enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
                     enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, username);
                     LOG.info(String.format("Request successfully authenticated, passing control to the servlet. Account: %s Token: %s Username: %s", accountId, token, username));
                     filterChain.doFilter(enhancedHttpRequest, httpServletResponse);
                     return;
-                } else {
-                    handleWadlRequest(httpServletRequest, httpServletResponse);
-                    //TODO:Handle un-authorized access here when we use query param for wadl
                 }
+            } else if (accountId == null) {
+                //TODO:Handle un-authorized access here when we use query param for wadl
+                handleWadlRequest(httpServletRequest, httpServletResponse);
             } else {
                 handleInternalAuthenticationRequest(httpServletRequest, httpServletResponse, filterChain);
             }
