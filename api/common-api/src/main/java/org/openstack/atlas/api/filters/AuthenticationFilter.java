@@ -13,6 +13,8 @@ import org.openstack.atlas.api.exceptions.MalformedUrlException;
 import org.openstack.atlas.api.filters.wrappers.HeadersRequestWrapper;
 import org.openstack.atlas.api.helpers.UrlAccountIdExtractor;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.LoadBalancerFault;
+import org.openstack.atlas.util.b64aes.Base64;
+import org.openstack.atlas.util.b64aes.PaddingException;
 import org.openstack.atlas.util.simplecache.CacheEntry;
 import org.openstack.atlas.util.simplecache.SimpleCache;
 import org.openstack.client.keystone.KeyStoneException;
@@ -24,6 +26,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
@@ -32,12 +35,12 @@ import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtende
 public class AuthenticationFilter implements Filter {
     private final Log LOG = LogFactory.getLog(AuthenticationFilter.class);
 
-    //TODO: Redo this when/if time constraints arent an issue...
+    //TODO: barf Redo this when/if time constraints arent an issue...
 
     private final String X_AUTH_TENANT_ID = "X-Tenant-Name";
     private final String X_AUTH_USER_NAME = "X-PP-User";
     private final String X_AUTH_TOKEN = "X-Auth-Token";
-    private final String VIA_HEADER = "Via";
+    private final String AUTHORIZATION_HEADER = "Authorization";
 
     private UrlAccountIdExtractor accountIdExtractor;
     private AuthTokenValidator authTokenValidator;
@@ -78,6 +81,7 @@ public class AuthenticationFilter implements Filter {
             token = httpServletRequest.getHeader(X_AUTH_TOKEN);
         }
 
+        //Rewrite headers to include only the username, no subs or quality at this time..
         String username = (httpServletRequest.getHeader(X_AUTH_USER_NAME) != null
                 ? httpServletRequest.getHeader(X_AUTH_USER_NAME).split(";")[0]
                 : null);
@@ -87,14 +91,16 @@ public class AuthenticationFilter implements Filter {
             accountId = httpServletRequest.getHeader(X_AUTH_TENANT_ID);
         }
 
-        if (httpServletRequest.getHeader(VIA_HEADER) != null) {
-            viaHeader = httpServletRequest.getHeader(VIA_HEADER).split(" ")[1];
+        String authorization = null;
+        if (httpServletRequest.getHeader(AUTHORIZATION_HEADER) != null) {
+            authorization = httpServletRequest.getHeader(AUTHORIZATION_HEADER);
         }
 
         try {
-            if (username != null && accountId != null && token != null && viaHeader != null) {
-                if (viaHeader.equals(configuration.getString(PublicApiServiceConfigurationKeys.repose_via_key))) {
-                    //Rewrite headers to include only the username, no subs or quality at this time..
+            if (username != null && accountId != null && token != null && authorization != null) {
+                String decoded = Base64.decode(authorization.split(" ")[1]);
+                if (decoded.equals(configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_user)
+                                + ":" + configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_key))) {
                     HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
                     enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
                     enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, username);
@@ -118,6 +124,12 @@ public class AuthenticationFilter implements Filter {
             LOG.error(String.format("Error in filterChain:%s\n", exceptMsg));
             httpServletResponse.sendError(500, "Something unexpected happened. Please contact support.");
             return;
+        } catch (PaddingException e) {
+            LOG.error(String.format("Error in filterChain:%s\n", e.getLocalizedMessage()));
+            sendUnauthorizedResponse(httpServletRequest, httpServletResponse, "User not authenticated, please retry the request with valid auth credentials. ");
+        } catch (UnsupportedEncodingException e) {
+            LOG.error(String.format("Error in filterChain:%s\n", e.getLocalizedMessage()));
+            sendUnauthorizedResponse(httpServletRequest, httpServletResponse, "User not authenticated, please retry the request with valid auth credentials. ");
         } catch (IOException e) {
             String exceptMsg = getExtendedStackTrace(e);
             LOG.error(String.format("Error in filterChain:%s\n", exceptMsg));
