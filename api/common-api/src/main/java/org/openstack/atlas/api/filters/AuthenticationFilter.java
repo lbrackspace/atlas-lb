@@ -108,10 +108,11 @@ public class AuthenticationFilter implements Filter {
                     filterChain.doFilter(enhancedHttpRequest, httpServletResponse);
                     return;
                 }
-            } else if (accountId == null) {
+            } else if (httpServletRequest.getRequestURL().toString().contains("application.wadl")) {
                 //TODO:Handle un-authorized access here when we use query param for wadl
                 handleWadlRequest(httpServletRequest, httpServletResponse);
             } else {
+                LOG.info("Not a WADL nor Repose request.. attempt to validate the user with provided credentials");
                 handleInternalAuthenticationRequest(httpServletRequest, httpServletResponse, filterChain);
             }
         } catch (RuntimeException e) {
@@ -141,7 +142,7 @@ public class AuthenticationFilter implements Filter {
     private void handleInternalAuthenticationRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws IOException, ServletException {
         int purged;
         String MISSING_TOKEN_MESSAGE = "Missing authentication token.";
-        String INVALID_TOKEN_MESSAGE = "Invalid authentication token. Please renew";
+        String INVALID_TOKEN_MESSAGE = "Invalid authentication credentials. Please review request and try again with valid credentials";
         String AUTH_FAULT_MESSAGE = "There was an error while authenticating, please contact support.";
         String authToken = httpServletRequest.getHeader("X-AUTH-TOKEN");
         Integer accountId;
@@ -231,6 +232,7 @@ public class AuthenticationFilter implements Filter {
 
     private void handleWadlRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException, ServletException {
         //Temp for fix in Repose to handle query params horrible things happen here
+        LOG.info("WADL request, forwarding to CXF to produce the WADL.");
         try {
             if (httpServletRequest.getRequestURL().toString().contains("application.wadl")
                     || httpServletRequest.getQueryString().contains("wadl")) {
