@@ -35,8 +35,6 @@ import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtende
 public class AuthenticationFilter implements Filter {
     private final Log LOG = LogFactory.getLog(AuthenticationFilter.class);
 
-    //TODO: barf Redo this when/if time constraints arent an issue...
-
     private final String X_AUTH_TENANT_ID = "X-Tenant-Name";
     private final String X_AUTH_USER_NAME = "X-PP-User";
     private final String X_AUTH_TOKEN = "X-Auth-Token";
@@ -47,7 +45,6 @@ public class AuthenticationFilter implements Filter {
     private RestApiConfiguration configuration;
     private FilterConfig filterConfig = null;
     private SimpleCache<AuthInfo> userCache;
-    private String viaHeader;
 
     public AuthenticationFilter(UrlAccountIdExtractor urlAccountIdExtractor) {
     }
@@ -70,13 +67,13 @@ public class AuthenticationFilter implements Filter {
         if (servletRequest instanceof HttpServletRequest) {
             HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-
             handleAuthenticationRequest(httpServletRequest, httpServletResponse, filterChain);
         }
     }
 
     private void handleAuthenticationRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws IOException {
         String token = null;
+
         if (httpServletRequest.getHeader(X_AUTH_TOKEN) != null) {
             token = httpServletRequest.getHeader(X_AUTH_TOKEN);
         }
@@ -112,47 +109,33 @@ public class AuthenticationFilter implements Filter {
                 //TODO:Handle un-authorized access here when we use query param for wadl
                 handleWadlRequest(httpServletRequest, httpServletResponse);
             } else {
-                LOG.info("Not a WADL nor Repose request.. attempt to validate the user with provided credentials");
+                LOG.debug("Not a WADL nor Repose request.. attempt to validate the user with provided credentials");
                 handleInternalAuthenticationRequest(httpServletRequest, httpServletResponse, filterChain);
             }
         } catch (RuntimeException e) {
-            String exceptMsg = getExtendedStackTrace(e);
-            LOG.error(String.format("Error in filterChain:%s\n", exceptMsg));
-            httpServletResponse.sendError(500, "Something unexpected happened. Please contact support.");
-            return;
+            handleErrorReposnse(httpServletRequest, httpServletResponse, 500, e);
         } catch (ServletException e) {
-            String exceptMsg = getExtendedStackTrace(e);
-            LOG.error(String.format("Error in filterChain:%s\n", exceptMsg));
-            httpServletResponse.sendError(500, "Something unexpected happened. Please contact support.");
-            return;
+            handleErrorReposnse(httpServletRequest, httpServletResponse, 500, e);
         } catch (PaddingException e) {
-            LOG.error(String.format("Error in filterChain:%s\n", e.getLocalizedMessage()));
-            sendUnauthorizedResponse(httpServletRequest, httpServletResponse, "User not authenticated, please retry the request with valid auth credentials. ");
+            handleErrorReposnse(httpServletRequest, httpServletResponse, 401, e);
         } catch (UnsupportedEncodingException e) {
-            LOG.error(String.format("Error in filterChain:%s\n", e.getLocalizedMessage()));
-            sendUnauthorizedResponse(httpServletRequest, httpServletResponse, "User not authenticated, please retry the request with valid auth credentials. ");
+            handleErrorReposnse(httpServletRequest, httpServletResponse, 401, e);
         } catch (IOException e) {
-            String exceptMsg = getExtendedStackTrace(e);
-            LOG.error(String.format("Error in filterChain:%s\n", exceptMsg));
-            httpServletResponse.sendError(500, "Something unexpected happened. Please contact support.");
-            return;
+            handleErrorReposnse(httpServletRequest, httpServletResponse, 500, e);
         }
     }
 
     private void handleInternalAuthenticationRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws IOException, ServletException {
-        int purged;
-        String MISSING_TOKEN_MESSAGE = "Missing authentication token.";
         String INVALID_TOKEN_MESSAGE = "Invalid authentication credentials. Please review request and try again with valid credentials";
         String AUTH_FAULT_MESSAGE = "There was an error while authenticating, please contact support.";
         String authToken = httpServletRequest.getHeader("X-AUTH-TOKEN");
-        Integer accountId;
+        String MISSING_TOKEN_MESSAGE = "Missing authentication token.";
         String username = null;
+        Integer accountId;
+        int purged;
 
         purged = userCache.cleanExpiredByCount(); // Prevent unchecked entries from Living forever
-        if (purged > 0) {
-            LOG.debug(String.format("cleaning auth userCache: purged %d stale entries", purged));
-        }
-
+        if (purged > 0) LOG.debug(String.format("cleaning auth userCache: purged %d stale entries", purged));
 
         if (authToken == null || authToken.isEmpty()) {
             sendUnauthorizedResponse(httpServletRequest, httpServletResponse, MISSING_TOKEN_MESSAGE);
@@ -162,7 +145,7 @@ public class AuthenticationFilter implements Filter {
         try {
             accountId = accountIdExtractor.getAccountId(httpServletRequest.getRequestURL().toString());
         } catch (MalformedUrlException exception) {
-            httpServletResponse.sendError(404, exception.getMessage());
+            handleErrorReposnse(httpServletRequest, httpServletResponse, 404, exception);
             return;
         }
 
@@ -192,7 +175,6 @@ public class AuthenticationFilter implements Filter {
 
                 LOG.debug(String.format("insert %s-%s-%s into userCache", accountStr, authToken, username));
                 userCache.put(accountStr, authInfo);
-
             } else {
                 username = authInfo.getUserName();
             }
@@ -223,27 +205,37 @@ public class AuthenticationFilter implements Filter {
             filterChain.doFilter(enhancedHttpRequest, httpServletResponse);
             return;
         } catch (RuntimeException e) {
-            String exceptMsg = getExtendedStackTrace(e);
-            LOG.error(String.format("Error in filterChain:%s\n", exceptMsg));
-            httpServletResponse.sendError(500, "Something unexpected happened. Please contact support.");
-            return;
+            handleErrorReposnse(httpServletRequest, httpServletResponse, 500, e);
         }
     }
 
     private void handleWadlRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException, ServletException {
         //Temp for fix in Repose to handle query params horrible things happen here
         LOG.info("WADL request, forwarding to CXF to produce the WADL.");
-        try {
-            if (httpServletRequest.getRequestURL().toString().contains("application.wadl")
-                    || httpServletRequest.getQueryString().contains("wadl")) {
-                HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
-                String root = httpServletRequest.getRequestURI().split("/application.wadl")[0];
-                RequestDispatcher dispatcher = enhancedHttpRequest.getRequestDispatcher(
-                        "/00000/loadbalancers?_wadl"); //have to forward to resource other then root...
-                dispatcher.forward(enhancedHttpRequest, httpServletResponse);
-            }
-        } catch (Exception ex) {
-            sendUnauthorizedResponse(httpServletRequest, httpServletResponse, "User not authenticated, please retry the request with valid auth credentials. ");
+        if (httpServletRequest.getRequestURL().toString().contains("application.wadl")
+                || httpServletRequest.getQueryString().contains("wadl")) {
+            HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
+            String root = httpServletRequest.getRequestURI().split("/application.wadl")[0];
+            RequestDispatcher dispatcher = enhancedHttpRequest.getRequestDispatcher(
+                    "/00000/loadbalancers?_wadl"); //have to forward to resource other then root...
+            dispatcher.forward(enhancedHttpRequest, httpServletResponse);
+        }
+    }
+
+    private void handleErrorReposnse(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, int errorCode, Exception e) throws IOException {
+        final String UNEXPECTED = "Something unexpected happened. Please contact support.";
+        final String UNAUTHENTICATED = "User not authenticated, please retry the request with valid auth credentials. ";
+
+        if (errorCode == 500) {
+            String exceptMsg = getExtendedStackTrace(e);
+            LOG.error(String.format("Error in filterChain:%s\n", exceptMsg));
+            httpServletResponse.sendError(errorCode, UNEXPECTED);
+        } else if (errorCode == 401) {
+            LOG.error(String.format("Error in filterChain:%s\n", e.getLocalizedMessage()));
+            sendUnauthorizedResponse(httpServletRequest, httpServletResponse, UNAUTHENTICATED);
+        } else {
+            LOG.error(String.format("Error in filterChain:%s\n", e.getLocalizedMessage()));
+            httpServletResponse.sendError(errorCode, e.getMessage());
         }
     }
 
