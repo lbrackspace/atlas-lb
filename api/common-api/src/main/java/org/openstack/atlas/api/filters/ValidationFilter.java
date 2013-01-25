@@ -1,5 +1,9 @@
 package org.openstack.atlas.api.filters;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
 import org.openstack.atlas.api.filters.helpers.MediaType;
@@ -27,13 +31,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.xml.stream.XMLStreamReader;
 
 import static org.openstack.atlas.api.filters.helpers.StringUtilities.logId;
 
 public class ValidationFilter implements Filter {
 
     private final Log LOG = LogFactory.getLog(ValidationFilter.class);
-
     protected static final String XML = "application/xml";
     protected static final String JSON = "application/json";
     protected static final String VFAIL = "Validation Failure";
@@ -48,10 +52,8 @@ public class ValidationFilter implements Filter {
     protected Schema pSchema;
     protected Schema fSchema;
     protected JsonObjectMapper mapper;
-    
     public static final int BUFFSIZE = 16384;
     public static final int BADREQ = 400;
-    public static final int sbCapacity = 256;
     public static final String dashline = "--------------------------------------\n";
     public static final Pattern jsonUriPattern = Pattern.compile(".*\\.json$", Pattern.CASE_INSENSITIVE);
     public static final Pattern xmlUriPattern = Pattern.compile(".*\\.xml$", Pattern.CASE_INSENSITIVE);
@@ -90,17 +92,6 @@ public class ValidationFilter implements Filter {
             out = true;
         }
         return out;
-    }
-
-    protected void startConfig() throws MalformedURLException, SAXException, JAXBException, IOException {
-        logId("startConfig() ", this);
-        this.pCtx = JAXBContext.newInstance(pPkg);
-        this.fCtx = JAXBContext.newInstance(fPkg);
-        SchemaFactory sf = SchemaFactory.newInstance(javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        pSchema = sf.newSchema((new ClassPathResource(pXSD)).getURL());
-        fSchema = sf.newSchema((new ClassPathResource(fXSD)).getURL());
-        mapper = new JsonObjectMapper();
-        mapper.init();
     }
 
     protected void sendXMLErrorResponse(HttpServletRequest req, HttpServletResponse resp, int status, List<String> errList) throws IOException {
@@ -157,15 +148,37 @@ public class ValidationFilter implements Filter {
         sendXMLErrorResponse(req, resp, status, errList);
     }
 
+    protected void startConfig() throws MalformedURLException, SAXException, JAXBException, IOException {
+        logId("startConfig() ", this);
+        this.pCtx = JAXBContext.newInstance(pPkg);
+        this.fCtx = JAXBContext.newInstance(fPkg);
+        SchemaFactory sf = SchemaFactory.newInstance(javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        pSchema = sf.newSchema((new ClassPathResource(pXSD)).getURL());
+        fSchema = sf.newSchema((new ClassPathResource(fXSD)).getURL());
+        mapper = new JsonObjectMapper();
+        mapper.init();
+    }
+
     protected Object xml2pojo(String xml, JAXBContext ctx, Schema schema, XmlValidationExceptionHandler errHandler) throws JAXBException, UnsupportedEncodingException, IOException {
         Object out = null;
+        XMLInputFactory xif = XMLInputFactory.newFactory();
+        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+        XMLStreamReader xsr;
         ByteArrayInputStream bytes = new ByteArrayInputStream(xml.getBytes("UTF-8"));
+        try {
+            xsr = xif.createXMLStreamReader(bytes);
+        } catch (Exception ex) {
+            Logger.getLogger(ValidationFilter.class.getName()).log(Level.SEVERE, null, ex);
+            throw new IOException("Could not create XMLStreamReader", ex);
+        }
         Unmarshaller u = ctx.createUnmarshaller();
         u.setSchema(schema);
         if (errHandler != null) {
             u.setEventHandler(errHandler);
         }
-        out = u.unmarshal(bytes);
+        out = u.unmarshal(xsr);
+        //out = u.unmarshal(bytes);
         return out;
     }
 
@@ -189,7 +202,7 @@ public class ValidationFilter implements Filter {
         while (true) {
             buf = new byte[BUFFSIZE];
             nread = is.read(buf);
-            if(nread<=0) {
+            if (nread <= 0) {
                 break;
             }
             String sbStr = new String(buf);
@@ -212,7 +225,7 @@ public class ValidationFilter implements Filter {
     }
 
     public static List<String> lineSplit(String strIn) {
-        StringBuffer sb = new StringBuffer(sbCapacity);
+        StringBuilder sb = new StringBuilder();
         int i;
         List<String> lines = new ArrayList<String>();
         char[] chrs = {' '};
@@ -222,7 +235,7 @@ public class ValidationFilter implements Filter {
             singleCharString = new String(chrs);
             if (singleCharString.equals("\n")) {
                 lines.add(sb.toString());
-                sb = new StringBuffer(sbCapacity);
+                sb = new StringBuilder();
             } else {
                 sb.append(singleCharString);
             }
@@ -263,12 +276,12 @@ public class ValidationFilter implements Filter {
 
     protected static String jaxbParseExceptionToString(Exception ex, String xml) {
         String out;
-        StringBuffer sb = new StringBuffer(sbCapacity);
+        StringBuilder sb = new StringBuilder();
         if (ex instanceof JAXBException) {
             JAXBException je = (JAXBException) ex;
             sb.append("JAXBException\n");
             sb.append(dashline);
-            sb.append(String.format("%s\n", getStackTrace(je)));
+            sb.append(String.format("%s\n", getExtendedStackTrace(je)));
             sb.append(dashline);
             sb.append("\n");
             if (je.getCause() != null && je.getCause() instanceof SAXParseException) {
@@ -284,7 +297,7 @@ public class ValidationFilter implements Filter {
 
     protected static String saxParseExceptionToString(Exception ex, String xml) {
         String out;
-        StringBuffer sb = new StringBuffer(sbCapacity);
+        StringBuilder sb = new StringBuilder();
         if (ex instanceof SAXParseException) {
             int lineNum;
             int colNum;
@@ -318,16 +331,26 @@ public class ValidationFilter implements Filter {
         return out;
     }
 
-    protected static String getStackTrace(Exception ex) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(String.format("Exception: %s:%s\n", ex.getMessage(), ex.getClass().getName()));
-        for (StackTraceElement se : ex.getStackTrace()) {
-            sb.append(String.format("%s\n", se.toString()));
+        public static String getExtendedStackTrace(Throwable th) {
+        Throwable t;
+        StringBuilder sb = new StringBuilder(PAGESIZE);
+        Throwable currThrowable;
+        String msg;
+
+        t = th;
+        while (t != null) {
+            if (t instanceof Throwable) {
+                currThrowable = (Throwable) t;
+                sb.append(String.format("\"%s\":\"%s\"\n", currThrowable.getClass().getName(), currThrowable.getMessage()));
+                for (StackTraceElement se : currThrowable.getStackTrace()) {
+                    sb.append(String.format("%s\n", se.toString()));
+                }
+                sb.append("\n");
+                t = t.getCause();
+            }
         }
         return sb.toString();
     }
-
-
 
     public FilterConfig getConfig() {
         return config;
