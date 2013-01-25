@@ -66,7 +66,7 @@ public class UpdateAccessListListener extends BaseListener {
         for (AccessList accessList : accessLists) {
             String desc = createAtomErrorSummary(accessList).toString();
             itemId = accessList == null ? lb.getId() : accessList.getId(); // TODO: Find a better way of dealing with null id
-            if(itemId == null) {
+            if (itemId == null) {
                 itemId = -1;
                 // TODO: Yea no kidding
             }
@@ -74,8 +74,8 @@ public class UpdateAccessListListener extends BaseListener {
         }
     }
 
-    private StringBuffer createAtomErrorSummary(AccessList accessListItem) {
-        StringBuffer atomSummary = new StringBuffer();
+    private StringBuilder createAtomErrorSummary(AccessList accessListItem) {
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("Error updating access list with the following network item: ");
         atomSummary.append("address: '").append(accessListItem.getIpAddress()).append("', ");
         atomSummary.append("type: '").append(accessListItem.getType()).append("'");

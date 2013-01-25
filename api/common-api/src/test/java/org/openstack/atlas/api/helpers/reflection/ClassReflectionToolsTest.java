@@ -38,10 +38,10 @@ public class ClassReflectionToolsTest {
         Object strbuffObj;
 
         stringObj = ClassReflectionTools.newInstance(java.lang.String.class);
-        strbuffObj = ClassReflectionTools.newInstance(java.lang.StringBuffer.class);
+        strbuffObj = ClassReflectionTools.newInstance(java.lang.StringBuilder.class);
 
         Assert.assertTrue(stringObj instanceof java.lang.String);
-        Assert.assertTrue(strbuffObj instanceof java.lang.StringBuffer);
+        Assert.assertTrue(strbuffObj instanceof java.lang.StringBuilder);
     }
 
     @Test
@@ -50,10 +50,10 @@ public class ClassReflectionToolsTest {
         Object strbuffObj;
 
         stringObj = ClassReflectionTools.newInstance("java.lang.String");
-        strbuffObj = ClassReflectionTools.newInstance("java.lang.StringBuffer");
+        strbuffObj = ClassReflectionTools.newInstance("java.lang.StringBuilder");
 
         Assert.assertTrue(stringObj instanceof java.lang.String);
-        Assert.assertTrue(strbuffObj instanceof java.lang.StringBuffer);
+        Assert.assertTrue(strbuffObj instanceof java.lang.StringBuilder);
     }
 
     @Test

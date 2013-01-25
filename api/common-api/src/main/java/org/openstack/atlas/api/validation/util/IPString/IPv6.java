@@ -10,8 +10,8 @@ public class IPv6 {
     private static final Pattern ipPattern;
 
     static {
-        String ippatternstr = "^(.*::)([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})$|"+
-        "^(.*):([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})$";
+        String ippatternstr = "^(.*::)([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})$|"
+                + "^(.*):([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})$";
 
         ipPattern = Pattern.compile(ippatternstr);
     }
@@ -58,12 +58,12 @@ public class IPv6 {
     }
 
     public static String expand(String ipStr, int nwords) throws IPStringConversionException {
-        StringBuffer sb;
+        StringBuilder sb;
         String hex;
         int[] vals;
         int[] expanded_vals;
         int i;
-        sb = new StringBuffer();
+        sb = new StringBuilder();
         vals = splitvals(ipStr);
         if (vals == null) {
             throw new IPStringConversionException("Error converting hex to binary in IPv6 ip");
@@ -172,7 +172,7 @@ public class IPv6 {
         if (ipMatch.find()) { // Found a RFC4291 2.2.3 ipv4 mixed address
             String hex_part = ipMatch.group(1);
             String ip4_part = ipMatch.group(2);
-            if(hex_part == null && ip4_part == null) {
+            if (hex_part == null && ip4_part == null) {
                 hex_part = ipMatch.group(3);
                 ip4_part = ipMatch.group(4);
             }
@@ -205,14 +205,14 @@ public class IPv6 {
         int i;
         int hi;
         int lo;
-        StringBuffer sb;
+        StringBuilder sb;
         String hex;
 
         if (in.length != 16) {
             String msg = "Error IPv6 requires byte array of length 16";
             throw new IPStringConversionException(msg);
         }
-        sb = new StringBuffer();
+        sb = new StringBuilder();
         for (i = 0; i < 14; i += 2) {
             hi = IPUtils.ubyte2int(in[i]) << 8;
             lo = IPUtils.ubyte2int(in[i + 1]);
@@ -233,7 +233,7 @@ public class IPv6 {
     }
 
     public IPv6(byte[] in) throws IPStringConversionException {
-        setIp(in);
+        ip = bytes2IpString(in);
     }
 
     public void setIp(byte[] in) throws IPStringConversionException {

@@ -153,7 +153,7 @@ public class Host extends Entity implements Serializable {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("{");
         sb.append(String.format("id=%s, ", vorn(this.getId())));
         sb.append(String.format("name= \"%s\",", vorn(this.getName())));

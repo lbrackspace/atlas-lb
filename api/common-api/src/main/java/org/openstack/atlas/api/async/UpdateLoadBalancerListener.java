@@ -35,7 +35,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
         ObjectMessage object = (ObjectMessage) message;
         LoadBalancer queueLb = (LoadBalancer) object.getObject();
         LoadBalancer dbLoadBalancer;
-        StringBuffer atomSummary = new StringBuffer("Load balancer successfully updated with ");
+        StringBuilder atomSummary = new StringBuilder("Load balancer successfully updated with ");
 
         try {
             dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());

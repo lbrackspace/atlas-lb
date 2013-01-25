@@ -205,7 +205,7 @@ public class NodeRepository {
     }
 
     public void setNodeCondition(Set<Node> nodes, String condition) {
-        StringBuffer sql = new StringBuffer("Update Node set condition = '" + condition + "' where id in (");
+        StringBuilder sql = new StringBuilder("Update Node set condition = '" + condition + "' where id in (");
         for (Node n : nodes) {
             sql.append(n.getId());
             sql.append(",");
@@ -223,7 +223,7 @@ public class NodeRepository {
     }
 
     public void deleteNodes(Set<Node> nodes) {
-        StringBuffer sql = new StringBuffer("delete from Node  where id in (");
+        StringBuilder sql = new StringBuilder("delete from Node  where id in (");
         for (Node n : nodes) {
             sql.append(n.getId());
             sql.append(",");

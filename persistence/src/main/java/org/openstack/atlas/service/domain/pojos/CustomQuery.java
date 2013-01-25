@@ -58,7 +58,7 @@ public class CustomQuery {
         String qStr;
         String out;
         int i;
-        StringBuffer where = new StringBuffer(strInitSize);
+        StringBuilder where = new StringBuilder(strInitSize);
         QueryParameter param;
         if (queryParameters == null || queryParameters.size() < 1) {
             return selectClause;

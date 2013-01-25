@@ -47,8 +47,9 @@ public class IPv4Ranges {
         return ranges;
     }
 
+    @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("[");
         for (IPv4Range stored : ranges) {
             sb.append(String.format("%s, ", stored));

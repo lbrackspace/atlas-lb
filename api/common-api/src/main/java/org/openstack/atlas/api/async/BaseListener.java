@@ -125,7 +125,7 @@ public abstract class BaseListener implements MessageListener {
     }
 
     public String getStackTrace(Exception ex) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(String.format("Exception: %s:%s\n", ex.getMessage(), ex.getClass().getName()));
         for (StackTraceElement se : ex.getStackTrace()) {
             sb.append(String.format("%s\n", se.toString()));
@@ -177,6 +177,7 @@ public abstract class BaseListener implements MessageListener {
         final String finalDestination = "lbOperation:" + "LOADBALANCER_RETRY";
         jmsTemplate.send(finalDestination, new MessageCreator() {
 
+            @Override
             public Message createMessage(Session session) throws JMSException {
                 ObjectMessage response = session.createObjectMessage(loadBalancer);
                 response.setJMSCorrelationID(message.getJMSCorrelationID());

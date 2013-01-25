@@ -247,7 +247,7 @@ public class ValidationFilter implements Filter {
     // Grabs the text where the Error begins
     protected static String nearString(String strIn, int lineNum, int colNum) {
         String out = "";
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String line;
         String lineOut;
         List<String> lines;

@@ -107,15 +107,6 @@ public class LoadBalancerEventRepository {
     public LoadBalancerServiceEvents getAllEventsForUsername(String username, Integer page, Calendar startDate, Calendar endDate) {
         Query query = entityManager.createQuery("SELECT lbe FROM LoadBalancerEvent lbe WHERE lbe.author = :author AND lbe.created BETWEEN :startDate AND :endDate ORDER BY lbe.created ASC").setParameter("author", username).setParameter("startDate", startDate).setParameter("endDate", endDate);
 
-        /*
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<LoadBalancerServiceEvent> query = builder.createQuery(LoadBalancerServiceEvent.class);
-        Root<LoadBalancerServiceEvent> root = query.from(LoadBalancerServiceEvent.class);
-        Predicate userEvents = builder.equal(root.get(LoadBalancerServiceEvent_.author), username);
-        Predicate timeRange = builder.between(root.get(LoadBalancerServiceEvent_.created), startDate, endDate);
-        query.where(userEvents, timeRange);
-        query.select(root);
-         */
         List<LoadBalancerServiceEvent> lsv = query.getResultList();
         LoadBalancerServiceEvents events = new LoadBalancerServiceEvents();
         events.getLoadBalancerServiceEvents().addAll(lsv);
@@ -253,7 +244,7 @@ public class LoadBalancerEventRepository {
         Query q;
         String qStr;
         String qHead;
-        StringBuffer qMid = new StringBuffer();
+        StringBuilder qMid = new StringBuilder();
         String qTail;
         Calendar startCal;
         Calendar endCal;
@@ -326,7 +317,7 @@ public class LoadBalancerEventRepository {
         Query q;
         String qStr;
         String qHead;
-        StringBuffer qMid = new StringBuffer();
+        StringBuilder qMid = new StringBuilder();
         String qTail;
         Calendar startCal;
         Calendar endCal;

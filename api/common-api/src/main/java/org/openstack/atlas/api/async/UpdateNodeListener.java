@@ -36,7 +36,7 @@ public class UpdateNodeListener extends BaseListener {
             sendErrorToEventResource(queueLb);
             return;
         }
-        
+
         Node nodeToUpdate = getNodeToUpdate(queueLb);
 
         try {
@@ -77,8 +77,8 @@ public class UpdateNodeListener extends BaseListener {
         return nodeToUpdate;
     }
 
-    private StringBuffer createAtomSummary(Node node) {
-        StringBuffer atomSummary = new StringBuffer();
+    private StringBuilder createAtomSummary(Node node) {
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("Node successfully updated with ");
         atomSummary.append("address: '").append(node.getIpAddress()).append("', ");
         atomSummary.append("port: '").append(node.getPort()).append("', ");

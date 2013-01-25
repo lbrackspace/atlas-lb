@@ -441,7 +441,7 @@ public class ClusterRepository  {
     }
 
     public List<VirtualIpAvailabilityReport> getVirtualIpAvailabilityReport(Integer cid) {
-        StringBuffer qStr = new StringBuffer();
+        StringBuilder qStr = new StringBuilder();
         List<VirtualIpAvailabilityReport> vipReportList;
         List<Integer> keys;
         List<Cluster> clusters;
