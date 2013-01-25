@@ -102,11 +102,11 @@ public class BitUtil {
     }
 
     public static String bytes2hex(byte[] bytes) {
-        StringBuffer sb;
+        StringBuilder sb;
         int i;
         int lo;
         int hi;
-        sb = new StringBuffer();
+        sb = new StringBuilder();
         for (i = 0; i < bytes.length; i++) {
             sb.append(byte2hex(bytes[i]));
         }

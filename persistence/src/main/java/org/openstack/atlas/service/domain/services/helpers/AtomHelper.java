@@ -172,7 +172,7 @@ public class AtomHelper {
     }
 
     public static String createRelativeUri(Integer accountId, Integer loadblancerId, EventType eventType, Integer additionalId) {
-        StringBuffer urI = new StringBuffer("/" + accountId + "/loadbalancers/" + loadblancerId);
+        StringBuilder urI = new StringBuilder("/" + accountId + "/loadbalancers/" + loadblancerId);
 
         if (eventType.equals(CREATE_ACCESS_LIST) || eventType.equals(UPDATE_ACCESS_LIST) || eventType.equals(DELETE_ACCESS_LIST) || eventType.equals(DELETE_NETWORK_ITEM)) {
             urI.append("/accesslist/");

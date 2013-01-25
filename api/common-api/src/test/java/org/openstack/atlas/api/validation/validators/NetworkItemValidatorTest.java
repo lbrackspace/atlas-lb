@@ -156,8 +156,7 @@ public class NetworkItemValidatorTest {
     }
 
     public String resultMessage(ValidatorResult result, Enum ctx) {
-        StringBuffer sb;
-        sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (!result.passedValidation()) {
             List<ExpectationResult> ers = result.getValidationResults();
             sb.append(String.format("ON %s result.withMessage([", ctx.toString()));

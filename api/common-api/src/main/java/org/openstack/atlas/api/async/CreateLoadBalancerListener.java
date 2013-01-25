@@ -153,8 +153,8 @@ public class CreateLoadBalancerListener extends BaseListener {
         notificationService.saveLoadBalancerEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, CREATE_LOADBALANCER, CREATE, CRITICAL);
     }
 
-    private StringBuffer createAtomSummary(LoadBalancer lb) {
-        StringBuffer atomSummary = new StringBuffer();
+    private StringBuilder createAtomSummary(LoadBalancer lb) {
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("Load balancer successfully created with ");
         atomSummary.append("name: '").append(lb.getName()).append("', ");
         atomSummary.append("algorithm: '").append(lb.getAlgorithm()).append("', ");

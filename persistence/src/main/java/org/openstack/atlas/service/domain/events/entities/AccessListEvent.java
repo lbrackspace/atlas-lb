@@ -22,7 +22,7 @@ public class AccessListEvent extends Event implements Serializable {
 
     @Override
     public String getAttributesAsString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(super.getAttributesAsString());
         sb.append(String.format("access_list_id=%s",getAccess_list_id()));
         return sb.toString();

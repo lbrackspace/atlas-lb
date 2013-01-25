@@ -77,7 +77,7 @@ public class JsonValidationFilter extends ValidationFilter {
             somePojo = mapper.readValue(body, classForUri);
         } catch (Exception ex) {
             String errMsg = "JSON does not match the expected schema";
-            String logMsg = getStackTrace(ex);
+            String logMsg = getExtendedStackTrace(ex);
 
             LOG.error(logMsg);
 

@@ -41,7 +41,7 @@ public class PrimitiveConverters {
     }
 
     public static String integerList2cdString(List<Integer> ints) throws ConverterException {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String component;
         int intListSize;
         int i;

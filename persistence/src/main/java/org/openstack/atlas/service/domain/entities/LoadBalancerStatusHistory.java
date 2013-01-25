@@ -61,7 +61,7 @@ public class LoadBalancerStatusHistory extends org.openstack.atlas.service.domai
     }
 
     public String getAttributesAsString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(String.format("id=%s ",vorn(getId())));
         sb.append(String.format("accountId=%s ",vorn(getAccountId())));
         sb.append(String.format("lb_id=%s ",vorn(getLoadbalancerId())));

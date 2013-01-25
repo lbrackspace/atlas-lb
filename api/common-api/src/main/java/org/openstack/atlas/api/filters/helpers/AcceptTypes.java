@@ -36,7 +36,7 @@ public class AcceptTypes {
     }
 
     public String mediaTypesToString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (this.acceptTypeList == null) {
             return null;
         }

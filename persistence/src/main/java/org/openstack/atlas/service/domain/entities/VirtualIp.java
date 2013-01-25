@@ -112,7 +112,7 @@ public class VirtualIp extends Entity implements Serializable {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(String.format("{"));
         sb.append(String.format("id = %s,", vorn(this.getId())));
         sb.append(String.format("ip_address = %s,", vorn(this.getIpAddress())));

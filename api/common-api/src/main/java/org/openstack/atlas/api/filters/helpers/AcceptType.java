@@ -59,7 +59,7 @@ public class AcceptType implements Comparable<AcceptType> {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         try {
             sb.append(String.format("%s/%s", this.getMediaType().getType(), this.getMediaType().getSubtype()));
             for (String parameter : this.getMediaType().getParameters()) {

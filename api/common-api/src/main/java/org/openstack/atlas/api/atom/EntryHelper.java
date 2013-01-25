@@ -20,7 +20,7 @@ public final class EntryHelper {
     public static final String CREATE_SSL_TERMINATION_TITLE = "SSL Termination Successfully created";
 
     public static String createNodeSummary(Node node) {
-        StringBuffer atomSummary = new StringBuffer();
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("Node successfully created with ");
         atomSummary.append("address: '").append(node.getIpAddress()).append("', ");
         atomSummary.append("port: '").append(node.getPort()).append("', ");
@@ -30,7 +30,7 @@ public final class EntryHelper {
     }
 
     public static String createSslTerminationSummary(SslTermination ssl) {
-        StringBuffer atomSummary = new StringBuffer();
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("SslTermination successfully created with ");
 //        atomSummary.append("key: '").append(ssl.getPrivatekey()).append("', ");
 //        atomSummary.append("cert: '").append(ssl.getCertificate()).append("', ");
@@ -41,7 +41,7 @@ public final class EntryHelper {
     }
 
     public static String createVirtualIpSummary(VirtualIp virtualIp) {
-        StringBuffer atomSummary = new StringBuffer();
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("Virtual ip successfully added with ");
         atomSummary.append("address: '").append(virtualIp.getIpAddress()).append("', ");
         atomSummary.append("type: '").append(virtualIp.getVipType()).append("'");
@@ -56,7 +56,7 @@ public final class EntryHelper {
             // Ignore
         }
 
-        StringBuffer atomSummary = new StringBuffer();
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("Virtual ip successfully added with ");
         if(ipv6AsString != null) atomSummary.append("address: '").append(ipv6AsString).append("', ");
         atomSummary.append("type: '").append(VirtualIpType.PUBLIC.name()).append("'");
@@ -68,7 +68,7 @@ public final class EntryHelper {
     }
 
     public static String createHealthMonitorSummary(LoadBalancer lb) {
-        StringBuffer atomSummary = new StringBuffer();
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("Health monitor successfully updated with ");
         atomSummary.append("type: '").append(lb.getHealthMonitor().getType().name()).append("', ");
         atomSummary.append("delay: '").append(lb.getHealthMonitor().getDelay()).append("', ");
@@ -88,7 +88,7 @@ public final class EntryHelper {
     }
 
     public static String createConnectionThrottleSummary(LoadBalancer lb) {
-        StringBuffer atomSummary = new StringBuffer();
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("Connection throttle successfully updated with ");
         atomSummary.append("minConnections: '").append(lb.getConnectionLimit().getMinConnections()).append("', ");
         atomSummary.append("maxConnections: '").append(lb.getConnectionLimit().getMaxConnections()).append("', ");
@@ -98,7 +98,7 @@ public final class EntryHelper {
     }
 
     public static String createAccessListSummary(AccessList accessListItem) {
-        StringBuffer atomSummary = new StringBuffer();
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("Access list successfully updated with the following item: ");
         atomSummary.append("id: '").append(accessListItem.getId()).append("', ");
         atomSummary.append("address: '").append(accessListItem.getIpAddress()).append("', ");

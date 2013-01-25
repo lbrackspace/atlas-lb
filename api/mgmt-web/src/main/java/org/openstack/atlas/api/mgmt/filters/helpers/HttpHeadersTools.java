@@ -130,7 +130,7 @@ public class HttpHeadersTools {
         List<String> valList = new ArrayList<String>(values);
         Collections.sort(valList);
         Object[] objAry = valList.toArray();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (objAry.length == 0) {
             return sb.toString();
         }

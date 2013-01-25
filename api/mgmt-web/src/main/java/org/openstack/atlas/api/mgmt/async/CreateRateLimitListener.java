@@ -86,8 +86,8 @@ public class CreateRateLimitListener extends BaseListener {
         notificationService.saveLoadBalancerEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, EventType.UPDATE_LOADBALANCER, CategoryType.DELETE, CRITICAL);
     }
 
-    private StringBuffer createAtomSummary(LoadBalancer lb) {
-        StringBuffer atomSummary = new StringBuffer();
+    private StringBuilder createAtomSummary(LoadBalancer lb) {
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("Rate limit successfully created with ");
         atomSummary.append("maxRequestsPerSecond: '").append(lb.getRateLimit().getMaxRequestsPerSecond()).append("', ");
         atomSummary.append("expirationTime: '").append(lb.getRateLimit().getExpirationTime().getTime()).append("', ");

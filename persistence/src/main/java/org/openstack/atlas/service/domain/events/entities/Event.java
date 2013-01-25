@@ -141,7 +141,7 @@ public abstract class Event implements Serializable {
     }
 
     public String getAttributesAsString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(String.format("id=%s ",vorn(getId())));
         sb.append(String.format("accountId=%s ",vorn(getAccountId())));
         sb.append(String.format("lb_id=%s ",vorn(getLoadbalancerId())));

@@ -78,8 +78,8 @@ public class DeleteAccessListListener extends BaseListener {
         }
     }
 
-    private StringBuffer createAtomErrorSummary(AccessList accessListItem) {
-        StringBuffer atomSummary = new StringBuffer();
+    private StringBuilder createAtomErrorSummary(AccessList accessListItem) {
+        StringBuilder atomSummary = new StringBuilder();
         atomSummary.append("Error updating access list with the following network item: ");
         atomSummary.append("address: '").append(accessListItem.getIpAddress()).append("', ");
         atomSummary.append("type: '").append(accessListItem.getType()).append("'");
