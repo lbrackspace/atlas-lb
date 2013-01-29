@@ -286,11 +286,12 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
 
     private String retrieveAndProcessAuthToken() {
         try {
-            String userName = configuration.getString(AtomHopperConfigurationKeys.ahusl_auth_username);
+            String username = configuration.getString(AtomHopperConfigurationKeys.ahusl_auth_username);
+            String password = configuration.getString(AtomHopperConfigurationKeys.ahusl_auth_password);
             AHUSLAuthentication ahuslAuthentication = new AHUSLAuthentication();
-            authToken = ahuslAuthentication.getToken(userName).getToken().getId();
+            authToken = ahuslAuthentication.getToken(username, password).getToken().getId();
             if (authToken != null) {
-                LOG.info("Token successfully retrieved: " + authToken + " For User: " + userName);
+                LOG.info("Token successfully retrieved: " + authToken + " For User: " + username);
                 return authToken;
             }
         } catch (Exception e) {

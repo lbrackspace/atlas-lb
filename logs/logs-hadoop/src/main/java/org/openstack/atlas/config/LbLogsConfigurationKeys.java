@@ -6,6 +6,7 @@ public enum LbLogsConfigurationKeys implements ConfigurationKey {
     auth_management_uri,
     basic_auth_key,
     basic_auth_user,
+    files_region,
 
     rawlogs_cache_dir,
     rawlogs_backup_dir,

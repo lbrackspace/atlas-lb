@@ -85,9 +85,9 @@
             <version>2.1.12</version>
         </dependency>
         <dependency>
-            <groupId>org.openstack.client.keystone</groupId>
-            <artifactId>java-keystone</artifactId>
-            <version>1.2</version>
+            <groupId>org.openstack.client.identity</groupId>
+            <artifactId>java-identityclient</artifactId>
+            <version>1.0</version>
         </dependency>
         <!--<dependency>-->
         <!--<groupId>atom-hopper-usl-client</groupId>-->

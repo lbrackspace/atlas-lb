@@ -17,7 +17,7 @@ import org.openstack.atlas.util.b64aes.Base64;
 import org.openstack.atlas.util.b64aes.PaddingException;
 import org.openstack.atlas.util.simplecache.CacheEntry;
 import org.openstack.atlas.util.simplecache.SimpleCache;
-import org.openstack.client.keystone.KeyStoneException;
+import org.openstack.identity.client.fault.IdentityFault;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -164,7 +164,7 @@ public class AuthenticationFilter implements Filter {
 
             if (authInfo == null || !authInfo.getAuthToken().equals(authToken)) {
                 LOG.info(String.format("Attempting to contact the auth service for account %s with token: %s", accountId, authToken));
-                username = authTokenValidator.validate(accountId, authToken).getUserId();
+                username = authTokenValidator.validate(authToken, String.valueOf(accountId)).getUser().getName();
                 if (username == null) {
                     sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                     return;
@@ -178,7 +178,7 @@ public class AuthenticationFilter implements Filter {
             } else {
                 username = authInfo.getUserName();
             }
-        } catch (KeyStoneException kex) {
+        } catch (IdentityFault kex) {
             String exceptMsg = getExtendedStackTrace(kex);
             if (kex.code == 401 || kex.code == 404) {
                 LOG.error(String.format("Error while authenticating user %s-%s-%s: ERROR CODE: %d Message: %s Full-Stack: %s\n", accountId, authToken, username, kex.code, kex.message, exceptMsg));
