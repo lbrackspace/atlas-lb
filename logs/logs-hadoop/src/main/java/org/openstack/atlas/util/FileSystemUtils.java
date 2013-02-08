@@ -318,7 +318,7 @@ public class FileSystemUtils {
 
         int bytesRead = 0;
 
-        StringBuffer outputContents = new StringBuffer();
+        StringBuilder outputContents = new StringBuilder();
         while ((bytesRead = is.read(buffer)) != -1) {
             outputContents.append(new String(buffer, 0, bytesRead));
         }

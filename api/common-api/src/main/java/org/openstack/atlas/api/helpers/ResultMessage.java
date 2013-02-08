@@ -6,8 +6,8 @@ import org.openstack.atlas.api.validation.results.ValidatorResult;
 
 public class ResultMessage {
     public static String resultMessage(ValidatorResult result) {
-        StringBuffer sb;
-        sb = new StringBuffer();
+        StringBuilder sb;
+        sb = new StringBuilder();
 
         if (!result.passedValidation()) {
             List<ExpectationResult> ers = result.getValidationResults();
@@ -23,8 +23,8 @@ public class ResultMessage {
     }
 
     public static String resultMessage(ValidatorResult result, Enum ctx) {
-        StringBuffer sb;
-        sb = new StringBuffer();
+        StringBuilder sb;
+        sb = new StringBuilder();
         if (!result.passedValidation()) {
             List<ExpectationResult> ers = result.getValidationResults();
             sb.append(String.format("ON %s result.withMessage([", ctx.toString()));

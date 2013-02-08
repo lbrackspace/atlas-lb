@@ -50,7 +50,7 @@ public class HealthMonitorValidatorTest {
 
         private String getBigStr(int size) {
             int i;
-            StringBuffer sb = new StringBuffer(size + 1);
+            StringBuilder sb = new StringBuilder();
             for (i = 0; i <= size; i++) {
                 sb.append("X");
             }

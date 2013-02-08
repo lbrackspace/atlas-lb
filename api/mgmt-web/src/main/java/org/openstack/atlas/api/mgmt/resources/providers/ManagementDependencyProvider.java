@@ -67,7 +67,7 @@ public class ManagementDependencyProvider {
     protected Configuration configuration;
 
     public static String getStackTraceMessage(Exception e) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(String.format("Exception: %s:%s\n", e.getMessage(), e.getClass().getName()));
         for (StackTraceElement se : e.getStackTrace()) {
             sb.append(String.format("%s\n", se.toString()));

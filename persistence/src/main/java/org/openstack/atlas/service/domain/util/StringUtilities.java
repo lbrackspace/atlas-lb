@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.util;
 import java.util.Collection;
 
 public class StringUtilities {
+
     public static <T> String DelimitString(Collection<T> objects, String delim) {
         String newString = "";
         for (Object string : objects) {
@@ -28,28 +29,24 @@ public class StringUtilities {
     }
 
     public static String buildDelemtedListFromStringArray(String[] a, String separator) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         if (a.length > 0) {
             result.append(a[0]);
             for (int i = 1; i < a.length; i++) {
-                result.append(separator);
-                result.append(a[i]);
+                result.append(separator).append(a[i]);
             }
         }
         return result.toString();
     }
 
     public static String buildDelemtedListFromIntegerArray(Integer[] a, String separator) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         if (a.length > 0) {
             result.append(String.valueOf(a[0]));
             for (int i = 1; i < a.length; i++) {
-                result.append(separator);
-                result.append(String.valueOf(a[i]));
+                result.append(separator).append(String.valueOf(a[i]));
             }
         }
         return result.toString();
     }
-
-
 }

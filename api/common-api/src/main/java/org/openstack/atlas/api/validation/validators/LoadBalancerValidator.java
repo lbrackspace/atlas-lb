@@ -27,6 +27,7 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getProtocol()).if_().exist().then().must().adhereTo(new MustBeInArray(ProtocolPortBindings.getKeysAsArray())).withMessage("Load balancer protocol is invalid. Please specify a valid protocol.");
                 result(validationTarget().getAlgorithm()).if_().exist().then().must().adhereTo(new MustBeInArray(AlgorithmType.values())).withMessage("Load balancer algorithm is invalid. Please specify a valid algorithm.");
 
+                result(validationTarget().getSslTermination()).must().not().exist().withMessage("Please visit {account id}/loadbalancers/{load balancer id}/ssltermination to configure ssl termination.");
                 result(validationTarget().getPort()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MIN_PORT, MAX_PORT)).withMessage("Load balancer port is invalid. Please specify a valid port.");
                 result(validationTarget().getTimeout()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MIN_TIMEOUT, MAX_TIMEOUT)).withMessage("Load balancer timeout is invalid. Please specify a valid timeout value.");
                 result(validationTarget().getId()).must().not().exist().withMessage("Load balancer id field cannot be modified.");

@@ -2,24 +2,51 @@ package org.openstack.atlas.api.auth;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.api.filters.AuthenticationFilter;
+import org.openstack.atlas.api.helpers.UrlAccountIdExtractor;
 import org.openstack.atlas.cfg.Configuration;
-import org.junit.Assert;
-import org.junit.experimental.runners.Enclosed;
 import org.openstack.client.keystone.KeyStoneAdminClient;
 import org.openstack.client.keystone.token.FullToken;
 import org.openstack.client.keystone.user.User;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 import static org.mockito.Mockito.*;
 
 @Ignore
 @RunWith(Enclosed.class)
 public class AuthServiceTest {
+    public static class WhenVerifyingReposeApiKey {
+        private Configuration configuration;
+        private ServletRequest servletRequest;
+        private ServletResponse servletResponse;
+        private FilterChain filterChain;
+
+        @Before
+        public void Setup() throws Exception {
+            configuration = mock(Configuration.class);
+            servletRequest = mock(ServletRequest.class);
+            servletResponse = mock(ServletResponse.class);
+            filterChain = mock(FilterChain.class);
+        }
+
+        @Test
+        public void should_filter_when_headers_set() throws Exception {
+            AuthenticationFilter filter = new AuthenticationFilter(new AuthTokenValidator(configuration), new UrlAccountIdExtractor());
+            filter.doFilter(servletRequest, servletResponse, filterChain);
+        }
+    }
+
     public static class WhenAuthenticatingAgainstAuthService {
         private String authToken = "Some Auth Token";
         private Integer accountId = 111111;

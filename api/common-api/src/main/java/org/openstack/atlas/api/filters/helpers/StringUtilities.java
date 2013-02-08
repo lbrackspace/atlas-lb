@@ -54,7 +54,7 @@ public class StringUtilities {
     }
 
     public static String getStackTrace(Exception ex) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(String.format("Exception: %s:%s\n", ex.getMessage(), ex.getClass().getName()));
         for (StackTraceElement se : ex.getStackTrace()) {
             sb.append(String.format("%s\n", se.toString()));
@@ -68,11 +68,11 @@ public class StringUtilities {
 
     public static String getExtendedStackTrace(Throwable ti) {
         Throwable t;
-        StringBuffer sb;
+        StringBuilder sb;
         Exception currEx;
         String msg;
 
-        sb = new StringBuffer();
+        sb = new StringBuilder();
         t = ti;
         while (t != null) {
             if (t instanceof Exception) {

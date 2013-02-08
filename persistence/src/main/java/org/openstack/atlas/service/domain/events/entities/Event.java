@@ -91,7 +91,12 @@ public abstract class Event implements Serializable {
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        int threshhold = 1023;
+        if (description.length() >= threshhold) {
+            this.description = description.substring(0, threshhold -1);
+        } else {
+            this.description = description;
+        }
     }
 
     public EventType getType() {
@@ -135,30 +140,30 @@ public abstract class Event implements Serializable {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         String attrString = getAttributesAsString();
-        return String.format("{%s}",attrString);
+        return String.format("{%s}", attrString);
     }
 
     public String getAttributesAsString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append(String.format("id=%s ",vorn(getId())));
-        sb.append(String.format("accountId=%s ",vorn(getAccountId())));
-        sb.append(String.format("lb_id=%s ",vorn(getLoadbalancerId())));
-        sb.append(String.format("category=\"%s\" ",vorn(getCategory())));
-        sb.append(String.format("severity=\"%s\" ",vorn(getSeverity())));
-        sb.append(String.format("desc=\"%s\" ",vorn(getDescription())));
-        sb.append(String.format("author=\"%s\" ",vorn(getAuthor())));
-        sb.append(String.format("created=\"%s\" ",vorn(getCreated())));
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("id=%s ", vorn(getId())));
+        sb.append(String.format("accountId=%s ", vorn(getAccountId())));
+        sb.append(String.format("lb_id=%s ", vorn(getLoadbalancerId())));
+        sb.append(String.format("category=\"%s\" ", vorn(getCategory())));
+        sb.append(String.format("severity=\"%s\" ", vorn(getSeverity())));
+        sb.append(String.format("desc=\"%s\" ", vorn(getDescription())));
+        sb.append(String.format("author=\"%s\" ", vorn(getAuthor())));
+        sb.append(String.format("created=\"%s\" ", vorn(getCreated())));
         return sb.toString();
     }
 
     protected String vorn(Object obj) {
-        if(obj==null) {
+        if (obj == null) {
             return "";
         }
-        if(obj instanceof Calendar) {
-            return ((Calendar)obj).getTime().toString();
+        if (obj instanceof Calendar) {
+            return ((Calendar) obj).getTime().toString();
         }
         return obj.toString();
     }

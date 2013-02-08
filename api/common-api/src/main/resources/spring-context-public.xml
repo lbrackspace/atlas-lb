@@ -53,8 +53,16 @@
           class="org.openstack.atlas.api.filters.AuthenticationFilter"
           scope="request" init-method="startConfig">
         <constructor-arg index="0">
+            <bean class="org.openstack.atlas.api.auth.AuthTokenValidator">
+                <constructor-arg index="0" ref="configuration"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg index="1">
             <bean class="org.openstack.atlas.api.helpers.UrlAccountIdExtractor" scope="request"/>
         </constructor-arg>
+        <property name="configuration" ref="configuration" />
+
+        <property name="userCache" ref="userCache"/>
     </bean>
     <bean id="groupsSanitationFilter"
           class="org.openstack.atlas.api.filters.GroupsSanitationFilter"

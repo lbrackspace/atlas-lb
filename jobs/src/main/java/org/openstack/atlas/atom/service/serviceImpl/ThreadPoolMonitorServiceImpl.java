@@ -11,6 +11,7 @@ public class ThreadPoolMonitorServiceImpl implements org.openstack.atlas.atom.se
     private long monitoringPeriod;
     private volatile boolean done = false;
 
+    @Override
     public void run() {
         try {
             while (!done) {
@@ -22,8 +23,9 @@ public class ThreadPoolMonitorServiceImpl implements org.openstack.atlas.atom.se
         }
     }
 
+    @Override
     public void monitorThreadPool() {
-        StringBuffer strBuff = new StringBuffer();
+        StringBuilder strBuff = new StringBuilder();
         strBuff.append("CurrentPoolSize : ").append(executor.getPoolSize());
         strBuff.append(" - CorePoolSize : ").append(executor.getCorePoolSize());
         strBuff.append(" - MaximumPoolSize : ").append(executor.getMaximumPoolSize());
@@ -35,10 +37,12 @@ public class ThreadPoolMonitorServiceImpl implements org.openstack.atlas.atom.se
         log.debug(strBuff.toString());
     }
 
+    @Override
     public ThreadPoolExecutor getExecutor() {
         return executor;
     }
 
+    @Override
     public void setExecutor(ThreadPoolExecutor executor) {
         this.executor = executor;
     }

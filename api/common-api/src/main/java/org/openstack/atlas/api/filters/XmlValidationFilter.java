@@ -4,13 +4,17 @@ import org.openstack.atlas.api.filters.helpers.AcceptTypes;
 import org.openstack.atlas.api.filters.helpers.MediaType;
 import org.openstack.atlas.api.filters.helpers.XmlValidationExceptionHandler;
 import org.openstack.atlas.api.filters.wrappers.BufferedRequestWrapper;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.util.debug.Debug;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class XmlValidationFilter extends ValidationFilter {
+
+    private final Log LOG = LogFactory.getLog(XmlValidationFilter.class);
 
     @Override
     public void init(FilterConfig config) throws ServletException {
@@ -75,6 +79,8 @@ public class XmlValidationFilter extends ValidationFilter {
                 }
             }
         } catch (Exception ex) {
+            String exceptionString = Debug.getExtendedStackTrace(ex);
+            LOG.error(String.format("Unknown Exception: %s\n", exceptionString));
             if (!errHandler.getErrList().isEmpty()) {
                 if (acceptType.equalsIgnoreCase(XML)) {
                     sendXMLErrorResponse(hreq, hresp, BADREQ, errHandler.getErrList());
@@ -87,11 +93,11 @@ public class XmlValidationFilter extends ValidationFilter {
 
             } else {
                 if (acceptType.equalsIgnoreCase(XML)) {
-                    sendXMLErrorResponse(hreq, hresp, BADREQ, String.format("Unknown Exception ex: %s\n", getStackTrace(ex)));
+                    sendXMLErrorResponse(hreq, hresp, BADREQ, String.format("Unknown Exception ex: %s\n", getExtendedStackTrace(ex)));
                     return;
                 }
                 if (acceptType.equalsIgnoreCase(JSON)) {
-                    sendJSONErrorResponse(hreq, hresp, BADREQ, String.format("Unknown Exception ex: %s\n", getStackTrace(ex)));
+                    sendJSONErrorResponse(hreq, hresp, BADREQ, String.format("Unknown Exception ex: %s\n", getExtendedStackTrace(ex)));
                     return;
                 }
             }

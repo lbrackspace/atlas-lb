@@ -174,11 +174,10 @@ public class BitConverters {
     }
 
     public static String bytes2hex(byte[] bytes) {
-        StringBuffer sb;
+        StringBuilder sb = new StringBuilder();
         int i;
         int lo;
         int hi;
-        sb = new StringBuffer();
         for (i = 0; i < bytes.length; i++) {
             sb.append(byte2hex(bytes[i]));
         }

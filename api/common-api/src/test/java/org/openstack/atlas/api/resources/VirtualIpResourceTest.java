@@ -1,22 +1,20 @@
 package org.openstack.atlas.api.resources;
 
-import org.junit.Ignore;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.VirtualIp;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
-import org.openstack.atlas.service.domain.operations.Operation;
-import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
-import org.openstack.atlas.service.domain.services.VirtualIpService;
-import org.openstack.atlas.api.integration.AsyncService;
 import junit.framework.Assert;
 import org.dozer.DozerBeanMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
+import org.openstack.atlas.api.integration.AsyncService;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.services.VirtualIpService;
 
 import javax.jms.JMSException;
 import javax.ws.rs.core.Response;
@@ -91,6 +89,14 @@ public class VirtualIpResourceTest {
             doThrow(new RuntimeException("Exception")).when(virtualIpService).prepareForVirtualIpDeletion(Matchers.<LoadBalancer>any(), Matchers.<Integer>any());
             Response response = vipResource.removeVirtualIpFromLoadBalancer();
             Assert.assertEquals(500, response.getStatus());
+        }
+
+        @Test
+        public void shouldTruncate() throws Exception {
+            String blah = "0123456789";
+            String b = blah.substring(0,5);
+            Assert.assertEquals(5, b.length());
+            Assert.assertEquals("01234", b);
         }
     }
 }

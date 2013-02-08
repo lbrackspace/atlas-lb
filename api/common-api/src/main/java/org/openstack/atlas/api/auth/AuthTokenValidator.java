@@ -9,7 +9,6 @@ import org.openstack.atlas.cfg.Configuration;
 import org.openstack.client.keystone.KeyStoneAdminClient;
 import org.openstack.client.keystone.KeyStoneException;
 import org.openstack.client.keystone.token.FullToken;
-import org.openstack.client.keystone.user.User;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

@@ -22,7 +22,7 @@ public class HealthMonitorEvent extends Event implements Serializable {
 
     @Override
     public String getAttributesAsString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(super.getAttributesAsString());
         sb.append(String.format("healthMonitorId=%s", vorn(getHealthMonitorId())));
         return sb.toString();

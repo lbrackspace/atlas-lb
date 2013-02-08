@@ -73,12 +73,11 @@ public class IPv6 implements Comparable<IPv6> {
     }
 
     public static String expand(String ipStr, int nwords) throws IPStringConversionException {
-        StringBuffer sb;
+        StringBuilder sb = new StringBuilder();
         String hex;
         int[] vals;
         int[] expanded_vals;
         int i;
-        sb = new StringBuffer();
         vals = splitvals(ipStr);
         if (vals == null) {
             throw new IPStringConversionException("Error converting hex to binary in IPv6 ip");
@@ -255,14 +254,13 @@ public class IPv6 implements Comparable<IPv6> {
         int i;
         int hi;
         int lo;
-        StringBuffer sb;
+        StringBuilder sb = new StringBuilder();
         String hex;
 
         if (in.length != 16) {
             String msg = "Error IPv6 requires byte array of length 16";
             throw new IPStringConversionException(msg);
         }
-        sb = new StringBuffer();
         for (i = 0; i < 14; i += 2) {
             hi = BitConverters.ubyte2int(in[i]) << 8;
             lo = BitConverters.ubyte2int(in[i + 1]);

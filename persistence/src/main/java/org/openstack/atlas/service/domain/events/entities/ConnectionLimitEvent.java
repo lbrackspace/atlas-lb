@@ -22,7 +22,7 @@ public class ConnectionLimitEvent extends Event implements Serializable {
 
     @Override
     public String getAttributesAsString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(super.getAttributesAsString());
         sb.append(String.format("connectionLimitId=%s",vorn(getConnectionLimitId())));
         return sb.toString();
