@@ -5,7 +5,8 @@
     <name>Openstack :: Atlas :: Parent</name>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-parent</artifactId>
-          <version>1.17.11-SNAPSHOT</version>    <packaging>pom</packaging>
+    <version>1.17.11-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <scm>
         <url>scm:git:git@github-lbaas:lbrackspace/atlas-lb.git</url>

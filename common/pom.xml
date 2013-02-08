@@ -5,7 +5,8 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-              <version>1.17.11-SNAPSHOT</version>    </parent>
+        <version>1.17.11-SNAPSHOT</version>
+    </parent>
 
     <artifactId>atlas-common</artifactId>
     <name>Openstack :: Atlas :: Common</name>
