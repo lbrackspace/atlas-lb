@@ -342,6 +342,13 @@ public class LoadBalancerValidatorTest {
             ValidatorResult result = validator.validate(lb, POST);
             assertTrue(result.passedValidation());
         }
+
+        @Test
+        public void shouldRejectSslTerminationElement() {
+            lb.setSslTermination(new SslTermination());
+            ValidatorResult result = validator.validate(lb, POST);
+            assertFalse(result.passedValidation());
+        }
 	}
 
 	public static class whenValidatingPut {
@@ -542,6 +549,13 @@ public class LoadBalancerValidatorTest {
             lb.setTimeout(70);
             ValidatorResult result = validator.validate(lb, PUT);
             assertTrue(result.passedValidation());
+        }
+
+        @Test
+        public void shouldRejectSslTerminationElement() {
+            lb.setSslTermination(new SslTermination());
+            ValidatorResult result = validator.validate(lb, PUT);
+            assertFalse (result.passedValidation());
         }
 	}
 }

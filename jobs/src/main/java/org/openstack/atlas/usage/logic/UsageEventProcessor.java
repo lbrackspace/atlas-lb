@@ -100,6 +100,9 @@ public class UsageEventProcessor {
                     LoadBalancerUsage secondUsage = loadBalancerUsages.get(i + 1);
 
                     // Update firstUsage end time add it to the create list
+                    UsageEvent firstUsageEvent = UsageEvent.valueOf(firstUsage.getEventType());
+                    int firstUsageTags = calculateTags(firstUsage.getAccountId(), lbId, firstUsageEvent, firstUsage);
+                    firstUsage.setTags(firstUsageTags);
                     Calendar newEndTimeForRecentUsage = calculateEndTime(firstUsage.getEndTime(), secondUsage.getStartTime());
                     firstUsage.setEndTime(newEndTimeForRecentUsage);
                     usagesToCreate.add(firstUsage);
@@ -114,8 +117,13 @@ public class UsageEventProcessor {
                     int updatedTags = calculateTags(firstUsage.getAccountId(), lbId, usageEvent, firstUsage);
                     secondUsage.setTags(updatedTags);
                 } else {
+                    LoadBalancerUsage usage = loadBalancerUsages.get(i);
+                    UsageEvent usageEvent = UsageEvent.valueOf(usage.getEventType());
+                    int updatedUsageTags = calculateTags(usage.getAccountId(), lbId, usageEvent, usage);
+                    usage.setTags(updatedUsageTags);
+
                     // Add last record whose timestamps are the same.
-                    usagesToCreate.add(loadBalancerUsages.get(i));
+                    usagesToCreate.add(usage);
                 }
             }
         }
