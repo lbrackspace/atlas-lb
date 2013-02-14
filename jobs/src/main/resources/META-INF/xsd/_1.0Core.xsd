@@ -1,11 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-   This is a 1.0 XML Schema, generated from a 1.1 schema.
-   The purpose of the schema is to enable support for XSD 1.0 processors.
-   The official schema is the 1.1 version from which this schema was defined.
-   This schema misses some critical checks that are only performed in the 1.1 version.
-   Validation at the usage layer will always use the 1.1 schema.
--->
+<?xml version="1.0"?>
+
 <schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:event="http://docs.rackspace.com/core/event" xmlns:xerces="http://xerces.apache.org" xmlns:saxon="http://saxon.sf.net/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://docs.rackspace.com/core/event">
 
     <complexType name="EventBase" abstract="true">
@@ -18,7 +12,7 @@
                 </html:p>
             </documentation>
         </annotation>
-        <attribute name="version" type="xsd:string" use="required">
+        <attribute name="version" type="event:NonEmptyString" use="required">
             <annotation>
                 <documentation>
                     <html:p>
@@ -42,7 +36,7 @@
                 <sequence>
                     <any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
                 </sequence>
-                <attribute name="tenantId" type="xsd:string" use="required">
+                <attribute name="tenantId" type="event:NonEmptyString" use="optional">
                     <annotation>
                         <documentation>
                             <html:p>
@@ -51,7 +45,7 @@
                         </documentation>
                     </annotation>
                 </attribute>
-                <attribute name="resourceId" type="xsd:string" use="required">
+                <attribute name="resourceId" type="event:NonEmptyString" use="optional">
                     <annotation>
                         <documentation>
                             <html:p>
@@ -69,6 +63,29 @@
                         </documentation>
                     </annotation>
                 </attribute>
+                <attribute name="referenceId" type="event:UUID" use="optional">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                A GUID identifying the event record,
+                                that this record is updating. This is
+                                optional, and this should be used if
+                                this event is correcting another
+                                event.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="rootAction" type="event:NonEmptyString" use="optional">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                Identifies the action that caused the
+                                event.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
                 <attribute name="type" type="event:EventType" use="required">
                     <annotation>
                         <documentation>
@@ -78,6 +95,18 @@
                                 set this type to EXTENDED and add an
                                 eventType attribute to your product
                                 schema.
+                            </html:p>
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="environment" type="event:ENVIRONMENT" use="optional" default="PROD">
+                    <annotation>
+                        <documentation>
+                            <html:p>
+                                The environment where the message
+                                originated from.  The optional is
+                                optional, if it is not specified PROD
+                                will be assumed.
                             </html:p>
                         </documentation>
                     </annotation>
@@ -138,7 +167,7 @@
                         </documentation>
                     </annotation>
                 </attribute>
-                <attribute name="resourceName" type="xsd:string" use="optional">
+                <attribute name="resourceName" type="event:NonEmptyString" use="optional">
                     <annotation>
                         <documentation>
                             <html:p>
@@ -147,13 +176,6 @@
                         </documentation>
                     </annotation>
                 </attribute>
-                
-                
-                
-                
-                
-                
-                
             </extension>
         </complexContent>
     </complexType>
@@ -201,11 +223,29 @@
         <restriction base="xsd:string">
             <enumeration value="CREATE"/>
             <enumeration value="USAGE"/>
+            <enumeration value="USAGE_SNAPSHOT"/>
             <enumeration value="UPDATE"/>
             <enumeration value="DELETE"/>
             <enumeration value="SUSPEND"/>
             <enumeration value="UNSUSPEND"/>
+            <enumeration value="UP"/>
+            <enumeration value="DOWN"/>
             <enumeration value="EXTENDED"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="NonEmptyString">
+        <annotation>
+            <documentation>
+                <html:p>
+                    Any non-empty string.
+                </html:p>
+            </documentation>
+        </annotation>
+        <restriction base="xsd:string">
+            <whiteSpace value="collapse"/>
+            <minLength value="1"/>
+            <maxLength value="255"/>
         </restriction>
     </simpleType>
 
@@ -261,6 +301,25 @@
             <enumeration value="LON1"/>
             <enumeration value="LON3"/>
             <enumeration value="ORD1"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="ENVIRONMENT">
+        <annotation>
+            <documentation>
+                <html:p>
+                    The environment where the message originated.
+                </html:p>
+            </documentation>
+        </annotation>
+        <restriction base="xsd:string">
+            <enumeration value="PROD"/>
+            <enumeration value="PREPROD"/>
+            <enumeration value="STAGE"/>
+            <enumeration value="QA"/>
+            <enumeration value="DEV"/>
+            <enumeration value="UAT"/>
+            <enumeration value="LOCAL"/>
         </restriction>
     </simpleType>
 </schema>

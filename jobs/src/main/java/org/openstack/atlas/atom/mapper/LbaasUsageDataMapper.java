@@ -24,8 +24,8 @@ import org.w3._2005.atom.UsageContent;
 
 import javax.ws.rs.core.MediaType;
 import javax.xml.datatype.DatatypeConfigurationException;
-import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
+import java.util.Calendar;
 import java.util.UUID;
 
 /**
@@ -83,7 +83,7 @@ public class LbaasUsageDataMapper {
     }
 
     private static String genUUIDString(Usage usageRecord) {
-        return usageRecord.getId() + "_" + usageRecord.getLoadbalancer().getId() + "_" + region;
+        return usageRecord.getId() + "_" + usageRecord.getLoadbalancer().getId() + "_" + region + "_" + Calendar.getInstance();
     }
 
     private static EntryPojo buildEntry() {
@@ -107,10 +107,10 @@ public class LbaasUsageDataMapper {
         LBaaSUsagePojo lu = new LBaaSUsagePojo();
         lu.setAvgConcurrentConnections(usageRecord.getAverageConcurrentConnections());
         lu.setAvgConcurrentConnectionsSsl(usageRecord.getAverageConcurrentConnectionsSsl());
-        lu.setBandWidthOutSsl(BigInteger.valueOf(usageRecord.getOutgoingTransferSsl()));
-        lu.setBandWidthInSsl(BigInteger.valueOf(usageRecord.getIncomingTransferSsl()));
-        lu.setBandWidthOut(BigInteger.valueOf(usageRecord.getOutgoingTransfer()));
-        lu.setBandWidthIn(BigInteger.valueOf(usageRecord.getIncomingTransfer()));
+        lu.setBandWidthOutSsl(usageRecord.getOutgoingTransferSsl());
+        lu.setBandWidthInSsl(usageRecord.getIncomingTransferSsl());
+        lu.setBandWidthOut(usageRecord.getOutgoingTransfer());
+        lu.setBandWidthIn(usageRecord.getIncomingTransfer());
         lu.setResourceType(ResourceTypes.LOADBALANCER);
         lu.setNumPolls(usageRecord.getNumberOfPolls());
         lu.setNumVips(usageRecord.getNumVips());
