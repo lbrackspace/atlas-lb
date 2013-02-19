@@ -21,12 +21,12 @@ public class AuthTokenValidator {
 
     public AuthTokenValidator(Configuration cfg) throws MalformedURLException, URISyntaxException, IdentityFault {
         this.configuration = cfg;
-        if (cfg.hasKeys(PublicApiServiceConfigurationKeys.auth_management_uri,
-                PublicApiServiceConfigurationKeys.basic_auth_user,
-                PublicApiServiceConfigurationKeys.basic_auth_key)) {
+        if (cfg.hasKeys(PublicApiServiceConfigurationKeys.identity_auth_url,
+                PublicApiServiceConfigurationKeys.identity_user,
+                PublicApiServiceConfigurationKeys.identity_pass)) {
 
-            LOG.info("Auth URI from local conf: " + configuration.getString(PublicApiServiceConfigurationKeys.auth_management_uri));
-            identityClient = new IdentityClient(configuration.getString(PublicApiServiceConfigurationKeys.auth_management_uri));
+            LOG.info("Auth URI from local conf: " + configuration.getString(PublicApiServiceConfigurationKeys.identity_auth_url));
+            identityClient = new IdentityClient(configuration.getString(PublicApiServiceConfigurationKeys.identity_auth_url));
         } else {
             LOG.error(StringUtilities.AUTH_INIT_FAIL);
             throw new MissingFieldException(StringUtilities.AUTH_INIT_FAIL);
@@ -35,7 +35,7 @@ public class AuthTokenValidator {
 
     public AuthenticateResponse validate(String userToken, String tenantId) throws URISyntaxException, IdentityFault {
         LOG.info("Within validate ... about to call client authenticate...");
-        AuthenticateResponse admin = identityClient.authenticateUsernamePassword(configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_user), configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_key));
+        AuthenticateResponse admin = identityClient.authenticateUsernamePassword(configuration.getString(PublicApiServiceConfigurationKeys.identity_user), configuration.getString(PublicApiServiceConfigurationKeys.identity_pass));
         return identityClient.validateToken(admin.getToken().getId(), userToken, tenantId);
     }
 }

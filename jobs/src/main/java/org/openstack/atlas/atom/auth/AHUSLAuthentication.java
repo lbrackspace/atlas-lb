@@ -21,12 +21,12 @@ public class AHUSLAuthentication {
     private static Configuration configuration = new AtomHopperConfiguration();
 
     public AHUSLAuthentication() throws MalformedURLException, URISyntaxException, IdentityFault {
-        if (configuration.hasKeys(PublicApiServiceConfigurationKeys.auth_management_uri,
-                PublicApiServiceConfigurationKeys.basic_auth_user,
-                PublicApiServiceConfigurationKeys.basic_auth_key)) {
+        if (configuration.hasKeys(PublicApiServiceConfigurationKeys.identity_auth_url,
+                PublicApiServiceConfigurationKeys.identity_user,
+                PublicApiServiceConfigurationKeys.identity_pass)) {
 
-            LOG.info("Auth URI from local conf: " + configuration.getString(PublicApiServiceConfigurationKeys.auth_management_uri));
-            identityClient = new IdentityClient(configuration.getString(PublicApiServiceConfigurationKeys.auth_management_uri));
+            LOG.info("Auth URI from local conf: " + configuration.getString(PublicApiServiceConfigurationKeys.identity_auth_url));
+            identityClient = new IdentityClient(configuration.getString(PublicApiServiceConfigurationKeys.identity_auth_url));
         } else {
             LOG.error(StringUtilities.AUTH_INIT_FAIL);
             throw new MissingFieldException(StringUtilities.AUTH_INIT_FAIL);
