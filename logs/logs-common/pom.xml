@@ -54,18 +54,15 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
-            <!--<classifier>core</classifier>-->
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-test</artifactId>
-            <!--<classifier>test</classifier>-->
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-tools</artifactId>
-            <!--<classifier>tools</classifier>-->
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>

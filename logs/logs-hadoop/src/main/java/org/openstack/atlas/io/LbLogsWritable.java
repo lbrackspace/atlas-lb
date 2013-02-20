@@ -23,6 +23,48 @@ public class LbLogsWritable implements WritableComparable<LbLogsWritable> {
         super();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final LbLogsWritable other = (LbLogsWritable) obj;
+        if (this.accountId != other.accountId && (this.accountId == null || !this.accountId.equals(other.accountId))) {
+            return false;
+        }
+        if (this.loadBalancerId != other.loadBalancerId && (this.loadBalancerId == null || !this.loadBalancerId.equals(other.loadBalancerId))) {
+            return false;
+        }
+        if ((this.loadbalancerName == null) ? (other.loadbalancerName != null) : !this.loadbalancerName.equals(other.loadbalancerName)) {
+            return false;
+        }
+        if (this.date != other.date && (this.date == null || !this.date.equals(other.date))) {
+            return false;
+        }
+        if ((this.sourceIp == null) ? (other.sourceIp != null) : !this.sourceIp.equals(other.sourceIp)) {
+            return false;
+        }
+        if ((this.logline == null) ? (other.logline != null) : !this.logline.equals(other.logline)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 89 * hash + (this.accountId != null ? this.accountId.hashCode() : 0);
+        hash = 89 * hash + (this.loadBalancerId != null ? this.loadBalancerId.hashCode() : 0);
+        hash = 89 * hash + (this.loadbalancerName != null ? this.loadbalancerName.hashCode() : 0);
+        hash = 89 * hash + (this.date != null ? this.date.hashCode() : 0);
+        hash = 89 * hash + (this.sourceIp != null ? this.sourceIp.hashCode() : 0);
+        hash = 89 * hash + (this.logline != null ? this.logline.hashCode() : 0);
+        return hash;
+    }
+
     public LbLogsWritable(Integer accountId, String sourceIp, String loadbalancerName, Integer loadBalancerId, Calendar date, String logline) {
         this.accountId = accountId;
         this.sourceIp = sourceIp;
