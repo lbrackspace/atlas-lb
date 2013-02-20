@@ -11,9 +11,9 @@ public final class LogChopper {
 
     private static final Log LOGGER = LogFactory.getLog(LogChopper.class);
 
-    private static final Pattern HTTP_LB_LOG_PATTERN = Pattern.compile("^((\\S+) (\\S+) (\\S+) (\\S+) (\\S+) \\[(\\d+\\/\\w+\\/\\d+:\\d+:\\d+:\\d+) \\S+\\] \"(\\S+ \\S.*)(HTTP\\/1\\.\\d*)\" (\\S+) (\\d+) \"(.*)\" \"(.*)\")$");
-    private static final Pattern HTTP_LB_LOG_PATTERN_IP = Pattern.compile("^((\\S+) (\\S+) (\\S+) (\\S+) (\\S+) \\[(\\d+\\/\\w+\\/\\d+:\\d+:\\d+:\\d+) \\S+\\] \"(\\S+ \\S.*)(HTTP\\/1\\.\\d*)\" (\\S+) (\\d+) \"(.*)\" \"(.*)\" (\\S+))$");
-    private static final Pattern NON_HTTP_LB_LOG_PATTERN = Pattern.compile("^((\\S+) \\[(\\d+\\/\\w+\\/\\d+:\\d+:\\d+:\\d+) \\S+\\] (\\S+) (\\S+) (\\S+) (\\S+) (\\S+) (\\S+))$");
+    private static final Pattern HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^ ]++) [^\\]]++\\] \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\")$");
+    private static final Pattern HTTP_LB_LOG_PATTERN_IP = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^ ]++) [^\\]]++\\] \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\" ([^ ]++))$");
+    private static final Pattern NON_HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) \\[([^ ]++) [^\\]]++\\] ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++))$");
 
     private LogChopper() {
     }
