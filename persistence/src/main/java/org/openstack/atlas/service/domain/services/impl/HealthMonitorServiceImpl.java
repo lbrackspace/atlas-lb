@@ -120,8 +120,13 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
 
     @Override
     @Transactional
-    public void delete(LoadBalancer requestLb) throws EntityNotFoundException {
+    public void delete(LoadBalancer requestLb) throws EntityNotFoundException, Exception {
         LoadBalancer dbLb = loadBalancerRepository.getByIdAndAccountId(requestLb.getId(), requestLb.getAccountId());
+        for (Node node : dbLb.getNodes()) {
+            if (node.getCondition().equals(NodeCondition.ENABLED))
+                node.setStatus(NodeStatus.ONLINE);
+        }
+        loadBalancerRepository.update(dbLb);
         loadBalancerRepository.removeHealthMonitor(dbLb);
     }
 

@@ -7,6 +7,7 @@ public class AuthUser {
     private String sliceAccountId;
     private String authKey;
     private boolean enabled;
+    private String region;
 
     private String cloudFilesAuthUrl;
 
@@ -64,5 +65,13 @@ public class AuthUser {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
     }
 }

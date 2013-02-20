@@ -2,6 +2,7 @@ package org.openstack.atlas.usage.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.atom.auth.AHUSLAuthentication;
 import org.openstack.atlas.atom.client.AHUSLClient;
 import org.openstack.atlas.atom.config.AtomHopperConfiguration;
@@ -286,11 +287,12 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
 
     private String retrieveAndProcessAuthToken() {
         try {
-            String userName = configuration.getString(AtomHopperConfigurationKeys.ahusl_auth_username);
+            String username = configuration.getString(PublicApiServiceConfigurationKeys.identity_user);
+            String password = configuration.getString(PublicApiServiceConfigurationKeys.identity_pass);
             AHUSLAuthentication ahuslAuthentication = new AHUSLAuthentication();
-            authToken = ahuslAuthentication.getToken(userName).getToken().getId();
+            authToken = ahuslAuthentication.getToken(username, password).getToken().getId();
             if (authToken != null) {
-                LOG.info("Token successfully retrieved: " + authToken + " For User: " + userName);
+                LOG.info("Token successfully retrieved: " + authToken + " For User: " + username);
                 return authToken;
             }
         } catch (Exception e) {
