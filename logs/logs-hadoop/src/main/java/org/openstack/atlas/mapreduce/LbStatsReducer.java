@@ -26,6 +26,7 @@ public class LbStatsReducer implements Reducer<LbLogsAccountDateKey, LbLogsWrita
     private static final Log LOG = LogFactory.getLog(LbStatsReducer.class);
     private static ZipArchiveOutputStream stream = null;
 
+    @Override
     public void close() throws IOException {
         //remote possibility of having 0 entries in the reducer (small runs)
         if (currentAccountId != null) {

@@ -40,6 +40,7 @@ public class LbLogsAccountDateKey implements WritableComparable<LbLogsAccountDat
         this.loadBalancerId = loadBalancerId;
     }
 
+    @Override
     public int compareTo(LbLogsAccountDateKey o) {
         int i = Long.valueOf(accountId).compareTo(Long.valueOf(o.getAccountId()));
         if(i != 0) return i;
