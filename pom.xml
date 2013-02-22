@@ -510,26 +510,26 @@
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-core</artifactId>
-                <version>0.20.2</version>
+                <version>1.0.3</version>
                 <!--<classifier>core</classifier>-->
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-test</artifactId>
-                <version>0.20.2</version>
+                <version>1.0.3</version>
                 <!--<classifier>test</classifier>-->
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-tools</artifactId>
-                <version>0.20.2</version>
+                <version>1.0.3</version>
                 <!--<classifier>tools</classifier>-->
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-lzo</artifactId>
-                <version>0.4.0</version>
+                <version>0.4.15</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>

@@ -1,5 +1,6 @@
 package org.openstack.atlas.tools;
 
+import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.GenericOptionsParser;
@@ -17,7 +18,7 @@ public class HadoopConfiguration {
         restOfArgs = new String[]{};
     }
 
-    public HadoopConfiguration(String[] args) {
+    public HadoopConfiguration(String[] args) throws IOException{
         conf = new Configuration();
         restOfArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
     }

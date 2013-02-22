@@ -27,7 +27,7 @@
                                     <goal>jdeb</goal>
                                 </goals>
                                 <configuration>
-                                    <deb>target/${artifactId}_${version}_all.deb</deb>
+                                    <deb>migration/target/${artifactId}_${version}_all.deb</deb>
                                     <dataSet>
                                         <data>
                                             <src>${basedir}/schema/loadbalancing</src>&gt;

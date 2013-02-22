@@ -3,8 +3,7 @@ Version: [[version]]
 Section: libs
 Priority: optional
 Architecture: all
-Depends: rs-glassfish, libmysql-java, atlas-logs-hadoop
 Maintainer: Carlos D. Garza <carlos.garza@rackspace.com>
-Description: The rackspace LBAAS hadoop component
- The rackspace lbaas logging component that runs under glassfish
+Description: The rackspace LBAAS hadoop jobs Jar
+    The Jobs Jar file used by the atlas-logs-web package
 Distribution: development
