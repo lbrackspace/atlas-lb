@@ -61,43 +61,42 @@ public class LoadBalancerAHUSLTask implements Runnable {
                             configuration,
                             configuration.getString(AtomHopperConfigurationKeys.ahusl_region));
 
-                    ClientResponse response = null;
+                    //Set UUID: use for updated usage...
+                    usageRecord.setUuid(entry.getContent().getEvent().getId());
+//                    LOG.debug("USAGE UUID: " + usageRecord.getUuid());
 
+                    ClientResponse response = null;
                     try {
-//                        LOG.debug(String.format("Start Uploading to the atomHopper service now for account: " + usageRecord.getLoadbalancer().getId()));
                         response = client.postEntryWithToken(entry, validationToken);
-//                        LOG.info(String.format("Finished uploading to the atomHopper service for account: " + usageRecord.getLoadbalancer().getId()));
                     } catch (ClientHandlerException che) {
-                        LOG.warn("Could not post entry because client handler exception for load balancer: " + usageRecord.getLoadbalancer().getId() + "Exception: " + AHUSLUtil.getStackTrace(che));
+                        LOG.warn("Could not post entry because client handler exception for load balancer: "
+                                + usageRecord.getLoadbalancer().getId() + "Exception: " + AHUSLUtil.getStackTrace(che));
                     } catch (ConnectionPoolTimeoutException cpe) {
-                        LOG.warn("Could not post entry because of limited connections for load balancer: " + usageRecord.getLoadbalancer().getId() + "Exception: " + AHUSLUtil.getStackTrace(cpe));
+                        LOG.warn("Could not post entry because of limited connections for load balancer: "
+                                + usageRecord.getLoadbalancer().getId() + "Exception: " + AHUSLUtil.getStackTrace(cpe));
                     }
 
                     //Notify usage if the record was uploaded or not...
                     if (response != null && response.getStatus() == 201) {
-//                        LOG.debug("Updating needs_pushed: " + false + " for load balancer: " + usageRecord.getLoadbalancer().getId());
                         usageRecord.setNeedsPushed(false);
                         response.close();
                     } else if (response != null) {
-                        LOG.error("There was an error pushing to the atom hopper service. status code: " + response.getStatus() + " for load balancer: " + usageRecord.getLoadbalancer().getId());
+                        LOG.error("There was an error pushing to the atom hopper service. status code: "
+                                + response.getStatus() + " for load balancer: " + usageRecord.getLoadbalancer().getId());
                         String body = AHUSLUtil.processResponseBody(response);
                         LOG.info(String.format("body %s\n", body));
                         response.close();
                         usageRecord.setNeedsPushed(true);
                     } else {
-                        LOG.error("The connection timed out, updating record for re-push for load balancer: " + usageRecord.getLoadbalancer().getId());
+                        LOG.error("The connection timed out, updating record for re-push for load balancer: "
+                                + usageRecord.getLoadbalancer().getId());
                         usageRecord.setNeedsPushed(true);
                     }
-
-//                    String body = AHUSLUtil.processResponseBody(response);
-//                    LOG.info(String.format("Status=%s\n", response.getStatus()));
-//                    LOG.info(String.format("body %s\n", body));
                 }
             }
 
             LOG.debug("Batch updating: " + lbusages.size() + " usage rows in the database...");
             usageRepository.batchUpdate(lbusages, false);
-//            LOG.info("Successfully batch updated: " + lbusages.size() + " usage rows in the database...");
         } catch (ConcurrentModificationException cme) {
             System.out.printf("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(cme));
             LOG.warn(String.format("Warning: %s\n", AHUSLUtil.getExtendedStackTrace(cme)));

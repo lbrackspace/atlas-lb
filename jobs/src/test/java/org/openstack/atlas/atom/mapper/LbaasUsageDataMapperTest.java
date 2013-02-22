@@ -187,5 +187,26 @@ public class LbaasUsageDataMapperTest {
             Assert.assertNotNull(entry.getContent().getEvent().getStartTime());
             Assert.assertNotNull(entry.getContent().getEvent().getEndTime());
         }
+
+        @Test
+        public void shouldNotUpdateRefIdIfUUIDIsNull() throws DatatypeConfigurationException, NoSuchAlgorithmException {
+            EntryPojo entry = LbaasUsageDataMapper.buildUsageEntry(usageRecord1, configuration, "DFW");
+            Assert.assertNull(entry.getContent().getEvent().getReferenceId());
+        }
+
+        @Test
+        public void shouldUpdateRefIdIfUUIDIsNotNull() throws DatatypeConfigurationException, NoSuchAlgorithmException {
+            usageRecord1.setUuid("52ab8665-1a1c-3765-96cd-29d54d0f7624");
+            EntryPojo entry = LbaasUsageDataMapper.buildUsageEntry(usageRecord1, configuration, "DFW");
+            Assert.assertNotNull(entry.getContent().getEvent().getReferenceId());
+        }
+
+        @Test
+        public void shouldUpdateRefIdIfUUIDIsNotNullAndCreateNewUUID() throws DatatypeConfigurationException, NoSuchAlgorithmException {
+            usageRecord1.setUuid("52ab8665-1a1c-3765-96cd-29d54d0f7624");
+            EntryPojo entry = LbaasUsageDataMapper.buildUsageEntry(usageRecord1, configuration, "DFW");
+            Assert.assertNotNull(entry.getContent().getEvent().getReferenceId());
+            Assert.assertNotSame(entry.getId(), entry.getContent().getEvent().getReferenceId());
+        }
     }
 }

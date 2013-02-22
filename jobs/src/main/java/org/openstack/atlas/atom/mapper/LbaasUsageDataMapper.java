@@ -78,6 +78,12 @@ public class LbaasUsageDataMapper {
         UUID uuid = UUIDUtil.genUUIDMD5Hash(genUUIDString(usageRecord));
         usageV1.setId(uuid.toString());
 
+        if (usageRecord.getUuid() != null) {
+            //This is an updated usage record, need the reference id from previous record
+            usageV1.setReferenceId(usageRecord.getUuid());
+        }
+
+
         usageV1.getAny().add(buildLbaasUsageRecord(usageRecord));
         return usageV1;
     }
