@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import org.openstack.atlas.util.StaticFileUtils;
 
 public abstract class DirectoryTool implements HadoopTool {
 
@@ -179,14 +180,12 @@ public abstract class DirectoryTool implements HadoopTool {
     }
 
     private String getSanitizedInputDir() {
-        return fileSystemUtils.sanitizeDir(inputDir);
+        return StaticFileUtils.sanitizeDir(inputDir);
     }
 
     public static String findPathJar(Class<?> context) throws IllegalStateException {
         URL location = context.getResource('/' + context.getName().replace(".", "/") + ".class");
         String jarPath = location.getPath();
         return jarPath.substring("file:".length(), jarPath.lastIndexOf("!"));
-
     }
-
 }

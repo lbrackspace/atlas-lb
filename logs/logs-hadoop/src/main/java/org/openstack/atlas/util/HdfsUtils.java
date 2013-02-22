@@ -58,19 +58,21 @@ public class HdfsUtils {
     public void init() throws IOException, InterruptedException {
         URI defaultUri = FileSystem.getDefaultUri(conf);
         localFileSystem = FileSystem.getLocal(conf).getRawFileSystem();
-        localFileSystem.setVerifyChecksum(false);
+        localFileSystem.setVerifyChecksum(false); // This avoids the .crc files
 
         if (user == null) {
             fileSystem = FileSystem.get(defaultUri, conf);
         } else {
-       //     fileSystem = FileSystem.get(defaultUri, conf, user);
+            fileSystem = FileSystem.get(defaultUri, conf, user);
         }
     }
 
+    // For debugging
     public Map<String, String> getConfigurationMap() {
         return getConfigurationMap(conf);
     }
 
+    // For debugging
     public static Map<String, String> getConfigurationMap(Configuration conf) {
         Map<String, String> map = new HashMap<String, String>();
         for (Entry<String, String> ent : conf) {
@@ -94,15 +96,15 @@ public class HdfsUtils {
     }
 
     
-    public void compressAndIndexLzoStream(InputStream uncompressedIS, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream, int buffSize) throws IOException {
+    public void compressAndIndexStreamToLzo(InputStream uncompressedIS, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream, int buffSize) throws IOException {
         Configuration codecConf = new Configuration();
         codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
         codecConf.set("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
         LzopCodec codec = new LzopCodec();
         codec.setConf(codecConf);
-        //CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
-        //StaticFileUtils.copyStreams(uncompressedIS, cos, null, bufferSize);
-        //cos.close();
+        CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
+        StaticFileUtils.copyStreams(uncompressedIS, cos, null, bufferSize);
+        cos.close();
     }
 
     public List<Path> listHdfsFiles(String inPath) throws IOException {
@@ -183,36 +185,6 @@ public class HdfsUtils {
 
     public void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
-    }
-
-    public List<String> listFilesRecursively(String mntPathIn, boolean useLocal) throws IOException {
-        LOG.info(String.format("Scanning %s\n", mntPathIn));
-        String mntPath = StaticFileUtils.expandUser(mntPathIn);
-        List<String> fileNames = new ArrayList<String>();
-        FileSystem fs;
-
-        if (useLocal) {
-            fs = localFileSystem;
-        } else {
-            fs = fileSystem;
-        }
-        FileStatus[] fileStatuses = fs.listStatus(new Path(mntPath));
-        if (fileStatuses == null) {
-            throw new IOException("Error reading directory " + mntPath);
-        }
-        for (FileStatus fileStatus : fileStatuses) {
-            String subFilePath = mntPath + File.separatorChar + fileStatus.getPath().getName();
-
-            if (fileStatus.isDir()) {
-                if (useLocal) { // Make sure where not following a symlink. Cause circuler links are dangours
-                }
-                List<String> subDirectoryList = listFilesRecursively(subFilePath, useLocal);
-                fileNames.addAll(subDirectoryList);
-            } else {
-                fileNames.add(subFilePath);
-            }
-        }
-        return fileNames;
     }
 
     public void setConf(Configuration conf) throws IOException, InterruptedException {

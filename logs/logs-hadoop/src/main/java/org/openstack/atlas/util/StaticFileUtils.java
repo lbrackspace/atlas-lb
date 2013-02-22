@@ -1,4 +1,3 @@
-
 package org.openstack.atlas.util;
 
 import java.io.BufferedInputStream;
@@ -22,13 +21,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.zip.CRC32;
 import org.openstack.atlas.util.exceptions.FileUtilsException;
-
 
 public class StaticFileUtils {
 
     private static final int DEFAULT_BUFFSIZE = 1024 * 256;
+
+    private static final Random rnd = new Random();
 
     public static String expandUser(String pathIn) {
         return pathIn.replace("~", System.getProperty("user.home"));
@@ -335,80 +336,19 @@ public class StaticFileUtils {
         return properties;
     }
 
-    public static String validatePropertyIsNotNull(Properties properties, String propertyName) {
-        if (properties == null) {
-            throw new IllegalArgumentException("Hadoop properties must not be null.");
+    public static String sanitizeDir(String dir) {
+        String sanitized = dir;
+        if (sanitized.contains("-*")) {
+            sanitized = sanitized.replace("-*", "");
         }
-
-        final String property = properties.getProperty(propertyName);
-
-        if (property == null) {
-            throw new IllegalArgumentException("Property " + propertyName + " must not be null.");
-        }
-
-        return property;
+        return sanitized;
     }
 
-    public static String validateDoubleProperty(Properties properties, String propertyName) {
-        if (properties == null) {
-            throw new IllegalArgumentException("Hadoop properties must not be null");
+    public static String getRestOfFilename(String fullFilename) {
+        if (fullFilename.contains("/")) {
+            return fullFilename.substring(fullFilename.lastIndexOf("/") + 1);
+        } else {
+            return fullFilename;
         }
-        final String property = properties.getProperty(propertyName);
-        if (property == null) {
-            throw new IllegalArgumentException("Property " + propertyName + " must not be null.");
-        }
-        try {
-            double val = Double.parseDouble(property);
-        } catch (Exception ex) {
-            throw new IllegalArgumentException("Unable to parse " + property + "for property " + propertyName + " to double");
-        }
-        return property;
-    }
-
-    public static String validateIntegerProperty(Properties properties, String propertyName) {
-        if (properties == null) {
-            throw new IllegalArgumentException("Hadoop properties must not be null");
-        }
-        final String property = properties.getProperty(propertyName);
-        if (property == null) {
-            throw new IllegalArgumentException("Property " + propertyName + " must not be null.");
-        }
-        try {
-            Integer val = Integer.parseInt(property);
-        } catch (Exception ex) {
-            throw new IllegalArgumentException("Unable to parse " + property + "for property " + propertyName + " to Integer value");
-        }
-        return property;
-    }
-
-    public static String getDestination(String path, String srcFilename) {
-        return (ensureSlashTerminatesPath(path) + srcFilename);
-    }
-
-    public static String ensureSlashTerminatesPath(String path) {
-        final String lastCharacter = path.substring(path.length() - 1);
-        StringBuilder safeConfigHadoopPath = new StringBuilder(path);
-
-        if (!"/".equals(lastCharacter)) {
-            safeConfigHadoopPath.append("/");
-        }
-
-        return safeConfigHadoopPath.toString();
-    }
-
-    public static Map<String, String> loadStaticFileExtensionsIntoMapKeys(String fileName) throws IOException {
-        final Map<String, String> extensions = new HashMap<String, String>();
-        final BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
-
-        try {
-            String fileExtension;
-            while ((fileExtension = bufferedReader.readLine()) != null) {
-                extensions.put(fileExtension, null);
-            }
-        } finally {
-            bufferedReader.close();
-        }
-
-        return extensions;
     }
 }

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Random;
 
 public class FileSystemUtils {
+
     private static final Log LOG = LogFactory.getLog(FileSystemUtils.class);
     private org.openstack.atlas.cfg.Configuration configuration;
     private static final Random r = new Random();
@@ -33,83 +34,8 @@ public class FileSystemUtils {
         return configuration.getString(LbLogsConfigurationKeys.rawlogs_backup_dir);
     }
 
-    public void copyToLocalFile(Configuration conf, Path src, Path dest) throws IOException {
-        copyToLocalFile(FileSystem.get(conf), src, dest);
-    }
-
-    public void copyToLocalFile(FileSystem fs, Path src, Path dest) throws IOException {
-        fs.copyToLocalFile(src, dest);
-    }
-
-    public List<String> getLocalInputFiles() {
-        List<String> logs = new LinkedList<String>();
-        String znodeBase = configuration.getString(LbLogsConfigurationKeys.filesystem_root_dir);
-        File znodesParent = new File(znodeBase);
-        String[] znodes = znodesParent.list();
-        for (int i = 0; i < znodes.length; i++) {
-            String znode = znodes[i];
-            File znodefile = new File(znodeBase + znode);
-            if (znodefile.isDirectory()) {
-                String[] logfiles = znodefile.list();
-                for (int j = 0; j < logfiles.length; j++) {
-                    String logfile = logfiles[j];
-                    logs.add(znodeBase + znode + "/" + logfile);
-                }
-            } else if (znodefile.isFile()) {
-                logs.add(znodeBase + znode);
-            }
-        }
-        return logs;
-    }
-
-    public List<Path> getPathsForImport(Configuration conf, String outputDirectory) throws IOException {
-        List<Path> paths = new LinkedList<Path>();
-
-        FileStatus[] files;
-        files = ls(conf, outputDirectory);
-        for (int i = 0; i < files.length; i++) {
-            FileStatus fileStatus = files[i];
-            if (fileStatus.getPath().getName().endsWith(
-                    configuration.getString(LbLogsConfigurationKeys.basemapreduce_log_suffix))) {
-                continue;
-            }
-            paths.add(fileStatus.getPath());
-        }
-        return paths;
-
-    }
-
-    public MapFile.Reader[] getReaders(Configuration conf, Path outputDir) throws IOException {
-        return MapFileOutputFormat.getReaders(FileSystem.get(conf), outputDir, conf);
-    }
-
-    public MapFile.Writer getMapWriter(Configuration conf, String output, Class keyClass, Class valClass) throws IOException {
-        return new MapFile.Writer(conf, FileSystem.get(conf), output, keyClass, valClass);
-    }
-
-    public MapFile.Writer getLocalMapWriter(Configuration conf, String output, Class keyClass, Class valClass) throws IOException {
-        FileSystem fs = FileSystem.getLocal(conf);
-        return new MapFile.Writer(conf, fs, output, keyClass, valClass);
-    }
-
-    public SequenceFile.Writer getWriter(Configuration conf, String output, Class keyClass, Class valClass) throws IOException {
-        return new SequenceFile.Writer(FileSystem.get(conf), conf, new Path(output), keyClass, valClass);
-    }
-
-    public String getRestOfFilename(String fullFilename) {
-        if (fullFilename.contains("/")) {
-            return fullFilename.substring(fullFilename.lastIndexOf("/") + 1);
-        } else {
-            return fullFilename;
-        }
-    }
-
     public FileStatus[] ls(Configuration conf, String dfsPath) throws IOException {
         return FileSystem.get(conf).listStatus(new Path(dfsPath));
-    }
-
-    public FileStatus[] ls(FileSystem fs, String dfsPath) throws IOException {
-        return fs.listStatus(new Path(dfsPath));
     }
 
     public void makeDirectories(Configuration conf, String remotePath) throws IOException {
@@ -121,115 +47,12 @@ public class FileSystemUtils {
     }
 
     public void placeFileOnDFS(Configuration conf, String localPath, String remotePath) throws IOException {
-        placeFileOnDFS(FileSystem.get(conf), localPath, remotePath);
-    }
-
-    public void placeFileOnDFS(FileSystem fs, String localPath, String remotePath) throws IOException {
-        fs.copyFromLocalFile(new Path(localPath), new Path(remotePath));
-    }
-
-    public void putFileArgsOntoDFS(FileSystem fs, String inputDir, String[] files) throws IOException {
-        if (files.length > 0) {
-            // we assume these are files that need to be placed on the dfs
-            // before running the job.
-            for (String fileString : files) {
-                File argFile = new File(fileString);
-                if (argFile.isDirectory()) {
-                    // get all the files in the directory
-                    // argFile
-                    putFileArgsOntoDFS(fs, inputDir, prependString(argFile.getAbsolutePath() + "/", argFile
-                            .list()));
-                } else {
-                    makeDirectories(fs, inputDir);
-                    placeFileOnDFS(fs, argFile.getAbsolutePath(), inputDir);
-                }
-            }
-        }
-    }
-
-    /**
-     * This puts a set of files and directories onto the DFS into the inputDir
-     * using the configuration values for the DFS.
-     *
-     * @param conf
-     * @param inputDir
-     * @param files
-     * @throws java.io.IOException
-     */
-    public void putLocalFilesOntoDFS(Configuration conf, String inputDir, String[] files) throws IOException {
-        putFileArgsOntoDFS(FileSystem.get(conf), inputDir, files);
-    }
-
-    public FSDataInputStream readFileFromDFS(Configuration conf, Path dfsPath) throws IOException {
-        return readFileFromDFS(FileSystem.get(conf), dfsPath);
-    }
-
-    public FSDataInputStream readFileFromDFS(Configuration conf, String dfsPath) throws IOException {
-        return readFileFromDFS(FileSystem.get(conf), dfsPath);
-    }
-
-    public FSDataInputStream readFileFromDFS(FileSystem fs, Path dfsPath) throws IOException {
-        return fs.open(dfsPath);
-    }
-
-    public FSDataInputStream readFileFromDFS(FileSystem fs, String dfsPath) throws IOException {
-        return fs.open(new Path(dfsPath));
-    }
-
-    public SequenceFile.Reader readSequenceFileFromDFS(Configuration conf, Path dfsPath) throws IOException {
-        return new SequenceFile.Reader(FileSystem.get(conf), dfsPath, conf);
-    }
-
-    public SequenceFile.Reader readSequenceFileFromDFS(FileSystem fs, Path dfsPath) throws IOException {
-        return new SequenceFile.Reader(fs, dfsPath, fs.getConf());
-    }
-
-    public void removeFileFromDFS(Configuration conf, String remotePath) throws IOException {
-        removeFileFromDFS(FileSystem.get(conf), remotePath, true);
-    }
-
-    public void removeFileFromDFS(FileSystem fs, String path, boolean recursive) throws IOException {
-        fs.delete(new Path(path), recursive);
-    }
-
-    public String sanitizeDir(String dir) {
-        String sanitized = dir;
-        if (sanitized.contains("-*")) {
-            sanitized = sanitized.replace("-*", "");
-        }
-        return sanitized;
+        FileSystem fs = FileSystem.get(conf);
+        fs.copyFromLocalFile(new Path(localPath),new Path(remotePath));
     }
 
     public void setConf(org.openstack.atlas.cfg.Configuration conf) {
         this.configuration = conf;
-    }
-
-    public void swallowAndClose(FSDataInputStream file) {
-        if (file != null) {
-            try {
-                file.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void swallowAndClose(SequenceFile.Reader file) {
-        if (file != null) {
-            try {
-                file.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private String[] prependString(String prepend, String[] list) {
-        String[] newItems = new String[list.length];
-        for (int i = 0; i < newItems.length; i++) {
-            newItems[i] = prepend + list[i];
-        }
-        return newItems;
     }
 
     public Path moveLocal(Configuration conf, Path path) throws IOException {
@@ -243,21 +66,6 @@ public class FileSystemUtils {
     public SequenceFile.Reader getLocalReader(Configuration conf, Path localPath) throws IOException {
         FileSystem fs = FileSystem.getLocal(conf);
         return new SequenceFile.Reader(fs, localPath, fs.getConf());
-    }
-
-    /**
-     * Do not use this method anymore. Use moveLocal and getLocalReader, so you can use deleteLocalFile as well
-     *
-     * @param conf
-     * @param path
-     * @return
-     * @throws java.io.IOException
-     */
-    @Deprecated
-    public SequenceFile.Reader moveLocalAndReadSequenceFile(Configuration conf, Path path) throws IOException {
-        Path local = moveLocal(conf, path);
-        FileSystem fs = FileSystem.getLocal(conf);
-        return new SequenceFile.Reader(fs, local, fs.getConf());
     }
 
     private synchronized String generateRandomBase() {

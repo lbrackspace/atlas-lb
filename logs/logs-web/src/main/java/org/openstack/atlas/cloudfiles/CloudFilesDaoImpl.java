@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Required;
 import javax.activation.FileTypeMap;
 import java.io.File;
 import java.util.HashMap;
+import org.openstack.atlas.util.StaticFileUtils;
 
 public class CloudFilesDaoImpl implements CloudFilesDao {
 
@@ -39,7 +40,7 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
         String fullFilename = localFileName.replaceAll("\\.\\./", "./");
         // the localFilename will always be before the last slash, if we are using
         // slashes (directories)
-        String restOfFilename = fileSystemUtils.getRestOfFilename(fullFilename);
+        String restOfFilename = StaticFileUtils.getRestOfFilename(fullFilename);
 
         try {
             try {
