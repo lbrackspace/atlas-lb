@@ -10,12 +10,12 @@ import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.tools.HadoopRunner;
-import org.openstack.atlas.util.LogFileUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import org.openstack.atlas.util.StaticFileUtils;
 
 public class FileWatchdogJobExecution extends LoggableJobExecution implements QuartzExecutable {
     private static final Log LOG = LogFactory.getLog(FileWatchdogJobExecution.class);
@@ -33,12 +33,12 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
 
         if (scheduledFilesToRun.size() == 1) {
             //eg. /var/log/zxtm/rotated/2012021017-access_log.aggregated
-            String logFileDate = LogFileUtil.getDateStringFromFileName(scheduledFilesToRun.get(0));
+            String logFileDate = StaticFileUtils.getDateStringFromFileName(scheduledFilesToRun.get(0));
             runner.setRawlogsFileTime(logFileDate);
             runner.setInputString(runner.getRawlogsFileTime());
         } else if (scheduledFilesToRun.size() >= 1) {
-            String newestFile = LogFileUtil.getNewestFile(scheduledFilesToRun);
-            String logFileDate = LogFileUtil.getDateStringFromFileName(newestFile);
+            String newestFile = StaticFileUtils.getNewestFile(scheduledFilesToRun);
+            String logFileDate = StaticFileUtils.getDateStringFromFileName(newestFile);
             runner.setRawlogsFileTime(logFileDate);
             runner.setInputString(runner.getRawlogsFileTime());
             scheduledFilesToRun.clear();

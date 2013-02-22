@@ -76,6 +76,29 @@ public class FileSystemUtils {
         return configuration.getString(LbLogsConfigurationKeys.rawlogs_cache_dir);
     }
 
+
+    public List<String> getLocalInputFiles() {
+        List<String> logs = new LinkedList<String>();
+        String znodeBase = configuration.getString(LbLogsConfigurationKeys.filesystem_root_dir);
+        File znodesParent = new File(znodeBase);
+        String[] znodes = znodesParent.list();
+        for (int i = 0; i < znodes.length; i++) {
+            String znode = znodes[i];
+            File znodefile = new File(znodeBase + znode);
+            if (znodefile.isDirectory()) {
+                String[] logfiles = znodefile.list();
+                for (int j = 0; j < logfiles.length; j++) {
+                    String logfile = logfiles[j];
+                    logs.add(znodeBase + znode + "/" + logfile);
+                }
+            } else if (znodefile.isFile()) {
+                logs.add(znodeBase + znode);
+            }
+        }
+        return logs;
+    }
+
+
     /**
      * Tries to exec the command, then it reads the output of the file to the logger and closes all streams.
      *

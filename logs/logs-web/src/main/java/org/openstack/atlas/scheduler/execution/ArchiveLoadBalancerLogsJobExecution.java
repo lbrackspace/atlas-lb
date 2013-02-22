@@ -14,7 +14,6 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.tools.HadoopRunner;
-import org.openstack.atlas.util.LogFileUtil;
 import org.openstack.atlas.util.LogFileNameBuilder;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -22,6 +21,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.openstack.atlas.util.StaticFileUtils;
+import org.openstack.atlas.util.StaticLogUtils;
 
 public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution implements QuartzExecutable {
     private static final Log LOG = LogFactory.getLog(ArchiveLoadBalancerLogsJobExecution.class);
@@ -38,7 +39,7 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
 
         Map<String, List> accountFilesMap = null;
         try {
-            accountFilesMap = LogFileUtil.getLocalCachedFiles(cacheLocation);
+            accountFilesMap = StaticFileUtils.getLocalCachedFiles(cacheLocation);
         } catch (Exception e) {
             throw new ExecutionException(e);
         }
@@ -55,10 +56,10 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
                 for (String absoluteFileName : accountLogFiles) {
                     try {
                         total++;
-                        String accountId = LogFileUtil.getAccountId(absoluteFileName);
-                        String loadBalancerId = LogFileUtil.getLoadBalancerId(absoluteFileName);
+                        String accountId = StaticLogUtils.getAccountId(absoluteFileName);
+                        String loadBalancerId = StaticLogUtils.getLoadBalancerId(absoluteFileName);
 
-                        String logFileTime = LogFileUtil.getLogFileTime(absoluteFileName);
+                        String logFileTime = StaticFileUtils.getLogFileTime(absoluteFileName);
 
                         LoadBalancer lb = loadBalancerRepository.getByIdAndAccountId(Integer.parseInt(loadBalancerId), Integer.parseInt(accountId));
 
@@ -72,7 +73,7 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
 
                         dao.uploadLocalFile(authService.getUser(accountId), containername, absoluteFileName, remoteFileName);
 
-                        LogFileUtil.deleteLocalFile(absoluteFileName);
+                        StaticFileUtils.deleteLocalFile(absoluteFileName);
                         LOG.info("Uploaded logFile: " + absoluteFileName + "  to cloudfile as " + containername + "/" + remoteFileName );
 
                     //We will log each individual upload event only if it fails. No need to track those that succeeded.
@@ -101,17 +102,17 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
                     }
                 }
 
-                LogFileUtil.deleteLocalFile(accountDirectory);
+                StaticFileUtils.deleteLocalFile(accountDirectory);
             } catch(Exception e){
                 LOG.error("JOB " + runner.getInputString() + "failed to upload to Cloud Files. Please have a developer look into it.", e);
             }
         }
         File folder = new File(cacheLocation);
         for (File runtimeFolder : folder.listFiles()) {
-            LogFileUtil.deleteLocalFile(runtimeFolder.getAbsolutePath());
+            StaticFileUtils.deleteLocalFile(runtimeFolder.getAbsolutePath());
         }
         finishJob(state);
-        LOG.info("JOB COMPLETED. Total Time Taken for job " + runner.getInputString() + " to complete : " + LogFileUtil.getTotalTimeTaken(runner.getRunTime()) + " seconds");
+        LOG.info("JOB COMPLETED. Total Time Taken for job " + runner.getInputString() + " to complete : " + StaticFileUtils.getTotalTimeTaken(runner.getRunTime()) + " seconds");
         LOG.info("Failed to upload " + failed.size() + " files out of " + total + " files");
     }
 

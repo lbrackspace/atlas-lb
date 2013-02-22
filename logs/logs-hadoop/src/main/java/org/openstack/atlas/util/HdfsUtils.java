@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.compress.CompressionInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
 import org.openstack.atlas.util.exceptions.ReflectionException;
@@ -65,6 +66,7 @@ public class HdfsUtils {
         } else {
             fileSystem = FileSystem.get(defaultUri, conf, user);
         }
+
     }
 
     // For debugging
@@ -81,8 +83,8 @@ public class HdfsUtils {
         return map;
     }
 
-    public List<Path> listSequenceFiles(String dirPath) throws IOException {
-        List<Path> reducerOutputPaths = listHdfsFiles(dirPath);
+    public List<Path> listSequenceFiles(String dirPath, boolean useLocal) throws IOException {
+        List<Path> reducerOutputPaths = listFiles(dirPath, useLocal);
         List<Path> sequenceFiles = new ArrayList<Path>();
         Matcher sequenceFileMatcher = sequenceFilePattern.matcher("");
 
@@ -95,7 +97,6 @@ public class HdfsUtils {
         return sequenceFiles;
     }
 
-    
     public void compressAndIndexStreamToLzo(InputStream uncompressedIS, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream, int buffSize) throws IOException {
         Configuration codecConf = new Configuration();
         codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
@@ -107,9 +108,15 @@ public class HdfsUtils {
         cos.close();
     }
 
-    public List<Path> listHdfsFiles(String inPath) throws IOException {
+    public List<Path> listFiles(String inPath, boolean useLocal) throws IOException {
         List<Path> paths = new ArrayList<Path>();
         FileStatus[] stats = fileSystem.listStatus(new Path(inPath));
+        FileSystem fs;
+        if (useLocal) {
+            fs = localFileSystem;
+        } else {
+            fs = fileSystem;
+        }
         if (stats == null) {
             throw new IOException(String.format("could not list status for Directory %s\n", inPath));
         }
@@ -164,6 +171,26 @@ public class HdfsUtils {
         }
         status = fs.getFileStatus(status.getPath().getParent());
         return new FileOwner(status.getOwner(), status.getGroup());
+    }
+
+    public void mkDirs(String dirPath, boolean useLocal) throws IOException {
+        FileSystem fs;
+        if (useLocal) {
+            fs = localFileSystem;
+        } else {
+            fs = fileSystem;
+        }
+        fs.mkdirs(new Path(dirPath));
+    }
+    
+    public void mkDirs(String dirPath, FsPermission perms,boolean useLocal) throws IOException {
+        FileSystem fs;
+        if (useLocal) {
+            fs = localFileSystem;
+        } else {
+            fs = fileSystem;
+        }
+        fs.mkdirs(new Path(dirPath),perms);
     }
 
     public FileOwner getDirectoryOwner(String fileName, boolean useLocal) throws IOException {
