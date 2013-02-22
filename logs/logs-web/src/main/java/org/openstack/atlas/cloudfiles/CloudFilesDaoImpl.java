@@ -75,22 +75,5 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
         }
     }
 
-    /*public void verifyContainerExistance(String containerName) throws Exception {
-        login();
-        if (!client.containerExists(containerName)) {
-            client.createContainer(containerName);
-        }
-    }
 
-    public boolean login() throws Exception {
-        // Hack used elsewhere in the App to simulate login via cloud files api.
-        try {
-            client.login();
-        } catch (Exception e) {
-            // try again to log in, sometimes this fails randomly
-            client.login();
-        }
-        return true;
-    }
-*/
 }
