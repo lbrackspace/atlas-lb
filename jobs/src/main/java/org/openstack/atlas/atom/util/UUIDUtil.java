@@ -1,7 +1,5 @@
 package org.openstack.atlas.atom.util;
 
-import org.openstack.atlas.service.domain.entities.Usage;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
@@ -26,7 +24,7 @@ public class UUIDUtil {
      * @throws NoSuchAlgorithmException
      */
     public static UUID genUUIDMD5Hash(String uuidString) throws NoSuchAlgorithmException {
-        byte[] sum = sha256(uuidString);
+        byte[] sum = md5(uuidString);
         return UUID.nameUUIDFromBytes(sum);
     }
 

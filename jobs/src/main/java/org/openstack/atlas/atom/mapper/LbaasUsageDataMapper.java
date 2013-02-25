@@ -89,7 +89,7 @@ public class LbaasUsageDataMapper {
     }
 
     private static String genUUIDString(Usage usageRecord) {
-        return usageRecord.getId() + "_" + usageRecord.getLoadbalancer().getId() + "_" + region + "_" + Calendar.getInstance();
+        return SERVICE_CODE + "_" + usageRecord.getId() + "_" + usageRecord.getLoadbalancer().getId() + "_" + region + "_" + Calendar.getInstance();
     }
 
     private static EntryPojo buildEntry() {
