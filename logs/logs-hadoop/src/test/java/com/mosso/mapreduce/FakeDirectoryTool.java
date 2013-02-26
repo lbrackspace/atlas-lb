@@ -2,7 +2,7 @@ package com.mosso.mapreduce;
 
 import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.tools.HadoopConfiguration;
-import org.openstack.atlas.tools.HadoopRunner;
+import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.Reducer;
 
@@ -21,7 +21,7 @@ public class FakeDirectoryTool extends DirectoryTool {
     }
 
     @Override
-    protected void setSpecialConfigurations(HadoopConfiguration conf, HadoopRunner runner) throws IOException {
+    protected void setSpecialConfigurations(HadoopConfiguration conf, QuartzSchedulerConfigs runner) throws IOException {
     }
 
 }

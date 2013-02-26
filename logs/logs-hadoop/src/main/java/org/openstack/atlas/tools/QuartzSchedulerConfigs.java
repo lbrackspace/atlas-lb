@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class HadoopRunner {
+public class QuartzSchedulerConfigs {
 
     private String runTime;
     private String rawlogsFileTime;
@@ -19,8 +19,8 @@ public class HadoopRunner {
     private String jobJarPath;
     private boolean lzoInput;
 
-    public static HadoopRunner createRunnerFromValues(Map values) {
-        HadoopRunner runner = new HadoopRunner();
+    public static QuartzSchedulerConfigs createRunnerFromValues(Map values) {
+        QuartzSchedulerConfigs runner = new QuartzSchedulerConfigs();
         runner.setRunTime((String) values.get(Constants.FORMATTED_RUNTIME));
         runner.setInputString((String) values.get(Constants.INPUT_DIR));
         runner.setRawlogsFileTime((String) values.get(Constants.FILEDATE));

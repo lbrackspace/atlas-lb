@@ -13,7 +13,7 @@ import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.tools.HadoopConfiguration;
-import org.openstack.atlas.tools.HadoopRunner;
+import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.openstack.atlas.tools.HadoopTool;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -23,6 +23,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.util.HdfsUtils;
 
 public class FileMoveJobExecution extends LoggableJobExecution implements QuartzExecutable {
 
@@ -32,7 +34,10 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
 
     private HadoopTool hadoopTool;
 
-    public void execute(JobScheduler scheduler, HadoopRunner runner) throws ExecutionException {
+    private HdfsUtils hdfsUtils = new HdfsUtils();
+
+    @Override
+    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws ExecutionException {
 
         // stupid manual set, this has to be done. a circular dep because of how
         // quartz must init its scheduler factory crap. currently u cannot have
@@ -65,7 +70,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
     }
 
     @Required
-    private void scheduleMapReduceAggregateLogsJob(HadoopRunner runner) throws SchedulingException {
+    private void scheduleMapReduceAggregateLogsJob(QuartzSchedulerConfigs runner) throws SchedulingException {
         jobScheduler.scheduleJob(MapReduceAggregateLogsJob.class, runner);
     }
 
@@ -85,7 +90,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         return fastValues;
     }
 
-    private List<String> getLocalInputFiles(HadoopRunner runner) throws Exception {
+    private List<String> getLocalInputFiles(QuartzSchedulerConfigs runner) throws Exception {
         List<String> localInputFiles = new LinkedList<String>();
         if (runner.getFileMoveInput() != null) {
             localInputFiles.add(runner.getFileMoveInput());
@@ -107,15 +112,15 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
                     // remove the seconds cuz it takes a few to write the logs sometimes
                     // only delete the files from the backup dir IFF they are named the same (sans the seconds)
                     String smallerFileName = filename.substring(0, filename.length() - 2);
-                    File backupDir = new File(utils.getBackupDir());
+                    File backupDir = new File(HadoopLogsConfigs.getBackupDir());
                     if (backupDir.exists()) {
                         String[] files = backupDir.list();
                         for (String file : files) {
                             if (file.contains(smallerFileName)) {
                                 // this is a backup file that needs to be deleted,
                                 // its from the same hour as the regular file
-                                LOG.info("deleting file " + utils.getBackupDir() + file);
-                                new File(utils.getBackupDir() + file).delete();
+                                LOG.info("deleting file " + HadoopLogsConfigs.getBackupDir() + file);
+                                new File(HadoopLogsConfigs.getBackupDir() + file).delete();
                             }
                         }
                     }
@@ -126,7 +131,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         }
     }
 
-    private void moveFilesOntoDFS(HadoopRunner runner, Map<String, JobState> fastValues) throws ExecutionException {
+    private void moveFilesOntoDFS(QuartzSchedulerConfigs runner, Map<String, JobState> fastValues) throws ExecutionException {
 
         HadoopConfiguration conf = hadoopTool.getConfiguration();
         String inputDir = hadoopTool.getInputDirectory();
@@ -138,8 +143,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
             try {
                 LOG.info("putting file on the DFS at " + inputDir);
 
-                utils.makeDirectories(conf.getConfiguration(),
-                        inputDir);
+                hdfsUtils.mkDirs(inputDir, false);
                 // The files will be the same, so we have to place it as the
                 // named file, so we need a new method.
                 File f = new File(inputFile);
@@ -150,7 +154,6 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
                 //if its a LZO file, index it
                 if (placedFile.endsWith(".lzo")) {
                     lzoIndexer.index(new Path(placedFile));
-//                    ToolRunner.run(new DistributedLzoIndexer(), new String[]{placedFile});
                 }
                 offset++;
 

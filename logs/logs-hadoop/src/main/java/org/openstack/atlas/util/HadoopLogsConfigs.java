@@ -8,7 +8,7 @@ import org.apache.hadoop.fs.Path;
 import org.openstack.atlas.config.LbLogsConfiguration;
 import org.openstack.atlas.config.LbLogsConfigurationKeys;
 
-public class HadoopConfigFactory {
+public class HadoopLogsConfigs {
 
     protected static final String cacheDir;
     protected static final String backupDir;

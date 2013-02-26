@@ -13,7 +13,7 @@ import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.tools.HadoopRunner;
+import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.openstack.atlas.util.LogFileNameBuilder;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.openstack.atlas.util.HadoopLogsConfigs;
 import org.openstack.atlas.util.StaticFileUtils;
 import org.openstack.atlas.util.StaticLogUtils;
 
@@ -32,10 +33,10 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
     private JobScheduler jobScheduler;
     private AuthService authService;
 
-    public void execute(JobScheduler scheduler, HadoopRunner runner) throws ExecutionException {
+    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws ExecutionException {
         jobScheduler = scheduler;
 
-        String cacheLocation = utils.getCacheDir();
+        String cacheLocation = HadoopLogsConfigs.getCacheDir();
 
         Map<String, List> accountFilesMap = null;
         try {

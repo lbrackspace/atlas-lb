@@ -30,7 +30,7 @@ public abstract class DirectoryTool implements HadoopTool {
 
     private List<String> localFiles = new LinkedList<String>();
 
-    private HadoopRunner runner;
+    private QuartzSchedulerConfigs runner;
 
     public RUN_STATES executeHadoopRun() throws IOException {
         setSpecialConfigurations(conf, runner);
@@ -94,7 +94,7 @@ public abstract class DirectoryTool implements HadoopTool {
         createInputDir();
     }
 
-    public void setupHadoopRun(HadoopRunner localrunner) {
+    public void setupHadoopRun(QuartzSchedulerConfigs localrunner) {
         this.runner = localrunner;
         this.inputDir = runner.getInputString();
         localFiles.clear();
@@ -157,7 +157,7 @@ public abstract class DirectoryTool implements HadoopTool {
     protected abstract Class<? extends Reducer> getReducerClass();
 
     protected abstract void setSpecialConfigurations(HadoopConfiguration specialConfigurations,
-                                                     HadoopRunner localRunner) throws IOException;
+                                                     QuartzSchedulerConfigs localRunner) throws IOException;
 
     private void createInputDir() {
         FileInputFormat.setInputPaths(conf.getJobConf(), new Path(getLocalInputDir()));

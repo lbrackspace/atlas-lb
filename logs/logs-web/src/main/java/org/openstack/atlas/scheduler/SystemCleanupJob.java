@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.util.Calendar;
+import org.openstack.atlas.util.HadoopLogsConfigs;
 import org.openstack.atlas.util.StaticFileUtils;
 
 public class SystemCleanupJob  extends QuartzJobBean implements StatefulJob {
@@ -22,7 +23,7 @@ public class SystemCleanupJob  extends QuartzJobBean implements StatefulJob {
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         log.info("Starting SystemCleanupJob  at " + Calendar.getInstance().getTime());
-        String cacheLocation = utils.getCacheDir();
+        String cacheLocation = HadoopLogsConfigs.getCacheDir();
         StaticFileUtils.deleteFilesOlderThanNDays(cacheLocation, 30); //Delete any log files from cache that are older than 30 days.
 
         jobStateService.deleteOldLoggingStates();

@@ -9,21 +9,28 @@ import org.openstack.atlas.scheduler.JobScheduler;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
-import org.openstack.atlas.tools.HadoopRunner;
+import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.hadoop.tools.rumen.HadoopLogsAnalyzer;
+import org.openstack.atlas.tools.HadoopConfiguration;
+import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.util.HdfsUtils;
 import org.openstack.atlas.util.StaticFileUtils;
 
 public class FileWatchdogJobExecution extends LoggableJobExecution implements QuartzExecutable {
     private static final Log LOG = LogFactory.getLog(FileWatchdogJobExecution.class);
+    private HdfsUtils hdfsUtils = new HdfsUtils();
 
-    public void execute(JobScheduler scheduler, HadoopRunner runner) throws ExecutionException {
-        List<String> localInputFiles = utils.getLocalInputFiles();
+    @Override
+    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws ExecutionException {
+        List<String> localInputFiles = hdfsUtils.getLocalInputFiles(HadoopLogsConfigs.getFileSystemRootDir());
 
-        List<String> scheduledFilesToRun = new LinkedList<String>();
+        List<String> scheduledFilesToRun = new ArrayList<String>();
         for (String inputFile : localInputFiles) {
             List states = jobStateRepository.getEntriesLike(JobName.FILECOPY, inputFile);
             if (states.isEmpty()) {

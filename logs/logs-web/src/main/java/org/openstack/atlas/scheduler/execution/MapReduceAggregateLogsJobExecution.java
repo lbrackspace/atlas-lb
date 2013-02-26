@@ -9,7 +9,7 @@ import org.openstack.atlas.scheduler.JobScheduler;
 import org.openstack.atlas.scheduler.SplitLoadBalancerLogsJob;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
-import org.openstack.atlas.tools.HadoopRunner;
+import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.openstack.atlas.tools.HadoopTool;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -23,7 +23,7 @@ public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution imp
         this.tool = tool;
     }
 
-    public void execute(JobScheduler scheduler, HadoopRunner runner) throws ExecutionException {
+    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws ExecutionException {
         JobState state = createJob(JobName.MAPREDUCE, runner.getInputString());
         tool.setupHadoopRun(runner);
 
@@ -39,7 +39,7 @@ public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution imp
         finishJob(state);
     }
 
-    private void scheduleSplitLoadBalancerLogsJob(JobScheduler scheduler, HadoopRunner runner) throws SchedulingException {
+    private void scheduleSplitLoadBalancerLogsJob(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws SchedulingException {
         scheduler.scheduleJob(SplitLoadBalancerLogsJob.class, runner);
     }
 }

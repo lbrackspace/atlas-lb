@@ -1,6 +1,6 @@
 package org.openstack.atlas.scheduler;
 
-import org.openstack.atlas.tools.HadoopRunner;
+import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.openstack.atlas.util.LogDateFormat;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Required;
@@ -19,8 +19,8 @@ public abstract class BaseMapreduceJob extends QuartzJobBean {
         return format.format(context.getScheduledFireTime());
     }
 
-    protected HadoopRunner getRunner(JobExecutionContext context) {
-        HadoopRunner runner = HadoopRunner.createRunnerFromValues(context.getJobDetail().getJobDataMap());
+    protected QuartzSchedulerConfigs getRunner(JobExecutionContext context) {
+        QuartzSchedulerConfigs runner = QuartzSchedulerConfigs.createRunnerFromValues(context.getJobDetail().getJobDataMap());
         if (runner.getRunTime() == null) {
             runner.setRunTime(getRuntime(context));
         }

@@ -1,7 +1,7 @@
 package org.openstack.atlas.scheduler;
 
 import org.openstack.atlas.exception.SchedulingException;
-import org.openstack.atlas.tools.HadoopRunner;
+import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.quartz.*;
 
 import java.text.SimpleDateFormat;
@@ -46,11 +46,11 @@ public class JobScheduler {
         }
     }
 
-    public void scheduleJob(String uniqueJobName, Class jobClass, HadoopRunner runner) throws SchedulingException {
+    public void scheduleJob(String uniqueJobName, Class jobClass, QuartzSchedulerConfigs runner) throws SchedulingException {
         scheduleJob(uniqueJobName, jobClass, runner.createMapOutputOfValues());
     }
 
-    public void scheduleJob(Class jobClass, HadoopRunner runner) throws SchedulingException {
+    public void scheduleJob(Class jobClass, QuartzSchedulerConfigs runner) throws SchedulingException {
         scheduleJob(createJobName(jobClass, runner), jobClass, runner.createMapOutputOfValues());
     }
 
@@ -58,7 +58,7 @@ public class JobScheduler {
         this.stdScheduler = schedulerFactoryBean;
     }
 
-    private String createJobName(Class jobClass, HadoopRunner runner) {
+    private String createJobName(Class jobClass, QuartzSchedulerConfigs runner) {
         String shrunkName = jobClass.getName();
         String totalName = random.nextLong() + "-" + shrunkName.substring(shrunkName.getClass().getPackage().getName().length() + 1)
                 + runner.getInputString() + "_"

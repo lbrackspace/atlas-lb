@@ -4,7 +4,7 @@ import com.hadoop.mapred.DeprecatedLzoTextInputFormat;
 import org.openstack.atlas.io.*;
 import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.tools.HadoopConfiguration;
-import org.openstack.atlas.tools.HadoopRunner;
+import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.Mapper;
@@ -33,7 +33,7 @@ public class LbStatsTool extends DirectoryTool {
     }
 
     @Override
-    protected void setSpecialConfigurations(HadoopConfiguration specialConfigurations, HadoopRunner localRunner) throws IOException {
+    protected void setSpecialConfigurations(HadoopConfiguration specialConfigurations, QuartzSchedulerConfigs localRunner) throws IOException {
         specialConfigurations.getJobConf().setJobName("LB_STATS"); //NameVal.FQDN.toString()
         if (localRunner.isLzoInput()) {
             //INPUT THE THING INTO MVN AND GET THE JARS ADDED

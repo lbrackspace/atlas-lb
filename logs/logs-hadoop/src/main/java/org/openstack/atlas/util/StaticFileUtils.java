@@ -42,6 +42,10 @@ public class StaticFileUtils {
     private static final int DEFAULT_BUFFSIZE = 1024 * 256;
     private static final Random rnd = new Random();
 
+    public static synchronized String generateRandomBase() {
+        return "-" + rnd.nextLong() + ".tmp";
+    }
+
     public static String expandUser(String pathIn) {
         return pathIn.replace("~", System.getProperty("user.home"));
     }
@@ -520,4 +524,10 @@ public class StaticFileUtils {
         }
         return monthYear;
     }
+
+    public static Random getRnd() {
+        return rnd;
+    }
+
+
 }

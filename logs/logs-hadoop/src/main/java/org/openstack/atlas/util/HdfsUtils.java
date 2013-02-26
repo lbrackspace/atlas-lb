@@ -36,7 +36,7 @@ public class HdfsUtils {
     protected int bufferSize = 256 * 1024;
     protected Configuration conf;
     protected String user;
-    protected FileSystem fileSystem;
+    protected FileSystem remoteFileSystem;
     protected FileSystem localFileSystem;
     protected short repCount = 3;
     protected long blockSize = 64 * 1024 * 1024;
@@ -62,19 +62,19 @@ public class HdfsUtils {
         localFileSystem.setVerifyChecksum(false); // This avoids the .crc files
 
         if (user == null) {
-            fileSystem = FileSystem.get(defaultUri, conf);
+            remoteFileSystem = FileSystem.get(defaultUri, conf);
         } else {
-            fileSystem = FileSystem.get(defaultUri, conf, user);
+            remoteFileSystem = FileSystem.get(defaultUri, conf, user);
         }
 
     }
 
-    // For debugging
+    // For debugging Not used by the Application
     public Map<String, String> getConfigurationMap() {
         return getConfigurationMap(conf);
     }
 
-    // For debugging
+    // For debugging Not used by the Application
     public static Map<String, String> getConfigurationMap(Configuration conf) {
         Map<String, String> map = new HashMap<String, String>();
         for (Entry<String, String> ent : conf) {
@@ -84,7 +84,7 @@ public class HdfsUtils {
     }
 
     public List<Path> listSequenceFiles(String dirPath, boolean useLocal) throws IOException {
-        List<Path> reducerOutputPaths = listFiles(dirPath, useLocal);
+        List<Path> reducerOutputPaths = listPaths(dirPath, useLocal);
         List<Path> sequenceFiles = new ArrayList<Path>();
         Matcher sequenceFileMatcher = sequenceFilePattern.matcher("");
 
@@ -108,14 +108,44 @@ public class HdfsUtils {
         cos.close();
     }
 
-    public List<Path> listFiles(String inPath, boolean useLocal) throws IOException {
-        List<Path> paths = new ArrayList<Path>();
-        FileStatus[] stats = fileSystem.listStatus(new Path(inPath));
+    public FileStatus[] listStatuses(String filePath, boolean useLocal) throws IOException {
         FileSystem fs;
         if (useLocal) {
             fs = localFileSystem;
         } else {
-            fs = fileSystem;
+            fs = remoteFileSystem;
+        }
+        return fs.listStatus(new Path(filePath));
+    }
+
+    public List<String> getLocalInputFiles(String znodeBase) {
+        List<String> logs = new ArrayList<String>();
+        File znodesParent = new File(znodeBase);
+        String[] znodes = znodesParent.list();
+        for (int i = 0; i < znodes.length; i++) {
+            String znode = znodes[i];
+            File znodefile = new File(znodeBase + znode);
+            if (znodefile.isDirectory()) {
+                String[] logfiles = znodefile.list();
+                for (int j = 0; j < logfiles.length; j++) {
+                    String logfile = logfiles[j];
+                    logs.add(znodeBase + znode + "/" + logfile);
+                }
+            } else if (znodefile.isFile()) {
+                logs.add(znodeBase + znode);
+            }
+        }
+        return logs;
+    }
+
+    public List<Path> listPaths(String inPath, boolean useLocal) throws IOException {
+        List<Path> paths = new ArrayList<Path>();
+        FileStatus[] stats = remoteFileSystem.listStatus(new Path(inPath));
+        FileSystem fs;
+        if (useLocal) {
+            fs = localFileSystem;
+        } else {
+            fs = remoteFileSystem;
         }
         if (stats == null) {
             throw new IOException(String.format("could not list status for Directory %s\n", inPath));
@@ -137,7 +167,7 @@ public class HdfsUtils {
         if (useLocal) {
             return localFileSystem.create(path, allowOveride, bufferSize, repCount, blockSize);
         } else {
-            return fileSystem.create(path, allowOveride, bufferSize, repCount, blockSize);
+            return remoteFileSystem.create(path, allowOveride, bufferSize, repCount, blockSize);
         }
     }
 
@@ -149,7 +179,7 @@ public class HdfsUtils {
         if (useLocal) {
             return localFileSystem.open(path, bufferSize);
         } else {
-            return fileSystem.open(path, bufferSize);
+            return remoteFileSystem.open(path, bufferSize);
         }
     }
 
@@ -158,13 +188,13 @@ public class HdfsUtils {
     }
 
     public FileOwner getFileOwner(Path path, boolean useLocal) throws IOException {
-        FileSystem fs = (useLocal) ? localFileSystem : fileSystem;
+        FileSystem fs = (useLocal) ? localFileSystem : remoteFileSystem;
         FileStatus status = fs.getFileStatus(path);
         return new FileOwner(status.getOwner(), status.getGroup());
     }
 
     public FileOwner getDirectoryOwner(Path path, boolean useLocal) throws IOException {
-        FileSystem fs = (useLocal) ? localFileSystem : fileSystem;
+        FileSystem fs = (useLocal) ? localFileSystem : remoteFileSystem;
         FileStatus status = fs.getFileStatus(path);
         if (status.isDir()) {
             return new FileOwner(status.getOwner(), status.getGroup());
@@ -178,19 +208,19 @@ public class HdfsUtils {
         if (useLocal) {
             fs = localFileSystem;
         } else {
-            fs = fileSystem;
+            fs = remoteFileSystem;
         }
         fs.mkdirs(new Path(dirPath));
     }
-    
-    public void mkDirs(String dirPath, FsPermission perms,boolean useLocal) throws IOException {
+
+    public void mkDirs(String dirPath, FsPermission perms, boolean useLocal) throws IOException {
         FileSystem fs;
         if (useLocal) {
             fs = localFileSystem;
         } else {
-            fs = fileSystem;
+            fs = remoteFileSystem;
         }
-        fs.mkdirs(new Path(dirPath),perms);
+        fs.mkdirs(new Path(dirPath), perms);
     }
 
     public FileOwner getDirectoryOwner(String fileName, boolean useLocal) throws IOException {
@@ -202,7 +232,7 @@ public class HdfsUtils {
     }
 
     public void setFileOwner(Path path, boolean useLocal, String user, String group) throws IOException {
-        FileSystem fs = (useLocal) ? localFileSystem : fileSystem;
+        FileSystem fs = (useLocal) ? localFileSystem : remoteFileSystem;
         fs.setOwner(path, user, group);
     }
 
@@ -247,7 +277,7 @@ public class HdfsUtils {
     }
 
     public FileSystem getFileSystem() {
-        return fileSystem;
+        return remoteFileSystem;
     }
 
     public FileSystem getLocalFileSystem() {
@@ -255,16 +285,36 @@ public class HdfsUtils {
     }
 
     public String getNameNode() {
-        if (fileSystem == null) {
+        if (remoteFileSystem == null) {
             return null;
         }
 
-        Configuration fsConf = fileSystem.getConf();
+        Configuration fsConf = remoteFileSystem.getConf();
         if (fsConf == null) {
             return null;
         }
         String nameNode = fsConf.get("fs.default.name", null);
         return nameNode;
+    }
+
+    public static void deleteLocalFile(Path filePath) {
+        new File(filePath.toUri().getPath()).delete();
+        deleteCrc(filePath);
+    }
+
+    public static void deleteCrc(Path filePath) {
+        //Check for the .NAME.crc file to deleted.
+        //The CRC is after the last /, and its a "." followed by the entire filename, and ".crc"
+        String path = filePath.toUri().getPath();
+        int indexOfParent = path.lastIndexOf("/");
+        if (indexOfParent >= 0 && indexOfParent < path.length()) {
+            // we assume there is a parent, grab it and manupilate the pate
+            path = path.substring(0, indexOfParent + 1) + "." + path.substring(indexOfParent + 1) + ".crc";
+            File pathFile = new File(path);
+            if (pathFile.exists()) {
+                pathFile.delete();
+            }
+        }
     }
 
     public static Object newUtils(Class utilClass, String user, String... confFiles) throws ReflectionException {

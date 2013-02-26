@@ -9,7 +9,7 @@ import org.openstack.atlas.scheduler.JobScheduler;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.tools.DirectoryTool;
-import org.openstack.atlas.tools.HadoopRunner;
+import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -19,14 +19,18 @@ import org.apache.hadoop.io.Text;
 
 import java.io.File;
 import java.io.IOException;
+import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.util.HdfsUtils;
 
 
 public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution implements QuartzExecutable {
     private static final Log LOG = LogFactory.getLog(SplitLoadBalancerLogsJobExecution.class);
 
      private DirectoryTool tool;
+     private HdfsUtils hdfsUtils = new HdfsUtils();
 
-     public void execute(JobScheduler scheduler, HadoopRunner runner) throws ExecutionException {
+    @Override
+     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws ExecutionException {
 
          JobState state = createJob(JobName.FILES_SPLIT, runner.getInputString());
 
@@ -37,8 +41,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
              String directory = tool.getOutputDirectory();
 
              FileStatus[] files = new FileStatus[0];
-
-             files = utils.ls(tool.getConfiguration().getJobConf(), tool.getOutputDirectory());
+             files = hdfsUtils.listStatuses(tool.getOutputDirectory(), false);
              LOG.info("No of files in " + directory + " is: " + files.length);
 
              for (int i = 0; i < files.length; i++) {
@@ -61,7 +64,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
                          String accountId = getAccount(key.toString());
                          String loadbalancerId = getLoadBalancerId(key.toString());
 
-                         String cacheLocation = utils.getCacheDir() + "/" + runner.getRawlogsFileTime() + "/" + accountId;
+                         String cacheLocation = HadoopLogsConfigs.getCacheDir() + "/" + runner.getRawlogsFileTime() + "/" + accountId;
                          new File(cacheLocation).mkdirs();
                          String filename = getFileName(loadbalancerId, runner.getRawlogsFileTime());
 
@@ -83,10 +86,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
                      }
 
                      reader.close();
-                     utils.deleteLocalFile(local);
-
-
-
+                     HdfsUtils.deleteLocalFile(local);
                  }
 
              }
@@ -126,7 +126,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
          return key.split(":")[1];
      }
 
-     private void scheduleArchiveLoadBalancerLogsJob(JobScheduler scheduler, HadoopRunner runner) throws SchedulingException {
+     private void scheduleArchiveLoadBalancerLogsJob(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws SchedulingException {
          scheduler.scheduleJob(ArchiveLoadBalancerLogsJob.class, runner);
      }
 
