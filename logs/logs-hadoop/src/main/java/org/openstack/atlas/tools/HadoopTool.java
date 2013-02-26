@@ -16,7 +16,7 @@ public interface HadoopTool {
 
     void setupHadoopRun(String inputFolder, String jobJarPath);
 
-    void setupHadoopRun(QuartzSchedulerConfigs runner);
+    void setupHadoopRun(QuartzSchedulerConfigs schedulerConfigs);
 
     static enum RUN_STATES {
         FAILURE, SUCCESS

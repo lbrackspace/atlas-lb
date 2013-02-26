@@ -23,13 +23,14 @@ public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution imp
         this.tool = tool;
     }
 
-    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws ExecutionException {
-        JobState state = createJob(JobName.MAPREDUCE, runner.getInputString());
-        tool.setupHadoopRun(runner);
+    @Override
+    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
+        JobState state = createJob(JobName.MAPREDUCE, schedulerConfigs.getInputString());
+        tool.setupHadoopRun(schedulerConfigs);
 
         try {
             tool.executeHadoopRun();
-            scheduleSplitLoadBalancerLogsJob(scheduler, runner);
+            scheduleSplitLoadBalancerLogsJob(scheduler, schedulerConfigs);
         } catch (Exception e) {
             LOG.error(e);
             failJob(state);
@@ -39,8 +40,8 @@ public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution imp
         finishJob(state);
     }
 
-    private void scheduleSplitLoadBalancerLogsJob(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws SchedulingException {
-        scheduler.scheduleJob(SplitLoadBalancerLogsJob.class, runner);
+    private void scheduleSplitLoadBalancerLogsJob(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws SchedulingException {
+        scheduler.scheduleJob(SplitLoadBalancerLogsJob.class, schedulerConfigs);
     }
 }
 

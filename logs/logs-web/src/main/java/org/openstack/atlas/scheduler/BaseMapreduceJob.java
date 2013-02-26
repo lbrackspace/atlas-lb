@@ -19,12 +19,12 @@ public abstract class BaseMapreduceJob extends QuartzJobBean {
         return format.format(context.getScheduledFireTime());
     }
 
-    protected QuartzSchedulerConfigs getRunner(JobExecutionContext context) {
-        QuartzSchedulerConfigs runner = QuartzSchedulerConfigs.createRunnerFromValues(context.getJobDetail().getJobDataMap());
-        if (runner.getRunTime() == null) {
-            runner.setRunTime(getRuntime(context));
+    protected QuartzSchedulerConfigs getSchedulerConfigs(JobExecutionContext context) {
+        QuartzSchedulerConfigs schedulerConfigs = QuartzSchedulerConfigs.createSchedulerConfigsFromMap(context.getJobDetail().getJobDataMap());
+        if (schedulerConfigs.getRunTime() == null) {
+            schedulerConfigs.setRunTime(getRuntime(context));
         }
-        return runner;
+        return schedulerConfigs;
     }
 
     protected JobScheduler createSchedulerInstance(JobExecutionContext context) {

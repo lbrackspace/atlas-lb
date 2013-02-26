@@ -21,7 +21,7 @@ public class FakeDirectoryTool extends DirectoryTool {
     }
 
     @Override
-    protected void setSpecialConfigurations(HadoopConfiguration conf, QuartzSchedulerConfigs runner) throws IOException {
+    protected void setSpecialConfigurations(HadoopConfiguration conf, QuartzSchedulerConfigs schedulerConfigs) throws IOException {
     }
 
 }

@@ -19,22 +19,22 @@ public class QuartzSchedulerConfigs {
     private String jobJarPath;
     private boolean lzoInput;
 
-    public static QuartzSchedulerConfigs createRunnerFromValues(Map values) {
-        QuartzSchedulerConfigs runner = new QuartzSchedulerConfigs();
-        runner.setRunTime((String) values.get(Constants.FORMATTED_RUNTIME));
-        runner.setInputString((String) values.get(Constants.INPUT_DIR));
-        runner.setRawlogsFileTime((String) values.get(Constants.FILEDATE));
+    public static QuartzSchedulerConfigs createSchedulerConfigsFromMap(Map values) {
+        QuartzSchedulerConfigs schedulerConfigs = new QuartzSchedulerConfigs();
+        schedulerConfigs.setRunTime((String) values.get(Constants.FORMATTED_RUNTIME));
+        schedulerConfigs.setInputString((String) values.get(Constants.INPUT_DIR));
+        schedulerConfigs.setRawlogsFileTime((String) values.get(Constants.FILEDATE));
 
-        runner.setInputForMultiPathJobs(createInputForMultiPathJobs(values));
-        runner.setJobJarPath((String) values.get(Constants.JOBJAR_PATH));
+        schedulerConfigs.setInputForMultiPathJobs(createInputForMultiPathJobs(values));
+        schedulerConfigs.setJobJarPath((String) values.get(Constants.JOBJAR_PATH));
 
         if (values.get(Constants.INPUT_TYPE) == null) {
-            runner.setLzoInput(false);
+            schedulerConfigs.setLzoInput(false);
         } else {
-            runner.setLzoInput((Boolean) values.get(Constants.INPUT_TYPE));
+            schedulerConfigs.setLzoInput((Boolean) values.get(Constants.INPUT_TYPE));
         }
 
-        return runner;
+        return schedulerConfigs;
     }
 
     private static List<String> createInputForMultiPathJobs(Map values) {

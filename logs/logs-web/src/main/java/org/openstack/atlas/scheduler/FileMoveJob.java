@@ -23,11 +23,11 @@ public class FileMoveJob extends BaseMapreduceJob implements StatefulJob {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        QuartzSchedulerConfigs runner = getRunner(context);
-        LOG.info("running " + getClass() + " on " + runner.getRunTime() + " for logFileDate: " + runner.getRawlogsFileTime());
+        QuartzSchedulerConfigs configScheduler = getSchedulerConfigs(context);
+        LOG.info("running " + getClass() + " on " + configScheduler.getRunTime() + " for logFileDate: " + configScheduler.getRawlogsFileTime());
 
         try {
-            fileMoveJobExecution.execute(createSchedulerInstance(context), runner);
+            fileMoveJobExecution.execute(createSchedulerInstance(context), configScheduler);
         } catch (ExecutionException e) {
             throw new JobExecutionException(e);
         }

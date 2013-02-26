@@ -33,9 +33,9 @@ public class LbStatsTool extends DirectoryTool {
     }
 
     @Override
-    protected void setSpecialConfigurations(HadoopConfiguration specialConfigurations, QuartzSchedulerConfigs localRunner) throws IOException {
+    protected void setSpecialConfigurations(HadoopConfiguration specialConfigurations, QuartzSchedulerConfigs localSchedulerConfigs) throws IOException {
         specialConfigurations.getJobConf().setJobName("LB_STATS"); //NameVal.FQDN.toString()
-        if (localRunner.isLzoInput()) {
+        if (localSchedulerConfigs.isLzoInput()) {
             //INPUT THE THING INTO MVN AND GET THE JARS ADDED
             specialConfigurations.getJobConf().setInputFormat(DeprecatedLzoTextInputFormat.class);
         }
@@ -56,7 +56,7 @@ public class LbStatsTool extends DirectoryTool {
         
         SequenceFileOutputFormat.setOutputCompressionType(specialConfigurations.getJobConf(), SequenceFile.CompressionType.BLOCK);
 
-        specialConfigurations.getJobConf().set(Constants.FILEDATE, localRunner.getRawlogsFileTime());
+        specialConfigurations.getJobConf().set(Constants.FILEDATE, localSchedulerConfigs.getRawlogsFileTime());
         
     }
 

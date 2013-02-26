@@ -33,7 +33,8 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
     private JobScheduler jobScheduler;
     private AuthService authService;
 
-    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws ExecutionException {
+    @Override
+    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
         jobScheduler = scheduler;
 
         String cacheLocation = HadoopLogsConfigs.getCacheDir();
@@ -50,7 +51,7 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
         List<String> failed = new ArrayList<String>();
         int total = 0;
 
-        JobState state = createJob(JobName.ARCHIVE, runner.getInputString());
+        JobState state = createJob(JobName.ARCHIVE, schedulerConfigs.getInputString());
         for (String accountDirectory : accountFilesMap.keySet()) {
             try {
                 List<String> accountLogFiles = accountFilesMap.get(accountDirectory);
@@ -79,24 +80,24 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
 
                     //We will log each individual upload event only if it fails. No need to track those that succeeded.
                     } catch (EntityNotFoundException e) {
-                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, runner.getInputString() + ":" + absoluteFileName);
+                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         failed.add("absoluteFileName");
                         LOG.error("Error trying to upload to CloudFiles for loadbalancer that doesn't exist: " + absoluteFileName, e);
                     } catch(FilesException e){
-                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, runner.getInputString() + ":" + absoluteFileName);
+                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         failed.add("absoluteFileName");
                         LOG.error("Error trying to upload to CloudFiles: " + absoluteFileName, e);
                     } catch(AuthException e){
-                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, runner.getInputString() + ":" + absoluteFileName);
+                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         failed.add("absoluteFileName");
                         LOG.error("Error trying to upload to CloudFiles: " + absoluteFileName, e);
                     } catch(Exception e){
                         // Usually its caused by SSL Exception due to some weird staging & test accounts. So ignoring for now.
                         // Catch all so we can proceed.
-                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, runner.getInputString() + ":" + absoluteFileName);
+                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         failed.add("absoluteFileName");
                         LOG.error("Unexpected Error trying to upload to CloudFiles: " + absoluteFileName, e);
@@ -105,7 +106,7 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
 
                 StaticFileUtils.deleteLocalFile(accountDirectory);
             } catch(Exception e){
-                LOG.error("JOB " + runner.getInputString() + "failed to upload to Cloud Files. Please have a developer look into it.", e);
+                LOG.error("JOB " + schedulerConfigs.getInputString() + "failed to upload to Cloud Files. Please have a developer look into it.", e);
             }
         }
         File folder = new File(cacheLocation);
@@ -113,7 +114,7 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
             StaticFileUtils.deleteLocalFile(runtimeFolder.getAbsolutePath());
         }
         finishJob(state);
-        LOG.info("JOB COMPLETED. Total Time Taken for job " + runner.getInputString() + " to complete : " + StaticFileUtils.getTotalTimeTaken(runner.getRunTime()) + " seconds");
+        LOG.info("JOB COMPLETED. Total Time Taken for job " + schedulerConfigs.getInputString() + " to complete : " + StaticFileUtils.getTotalTimeTaken(schedulerConfigs.getRunTime()) + " seconds");
         LOG.info("Failed to upload " + failed.size() + " files out of " + total + " files");
     }
 

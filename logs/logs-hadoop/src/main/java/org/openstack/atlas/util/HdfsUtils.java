@@ -33,6 +33,7 @@ public class HdfsUtils {
 
     private final Log LOG = LogFactory.getLog(HdfsUtils.class);
     public static final Pattern sequenceFilePattern = Pattern.compile("^(.*)(part-r-[0-9]+)$");
+    public static final String HADOOP_USER_NAME = "HADOOP_USER_NAME"; // Silly isn't it.
     protected int bufferSize = 256 * 1024;
     protected Configuration conf;
     protected String user;
@@ -65,8 +66,8 @@ public class HdfsUtils {
             remoteFileSystem = FileSystem.get(defaultUri, conf);
         } else {
             remoteFileSystem = FileSystem.get(defaultUri, conf, user);
+            System.setProperty(HADOOP_USER_NAME, user);
         }
-
     }
 
     // For debugging Not used by the Application
@@ -254,6 +255,7 @@ public class HdfsUtils {
 
     public void setUser(String user) {
         this.user = user;
+        System.setProperty(HADOOP_USER_NAME, user);
     }
 
     public String getUser() {

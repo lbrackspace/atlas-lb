@@ -6,5 +6,5 @@ import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 
 public interface QuartzExecutable {
 
-    void execute(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws ExecutionException;
+    void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException;
 }

@@ -26,8 +26,8 @@ public class FileWatchdogJob extends BaseMapreduceJob implements StatefulJob {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        QuartzSchedulerConfigs runner = getRunner(context);
-        LOG.info("running " + getClass() + " on " + runner.getRunTime());
+        QuartzSchedulerConfigs schedulerConfigs = getSchedulerConfigs(context);
+        LOG.info("running " + getClass() + " on " + schedulerConfigs.getRunTime());
 
         String jarPath = findPathJar(DirectoryTool.class);
         LOG.info("Hadoop Jar path resolved at runtime is: " + jarPath);
@@ -35,7 +35,7 @@ public class FileWatchdogJob extends BaseMapreduceJob implements StatefulJob {
             throw new IllegalArgumentException("Couldn't resolve the Hadoop Jar path in runtime. Aborting the job now!");
         }
         try {
-            execution.execute(createSchedulerInstance(context), runner);
+            execution.execute(createSchedulerInstance(context), schedulerConfigs);
         } catch (ExecutionException e) {
             throw new JobExecutionException(e);
         }

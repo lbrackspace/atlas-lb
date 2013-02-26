@@ -8,13 +8,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.Random;
+import org.openstack.atlas.util.StaticFileUtils;
 
 public class JobScheduler {
     private static SimpleDateFormat format = new SimpleDateFormat("HHmmss");
 
     private Scheduler stdScheduler;
-
-    private Random random = new Random();
 
     public JobScheduler() {
     }
@@ -36,32 +35,28 @@ public class JobScheduler {
 
         //RESCHEDULE IF THE TRIGGER EXIST
         try {
-//            if (stdScheduler.getTriggerState(jobClass.toString(), Scheduler.DEFAULT_GROUP) == STATE_NONE) {
-//                stdScheduler.rescheduleJob(uniqueJobName, Scheduler.DEFAULT_GROUP, moveTrigger);
-//            } else {
                 stdScheduler.scheduleJob(statsJobDetail, moveTrigger);
-//            }
         } catch (SchedulerException e) {
             throw new SchedulingException(e);
         }
     }
 
-    public void scheduleJob(String uniqueJobName, Class jobClass, QuartzSchedulerConfigs runner) throws SchedulingException {
-        scheduleJob(uniqueJobName, jobClass, runner.createMapOutputOfValues());
+    public void scheduleJob(String uniqueJobName, Class jobClass, QuartzSchedulerConfigs schedulerConfigs) throws SchedulingException {
+        scheduleJob(uniqueJobName, jobClass, schedulerConfigs.createMapOutputOfValues());
     }
 
-    public void scheduleJob(Class jobClass, QuartzSchedulerConfigs runner) throws SchedulingException {
-        scheduleJob(createJobName(jobClass, runner), jobClass, runner.createMapOutputOfValues());
+    public void scheduleJob(Class jobClass, QuartzSchedulerConfigs schedulerConfigs) throws SchedulingException {
+        scheduleJob(createJobName(jobClass, schedulerConfigs), jobClass, schedulerConfigs.createMapOutputOfValues());
     }
 
     public void setSchedulerFactoryBean(Scheduler schedulerFactoryBean) {
         this.stdScheduler = schedulerFactoryBean;
     }
 
-    private String createJobName(Class jobClass, QuartzSchedulerConfigs runner) {
+    private String createJobName(Class jobClass, QuartzSchedulerConfigs schedulerConfigs) {
         String shrunkName = jobClass.getName();
-        String totalName = random.nextLong() + "-" + shrunkName.substring(shrunkName.getClass().getPackage().getName().length() + 1)
-                + runner.getInputString() + "_"
+        String totalName = StaticFileUtils.getRnd().nextLong() + "-" + shrunkName.substring(shrunkName.getClass().getPackage().getName().length() + 1)
+                + schedulerConfigs.getInputString() + "_"
                 + format.format(Calendar.getInstance().getTime());
         if (totalName.length() > 78) {
             totalName = totalName.substring(0, 78);

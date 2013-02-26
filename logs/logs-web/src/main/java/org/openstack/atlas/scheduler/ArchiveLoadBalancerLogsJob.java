@@ -23,10 +23,10 @@ public class ArchiveLoadBalancerLogsJob extends BaseMapreduceJob {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        QuartzSchedulerConfigs runner = getRunner(context);
-        LOG.info("running " + getClass() + " on " + runner.getRunTime() + " for logFileDate: " + runner.getRawlogsFileTime());
+        QuartzSchedulerConfigs schedulerConfigs = getSchedulerConfigs(context);
+        LOG.info("running " + getClass() + " on " + schedulerConfigs.getRunTime() + " for logFileDate: " + schedulerConfigs.getRawlogsFileTime());
         try {
-            execution.execute(createSchedulerInstance(context), runner);
+            execution.execute(createSchedulerInstance(context), schedulerConfigs);
         } catch (ExecutionException e) {
             throw new JobExecutionException(e);
         }

@@ -30,12 +30,13 @@ public abstract class DirectoryTool implements HadoopTool {
 
     private List<String> localFiles = new LinkedList<String>();
 
-    private QuartzSchedulerConfigs runner;
+    private QuartzSchedulerConfigs schedulerConfigs;
 
+    @Override
     public RUN_STATES executeHadoopRun() throws IOException {
-        setSpecialConfigurations(conf, runner);
+        setSpecialConfigurations(conf, schedulerConfigs);
         if (conf.getJobConf().getJobName() != null) {
-            conf.getJobConf().setJobName(conf.getJobConf().getJobName() + ":" + runner.getInputString());
+            conf.getJobConf().setJobName(conf.getJobConf().getJobName() + ":" + schedulerConfigs.getInputString());
         }
 
         beforeJobRun();
@@ -49,10 +50,12 @@ public abstract class DirectoryTool implements HadoopTool {
         }
     }
 
+    @Override
     public HadoopConfiguration getConfiguration() {
         return conf;
     }
 
+    @Override
     public String getInputDirectory() {
         Path[] inputPaths = FileInputFormat.getInputPaths(conf.getJobConf());
         if (inputPaths.length == 0) {
@@ -61,6 +64,7 @@ public abstract class DirectoryTool implements HadoopTool {
         return inputPaths[0].toUri().getPath();
     }
 
+    @Override
     public String getOutputDirectory() {
         Path outputPath = FileOutputFormat.getOutputPath(conf.getJobConf());
         if (outputPath == null) {
@@ -78,6 +82,7 @@ public abstract class DirectoryTool implements HadoopTool {
         this.fileSystemUtils = fileSystemUtils;
     }
 
+    @Override
     public void setupHadoopRun(String setupDir) {
         this.inputDir = setupDir;
         localFiles.clear();
@@ -94,15 +99,16 @@ public abstract class DirectoryTool implements HadoopTool {
         createInputDir();
     }
 
-    public void setupHadoopRun(QuartzSchedulerConfigs localrunner) {
-        this.runner = localrunner;
-        this.inputDir = runner.getInputString();
+    @Override
+    public void setupHadoopRun(QuartzSchedulerConfigs localSchedulerConfigs) {
+        this.schedulerConfigs = localSchedulerConfigs;
+        this.inputDir = schedulerConfigs.getInputString();
         localFiles.clear();
         conf = new HadoopConfiguration();
 
         conf.setJobConf(createJobConf(conf.getConfiguration()));
 
-        if (runner.getJobJarPath() == null) {
+        if (schedulerConfigs.getJobJarPath() == null) {
 
             String jarPath = findPathJar(DirectoryTool.class);
             if (jarPath != null) {
@@ -111,11 +117,12 @@ public abstract class DirectoryTool implements HadoopTool {
                 }
             }
         } else {
-            conf.getJobConf().setJar(runner.getJobJarPath());
+            conf.getJobConf().setJar(schedulerConfigs.getJobJarPath());
         }
         createInputDir();
     }
 
+    @Override
     public void setupHadoopRun(String setupDir, String jobJarPath) {
         this.inputDir = setupDir;
         localFiles.clear();
@@ -157,7 +164,7 @@ public abstract class DirectoryTool implements HadoopTool {
     protected abstract Class<? extends Reducer> getReducerClass();
 
     protected abstract void setSpecialConfigurations(HadoopConfiguration specialConfigurations,
-                                                     QuartzSchedulerConfigs localRunner) throws IOException;
+                                                     QuartzSchedulerConfigs localSchedulerConfigs) throws IOException;
 
     private void createInputDir() {
         FileInputFormat.setInputPaths(conf.getJobConf(), new Path(getLocalInputDir()));

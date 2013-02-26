@@ -27,7 +27,7 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
     private HdfsUtils hdfsUtils = new HdfsUtils();
 
     @Override
-    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws ExecutionException {
+    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
         List<String> localInputFiles = hdfsUtils.getLocalInputFiles(HadoopLogsConfigs.getFileSystemRootDir());
 
         List<String> scheduledFilesToRun = new ArrayList<String>();
@@ -41,13 +41,13 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
         if (scheduledFilesToRun.size() == 1) {
             //eg. /var/log/zxtm/rotated/2012021017-access_log.aggregated
             String logFileDate = StaticFileUtils.getDateStringFromFileName(scheduledFilesToRun.get(0));
-            runner.setRawlogsFileTime(logFileDate);
-            runner.setInputString(runner.getRawlogsFileTime());
+            schedulerConfigs.setRawlogsFileTime(logFileDate);
+            schedulerConfigs.setInputString(schedulerConfigs.getRawlogsFileTime());
         } else if (scheduledFilesToRun.size() >= 1) {
             String newestFile = StaticFileUtils.getNewestFile(scheduledFilesToRun);
             String logFileDate = StaticFileUtils.getDateStringFromFileName(newestFile);
-            runner.setRawlogsFileTime(logFileDate);
-            runner.setInputString(runner.getRawlogsFileTime());
+            schedulerConfigs.setRawlogsFileTime(logFileDate);
+            schedulerConfigs.setInputString(schedulerConfigs.getRawlogsFileTime());
             scheduledFilesToRun.clear();
             scheduledFilesToRun.add(newestFile);
         } else if (scheduledFilesToRun.isEmpty()) {
@@ -55,17 +55,17 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
             return;
         }
 
-        String inputString = runner.getInputString();
+        String inputString = schedulerConfigs.getInputString();
         JobState state = createJob(JobName.WATCHDOG, inputString);
-        runner.setInputForMultiPathJobs(scheduledFilesToRun);
+        schedulerConfigs.setInputForMultiPathJobs(scheduledFilesToRun);
 
         try {
             Calendar currentDate = Calendar.getInstance();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMMddHH:mm:ss");
             String dateNow = formatter.format(currentDate.getTime());
 
-            String jobName = "fileMove:" +  dateNow + runner.getInputString();
-            scheduler.scheduleJob(jobName, FileMoveJob.class, runner);
+            String jobName = "fileMove:" +  dateNow + schedulerConfigs.getInputString();
+            scheduler.scheduleJob(jobName, FileMoveJob.class, schedulerConfigs);
         } catch (SchedulingException e) {
             LOG.error(e);
             state.setState(JobStateVal.FAILED);

@@ -30,14 +30,14 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
      private HdfsUtils hdfsUtils = new HdfsUtils();
 
     @Override
-     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws ExecutionException {
+     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
 
-         JobState state = createJob(JobName.FILES_SPLIT, runner.getInputString());
+         JobState state = createJob(JobName.FILES_SPLIT, schedulerConfigs.getInputString());
 
          try {
 
              tool = createTool(LbStatsTool.class);
-             tool.setupHadoopRun(runner);
+             tool.setupHadoopRun(schedulerConfigs);
              String directory = tool.getOutputDirectory();
 
              FileStatus[] files = new FileStatus[0];
@@ -64,9 +64,9 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
                          String accountId = getAccount(key.toString());
                          String loadbalancerId = getLoadBalancerId(key.toString());
 
-                         String cacheLocation = HadoopLogsConfigs.getCacheDir() + "/" + runner.getRawlogsFileTime() + "/" + accountId;
+                         String cacheLocation = HadoopLogsConfigs.getCacheDir() + "/" + schedulerConfigs.getRawlogsFileTime() + "/" + accountId;
                          new File(cacheLocation).mkdirs();
-                         String filename = getFileName(loadbalancerId, runner.getRawlogsFileTime());
+                         String filename = getFileName(loadbalancerId, schedulerConfigs.getRawlogsFileTime());
 
                          String cacheLocationAndFile = cacheLocation + "/" + filename;
 
@@ -91,7 +91,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
 
              }
 
-             scheduleArchiveLoadBalancerLogsJob(scheduler, runner);
+             scheduleArchiveLoadBalancerLogsJob(scheduler, schedulerConfigs);
          } catch (IOException e) {
              e.printStackTrace();
              failJob(state);
@@ -126,8 +126,8 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
          return key.split(":")[1];
      }
 
-     private void scheduleArchiveLoadBalancerLogsJob(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws SchedulingException {
-         scheduler.scheduleJob(ArchiveLoadBalancerLogsJob.class, runner);
+     private void scheduleArchiveLoadBalancerLogsJob(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws SchedulingException {
+         scheduler.scheduleJob(ArchiveLoadBalancerLogsJob.class, schedulerConfigs);
      }
 
 }

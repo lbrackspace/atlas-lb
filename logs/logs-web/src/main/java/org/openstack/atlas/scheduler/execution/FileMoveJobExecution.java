@@ -37,31 +37,31 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
     private HdfsUtils hdfsUtils = new HdfsUtils();
 
     @Override
-    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs runner) throws ExecutionException {
+    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
 
         // stupid manual set, this has to be done. a circular dep because of how
         // quartz must init its scheduler factory crap. currently u cannot have
         // a bean that has a dependency on a bean that is in the
         // schedulerFactoryBean#schedulerContextAsMap
         jobScheduler = scheduler;
-        String runTime = runner.getInputString();
+        String runTime = schedulerConfigs.getInputString();
 
         hadoopTool.setupHadoopRun(runTime);
 
         try {
-            List<String> localInputFiles = getLocalInputFiles(runner);
+            List<String> localInputFiles = getLocalInputFiles(schedulerConfigs);
 
             Map<String, JobState> fastValues = createStateForMovingFiles(runTime, localInputFiles);
             for (String filename : localInputFiles) {
                 if (filename.endsWith(".lzo")) {
-                    runner.setLzoInput(true);
+                    schedulerConfigs.setLzoInput(true);
                 }
             }
 
-            moveFilesOntoDFS(runner, fastValues);
+            moveFilesOntoDFS(schedulerConfigs, fastValues);
             deleteIfFinished(fastValues);
 
-            scheduleMapReduceAggregateLogsJob(runner);
+            scheduleMapReduceAggregateLogsJob(schedulerConfigs);
 
         } catch (Exception e) {
             LOG.error(e);
@@ -70,8 +70,8 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
     }
 
     @Required
-    private void scheduleMapReduceAggregateLogsJob(QuartzSchedulerConfigs runner) throws SchedulingException {
-        jobScheduler.scheduleJob(MapReduceAggregateLogsJob.class, runner);
+    private void scheduleMapReduceAggregateLogsJob(QuartzSchedulerConfigs schedulerConfigs) throws SchedulingException {
+        jobScheduler.scheduleJob(MapReduceAggregateLogsJob.class, schedulerConfigs);
     }
 
     @Required
@@ -90,12 +90,12 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         return fastValues;
     }
 
-    private List<String> getLocalInputFiles(QuartzSchedulerConfigs runner) throws Exception {
+    private List<String> getLocalInputFiles(QuartzSchedulerConfigs schedulerConfigs) throws Exception {
         List<String> localInputFiles = new LinkedList<String>();
-        if (runner.getFileMoveInput() != null) {
-            localInputFiles.add(runner.getFileMoveInput());
-        } else if (runner.getInputForMultiPathJobs() != null) {
-            localInputFiles = runner.getInputForMultiPathJobs();
+        if (schedulerConfigs.getFileMoveInput() != null) {
+            localInputFiles.add(schedulerConfigs.getFileMoveInput());
+        } else if (schedulerConfigs.getInputForMultiPathJobs() != null) {
+            localInputFiles = schedulerConfigs.getInputForMultiPathJobs();
         } else {
             throw new Exception("Could not find any files for the copy. This job was fired without a indicator as to what files to run.");
         }
@@ -131,7 +131,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         }
     }
 
-    private void moveFilesOntoDFS(QuartzSchedulerConfigs runner, Map<String, JobState> fastValues) throws ExecutionException {
+    private void moveFilesOntoDFS(QuartzSchedulerConfigs schedulerConfigs, Map<String, JobState> fastValues) throws ExecutionException {
 
         HadoopConfiguration conf = hadoopTool.getConfiguration();
         String inputDir = hadoopTool.getInputDirectory();
