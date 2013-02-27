@@ -108,7 +108,7 @@ public class JobStateRepository {
         return null;
     }
 
-    public List getEntriesLike(JobName jobName, String inputPath) {
+    public List<JobState> getEntriesLike(JobName jobName, String inputPath) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<JobState> criteria = builder.createQuery(JobState.class);
         Root<JobState> jobStateRoot = criteria.from(JobState.class);

@@ -27,7 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.compress.CompressionInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
-import org.openstack.atlas.util.exceptions.ReflectionException;
+import org.openstack.atlas.exception.ReflectionException;
 
 public class HdfsUtils {
 

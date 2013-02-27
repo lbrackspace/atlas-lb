@@ -2,6 +2,10 @@ package org.openstack.atlas.exception;
 
 public class SchedulingException extends Exception {
 
+    public SchedulingException(){
+        super();
+    }
+
     public SchedulingException(String message) {
         super(message);
     }

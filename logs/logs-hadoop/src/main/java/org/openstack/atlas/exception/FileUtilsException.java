@@ -1,5 +1,5 @@
 
-package org.openstack.atlas.util.exceptions;
+package org.openstack.atlas.exception;
 
 public class FileUtilsException extends Exception {
     public FileUtilsException(Throwable cause) {

@@ -10,6 +10,8 @@ import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import org.openstack.atlas.exception.ExecutionException;
+import org.openstack.atlas.exception.SchedulingException;
 
 
 public class Debug {
@@ -198,5 +200,17 @@ public class Debug {
 
     public static String itoa(int l, int radix) {
         return BigInteger.valueOf(l).toString(radix);
+    }
+
+    public static void schedulingExceptionThrowable(boolean shouldThrow) throws SchedulingException{
+        if(shouldThrow){
+            throw new SchedulingException();
+        }
+    }
+
+    public static void executionExceptionThrowable(boolean shouldThrow) throws ExecutionException {
+        if(shouldThrow){
+            throw new ExecutionException();
+        }
     }
 }

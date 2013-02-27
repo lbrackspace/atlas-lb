@@ -2,6 +2,10 @@ package org.openstack.atlas.exception;
 
 public class ExecutionException extends Exception {
 
+    public ExecutionException() {
+        super();
+    }
+
     public ExecutionException(String message) {
         super(message);
     }

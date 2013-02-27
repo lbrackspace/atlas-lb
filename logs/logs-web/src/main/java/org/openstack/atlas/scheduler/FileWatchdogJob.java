@@ -12,11 +12,12 @@ import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.net.URL;
+import org.openstack.atlas.util.VerboseLogger;
 
 public class FileWatchdogJob extends BaseMapreduceJob implements StatefulJob {
 
     private static final Log LOG = LogFactory.getLog(FileWatchdogJob.class);
-
+    private static final VerboseLogger vlog = new VerboseLogger(FileWatchdogJob.class);
     private QuartzExecutable execution;
 
     @Required
@@ -29,11 +30,12 @@ public class FileWatchdogJob extends BaseMapreduceJob implements StatefulJob {
         QuartzSchedulerConfigs schedulerConfigs = getSchedulerConfigs(context);
         LOG.info("running " + getClass() + " on " + schedulerConfigs.getRunTime());
 
+        vlog.log(String.format("SchedulerConfig = %s", schedulerConfigs.toString()));
         String jarPath = findPathJar(DirectoryTool.class);
-        LOG.info("Hadoop Jar path resolved at runtime is: " + jarPath);
-        if(jarPath == null) {
-            throw new IllegalArgumentException("Couldn't resolve the Hadoop Jar path in runtime. Aborting the job now!");
-        }
+        vlog.log("Hadoop Jar path resolved at runtime is: " + jarPath);
+        //if(jarPath == null) {
+        //    throw new IllegalArgumentException("Couldn't resolve the Hadoop Jar path in runtime. Aborting the job now!");
+        //}
         try {
             execution.execute(createSchedulerInstance(context), schedulerConfigs);
         } catch (ExecutionException e) {

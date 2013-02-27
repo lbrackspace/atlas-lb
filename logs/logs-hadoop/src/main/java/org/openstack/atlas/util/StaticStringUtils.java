@@ -1,6 +1,8 @@
-
 package org.openstack.atlas.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class StaticStringUtils {
@@ -47,6 +49,26 @@ public class StaticStringUtils {
                 t = t.getCause();
             }
         }
+        return sb.toString();
+    }
+
+    public static <T> String collectionToString(Collection<T> collection, String delimiter) {
+        if (collection.isEmpty()) {
+            return "[]";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        List<T> list = new ArrayList<T>(collection);
+        for (int i = 0; i < list.size() - 1; i++) {
+            T entry = list.get(i);
+            if (entry == null) {
+                sb.append("null").append(delimiter);
+                continue;
+            }
+            sb.append(entry.toString()).append(delimiter);
+        }
+        sb.append(list.get(list.size() - 1)).append("]");
         return sb.toString();
     }
 
