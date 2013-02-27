@@ -12,6 +12,7 @@ import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.net.URL;
+import org.openstack.atlas.util.HadoopLogsConfigs;
 import org.openstack.atlas.util.VerboseLogger;
 
 public class FileWatchdogJob extends BaseMapreduceJob implements StatefulJob {
@@ -33,9 +34,7 @@ public class FileWatchdogJob extends BaseMapreduceJob implements StatefulJob {
         vlog.log(String.format("SchedulerConfig = %s", schedulerConfigs.toString()));
         String jarPath = findPathJar(DirectoryTool.class);
         vlog.log("Hadoop Jar path resolved at runtime is: " + jarPath);
-        //if(jarPath == null) {
-        //    throw new IllegalArgumentException("Couldn't resolve the Hadoop Jar path in runtime. Aborting the job now!");
-        //}
+        schedulerConfigs.setJobJarPath(HadoopLogsConfigs.getJobJarPath());
         try {
             execution.execute(createSchedulerInstance(context), schedulerConfigs);
         } catch (ExecutionException e) {

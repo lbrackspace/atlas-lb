@@ -37,7 +37,7 @@ public class FileSystemUtils {
         this.configuration = conf;
     }
 
-    public Path moveLocal(Configuration conf, Path path) throws IOException {
+    public Path moveToLocalCacheDir(Configuration conf, Path path) throws IOException {
         String base = HadoopLogsConfigs.getCacheDir();
         String generateRandomBase = StaticFileUtils.generateRandomBase();
         Path local = new Path(base + path.getName() + generateRandomBase);
@@ -49,19 +49,4 @@ public class FileSystemUtils {
         FileSystem fs = FileSystem.getLocal(conf);
         return new SequenceFile.Reader(fs, localPath, fs.getConf());
     }
-
-    private void logBuffer(InputStream inputStream) throws IOException {
-        BufferedInputStream bufferedInput = null;
-        byte[] buffer = new byte[1024];
-        BufferedInputStream is = new BufferedInputStream(inputStream);
-
-        int bytesRead = 0;
-
-        StringBuilder outputContents = new StringBuilder();
-        while ((bytesRead = is.read(buffer)) != -1) {
-            outputContents.append(new String(buffer, 0, bytesRead));
-        }
-        LOG.debug(outputContents);
-    }
-
 }

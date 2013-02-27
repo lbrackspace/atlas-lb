@@ -46,7 +46,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
 
              for (int i = 0; i < files.length; i++) {
                  if (files[i].getPath().getName().startsWith("part-")) {
-                     Path local = utils.moveLocal(tool.getConfiguration().getJobConf(), files[i].getPath());
+                     Path local = utils.moveToLocalCacheDir(tool.getConfiguration().getJobConf(), files[i].getPath());
                      SequenceFile.Reader reader = utils.getLocalReader(tool.getConfiguration().getJobConf(), local);
 
                      Text key = new Text();

@@ -1,9 +1,8 @@
 package org.openstack.atlas.scheduler.execution;
 
-import com.hadoop.compression.lzo.LzoIndexer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.exception.SchedulingException;
 import org.openstack.atlas.mapreduce.LbStatsTool;
@@ -20,12 +19,12 @@ import org.springframework.beans.factory.annotation.Required;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.openstack.atlas.util.HadoopLogsConfigs;
-import org.openstack.atlas.util.HdfsUtils;
+import org.openstack.atlas.util.StaticFileUtils;
 import org.openstack.atlas.util.StaticStringUtils;
 import org.openstack.atlas.util.VerboseLogger;
 
@@ -140,6 +139,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         String inputDir = hadoopTool.getInputDirectory();
         int offset = 0;
 
+
         for (Entry<String, JobState> inputEntry : fileNameStateMap.entrySet()) {
             String inputFile = inputEntry.getKey();
             JobState state = inputEntry.getValue();
@@ -148,19 +148,33 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
 
                 hdfsUtils.mkDirs(inputDir, false);
                 // The files will be the same, so we have to place it as the
-                // named file, so we need a new method.
-                File f = new File(inputFile);
-                String placedFile = inputDir + "/" + offset + "-" + f.getName();
+                // named file, so we need a n
+                String placedFile = inputDir + "/" + offset + "-" + StaticFileUtils.stripDirectoryFromFileName(inputFile);
                 vlog.log(String.format("copying file %s -> to Hdfs %s", inputFile, placedFile));
-                
-                utils.placeFileOnDFS(inputFile, placedFile);
-                LzoIndexer lzoIndexer = new LzoIndexer(hadoopTool.getConfiguration().getJobConf());
+
+                //utils.placeFileOnDFS(inputFile, placedFile);
                 //if its a LZO file, index it
                 if (placedFile.endsWith(".lzo")) {
-                lzoIndexer.index(new Path(placedFile));
+                    vlog.log(String.format("file %s is an LZO recompressing and indexing", inputFile));
+                    FSDataInputStream lzoIS = hdfsUtils.openHdfsInputFile(inputFile, false);
+                    FSDataOutputStream lzoOS = hdfsUtils.openHdfsOutputFile(placedFile, false, true);
+                    FSDataOutputStream idxOS = hdfsUtils.openHdfsOutputFile(placedFile + ".index", false, true);
+                    hdfsUtils.recompressAndIndexLzoStream(lzoIS, lzoOS, idxOS);
+                    idxOS.close();
+                    lzoOS.close();
+                    lzoIS.close();
+                } else {
+                    vlog.log(String.format("file %s is not compressed: Calling compression and indexer functions", inputFile));
+                    FSDataInputStream uncompressedIS = hdfsUtils.openHdfsInputFile(inputFile, true);
+                    FSDataOutputStream lzoOS = hdfsUtils.openHdfsOutputFile(placedFile + ".lzo", false, true);
+                    FSDataOutputStream idxOS = hdfsUtils.openHdfsOutputFile(placedFile + ".lzo.index", false, true);
+                    hdfsUtils.compressAndIndexStreamToLzo(uncompressedIS, lzoOS, lzoOS, hdfsUtils.getBufferSize());
+                    idxOS.close();
+                    lzoOS.close();
+                    uncompressedIS.close();
                 }
                 offset++;
-                
+
                 finishJob(state);
 
             } catch (Exception e) {
