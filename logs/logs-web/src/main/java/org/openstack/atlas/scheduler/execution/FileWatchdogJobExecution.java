@@ -29,19 +29,20 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
 
     private static final Log LOG = LogFactory.getLog(FileWatchdogJobExecution.class);
     private static final VerboseLogger vlog = new VerboseLogger(FileWatchdogJobExecution.class);
-    private HdfsUtils hdfsUtils = new HdfsUtils();
+    private HdfsUtils hdfsUtils = HadoopLogsConfigs.getHdfsUtils();
 
     @Override
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
         List<String> localInputFiles = hdfsUtils.getLocalInputFiles(HadoopLogsConfigs.getFileSystemRootDir());
         List<String> scheduledFilesToRun = new ArrayList<String>();
         for (String inputFile : localInputFiles) {
-            List<JobState> states = jobStateRepository.getEntriesLike(JobName.FILECOPY, inputFile);
+            vlog.log(String.format("Searching for %s", "%:" + inputFile));
+            List<JobState> states = jobStateRepository.getEntriesLike(JobName.FILECOPY, "%:" + inputFile);
             if (states.isEmpty()) {
                 scheduledFilesToRun.add(inputFile);
                 vlog.log(String.format("Scheduling new inputFile %s\n", inputFile));
             } else {
-                vlog.log(String.format("Skipping inputFile %s as it was already in the state table: %s", StaticStringUtils.<JobState>collectionToString(states, ",")));
+                vlog.log(String.format("Skipping inputFile %s as it was already in the state table: %s", inputFile,StaticStringUtils.<JobState>collectionToString(states, ",")));
             }
         }
 

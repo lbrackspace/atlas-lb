@@ -26,8 +26,10 @@ public class FileSystemUtils {
     private org.openstack.atlas.cfg.Configuration configuration;
     private static final Random r = new Random();
 
-    public void placeFileOnDFS(Configuration conf, String localPath, String remotePath) throws IOException {
-        FileSystem fs = FileSystem.get(conf);
+    private HdfsUtils hdfsUtils = HadoopLogsConfigs.getHdfsUtils();
+
+    public void placeFileOnDFS(String localPath, String remotePath) throws IOException {
+        FileSystem fs = FileSystem.get(HadoopLogsConfigs.getHadoopConfiguration());
         fs.copyFromLocalFile(new Path(localPath), new Path(remotePath));
     }
 
@@ -36,7 +38,7 @@ public class FileSystemUtils {
     }
 
     public Path moveLocal(Configuration conf, Path path) throws IOException {
-        String base = configuration.getString(LbLogsConfigurationKeys.rawlogs_cache_dir);
+        String base = HadoopLogsConfigs.getCacheDir();
         String generateRandomBase = StaticFileUtils.generateRandomBase();
         Path local = new Path(base + path.getName() + generateRandomBase);
         FileSystem.get(conf).copyToLocalFile(path, local);

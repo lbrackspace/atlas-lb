@@ -106,7 +106,7 @@ public class StaticStringUtils {
             if (val == null) {
                 sb.append("null),");
             } else {
-                sb.append(val.toString()).append(",");
+                sb.append(val.toString()).append("),");
             }
         }
         sb.append("]");

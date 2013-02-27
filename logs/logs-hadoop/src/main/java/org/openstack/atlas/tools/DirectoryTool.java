@@ -12,24 +12,22 @@ import org.apache.hadoop.mapred.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import org.openstack.atlas.util.HadoopLogsConfigs;
 import org.openstack.atlas.util.StaticFileUtils;
+import org.openstack.atlas.util.VerboseLogger;
 
 public abstract class DirectoryTool implements HadoopTool {
 
     private static final Log LOG = LogFactory.getLog(DirectoryTool.class);
-
+    private static final VerboseLogger vlog = new VerboseLogger(DirectoryTool.class);
     private org.openstack.atlas.cfg.Configuration compositeConfiguration;
-
     private HadoopConfiguration conf;
-
     private FileSystemUtils fileSystemUtils;
-
     private String inputDir;
-
-    private List<String> localFiles = new LinkedList<String>();
-
+    private List<String> localFiles = new ArrayList<String>();
     private QuartzSchedulerConfigs schedulerConfigs;
 
     @Override
@@ -90,7 +88,7 @@ public abstract class DirectoryTool implements HadoopTool {
         conf.setJobConf(createJobConf(conf.getConfiguration()));
         LOG.info("Composite Configuration: " + compositeConfiguration);
 
-        String jarPath = findPathJar(DirectoryTool.class);
+        String jarPath = HadoopLogsConfigs.getJobJarPath();
         if (jarPath != null) {
             if (new File(jarPath).exists()) {
                 conf.getJobConf().setJar(jarPath);
@@ -112,7 +110,7 @@ public abstract class DirectoryTool implements HadoopTool {
 
             String jarPath = findPathJar(DirectoryTool.class);
             if (jarPath != null) {
-                if(new File(jarPath).exists()) {
+                if (new File(jarPath).exists()) {
                     conf.getJobConf().setJar(jarPath);
                 }
             }
@@ -164,7 +162,7 @@ public abstract class DirectoryTool implements HadoopTool {
     protected abstract Class<? extends Reducer> getReducerClass();
 
     protected abstract void setSpecialConfigurations(HadoopConfiguration specialConfigurations,
-                                                     QuartzSchedulerConfigs localSchedulerConfigs) throws IOException;
+            QuartzSchedulerConfigs localSchedulerConfigs) throws IOException;
 
     private void createInputDir() {
         FileInputFormat.setInputPaths(conf.getJobConf(), new Path(getLocalInputDir()));
@@ -184,6 +182,23 @@ public abstract class DirectoryTool implements HadoopTool {
         j.setReducerClass(getReducerClass());
 
         return j;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("DirectoryTool{").append("schedulerConfigs=");
+        if (schedulerConfigs == null) {
+            sb.append("null");
+        } else {
+            sb.append(schedulerConfigs.toString());
+        }
+        sb.append(", createHistoryOutputDir()=").append(createHistoryOutputDir()).
+                append(", createOutputDir()=").append(createOutputDir()).
+                append(", getLocalInputDir()=").append(getLocalInputDir()).
+                append(", sanitizedInputDir()=").append(getSanitizedInputDir()).
+                append("}");
+        return sb.toString();
     }
 
     private String getSanitizedInputDir() {

@@ -359,12 +359,12 @@ public class StaticFileUtils {
         return sanitized;
     }
 
-    public static String getRestOfFilename(String fullFilename) {
-        if (fullFilename.contains("/")) {
-            return fullFilename.substring(fullFilename.lastIndexOf("/") + 1);
-        } else {
-            return fullFilename;
+    public static String stripDirectoryFromFileName(String fullFilePath) {
+        String[] pathComponents = splitPath(fullFilePath);
+        if (pathComponents == null || pathComponents.length == 0) {
+            return "";
         }
+        return pathComponents[pathComponents.length - 1];
     }
 
     /**
@@ -528,6 +528,4 @@ public class StaticFileUtils {
     public static Random getRnd() {
         return rnd;
     }
-
-
 }

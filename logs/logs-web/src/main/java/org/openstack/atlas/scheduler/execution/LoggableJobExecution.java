@@ -1,18 +1,23 @@
 package org.openstack.atlas.scheduler.execution;
 
+import java.io.IOException;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.repository.JobStateRepository;
 import org.openstack.atlas.tools.DirectoryTool;
+import org.openstack.atlas.tools.HadoopConfiguration;
 import org.openstack.atlas.util.DateTime;
 import org.openstack.atlas.util.FileSystemUtils;
+import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.util.HdfsUtils;
 import org.springframework.beans.factory.annotation.Required;
 
 public class LoggableJobExecution {
     protected JobStateRepository jobStateRepository;
     protected FileSystemUtils utils;
     protected org.openstack.atlas.cfg.Configuration conf;
+    protected HdfsUtils hdfsUtils = HadoopLogsConfigs.getHdfsUtils();
 
     protected JobState createJob(JobName val, String jobInput) {
         return jobStateRepository.create(val, jobInput);
@@ -51,8 +56,8 @@ public class LoggableJobExecution {
     public void setJobStateRepository(JobStateRepository jobStateRepository) {
         this.jobStateRepository = jobStateRepository;
     }
-    @Required
 
+    @Required
     public void setConf(org.openstack.atlas.cfg.Configuration conf) {
         this.conf = conf;
     }

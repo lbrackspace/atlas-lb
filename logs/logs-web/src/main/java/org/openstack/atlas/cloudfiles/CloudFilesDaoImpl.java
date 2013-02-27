@@ -40,7 +40,7 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
         String fullFilename = localFileName.replaceAll("\\.\\./", "./");
         // the localFilename will always be before the last slash, if we are using
         // slashes (directories)
-        String restOfFilename = StaticFileUtils.getRestOfFilename(fullFilename);
+        String restOfFilename = StaticFileUtils.stripDirectoryFromFileName(fullFilename);
 
         try {
             try {

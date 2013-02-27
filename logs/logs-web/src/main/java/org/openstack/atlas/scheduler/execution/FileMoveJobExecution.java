@@ -35,7 +35,6 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
     private static final VerboseLogger vlog = new VerboseLogger(FileMoveJobExecution.class);
     protected JobScheduler jobScheduler;
     private HadoopTool hadoopTool;
-    private HdfsUtils hdfsUtils = new HdfsUtils();
 
     @Override
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
@@ -48,19 +47,20 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         String runTime = schedulerConfigs.getInputString();
 
         hadoopTool.setupHadoopRun(runTime);
+        vlog.log(String.format("hadoopTool = %s", hadoopTool.toString()));
 
         try {
             List<String> localInputFiles = getLocalInputFiles(schedulerConfigs);
             vlog.log(String.format("calling createStateForMovingFiles(%s,%s)", runTime, StaticStringUtils.collectionToString(localInputFiles, ",")));
-            Map<String, JobState> fastValues = createStateForMovingFiles(runTime, localInputFiles);
+            Map<String, JobState> fileNameStateMap = createStateForMovingFiles(runTime, localInputFiles);
             for (String filename : localInputFiles) {
                 if (filename.endsWith(".lzo")) {
                     schedulerConfigs.setLzoInput(true);
                 }
             }
-            vlog.log(String.format("about to move files onto DFS: schedulerConfis = %s fastValues= %s", schedulerConfigs.toString(), StaticStringUtils.mapToString(fastValues)));
-            //moveFilesOntoDFS(schedulerConfigs, fastValues);
-            //deleteIfFinished(fastValues);
+            vlog.log(String.format("about to move files onto DFS: schedulerConfis = %s fastValues= %s", schedulerConfigs.toString(), StaticStringUtils.mapToString(fileNameStateMap)));
+            moveFilesOntoDFS(fileNameStateMap);
+            deleteIfFinished(fileNameStateMap);
 
             //scheduleMapReduceAggregateLogsJob(schedulerConfigs);
 
@@ -82,15 +82,15 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
 
     private Map<String, JobState> createStateForMovingFiles(String inputString,
             List<String> localInputFiles) {
-        Map<String, JobState> fastValues = new HashMap<String, JobState>();
+        Map<String, JobState> fileNameStateMap = new HashMap<String, JobState>();
         for (String inputFile : localInputFiles) {
             String jobInput = inputString + ":" + inputFile;
             vlog.log(String.format("calling createJob(FILECOPY,%s);", jobInput));
             JobState state = createJob(JobName.FILECOPY, jobInput);
-            fastValues.put(inputFile, state);
+            fileNameStateMap.put(inputFile, state);
             vlog.log(String.format("calling fastValues.put(%s,%s)", inputFile, state.toString()));
         }
-        return fastValues;
+        return fileNameStateMap;
     }
 
     private List<String> getLocalInputFiles(QuartzSchedulerConfigs schedulerConfigs) throws Exception {
@@ -134,13 +134,13 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         }
     }
 
-    private void moveFilesOntoDFS(QuartzSchedulerConfigs schedulerConfigs, Map<String, JobState> fastValues) throws ExecutionException {
+    private void moveFilesOntoDFS(Map<String, JobState> fileNameStateMap) throws ExecutionException {
 
         HadoopConfiguration conf = hadoopTool.getConfiguration();
         String inputDir = hadoopTool.getInputDirectory();
         int offset = 0;
 
-        for (Entry<String, JobState> inputEntry : fastValues.entrySet()) {
+        for (Entry<String, JobState> inputEntry : fileNameStateMap.entrySet()) {
             String inputFile = inputEntry.getKey();
             JobState state = inputEntry.getValue();
             try {
@@ -151,15 +151,16 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
                 // named file, so we need a new method.
                 File f = new File(inputFile);
                 String placedFile = inputDir + "/" + offset + "-" + f.getName();
-                utils.placeFileOnDFS(conf.getConfiguration(),
-                        inputFile, placedFile);
+                vlog.log(String.format("copying file %s -> to Hdfs %s", inputFile, placedFile));
+                
+                utils.placeFileOnDFS(inputFile, placedFile);
                 LzoIndexer lzoIndexer = new LzoIndexer(hadoopTool.getConfiguration().getJobConf());
                 //if its a LZO file, index it
                 if (placedFile.endsWith(".lzo")) {
-                    lzoIndexer.index(new Path(placedFile));
+                lzoIndexer.index(new Path(placedFile));
                 }
                 offset++;
-
+                
                 finishJob(state);
 
             } catch (Exception e) {

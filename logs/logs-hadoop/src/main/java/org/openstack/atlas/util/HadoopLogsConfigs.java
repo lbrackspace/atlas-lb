@@ -43,7 +43,7 @@ public class HadoopLogsConfigs {
         return hadoopConfiguration;
     }
 
-    public static HdfsUtils getHdfsUtils() throws IOException, InterruptedException {
+    public static HdfsUtils getHdfsUtils() {
         if (hdfsUtils == null) {
             hdfsUtils = new HdfsUtils();
             try {
@@ -52,10 +52,10 @@ public class HadoopLogsConfigs {
                 hdfsUtils.init();
             } catch (IOException ex) {
                 hdfsUtils = null;
-                throw ex;
+                throw new IllegalStateException("Could not initialize HadoopLogsConfigs class", ex);
             } catch (InterruptedException ex) {
                 hdfsUtils = null;
-                throw ex;
+                throw new IllegalStateException("Could not initialize HadoopLogsConfigs class", ex);
             }
         }
         return hdfsUtils;
