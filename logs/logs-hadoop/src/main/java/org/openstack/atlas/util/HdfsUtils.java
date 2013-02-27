@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.hadoop.io.SequenceFile;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -99,7 +100,7 @@ public class HdfsUtils {
     }
 
     // Silly but this will open an LZO decompress and then recompresse it with Indexing
-    public void recompressAndIndexLzoStream(InputStream lzoInputStream,OutputStream lzoOutputStream,OutputStream lzoIndexedOutputStream) throws IOException{
+    public void recompressAndIndexLzoStream(InputStream lzoInputStream, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream) throws IOException {
         Configuration codecConf = new Configuration();
         codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
         codecConf.set("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
@@ -107,7 +108,7 @@ public class HdfsUtils {
         codec.setConf(codecConf);
         CompressionInputStream cis = codec.createInputStream(lzoInputStream);
         CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
-        StaticFileUtils.copyStreams(cis,cos,null,bufferSize);
+        StaticFileUtils.copyStreams(cis, cos, null, bufferSize);
         cis.close();
         cos.close();
     }
@@ -298,6 +299,24 @@ public class HdfsUtils {
 
     public FileSystem getLocalFileSystem() {
         return localFileSystem;
+    }
+
+    public Path moveToLocalCacheDir(Path path) throws IOException {
+        String base = HadoopLogsConfigs.getCacheDir();
+        String generateRandomBase = StaticFileUtils.generateRandomBase();
+        Path local = new Path(base + path.getName() + generateRandomBase);
+        FileSystem.get(conf).copyToLocalFile(path, local);
+        return local;
+    }
+
+    public SequenceFile.Reader getReader(Path path,boolean useLocal) throws IOException {
+        FileSystem fs;
+        if(useLocal){
+            fs = localFileSystem;
+        }else{
+            fs = remoteFileSystem;
+        }
+        return new SequenceFile.Reader(fs, path, fs.getConf());
     }
 
     public String getNameNode() {

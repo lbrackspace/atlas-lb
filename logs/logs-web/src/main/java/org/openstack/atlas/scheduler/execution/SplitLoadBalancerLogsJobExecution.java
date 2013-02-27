@@ -22,112 +22,111 @@ import java.io.IOException;
 import org.openstack.atlas.util.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;
 
-
 public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution implements QuartzExecutable {
-    private static final Log LOG = LogFactory.getLog(SplitLoadBalancerLogsJobExecution.class);
 
-     private DirectoryTool tool;
-     private HdfsUtils hdfsUtils = new HdfsUtils();
+    private static final Log LOG = LogFactory.getLog(SplitLoadBalancerLogsJobExecution.class);
+    private DirectoryTool tool;
+    private HdfsUtils hdfsUtils = new HdfsUtils();
 
     @Override
-     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
+    public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
 
-         JobState state = createJob(JobName.FILES_SPLIT, schedulerConfigs.getInputString());
+        JobState state = createJob(JobName.FILES_SPLIT, schedulerConfigs.getInputString());
 
-         try {
+        try {
 
-             tool = createTool(LbStatsTool.class);
-             tool.setupHadoopRun(schedulerConfigs);
-             String directory = tool.getOutputDirectory();
+            tool = createTool(LbStatsTool.class);
+            tool.setupHadoopRun(schedulerConfigs);
+            String directory = tool.getOutputDirectory();
 
-             FileStatus[] files = new FileStatus[0];
-             files = hdfsUtils.listStatuses(tool.getOutputDirectory(), false);
-             LOG.info("No of files in " + directory + " is: " + files.length);
+            FileStatus[] files = new FileStatus[0];
+            files = hdfsUtils.listStatuses(tool.getOutputDirectory(), false);
+            LOG.info("No of files in " + directory + " is: " + files.length);
 
-             for (int i = 0; i < files.length; i++) {
-                 if (files[i].getPath().getName().startsWith("part-")) {
-                     Path local = utils.moveToLocalCacheDir(tool.getConfiguration().getJobConf(), files[i].getPath());
-                     SequenceFile.Reader reader = utils.getLocalReader(tool.getConfiguration().getJobConf(), local);
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].getPath().getName().startsWith("part-")) {
 
-                     Text key = new Text();
-                     int seqCount = 0;
-                     String currentKey = null;
+                    Path local = hdfsUtils.moveToLocalCacheDir(files[i].getPath());
+                    SequenceFile.Reader reader = hdfsUtils.getReader(local, true);
 
-                     while (reader.next(key)) {
-                         if (key.toString().equals(currentKey)) {
-                             seqCount++;
-                         } else {
-                             currentKey = key.toString();
-                             seqCount = 0;
-                         }
+                    Text key = new Text();
+                    int seqCount = 0;
+                    String currentKey = null;
 
-                         String accountId = getAccount(key.toString());
-                         String loadbalancerId = getLoadBalancerId(key.toString());
+                    while (reader.next(key)) {
+                        if (key.toString().equals(currentKey)) {
+                            seqCount++;
+                        } else {
+                            currentKey = key.toString();
+                            seqCount = 0;
+                        }
 
-                         String cacheLocation = HadoopLogsConfigs.getCacheDir() + "/" + schedulerConfigs.getRawlogsFileTime() + "/" + accountId;
-                         new File(cacheLocation).mkdirs();
-                         String filename = getFileName(loadbalancerId, schedulerConfigs.getRawlogsFileTime());
+                        String accountId = getAccount(key.toString());
+                        String loadbalancerId = getLoadBalancerId(key.toString());
 
-                         String cacheLocationAndFile = cacheLocation + "/" + filename;
+                        String cacheLocation = HadoopLogsConfigs.getCacheDir() + "/" + schedulerConfigs.getRawlogsFileTime() + "/" + accountId;
+                        new File(cacheLocation).mkdirs();
+                        String filename = getFileName(loadbalancerId, schedulerConfigs.getRawlogsFileTime());
 
-                         File file = new File(cacheLocationAndFile);
-                         if(file.exists()) {
-                             LOG.warn("A file with name " + cacheLocationAndFile + " already exists. This can lead to missing log files as the old files can be overwritten.");
-                             cacheLocationAndFile = cacheLocationAndFile + "_" + i;
-                         }
+                        String cacheLocationAndFile = cacheLocation + "/" + filename;
 
-                         cacheLocationAndFile = cacheLocationAndFile + ".zip";
+                        File file = new File(cacheLocationAndFile);
+                        if (file.exists()) {
+                            LOG.warn("A file with name " + cacheLocationAndFile + " already exists. This can lead to missing log files as the old files can be overwritten.");
+                            cacheLocationAndFile = cacheLocationAndFile + "_" + i;
+                        }
 
-                         FileBytesWritable val = new FileBytesWritable();
-                         val.setOrder(seqCount);
-                         val.setFileName(cacheLocationAndFile);
-                         reader.getCurrentValue(val);
-                         LOG.info("File Written to: " + cacheLocationAndFile);
-                     }
+                        cacheLocationAndFile = cacheLocationAndFile + ".zip";
 
-                     reader.close();
-                     HdfsUtils.deleteLocalFile(local);
-                 }
+                        FileBytesWritable val = new FileBytesWritable();
+                        val.setOrder(seqCount);
+                        val.setFileName(cacheLocationAndFile);
+                        reader.getCurrentValue(val);
+                        LOG.info("File Written to: " + cacheLocationAndFile);
+                    }
 
-             }
+                    reader.close();
+                    HdfsUtils.deleteLocalFile(local);
+                }
 
-             scheduleArchiveLoadBalancerLogsJob(scheduler, schedulerConfigs);
-         } catch (IOException e) {
-             e.printStackTrace();
-             failJob(state);
-             throw new ExecutionException(e);
-         } catch (Exception e) {
-             e.printStackTrace();
-             failJob(state);
-             throw new ExecutionException(e);
-         }
+            }
 
-         finishJob(state);
-     }
+            scheduleArchiveLoadBalancerLogsJob(scheduler, schedulerConfigs);
+        } catch (IOException e) {
+            e.printStackTrace();
+            failJob(state);
+            throw new ExecutionException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            failJob(state);
+            throw new ExecutionException(e);
+        }
 
-     private String getFileName(String lbId, String rawlogsFileDate) {
-         StringBuilder sb = new StringBuilder();
-         sb.append("access log ");
-         sb.append(lbId).append(" ");
-         sb.append(rawlogsFileDate);
-         return getFormattedName(sb.toString());
-     }
+        finishJob(state);
+    }
 
-     private String getFormattedName(String name) {
-         return name.replaceAll(" ", "_");
+    private String getFileName(String lbId, String rawlogsFileDate) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("access log ");
+        sb.append(lbId).append(" ");
+        sb.append(rawlogsFileDate);
+        return getFormattedName(sb.toString());
+    }
 
-     }
+    private String getFormattedName(String name) {
+        return name.replaceAll(" ", "_");
 
-     private String getAccount(String key) {
-         return key.split(":")[0];
-     }
+    }
 
-     private String getLoadBalancerId(String key) {
-         return key.split(":")[1];
-     }
+    private String getAccount(String key) {
+        return key.split(":")[0];
+    }
 
-     private void scheduleArchiveLoadBalancerLogsJob(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws SchedulingException {
-         scheduler.scheduleJob(ArchiveLoadBalancerLogsJob.class, schedulerConfigs);
-     }
+    private String getLoadBalancerId(String key) {
+        return key.split(":")[1];
+    }
 
+    private void scheduleArchiveLoadBalancerLogsJob(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws SchedulingException {
+        scheduler.scheduleJob(ArchiveLoadBalancerLogsJob.class, schedulerConfigs);
+    }
 }

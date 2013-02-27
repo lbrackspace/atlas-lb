@@ -28,25 +28,8 @@ public class FileSystemUtils {
 
     private HdfsUtils hdfsUtils = HadoopLogsConfigs.getHdfsUtils();
 
-    public void placeFileOnDFS(String localPath, String remotePath) throws IOException {
-        FileSystem fs = FileSystem.get(HadoopLogsConfigs.getHadoopConfiguration());
-        fs.copyFromLocalFile(new Path(localPath), new Path(remotePath));
-    }
 
     public void setConf(org.openstack.atlas.cfg.Configuration conf) {
         this.configuration = conf;
-    }
-
-    public Path moveToLocalCacheDir(Configuration conf, Path path) throws IOException {
-        String base = HadoopLogsConfigs.getCacheDir();
-        String generateRandomBase = StaticFileUtils.generateRandomBase();
-        Path local = new Path(base + path.getName() + generateRandomBase);
-        FileSystem.get(conf).copyToLocalFile(path, local);
-        return local;
-    }
-
-    public SequenceFile.Reader getLocalReader(Configuration conf, Path localPath) throws IOException {
-        FileSystem fs = FileSystem.getLocal(conf);
-        return new SequenceFile.Reader(fs, localPath, fs.getConf());
     }
 }
