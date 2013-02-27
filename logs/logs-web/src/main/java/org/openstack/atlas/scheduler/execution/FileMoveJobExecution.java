@@ -156,7 +156,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
                 //if its a LZO file, index it
                 if (placedFile.endsWith(".lzo")) {
                     vlog.log(String.format("file %s is an LZO recompressing and indexing", inputFile));
-                    FSDataInputStream lzoIS = hdfsUtils.openHdfsInputFile(inputFile, false);
+                    FSDataInputStream lzoIS = hdfsUtils.openHdfsInputFile(inputFile, true);
                     FSDataOutputStream lzoOS = hdfsUtils.openHdfsOutputFile(placedFile, false, true);
                     FSDataOutputStream idxOS = hdfsUtils.openHdfsOutputFile(placedFile + ".index", false, true);
                     hdfsUtils.recompressAndIndexLzoStream(lzoIS, lzoOS, idxOS);

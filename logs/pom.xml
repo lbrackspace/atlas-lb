@@ -16,6 +16,7 @@
     <modules>
         <module>logs-hadoop</module>
         <module>logs-web</module>
+        <module>logs-hdfs-cli</module>
     </modules>
 
     <build>
