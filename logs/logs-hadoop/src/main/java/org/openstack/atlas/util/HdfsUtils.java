@@ -98,14 +98,28 @@ public class HdfsUtils {
         return sequenceFiles;
     }
 
-    public void compressAndIndexStreamToLzo(InputStream uncompressedIS, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream, int buffSize) throws IOException {
+    // Silly but this will open an LZO decompress and then recompresse it with Indexing
+    public void recompressAndIndexLzoStream(InputStream lzoInputStream,OutputStream lzoOutputStream,OutputStream lzoIndexedOutputStream) throws IOException{
+        Configuration codecConf = new Configuration();
+        codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
+        codecConf.set("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
+        LzopCodec codec = new LzopCodec();
+        codec.setConf(codecConf);
+        CompressionInputStream cis = codec.createInputStream(lzoInputStream);
+        CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
+        StaticFileUtils.copyStreams(cis,cos,null,bufferSize);
+        cis.close();
+        cos.close();
+    }
+
+    public void compressAndIndexStreamToLzo(InputStream uncompressedInputStream, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream, int buffSize) throws IOException {
         Configuration codecConf = new Configuration();
         codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
         codecConf.set("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
         LzopCodec codec = new LzopCodec();
         codec.setConf(codecConf);
         CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
-        StaticFileUtils.copyStreams(uncompressedIS, cos, null, bufferSize);
+        StaticFileUtils.copyStreams(uncompressedInputStream, cos, null, bufferSize);
         cos.close();
     }
 

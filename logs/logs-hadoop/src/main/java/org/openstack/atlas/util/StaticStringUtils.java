@@ -3,6 +3,8 @@ package org.openstack.atlas.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 public class StaticStringUtils {
@@ -53,6 +55,9 @@ public class StaticStringUtils {
     }
 
     public static <T> String collectionToString(Collection<T> collection, String delimiter) {
+        if (collection == null) {
+            return "null";
+        }
         if (collection.isEmpty()) {
             return "[]";
         }
@@ -77,5 +82,34 @@ public class StaticStringUtils {
             return stringIn;
         }
         return stringIn.substring(0, Math.min(maxLen, stringIn.length() - 1));
+    }
+
+    public static <K, V> String mapToString(Map<K, V> mapIn) {
+        if (mapIn == null) {
+            return "null";
+        }
+        if (mapIn.size() <= 0) {
+            return "[]";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (Entry<K, V> entry : mapIn.entrySet()) {
+            K key = entry.getKey();
+            V val = entry.getValue();
+            sb.append("(");
+            if (key == null) {
+                sb.append("null:");
+            } else {
+                sb.append(key.toString()).append(":");
+            }
+
+            if (val == null) {
+                sb.append("null),");
+            } else {
+                sb.append(val.toString()).append(",");
+            }
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }

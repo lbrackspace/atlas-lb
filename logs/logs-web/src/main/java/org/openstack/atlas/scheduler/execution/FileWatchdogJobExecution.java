@@ -74,8 +74,8 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
 
             String jobName = "fileMove:" + dateNow + schedulerConfigs.getInputString();
             vlog.log(String.format("Calling FileMoveJob with jobName %s and schedulerConfigs=%s", jobName, schedulerConfigs));
-            //scheduler.scheduleJob(jobName, FileMoveJob.class, schedulerConfigs);
-            Debug.schedulingExceptionThrowable(false);
+            scheduler.scheduleJob(jobName, FileMoveJob.class, schedulerConfigs);
+            //Debug.schedulingExceptionThrowable(false);
         } catch (SchedulingException e) {
             LOG.error(e);
             state.setState(JobStateVal.FAILED);

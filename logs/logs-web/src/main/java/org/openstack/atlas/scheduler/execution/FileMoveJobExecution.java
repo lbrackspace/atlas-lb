@@ -18,6 +18,7 @@ import org.openstack.atlas.tools.HadoopTool;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,15 +26,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.openstack.atlas.util.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;
+import org.openstack.atlas.util.StaticStringUtils;
+import org.openstack.atlas.util.VerboseLogger;
 
 public class FileMoveJobExecution extends LoggableJobExecution implements QuartzExecutable {
 
     private static final Log LOG = LogFactory.getLog(FileMoveJobExecution.class);
-
+    private static final VerboseLogger vlog = new VerboseLogger(FileMoveJobExecution.class);
     protected JobScheduler jobScheduler;
-
     private HadoopTool hadoopTool;
-
     private HdfsUtils hdfsUtils = new HdfsUtils();
 
     @Override
@@ -50,18 +51,18 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
 
         try {
             List<String> localInputFiles = getLocalInputFiles(schedulerConfigs);
-
+            vlog.log(String.format("calling createStateForMovingFiles(%s,%s)", runTime, StaticStringUtils.collectionToString(localInputFiles, ",")));
             Map<String, JobState> fastValues = createStateForMovingFiles(runTime, localInputFiles);
             for (String filename : localInputFiles) {
                 if (filename.endsWith(".lzo")) {
                     schedulerConfigs.setLzoInput(true);
                 }
             }
+            vlog.log(String.format("about to move files onto DFS: schedulerConfis = %s fastValues= %s", schedulerConfigs.toString(), StaticStringUtils.mapToString(fastValues)));
+            //moveFilesOntoDFS(schedulerConfigs, fastValues);
+            //deleteIfFinished(fastValues);
 
-            moveFilesOntoDFS(schedulerConfigs, fastValues);
-            deleteIfFinished(fastValues);
-
-            scheduleMapReduceAggregateLogsJob(schedulerConfigs);
+            //scheduleMapReduceAggregateLogsJob(schedulerConfigs);
 
         } catch (Exception e) {
             LOG.error(e);
@@ -80,18 +81,20 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
     }
 
     private Map<String, JobState> createStateForMovingFiles(String inputString,
-                                                         List<String> localInputFiles) {
+            List<String> localInputFiles) {
         Map<String, JobState> fastValues = new HashMap<String, JobState>();
         for (String inputFile : localInputFiles) {
-
-            JobState state = createJob(JobName.FILECOPY, inputString + ":" + inputFile);
+            String jobInput = inputString + ":" + inputFile;
+            vlog.log(String.format("calling createJob(FILECOPY,%s);", jobInput));
+            JobState state = createJob(JobName.FILECOPY, jobInput);
             fastValues.put(inputFile, state);
+            vlog.log(String.format("calling fastValues.put(%s,%s)", inputFile, state.toString()));
         }
         return fastValues;
     }
 
     private List<String> getLocalInputFiles(QuartzSchedulerConfigs schedulerConfigs) throws Exception {
-        List<String> localInputFiles = new LinkedList<String>();
+        List<String> localInputFiles = new ArrayList<String>();
         if (schedulerConfigs.getFileMoveInput() != null) {
             localInputFiles.add(schedulerConfigs.getFileMoveInput());
         } else if (schedulerConfigs.getInputForMultiPathJobs() != null) {

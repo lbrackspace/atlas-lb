@@ -96,6 +96,4 @@ public class StaticStringUtilsTest {
         assertTrue(out.equals("[test1, test2, test3]"));
         assertFalse(out.equals(""));
     }
-
-
 }

@@ -6,18 +6,28 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.openstack.atlas.util.StaticStringUtils;
 
 public class QuartzSchedulerConfigs {
 
     private String runTime;
     private String rawlogsFileTime;
     private String inputString;
-
     private String fileMoveInput;
     private List<String> inputForMultiPathJobs;
-
     private String jobJarPath;
     private boolean lzoInput;
+
+    @Override
+    public String toString() {
+        return "QuartzSchedulerConfigs{runTime=" + runTime
+                + ", rawlogsFileTime=" + rawlogsFileTime
+                + ", inputString=" + inputString
+                + ", fileMoveInput=" + fileMoveInput
+                + ", inputForMultiPathJobs=" + StaticStringUtils.collectionToString(inputForMultiPathJobs, ",")
+                + ", jobJarPath=" + jobJarPath
+                + ", lzoInput=" + lzoInput + '}';
+    }
 
     public static QuartzSchedulerConfigs createSchedulerConfigsFromMap(Map values) {
         QuartzSchedulerConfigs schedulerConfigs = new QuartzSchedulerConfigs();
@@ -125,5 +135,3 @@ public class QuartzSchedulerConfigs {
         this.lzoInput = lzoInput;
     }
 }
-
-

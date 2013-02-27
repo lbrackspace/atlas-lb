@@ -6,6 +6,7 @@ import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.util.VerboseLogger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 public class FileMoveJob extends BaseMapreduceJob implements StatefulJob {
     private static final Log LOG = LogFactory.getLog(FileMoveJob.class);
+    private static final VerboseLogger vlog = new VerboseLogger(FileMoveJob.class);
 
     private QuartzExecutable fileMoveJobExecution;
 
