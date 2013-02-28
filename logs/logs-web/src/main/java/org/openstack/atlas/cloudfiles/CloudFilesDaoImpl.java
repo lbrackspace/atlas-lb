@@ -28,15 +28,6 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
         this.fileSystemUtils = fileSystemUtils;
     }
 
-    /*   private void storeObject(String containerName, File file, String contentType, String remoteFilename, Map values) throws IOException, HttpException {
-            try {
-                client.storeObjectAs(containerName, file, contentType, remoteFilename, values);
-            } catch (Exception e) {
-                // Files has a tendency to crap out on uploads. Just try again.
-                client.storeObjectAs(containerName, file, contentType, remoteFilename, values);
-            }
-        }
-    */
     public synchronized void uploadLocalFile(AuthUser user, String containerName, String localFileName, String remoteFileName) throws FilesException {
         File localFile = new File(localFileName);
         if (!localFile.exists()) {
@@ -57,6 +48,7 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
                 // try again to log in, sometimes this fails randomly
                 client.login();
             }
+            client.setCurrentRegion(user.getRegion());
             if (!client.containerExists(containerName)) {
                 client.createContainer(containerName);
             }

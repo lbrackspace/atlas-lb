@@ -6,9 +6,9 @@ import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.exceptions.MissingFieldException;
 import org.openstack.atlas.api.filters.helpers.StringUtilities;
 import org.openstack.atlas.cfg.Configuration;
-import org.openstack.client.keystone.KeyStoneAdminClient;
-import org.openstack.client.keystone.KeyStoneException;
-import org.openstack.client.keystone.token.FullToken;
+import org.openstack.identity.client.client.IdentityClient;
+import org.openstack.identity.client.fault.IdentityFault;
+import org.openstack.identity.client.token.AuthenticateResponse;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -16,28 +16,26 @@ import java.net.URISyntaxException;
 public class AuthTokenValidator {
     private static final Log LOG = LogFactory.getLog(AuthTokenValidator.class);
 
-    public KeyStoneAdminClient keyStoneAdminClient;
+    public IdentityClient identityClient;
     private Configuration configuration;
 
-    public AuthTokenValidator(Configuration cfg) throws MalformedURLException, URISyntaxException, KeyStoneException {
+    public AuthTokenValidator(Configuration cfg) throws MalformedURLException, URISyntaxException, IdentityFault {
         this.configuration = cfg;
-        if (cfg.hasKeys(PublicApiServiceConfigurationKeys.auth_management_uri,
-                PublicApiServiceConfigurationKeys.basic_auth_user,
-                PublicApiServiceConfigurationKeys.basic_auth_key)) {
+        if (cfg.hasKeys(PublicApiServiceConfigurationKeys.identity_auth_url,
+                PublicApiServiceConfigurationKeys.identity_user,
+                PublicApiServiceConfigurationKeys.identity_pass)) {
 
-            LOG.info("Auth URI from local conf: " + configuration.getString(PublicApiServiceConfigurationKeys.auth_management_uri));
-            keyStoneAdminClient = new KeyStoneAdminClient(configuration.getString(PublicApiServiceConfigurationKeys.auth_management_uri),
-                    configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_key),
-                    configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_user));
+            LOG.info("Auth URI from local conf: " + configuration.getString(PublicApiServiceConfigurationKeys.identity_auth_url));
+            identityClient = new IdentityClient(configuration.getString(PublicApiServiceConfigurationKeys.identity_auth_url));
         } else {
             LOG.error(StringUtilities.AUTH_INIT_FAIL);
             throw new MissingFieldException(StringUtilities.AUTH_INIT_FAIL);
         }
     }
 
-    public FullToken validate(Integer passedAccountId, String authToken) throws KeyStoneException, URISyntaxException {
+    public AuthenticateResponse validate(String userToken, String tenantId) throws URISyntaxException, IdentityFault {
         LOG.info("Within validate ... about to call client authenticate...");
-        //Validating mosso style user...
-        return keyStoneAdminClient.validateToken(String.valueOf(passedAccountId), authToken, "mosso");
+        AuthenticateResponse admin = identityClient.authenticateUsernamePassword(configuration.getString(PublicApiServiceConfigurationKeys.identity_user), configuration.getString(PublicApiServiceConfigurationKeys.identity_pass));
+        return identityClient.validateToken(admin.getToken().getId(), userToken, tenantId);
     }
 }

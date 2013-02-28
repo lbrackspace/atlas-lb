@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.17.12-SNAPSHOT</version>
+        <version>1.17.15-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-logs-web</artifactId>
@@ -40,8 +40,8 @@
             <artifactId>xmlrpc-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mosso.client</groupId>
-            <artifactId>cloudfiles</artifactId>
+            <groupId>com.rackspacecloud</groupId>
+            <artifactId>java-cloudfiles</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlrpc</groupId>

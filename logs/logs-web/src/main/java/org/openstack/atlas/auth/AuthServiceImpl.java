@@ -35,7 +35,8 @@ public class AuthServiceImpl implements AuthService {
             user.setUsername(validatedUser.getId());
             user.setAuthKey(validatedUser.getKey());
             user.setEnabled(validatedUser.isEnabled());
-            user.setCloudFilesAuthUrl(getCloudFilesAuthUrl());
+            user.setRegion(configuration.getString(LbLogsConfigurationKeys.files_region));
+            user.setCloudFilesAuthUrl(getCloudFilesAuthUrl() + "auth");
             return user;
         } catch (Exception e) {
             throw new AuthException("Exception getting auth info for account " + accountId + " from " + configuration.getString(LbLogsConfigurationKeys.auth_management_uri), e);
@@ -45,6 +46,5 @@ public class AuthServiceImpl implements AuthService {
     public String getCloudFilesAuthUrl() {
         return configuration.getString(LbLogsConfigurationKeys.auth_management_uri);
     }
-
 
 }

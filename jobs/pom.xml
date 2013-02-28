@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.17.12-SNAPSHOT</version>
+        <version>1.17.15-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-jobs</artifactId>
@@ -86,9 +86,9 @@
             <version>2.1.12</version>
         </dependency>
         <dependency>
-            <groupId>org.openstack.client.keystone</groupId>
-            <artifactId>java-keystone</artifactId>
-            <version>1.2</version>
+            <groupId>org.openstack.client.identity</groupId>
+            <artifactId>java-identityclient</artifactId>
+            <version>1.0.0</version>
         </dependency>
         <!--<dependency>-->
         <!--<groupId>atom-hopper-usl-client</groupId>-->

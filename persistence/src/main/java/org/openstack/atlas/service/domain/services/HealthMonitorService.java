@@ -12,7 +12,7 @@ public interface HealthMonitorService {
 
     public void prepareForDeletion(LoadBalancer requestLb) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException;
 
-    public void delete(LoadBalancer requestLb) throws EntityNotFoundException;
+    public void delete(LoadBalancer requestLb) throws EntityNotFoundException, Exception;
 
      public void verifyMonitorProtocol(HealthMonitor queueMonitor, LoadBalancer dbLoadBalancer, HealthMonitor dbMonitor) throws BadRequestException;
 }

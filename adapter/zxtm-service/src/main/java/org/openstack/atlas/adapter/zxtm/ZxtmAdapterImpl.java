@@ -422,7 +422,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     removeSessionPersistence(config, lbId, accountId);
                 }
             } else {
-                 if (!SessionPersistence.HTTP_COOKIE.equals(lb.getSessionPersistence())) {
+                if (!SessionPersistence.HTTP_COOKIE.equals(lb.getSessionPersistence())) {
                     removeSessionPersistence(config, lbId, accountId);
                 }
             }
@@ -1155,8 +1155,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         //TODO: uncomment when zeus performance issues are resolved... (VERSION 1) TK-12805
         try {
 //        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{vsName}, new String[]{Constants.DEFAULT_ERRORFILE});
-        serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{vsName}, new String[]{"Default"});
-        LOG.info(String.format("Successfully set the default error file for: %s", vsName));
+            serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{vsName}, new String[]{"Default"});
+            LOG.info(String.format("Successfully set the default error file for: %s", vsName));
         } catch (ObjectDoesNotExist odne) {
             LOG.warn(String.format("Virtual server %s does not exist, ignoring...", vsName));
         }
@@ -1227,12 +1227,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void updateTimeout(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         final String poolName = ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         if (loadBalancer.getTimeout() != null) {
-                serviceStubs.getPoolBinding().setMaxReplyTime(new String[]{poolName}, new UnsignedInt[]{new UnsignedInt(loadBalancer.getTimeout())});
-            }
+            serviceStubs.getPoolBinding().setMaxReplyTime(new String[]{poolName}, new UnsignedInt[]{new UnsignedInt(loadBalancer.getTimeout())});
+        }
     }
 
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, String vsName, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
@@ -1622,7 +1622,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         } catch (InvalidInput e) {
             LOG.error("Content caching not found, ignoring..." + e);
 //            throw new ZxtmRollBackException(rollBackMessage, e);
-        }  catch (RemoteException e) {
+        } catch (RemoteException e) {
             LOG.error("Error updating content caching..." + e);
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
@@ -1833,14 +1833,21 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void updateHalfClosed(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
-        final String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
-
         try {
-        LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualSecureServerName, loadBalancer.isHalfClosed()));
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualSecureServerName}, new boolean[]{loadBalancer.isHalfClosed()});
+            LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId()), loadBalancer.isHalfClosed()));
+            ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+            serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId())}, new boolean[]{loadBalancer.isHalfClosed()});
         } catch (Exception e) {
-            LOG.error("Could not update half close support for virtual server: " + virtualSecureServerName);
+            LOG.error("Could not update half close support for virtual server: " + ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId()));
+        }
+        try {
+            if (loadBalancer.hasSsl()) {
+                LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId()), loadBalancer.isHalfClosed()));
+                ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+                serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId())}, new boolean[]{loadBalancer.isHalfClosed()});
+            }
+        } catch (Exception e) {
+            LOG.error("Could not update half close support for virtual server: " + ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId()));
         }
 
     }

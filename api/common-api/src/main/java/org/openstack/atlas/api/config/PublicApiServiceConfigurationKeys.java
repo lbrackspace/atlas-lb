@@ -30,4 +30,7 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     rdns_admin_passwd,
     allow_internal_auth,
     repose_via_key,
+    identity_auth_url,
+    identity_user,
+    identity_pass
 }
