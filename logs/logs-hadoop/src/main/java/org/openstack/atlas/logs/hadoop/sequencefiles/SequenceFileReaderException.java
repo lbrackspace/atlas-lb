@@ -1,4 +1,4 @@
-package org.openstack.atlas.util.sequencefile;
+package org.openstack.atlas.logs.hadoop.sequencefiles;
 
 public class SequenceFileReaderException extends Exception {
 

@@ -8,11 +8,10 @@ import org.apache.hadoop.mapred.Reporter;
 import java.io.*;
 
 public class FileBytesWritable implements WritableComparable<FileBytesWritable> {
-    public static int MAXSIZE = 10000000;
-    public static int NUMTIMES = 1000;
-    public static int BUFSIZE = MAXSIZE / NUMTIMES;
-    private static final Log LOG =
-            LogFactory.getLog(FileBytesWritable.class);
+    public static final int MAXSIZE = 10000000;
+    public static final int NUMTIMES = 1000;
+    public static final int BUFSIZE = 256*1024;
+    private static final Log LOG = LogFactory.getLog(FileBytesWritable.class);
 
     private String fileName;
     int order;
@@ -30,8 +29,9 @@ public class FileBytesWritable implements WritableComparable<FileBytesWritable> 
 
     // In order to not write extra bytes ths **order** must be set on this object, index to offset of the set of these.
 
-    public void write(DataOutput out) throws IOException {
-        out.writeLong(maxSize);
+    @Override
+    public void write(DataOutput d) throws IOException {
+        d.writeLong(maxSize);
         byte[] buf = new byte[BUFSIZE];
         BufferedInputStream is = null;
         try {
@@ -43,7 +43,7 @@ public class FileBytesWritable implements WritableComparable<FileBytesWritable> 
             int numTimes = 0;
 
             while (numTimes < NUMTIMES && is.read(buf) >= 0) {
-                out.write(buf);
+                d.write(buf);
                 numTimes++;
             }
         } finally {
@@ -57,8 +57,9 @@ public class FileBytesWritable implements WritableComparable<FileBytesWritable> 
     // In order to not write extra bytes ths **order** must be set on this object, index to offset of the set of these.
     // In order to not write extra bytes ths **maxSize** must be set on this object, equal to fileSize.
 
-    public void readFields(DataInput in) throws IOException {
-        maxSize = in.readLong();
+    @Override
+    public void readFields(DataInput di) throws IOException {
+        maxSize = di.readLong();
         byte[] buf = new byte[BUFSIZE];
 
         int start = order * MAXSIZE;
@@ -79,11 +80,11 @@ public class FileBytesWritable implements WritableComparable<FileBytesWritable> 
 
                 if (start + BUFSIZE < maxSize) {
                     start += BUFSIZE;
-                    in.readFully(buf);
+                    di.readFully(buf);
                     out.write(buf);
                 } else {
                     int rest = (int) maxSize - start;
-                    in.readFully(buf);
+                    di.readFully(buf);
                     out.write(buf, 0, rest);
                     throw new EOFException();
                 }
@@ -102,18 +103,6 @@ public class FileBytesWritable implements WritableComparable<FileBytesWritable> 
 
     }
 
-
-//    public final void readFully(DataInput in, byte b[], int off, int len) throws EOFException{
-//        if (len < 0)
-//            throw new IndexOutOfBoundsException();
-//        int n = 0;
-//        while (n < len) {
-//            int count = in.readFully(b, off + n, len - n);
-//            if (count < 0)
-//                throw new EOFException();
-//            n += count;
-//        }
-//    }
 
     public Reporter getReporter() {
         return reporter;
@@ -139,6 +128,7 @@ public class FileBytesWritable implements WritableComparable<FileBytesWritable> 
         this.fileName = fileName;
     }
 
+    @Override
     public int compareTo(FileBytesWritable o) {
         return fileName.compareTo(o.getFileName());
     }

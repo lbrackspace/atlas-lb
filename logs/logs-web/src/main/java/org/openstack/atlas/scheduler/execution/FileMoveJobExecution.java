@@ -45,7 +45,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         jobScheduler = scheduler;
         String runTime = schedulerConfigs.getInputString();
 
-        hadoopTool.setupHadoopRun(runTime);
+        //hadoopTool.setupHadoopRun(runTime);
         vlog.log(String.format("hadoopTool = %s", hadoopTool.toString()));
 
         try {

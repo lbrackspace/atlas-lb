@@ -1,5 +1,5 @@
 
-package org.openstack.atlas.util.sequencefile;
+package org.openstack.atlas.logs.hadoop.sequencefiles;
 
 public class EndOfIteratorException extends Exception{
     public EndOfIteratorException(Throwable cause) {

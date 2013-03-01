@@ -1,15 +1,17 @@
 package org.openstack.atlas.util;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.openstack.atlas.config.LbLogsConfiguration;
 import org.openstack.atlas.config.LbLogsConfigurationKeys;
+import org.openstack.atlas.logs.hadoop.jobs.HadoopJob;
 
 public class HadoopLogsConfigs {
 
+    private static final Log LOG = LogFactory.getLog(HadoopLogsConfigs.class);
     protected static final String cacheDir;
     protected static final String backupDir;
     protected static final String fileSystemRootDir;
@@ -33,6 +35,37 @@ public class HadoopLogsConfigs {
         mapreduceOutputPrefix = lbLogsConf.getString(LbLogsConfigurationKeys.mapreduce_output_prefix);
         fileRegion = lbLogsConf.getString(LbLogsConfigurationKeys.files_region);
         hdfsUserName = lbLogsConf.getString(LbLogsConfigurationKeys.hdfs_user_name);
+    }
+
+    public static HadoopJob getHadoopJob(Class<? extends HadoopJob> jobClass) {
+        HadoopJob implementation = null;
+        try {
+            implementation = jobClass.newInstance();
+        } catch (InstantiationException ex) {
+            String msg = String.format("Could not instantiate class %s", jobClass.getName());
+            LOG.error(msg, ex);
+            throw new IllegalArgumentException(msg, ex);
+        } catch (IllegalAccessException ex) {
+            String msg = String.format("Could not instantiate class %s", jobClass.getName());
+            LOG.error(msg, ex);
+            throw new IllegalArgumentException(msg, ex);
+        }
+        implementation.setConfiguration(getHadoopConfiguration());
+        return implementation;
+    }
+
+    public static String staticToString() {
+        StringBuilder sb = new StringBuilder();
+        sb = sb.append("{cacheDir=").append(cacheDir).
+                append(", backupdir=").append(backupDir).
+                append(", fileSystemRootDir=").append(fileSystemRootDir).
+                append(", hadoopXmlFile=").append(hadoopXmlFile).
+                append(", mapreduceInputPrefix=").append(mapreduceInputPrefix).
+                append(", mapreduceOutputPrefix=").append(mapreduceOutputPrefix).
+                append(", fileRegion=").append(fileRegion).
+                append(", hdfsUserName=").append(hdfsUserName).
+                append("}");
+        return sb.toString();
     }
 
     public static Configuration getHadoopConfiguration() {
@@ -95,19 +128,5 @@ public class HadoopLogsConfigs {
 
     public static String getHdfsUserName() {
         return hdfsUserName;
-    }
-
-    public static String staticToString() {
-        StringBuilder sb = new StringBuilder();
-        sb = sb.append("{cacheDir=").append(cacheDir).
-                append(", backupdir=").append(backupDir).
-                append(", fileSystemRootDir=").append(fileSystemRootDir).
-                append(", hadoopXmlFile=").append(hadoopXmlFile).
-                append(", mapreduceInputPrefix=").append(mapreduceInputPrefix).
-                append(", mapreduceOutputPrefix=").append(mapreduceOutputPrefix).
-                append(", fileRegion=").append(fileRegion).
-                append(", hdfsUserName=").append(hdfsUserName).
-                append("}");
-        return sb.toString();
     }
 }

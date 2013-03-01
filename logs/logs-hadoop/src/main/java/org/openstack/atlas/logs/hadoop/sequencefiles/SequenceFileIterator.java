@@ -1,4 +1,4 @@
-package org.openstack.atlas.util.sequencefile;
+package org.openstack.atlas.logs.hadoop.sequencefiles;
 
 import java.io.IOException;
 import java.util.logging.Level;

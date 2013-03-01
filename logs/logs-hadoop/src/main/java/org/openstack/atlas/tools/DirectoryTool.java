@@ -37,9 +37,7 @@ public abstract class DirectoryTool implements HadoopTool {
             conf.getJobConf().setJobName(conf.getJobConf().getJobName() + ":" + schedulerConfigs.getInputString());
         }
 
-        beforeJobRun();
         RunningJob job = JobClient.runJob(conf.getJobConf());
-        afterJobRun();
 
         if (job.getJobState() == JobStatus.SUCCEEDED) {
             return RUN_STATES.SUCCESS;
@@ -131,12 +129,6 @@ public abstract class DirectoryTool implements HadoopTool {
             conf.getJobConf().setJar(jobJarPath);
         }
         createInputDir();
-    }
-
-    protected void afterJobRun() {
-    }
-
-    protected void beforeJobRun() {
     }
 
     protected String createHistoryOutputDir() {

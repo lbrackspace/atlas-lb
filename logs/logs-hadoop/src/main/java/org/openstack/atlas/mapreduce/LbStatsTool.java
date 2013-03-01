@@ -1,5 +1,6 @@
 package org.openstack.atlas.mapreduce;
 
+import org.openstack.atlas.io.FileBytesWritable;
 import com.hadoop.mapred.DeprecatedLzoTextInputFormat;
 import org.openstack.atlas.io.*;
 import org.openstack.atlas.tools.DirectoryTool;
