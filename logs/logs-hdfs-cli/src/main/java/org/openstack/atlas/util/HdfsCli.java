@@ -27,6 +27,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -39,6 +40,7 @@ import java.util.Map.Entry;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
+import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 
 public class HdfsCli {
 
@@ -109,6 +111,7 @@ public class HdfsCli {
                     System.out.printf("cpLocal <localSrc> <localDst> [buffsize] #None hadoop file copy\n");
                     System.out.printf("countLines <zeusFile> <nTicks> [buffSize]\n");
                     System.out.printf("indexLzo <FileName>\n");
+                    System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
                     System.out.printf("du #Get number of free space on HDFS\n");
                     System.out.printf("setReplCount <FilePath> <nReps> #Set the replication count for this file\n");
                     System.out.printf("compressLzo <srcPath> <dstPath> [buffSize]#Compress lzo file\n");
@@ -377,6 +380,50 @@ public class HdfsCli {
                     LzoIndex.createIndex(lfs, filePath);
                     double endTime = Debug.getEpochSeconds();
                     System.out.printf("Took %f seconds to index file %s\n", endTime - startTime, srcFileName);
+                    continue;
+                }
+                if (cmd.equals("scanLines") && args.length >= 3) {
+                    String fileName = args[1];
+                    int nLines = Integer.parseInt(args[2]);
+                    int nTicks = Integer.parseInt(args[3]);
+                    BufferedReader r = new BufferedReader(new FileReader(StaticFileUtils.expandUser(fileName)), HDFSBUFFSIZE);
+                    int badLines = 0;
+                    int goodLines = 0;
+                    int lineCounter = 0;
+                    int totalLines = 0;
+                    int totalGoodLines = 0;
+                    int totalBadLines = 0;
+                    LogMapperOutputValue logValue = new LogMapperOutputValue();
+                    double startTime = StaticDateTimeUtils.getEpochSeconds();
+                    for (int i = 0; i < nLines; i++) {
+                        String line = r.readLine();
+
+                        if (line == null) {
+                            break; // End of file
+                        }
+                        try {
+                            LogChopper.getLogLineValues(line, logValue);
+                            goodLines++;
+                            totalGoodLines++;
+                        } catch (Exception ex) {
+                            badLines++;
+                            totalBadLines++;
+                        }
+                        lineCounter++;
+                        totalLines++;
+                        if (i % nTicks == 0) {
+                            double stopTime = StaticDateTimeUtils.getEpochSeconds();
+                            double lps = (double) lineCounter / (stopTime - startTime);
+                            System.out.printf("read %d lines goodlines=%d badlines=%d secs = %f linespersecond=%f\n", lineCounter, goodLines, badLines, stopTime - startTime, lps);
+                            startTime = stopTime;
+                            lineCounter = 0;
+                            goodLines = 0;
+                            badLines = 0;
+                        }
+                    }
+                    System.out.printf("Good=%d badLines=%d total = %d\n", totalGoodLines, totalBadLines, totalLines);
+
+                    r.close();
                     continue;
                 }
                 if (cmd.equals("du")) {

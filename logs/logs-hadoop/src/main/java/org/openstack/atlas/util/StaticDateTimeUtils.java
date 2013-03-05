@@ -8,6 +8,7 @@ import org.joda.time.format.DateTimeFormatter;
 public class StaticDateTimeUtils {
 
     public static final DateTimeFormatter apacheDateTimeFormat = DateTimeFormat.forPattern("dd/MMM/yyyy:HH:mm:ss Z");
+    public static final DateTimeFormatter utcApacheDateTimeFormat = apacheDateTimeFormat.withZone(DateTimeZone.UTC);
 
     public static long dateTimeToOrdinalMillis(DateTime dt) {
         return dt.getYear() * 10000000000000L
@@ -40,9 +41,12 @@ public class StaticDateTimeUtils {
         return new DateTime(years, months, days, hours, mins, secs, millis);
     }
 
-    public static DateTime parseApacheDateTime(String apacheDateStr) {
-        DateTime dt = apacheDateTimeFormat.parseDateTime(apacheDateStr);
-        return dt;
+    public static DateTime parseApacheDateTime(String apacheDateStr, boolean useUTC) {
+        if (useUTC) {
+            utcApacheDateTimeFormat.parseDateTime(apacheDateStr);
+        }
+        return apacheDateTimeFormat.parseDateTime(apacheDateStr);
+
     }
 
     public static DateTime nowDateTime(boolean useUTC) {
@@ -50,5 +54,9 @@ public class StaticDateTimeUtils {
             return DateTime.now().withZone(DateTimeZone.UTC);
         }
         return DateTime.now();
+    }
+
+    public static double getEpochSeconds() {
+        return ((double) System.currentTimeMillis()) * 0.001;
     }
 }

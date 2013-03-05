@@ -1,13 +1,13 @@
 package org.openstack.atlas.scheduler.execution;
 
 import java.io.IOException;
+import org.openstack.atlas.hadoop.deprecated.DateTime;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.repository.JobStateRepository;
 import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.tools.HadoopConfiguration;
-import org.openstack.atlas.util.DateTime;
 import org.openstack.atlas.util.FileSystemUtils;
 import org.openstack.atlas.util.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;

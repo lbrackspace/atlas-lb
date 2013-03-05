@@ -11,9 +11,9 @@ import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 public final class LogChopper {
 
     private static final Log LOGGER = LogFactory.getLog(LogChopper.class);
-    private static final Pattern HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++\\]) \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\")$");
-    private static final Pattern HTTP_LB_LOG_PATTERN_IP = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++\\]) \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\" ([^ ]++))$");
-    private static final Pattern NON_HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) \\[([^\\]]++\\]) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++))$");
+    private static final Pattern HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++)\\] \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\")$");
+    private static final Pattern HTTP_LB_LOG_PATTERN_IP = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++)\\] \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\" ([^ ]++))$");
+    private static final Pattern NON_HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) \\[([^\\]]++)\\] ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++))$");
 
     private LogChopper() {
     }
@@ -92,7 +92,7 @@ public final class LogChopper {
                     sourceIp,
                     accountId_loadBalancerId,
                     loadBalancerId,
-                    StaticDateTimeUtils.parseApacheDateTime(date).toGregorianCalendar(),
+                    StaticDateTimeUtils.parseApacheDateTime(date,false).toGregorianCalendar(),
                     logline);
         } else {
             LOGGER.error(logline);
@@ -121,7 +121,7 @@ public final class LogChopper {
             val.setSourceIp(sourceIp);
             val.setLoadbalancerName(accountId_loadBalancerId);
             val.setLoadbalancerId(loadBalancerId);
-            org.joda.time.DateTime dt = StaticDateTimeUtils.parseApacheDateTime(date);
+            org.joda.time.DateTime dt = StaticDateTimeUtils.parseApacheDateTime(date,true);
             long dateOrd = StaticDateTimeUtils.dateTimeToOrdinalMillis(dt);
             val.setDate(dateOrd);
             val.setLogLine(logline);

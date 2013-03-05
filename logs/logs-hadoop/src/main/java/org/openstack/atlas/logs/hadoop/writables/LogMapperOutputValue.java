@@ -8,6 +8,15 @@ import org.apache.hadoop.io.WritableComparable;
 
 public class LogMapperOutputValue implements WritableComparable<LogMapperOutputValue> {
 
+    @Override
+    public String toString() {
+        return "LogMapperOutputValue{accountId=" + accountId
+                + ", loadbalancerId=" + loadbalancerId
+                + ", date=" + date
+                + ", loadbalancerName=" + loadbalancerName
+                + ", sourceIp=" + sourceIp
+                + ", logLine=" + logLine + '}';
+    }
     private int accountId;
     private int loadbalancerId;
     private long date;
