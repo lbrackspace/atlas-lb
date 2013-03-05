@@ -6,18 +6,48 @@ import org.apache.commons.logging.LogFactory;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 
 public final class LogChopper {
 
     private static final Log LOGGER = LogFactory.getLog(LogChopper.class);
-
-    private static final Pattern HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^ ]++) [^\\]]++\\] \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\")$");
-    private static final Pattern HTTP_LB_LOG_PATTERN_IP = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^ ]++) [^\\]]++\\] \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\" ([^ ]++))$");
-    private static final Pattern NON_HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) \\[([^ ]++) [^\\]]++\\] ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++))$");
+    private static final Pattern HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++\\]) \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\")$");
+    private static final Pattern HTTP_LB_LOG_PATTERN_IP = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++\\]) \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\" ([^ ]++))$");
+    private static final Pattern NON_HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) \\[([^\\]]++\\]) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++))$");
 
     private LogChopper() {
     }
 
+    public static void getLogLineValues(String logLine, LogMapperOutputValue val) throws Exception {
+
+        Matcher matcher = HTTP_LB_LOG_PATTERN.matcher(logLine);
+        Matcher matcherIP = HTTP_LB_LOG_PATTERN_IP.matcher(logLine);
+        boolean matchFound = matcher.find();
+        String date;
+
+        if (matchFound) {
+            date = matcher.group(7);
+            String sourceIp = matcher.group(4);
+            parseLogLine(logLine, matcher, matchFound, date, sourceIp, val);
+            return;
+        } else if (matcherIP.find()) {
+            matchFound = true;
+            date = matcherIP.group(7);
+            String sourceIp = matcherIP.group(4);
+            parseLogLine(logLine, matcherIP, matchFound, date, sourceIp, val);
+            return;
+        } else {
+            matcher = NON_HTTP_LB_LOG_PATTERN.matcher(logLine);
+            matchFound = matcher.find();
+            date = matcher.group(3);
+            parseLogLine(logLine, matcher, matchFound, date, null, val);
+            return;
+        }
+
+
+    }
+
+    @Deprecated
     public static LbLogsWritable getLbLogStats(String logline) throws Exception {
         Matcher matcher = HTTP_LB_LOG_PATTERN.matcher(logline);
         Matcher matcherIP = HTTP_LB_LOG_PATTERN_IP.matcher(logline);
@@ -41,6 +71,7 @@ public final class LogChopper {
         }
     }
 
+    @Deprecated
     private static LbLogsWritable parseLogLine(String logline, Matcher matcher, boolean matchFound, String date, String sourceIp) throws Exception {
         if (matchFound) {
             String loadBalancerName = matcher.group(2);
@@ -61,13 +92,43 @@ public final class LogChopper {
                     sourceIp,
                     accountId_loadBalancerId,
                     loadBalancerId,
-                    new DateTime(date, DateTime.APACHE).getCalendar(),
-                    logline
-            );
+                    StaticDateTimeUtils.parseApacheDateTime(date).toGregorianCalendar(),
+                    logline);
         } else {
             LOGGER.error(logline);
             throw getLoglineError(logline.toString());
 
+        }
+    }
+
+    private static void parseLogLine(String logline, Matcher matcher, boolean matchFound, String date, String sourceIp, LogMapperOutputValue val) throws Exception {
+        if (matchFound) {
+            String loadBalancerName = matcher.group(2);
+            String[] arr = loadBalancerName.split("_");
+            int accountId = Integer.parseInt(arr[0]);
+            int loadBalancerId = Integer.parseInt(arr[1]);
+            String accountId_loadBalancerId = accountId + "_" + loadBalancerId;
+
+
+            if (loadBalancerName.contains("_S")) {
+                logline = stripSSL(logline, loadBalancerName, accountId_loadBalancerId);
+            }
+
+            if (sourceIp == null) {
+                sourceIp = "";
+            }
+            val.setAccountId(accountId);
+            val.setSourceIp(sourceIp);
+            val.setLoadbalancerName(accountId_loadBalancerId);
+            val.setLoadbalancerId(loadBalancerId);
+            org.joda.time.DateTime dt = StaticDateTimeUtils.parseApacheDateTime(date);
+            long dateOrd = StaticDateTimeUtils.dateTimeToOrdinalMillis(dt);
+            val.setDate(dateOrd);
+            val.setLogLine(logline);
+            return;
+        } else {
+            LOGGER.error(logline);
+            throw getLoglineError(logline.toString());
         }
     }
 

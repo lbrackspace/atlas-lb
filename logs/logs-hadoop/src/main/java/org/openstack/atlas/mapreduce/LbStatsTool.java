@@ -17,6 +17,7 @@ import org.openstack.atlas.util.Constants;
 import java.io.IOException;
 import java.util.List;
 
+@Deprecated
 public class LbStatsTool extends DirectoryTool {
     @Override
     protected Class<? extends Mapper> getMapperClass() {

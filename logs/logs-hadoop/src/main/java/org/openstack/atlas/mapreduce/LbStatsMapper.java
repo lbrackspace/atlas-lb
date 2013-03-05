@@ -2,7 +2,7 @@ package org.openstack.atlas.mapreduce;
 
 import org.openstack.atlas.io.LbLogsAccountDateKey;
 import org.openstack.atlas.io.LbLogsWritable;
-import org.openstack.atlas.util.DateTime;
+import org.openstack.atlas.hadoop.deprecated.DateTime;
 import org.openstack.atlas.util.LogChopper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,6 +15,7 @@ import org.apache.hadoop.mapred.Reporter;
 
 import java.io.IOException;
 
+@Deprecated
 public class LbStatsMapper implements Mapper<LongWritable, Text, LbLogsAccountDateKey, LbLogsWritable> {
     private static Log LOG = LogFactory.getLog(LbStatsMapper.class);
 

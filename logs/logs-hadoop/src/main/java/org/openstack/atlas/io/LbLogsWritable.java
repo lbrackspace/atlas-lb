@@ -1,6 +1,6 @@
 package org.openstack.atlas.io;
 
-import org.openstack.atlas.util.DateTime;
+import org.openstack.atlas.hadoop.deprecated.DateTime;
 import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataInput;

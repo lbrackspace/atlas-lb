@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
+@Deprecated
 public class LbStatsReducer implements Reducer<LbLogsAccountDateKey, LbLogsWritable, Text, FileBytesWritable> {
     
     private static String fileDate;
