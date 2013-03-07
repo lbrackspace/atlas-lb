@@ -400,6 +400,7 @@ public class HdfsCli {
                         throw ex;
                     }
                     Collections.sort(sequenceFiles);
+                    int totalEntryCount = 0;
                     for (Path sequencePath : sequenceFiles) {
                         System.out.printf("Scanning %s\n", sequencePath.toUri().toString());
                         try {
@@ -412,6 +413,7 @@ public class HdfsCli {
                             try {
                                 SequenceFileEntry<LogReducerOutputKey, LogReducerOutputValue> sequenceEntry;
                                 sequenceEntry = zipIterator.getNextEntry();
+                                totalEntryCount++;
                                 LogReducerOutputKey key = sequenceEntry.getKey();
                                 LogReducerOutputValue val = sequenceEntry.getValue();
                                 System.out.printf("%s:key=%s val=%s\n", sequencePath.toUri().toString(), key.toString(), val.toString());
@@ -424,6 +426,7 @@ public class HdfsCli {
                             }
                         }
                     }
+                    System.out.printf("Total entries = %d\n", totalEntryCount);
                     continue;
                 }
                 if (cmd.equals("scanLines") && args.length >= 3) {
@@ -452,6 +455,7 @@ public class HdfsCli {
                         } catch (Exception ex) {
                             badLines++;
                             totalBadLines++;
+                            System.out.printf("BAD=%s\n",line);
                         }
                         lineCounter++;
                         totalLines++;
