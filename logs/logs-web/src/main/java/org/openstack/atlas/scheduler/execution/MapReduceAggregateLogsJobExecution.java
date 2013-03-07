@@ -99,7 +99,7 @@ public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution imp
             HadoopJob hadoopClient = new HadoopLogSplitterJob();
             hadoopClient.setConfiguration(HadoopLogsConfigs.getHadoopConfiguration());
             int errorCode = hadoopClient.run(argsList);
-            if (hadoopClient.run(argsList) < 0) {
+            if (errorCode < 0) {
                 LOG.error(String.format("Hadoop run FAILED with error code %d", errorCode));
             } else {
                 vlog.log(String.format("Hadoop run SUCCEEDED with code %d", errorCode));

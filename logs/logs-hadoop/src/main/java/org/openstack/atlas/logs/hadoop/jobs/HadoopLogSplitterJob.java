@@ -59,6 +59,7 @@ public class HadoopLogSplitterJob extends HadoopJob {
         vlog.log(String.format("jobName=%s", jobName));
         job.setJarByClass(HadoopLogSplitterJob.class);
         job.setJobName(jobName);
+        job.getConfiguration().set("fileHour", fileHour);
         URI defaultHdfsUri = FileSystem.getDefaultUri(conf);
         FileSystem fs = FileSystem.get(defaultHdfsUri, conf, userName);
         //DistributedCache.addCacheFile(jarPath.toUri(), job.getConfiguration());

@@ -10,9 +10,12 @@ import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 
 public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue, LogReducerOutputKey, LogReducerOutputValue> {
 
+    private int fileHour;
+
     @Override
     public void setup(Context ctx) {
         ctx.getCounter(LogCounters.REDUCER_SETUP_CALLS).increment(1);
+        fileHour = Integer.parseInt(ctx.getConfiguration().get("fileHour"));
     }
 
     @Override
@@ -30,18 +33,22 @@ public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue
         oVal.setLoadbalancerId(loadbalancerId);
         oVal.setCrc(-1);
         int nLines = 0;
-        oVal.setLogFile(getLogFileName(accountId, loadbalancerId));
         for (LogMapperOutputValue rVal : rVals) {
             nLines++;
         }
+        String zipName = getZipFileName(loadbalancerId, fileHour);
+        String zipContentsName = getZipContentsName(loadbalancerId, fileHour);
         oVal.setnLines(nLines);
+
+        oVal.setLogFile(zipName);
         ctx.write(oKey, oVal);
     }
 
-    private String getLogFileName(int accountId, int loadbalancerId) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(accountId).append("_").append(loadbalancerId).append(".zip");
-        return sb.toString();
+    private static String getZipFileName(int loadbalancerId, int fileHour) {
+        return "access_log_" + loadbalancerId + "_" + fileHour + ".zip";
+    }
 
+    private static String getZipContentsName(int loadbalancerId, int fileHour) {
+        return "access_log_" + loadbalancerId + "_" + fileHour;
     }
 }
