@@ -41,7 +41,13 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
 import org.openstack.atlas.logs.hadoop.jobs.HadoopJob;
+import org.openstack.atlas.logs.hadoop.sequencefiles.EndOfIteratorException;
+import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileEntry;
+import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileIterator;
+import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileReaderException;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
+import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
+import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 
 public class HdfsCli {
 
@@ -68,6 +74,7 @@ public class HdfsCli {
 
         BufferedReader stdin = HdfsCliHelpers.inputStreamToBufferedReader(System.in);
         System.out.printf("\n");
+
 
         while (true) {
             try {
@@ -113,6 +120,7 @@ public class HdfsCli {
                     System.out.printf("countLines <zeusFile> <nTicks> [buffSize]\n");
                     System.out.printf("indexLzo <FileName>\n");
                     System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
+                    System.out.printf("printReducers <hdfsDir> #Display the contents of the reducer output\n");
                     System.out.printf("du #Get number of free space on HDFS\n");
                     System.out.printf("setReplCount <FilePath> <nReps> #Set the replication count for this file\n");
                     System.out.printf("compressLzo <srcPath> <dstPath> [buffSize]#Compress lzo file\n");
@@ -151,7 +159,7 @@ public class HdfsCli {
                     HadoopJob jobDriver = jobDriverClass.newInstance();
                     jobDriver.setConfiguration(conf);
                     List<String> argsList = new ArrayList<String>();
-                    for(int i=2;i<args.length;i++){
+                    for (int i = 2; i < args.length; i++) {
                         argsList.add(args[i]);
                     }
                     // Run job
@@ -380,6 +388,42 @@ public class HdfsCli {
                     LzoIndex.createIndex(lfs, filePath);
                     double endTime = Debug.getEpochSeconds();
                     System.out.printf("Took %f seconds to index file %s\n", endTime - startTime, srcFileName);
+                    continue;
+                }
+                if (cmd.equals("printReducers") && args.length >= 2) {
+                    SequenceFileIterator<LogReducerOutputKey, LogReducerOutputValue> zipIterator;
+                    String sequenceDirectory = args[1];
+                    List<Path> sequenceFiles;
+                    try {
+                        sequenceFiles = hdfsUtils.listSequenceFiles(sequenceDirectory, false);
+                    } catch (IOException ex) {
+                        throw ex;
+                    }
+                    Collections.sort(sequenceFiles);
+                    for (Path sequencePath : sequenceFiles) {
+                        System.out.printf("Scanning %s\n", sequencePath.toUri().toString());
+                        try {
+                            zipIterator = new SequenceFileIterator<LogReducerOutputKey, LogReducerOutputValue>(sequencePath, fs);
+                        } catch (SequenceFileReaderException ex) {
+                            throw ex;
+                        }
+
+                        while (true) {
+                            try {
+                                SequenceFileEntry<LogReducerOutputKey, LogReducerOutputValue> sequenceEntry;
+                                sequenceEntry = zipIterator.getNextEntry();
+                                LogReducerOutputKey key = sequenceEntry.getKey();
+                                LogReducerOutputValue val = sequenceEntry.getValue();
+                                System.out.printf("%s:key=%s val=%s\n", sequencePath.toUri().toString(), key.toString(), val.toString());
+                            } catch (EndOfIteratorException ex) {
+                                zipIterator.close();
+                                break;
+                            } catch (SequenceFileReaderException ex) {
+                                zipIterator.close();
+                                throw ex;
+                            }
+                        }
+                    }
                     continue;
                 }
                 if (cmd.equals("scanLines") && args.length >= 3) {

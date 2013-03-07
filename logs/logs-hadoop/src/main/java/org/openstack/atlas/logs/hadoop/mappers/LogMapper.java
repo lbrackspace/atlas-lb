@@ -1,8 +1,10 @@
 package org.openstack.atlas.logs.hadoop.mappers;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -11,16 +13,39 @@ import org.openstack.atlas.exception.StringParseException;
 import org.openstack.atlas.logs.hadoop.counters.LogCounters;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
+import org.openstack.atlas.util.Debug;
 import org.openstack.atlas.util.LogChopper;
+import org.openstack.atlas.util.StaticFileUtils;
 
 public class LogMapper extends Mapper<LongWritable, Text, LogMapperOutputKey, LogMapperOutputValue> {
 
     private LogMapperOutputKey oKey = new LogMapperOutputKey();
     private LogMapperOutputValue oVal = new LogMapperOutputValue();
+    private static final boolean DEBUG_EXCEPTION = false;
+
+    private String getDebugInfo(Context ctx) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("host: ").append(Debug.hostName()).append("\n").
+                append("Directory: ").append(StaticFileUtils.workingDirectory()).append("\n").
+                append("CacheFiles: \n");
+        URI[] cacheFiles = DistributedCache.getCacheFiles(ctx.getConfiguration());
+        if (cacheFiles == null) {
+            sb.append("No cache files found\n");
+            throw new IOException(sb.toString());
+        }
+        for (URI cacheFile : cacheFiles) {
+            sb.append("   ").append(cacheFile.toString()).append("\n");
+        }
+        return sb.toString();
+    }
 
     @Override
-    public void setup(Context ctx) {
+    public void setup(Context ctx) throws IOException {
+
         ctx.getCounter(LogCounters.MAPPER_SETUP_CALLS).increment(1);
+        if (DEBUG_EXCEPTION) {
+            throw new IOException(getDebugInfo(ctx));
+        }
     }
 
     @Override

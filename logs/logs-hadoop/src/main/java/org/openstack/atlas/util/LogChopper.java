@@ -41,6 +41,9 @@ public final class LogChopper {
         } else {
             matcher = NON_HTTP_LB_LOG_PATTERN.matcher(logLine);
             matchFound = matcher.find();
+            if (!matchFound) {
+                throw new StringParseException("Date did not parse on Non HTTP LoadBalancer");
+            }
             date = matcher.group(3);
             parseLogLine(logLine, matcher, matchFound, date, null, val);
             return;

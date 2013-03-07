@@ -63,7 +63,7 @@ public class LogReducerOutputValue implements WritableComparable<LogReducerOutpu
     @Override
     public void write(DataOutput d) throws IOException {
         int nullFlags = ((logFile == null) ? 0 : 1);
-
+        d.writeByte(nullFlags);
         d.writeInt(accountId);
         d.writeInt(loadbalancerId);
         d.writeInt(nLines);

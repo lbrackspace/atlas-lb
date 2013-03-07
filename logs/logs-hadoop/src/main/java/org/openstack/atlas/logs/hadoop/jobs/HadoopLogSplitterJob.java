@@ -15,8 +15,11 @@ import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.joda.time.DateTime;
 import org.openstack.atlas.logs.hadoop.comparators.LogGroupComparator;
 import org.openstack.atlas.logs.hadoop.comparators.LogSortComparator;
+import org.openstack.atlas.logs.hadoop.counters.CounterUtils;
+import org.openstack.atlas.logs.hadoop.counters.LogCounters;
 import org.openstack.atlas.logs.hadoop.mappers.LogMapper;
 import org.openstack.atlas.logs.hadoop.partitioners.LogPartitioner;
 import org.openstack.atlas.logs.hadoop.reducers.LogReducer;
@@ -24,6 +27,8 @@ import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
+import org.openstack.atlas.util.Nop;
+import org.openstack.atlas.util.StaticDateTimeUtils;
 import org.openstack.atlas.util.VerboseLogger;
 
 public class HadoopLogSplitterJob extends HadoopJob {
@@ -47,18 +52,22 @@ public class HadoopLogSplitterJob extends HadoopJob {
         for (int i = 6; i < args.length; i++) {
             lzoFiles.add(args[i]);
         }
-
-        System.setProperty("HADOOP_USER_NAME", userName);
-        URI defaultHdfsUri = FileSystem.getDefaultUri(conf);
-
         Job job = new Job(conf);
-
+        System.setProperty("HADOOP_USER_NAME", userName);
+        DateTime dt = StaticDateTimeUtils.nowDateTime(true);
+        long dateOrd = StaticDateTimeUtils.dateTimeToOrdinalMillis(dt);
+        String jobName = "LB_STATS" + ":" + fileHour + ":" + dateOrd;
+        vlog.log(String.format("jobName=%s", jobName));
+        job.setJarByClass(Nop.class);
+        job.setJobName(jobName);
+        URI defaultHdfsUri = FileSystem.getDefaultUri(conf);
         FileSystem fs = FileSystem.get(defaultHdfsUri, conf, userName);
-        DistributedCache.addCacheFile(jarPath.toUri(), job.getConfiguration());
+        //DistributedCache.addCacheFile(jarPath.toUri(), job.getConfiguration());
         DistributedCache.addFileToClassPath(jarPath, job.getConfiguration(), fs);
-        DistributedCache.createSymlink(job.getConfiguration());
+        //DistributedCache.createSymlink(job.getConfiguration());
 
-        job.setJobName(String.format("%s:%s", "LB_STATS", fileHour));
+        vlog.log(String.format("jobJar = %s", job.getJar()));
+
         job.setMapperClass(LogMapper.class);
         job.setMapOutputKeyClass(LogMapperOutputKey.class);
         job.setMapOutputValueClass(LogMapperOutputValue.class);
@@ -74,7 +83,7 @@ public class HadoopLogSplitterJob extends HadoopJob {
         job.setInputFormatClass(LzoTextInputFormat.class);
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-        job.getConfiguration().set("hadoop.jop.history.user.location", histDir);
+        //job.getConfiguration().set("hadoop.jop.history.user.location", histDir);
 
 
         for (String lzoFileName : lzoFiles) {
@@ -89,7 +98,6 @@ public class HadoopLogSplitterJob extends HadoopJob {
 
         job.setNumReduceTasks(nReducers);
 
-        job.setJarByClass(HadoopLogSplitterJob.class);
 
         int exit;
 
@@ -100,6 +108,8 @@ public class HadoopLogSplitterJob extends HadoopJob {
             exit = -1;
             vlog.log("LogSplitter job failed");
         }
+
+        vlog.log(String.format("%s\n", CounterUtils.showCounters(job, LogCounters.values())));
 
         return exit;
     }

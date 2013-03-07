@@ -568,4 +568,6 @@ public class StaticFileUtils {
             // Not logging since the stream is likely already closed
         }
     }
+
+
 }

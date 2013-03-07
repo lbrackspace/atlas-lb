@@ -7,6 +7,9 @@ import org.apache.hadoop.io.WritableComparable;
 
 public class LogReducerOutputKey implements WritableComparable<LogReducerOutputKey> {
 
+    private int accountId;
+    private int loadbalancerId;
+
     @Override
     public String toString() {
         return "LogReducerKey{" + "accountId=" + accountId + "loadbalancerId=" + loadbalancerId + '}';
@@ -37,8 +40,6 @@ public class LogReducerOutputKey implements WritableComparable<LogReducerOutputK
         hash = 53 * hash + this.loadbalancerId;
         return hash;
     }
-    private int accountId;
-    private int loadbalancerId;
 
     @Override
     public void write(DataOutput d) throws IOException {

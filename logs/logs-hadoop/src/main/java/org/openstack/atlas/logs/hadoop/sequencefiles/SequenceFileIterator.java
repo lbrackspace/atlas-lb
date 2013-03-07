@@ -28,6 +28,7 @@ public class SequenceFileIterator<K extends Writable, V extends Writable> {
     public SequenceFileIterator(Path path, FileSystem fileSystem) throws SequenceFileReaderException {
         fs = fileSystem;
         conf = fs.getConf();
+        this.path = path;
         try {
             reader = new SequenceFile.Reader(fs, new Path(path.toUri().getPath()), conf);
         } catch (IOException ex) {
