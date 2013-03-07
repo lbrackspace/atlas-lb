@@ -2,8 +2,8 @@ package org.openstack.atlas.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -190,6 +190,22 @@ public class StaticFileUtils {
         }
     }
 
+    public static List<String> joinPath(List<String> paths) {
+        List<String> joined = new ArrayList<String>();
+        for (int i = 0; i < paths.size(); i++) {
+            String path = paths.get(i);
+            String[] pathComps = splitPath(path);
+            for (int j = 0; j < pathComps.length; j++) {
+                String comp = pathComps[j];
+                if (comp.length() == 0 && !(j == 0 && i == 0)) {
+                    continue; // Skip blanks for all but the joined Root element
+                }
+                joined.add(comp);
+            }
+        }
+        return joined;
+    }
+
     public static String[] splitPath(String pathName) {
         List<String> pathList = new ArrayList<String>();
         File file = new File(pathName);
@@ -221,6 +237,22 @@ public class StaticFileUtils {
             newPath[i + firstLen] = secondPart[i];
         }
         return newPath;
+    }
+
+    public static String splitPathToString(List<String> pathComps) {
+        StringBuilder sb = new StringBuilder();
+        if (pathComps.isEmpty()) {
+            return null;
+        }
+        if (pathComps.size() == 1) {
+            return pathComps.get(0);
+        }
+
+        for (int i = 0; i < pathComps.size() - 1; i++) {
+            sb.append(pathComps.get(i)).append(File.separator);
+        }
+        sb.append(pathComps.get(pathComps.size() - 1));
+        return sb.toString();
     }
 
     public static String splitPathToString(String[] splitPath) {
@@ -527,5 +559,13 @@ public class StaticFileUtils {
 
     public static Random getRnd() {
         return rnd;
+    }
+
+    public static void close(Closeable is) {
+        try {
+            is.close();
+        } catch (Exception ex) {
+            // Not logging since the stream is likely already closed
+        }
     }
 }

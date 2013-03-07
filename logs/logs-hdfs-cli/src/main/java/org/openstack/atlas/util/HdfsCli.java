@@ -40,6 +40,7 @@ import java.util.Map.Entry;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
+import org.openstack.atlas.logs.hadoop.jobs.HadoopJob;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 
 public class HdfsCli {
@@ -138,25 +139,24 @@ public class HdfsCli {
                     continue;
                 }
                 if (cmd.equals("runJob") && args.length >= 2) {
-                    Class<? extends Configured> jobDriverClass;
+                    Class<? extends HadoopJob> jobDriverClass;
 
-                    String jobDriverClassName = "com.rackspace.cloud.sum.hadoop.jobs." + args[1];
+                    String jobDriverClassName = "org.openstack.atlas.logs.hadoop.jobs." + args[1];
                     if (jobClassLoader == null) {
                         System.out.printf("No jobJar set cannot load class searching class Path\n");
-                        jobDriverClass = (Class<? extends Configured>) Class.forName(jobDriverClassName);
+                        jobDriverClass = (Class<? extends HadoopJob>) Class.forName(jobDriverClassName);
                     } else {
-                        jobDriverClass = (Class<? extends Configured>) Class.forName(jobDriverClassName, true, jobClassLoader);
+                        jobDriverClass = (Class<? extends HadoopJob>) Class.forName(jobDriverClassName, true, jobClassLoader);
                     }
-                    Configured jobDriver = jobDriverClass.newInstance();
-                    jobDriver.setConf(conf);
-                    String[] jobArgs = new String[args.length - 1];
-                    for (int i = 0; i < args.length - 2; i++) {
-                        jobArgs[i] = args[i + 2];
+                    HadoopJob jobDriver = jobDriverClass.newInstance();
+                    jobDriver.setConfiguration(conf);
+                    List<String> argsList = new ArrayList<String>();
+                    for(int i=2;i<args.length;i++){
+                        argsList.add(args[i]);
                     }
                     // Run job
                     double startTime = Debug.getEpochSeconds();
-                    Method m = jobDriverClass.getMethod("run", String[].class);
-                    Integer exitCode = (Integer) m.invoke(jobDriver, new Object[]{jobArgs});
+                    int exitCode = jobDriver.run(argsList);
                     //jobDriver.run(jobArgs);
                     double endTime = Debug.getEpochSeconds();
                     System.out.printf("took %f seconds running job %s\n", endTime - startTime, jobDriverClassName);

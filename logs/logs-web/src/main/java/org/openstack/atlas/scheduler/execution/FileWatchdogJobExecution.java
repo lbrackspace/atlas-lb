@@ -1,5 +1,9 @@
 package org.openstack.atlas.scheduler.execution;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.exception.ExecutionException;
@@ -42,7 +46,7 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
                 scheduledFilesToRun.add(inputFile);
                 vlog.log(String.format("Scheduling new inputFile %s\n", inputFile));
             } else {
-                vlog.log(String.format("Skipping inputFile %s as it was already in the state table: %s", inputFile,StaticStringUtils.<JobState>collectionToString(states, ",")));
+                vlog.log(String.format("Skipping inputFile %s as it was already in the state table: %s", inputFile, StaticStringUtils.<JobState>collectionToString(states, ",")));
             }
         }
 
@@ -84,6 +88,13 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
             throw new ExecutionException(e);
         }
 
+        // This may be the first time the app is run so attempt to copy JobsJar over
+        try {
+            HadoopLogsConfigs.copyJobsJar();
+        } catch (IOException ex) {
+            String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+            LOG.error(String.format("Unable to copy JobsJar: %s", excMsg), ex);
+        }
         finishJob(state);
     }
 }

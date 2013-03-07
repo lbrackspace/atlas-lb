@@ -64,6 +64,6 @@ public class LoggableJobExecution {
 
     @Required
     public void setFileSystemUtils(FileSystemUtils fileSystemUtils) {
-        this.utils = fileSystemUtils;
+        //this.utils = fileSystemUtils;
     }
 }

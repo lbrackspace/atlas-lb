@@ -17,6 +17,7 @@ import org.openstack.atlas.tools.HadoopTool;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
 
     private static final Log LOG = LogFactory.getLog(FileMoveJobExecution.class);
     private static final VerboseLogger vlog = new VerboseLogger(FileMoveJobExecution.class);
+    protected String fileHour;
     protected JobScheduler jobScheduler;
     private HadoopTool hadoopTool;
 
@@ -43,15 +45,14 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
         // a bean that has a dependency on a bean that is in the
         // schedulerFactoryBean#schedulerContextAsMap
         jobScheduler = scheduler;
-        String runTime = schedulerConfigs.getInputString();
-
+        fileHour = schedulerConfigs.getInputString();
         //hadoopTool.setupHadoopRun(runTime);
-        vlog.log(String.format("hadoopTool = %s", hadoopTool.toString()));
+        //vlog.log(String.format("hadoopTool = %s", hadoopTool.toString()));
 
         try {
             List<String> localInputFiles = getLocalInputFiles(schedulerConfigs);
-            vlog.log(String.format("calling createStateForMovingFiles(%s,%s)", runTime, StaticStringUtils.collectionToString(localInputFiles, ",")));
-            Map<String, JobState> fileNameStateMap = createStateForMovingFiles(runTime, localInputFiles);
+            vlog.log(String.format("calling createStateForMovingFiles(%s,%s)", fileHour, StaticStringUtils.collectionToString(localInputFiles, ",")));
+            Map<String, JobState> fileNameStateMap = createStateForMovingFiles(fileHour, localInputFiles);
             for (String filename : localInputFiles) {
                 if (filename.endsWith(".lzo")) {
                     schedulerConfigs.setLzoInput(true);
@@ -60,8 +61,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
             vlog.log(String.format("about to move files onto DFS: schedulerConfis = %s fastValues= %s", schedulerConfigs.toString(), StaticStringUtils.mapToString(fileNameStateMap)));
             moveFilesOntoDFS(fileNameStateMap);
             deleteIfFinished(fileNameStateMap);
-
-            //scheduleMapReduceAggregateLogsJob(schedulerConfigs);
+            scheduleMapReduceAggregateLogsJob(schedulerConfigs);
 
         } catch (Exception e) {
             LOG.error(e);
@@ -76,7 +76,8 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
 
     @Required
     public void setLbStatsTool(LbStatsTool lbStatsTool) {
-        this.hadoopTool = lbStatsTool;
+        //this.hadoopTool = lbStatsTool;
+        this.hadoopTool = null;
     }
 
     private Map<String, JobState> createStateForMovingFiles(String inputString,
@@ -135,8 +136,12 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
 
     private void moveFilesOntoDFS(Map<String, JobState> fileNameStateMap) throws ExecutionException {
 
-        HadoopConfiguration conf = hadoopTool.getConfiguration();
-        String inputDir = hadoopTool.getInputDirectory();
+        //HadoopConfiguration conf = hadoopTool.getConfiguration();
+        //String inputDir = hadoopTool.getInputDirectory();
+        List<String> inputDirList = new ArrayList<String>();
+        inputDirList.add(HadoopLogsConfigs.getMapreduceInputPrefix());
+        inputDirList.add(fileHour);
+        String inputDir = StaticFileUtils.splitPathToString(inputDirList);
         int offset = 0;
 
 

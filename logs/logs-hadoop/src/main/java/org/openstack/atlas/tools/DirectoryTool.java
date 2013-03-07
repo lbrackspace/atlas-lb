@@ -37,6 +37,7 @@ public abstract class DirectoryTool implements HadoopTool {
             conf.getJobConf().setJobName(conf.getJobConf().getJobName() + ":" + schedulerConfigs.getInputString());
         }
 
+        vlog.log(String.format("Directory Tool = %s\n", this.toString()));
         RunningJob job = JobClient.runJob(conf.getJobConf());
 
         if (job.getJobState() == JobStatus.SUCCEEDED) {
@@ -86,7 +87,7 @@ public abstract class DirectoryTool implements HadoopTool {
         conf.setJobConf(createJobConf(conf.getConfiguration()));
         LOG.info("Composite Configuration: " + compositeConfiguration);
 
-        String jarPath = HadoopLogsConfigs.getJobJarPath();
+        String jarPath = HadoopLogsConfigs.getHdfsJobsJarPath();
         if (jarPath != null) {
             if (new File(jarPath).exists()) {
                 conf.getJobConf().setJar(jarPath);
@@ -189,6 +190,8 @@ public abstract class DirectoryTool implements HadoopTool {
                 append(", createOutputDir()=").append(createOutputDir()).
                 append(", getLocalInputDir()=").append(getLocalInputDir()).
                 append(", sanitizedInputDir()=").append(getSanitizedInputDir()).
+                append(", getInputDir()=").append(getInputDirectory()).
+                append(", getOutputDir()=").append(getOutputDirectory()).
                 append("}");
         return sb.toString();
     }

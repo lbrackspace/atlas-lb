@@ -1,9 +1,12 @@
 package org.openstack.atlas.util;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.openstack.atlas.config.LbLogsConfiguration;
 import org.openstack.atlas.config.LbLogsConfigurationKeys;
@@ -15,26 +18,31 @@ public class HadoopLogsConfigs {
     protected static final String cacheDir;
     protected static final String backupDir;
     protected static final String fileSystemRootDir;
-    protected static final String jobJarPath;
+    protected static final String localJobsJarPath;
     protected static final String hadoopXmlFile;
     protected static final String mapreduceInputPrefix;
     protected static final String mapreduceOutputPrefix;
     protected static final String fileRegion;
     protected static final String hdfsUserName;
+    private static final String numReducers;
+    protected static String hdfsJobsJarPath;
     protected static Configuration hadoopConfiguration = null;
     protected static HdfsUtils hdfsUtils = null;
+    protected static boolean jarCopyed = false;
 
     static {
         LbLogsConfiguration lbLogsConf = new LbLogsConfiguration();
         cacheDir = lbLogsConf.getString(LbLogsConfigurationKeys.rawlogs_cache_dir);
         backupDir = lbLogsConf.getString(LbLogsConfigurationKeys.rawlogs_backup_dir);
         fileSystemRootDir = lbLogsConf.getString(LbLogsConfigurationKeys.filesystem_root_dir);
-        jobJarPath = lbLogsConf.getString(LbLogsConfigurationKeys.job_jar_path);
+        localJobsJarPath = lbLogsConf.getString(LbLogsConfigurationKeys.job_jar_path);
         hadoopXmlFile = lbLogsConf.getString(LbLogsConfigurationKeys.hadoop_xml_file);
         mapreduceInputPrefix = lbLogsConf.getString(LbLogsConfigurationKeys.mapreduce_input_prefix);
         mapreduceOutputPrefix = lbLogsConf.getString(LbLogsConfigurationKeys.mapreduce_output_prefix);
         fileRegion = lbLogsConf.getString(LbLogsConfigurationKeys.files_region);
         hdfsUserName = lbLogsConf.getString(LbLogsConfigurationKeys.hdfs_user_name);
+        hdfsJobsJarPath = lbLogsConf.getString(LbLogsConfigurationKeys.hdfs_job_jar_path);
+        numReducers = lbLogsConf.getString(LbLogsConfigurationKeys.num_reducers);
     }
 
     public static HadoopJob getHadoopJob(Class<? extends HadoopJob> jobClass) {
@@ -64,6 +72,7 @@ public class HadoopLogsConfigs {
                 append(", mapreduceOutputPrefix=").append(mapreduceOutputPrefix).
                 append(", fileRegion=").append(fileRegion).
                 append(", hdfsUserName=").append(hdfsUserName).
+                append(", jarCopyed=").append(jarCopyed).
                 append("}");
         return sb.toString();
     }
@@ -106,10 +115,6 @@ public class HadoopLogsConfigs {
         return fileSystemRootDir;
     }
 
-    public static String getJobJarPath() {
-        return jobJarPath;
-    }
-
     public static String getHadoopXmlFile() {
         return hadoopXmlFile;
     }
@@ -128,5 +133,35 @@ public class HadoopLogsConfigs {
 
     public static String getHdfsUserName() {
         return hdfsUserName;
+    }
+
+    public static String getHdfsJobsJarPath() {
+        return hdfsJobsJarPath;
+    }
+
+    public static String getLocalJobsJarPath() {
+        return localJobsJarPath;
+    }
+
+    public static boolean isJarCopyed() {
+        return jarCopyed;
+    }
+
+    public static void copyJobsJar() throws FileNotFoundException, IOException {
+        if (!jarCopyed) { // If this is the first run since the app was deployed then copy the jobs jar
+            LOG.info(String.format("Copying jobsJar %s -> %s", localJobsJarPath, hdfsJobsJarPath));
+            InputStream is = StaticFileUtils.openInputFile(localJobsJarPath);
+            FSDataOutputStream os = hdfsUtils.openHdfsOutputFile(hdfsJobsJarPath, false, true);
+            StaticFileUtils.copyStreams(is, os, null, hdfsUtils.getBufferSize());
+            StaticFileUtils.close(is);
+            StaticFileUtils.close(os);
+            jarCopyed = true;
+        } else {
+            LOG.info("JobsJar already copyed not copying again.");
+        }
+    }
+
+    public static String getNumReducers() {
+        return numReducers;
     }
 }

@@ -34,7 +34,7 @@ public class FileWatchdogJob extends BaseMapreduceJob implements StatefulJob {
         vlog.log(String.format("SchedulerConfig = %s", schedulerConfigs.toString()));
         String jarPath = findPathJar(DirectoryTool.class);
         vlog.log("Hadoop Jar path resolved at runtime is: " + jarPath);
-        schedulerConfigs.setJobJarPath(HadoopLogsConfigs.getJobJarPath());
+        schedulerConfigs.setJobJarPath(HadoopLogsConfigs.getLocalJobsJarPath());
         try {
             execution.execute(createSchedulerInstance(context), schedulerConfigs);
         } catch (ExecutionException e) {

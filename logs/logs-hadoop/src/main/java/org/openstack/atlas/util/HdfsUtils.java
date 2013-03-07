@@ -309,11 +309,11 @@ public class HdfsUtils {
         return local;
     }
 
-    public SequenceFile.Reader getReader(Path path,boolean useLocal) throws IOException {
+    public SequenceFile.Reader getReader(Path path, boolean useLocal) throws IOException {
         FileSystem fs;
-        if(useLocal){
+        if (useLocal) {
             fs = localFileSystem;
-        }else{
+        } else {
             fs = remoteFileSystem;
         }
         return new SequenceFile.Reader(fs, path, fs.getConf());
@@ -330,6 +330,10 @@ public class HdfsUtils {
         }
         String nameNode = fsConf.get("fs.default.name", null);
         return nameNode;
+    }
+
+    public static String pathUriString(Path path) {
+        return path.toUri().getPath();
     }
 
     public static void deleteLocalFile(Path filePath) {
