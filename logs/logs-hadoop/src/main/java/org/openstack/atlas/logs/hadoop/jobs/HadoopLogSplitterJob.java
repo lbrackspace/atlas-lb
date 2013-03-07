@@ -27,7 +27,6 @@ import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
-import org.openstack.atlas.util.Nop;
 import org.openstack.atlas.util.StaticDateTimeUtils;
 import org.openstack.atlas.util.VerboseLogger;
 
@@ -58,7 +57,7 @@ public class HadoopLogSplitterJob extends HadoopJob {
         long dateOrd = StaticDateTimeUtils.dateTimeToOrdinalMillis(dt);
         String jobName = "LB_STATS" + ":" + fileHour + ":" + dateOrd;
         vlog.log(String.format("jobName=%s", jobName));
-        job.setJarByClass(Nop.class);
+        job.setJarByClass(HadoopLogSplitterJob.class);
         job.setJobName(jobName);
         URI defaultHdfsUri = FileSystem.getDefaultUri(conf);
         FileSystem fs = FileSystem.get(defaultHdfsUri, conf, userName);
