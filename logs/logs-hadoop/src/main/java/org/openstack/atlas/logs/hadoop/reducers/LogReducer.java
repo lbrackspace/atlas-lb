@@ -7,15 +7,23 @@ import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import java.util.zip.CRC32;
 
 public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue, LogReducerOutputKey, LogReducerOutputValue> {
 
-    private int fileHour;
+    private static final int BUFFER_SIZE = 1024 * 128;
+    private int fileHour = -1;
+    private String hdfsUserName;
+    private String hdfsZipDir;
 
     @Override
-    public void setup(Context ctx) {
+    public void setup(Context ctx) throws IOException {
         ctx.getCounter(LogCounters.REDUCER_SETUP_CALLS).increment(1);
-        fileHour = Integer.parseInt(ctx.getConfiguration().get("fileHour"));
+        String fileHourString = ctx.getConfiguration().get("fileHour");
+        hdfsUserName = ctx.getConfiguration().get("hdfs_user_name");
+        hdfsZipDir = ctx.getConfiguration().get("hdfs_zip_dir");
     }
 
     @Override
@@ -32,12 +40,14 @@ public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue
         oVal.setAccountId(accountId);
         oVal.setLoadbalancerId(loadbalancerId);
         oVal.setCrc(-1);
+        String zipName = getZipFileName(loadbalancerId, fileHour);
+        String zipContentsName = getZipContentsName(loadbalancerId, fileHour);
+
+
         int nLines = 0;
         for (LogMapperOutputValue rVal : rVals) {
             nLines++;
         }
-        String zipName = getZipFileName(loadbalancerId, fileHour);
-        String zipContentsName = getZipContentsName(loadbalancerId, fileHour);
         oVal.setnLines(nLines);
 
         oVal.setLogFile(zipName);

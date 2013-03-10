@@ -21,7 +21,6 @@ public class LogMapper extends Mapper<LongWritable, Text, LogMapperOutputKey, Lo
 
     private LogMapperOutputKey oKey = new LogMapperOutputKey();
     private LogMapperOutputValue oVal = new LogMapperOutputValue();
-    private static final boolean DEBUG_EXCEPTION = false;
 
     private String getDebugInfo(Context ctx) throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -41,11 +40,7 @@ public class LogMapper extends Mapper<LongWritable, Text, LogMapperOutputKey, Lo
 
     @Override
     public void setup(Context ctx) throws IOException {
-
         ctx.getCounter(LogCounters.MAPPER_SETUP_CALLS).increment(1);
-        if (DEBUG_EXCEPTION) {
-            throw new IOException(getDebugInfo(ctx));
-        }
     }
 
     @Override

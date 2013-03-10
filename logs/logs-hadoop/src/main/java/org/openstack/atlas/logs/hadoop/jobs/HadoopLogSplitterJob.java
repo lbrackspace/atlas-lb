@@ -28,6 +28,8 @@ import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 import org.openstack.atlas.util.StaticDateTimeUtils;
+import org.openstack.atlas.util.StaticFileUtils;
+import org.openstack.atlas.util.StaticStringUtils;
 import org.openstack.atlas.util.VerboseLogger;
 
 public class HadoopLogSplitterJob extends HadoopJob {
@@ -51,15 +53,20 @@ public class HadoopLogSplitterJob extends HadoopJob {
         for (int i = 6; i < args.length; i++) {
             lzoFiles.add(args[i]);
         }
+
         Job job = new Job(conf);
         System.setProperty("HADOOP_USER_NAME", userName);
+
         DateTime dt = StaticDateTimeUtils.nowDateTime(true);
         long dateOrd = StaticDateTimeUtils.dateTimeToOrdinalMillis(dt);
         String jobName = "LB_STATS" + ":" + fileHour + ":" + dateOrd;
         vlog.log(String.format("jobName=%s", jobName));
         job.setJarByClass(HadoopLogSplitterJob.class);
         job.setJobName(jobName);
+        String hdfsZipDir = StaticFileUtils.joinPath(outDir, "zips");
         job.getConfiguration().set("fileHour", fileHour);
+        job.getConfiguration().set("hdfs_user_name", userName);
+        job.getConfiguration().set("hdfs_zip_dir", hdfsZipDir);
         URI defaultHdfsUri = FileSystem.getDefaultUri(conf);
         FileSystem fs = FileSystem.get(defaultHdfsUri, conf, userName);
         //DistributedCache.addCacheFile(jarPath.toUri(), job.getConfiguration());

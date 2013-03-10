@@ -13,6 +13,10 @@ public abstract class HadoopJob {
         this.conf = conf;
     }
 
+    public Configuration getConfiguration(){
+        return conf;
+    }
+
     //Convience method for wrapping List<String> args instead of String[] args
     public int run(List<String> argList) throws Exception{
         String[] args = argList.toArray(new String[argList.size()]);
