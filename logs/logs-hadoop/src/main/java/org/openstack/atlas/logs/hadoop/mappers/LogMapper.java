@@ -22,6 +22,19 @@ public class LogMapper extends Mapper<LongWritable, Text, LogMapperOutputKey, Lo
     private LogMapperOutputKey oKey = new LogMapperOutputKey();
     private LogMapperOutputValue oVal = new LogMapperOutputValue();
 
+    @Override
+    public void setup(Context ctx) throws IOException {
+        ctx.getCounter(LogCounters.MAPPER_SETUP_CALLS).increment(1);
+        oKey.setDate(-1);
+        oKey.setLoadbalancerId(-1);
+        oKey.setAccountId(-1);
+        oVal.setAccountId(-1);
+        oVal.setLoadbalancerId(-1);
+        oVal.setLoadbalancerName("null");
+        oVal.setLogLine("null");
+        oVal.setSourceIp("127.0.0.1");
+    }
+
     private String getDebugInfo(Context ctx) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append("host: ").append(Debug.hostName()).append("\n").
@@ -36,11 +49,6 @@ public class LogMapper extends Mapper<LongWritable, Text, LogMapperOutputKey, Lo
             sb.append("   ").append(cacheFile.toString()).append("\n");
         }
         return sb.toString();
-    }
-
-    @Override
-    public void setup(Context ctx) throws IOException {
-        ctx.getCounter(LogCounters.MAPPER_SETUP_CALLS).increment(1);
     }
 
     @Override

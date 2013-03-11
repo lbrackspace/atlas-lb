@@ -55,6 +55,7 @@ public class HdfsCli {
     private static final int PAGESIZE = 4096;
     private static final int HDFSBUFFSIZE = 1024 * 64;
     private static final int ONEMEG = 1024 * 1024;
+    private static final int SANE_BUFFER_SIZE = 1024 * 128;
     private static List<String> jarFiles = new ArrayList<String>();
     private static URLClassLoader jobClassLoader = null;
     private static String jobJarName = "";
@@ -120,6 +121,7 @@ public class HdfsCli {
                     System.out.printf("countLines <zeusFile> <nTicks> [buffSize]\n");
                     System.out.printf("indexLzo <FileName>\n");
                     System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
+                    System.out.printf("showCrc <fileName> #Show crc value that would be reported by Zip\n");
                     System.out.printf("printReducers <hdfsDir> #Display the contents of the reducer output\n");
                     System.out.printf("du #Get number of free space on HDFS\n");
                     System.out.printf("setReplCount <FilePath> <nReps> #Set the replication count for this file\n");
@@ -380,6 +382,8 @@ public class HdfsCli {
                     fos.close();
                     continue;
                 }
+
+
                 if (cmd.equals("indexLzo") && args.length >= 2) {
                     String srcFileName = args[1];
                     Path filePath = new Path(StaticFileUtils.expandUser(srcFileName));
@@ -455,7 +459,7 @@ public class HdfsCli {
                         } catch (Exception ex) {
                             badLines++;
                             totalBadLines++;
-                            System.out.printf("BAD=%s\n",line);
+                            System.out.printf("BAD=%s\n", line);
                         }
                         lineCounter++;
                         totalLines++;
@@ -472,6 +476,14 @@ public class HdfsCli {
                     System.out.printf("Good=%d badLines=%d total = %d\n", totalGoodLines, totalBadLines, totalLines);
 
                     r.close();
+                    continue;
+                }
+                if (cmd.equals("showCrc") && args.length >= 2) {
+                    String fileName = StaticFileUtils.expandUser(args[1]);
+                    BufferedInputStream is = new BufferedInputStream(new FileInputStream(fileName), SANE_BUFFER_SIZE);
+                    long crc = StaticFileUtils.computeCrc(is);
+                    System.out.printf("crc(%s)=%d\n", fileName, crc);
+                    is.close();
                     continue;
                 }
                 if (cmd.equals("du")) {

@@ -61,7 +61,9 @@ public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue
         byte[] bytes = null;
         int nLines = 0;
         for (LogMapperOutputValue rVal : rVals) {
-            bytes = rVal.getLogLine().getBytes("utf-8");
+            String logLine = rVal.getLogLine();
+            bytes = logLine.getBytes("utf-8");
+            zos.write(bytes);
             crc.update(bytes);
             ctx.getCounter(LogCounters.REDUCER_REDUCTIONS).increment(1);
             ctx.getCounter(LogCounters.LOG_BYTE_COUNT).increment(bytes.length);
@@ -70,7 +72,7 @@ public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue
         zos.closeEntry(); // Closes the zip Contents
         zos.finish();     // Marks this as the last file in the zip arvhive
         zos.close();      // Closes the zipFile
-        os.close();       // Just incase the Hdfs file is still open this closes it too.
+        os.close();       // Just inbytescase the Hdfs file is still open this closes it too.
         oVal.setnLines(nLines);
         oVal.setLogFile(fullZipPath);
         oVal.setCrc(crc.getValue());

@@ -68,7 +68,7 @@ public class LogMapperOutputValue implements WritableComparable<LogMapperOutputV
 
     @Override
     public void write(DataOutput d) throws IOException {
-        int nullFlags = ((loadbalancerName == null) ? 0 : 1) + ((sourceIp == null) ? 0 : 2) + ((sourceIp == null) ? 0 : 4);
+        int nullFlags = ((loadbalancerName == null) ? 0 : 1) + ((sourceIp == null) ? 0 : 2) + ((logLine == null) ? 0 : 4);
 
         d.writeByte(nullFlags);
 
@@ -83,7 +83,7 @@ public class LogMapperOutputValue implements WritableComparable<LogMapperOutputV
             d.writeUTF(sourceIp);
         }
         if ((nullFlags & 4) > 0) {
-            d.writeUTF(sourceIp);
+            d.writeUTF(logLine);
         }
     }
 
@@ -106,9 +106,9 @@ public class LogMapperOutputValue implements WritableComparable<LogMapperOutputV
             sourceIp = null;
         }
         if ((nullFlags & 4) > 0) {
-            sourceIp = di.readUTF();
+            logLine = di.readUTF();
         } else {
-            sourceIp = null;
+            logLine = null;
         }
 
     }
