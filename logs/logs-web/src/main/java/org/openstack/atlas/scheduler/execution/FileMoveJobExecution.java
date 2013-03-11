@@ -164,7 +164,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
                     FSDataInputStream lzoIS = hdfsUtils.openHdfsInputFile(inputFile, true);
                     FSDataOutputStream lzoOS = hdfsUtils.openHdfsOutputFile(placedFile, false, true);
                     FSDataOutputStream idxOS = hdfsUtils.openHdfsOutputFile(placedFile + ".index", false, true);
-                    hdfsUtils.recompressAndIndexLzoStream(lzoIS, lzoOS, idxOS);
+                    hdfsUtils.recompressAndIndexLzoStream(lzoIS, lzoOS, idxOS, null);
                     idxOS.close();
                     lzoOS.close();
                     lzoIS.close();
@@ -173,7 +173,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
                     FSDataInputStream uncompressedIS = hdfsUtils.openHdfsInputFile(inputFile, true);
                     FSDataOutputStream lzoOS = hdfsUtils.openHdfsOutputFile(placedFile + ".lzo", false, true);
                     FSDataOutputStream idxOS = hdfsUtils.openHdfsOutputFile(placedFile + ".lzo.index", false, true);
-                    hdfsUtils.compressAndIndexStreamToLzo(uncompressedIS, lzoOS, lzoOS, hdfsUtils.getBufferSize());
+                    hdfsUtils.compressAndIndexStreamToLzo(uncompressedIS, lzoOS, lzoOS, hdfsUtils.getBufferSize(), null);
                     idxOS.close();
                     lzoOS.close();
                     uncompressedIS.close();

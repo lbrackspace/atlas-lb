@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -100,7 +101,7 @@ public class HdfsUtils {
     }
 
     // Silly but this will open an LZO decompress and then recompresse it with Indexing
-    public void recompressAndIndexLzoStream(InputStream lzoInputStream, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream) throws IOException {
+    public void recompressAndIndexLzoStream(InputStream lzoInputStream, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream,PrintStream ps) throws IOException {
         Configuration codecConf = new Configuration();
         codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
         codecConf.set("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
@@ -108,19 +109,19 @@ public class HdfsUtils {
         codec.setConf(codecConf);
         CompressionInputStream cis = codec.createInputStream(lzoInputStream);
         CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
-        StaticFileUtils.copyStreams(cis, cos, null, bufferSize);
+        StaticFileUtils.copyStreams(cis, cos, ps, bufferSize);
         cis.close();
         cos.close();
     }
 
-    public void compressAndIndexStreamToLzo(InputStream uncompressedInputStream, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream, int buffSize) throws IOException {
+    public void compressAndIndexStreamToLzo(InputStream uncompressedInputStream, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream, int buffSize,PrintStream ps) throws IOException {
         Configuration codecConf = new Configuration();
         codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
         codecConf.set("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
         LzopCodec codec = new LzopCodec();
         codec.setConf(codecConf);
         CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
-        StaticFileUtils.copyStreams(uncompressedInputStream, cos, null, bufferSize);
+        StaticFileUtils.copyStreams(uncompressedInputStream, cos, ps, bufferSize);
         cos.close();
     }
 

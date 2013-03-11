@@ -13,21 +13,21 @@ public class LogGroupComparator extends WritableComparator{
     public int compare(WritableComparable objA,WritableComparable objB){
         LogMapperOutputKey  a = (LogMapperOutputKey)objA;
         LogMapperOutputKey  b = (LogMapperOutputKey)objB;
-        int aaid = a.getAccountId();
-        int baid = b.getAccountId();
-        int alid = a.getLoadbalancerId();
-        int blid = b.getLoadbalancerId();
+        int aAccountId = a.getAccountId();
+        int bAccountId = b.getAccountId();
+        int aLoadbalancerId = a.getLoadbalancerId();
+        int bLoadBalancerId = b.getLoadbalancerId();
 
-        if(aaid > baid){
+        if(aAccountId > bAccountId){
             return 1;
         }
-        if(aaid < baid){
+        if(aAccountId < bAccountId){
             return -1;
         }
-        if(alid > blid){
+        if(aLoadbalancerId > bLoadBalancerId){
             return 1;
         }
-        if(alid < blid){
+        if(aLoadbalancerId < bLoadBalancerId){
             return -1;
         }
         return 0;

@@ -57,12 +57,16 @@ public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue
 
         FSDataOutputStream os = fs.create(new Path(fullZipPath), true, BUFFER_SIZE, REPL_COUNT, HDFS_BLOCK_SIZE);
         ZipOutputStream zos = new ZipOutputStream(os);
+        String comment = String.format("Produced by HadoopJob %s: JobId=%s", ctx.getJobName(), ctx.getJobID().toString());
+        zos.setComment(comment);
         zos.putNextEntry(new ZipEntry(zipContentsName));
         byte[] bytes = null;
         int nLines = 0;
+        long fileSize = 0;
         for (LogMapperOutputValue rVal : rVals) {
             String logLine = rVal.getLogLine();
             bytes = logLine.getBytes("utf-8");
+            fileSize += bytes.length;
             zos.write(bytes);
             crc.update(bytes);
             ctx.getCounter(LogCounters.REDUCER_REDUCTIONS).increment(1);
@@ -76,6 +80,7 @@ public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue
         oVal.setnLines(nLines);
         oVal.setLogFile(fullZipPath);
         oVal.setCrc(crc.getValue());
+        oVal.setFileSize(fileSize);
         ctx.getCounter(LogCounters.REDUCER_WRITES).increment(1);
         ctx.write(oKey, oVal);
     }

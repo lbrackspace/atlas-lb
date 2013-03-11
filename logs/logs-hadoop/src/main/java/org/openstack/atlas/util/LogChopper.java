@@ -132,7 +132,7 @@ public final class LogChopper {
             }
             long dateOrd = StaticDateTimeUtils.dateTimeToOrdinalMillis(dt);
             val.setDate(dateOrd);
-            val.setLogLine(logline);
+            val.setLogLine(logline + "\n"); // Not sure why the carriage returns were stripped.
             return;
         } else {
             LOGGER.error(logline);

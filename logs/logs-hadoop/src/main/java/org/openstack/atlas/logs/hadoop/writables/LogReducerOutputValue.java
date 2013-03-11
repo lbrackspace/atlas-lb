@@ -11,6 +11,7 @@ public class LogReducerOutputValue implements WritableComparable<LogReducerOutpu
     private int loadbalancerId;
     private int nLines;
     private long crc;
+    private long fileSize;
     private String logFile;
 
     @Override
@@ -34,6 +35,9 @@ public class LogReducerOutputValue implements WritableComparable<LogReducerOutpu
         if (this.crc != other.crc) {
             return false;
         }
+        if (this.fileSize != other.fileSize) {
+            return false;
+        }
         if ((this.logFile == null) ? (other.logFile != null) : !this.logFile.equals(other.logFile)) {
             return false;
         }
@@ -47,6 +51,7 @@ public class LogReducerOutputValue implements WritableComparable<LogReducerOutpu
         hash = 89 * hash + this.loadbalancerId;
         hash = 89 * hash + this.nLines;
         hash = 89 * hash + (int) (this.crc ^ (this.crc >>> 32));
+        hash = 89 * hash + (int) (this.fileSize ^ (this.fileSize >>> 32));
         hash = 89 * hash + (this.logFile != null ? this.logFile.hashCode() : 0);
         return hash;
     }
@@ -57,6 +62,7 @@ public class LogReducerOutputValue implements WritableComparable<LogReducerOutpu
                 + ", loadbalancerId=" + loadbalancerId
                 + ", nLines=" + nLines
                 + ", crc=" + crc
+                + ", fileSize=" + fileSize
                 + ", logFile=" + logFile + '}';
     }
 
@@ -68,6 +74,7 @@ public class LogReducerOutputValue implements WritableComparable<LogReducerOutpu
         d.writeInt(loadbalancerId);
         d.writeInt(nLines);
         d.writeLong(crc);
+        d.writeLong(fileSize);
 
         if ((nullFlags & 1) > 0) {
             d.writeUTF(logFile);
@@ -83,6 +90,7 @@ public class LogReducerOutputValue implements WritableComparable<LogReducerOutpu
         loadbalancerId = di.readInt();
         nLines = di.readInt();
         crc = di.readLong();
+        fileSize = di.readLong();
 
         if ((nullFlags & 1) > 0) {
             logFile = di.readUTF();
@@ -95,11 +103,11 @@ public class LogReducerOutputValue implements WritableComparable<LogReducerOutpu
 
     @Override
     public int compareTo(LogReducerOutputValue o) {
-        int oNlines = o.getnLines();
-        if (nLines > oNlines) {
+        long oFileSize = o.getFileSize();
+        if (fileSize > oFileSize) {
             return 1;
         }
-        if (nLines < oNlines) {
+        if (fileSize < oFileSize) {
             return -1;
         }
         return 0;
@@ -143,5 +151,13 @@ public class LogReducerOutputValue implements WritableComparable<LogReducerOutpu
 
     public void setLogFile(String logFile) {
         this.logFile = logFile;
+    }
+
+    public long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
     }
 }

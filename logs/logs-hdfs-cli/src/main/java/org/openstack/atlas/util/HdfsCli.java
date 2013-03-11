@@ -120,17 +120,32 @@ public class HdfsCli {
                     System.out.printf("cpLocal <localSrc> <localDst> [buffsize] #None hadoop file copy\n");
                     System.out.printf("countLines <zeusFile> <nTicks> [buffSize]\n");
                     System.out.printf("indexLzo <FileName>\n");
+                    System.out.printf("recompressIndex <srcFile> <hdfsDstFile> #Recompress and index lzo file and upload to hdfs");
                     System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
                     System.out.printf("showCrc <fileName> #Show crc value that would be reported by Zip\n");
                     System.out.printf("printReducers <hdfsDir> #Display the contents of the reducer output\n");
                     System.out.printf("du #Get number of free space on HDFS\n");
                     System.out.printf("setReplCount <FilePath> <nReps> #Set the replication count for this file\n");
-                    System.out.printf("compressLzo <srcPath> <dstPath> [buffSize]#Compress lzo file\n");
+                    System.out.printf("compressLzo <srcPath> <dstFile> [buffSize]#Compress lzo file\n");
                     System.out.printf("dumpConfig <outFile.xml> <confIn.xml..> #Dump config to outfile\n");
                     System.out.printf("diffConfig <confA.xml> <confB.xml># Compare the differences between the configs\n");
                     System.out.printf("lineIndex <fileName> #Index the line numbers in the file\n");
                     System.out.printf("printLineNumber <fileName> <lineNumberN> #Print the line number based on the index file\n");
                     System.out.printf("\n");
+                    continue;
+                }
+                if (cmd.equals("recompressIndex") && args.length >= 3) {
+                    String srcLzo = StaticFileUtils.expandUser(args[1]);
+                    String dstLzo = args[2];
+                    String dstIdx = dstLzo + ".index";
+                    FileInputStream lzoInputStream = new FileInputStream(srcLzo);
+                    FSDataOutputStream dstLzoStream = hdfsUtils.openHdfsOutputFile(dstLzo, false, true);
+                    FSDataOutputStream dstIdxStream = hdfsUtils.openHdfsOutputFile(dstIdx, false, true);
+                    hdfsUtils.recompressAndIndexLzoStream(lzoInputStream, dstLzoStream, dstIdxStream, null);
+                    System.out.printf("Recompressed and sent\n");
+                    lzoInputStream.close();
+                    dstLzoStream.close();
+                    dstIdxStream.close();
                     continue;
                 }
                 if (cmd.equals("whoami")) {
@@ -395,6 +410,7 @@ public class HdfsCli {
                     continue;
                 }
                 if (cmd.equals("printReducers") && args.length >= 2) {
+                    List<LogReducerOutputValue> zipFileInfoList = new ArrayList<LogReducerOutputValue>();
                     SequenceFileIterator<LogReducerOutputKey, LogReducerOutputValue> zipIterator;
                     String sequenceDirectory = args[1];
                     List<Path> sequenceFiles;
@@ -405,13 +421,16 @@ public class HdfsCli {
                     }
                     Collections.sort(sequenceFiles);
                     int totalEntryCount = 0;
+                    Map<LogReducerOutputValue, String> valToFileMap = new HashMap<LogReducerOutputValue, String>();
                     for (Path sequencePath : sequenceFiles) {
+                        String sequenceFileName = sequencePath.toUri().toString();
                         System.out.printf("Scanning %s\n", sequencePath.toUri().toString());
                         try {
                             zipIterator = new SequenceFileIterator<LogReducerOutputKey, LogReducerOutputValue>(sequencePath, fs);
                         } catch (SequenceFileReaderException ex) {
                             throw ex;
                         }
+
 
                         while (true) {
                             try {
@@ -420,7 +439,9 @@ public class HdfsCli {
                                 totalEntryCount++;
                                 LogReducerOutputKey key = sequenceEntry.getKey();
                                 LogReducerOutputValue val = sequenceEntry.getValue();
-                                System.out.printf("%s:key=%s val=%s\n", sequencePath.toUri().toString(), key.toString(), val.toString());
+                                zipFileInfoList.add(val);
+
+                                valToFileMap.put(val, sequenceFileName);
                             } catch (EndOfIteratorException ex) {
                                 zipIterator.close();
                                 break;
@@ -429,6 +450,11 @@ public class HdfsCli {
                                 throw ex;
                             }
                         }
+                    }
+                    Collections.sort(zipFileInfoList);
+                    for (LogReducerOutputValue val : zipFileInfoList) {
+                        String sequenceFileName = valToFileMap.get(val);
+                        System.out.printf("%s: %s\n", sequenceFileName, val.toString());
                     }
                     System.out.printf("Total entries = %d\n", totalEntryCount);
                     continue;
