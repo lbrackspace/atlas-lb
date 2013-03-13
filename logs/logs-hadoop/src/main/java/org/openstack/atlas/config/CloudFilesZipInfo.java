@@ -9,6 +9,8 @@ public class CloudFilesZipInfo implements Comparable<CloudFilesZipInfo> {
     protected long crc;
     private String hdfsFile;
     private String cacheFile;
+    private String localCacheDir;
+    private String accountCacheDir;
 
     public CloudFilesZipInfo() {
     }
@@ -97,5 +99,21 @@ public class CloudFilesZipInfo implements Comparable<CloudFilesZipInfo> {
 
     public void setCacheFile(String cacheFile) {
         this.cacheFile = cacheFile;
+    }
+
+    public String getLocalCacheDir() {
+        return localCacheDir;
+    }
+
+    public void setLocalCacheDir(String localCacheDir) {
+        this.localCacheDir = localCacheDir;
+    }
+
+    public String getAccountCacheDir() {
+        return accountCacheDir;
+    }
+
+    public void setAccountCacheDir(String accountCacheDir) {
+        this.accountCacheDir = accountCacheDir;
     }
 }

@@ -56,6 +56,21 @@ public class LoadBalancerRepository {
         return lb;
     }
 
+    public String getLoadBalancerNameById(Integer lbid, Integer aid) throws EntityNotFoundException {
+        String lbName;
+        String qStr = "SELECT l.name from LoadBalancer l where l.id = :lbid and l.accountId = :aid ";
+        Query q = entityManager.createQuery(qStr);
+        q.setParameter("lbid", lbid);
+        q.setParameter("aid", aid);
+        lbName = (String) q.getSingleResult();
+        if (lbName == null) {
+            String message = Constants.LoadBalancerNotFound;
+            LOG.warn(message);
+            throw new EntityNotFoundException(message);
+        }
+        return lbName;
+    }
+
     public LoadBalancer getByIdAndAccountId(Integer id, Integer accountId) throws EntityNotFoundException {
         LoadBalancer lb;
         lb = getById(id);

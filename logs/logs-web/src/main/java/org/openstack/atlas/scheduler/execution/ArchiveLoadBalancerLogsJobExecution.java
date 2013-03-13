@@ -1,13 +1,12 @@
 package org.openstack.atlas.scheduler.execution;
 
 import com.rackspacecloud.client.cloudfiles.FilesException;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.auth.AuthService;
 import org.openstack.atlas.cloudfiles.CloudFilesDao;
+import org.openstack.atlas.config.CloudFilesZipInfo;
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.exception.AuthException;
 import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.scheduler.JobScheduler;
@@ -18,7 +17,7 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.openstack.atlas.util.LogFileNameBuilder;
-import org.openstack.client.keystone.KeyStoneException;
+
 import org.springframework.beans.factory.annotation.Required;
 
 import java.io.File;
@@ -26,11 +25,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.openstack.atlas.config.CloudFilesZipInfo;
-import org.openstack.atlas.config.HadoopLogsConfigs;
-import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.StaticLogUtils;
 import org.openstack.atlas.util.VerboseLogger;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution implements QuartzExecutable {
 
@@ -47,35 +44,60 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
         vlog.printf("SchedulerConfigs = %s", schedulerConfigs.toString());
         List<CloudFilesZipInfo> zipInfoList = schedulerConfigs.getCloudFilesZipInfoList();
         Collections.sort(zipInfoList); // Sort by accountId and loadbalancerId for Saner debuging
+
+        List<String> failedUploads = new ArrayList<String>();
+        JobState state = createJob(JobName.ARCHIVE, schedulerConfigs.getInputString());
+
+        int totalFilesToUpload = 0;
         for (CloudFilesZipInfo zipInfo : schedulerConfigs.getCloudFilesZipInfoList()) {
+            totalFilesToUpload++;
             int accountId = zipInfo.getAccountId();
             int loadbalancerId = zipInfo.getLoadbalancerId();
             String accountIdStr = Integer.toString(accountId);
             String loadBalancerIdStr = Integer.toString(loadbalancerId);
             String localCacheFile = zipInfo.getCacheFile();
             try {
-                //LoadBalancer lb = loadBalancerRepository.getByIdAndAccountId(loadbalancerId, accountId);
-                if(1==0){
-                    throw new EntityNotFoundException(); // Not gonna happen. Just here so the code compiles
-                }
-                String lbName = "Some Lb Name";
-
-
+                String lbName = loadBalancerRepository.getLoadBalancerNameById(loadbalancerId, accountId);
+                vlog.printf("LoadBalancer Name: %s", lbName); //TODO: remove
                 String containerName = LogFileNameBuilder.getContainerName(loadBalancerIdStr, lbName, fileHour);
                 String remoteFileName = LogFileNameBuilder.getRemoteFileName(loadBalancerIdStr, lbName, fileHour);
-
                 vlog.printf("Attempting to send file=%s -> containerName=%s remoteFileName=%s", localCacheFile, containerName, remoteFileName);
 
-                //dao.uploadLocalFile(authService.getUser(accountIdStr), containername, localCacheFile, remoteFileName);
+                dao.uploadLocalFile(authService.getUser(accountIdStr), containerName, localCacheFile, remoteFileName);
 
-                //StaticFileUtils.deleteLocalFile(localCacheFile);
+                StaticFileUtils.deleteLocalFile(localCacheFile);
                 LOG.info("Uploaded logFile: " + localCacheFile + "  to cloudfile as " + containerName + "/" + remoteFileName);
-            } catch (EntityNotFoundException ex) {
-                LOG.error(String.format("Entity not found for accountId=%d loadbalancerId=%d", accountId, loadbalancerId), ex);
-                // Do something
-                continue;
+            } catch (EntityNotFoundException e) {
+                JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + localCacheFile);
+                failJob(individualState);
+                failedUploads.add(localCacheFile);
+                LOG.error("Error trying to upload to CloudFiles for loadbalancer that doesn't exist: " + localCacheFile, e);
+            } catch (FilesException e) {
+                JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + localCacheFile);
+                failJob(individualState);
+                failedUploads.add(localCacheFile);
+                LOG.error("Error trying to upload to CloudFiles: " + localCacheFile, e);
+            } catch (AuthException e) {
+                JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + localCacheFile);
+                failJob(individualState);
+                failedUploads.add(localCacheFile);
+                LOG.error("Error trying to upload to CloudFiles: " + localCacheFile, e);
+            } catch (Exception e) {
+                JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + localCacheFile);
+                failJob(individualState);
+                failedUploads.add(localCacheFile);
+                LOG.error("Unexpected Error trying to upload to CloudFiles: " + localCacheFile, e);
             }
         }
+
+//        File folder = new File(zipInfo.getLocalCacheDir());
+//        for (File runtimeFolder : folder.listFiles()) {
+//            StaticFileUtils.deleteLocalFile(runtimeFolder.getAbsolutePath());
+//        }
+
+        finishJob(state);
+        LOG.info("JOB COMPLETED. Total Time Taken for job " + schedulerConfigs.getInputString() + " to complete : " + StaticFileUtils.getTotalTimeTaken(schedulerConfigs.getRunTime()) + " seconds");
+        LOG.info("Failed to upload " + failedUploads.size() + " files out of " + totalFilesToUpload + " files");
     }
 
     @Deprecated
