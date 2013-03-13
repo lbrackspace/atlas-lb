@@ -1,5 +1,6 @@
 package org.openstack.atlas.util;
 
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;

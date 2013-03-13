@@ -12,7 +12,7 @@ import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.net.URL;
-import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.VerboseLogger;
 
 public class FileWatchdogJob extends BaseMapreduceJob implements StatefulJob {

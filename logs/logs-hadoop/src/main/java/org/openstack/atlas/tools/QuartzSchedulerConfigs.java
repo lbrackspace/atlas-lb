@@ -1,11 +1,13 @@
 package org.openstack.atlas.tools;
 
+import java.util.ArrayList;
 import org.openstack.atlas.util.Constants;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.openstack.atlas.config.CloudFilesZipInfo;
 import org.openstack.atlas.util.StaticStringUtils;
 
 public class QuartzSchedulerConfigs {
@@ -15,6 +17,7 @@ public class QuartzSchedulerConfigs {
     private String inputString;
     private String fileMoveInput;
     private List<String> inputForMultiPathJobs;
+    private List<CloudFilesZipInfo> cloudFilesZipInfoList;
     private String jobJarPath;
     private boolean lzoInput;
 
@@ -26,25 +29,28 @@ public class QuartzSchedulerConfigs {
                 + ", fileMoveInput=" + fileMoveInput
                 + ", inputForMultiPathJobs=" + StaticStringUtils.collectionToString(inputForMultiPathJobs, ",")
                 + ", jobJarPath=" + jobJarPath
-                + ", lzoInput=" + lzoInput + '}';
+                + ", lzoInput=" + lzoInput
+                + ", cloudFilesZipList ={" + cloudFilesZipFileListToString() + "}"
+                + "}";
     }
 
-    public static QuartzSchedulerConfigs createSchedulerConfigsFromMap(Map values) {
-        QuartzSchedulerConfigs schedulerConfigs = new QuartzSchedulerConfigs();
-        schedulerConfigs.setRunTime((String) values.get(Constants.FORMATTED_RUNTIME));
-        schedulerConfigs.setInputString((String) values.get(Constants.INPUT_DIR));
-        schedulerConfigs.setRawlogsFileTime((String) values.get(Constants.FILEDATE));
-
-        schedulerConfigs.setInputForMultiPathJobs(createInputForMultiPathJobs(values));
-        schedulerConfigs.setJobJarPath((String) values.get(Constants.JOBJAR_PATH));
-
-        if (values.get(Constants.INPUT_TYPE) == null) {
-            schedulerConfigs.setLzoInput(false);
-        } else {
-            schedulerConfigs.setLzoInput((Boolean) values.get(Constants.INPUT_TYPE));
+    private String cloudFilesZipFileListToString() {
+        if (cloudFilesZipInfoList == null) {
+            return "null";
         }
 
-        return schedulerConfigs;
+        long uncompressedSize = 0;
+        long nLines = 0;
+        int nFiles = 0;
+        for (CloudFilesZipInfo zipInfo : cloudFilesZipInfoList) {
+            uncompressedSize += zipInfo.getUncompressedSize();
+            nFiles += 1;
+            nLines += zipInfo.getnLines();
+        }
+
+        return "nLines=" + nLines
+                + ", nFiles=" + nFiles
+                + ", uncompressedSize=" + uncompressedSize;
     }
 
     private static List<String> createInputForMultiPathJobs(Map values) {
@@ -73,10 +79,28 @@ public class QuartzSchedulerConfigs {
         map.put(Constants.FILEDATE, getRawlogsFileTime());
         map.put(Constants.COPY_ALL_FILES, getInputForMultiPathJobs());
         map.put(Constants.JOBJAR_PATH, getJobJarPath());
-
+        map.put(Constants.CLOUDFILES_ZIP_INFO, getCloudFilesZipInfoList());
         map.put(Constants.INPUT_TYPE, isLzoInput());
 
         return map;
+    }
+
+    public static QuartzSchedulerConfigs createSchedulerConfigsFromMap(Map values) {
+        QuartzSchedulerConfigs schedulerConfigs = new QuartzSchedulerConfigs();
+        schedulerConfigs.setRunTime((String) values.get(Constants.FORMATTED_RUNTIME));
+        schedulerConfigs.setInputString((String) values.get(Constants.INPUT_DIR));
+        schedulerConfigs.setRawlogsFileTime((String) values.get(Constants.FILEDATE));
+        schedulerConfigs.setCloudFilesZipInfoList((List<CloudFilesZipInfo>) values.get(Constants.CLOUDFILES_ZIP_INFO));
+        schedulerConfigs.setInputForMultiPathJobs(createInputForMultiPathJobs(values));
+        schedulerConfigs.setJobJarPath((String) values.get(Constants.JOBJAR_PATH));
+
+        if (values.get(Constants.INPUT_TYPE) == null) {
+            schedulerConfigs.setLzoInput(false);
+        } else {
+            schedulerConfigs.setLzoInput((Boolean) values.get(Constants.INPUT_TYPE));
+        }
+
+        return schedulerConfigs;
     }
 
     public String getRunTime() {
@@ -133,5 +157,16 @@ public class QuartzSchedulerConfigs {
 
     public void setLzoInput(boolean lzoInput) {
         this.lzoInput = lzoInput;
+    }
+
+    public List<CloudFilesZipInfo> getCloudFilesZipInfoList() {
+        if (cloudFilesZipInfoList == null) {
+            cloudFilesZipInfoList = new ArrayList<CloudFilesZipInfo>();
+        }
+        return cloudFilesZipInfoList;
+    }
+
+    public void setCloudFilesZipInfoList(List<CloudFilesZipInfo> cloudFilesZipInfoList) {
+        this.cloudFilesZipInfoList = cloudFilesZipInfoList;
     }
 }

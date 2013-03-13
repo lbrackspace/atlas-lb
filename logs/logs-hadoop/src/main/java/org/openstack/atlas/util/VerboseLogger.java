@@ -85,4 +85,9 @@ public class VerboseLogger {
     public void setLevel(LogLevel level) {
         this.level = level;
     }
+
+    public void printf(String  fmt,Object... args){
+        String logLine = String.format(fmt,args);
+        log(logLine);
+    }
 }

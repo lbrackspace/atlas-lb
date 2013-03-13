@@ -24,6 +24,7 @@ public class SequenceFileIterator<K extends Writable, V extends Writable> {
     protected Path path;
     protected Class keyClass;
     protected Class valueClass;
+    protected int entryNumber = 0;
 
     public SequenceFileIterator(Path path, FileSystem fileSystem) throws SequenceFileReaderException {
         fs = fileSystem;
@@ -56,7 +57,8 @@ public class SequenceFileIterator<K extends Writable, V extends Writable> {
         if (!hasNext) {
             throw new EndOfIteratorException();
         }
-        SequenceFileEntry<K, V> out = new SequenceFileEntry(key, value);
+        SequenceFileEntry<K, V> out = new SequenceFileEntry(this.path.toUri().toString(), entryNumber, key, value);
+        entryNumber++;
         return out;
     }
 

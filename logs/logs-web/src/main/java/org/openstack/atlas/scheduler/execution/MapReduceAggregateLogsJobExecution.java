@@ -17,7 +17,7 @@ import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.tools.HadoopConfiguration;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.openstack.atlas.tools.HadoopTool;
-import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;
 import org.openstack.atlas.util.StaticFileUtils;
 import org.openstack.atlas.util.VerboseLogger;
@@ -98,14 +98,15 @@ public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution imp
             }
             HadoopJob hadoopClient = new HadoopLogSplitterJob();
             hadoopClient.setConfiguration(HadoopLogsConfigs.getHadoopConfiguration());
-            int errorCode = hadoopClient.run(argsList);
+            int errorCode = hadoopClient.run(argsList);  // Actually runs the Hadoop Job
             if (errorCode < 0) {
                 LOG.error(String.format("Hadoop run FAILED with error code %d", errorCode));
             } else {
                 vlog.log(String.format("Hadoop run SUCCEEDED with code %d", errorCode));
             }
-            //tool.executeHadoopRun();
-            //scheduleSplitLoadBalancerLogsJob(scheduler, schedulerConfigs);
+            // Note that the SplitLoadBalancerLogsJob being called below is the quartz job that reads the zip files from HDFS.
+            // This does not call hadoop job. The hadoop job was actually ran above via the hadoopClient.run(argsList)
+            scheduler.scheduleJob(SplitLoadBalancerLogsJob.class, schedulerConfigs);
         } catch (Exception e) {
             LOG.error(e);
             failJob(state);
@@ -113,9 +114,5 @@ public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution imp
         }
 
         finishJob(state);
-    }
-
-    private void scheduleSplitLoadBalancerLogsJob(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws SchedulingException {
-        scheduler.scheduleJob(SplitLoadBalancerLogsJob.class, schedulerConfigs);
     }
 }

@@ -21,13 +21,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.config.CloudFilesZipInfo;
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.StaticFileUtils;
 import org.openstack.atlas.util.StaticLogUtils;
+import org.openstack.atlas.util.VerboseLogger;
 
 public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution implements QuartzExecutable {
-    private static final Log LOG = LogFactory.getLog(ArchiveLoadBalancerLogsJobExecution.class);
 
+    private static final Log LOG = LogFactory.getLog(ArchiveLoadBalancerLogsJobExecution.class);
+    private static final VerboseLogger vlog = new VerboseLogger(ArchiveLoadBalancerLogsJobExecution.class);
     private LoadBalancerRepository loadBalancerRepository;
     private CloudFilesDao dao;
     private JobScheduler jobScheduler;
@@ -35,6 +38,11 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
 
     @Override
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
+        String fileHour = schedulerConfigs.getInputString();
+        vlog.printf("SchedulerConfigs = %s", schedulerConfigs.toString());
+    }
+
+    public void executeDeprecated(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
         jobScheduler = scheduler;
 
         String cacheLocation = HadoopLogsConfigs.getCacheDir();
@@ -76,25 +84,25 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
                         dao.uploadLocalFile(authService.getUser(accountId), containername, absoluteFileName, remoteFileName);
 
                         StaticFileUtils.deleteLocalFile(absoluteFileName);
-                        LOG.info("Uploaded logFile: " + absoluteFileName + "  to cloudfile as " + containername + "/" + remoteFileName );
+                        LOG.info("Uploaded logFile: " + absoluteFileName + "  to cloudfile as " + containername + "/" + remoteFileName);
 
-                    //We will log each individual upload event only if it fails. No need to track those that succeeded.
+                        //We will log each individual upload event only if it fails. No need to track those that succeeded.
                     } catch (EntityNotFoundException e) {
                         JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         failed.add("absoluteFileName");
                         LOG.error("Error trying to upload to CloudFiles for loadbalancer that doesn't exist: " + absoluteFileName, e);
-                    } catch(FilesException e){
+                    } catch (FilesException e) {
                         JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         failed.add("absoluteFileName");
                         LOG.error("Error trying to upload to CloudFiles: " + absoluteFileName, e);
-                    } catch(AuthException e){
+                    } catch (AuthException e) {
                         JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         failed.add("absoluteFileName");
                         LOG.error("Error trying to upload to CloudFiles: " + absoluteFileName, e);
-                    } catch(Exception e){
+                    } catch (Exception e) {
                         // Usually its caused by SSL Exception due to some weird staging & test accounts. So ignoring for now.
                         // Catch all so we can proceed.
                         JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
@@ -105,7 +113,7 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
                 }
 
                 StaticFileUtils.deleteLocalFile(accountDirectory);
-            } catch(Exception e){
+            } catch (Exception e) {
                 LOG.error("JOB " + schedulerConfigs.getInputString() + "failed to upload to Cloud Files. Please have a developer look into it.", e);
             }
         }

@@ -15,7 +15,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.StaticFileUtils;
 import org.openstack.atlas.util.VerboseLogger;
 

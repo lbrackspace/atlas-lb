@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.util.Calendar;
-import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.StaticFileUtils;
 
 public class SystemCleanupJob  extends QuartzJobBean implements StatefulJob {

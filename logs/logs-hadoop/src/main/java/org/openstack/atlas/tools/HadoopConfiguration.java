@@ -4,7 +4,7 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.GenericOptionsParser;
-import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.config.HadoopLogsConfigs;
 
 public class HadoopConfiguration {
 

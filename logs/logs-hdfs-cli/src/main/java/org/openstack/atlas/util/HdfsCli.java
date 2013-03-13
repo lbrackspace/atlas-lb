@@ -1,5 +1,6 @@
 package org.openstack.atlas.util;
 
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import java.beans.XMLEncoder;
 import com.hadoop.compression.lzo.LzoIndex;
 import java.io.PrintStream;
@@ -77,6 +78,7 @@ public class HdfsCli {
         System.out.printf("\n");
 
 
+
         while (true) {
             try {
                 System.out.printf("hdfs %s$ ", fs.getWorkingDirectory().toUri().toString());
@@ -130,7 +132,8 @@ public class HdfsCli {
                     System.out.printf("dumpConfig <outFile.xml> <confIn.xml..> #Dump config to outfile\n");
                     System.out.printf("diffConfig <confA.xml> <confB.xml># Compare the differences between the configs\n");
                     System.out.printf("lineIndex <fileName> #Index the line numbers in the file\n");
-                    System.out.printf("printLineNumber <fileName> <lineNumberN> #Print the line number based on the index file\n");
+                    System.out.printf("rebasePath <srcBase> <srcPath> <dstPath> #Show what the rebasePath method in StaticFileUtils would do\n");
+                    System.out.printf("joinPath <path1> ...<pathN> #Test the join the paths together skipping double slashes.\n");
                     System.out.printf("\n");
                     continue;
                 }
@@ -410,52 +413,15 @@ public class HdfsCli {
                     continue;
                 }
                 if (cmd.equals("printReducers") && args.length >= 2) {
-                    List<LogReducerOutputValue> zipFileInfoList = new ArrayList<LogReducerOutputValue>();
-                    SequenceFileIterator<LogReducerOutputKey, LogReducerOutputValue> zipIterator;
                     String sequenceDirectory = args[1];
-                    List<Path> sequenceFiles;
-                    try {
-                        sequenceFiles = hdfsUtils.listSequenceFiles(sequenceDirectory, false);
-                    } catch (IOException ex) {
-                        throw ex;
+                    List<LogReducerOutputValue> zipFileInfoList = hdfsUtils.getZipFileInfoList(sequenceDirectory);
+                    int totalEntryCount = zipFileInfoList.size();
+                    int entryNum = 0;
+                    for (LogReducerOutputValue zipFileInfo : zipFileInfoList) {
+                        System.out.printf("zipFile[%d]=%s\n", entryNum, zipFileInfo.toString());
+                        entryNum++;
                     }
-                    Collections.sort(sequenceFiles);
-                    int totalEntryCount = 0;
-                    Map<LogReducerOutputValue, String> valToFileMap = new HashMap<LogReducerOutputValue, String>();
-                    for (Path sequencePath : sequenceFiles) {
-                        String sequenceFileName = sequencePath.toUri().toString();
-                        System.out.printf("Scanning %s\n", sequencePath.toUri().toString());
-                        try {
-                            zipIterator = new SequenceFileIterator<LogReducerOutputKey, LogReducerOutputValue>(sequencePath, fs);
-                        } catch (SequenceFileReaderException ex) {
-                            throw ex;
-                        }
 
-
-                        while (true) {
-                            try {
-                                SequenceFileEntry<LogReducerOutputKey, LogReducerOutputValue> sequenceEntry;
-                                sequenceEntry = zipIterator.getNextEntry();
-                                totalEntryCount++;
-                                LogReducerOutputKey key = sequenceEntry.getKey();
-                                LogReducerOutputValue val = sequenceEntry.getValue();
-                                zipFileInfoList.add(val);
-
-                                valToFileMap.put(val, sequenceFileName);
-                            } catch (EndOfIteratorException ex) {
-                                zipIterator.close();
-                                break;
-                            } catch (SequenceFileReaderException ex) {
-                                zipIterator.close();
-                                throw ex;
-                            }
-                        }
-                    }
-                    Collections.sort(zipFileInfoList);
-                    for (LogReducerOutputValue val : zipFileInfoList) {
-                        String sequenceFileName = valToFileMap.get(val);
-                        System.out.printf("%s: %s\n", sequenceFileName, val.toString());
-                    }
                     System.out.printf("Total entries = %d\n", totalEntryCount);
                     continue;
                 }
@@ -548,26 +514,24 @@ public class HdfsCli {
                     os.close();
                     continue;
                 }
-                if (cmd.equals("readLineNumber") && args.length > 3) {
-                    String inFileName = StaticFileUtils.expandUser(args[1]);
-                    String outFileName = inFileName + ".idx";
-                    InputStream is = StaticFileUtils.openInputFile(inFileName);
-                    DataInputStream dis = StaticFileUtils.openDataInputStreamFile(inFileName, PAGESIZE * 8);
-                    System.out.printf("Printing line number\n");
-                    String lineStr = HdfsCliHelpers.printLineNumber(is, dis, PAGESIZE * 8);
+                if (cmd.equals("rebasePath") && args.length >= 4) {
+                    String srcBase = args[1];
+                    String srcPath = args[2];
+                    String dstPath = args[3];
+                    System.out.printf("calling StaticFileUtils.rebasePath(%s,%s,%s)=", srcBase, srcPath, dstPath);
+                    System.out.flush();
+                    String rebasedPath = StaticFileUtils.rebaseSplitPath(srcBase, srcPath, dstPath);
+                    System.out.printf("%s\n", rebasedPath);
                     continue;
                 }
-                if (cmd.equals("cpLocal") && args.length >= 3) {
-                    String inFileName = StaticFileUtils.expandUser(args[1]);
-                    String outFileName = StaticFileUtils.expandUser(args[2]);
-                    int buffSize = (args.length >= 4) ? Integer.parseInt(args[3]) : ONEMEG;
-                    System.out.printf("Copy %s -> %s with a buffer of %d\n", inFileName, outFileName, buffSize);
-                    long inputFileLength = new File(inFileName).length();
-                    InputStream fis = new FileInputStream(new File(inFileName));
-                    OutputStream fos = new FileOutputStream(new File(outFileName));
-                    StaticFileUtils.copyStreams(fis, fos, System.out, inputFileLength, buffSize);
-                    fis.close();
-                    fos.close();
+                if (cmd.equals("joinPath") && args.length >= 1) {
+                    List<String> pathComps = new ArrayList<String>();
+                    for (int i = 1; i < args.length; i++) {
+                        pathComps.add(args[i]);
+                    }
+                    List<String> joinedPathList = StaticFileUtils.joinPath(pathComps);
+                    String joinPathString = StaticFileUtils.splitPathToString(joinedPathList);
+                    System.out.printf("joinedPath = %s\n", joinPathString);
                     continue;
                 }
                 continue;

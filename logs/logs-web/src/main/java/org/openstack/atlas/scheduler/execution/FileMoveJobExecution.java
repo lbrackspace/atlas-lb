@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.StaticFileUtils;
 import org.openstack.atlas.util.StaticStringUtils;
 import org.openstack.atlas.util.VerboseLogger;

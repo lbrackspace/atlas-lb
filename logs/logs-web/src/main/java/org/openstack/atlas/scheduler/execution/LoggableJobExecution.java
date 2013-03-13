@@ -9,7 +9,7 @@ import org.openstack.atlas.service.domain.repository.JobStateRepository;
 import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.tools.HadoopConfiguration;
 import org.openstack.atlas.util.FileSystemUtils;
-import org.openstack.atlas.util.HadoopLogsConfigs;
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;
 import org.springframework.beans.factory.annotation.Required;
 

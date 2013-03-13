@@ -206,7 +206,7 @@ public class StaticFileUtils {
         return joined;
     }
 
-    public static String[] splitPath(String pathName) {
+    public static List<String> splitPathList(String pathName) {
         List<String> pathList = new ArrayList<String>();
         File file = new File(pathName);
         while (true) {
@@ -217,6 +217,11 @@ public class StaticFileUtils {
             pathList.add(name);
             file = file.getParentFile();
         }
+        return pathList;
+    }
+
+    public static String[] splitPath(String pathName) {
+        List<String> pathList = splitPathList(pathName);
         Collections.reverse(pathList);
         return pathList.toArray(new String[pathList.size()]);
     }
@@ -568,6 +573,4 @@ public class StaticFileUtils {
             // Not logging since the stream is likely already closed
         }
     }
-
-
 }

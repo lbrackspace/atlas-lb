@@ -1,5 +1,8 @@
 package org.openstack.atlas.util;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import com.hadoop.compression.lzo.LzopCodec;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -11,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,11 +33,19 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.compress.CompressionInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
+import org.openstack.atlas.exception.DebugException;
 import org.openstack.atlas.exception.ReflectionException;
+import org.openstack.atlas.logs.hadoop.sequencefiles.EndOfIteratorException;
+import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileEntry;
+import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileIterator;
+import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileReaderException;
+import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
+import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 
 public class HdfsUtils {
 
     private final Log LOG = LogFactory.getLog(HdfsUtils.class);
+    private final VerboseLogger vlog = new VerboseLogger(HdfsUtils.class, VerboseLogger.LogLevel.INFO);
     public static final Pattern sequenceFilePattern = Pattern.compile("^(.*)(part-r-[0-9]+)$");
     public static final String HADOOP_USER_NAME = "HADOOP_USER_NAME"; // Silly isn't it.
     protected int bufferSize = 256 * 1024;
@@ -77,6 +89,49 @@ public class HdfsUtils {
         return getConfigurationMap(conf);
     }
 
+    public List<LogReducerOutputValue> getZipFileInfoList(String reducerOutputDirectory) throws SequenceFileReaderException {
+        List<LogReducerOutputValue> zipFileInfoList = new ArrayList<LogReducerOutputValue>();
+        List<Path> sequencePaths;
+        SequenceFileIterator<LogReducerOutputKey, LogReducerOutputValue> zipIterator;
+        try {
+            sequencePaths = listSequenceFiles(reducerOutputDirectory, false);
+        } catch (IOException ex) {
+            String msg = "Error fetching list of sequence files";
+            String excMsg = String.format("%s: %s", msg, StaticStringUtils.getExtendedStackTrace(ex));
+            LOG.error(excMsg, ex);
+            throw new SequenceFileReaderException(msg, ex);
+        }
+        for (Path sequencePath : sequencePaths) {
+            String sequenceFileName = sequencePath.toUri().toString();
+            try {
+                vlog.printf("Scanning reduceroutput directory %s", sequenceFileName);
+                zipIterator = new SequenceFileIterator<LogReducerOutputKey, LogReducerOutputValue>(sequencePath, remoteFileSystem);
+            } catch (SequenceFileReaderException ex) {
+                String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+                LOG.error(excMsg, ex);
+                throw ex;
+            }
+            while (true) {
+                try {
+                    SequenceFileEntry<LogReducerOutputKey, LogReducerOutputValue> zipFileEntry;
+                    zipFileEntry = zipIterator.getNextEntry();
+                    LogReducerOutputValue val = zipFileEntry.getValue();
+                    zipFileInfoList.add(val);
+                } catch (SequenceFileReaderException ex) {
+                    String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+                    LOG.error(excMsg, ex);
+                    zipIterator.close();
+                    throw ex;
+                } catch (EndOfIteratorException ex) {
+                    zipIterator.close();
+                    break;
+                }
+            }
+        }
+        Collections.sort(zipFileInfoList);
+        return zipFileInfoList;
+    }
+
     // For debugging Not used by the Application
     public static Map<String, String> getConfigurationMap(Configuration conf) {
         Map<String, String> map = new HashMap<String, String>();
@@ -101,7 +156,7 @@ public class HdfsUtils {
     }
 
     // Silly but this will open an LZO decompress and then recompresse it with Indexing
-    public void recompressAndIndexLzoStream(InputStream lzoInputStream, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream,PrintStream ps) throws IOException {
+    public void recompressAndIndexLzoStream(InputStream lzoInputStream, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream, PrintStream ps) throws IOException {
         Configuration codecConf = new Configuration();
         codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
         codecConf.set("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
@@ -114,7 +169,7 @@ public class HdfsUtils {
         cos.close();
     }
 
-    public void compressAndIndexStreamToLzo(InputStream uncompressedInputStream, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream, int buffSize,PrintStream ps) throws IOException {
+    public void compressAndIndexStreamToLzo(InputStream uncompressedInputStream, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream, int buffSize, PrintStream ps) throws IOException {
         Configuration codecConf = new Configuration();
         codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
         codecConf.set("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");

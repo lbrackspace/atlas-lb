@@ -12,5 +12,6 @@ public interface Constants {
 
     String INPUT_DIR = "inputdir";
     String FILEDATE = "file.date";
+    String CLOUDFILES_ZIP_INFO = "cloudfiles.zipinfo";
 
 }
