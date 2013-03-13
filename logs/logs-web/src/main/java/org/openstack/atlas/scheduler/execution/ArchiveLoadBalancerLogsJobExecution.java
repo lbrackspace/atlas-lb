@@ -1,6 +1,9 @@
 package org.openstack.atlas.scheduler.execution;
 
 import com.rackspacecloud.client.cloudfiles.FilesException;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.auth.AuthService;
@@ -15,10 +18,12 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.openstack.atlas.util.LogFileNameBuilder;
+import org.openstack.client.keystone.KeyStoneException;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.openstack.atlas.config.CloudFilesZipInfo;
@@ -40,8 +45,40 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
         String fileHour = schedulerConfigs.getInputString();
         vlog.printf("SchedulerConfigs = %s", schedulerConfigs.toString());
+        List<CloudFilesZipInfo> zipInfoList = schedulerConfigs.getCloudFilesZipInfoList();
+        Collections.sort(zipInfoList); // Sort by accountId and loadbalancerId for Saner debuging
+        for (CloudFilesZipInfo zipInfo : schedulerConfigs.getCloudFilesZipInfoList()) {
+            int accountId = zipInfo.getAccountId();
+            int loadbalancerId = zipInfo.getLoadbalancerId();
+            String accountIdStr = Integer.toString(accountId);
+            String loadBalancerIdStr = Integer.toString(loadbalancerId);
+            String localCacheFile = zipInfo.getCacheFile();
+            try {
+                //LoadBalancer lb = loadBalancerRepository.getByIdAndAccountId(loadbalancerId, accountId);
+                if(1==0){
+                    throw new EntityNotFoundException(); // Not gonna happen. Just here so the code compiles
+                }
+                String lbName = "Some Lb Name";
+
+
+                String containerName = LogFileNameBuilder.getContainerName(loadBalancerIdStr, lbName, fileHour);
+                String remoteFileName = LogFileNameBuilder.getRemoteFileName(loadBalancerIdStr, lbName, fileHour);
+
+                vlog.printf("Attempting to send file=%s -> containerName=%s remoteFileName=%s", localCacheFile, containerName, remoteFileName);
+
+                //dao.uploadLocalFile(authService.getUser(accountIdStr), containername, localCacheFile, remoteFileName);
+
+                //StaticFileUtils.deleteLocalFile(localCacheFile);
+                LOG.info("Uploaded logFile: " + localCacheFile + "  to cloudfile as " + containerName + "/" + remoteFileName);
+            } catch (EntityNotFoundException ex) {
+                LOG.error(String.format("Entity not found for accountId=%d loadbalancerId=%d", accountId, loadbalancerId), ex);
+                // Do something
+                continue;
+            }
+        }
     }
 
+    @Deprecated
     public void executeDeprecated(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
         jobScheduler = scheduler;
 

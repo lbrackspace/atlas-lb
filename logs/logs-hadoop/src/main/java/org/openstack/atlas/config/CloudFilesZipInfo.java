@@ -15,11 +15,18 @@ public class CloudFilesZipInfo implements Comparable<CloudFilesZipInfo> {
 
     @Override
     public int compareTo(CloudFilesZipInfo o) {
-        long oUncompressedSize = o.getUncompressedSize();
-        if (uncompressedSize < oUncompressedSize) {
+        int oAccountId = o.getAccountId();
+        int oLoadbalancerId = o.getLoadbalancerId();
+        if (accountId < oAccountId) {
             return -1;
         }
-        if (uncompressedSize > oUncompressedSize) {
+        if (accountId > oAccountId) {
+            return 1;
+        }
+        if (loadbalancerId < oLoadbalancerId) {
+            return -1;
+        }
+        if (loadbalancerId > oLoadbalancerId) {
             return 1;
         }
         return 0;
