@@ -1,39 +1,35 @@
 package org.openstack.atlas.scheduler.execution;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
+import org.openstack.atlas.config.CloudFilesZipInfo;
+import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.exception.SchedulingException;
 import org.openstack.atlas.io.FileBytesWritable;
 import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileReaderException;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
-import org.openstack.atlas.mapreduce.LbStatsTool;
 import org.openstack.atlas.scheduler.ArchiveLoadBalancerLogsJob;
 import org.openstack.atlas.scheduler.JobScheduler;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.Text;
+import org.openstack.atlas.util.HdfsUtils;
+import org.openstack.atlas.util.StaticFileUtils;
+import org.openstack.atlas.util.StaticStringUtils;
+import org.openstack.atlas.util.VerboseLogger;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.openstack.atlas.config.HadoopLogsConfigs;
-import org.openstack.atlas.config.CloudFilesZipInfo;
-import org.openstack.atlas.tools.HadoopConfiguration;
-import org.openstack.atlas.util.HdfsUtils;
-import org.openstack.atlas.util.StaticFileUtils;
-import org.openstack.atlas.util.StaticStringUtils;
-import org.openstack.atlas.util.VerboseLogger;
 
 public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution implements QuartzExecutable {
 
@@ -123,6 +119,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
             cloudFileZipEntry.setnLines(nLines);
             cloudFileZipEntry.setHdfsFile(hdfsZipFilePath);
             cloudFileZipEntry.setCacheFile(fullCacheZipPath);
+            cloudFileZipEntry.setLocalCacheDir(localCacheDir);
             schedulerConfigs.getCloudFilesZipInfoList().add(cloudFileZipEntry);
             vlog.printf("Added %s", cloudFileZipEntry.toString());
             StaticFileUtils.close(zipFileInputStream);
