@@ -19,7 +19,7 @@ import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.openstack.atlas.tools.HadoopTool;
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;
-import org.openstack.atlas.util.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.VerboseLogger;
 import org.springframework.beans.factory.annotation.Required;
 

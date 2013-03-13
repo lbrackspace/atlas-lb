@@ -3,7 +3,7 @@ package org.openstack.atlas.logs.hadoop.counters;
 import java.io.IOException;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
-import org.openstack.atlas.util.StaticStringUtils;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 
 public class CounterUtils {

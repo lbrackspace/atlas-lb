@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.Random;
-import org.openstack.atlas.util.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 public class JobScheduler {
     private static SimpleDateFormat format = new SimpleDateFormat("HHmmss");

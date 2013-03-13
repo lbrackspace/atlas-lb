@@ -27,9 +27,9 @@ import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
-import org.openstack.atlas.util.StaticDateTimeUtils;
-import org.openstack.atlas.util.StaticFileUtils;
-import org.openstack.atlas.util.StaticStringUtils;
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.VerboseLogger;
 
 public class HadoopLogSplitterJob extends HadoopJob {

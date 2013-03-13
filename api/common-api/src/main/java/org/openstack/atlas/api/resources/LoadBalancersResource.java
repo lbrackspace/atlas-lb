@@ -15,7 +15,7 @@ import org.openstack.atlas.service.domain.entities.LimitType;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
-import org.openstack.atlas.util.converters.exceptions.ConverterException;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.w3.atom.Link;
 
 import javax.ws.rs.*;

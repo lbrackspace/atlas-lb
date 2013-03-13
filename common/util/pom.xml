@@ -59,6 +59,16 @@
                         <debug>true</debug>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <configuration>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                        <finalName>${project.artifactId}-${project.version}-assembly</finalName>
+                        <appendAssemblyId>false</appendAssemblyId>
+                    </configuration>
+                </plugin>
         </plugins>
    </build>
 

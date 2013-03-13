@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.openstack.atlas.config.CloudFilesZipInfo;
-import org.openstack.atlas.util.StaticStringUtils;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 public class QuartzSchedulerConfigs {
 

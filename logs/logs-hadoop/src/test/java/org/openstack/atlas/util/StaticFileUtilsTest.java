@@ -1,10 +1,11 @@
 package org.openstack.atlas.util;
 
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 import junit.framework.Assert;
-import org.openstack.atlas.exception.FileUtilsException;
+import org.openstack.atlas.util.crypto.exception.FileUtilsException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;

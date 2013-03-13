@@ -1,5 +1,8 @@
 package org.openstack.atlas.util;
 
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import java.beans.XMLEncoder;
 import com.hadoop.compression.lzo.LzoIndex;
@@ -49,6 +52,7 @@ import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileReaderException
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
+import org.openstack.atlas.util.debug.Debug;
 
 public class HdfsCli {
 

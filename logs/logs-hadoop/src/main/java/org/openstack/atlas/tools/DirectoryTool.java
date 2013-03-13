@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.openstack.atlas.config.HadoopLogsConfigs;
-import org.openstack.atlas.util.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.VerboseLogger;
 
 public abstract class DirectoryTool implements HadoopTool {

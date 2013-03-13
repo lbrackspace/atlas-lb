@@ -7,7 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.auth.AuthUser;
 import org.openstack.atlas.util.FileSystemUtils;
-import org.openstack.atlas.util.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.springframework.beans.factory.annotation.Required;
 
 import javax.activation.FileTypeMap;

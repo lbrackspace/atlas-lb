@@ -1,5 +1,9 @@
 package org.openstack.atlas.util;
 
+import java.io.File;
+import java.io.IOException;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
+
 public class StaticLogUtils {
 
     /**
@@ -16,5 +20,10 @@ public class StaticLogUtils {
      */
     public static String getLoadBalancerId(String absoluteFileName) {
         return absoluteFileName.split("_")[2];
+    }
+
+    public static boolean isSymLink(String filePath) throws IOException {
+        File file = new File(StaticFileUtils.expandUser(filePath));
+        return org.apache.commons.io.FileUtils.isSymlink(file);
     }
 }

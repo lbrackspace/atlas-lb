@@ -2,7 +2,7 @@ package org.openstack.atlas.util.converters;
 
 import static org.openstack.atlas.util.converters.DateTimeConverters.calToiso;
 import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
-import org.openstack.atlas.util.converters.exceptions.ConverterException;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
 import java.util.Calendar;
 import java.util.TimeZone;
 import org.junit.Before;

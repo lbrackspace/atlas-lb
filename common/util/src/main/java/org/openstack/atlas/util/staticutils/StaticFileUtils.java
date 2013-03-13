@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.util.staticutils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -32,7 +32,9 @@ import java.util.Random;
 import java.util.zip.CRC32;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.exception.FileUtilsException;
+import org.openstack.atlas.util.crypto.exception.FileUtilsException;
+
+import org.openstack.atlas.util.debug.Debug;
 
 public class StaticFileUtils {
 
@@ -533,10 +535,6 @@ public class StaticFileUtils {
         return startDate;
     }
 
-    public static boolean isSymLink(String filePath) throws IOException {
-        File file = new File(expandUser(filePath));
-        return org.apache.commons.io.FileUtils.isSymlink(file);
-    }
 
     public static String getMonthYearFromFileDate(String dateString) {
         String monthYear = "";

@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.util.staticutils;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;

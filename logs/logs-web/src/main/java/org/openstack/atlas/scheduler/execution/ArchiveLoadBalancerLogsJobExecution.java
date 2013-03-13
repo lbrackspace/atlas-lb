@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import org.openstack.atlas.config.CloudFilesZipInfo;
 import org.openstack.atlas.config.HadoopLogsConfigs;
-import org.openstack.atlas.util.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.StaticLogUtils;
 import org.openstack.atlas.util.VerboseLogger;
 

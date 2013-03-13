@@ -6,7 +6,7 @@ import org.openstack.atlas.api.mapper.UsageMapper;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountBillings;
 import org.openstack.atlas.service.domain.entities.AccountUsage;
-import org.openstack.atlas.util.converters.exceptions.ConverterException;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.w3.atom.Link;
 
 import javax.ws.rs.GET;

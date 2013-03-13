@@ -1,5 +1,7 @@
 package org.openstack.atlas.util;
 
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.hadoop.conf.Configuration;
+import org.openstack.atlas.util.debug.Debug;
 
 public class HdfsCliHelpers {
 

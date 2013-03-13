@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.util.staticutils;
 
 import java.util.ArrayList;
 import java.util.Collection;

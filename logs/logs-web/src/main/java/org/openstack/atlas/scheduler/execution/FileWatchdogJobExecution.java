@@ -22,11 +22,11 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.hadoop.tools.rumen.HadoopLogsAnalyzer;
 import org.openstack.atlas.tools.HadoopConfiguration;
-import org.openstack.atlas.util.Debug;
+
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;
-import org.openstack.atlas.util.StaticFileUtils;
-import org.openstack.atlas.util.StaticStringUtils;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.VerboseLogger;
 
 public class FileWatchdogJobExecution extends LoggableJobExecution implements QuartzExecutable {

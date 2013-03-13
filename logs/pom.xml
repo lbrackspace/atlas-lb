@@ -17,6 +17,7 @@
         <module>logs-hadoop</module>
         <module>logs-web</module>
         <module>logs-hdfs-cli</module>
+        <module>logs-hibernate-toy</module>
     </modules>
 
     <build>

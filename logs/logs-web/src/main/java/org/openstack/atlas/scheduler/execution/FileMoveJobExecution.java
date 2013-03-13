@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.openstack.atlas.config.HadoopLogsConfigs;
-import org.openstack.atlas.util.StaticFileUtils;
-import org.openstack.atlas.util.StaticStringUtils;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.VerboseLogger;
 
 public class FileMoveJobExecution extends LoggableJobExecution implements QuartzExecutable {

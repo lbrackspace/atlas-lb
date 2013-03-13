@@ -1,4 +1,4 @@
-package org.openstack.atlas.exception;
+package org.openstack.atlas.util.crypto.exception;
 
 public class DebugException extends Exception{
 

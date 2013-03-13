@@ -7,7 +7,7 @@ import org.openstack.atlas.service.domain.usage.entities.HostUsage;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
-import org.openstack.atlas.util.converters.exceptions.ConverterException;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.api.mgmt.validation.contexts.HostContext;
 import org.openstack.atlas.api.mgmt.helpers.HostUsageProcessor;

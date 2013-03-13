@@ -1,5 +1,6 @@
 package org.openstack.atlas.util;
 
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;

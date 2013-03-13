@@ -8,7 +8,7 @@ import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.CustomQuery;
 import org.openstack.atlas.service.domain.pojos.QueryParameter;
-import org.openstack.atlas.util.converters.exceptions.ConverterException;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

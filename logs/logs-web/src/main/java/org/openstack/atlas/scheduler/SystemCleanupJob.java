@@ -12,7 +12,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.util.Calendar;
 import org.openstack.atlas.config.HadoopLogsConfigs;
-import org.openstack.atlas.util.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 public class SystemCleanupJob  extends QuartzJobBean implements StatefulJob {
     private static Log log = LogFactory.getLog(SystemCleanupJob.class);

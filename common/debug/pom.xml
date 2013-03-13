@@ -18,8 +18,13 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     -->
-
     <dependencies>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-util</artifactId>
+            <version>1.18.0-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

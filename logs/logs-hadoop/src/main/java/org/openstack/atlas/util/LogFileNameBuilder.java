@@ -1,5 +1,7 @@
 package org.openstack.atlas.util;
 
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
+
 public class LogFileNameBuilder {
     public static String getContainerName(String lbId, String lbName, String dateString) {
         String monthYear = StaticFileUtils.getMonthYearFromFileDate(dateString);

@@ -1,4 +1,4 @@
-package org.openstack.atlas.util.converters.exceptions;
+package org.openstack.atlas.util.common.exceptions;
 
 public class ConverterException extends Exception {
 

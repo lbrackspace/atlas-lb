@@ -1,5 +1,5 @@
 
-package org.openstack.atlas.exception;
+package org.openstack.atlas.util.crypto.exception;
 
 public class FileUtilsException extends Exception {
     public FileUtilsException(Throwable cause) {

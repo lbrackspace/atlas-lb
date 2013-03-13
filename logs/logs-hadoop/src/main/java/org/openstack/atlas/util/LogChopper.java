@@ -1,5 +1,6 @@
 package org.openstack.atlas.util;
 
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.io.LbLogsWritable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

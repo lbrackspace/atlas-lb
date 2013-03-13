@@ -12,7 +12,7 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.util.StaticStringUtils;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 // Simulare to an Enumerator but allows Exceptions to be thrown
 public class SequenceFileIterator<K extends Writable, V extends Writable> {

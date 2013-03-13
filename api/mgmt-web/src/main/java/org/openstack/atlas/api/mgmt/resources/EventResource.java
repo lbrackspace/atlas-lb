@@ -5,7 +5,7 @@ import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProv
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerServiceEvents;
 import org.openstack.atlas.service.domain.pojos.DateTimeToolException;
-import org.openstack.atlas.util.converters.exceptions.ConverterException;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
