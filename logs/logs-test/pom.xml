@@ -4,8 +4,8 @@
 
     <parent>
         <groupId>org.openstack.atlas</groupId>
-        <artifactId>atlas-parent</artifactId>
-        <version>1.17.11-SNAPSHOT</version>
+        <artifactId>atlas-logs</artifactId>
+        <version>1.17.15-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-logs-test</artifactId>
@@ -22,11 +22,6 @@
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>

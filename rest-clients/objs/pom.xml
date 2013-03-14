@@ -4,7 +4,7 @@
 
     <parent>
         <groupId>org.openstack.atlas</groupId>
-        <artifactId>atlas-parent</artifactId>
+        <artifactId>atlas-rest-clients</artifactId>
         <version>1.17.15-SNAPSHOT</version>
     </parent>
 

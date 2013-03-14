@@ -4,8 +4,8 @@
     
     <parent>
         <groupId>org.openstack.atlas</groupId>
-        <artifactId>atlas-parent</artifactId>
-        <version>1.17.11-SNAPSHOT</version>
+        <artifactId>atlas-rest-clients</artifactId>
+        <version>1.17.15-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-auth-client</artifactId>
@@ -22,11 +22,6 @@
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-client</artifactId>
             <version>1.8</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.2</version>
         </dependency>
         <dependency>
             <artifactId>atlas-restclients-objs-auth</artifactId>
