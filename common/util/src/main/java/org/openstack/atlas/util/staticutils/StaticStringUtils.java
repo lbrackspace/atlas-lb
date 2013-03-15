@@ -8,17 +8,6 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 public class StaticStringUtils {
-
-    private static final Pattern IS_BLANK_PATTERN = Pattern.compile("[\\s]*");
-
-    public static boolean isEmpty(String st) {
-        return st == null || st.length() == 0;
-    }
-
-    public static boolean isBlank(String st) {
-        return isEmpty(st) || IS_BLANK_PATTERN.matcher(st).matches();
-    }
-
     public static String lpadLong(long val, String pad, int npad) {
         return lpad(Long.toString(val), pad, npad);
     }

@@ -1,9 +1,9 @@
-package com.rackspace.cloud.sum.exp.hibernate;
+package org.openstack.atlas.logs.hibernatetoy;
 
 import java.util.List;
 import java.util.Map;
 import org.hibernate.Transaction;
-import com.rackspace.cloud.sum.exp.hibernate.HibernateUtil;
+import org.openstack.atlas.logs.hibernatetoy.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
@@ -118,6 +118,11 @@ public class HuApp {
     }
 
     public Transaction begin() {
+        return getSession().beginTransaction();
+    }
+
+    public Transaction begin(String dbKey){
+        setDb(dbKey);
         return getSession().beginTransaction();
     }
 

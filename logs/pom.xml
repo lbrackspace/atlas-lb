@@ -18,6 +18,7 @@
         <module>logs-web</module>
         <module>logs-hdfs-cli</module>
         <module>logs-hibernate-toy</module>
+        <module>logs-lzo-faker</module>
     </modules>
 
     <build>

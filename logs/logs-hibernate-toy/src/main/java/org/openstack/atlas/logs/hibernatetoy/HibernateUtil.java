@@ -1,4 +1,4 @@
-package com.rackspace.cloud.sum.exp.hibernate;
+package org.openstack.atlas.logs.hibernatetoy;
 
 import java.util.HashMap;
 import java.util.List;

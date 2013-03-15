@@ -41,6 +41,10 @@ public class StaticDateTimeUtils {
         return new DateTime(years, months, days, hours, mins, secs, millis);
     }
 
+    public static String toApacheDateTime(DateTime dt) {
+        return apacheDateTimeFormat.print(dt);
+    }
+
     public static DateTime parseApacheDateTime(String apacheDateStr, boolean useUTC) {
         if (useUTC) {
             utcApacheDateTimeFormat.parseDateTime(apacheDateStr);

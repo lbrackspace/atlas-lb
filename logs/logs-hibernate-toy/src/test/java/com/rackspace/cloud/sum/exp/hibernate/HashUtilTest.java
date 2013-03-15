@@ -1,5 +1,6 @@
 package com.rackspace.cloud.sum.exp.hibernate;
 
+import org.openstack.atlas.logs.hibernatetoy.HashUtil;
 import java.security.NoSuchAlgorithmException;
 import org.junit.Before;
 import org.junit.AfterClass;

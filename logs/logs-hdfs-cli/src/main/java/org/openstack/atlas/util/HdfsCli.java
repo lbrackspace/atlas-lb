@@ -81,8 +81,6 @@ public class HdfsCli {
         BufferedReader stdin = HdfsCliHelpers.inputStreamToBufferedReader(System.in);
         System.out.printf("\n");
 
-
-
         while (true) {
             try {
                 System.out.printf("hdfs %s$ ", fs.getWorkingDirectory().toUri().toString());
@@ -126,7 +124,7 @@ public class HdfsCli {
                     System.out.printf("cpLocal <localSrc> <localDst> [buffsize] #None hadoop file copy\n");
                     System.out.printf("countLines <zeusFile> <nTicks> [buffSize]\n");
                     System.out.printf("indexLzo <FileName>\n");
-                    System.out.printf("recompressIndex <srcFile> <hdfsDstFile> #Recompress and index lzo file and upload to hdfs");
+                    System.out.printf("recompressIndex <srcFile> <hdfsDstFile> #Recompress and index lzo file and upload to hdfs\n");
                     System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
                     System.out.printf("showCrc <fileName> #Show crc value that would be reported by Zip\n");
                     System.out.printf("printReducers <hdfsDir> #Display the contents of the reducer output\n");

@@ -1,7 +1,5 @@
-package com.rackspace.cloud.sum.exp.hibernate;
+package org.openstack.atlas.logs.hibernatetoy;
 
-import org.openstack.atlas.util.b64aes.Aes;
-import org.openstack.atlas.util.b64aes.PaddingException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -22,6 +21,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 public class HibernateDbConf {
 
@@ -35,6 +35,27 @@ public class HibernateDbConf {
     private String packageName;
     private List<String> classNames;
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("HibernateDbConf{dbKey=").append(dbKey).
+                append(", url=").append(url).
+                append(", user=").append(user).
+                append(", passwd=").append(passwd).
+                append(", driver=").append(driver).
+                append(", dialect=").append(dialect).
+                append(", hbm2ddl=").append(hbm2ddl).
+                append(", packageName=").append(packageName).
+                append(", classNames=");
+        if (classNames == null) {
+            sb.append("null");
+        } else {
+            sb.append(StaticStringUtils.collectionToString(classNames, ", "));
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
     public HibernateDbConf() {
     }
 
@@ -43,42 +64,31 @@ public class HibernateDbConf {
         return conf;
     }
 
-    public static HibernateDbConf newHibernateConf(String fileName, String keyFile) throws UnsupportedEncodingException, FileNotFoundException, IOException, ParseException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidAlgorithmParameterException, PaddingException, java.text.ParseException {
+    public static HibernateDbConf newHibernateConf(String fileName) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException {
         HibernateDbConf conf = new HibernateDbConf();
         String jsonStr = new String(StaticFileUtils.readFile(fileName), "utf-8");
         JSONParser jp = new JSONParser();
         JSONObject jsonConf = (JSONObject) jp.parse(jsonStr);
         List<String> classList = new ArrayList<String>();
-        String key = HibernateStaticUtils.readKeyFromJsonFile(keyFile);
+
         conf.setUrl((String) jsonConf.get("url"));
         conf.setUser((String) jsonConf.get("user"));
-        conf.setPasswd(Aes.b64decrypt_str((String) jsonConf.get("passwd"), key));
+        conf.setPasswd((String) jsonConf.get("passwd"));
         conf.setClassNames(classList);
-        conf.setDbKey((String)jsonConf.get("dbkey"));
-        conf.setDialect((String)jsonConf.get("dialect"));
-        conf.setDriver((String)jsonConf.get("driver"));
-        conf.setPackageName((String)jsonConf.get("package"));
-        conf.setHbm2ddl((String)jsonConf.get("hbm2ddl"));
-        JSONArray classes = (JSONArray)jsonConf.get("classes");
-        int cl = classes.size();
-        for(int i=0;i<cl;i++){
-            classList.add((String)classes.get(i));
+        conf.setDbKey((String) jsonConf.get("dbkey"));
+        conf.setDialect((String) jsonConf.get("dialect"));
+        conf.setDriver((String) jsonConf.get("driver"));
+        conf.setPackageName((String) jsonConf.get("package"));
+        conf.setHbm2ddl((String) jsonConf.get("hbm2ddl"));
+        JSONArray classes = (JSONArray) jsonConf.get("classes");
+        
+        if (classes != null) {
+            int cl = classes.size();
+            for (int i = 0; i < cl; i++) {
+                classList.add((String) classes.get(i));
+            }
         }
         return conf;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        String fmt = "dbKey: %s\nurl: %s\nuser: %s\npasswd: %s\n"
-                + "driver: %s\ndialect: %s\nhdm2ddl: %s\npackage: %s\n";
-        sb.append(String.format(fmt, dbKey, url, user, passwd, driver, dialect, hbm2ddl, packageName));
-        sb.append("Classes:\n");
-        for (String className : classNames) {
-            sb.append(String.format("    %s\n", className));
-        }
-        return sb.toString();
-
     }
 
     public String getDbKey() {
