@@ -23,8 +23,10 @@ import org.springframework.beans.factory.annotation.Required;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.openstack.atlas.util.StaticLogUtils;
 import org.openstack.atlas.util.VerboseLogger;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
@@ -45,7 +47,9 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
         List<CloudFilesZipInfo> zipInfoList = schedulerConfigs.getCloudFilesZipInfoList();
         Collections.sort(zipInfoList); // Sort by accountId and loadbalancerId for Saner debuging
 
-        List<String> failedUploads = new ArrayList<String>();
+        Set<String> failedUploads = new HashSet<String>();
+        Set<String> allFiles = new HashSet<String>();
+        Set<String> accountDirs = new HashSet<String>();
         JobState state = createJob(JobName.ARCHIVE, schedulerConfigs.getInputString());
 
         int totalFilesToUpload = 0;
@@ -56,6 +60,8 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
             String accountIdStr = Integer.toString(accountId);
             String loadBalancerIdStr = Integer.toString(loadbalancerId);
             String localCacheFile = zipInfo.getCacheFile();
+            allFiles.add(localCacheFile); // Keep track of all files
+            accountDirs.add(StaticFileUtils.stripDirectoryFromFileName(localCacheFile));
             try {
                 String lbName = loadBalancerRepository.getLoadBalancerNameById(loadbalancerId, accountId);
                 vlog.printf("LoadBalancer Name: %s", lbName); //TODO: remove
@@ -64,8 +70,6 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
                 vlog.printf("Attempting to send file=%s -> containerName=%s remoteFileName=%s", localCacheFile, containerName, remoteFileName);
 
                 dao.uploadLocalFile(authService.getUser(accountIdStr), containerName, localCacheFile, remoteFileName);
-
-                StaticFileUtils.deleteLocalFile(localCacheFile);
                 LOG.info("Uploaded logFile: " + localCacheFile + "  to cloudfile as " + containerName + "/" + remoteFileName);
             } catch (EntityNotFoundException e) {
                 JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + localCacheFile);
@@ -90,10 +94,22 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
             }
         }
 
-//        File folder = new File(zipInfo.getLocalCacheDir());
-//        for (File runtimeFolder : folder.listFiles()) {
-//            StaticFileUtils.deleteLocalFile(runtimeFolder.getAbsolutePath());
-//        }
+        // Delete the non failed upload jobs
+        Set<String> doomedFiles = new HashSet<String>(allFiles);
+        doomedFiles.removeAll(failedUploads);
+        for (String doomedFile : doomedFiles) {
+            StaticFileUtils.deleteLocalFile(doomedFile);
+        }
+
+        // Attempt to delete any empty account Directories
+        for (String doomedAccountDir : accountDirs) {
+            StaticFileUtils.deleteLocalFile(doomedAccountDir);
+        }
+
+        // Attempt to delete the date dir
+        String dateDir = StaticFileUtils.joinPath(HadoopLogsConfigs.getCacheDir(), fileHour);
+        StaticFileUtils.deleteLocalFile(dateDir);
+
 
         finishJob(state);
         LOG.info("JOB COMPLETED. Total Time Taken for job " + schedulerConfigs.getInputString() + " to complete : " + StaticFileUtils.getTotalTimeTaken(schedulerConfigs.getRunTime()) + " seconds");
