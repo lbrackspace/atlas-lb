@@ -12,6 +12,7 @@ import org.openstack.atlas.atom.jobs.AtomHopperLoadBalancerUsageJob;
 import org.openstack.atlas.atom.mapper.LbaasUsageDataMapper;
 import org.openstack.atlas.atom.pojo.EntryPojo;
 import org.openstack.atlas.atom.util.AHUSLUtil;
+import org.openstack.atlas.atom.util.UsageMarshaller;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
@@ -56,14 +57,16 @@ public class LoadBalancerAHUSLTask implements Runnable {
             for (Usage usageRecord : lbusages) {
                 if (usageRecord.isNeedsPushed()) {
 
-                    EntryPojo entry = LbaasUsageDataMapper.buildUsageEntry(
-                            usageRecord,
-                            configuration,
+                    EntryPojo entry = LbaasUsageDataMapper.buildUsageEntry(usageRecord, configuration,
                             configuration.getString(AtomHopperConfigurationKeys.ahusl_region));
+
+                    String d = configuration.getString(AtomHopperConfigurationKeys.ahusl_log_requests);
+                    if (d != null && d.equals("ENABLED")) {
+                        LOG.debug(String.format("AHUSL ENTRY: ACCOUNTID: %s LBID: %s ENTRY: \n %s \n", usageRecord.getAccountId(), usageRecord.getLoadbalancer().getId(), UsageMarshaller.marshallObject(entry)));
+                    }
 
                     //Set UUID: use for updated usage...
                     usageRecord.setUuid(entry.getContent().getEvent().getId());
-//                    LOG.debug("USAGE UUID: " + usageRecord.getUuid());
 
                     ClientResponse response = null;
                     try {
@@ -86,6 +89,8 @@ public class LoadBalancerAHUSLTask implements Runnable {
                         String body = AHUSLUtil.processResponseBody(response);
                         LOG.info(String.format("body %s\n", body));
                         response.close();
+                        LOG.debug("FAILED ENTRY: ACCOUNT: " + usageRecord.getAccountId() + "LBID" + usageRecord.getLoadbalancer().getId()
+                                + "ENTRY:" + UsageMarshaller.marshallObject(entry) + " :END FAILED ENTRY");
                         usageRecord.setNeedsPushed(true);
                     } else {
                         LOG.error("The connection timed out, updating record for re-push for load balancer: "

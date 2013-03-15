@@ -203,10 +203,8 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
                     initiateThreadMonitorAndTaskExecutors();
 
                     //Process usage rows, send batched rows to tasks@loadBalancerAHUSLTask
-
                     LOG.debug("Setting up the client...");
                     client = new AHUSLClient();
-
                     int totalUsageRowsToSend = 0;
                     List<Usage> lbusages = loadBalancerRepository.getAllUsageNeedsPushed(AHUSLUtil.getStartCal(), AHUSLUtil.getNow());
 
@@ -215,7 +213,6 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
                         int taskCounter = 0;
                         while (totalUsageRowsToSend < lbusages.size()) {
                             processUsage = new ArrayList<Usage>();
-
                             LOG.debug("Processing usage into tasks.. task: " + taskCounter);
                             for (int i = 0; i < nTasks; i++) {
                                 if (totalUsageRowsToSend <= lbusages.size() - 1) {
@@ -226,9 +223,7 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
                                     break;
                                 }
                             }
-
                             taskCounter++;
-
                             taskExecutor.execute(new LoadBalancerAHUSLTask(processUsage, client, authToken, usageRepository)); //TODO: Need to move repository deps...
                         }
                     } else {

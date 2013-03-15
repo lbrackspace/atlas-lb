@@ -81,6 +81,9 @@ public class LbaasUsageDataMapper {
         if (usageRecord.getUuid() != null) {
             //This is an updated usage record, need the reference id from previous record
             usageV1.setReferenceId(usageRecord.getUuid());
+        } else {
+            //They dont want this null...............
+            usageV1.setReferenceId(uuid.toString());
         }
 
 

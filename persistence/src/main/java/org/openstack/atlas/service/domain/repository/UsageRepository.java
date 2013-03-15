@@ -84,7 +84,7 @@ public class UsageRepository {
 
     private String generateBatchInsertQuery(List<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed) values");
+        sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed, uuid) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
