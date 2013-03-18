@@ -30,4 +30,9 @@ public interface StingrayUsageClient {
      */
     Map<String, Long> getTotalBandwidthOut(Host host);
 
+    Long getTotalConnections(Host host, String virtualServerName);
+
+    Long getTotalBandwidthIn(Host host, String virtualServerName);
+
+    Long getTotalBandwidthOut(Host host, String virtualServerName);
 }
