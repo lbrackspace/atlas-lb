@@ -2,7 +2,7 @@ package org.openstack.atlas.atom.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.atom.client.AHUSLClient;
+import org.openstack.atlas.atom.client.AtomHopperClientImpl;
 import org.openstack.atlas.atom.config.AtomHopperConfiguration;
 import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.atom.handler.RejectedExecutionHandler;
@@ -44,7 +44,7 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
     private int corePoolSize = Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_core_size));
     private long keepAliveTime = Long.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_conn_timeout));
 
-    private AHUSLClient client;
+    private AtomHopperClientImpl clientImpl;
 
 
     @Override
@@ -73,7 +73,7 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
 
             try {
                 LOG.debug("Setting up the client...");
-                client = new AHUSLClient();
+                clientImpl = new AtomHopperClientImpl();
 
                 int totalUsageRowsToSend = 0;
                     List<Usage> lbusages = loadBalancerRepository.getAllUsageNeedsPushed(AHUSLUtil.getStartCal(), AHUSLUtil.getNow());
@@ -118,7 +118,7 @@ public class AtomHopperLoadBalancerUsageJob extends Job implements StatefulJob {
             }
 
             LOG.debug("Destroying the client");
-            client.destroy();
+            clientImpl.destroy();
         }
 
         /**
