@@ -17,8 +17,6 @@
     <bean id="cloudFilesDao" class="org.openstack.atlas.cloudfiles.CloudFilesDaoImpl"/>
     <bean id="logDateFormat" class="org.openstack.atlas.util.LogDateFormat"/>
 
-    <bean id="fileSystemUtils" class="org.openstack.atlas.util.FileSystemUtils"/>
-
     <bean id="authService" class="org.openstack.atlas.auth.AuthServiceImpl" scope="prototype" >
         <constructor-arg index="0"  ref="conf"/>
     </bean>
@@ -26,8 +24,6 @@
     <bean id="conf"
           class="org.openstack.atlas.config.LbLogsConfiguration"
           scope="prototype"/>
-
-	<bean id="lbStatsTool" class="org.openstack.atlas.mapreduce.LbStatsTool" />
 
     <bean id="schedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="applicationContextSchedulerContextKey">
@@ -42,10 +38,6 @@
 
                <entry key="logDateFormat">
                    <ref bean="logDateFormat"/>
-               </entry>
-
-               <entry key="fileSystemUtils">
-                   <ref bean="fileSystemUtils"/>
                </entry>
 
                <entry key="conf">
@@ -98,7 +90,6 @@
         <property name="jobClass" value="org.openstack.atlas.scheduler.SystemCleanupJob"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="fileSystemUtils" value-ref="fileSystemUtils"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
@@ -119,7 +110,6 @@
     <bean id="loggableJobExecution" class="org.openstack.atlas.scheduler.execution.LoggableJobExecution">
         <property name="jobStateRepository" ref="jobStateRepository"/>
         <property name="conf" ref="conf"/>
-        <property name="fileSystemUtils" ref="fileSystemUtils"/>
     </bean>
     <bean id="fileWatchdogJobExecution"
           class="org.openstack.atlas.scheduler.execution.FileWatchdogJobExecution"/>

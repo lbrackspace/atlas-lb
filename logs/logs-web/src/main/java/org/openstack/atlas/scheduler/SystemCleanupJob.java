@@ -3,7 +3,6 @@ package org.openstack.atlas.scheduler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.services.JobStateService;
-import org.openstack.atlas.util.FileSystemUtils;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
@@ -18,7 +17,6 @@ public class SystemCleanupJob  extends QuartzJobBean implements StatefulJob {
     private static Log log = LogFactory.getLog(SystemCleanupJob.class);
 
     private JobStateService jobStateService;
-    private FileSystemUtils utils;
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
@@ -34,8 +32,4 @@ public class SystemCleanupJob  extends QuartzJobBean implements StatefulJob {
         this.jobStateService = jobStateService;
     }
 
-    @Required
-    public void setFileSystemUtils(FileSystemUtils utils) {
-        this.utils = utils;
-    }
 }

@@ -6,7 +6,6 @@ import com.rackspacecloud.client.cloudfiles.FilesNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.auth.AuthUser;
-import org.openstack.atlas.util.FileSystemUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -22,12 +21,6 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
 
     private FileTypeMap fileMap = FileTypeMap.getDefaultFileTypeMap();
 
-    private FileSystemUtils fileSystemUtils;
-
-    @Required
-    public void setFileSystemUtils(FileSystemUtils fileSystemUtils) {
-        this.fileSystemUtils = fileSystemUtils;
-    }
 
     public synchronized void uploadLocalFile(AuthUser user, String containerName, String localFileName, String remoteFileName) throws FilesException {
         File localFile = new File(localFileName);

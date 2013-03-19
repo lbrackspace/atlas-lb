@@ -7,14 +7,12 @@ import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.repository.JobStateRepository;
 
-import org.openstack.atlas.util.FileSystemUtils;
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;
 import org.springframework.beans.factory.annotation.Required;
 
 public class LoggableJobExecution {
     protected JobStateRepository jobStateRepository;
-    protected FileSystemUtils utils;
     protected org.openstack.atlas.cfg.Configuration conf;
     protected HdfsUtils hdfsUtils = HadoopLogsConfigs.getHdfsUtils();
 
@@ -52,10 +50,5 @@ public class LoggableJobExecution {
     @Required
     public void setConf(org.openstack.atlas.cfg.Configuration conf) {
         this.conf = conf;
-    }
-
-    @Required
-    public void setFileSystemUtils(FileSystemUtils fileSystemUtils) {
-        //this.utils = fileSystemUtils;
     }
 }
