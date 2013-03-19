@@ -5,15 +5,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.exception.SchedulingException;
-import org.openstack.atlas.mapreduce.LbStatsTool;
 import org.openstack.atlas.scheduler.JobScheduler;
 import org.openstack.atlas.scheduler.MapReduceAggregateLogsJob;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
-import org.openstack.atlas.tools.HadoopConfiguration;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
-import org.openstack.atlas.tools.HadoopTool;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.io.File;
@@ -35,7 +32,6 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
     private static final VerboseLogger vlog = new VerboseLogger(FileMoveJobExecution.class);
     protected String fileHour;
     protected JobScheduler jobScheduler;
-    private HadoopTool hadoopTool;
 
     @Override
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
@@ -72,12 +68,6 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
     @Required
     private void scheduleMapReduceAggregateLogsJob(QuartzSchedulerConfigs schedulerConfigs) throws SchedulingException {
         jobScheduler.scheduleJob(MapReduceAggregateLogsJob.class, schedulerConfigs);
-    }
-
-    @Required
-    public void setLbStatsTool(LbStatsTool lbStatsTool) {
-        //this.hadoopTool = lbStatsTool;
-        this.hadoopTool = null;
     }
 
     private Map<String, JobState> createStateForMovingFiles(String inputString,

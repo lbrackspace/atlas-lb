@@ -9,14 +9,12 @@ import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.exception.SchedulingException;
 import org.openstack.atlas.logs.hadoop.jobs.HadoopJob;
 import org.openstack.atlas.logs.hadoop.jobs.HadoopLogSplitterJob;
-import org.openstack.atlas.mapreduce.LbStatsTool;
 import org.openstack.atlas.scheduler.JobScheduler;
 import org.openstack.atlas.scheduler.SplitLoadBalancerLogsJob;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
-import org.openstack.atlas.tools.HadoopConfiguration;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
-import org.openstack.atlas.tools.HadoopTool;
+
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
@@ -27,13 +25,6 @@ public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution imp
 
     private static final Log LOG = LogFactory.getLog(MapReduceAggregateLogsJobExecution.class);
     private static final VerboseLogger vlog = new VerboseLogger(MapReduceAggregateLogsJobExecution.class);
-    private HadoopTool tool;
-
-    @Required
-    public void setLbStatsTool(LbStatsTool tool) {
-        //this.tool = tool;
-        this.tool = null;
-    }
 
     @Override
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {

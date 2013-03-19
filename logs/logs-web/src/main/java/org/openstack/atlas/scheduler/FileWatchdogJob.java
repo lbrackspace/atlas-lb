@@ -2,7 +2,6 @@ package org.openstack.atlas.scheduler;
 
 import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.scheduler.execution.QuartzExecutable;
-import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,8 +31,6 @@ public class FileWatchdogJob extends BaseMapreduceJob implements StatefulJob {
         LOG.info("running " + getClass() + " on " + schedulerConfigs.getRunTime());
 
         vlog.log(String.format("SchedulerConfig = %s", schedulerConfigs.toString()));
-        String jarPath = findPathJar(DirectoryTool.class);
-        vlog.log("Hadoop Jar path resolved at runtime is: " + jarPath);
         schedulerConfigs.setJobJarPath(HadoopLogsConfigs.getLocalJobsJarPath());
         try {
             execution.execute(createSchedulerInstance(context), schedulerConfigs);

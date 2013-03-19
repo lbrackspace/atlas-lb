@@ -19,7 +19,6 @@ import org.openstack.atlas.scheduler.ArchiveLoadBalancerLogsJob;
 import org.openstack.atlas.scheduler.JobScheduler;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
-import org.openstack.atlas.tools.DirectoryTool;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.openstack.atlas.util.HdfsUtils;
 
@@ -37,12 +36,10 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
 
     private static final VerboseLogger vlog = new VerboseLogger(SplitLoadBalancerLogsJobExecution.class, VerboseLogger.LogLevel.INFO);
     private static final Log LOG = LogFactory.getLog(SplitLoadBalancerLogsJobExecution.class);
-    private DirectoryTool tool;
 
     @Override
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
         // Get reducer Directory
-        tool = null;
         String fileHour = schedulerConfigs.getInputString();
         JobState state = createJob(JobName.FILES_SPLIT, fileHour);
         List<LogReducerOutputValue> zipFileInfoList;
@@ -136,84 +133,6 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
             failJob(state);
             throw new ExecutionException(msg, ex);
         }
-        finishJob(state);
-    }
-
-    @Deprecated
-    public void executeDeprecated(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
-
-        JobState state = createJob(JobName.FILES_SPLIT, schedulerConfigs.getInputString());
-
-        try {
-
-            tool = null;
-            //tool = createTool(LbStatsTool.class);
-            //tool.setupHadoopRun(schedulerConfigs);
-            //String directory = tool.getOutputDirectory();
-
-            FileStatus[] files = new FileStatus[0];
-            //files = hdfsUtils.listStatuses(tool.getOutputDirectory(), false);
-            //LOG.info("No of files in " + directory + " is: " + files.length);
-
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getPath().getName().startsWith("part-")) {
-
-                    Path local = hdfsUtils.moveToLocalCacheDir(files[i].getPath());
-                    SequenceFile.Reader reader = hdfsUtils.getReader(local, true);
-
-                    Text key = new Text();
-                    int seqCount = 0;
-                    String currentKey = null;
-
-                    while (reader.next(key)) {
-                        if (key.toString().equals(currentKey)) {
-                            seqCount++;
-                        } else {
-                            currentKey = key.toString();
-                            seqCount = 0;
-                        }
-
-                        String accountId = getAccount(key.toString());
-                        String loadbalancerId = getLoadBalancerId(key.toString());
-
-                        String cacheLocation = HadoopLogsConfigs.getCacheDir() + "/" + schedulerConfigs.getRawlogsFileTime() + "/" + accountId;
-                        new File(cacheLocation).mkdirs();
-                        String filename = getFileName(loadbalancerId, schedulerConfigs.getRawlogsFileTime());
-
-                        String cacheLocationAndFile = cacheLocation + "/" + filename;
-
-                        File file = new File(cacheLocationAndFile);
-                        if (file.exists()) {
-                            LOG.warn("A file with name " + cacheLocationAndFile + " already exists. This can lead to missing log files as the old files can be overwritten.");
-                            cacheLocationAndFile = cacheLocationAndFile + "_" + i;
-                        }
-
-                        cacheLocationAndFile = cacheLocationAndFile + ".zip";
-
-                        FileBytesWritable val = new FileBytesWritable();
-                        val.setOrder(seqCount);
-                        val.setFileName(cacheLocationAndFile);
-                        reader.getCurrentValue(val);
-                        LOG.info("File Written to: " + cacheLocationAndFile);
-                    }
-
-                    reader.close();
-                    HdfsUtils.deleteLocalFile(local);
-                }
-
-            }
-
-            scheduleArchiveLoadBalancerLogsJob(scheduler, schedulerConfigs);
-        } catch (IOException e) {
-            e.printStackTrace();
-            failJob(state);
-            throw new ExecutionException(e);
-        } catch (Exception e) {
-            e.printStackTrace();
-            failJob(state);
-            throw new ExecutionException(e);
-        }
-
         finishJob(state);
     }
 

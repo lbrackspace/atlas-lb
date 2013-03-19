@@ -6,8 +6,7 @@ import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.repository.JobStateRepository;
-import org.openstack.atlas.tools.DirectoryTool;
-import org.openstack.atlas.tools.HadoopConfiguration;
+
 import org.openstack.atlas.util.FileSystemUtils;
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;
@@ -44,14 +43,7 @@ public class LoggableJobExecution {
         state.setEndTime(new DateTime().getCalendar());
         jobStateRepository.update(state);
     }
-
-    public DirectoryTool createTool(Class jobclass) throws Exception {
-        DirectoryTool d = (DirectoryTool) jobclass.newInstance();
-        d.setConf(conf);
-        d.setFileSystemUtils(utils);
-        return d;
-    }
-
+    
     @Required
     public void setJobStateRepository(JobStateRepository jobStateRepository) {
         this.jobStateRepository = jobStateRepository;

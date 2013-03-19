@@ -20,8 +20,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.hadoop.tools.rumen.HadoopLogsAnalyzer;
-import org.openstack.atlas.tools.HadoopConfiguration;
+
 
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;
