@@ -11,14 +11,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.usagerefactor.generator.PolledUsageRecordGenerator;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Mockito.when;
+import org.openstack.atlas.usagerefactor.generator.PolledUsageRecordGenerator;
 
-@Ignore
+//@Ignore
 @RunWith(Enclosed.class)
 public class UsageRollupProcessorTest {
 
@@ -70,14 +73,19 @@ public class UsageRollupProcessorTest {
 
         @Test
         public void shouldReturnEmptyMapWhenNoPolledRecords() {
-            Map<Integer, List<Usage>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
+            Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
 
             Assert.assertTrue(usagesByLbId.isEmpty());
         }
 
         @Test
         public void shouldReturnARecordWhenOnePolledRecordExists() {
-            
+            List<PolledUsageRecordGenerator.GeneratorPojo> usagePojoList = new ArrayList<PolledUsageRecordGenerator.GeneratorPojo>();
+            PolledUsageRecordGenerator.GeneratorPojo usagePojo = new PolledUsageRecordGenerator.GeneratorPojo(5806065, 1, 1);
+            usagePojoList.add(usagePojo);
+            polledUsageRecords = PolledUsageRecordGenerator.generate(usagePojoList, Calendar.getInstance());
+            Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
+            Assert.assertEquals(1, usagesByLbId.size());
         }
     }
 }

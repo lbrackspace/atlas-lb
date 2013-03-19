@@ -8,7 +8,7 @@ import java.util.List;
 
 public class PolledUsageRecordGenerator {
 
-    public class GeneratorPojo {
+    public static class GeneratorPojo {
         private Integer accountId;
         private Integer loadbalancerId;
         private Integer numRecords;
@@ -18,6 +18,10 @@ public class PolledUsageRecordGenerator {
             this.loadbalancerId = loadbalancerId;
             this.numRecords = numRecords;
         }
+    }
+
+    public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime){
+        return generate(generatorPojoList, initialPollTime, 5);
     }
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime, int pollIntervalInMins) {
