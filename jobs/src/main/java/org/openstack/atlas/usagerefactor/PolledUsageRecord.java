@@ -6,6 +6,7 @@ import java.util.Calendar;
 
 public class PolledUsageRecord {
     private int id;
+    private int accountId;
     private int loadbalancerId;
     private long bandwidthOut;
     private long bandwidthIn;
@@ -15,12 +16,33 @@ public class PolledUsageRecord {
     private int numConnections;
     private String eventType;
 
+    public PolledUsageRecord(int id, int accountId, int loadbalancerId, long bandwidthOut, long bandwidthIn, long bandwidthOutSsl, long bandwidthInSsl, Calendar pollTime, int numConnections, String eventType) {
+        this.id = id;
+        this.accountId = accountId;
+        this.loadbalancerId = loadbalancerId;
+        this.bandwidthOut = bandwidthOut;
+        this.bandwidthIn = bandwidthIn;
+        this.bandwidthOutSsl = bandwidthOutSsl;
+        this.bandwidthInSsl = bandwidthInSsl;
+        this.pollTime = pollTime;
+        this.numConnections = numConnections;
+        this.eventType = eventType;
+    }
+
     public int getId() {
         return id;
     }
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(int accountId) {
+        this.accountId = accountId;
     }
 
     public int getLoadbalancerId() {
