@@ -21,6 +21,7 @@
         <module>cidr</module>
         <module>ca</module>
         <module>crypto-tool</module>
+        <module>exp</module>
     </modules>
 
     <!-- <properties>
