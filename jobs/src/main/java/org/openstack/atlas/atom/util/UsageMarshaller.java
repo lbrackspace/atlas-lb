@@ -1,10 +1,9 @@
 package org.openstack.atlas.atom.util;
 
 import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
+import org.w3c.dom.Node;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import javax.xml.bind.*;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -35,5 +34,19 @@ public class UsageMarshaller {
         marshaller.marshal(object, st);
         String xml = st.toString();
         return xml;
+    }
+
+    public static StringWriter marshallResource(JAXBElement element, JAXBContext context) throws JAXBException {
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", Boolean.TRUE);
+        marshaller.setProperty("jaxb.encoding", "UTF-8");
+        StringWriter writer = new StringWriter();
+        marshaller.marshal(element, writer);
+        return writer;
+    }
+
+    public static JAXBElement unmarshallResource(Object content, JAXBContext context) throws JAXBException {
+        Unmarshaller um = context.createUnmarshaller();
+        return (JAXBElement) um.unmarshal((Node) content);
     }
 }

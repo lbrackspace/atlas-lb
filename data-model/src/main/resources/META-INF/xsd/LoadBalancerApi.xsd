@@ -295,6 +295,7 @@
         <xsd:attribute name="eventType" type="xsd:string" use="optional"/>
         <xsd:attribute name="entryVersion" type="xsd:int"/>
         <xsd:attribute name="needsPushed" type="xsd:int"/>
+        <xsd:attribute name="uuid" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:element name="accountBilling" type="tns:accountBilling"/>
