@@ -7,19 +7,16 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.usagerefactor.generator.PolledUsageRecordGenerator;
+import org.openstack.atlas.usagerefactor.generator.GeneratorPojo;
 
 import java.util.*;
 
-import static org.mockito.Matchers.intThat;
 import static org.mockito.Mockito.when;
-import org.openstack.atlas.usagerefactor.generator.PolledUsageRecordGenerator;
 
-//@Ignore
 @RunWith(Enclosed.class)
 public class UsageRollupProcessorTest {
 
@@ -50,6 +47,7 @@ public class UsageRollupProcessorTest {
             Assert.assertTrue(processedUsages.isEmpty());
         }
 
+        @Ignore
         @Test
         public void shouldCreateOneHourlyRecord() {
             List<PolledUsageRecord> allRecords = polledUsageRepository.getAllRecords(loadbalancerIds);
@@ -78,40 +76,40 @@ public class UsageRollupProcessorTest {
 
         @Test
         public void shouldReturnARecordWhenOnePolledRecordExists() {
-            List<PolledUsageRecordGenerator.GeneratorPojo> usagePojoList = new ArrayList<PolledUsageRecordGenerator.GeneratorPojo>();
-            PolledUsageRecordGenerator.GeneratorPojo usagePojo = new PolledUsageRecordGenerator.GeneratorPojo(5806065, 1, 1);
-            usagePojoList.add(usagePojo);
+            List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
+            usagePojoList.add(new GeneratorPojo(5806065, 1, 1));
             polledUsageRecords = PolledUsageRecordGenerator.generate(usagePojoList, Calendar.getInstance());
             Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
-            Assert.assertEquals(usagePojoList.size(), usagesByLbId.get(1).size());
+
             Assert.assertEquals(usagePojoList.size(), usagesByLbId.size());
+            Assert.assertEquals(usagePojoList.get(0).getNumRecords(), usagesByLbId.get(1).size());
         }
 
         @Test
         public void shouldReturnManyRecordsWhenManyPolledRecordsExistForALoadBalancer(){
-            List<PolledUsageRecordGenerator.GeneratorPojo> usagePojoList = new ArrayList<PolledUsageRecordGenerator.GeneratorPojo>();
-            int randomLBRecordCount = new Random().nextInt(30);
-            PolledUsageRecordGenerator.GeneratorPojo usagePojo = new PolledUsageRecordGenerator.GeneratorPojo(5806065, 1, randomLBRecordCount);
-            usagePojoList.add(usagePojo);
+            List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
+            usagePojoList.add(new GeneratorPojo(5806065, 1, 1, 30));
             polledUsageRecords = PolledUsageRecordGenerator.generate(usagePojoList, Calendar.getInstance());
             Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
-            Assert.assertEquals(usagePojoList.size(), usagesByLbId.get(1).size());
+
             Assert.assertEquals(usagePojoList.size(), usagesByLbId.size());
+            Assert.assertEquals(usagePojoList.get(0).getNumRecords(), usagesByLbId.get(1).size());
         }
 
         @Test
         public void shouldReturnManyRecordsWhenManyPolledRecordsExistForManyLoadBalancers(){
-            List<PolledUsageRecordGenerator.GeneratorPojo> usagePojoList = new ArrayList<PolledUsageRecordGenerator.GeneratorPojo>();
-            int randomLBCount = new Random().nextInt(100);
-            for(int i = 0; i < randomLBCount; i++){
-                int randomLBRecordCount = new Random().nextInt(30);
-                PolledUsageRecordGenerator.GeneratorPojo usagePojo = new PolledUsageRecordGenerator.GeneratorPojo(5806065, i, randomLBRecordCount);
-                usagePojoList.add(usagePojo);
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            int randomLBCount = new Random().nextInt(100) + 1;
+            for(int lbId = 0; lbId < randomLBCount; lbId++){
+                generatorPojos.add(new GeneratorPojo(5806065, lbId, 1, 30));
             }
-            polledUsageRecords = PolledUsageRecordGenerator.generate(usagePojoList, Calendar.getInstance());
+
+            polledUsageRecords = PolledUsageRecordGenerator.generate(generatorPojos, Calendar.getInstance());
             Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
+
+            Assert.assertEquals(generatorPojos.size(), usagesByLbId.size());
             for(int i = 0; i < randomLBCount; i++){
-                Assert.assertEquals(usagePojoList.get(i).getNumRecords().intValue(), usagesByLbId.get(i).size());
+                Assert.assertEquals(generatorPojos.get(i).getNumRecords(), usagesByLbId.get(i).size());
             }
         }
     }

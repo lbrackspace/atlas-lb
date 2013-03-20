@@ -12,12 +12,15 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     @Override
     public Map<Integer, List<PolledUsageRecord>> breakDownUsagesByLbId(List<PolledUsageRecord> polledUsageRecords) {
         Map<Integer, List<PolledUsageRecord>> usagesByLbId = new HashMap<Integer, List<PolledUsageRecord>>();
-        for(PolledUsageRecord polledUsageRecord : polledUsageRecords){
+
+        for (PolledUsageRecord polledUsageRecord : polledUsageRecords) {
             List<PolledUsageRecord> usageList;
-            if (!usagesByLbId.containsKey(polledUsageRecord.getLoadbalancerId())){
+            
+            if (!usagesByLbId.containsKey(polledUsageRecord.getLoadbalancerId())) {
                 usageList = new ArrayList<PolledUsageRecord>();
                 usagesByLbId.put(polledUsageRecord.getLoadbalancerId(), usageList);
             }
+
             usageList = usagesByLbId.get(polledUsageRecord.getLoadbalancerId());
             usageList.add(polledUsageRecord);
         }
@@ -29,7 +32,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     public List<Usage> processRecords(List<PolledUsageRecord> polledUsageRecords) {
         List<Usage> processedRecords = new ArrayList<Usage>();
 
-        if (polledUsageRecords == null || polledUsageRecords.isEmpty()){
+        if (polledUsageRecords == null || polledUsageRecords.isEmpty()) {
             return processedRecords;
         }
 
