@@ -37,7 +37,14 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         }
 
         Map<Integer, List<PolledUsageRecord>> usagesByLbId = breakDownUsagesByLbId(polledUsageRecords);
+        for(Integer lbid : usagesByLbId.keySet()){
+            List<Usage> lbUsageRecords = new ArrayList<Usage>();
+            List<PolledUsageRecord> lbPolledUsageRecords = usagesByLbId.get(lbid);
+            processedRecords.addAll(lbUsageRecords);
+        }
 
         return processedRecords;
     }
+
+
 }
