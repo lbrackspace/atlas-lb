@@ -23,29 +23,7 @@ public class StingraySnmpClientTest {
         address = "10.12.99.19";
         port = "1161";
         community = "public";
-        client = new StingraySnmpClient(address, port, community);
+        client = new StingraySnmpClient(address, port, community,1500,0);
     }
 
-    @Test
-    public void shouldReturnMap() {
-        try {
-            Map<String, Long> map = client.getWalkRequest(OIDConstants.ALL_VS_CURRENT_CONNECTIONS);
-            assertTrue(map.entrySet().size() > 0);
-        } catch (StingraySnmpException sse) {
-            System.out.println(sse.getMessage());
-        }
-    }
-
-    @Test
-    public void shouldReturnMapWithByteCounts() {
-        try {
-            Map<String, Long> map = client.getWalkRequest(OIDConstants.ALL_VS_TOTAL_BYTES_IN);
-            for (Map.Entry<String, Long> entry : map.entrySet()) {
-                System.out.println(entry.toString());
-            }
-//            assertTrue(map.entrySet().size() > 0);
-        } catch (StingraySnmpException sse) {
-            System.out.println(sse.getMessage());
-        }
-    }
 }
