@@ -13,6 +13,18 @@ public class PolledUsageRecordGenerator {
         private Integer loadbalancerId;
         private Integer numRecords;
 
+        public Integer getAccountId() {
+            return accountId;
+        }
+
+        public Integer getLoadbalancerId() {
+            return loadbalancerId;
+        }
+
+        public Integer getNumRecords() {
+            return numRecords;
+        }
+
         public GeneratorPojo(Integer accountId, Integer loadbalancerId, Integer numRecords) {
             this.accountId = accountId;
             this.loadbalancerId = loadbalancerId;
