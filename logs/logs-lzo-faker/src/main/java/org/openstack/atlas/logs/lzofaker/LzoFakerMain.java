@@ -1,12 +1,15 @@
 package org.openstack.atlas.logs.lzofaker;
 
+import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import com.hadoop.compression.lzo.LzopCodec;
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
@@ -57,31 +60,41 @@ public class LzoFakerMain {
         huApp.setDbMap(hConf);
 
         huApp.begin();
-        List<LoadBalancerIdAndName> lbs = new ArrayList<LoadBalancerIdAndName>();
-
-        for (LoadBalancerIdAndName lb : LzoFakerMain.getActiveLoadbalancerIdsAndNames(huApp)) {
-            System.out.printf("%s ", lb.toString());
-            if (useCustomLbs) {
-                if (customLbIds.contains(lb.getLoadbalancerId())) {
-                    lbs.add(lb);
-                    System.out.printf("USEING\n");
-                }
-                System.out.printf("SKIPPING\n");
-            } else {
-                lbs.add(lb);
-                System.out.printf("USEING\n");
-            }
+        List<LoadBalancerIdAndName> lbsIds = getActiveLoadbalancerIdsAndNames(huApp);
+        for (LoadBalancerIdAndName lbId : lbsIds) {
+            System.out.printf("FOUND %d_%d %s\n", lbId.getAccountId(), lbId.getLoadbalancerId(), lbId.getName());
         }
-
         huApp.commit();
 
-        int lbArrayLength = lbs.size();
-        LoadBalancerIdAndName[] lbArray = new LoadBalancerIdAndName[lbArrayLength];
-        Collections.sort(lbs);
-        for (int i = 0; i < lbArrayLength; i++) {
-            lbArray[i] = lbs.get(i);
+        // If the user tried to customize the lbs then replace the orginal lbsIds list
+        if (useCustomLbs) {
+            Map<Integer, LoadBalancerIdAndName> foundIds = new HashMap<Integer, LoadBalancerIdAndName>();
+            for (LoadBalancerIdAndName lbId : lbsIds) {
+                foundIds.put(lbId.getLoadbalancerId(), lbId);
+            }
+            List<LoadBalancerIdAndName> replaceIds = new ArrayList<LoadBalancerIdAndName>();
+            for (Integer lbId : customLbIds) {
+                if (foundIds.containsKey(lbId)) {
+                    replaceIds.add(foundIds.get(lbId));
+                } else {
+                    LoadBalancerIdAndName bogusId = new LoadBalancerIdAndName();
+                    bogusId.setAccountId(911);
+                    bogusId.setLoadbalancerId(lbId);
+                    bogusId.setName("911_" + lbId);
+                    replaceIds.add(bogusId);
+                }
+
+            }
+            lbsIds = replaceIds;
         }
-        lbs = null;
+
+        int lbArrayLength = lbsIds.size();
+        LoadBalancerIdAndName[] lbArray = new LoadBalancerIdAndName[lbArrayLength];
+        Collections.sort(lbsIds);
+        for (int i = 0; i < lbArrayLength; i++) {
+            lbArray[i] = lbsIds.get(i);
+        }
+        lbsIds = null;
         System.out.printf("Found a total of %d active loadbalancers\n", lbArrayLength);
         DateTime dt = StaticDateTimeUtils.OrdinalMillisToDateTime(hourKey * ORD_MILLIS_PER_HOUR, false);
         double stepMillis = (double) REAL_MILLIS_PER_HOUR / (double) nLines;

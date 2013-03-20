@@ -14,6 +14,7 @@ import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.openstack.atlas.util.LogFileNameBuilder;
@@ -23,12 +24,15 @@ import org.springframework.beans.factory.annotation.Required;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.tools.ant.filters.LineContains.Contains;
 import org.openstack.atlas.util.StaticLogUtils;
 import org.openstack.atlas.util.VerboseLogger;
+import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution implements QuartzExecutable {
@@ -42,6 +46,9 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
 
     @Override
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
+        // Build a quick map so we don't have to send thousands of seperate queries to our database
+        Map<LoadBalancerIdAndName, String> lbId2NameMap = createLbIdAndNameMap(loadBalancerRepository.getActiveLoadbalancerIdsAndNames());
+
         String fileHour = schedulerConfigs.getInputString();
         vlog.printf("SchedulerConfigs = %s", schedulerConfigs.toString());
         List<CloudFilesZipInfo> zipInfoList = schedulerConfigs.getCloudFilesZipInfoList();
@@ -63,7 +70,14 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
             allFiles.add(localCacheFile); // Keep track of all files
             accountDirs.add(StaticFileUtils.stripDirectoryFromFileName(localCacheFile));
             try {
-                String lbName = loadBalancerRepository.getLoadBalancerNameById(loadbalancerId, accountId);
+                LoadBalancerIdAndName currentLbIds = new LoadBalancerIdAndName();
+                currentLbIds.setAccountId(accountId);
+                currentLbIds.setLoadbalancerId(loadbalancerId);
+                if (!lbId2NameMap.containsKey(currentLbIds)) {
+                    throw new EntityNotFoundException(String.format("(accoundId=%d, loadbalancerId=%d) not found", accountId, loadbalancerId));
+                }
+
+                String lbName = lbId2NameMap.get(currentLbIds);
                 vlog.printf("LoadBalancer Name: %s", lbName); //TODO: remove
                 String containerName = LogFileNameBuilder.getContainerName(loadBalancerIdStr, lbName, fileHour);
                 String remoteFileName = LogFileNameBuilder.getRemoteFileName(loadBalancerIdStr, lbName, fileHour);
@@ -199,6 +213,19 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
         finishJob(state);
         LOG.info("JOB COMPLETED. Total Time Taken for job " + schedulerConfigs.getInputString() + " to complete : " + StaticFileUtils.getTotalTimeTaken(schedulerConfigs.getRunTime()) + " seconds");
         LOG.info("Failed to upload " + failed.size() + " files out of " + total + " files");
+    }
+
+    // Build AccountId/LbId to name map
+    public Map<LoadBalancerIdAndName, String> createLbIdAndNameMap(List<LoadBalancerIdAndName> dbResults) {
+        Map<LoadBalancerIdAndName, String> nameMap = new HashMap<LoadBalancerIdAndName, String>();
+        for (LoadBalancerIdAndName lbId : dbResults) {
+            LoadBalancerIdAndName key = new LoadBalancerIdAndName();
+            key.setAccountId(lbId.getAccountId());
+            key.setLoadbalancerId(lbId.getLoadbalancerId());
+            String val = lbId.getName();
+            nameMap.put(key, val);
+        }
+        return nameMap;
     }
 
     @Required

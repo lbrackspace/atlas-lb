@@ -1,4 +1,4 @@
-package org.openstack.atlas.logs.lzofaker;
+package org.openstack.atlas.service.domain.pojos;
 
 public class LoadBalancerIdAndName implements Comparable<LoadBalancerIdAndName>{
 
@@ -16,7 +16,7 @@ public class LoadBalancerIdAndName implements Comparable<LoadBalancerIdAndName>{
     }
 
 
-    protected LoadBalancerIdAndName() {
+    public LoadBalancerIdAndName() {
     }
 
     public int getLoadbalancerId() {
@@ -61,10 +61,10 @@ public class LoadBalancerIdAndName implements Comparable<LoadBalancerIdAndName>{
             return 1;
         }
         return 0;
-
     }
 
 
+    // Only compare the ids. This is for use as a key.
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -78,9 +78,6 @@ public class LoadBalancerIdAndName implements Comparable<LoadBalancerIdAndName>{
             return false;
         }
         if (this.accountId != other.accountId) {
-            return false;
-        }
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
             return false;
         }
         return true;
