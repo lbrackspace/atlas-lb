@@ -47,12 +47,28 @@ public class UsageRollupProcessorTest {
             Assert.assertTrue(processedUsages.isEmpty());
         }
 
-        @Ignore
         @Test
         public void shouldCreateOneHourlyRecord() {
-            List<PolledUsageRecord> allRecords = polledUsageRepository.getAllRecords(loadbalancerIds);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(allRecords);
+//            List<PolledUsageRecord> allRecords = polledUsageRepository.getAllRecords(loadbalancerIds);
+//            List<Usage> processedUsages = usageRollupProcessor.processRecords(allRecords);
+//            Assert.assertEquals(1, processedUsages.size());
+            List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
+            usagePojoList.add(new GeneratorPojo(5806065, 1, 1));
+            polledRecords = PolledUsageRecordGenerator.generate(usagePojoList, Calendar.getInstance());
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords);
             Assert.assertEquals(1, processedUsages.size());
+        }
+
+        @Test
+        public void shouldCreateOneHourlyRecordPerLB(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            int randomLBCount = new Random().nextInt(100) + 1;
+            for(int lbId = 0; lbId < randomLBCount; lbId++){
+                generatorPojos.add(new GeneratorPojo(5806065, lbId, 1, 30));
+            }
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, Calendar.getInstance());
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords);
+            Set<Usage> processedUsagesSet = new HashSet<Usage>();
         }
     }
 
