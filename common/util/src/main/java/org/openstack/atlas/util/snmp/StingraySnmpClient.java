@@ -15,17 +15,6 @@ import java.util.regex.Pattern;
 
 public class StingraySnmpClient {
     private Pattern dotSplitter = Pattern.compile("\\.");
-    private enum numberOids {
-        ALL_VS_CURRENT_CONNECTIONS("1.3.6.1.4.1.7146.1.2.2.2.1.9"),
-        ALL_VS_TOTAL_BYTES_IN(""),
-        ALL_VS_TOTAL_BYTES_OUT(""),
-        ONE_VS_CURRENT_CONNECTIONS(""),
-        ONE_VS_TOTAL_BYTES_IN(""),
-        ONE_VS_TOTAL_BYTES_OUT("");
-
-        numberOids(String oid){}
-    }
-    private String vsCurrentConnectionsOID = "1.3.6.1.4.1.7146.1.2.2.2.1.9";
     String address;
     String port;
     String community;
@@ -46,9 +35,9 @@ public class StingraySnmpClient {
         this.nonRepeaters = nonRepeaters;
     }
 
-    public Map<String, Integer> getWalkRequest(String oid) {
-        HashMap<String, Integer> map = new HashMap<String, Integer>();
-        OID targetOID = new OID(vsCurrentConnectionsOID);
+    public Map<String, Long> getWalkRequest(String oid) {
+        HashMap<String, Long> map = new HashMap<String, Long>();
+        OID targetOID = new OID(OIDConstants.ALL_VS_CURRENT_CONNECTIONS);
 
         PDU requestPDU = new PDU();
         requestPDU.add(new VariableBinding(targetOID));
@@ -103,7 +92,7 @@ public class StingraySnmpClient {
                     finished = true;
                 } else {
                     // Dump response.
-                    map.put(getVirtualServerName(vb.getOid().toString()), vb.getVariable().toInt());
+                    map.put(getVirtualServerName(vb.getOid().toString()), vb.getVariable().toLong());
 
                     // Set up the variable binding for the next entry.
                     requestPDU.setRequestID(new Integer32(0));
@@ -119,7 +108,7 @@ public class StingraySnmpClient {
 
     public String getVirtualServerName(String oid) {
         StringBuilder sb = new StringBuilder();
-        if (!oid.startsWith(vsCurrentConnectionsOID + ".")) {
+        if (!oid.startsWith(OIDConstants.ALL_VS_CURRENT_CONNECTIONS + ".")) {
             return "I don't know";
         }
         String[] nums = dotSplitter.split(oid);
