@@ -22,40 +22,44 @@ public class UsageRollupProcessorTest {
 
     @RunWith(MockitoJUnitRunner.class)
     public static class OneHourOfPolledUsageWithNoEvents {
-        private int lbId1 = 1234;
-        private List<Integer> loadbalancerIds;
+        private int accountId = 5806065;
+        private int lbId = 1234;
 
+        private List<Integer> loadbalancerIds;
         @Mock
         private PolledUsageRepository polledUsageRepository;
         private List<PolledUsageRecord> polledRecords;
         private UsageRollupProcessor usageRollupProcessor;
+        private Calendar initialPollTime;
+        private Calendar hourToProcess;
 
         @Before
         public void standUp() {
             loadbalancerIds = new ArrayList<Integer>();
-            loadbalancerIds.add(lbId1);
+            loadbalancerIds.add(lbId);
             usageRollupProcessor = new UsageRollupProcessorImpl();
+            initialPollTime = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
+            hourToProcess = new GregorianCalendar(2013, Calendar.MARCH, 20, 11, 0, 0);
 
-            polledRecords = new ArrayList<PolledUsageRecord>();
+            List<GeneratorPojo> generatorPojoList = new ArrayList<GeneratorPojo>();
+            generatorPojoList.add(new GeneratorPojo(accountId, lbId, 24));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojoList, initialPollTime);
             when(polledUsageRepository.getAllRecords(loadbalancerIds)).thenReturn(polledRecords);
         }
 
         @Test
         public void shouldNotCreateARecord() {
+            polledRecords.clear();
             List<PolledUsageRecord> allRecords = polledUsageRepository.getAllRecords(loadbalancerIds);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(allRecords);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(allRecords, hourToProcess);
             Assert.assertTrue(processedUsages.isEmpty());
         }
 
+        @Ignore
         @Test
         public void shouldCreateOneHourlyRecord() {
-//            List<PolledUsageRecord> allRecords = polledUsageRepository.getAllRecords(loadbalancerIds);
-//            List<Usage> processedUsages = usageRollupProcessor.processRecords(allRecords);
-//            Assert.assertEquals(1, processedUsages.size());
-            List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
-            usagePojoList.add(new GeneratorPojo(5806065, 1, 1));
-            polledRecords = PolledUsageRecordGenerator.generate(usagePojoList, Calendar.getInstance());
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords);
+            List<PolledUsageRecord> allRecords = polledUsageRepository.getAllRecords(loadbalancerIds);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(allRecords, hourToProcess);
             Assert.assertEquals(1, processedUsages.size());
         }
 
@@ -66,14 +70,15 @@ public class UsageRollupProcessorTest {
             for(int lbId = 0; lbId < randomLBCount; lbId++){
                 generatorPojos.add(new GeneratorPojo(5806065, lbId, 1, 30));
             }
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, Calendar.getInstance());
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords);
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Set<Usage> processedUsagesSet = new HashSet<Usage>();
         }
     }
 
     @RunWith(MockitoJUnitRunner.class)
     public static class WhenBreakingPolledRecordsDownByLbId {
+        private Calendar initialPollTime;
         private UsageRollupProcessor usageRollupProcessor;
         private List<PolledUsageRecord> polledUsageRecords;
 
@@ -81,6 +86,7 @@ public class UsageRollupProcessorTest {
         public void standUp() {
             usageRollupProcessor = new UsageRollupProcessorImpl();
             polledUsageRecords = new ArrayList<PolledUsageRecord>();
+            initialPollTime = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
         }
 
         @Test
@@ -94,7 +100,7 @@ public class UsageRollupProcessorTest {
         public void shouldReturnARecordWhenOnePolledRecordExists() {
             List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
             usagePojoList.add(new GeneratorPojo(5806065, 1, 1));
-            polledUsageRecords = PolledUsageRecordGenerator.generate(usagePojoList, Calendar.getInstance());
+            polledUsageRecords = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
             Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
 
             Assert.assertEquals(usagePojoList.size(), usagesByLbId.size());
@@ -105,7 +111,7 @@ public class UsageRollupProcessorTest {
         public void shouldReturnManyRecordsWhenManyPolledRecordsExistForALoadBalancer(){
             List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
             usagePojoList.add(new GeneratorPojo(5806065, 1, 1, 30));
-            polledUsageRecords = PolledUsageRecordGenerator.generate(usagePojoList, Calendar.getInstance());
+            polledUsageRecords = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
             Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
 
             Assert.assertEquals(usagePojoList.size(), usagesByLbId.size());
@@ -120,7 +126,7 @@ public class UsageRollupProcessorTest {
                 generatorPojos.add(new GeneratorPojo(5806065, lbId, 1, 30));
             }
 
-            polledUsageRecords = PolledUsageRecordGenerator.generate(generatorPojos, Calendar.getInstance());
+            polledUsageRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
             Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
 
             Assert.assertEquals(generatorPojos.size(), usagesByLbId.size());
