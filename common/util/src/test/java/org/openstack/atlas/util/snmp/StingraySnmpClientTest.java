@@ -26,4 +26,8 @@ public class StingraySnmpClientTest {
         client = new StingraySnmpClient(address, port, community);
     }
 
+    @Test
+    public void testSomething(){
+    }
+
 }
