@@ -22,7 +22,7 @@ import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.openstack.atlas.util.HdfsUtils;
 
-import org.openstack.atlas.util.VerboseLogger;
+import org.openstack.atlas.util.common.VerboseLogger;
 
 import java.io.File;
 import java.io.IOException;

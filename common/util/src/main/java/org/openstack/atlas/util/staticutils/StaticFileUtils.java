@@ -32,7 +32,7 @@ import java.util.Random;
 import java.util.zip.CRC32;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.util.crypto.exception.FileUtilsException;
+import org.openstack.atlas.util.common.exceptions.FileUtilsException;
 
 import org.openstack.atlas.util.debug.Debug;
 

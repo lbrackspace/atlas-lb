@@ -6,7 +6,7 @@ import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.util.VerboseLogger;
+import org.openstack.atlas.util.common.VerboseLogger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;

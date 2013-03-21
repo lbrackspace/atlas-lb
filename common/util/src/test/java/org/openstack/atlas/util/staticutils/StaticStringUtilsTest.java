@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.util.staticutils;
 
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import java.util.List;

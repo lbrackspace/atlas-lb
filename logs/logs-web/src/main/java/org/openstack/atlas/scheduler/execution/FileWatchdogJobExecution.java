@@ -26,7 +26,7 @@ import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.util.HdfsUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
-import org.openstack.atlas.util.VerboseLogger;
+import org.openstack.atlas.util.common.VerboseLogger;
 
 public class FileWatchdogJobExecution extends LoggableJobExecution implements QuartzExecutable {
 

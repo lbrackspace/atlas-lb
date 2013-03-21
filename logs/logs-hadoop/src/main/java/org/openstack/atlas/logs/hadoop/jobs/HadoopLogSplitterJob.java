@@ -30,7 +30,7 @@ import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
-import org.openstack.atlas.util.VerboseLogger;
+import org.openstack.atlas.util.common.VerboseLogger;
 
 public class HadoopLogSplitterJob extends HadoopJob {
 

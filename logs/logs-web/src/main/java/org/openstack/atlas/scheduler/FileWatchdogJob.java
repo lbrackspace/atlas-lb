@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import java.net.URL;
 import org.openstack.atlas.config.HadoopLogsConfigs;
-import org.openstack.atlas.util.VerboseLogger;
+import org.openstack.atlas.util.common.VerboseLogger;
 
 public class FileWatchdogJob extends BaseMapreduceJob implements StatefulJob {
 

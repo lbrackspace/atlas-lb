@@ -1,5 +1,6 @@
 package org.openstack.atlas.util;
 
+import org.openstack.atlas.util.common.VerboseLogger;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import java.util.logging.Level;
@@ -35,7 +36,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.compress.CompressionInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
-import org.openstack.atlas.util.crypto.exception.DebugException;
+import org.openstack.atlas.util.common.exceptions.DebugException;
 import org.openstack.atlas.exception.ReflectionException;
 import org.openstack.atlas.logs.hadoop.sequencefiles.EndOfIteratorException;
 import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileEntry;

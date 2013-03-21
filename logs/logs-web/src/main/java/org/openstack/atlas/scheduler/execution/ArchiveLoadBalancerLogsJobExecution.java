@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.tools.ant.filters.LineContains.Contains;
 import org.openstack.atlas.util.StaticLogUtils;
-import org.openstack.atlas.util.VerboseLogger;
+import org.openstack.atlas.util.common.VerboseLogger;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 

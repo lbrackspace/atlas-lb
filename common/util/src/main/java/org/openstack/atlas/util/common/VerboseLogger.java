@@ -1,5 +1,5 @@
 
-package org.openstack.atlas.util;
+package org.openstack.atlas.util.common;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
