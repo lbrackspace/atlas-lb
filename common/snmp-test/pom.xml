@@ -7,8 +7,8 @@
         <version>1.17.15-SNAPSHOT</version>
     </parent>
     <groupId>org.openstack.atlas</groupId>
-    <artifactId>atlas-common-exp</artifactId>
-    <name>Openstack :: Atlas :: Common :: Experiments</name>
+    <artifactId>atlas-common-snmp-test</artifactId>
+    <name>Openstack :: Atlas :: Common :: SNMP Tester</name>
     <version>1.17.15-SNAPSHOT</version>
     <packaging>jar</packaging>
 

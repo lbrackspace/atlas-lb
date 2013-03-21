@@ -23,7 +23,7 @@ public class StingraySnmpClientTest {
         address = "10.12.99.19";
         port = "1161";
         community = "public";
-        client = new StingraySnmpClient(address, port, community,1500,0);
+        client = new StingraySnmpClient(address, port, community);
     }
 
 }
