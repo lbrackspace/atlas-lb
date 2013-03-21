@@ -8,30 +8,6 @@ import java.util.List;
 
 public class PolledUsageRecordGenerator {
 
-    public static class GeneratorPojo {
-        private Integer accountId;
-        private Integer loadbalancerId;
-        private Integer numRecords;
-
-        public Integer getAccountId() {
-            return accountId;
-        }
-
-        public Integer getLoadbalancerId() {
-            return loadbalancerId;
-        }
-
-        public Integer getNumRecords() {
-            return numRecords;
-        }
-
-        public GeneratorPojo(Integer accountId, Integer loadbalancerId, Integer numRecords) {
-            this.accountId = accountId;
-            this.loadbalancerId = loadbalancerId;
-            this.numRecords = numRecords;
-        }
-    }
-
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime){
         return generate(generatorPojoList, initialPollTime, 5);
     }
@@ -51,11 +27,11 @@ public class PolledUsageRecordGenerator {
         for (GeneratorPojo generatorPojo : generatorPojoList) {
             pollTime = initialPollTime;
 
-            for (int j = 0; j < generatorPojo.numRecords; j++) {
+            for (int j = 0; j < generatorPojo.getNumRecords(); j++) {
                 PolledUsageRecord polledUsageRecord = new PolledUsageRecord(
                         idCnt++,
-                        generatorPojo.accountId,
-                        generatorPojo.loadbalancerId,
+                        generatorPojo.getAccountId(),
+                        generatorPojo.getLoadbalancerId(),
                         bandwidthOut,
                         bandwidthIn,
                         bandwidthOutSsl,
