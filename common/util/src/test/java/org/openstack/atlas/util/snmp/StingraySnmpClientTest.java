@@ -2,7 +2,6 @@ package org.openstack.atlas.util.snmp;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openstack.atlas.util.snmp.exceptions.StingraySnmpException;
 
 import java.util.Map;
 
@@ -26,4 +25,26 @@ public class StingraySnmpClientTest {
         client = new StingraySnmpClient(address, port, community);
     }
 
+    @Test
+    public void shouldReturnVariableBindingList() {
+        assertTrue(client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS).size() > 0);
+    }
+
+    @Test
+    public void shouldReturnMapOfStringByRawUsage() {
+        Map<String, RawSnmpUsage> map = client.getSnmpUsage();
+        assertTrue(map.entrySet().size() > 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailWithInvalidAddress() {
+        client.setAddress("10.1000.1.1");
+        client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+    }
+
+    @Test
+    public void shouldFailWithIncorrectPort() {
+        client.setPort("1111");
+        client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+    }
 }

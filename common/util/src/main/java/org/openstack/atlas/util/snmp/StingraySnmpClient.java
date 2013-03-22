@@ -1,6 +1,6 @@
 package org.openstack.atlas.util.snmp;
 
-import java.util.ArrayList;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpException;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
@@ -10,11 +10,10 @@ import org.snmp4j.mp.SnmpConstants;
 import org.snmp4j.smi.*;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.regex.Pattern;
 
 public class StingraySnmpClient {
@@ -33,7 +32,6 @@ public class StingraySnmpClient {
         this.address = address;
         this.port = port;
         this.community = community;
-
     }
 
     public Map<String, RawSnmpUsage> getSnmpUsage() {
@@ -63,8 +61,6 @@ public class StingraySnmpClient {
             }
             rawSnmpMap.get(vsName).setTotalConnections(vb.getVariable().toInt());
         }
-
-
 
         // Fetch BytesIn hi bytes
         bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_IN_HI);
@@ -145,8 +141,9 @@ public class StingraySnmpClient {
                 }
 
                 if (responsePDU == null) {
-                    System.out.println("responsePDU == null");
-                    finished = true;
+                    throw new StingraySnmpException("responsePDU == null");
+//                    System.out.println("responsePDU == null");
+//                    finished = true;
                 } else if (responsePDU.getErrorStatus() != 0) {
 //                    System.out.println("responsePDU.getErrorStatus() != 0");
 //                    System.out.println(responsePDU.getErrorStatusText());
