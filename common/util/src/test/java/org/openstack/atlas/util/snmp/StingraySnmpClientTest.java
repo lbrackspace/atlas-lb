@@ -2,7 +2,6 @@ package org.openstack.atlas.util.snmp;
 
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 
@@ -56,10 +55,5 @@ public class StingraySnmpClientTest {
     public void shouldFailWithInvalidCommunity() throws Exception {
         client.setCommunity("expensivePradaBag");
         client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
-    }
-
-    @Ignore
-    @Test
-    public void deleteMeAfterVerificationOfAbilityToPushCode() {
     }
 }
