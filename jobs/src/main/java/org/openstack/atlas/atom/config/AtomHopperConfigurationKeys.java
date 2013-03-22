@@ -17,5 +17,6 @@ public enum AtomHopperConfigurationKeys implements ConfigurationKey {
     ahusl_pool_conn_timeout,
     ahusl_auth_username,
     ahusl_auth_password,
-    ahusl_log_requests
+    ahusl_log_requests,
+    ahusl_log_fail_requests
 }
