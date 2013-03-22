@@ -1,6 +1,8 @@
 package org.openstack.atlas.usagerefactor;
 
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.usagerefactor.helpers.BandwidthUsageHelper;
 
 import java.util.*;
 
@@ -53,11 +55,24 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         if (polledUsageRecordsForLb == null || polledUsageRecordsForLb.isEmpty()) {
             return processedRecords;
         }
-
+        
         Calendar validHourToProcess = stripOutMinsAndSecs(hourToProcess);
 
-        for (PolledUsageRecord polledUsageRecord : polledUsageRecordsForLb) {
-            // TODO: Implement
+        Usage newUsage = createInitializedUsageRecord(polledUsageRecordsForLb.get(0));
+
+        for(int i = 0; i < polledUsageRecordsForLb.size(); i++){
+            if ((i + 2) == polledUsageRecordsForLb.size()){
+                break;
+            }
+            
+            BandwidthUsageHelper.calculateAndSetBandwidth(polledUsageRecordsForLb.get(i), polledUsageRecordsForLb.get(i + 1), newUsage);
+            if (polledUsageRecordsForLb.get(i + 1).getEventType() != null &&
+                !polledUsageRecordsForLb.get(i + 1).getEventType().toLowerCase().equals("null")){
+                newUsage.setEndTime(polledUsageRecordsForLb.get(i + 1).getPollTime());
+                processedRecords.add(newUsage);
+                newUsage = createInitializedUsageRecord(polledUsageRecordsForLb.get(i + 1));
+            }
+            
         }
 
         return processedRecords;
@@ -72,4 +87,17 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         return newCal;
     }
 
+    private Usage createInitializedUsageRecord(PolledUsageRecord polledUsageRecord){
+        LoadBalancer currentLB = new LoadBalancer();
+        currentLB.setId(polledUsageRecord.getLoadbalancerId());
+        currentLB.setAccountId(polledUsageRecord.getAccountId());
+        Usage initUsage =  new Usage();
+        initUsage.setLoadbalancer(currentLB);
+        initUsage.setStartTime(polledUsageRecord.getPollTime());
+        initUsage.setEventType(polledUsageRecord.getEventType());
+        initUsage.setAccountId(polledUsageRecord.getAccountId());
+        initUsage.setNeedsPushed(true);
+        initUsage.setEntryVersion(0);
+        return initUsage;
+    }
 }

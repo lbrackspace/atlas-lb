@@ -63,6 +63,7 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(1, processedUsages.size());
         }
 
+        @Ignore
         @Test
         public void shouldCreateOneHourlyRecordPerLB(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
