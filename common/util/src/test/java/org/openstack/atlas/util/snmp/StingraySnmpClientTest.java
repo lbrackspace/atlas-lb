@@ -1,12 +1,13 @@
 package org.openstack.atlas.util.snmp;
 
+import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class StingraySnmpClientTest {
@@ -21,6 +22,7 @@ public class StingraySnmpClientTest {
 
     @Before
     public void setUp() {
+        BasicConfigurator.configure();
         address = "10.12.99.19";
         port = "1161";
         community = "public";
@@ -48,5 +50,16 @@ public class StingraySnmpClientTest {
     public void shouldFailWithIncorrectPort() throws Exception {
         client.setPort("1111");
         client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+    }
+
+    @Test(expected = StingraySnmpGeneralException.class)
+    public void shouldFailWithInvalidCommunity() throws Exception {
+        client.setCommunity("expensivePradaBag");
+        client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+    }
+
+    @Ignore
+    @Test
+    public void deleteMeAfterVerificationOfAbilityToPushCode() {
     }
 }
