@@ -28,41 +28,25 @@ public class StingraySnmpClientTest {
     }
 
     @Test
-    public void shouldReturnVariableBindingList() {
-        try {
-            assertTrue(client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS).size() > 0);
-        } catch (StingraySnmpGeneralException e) {
-            assertFalse(e.getMessage(), true);
-        }
+    public void shouldReturnVariableBindingList() throws Exception {
+        assertTrue(client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS).size() > 0);
     }
 
     @Test
-    public void shouldReturnMapOfStringByRawUsage() {
-        try {
-            Map<String, RawSnmpUsage> map = client.getSnmpUsage();
-            assertTrue(map.entrySet().size() > 0);
-        } catch (StingraySnmpGeneralException e) {
-            assertFalse(e.getMessage(), true);
-        }
+    public void shouldReturnMapOfStringByRawUsage() throws Exception {
+        Map<String, RawSnmpUsage> map = client.getSnmpUsage();
+        assertTrue(map.entrySet().size() > 0);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldFailWithInvalidAddress() {
+    @Test(expected = StingraySnmpGeneralException.class)
+    public void shouldFailWithInvalidAddress() throws Exception {
         client.setAddress("10.1000.1.1");
-        try {
-            client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
-        } catch (StingraySnmpGeneralException e) {
-            assertFalse(e.getMessage(), true);
-        }
+        client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
     }
 
-    @Test
-    public void shouldFailWithIncorrectPort() {
+    @Test(expected = StingraySnmpGeneralException.class)
+    public void shouldFailWithIncorrectPort() throws Exception {
         client.setPort("1111");
-        try {
-            client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
-        } catch (StingraySnmpGeneralException e) {
-            assertFalse(e.getMessage(), true);
-        }
+        client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
     }
 }

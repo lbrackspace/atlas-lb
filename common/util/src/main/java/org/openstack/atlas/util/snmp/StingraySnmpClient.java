@@ -154,12 +154,11 @@ public class StingraySnmpClient {
         PDU requestPDU = new PDU();
         requestPDU.add(new VariableBinding(targetOID));
         requestPDU.setType(PDU.GETNEXT);
-
-        CommunityTarget target = new CommunityTarget();
-        target.setCommunity(new OctetString(community));
-        target.setAddress(new UdpAddress(address + "/" + port));
-        target.setVersion(SnmpConstants.version1);
         try {
+            CommunityTarget target = new CommunityTarget();
+            target.setCommunity(new OctetString(community));
+            target.setAddress(new UdpAddress(address + "/" + port));
+            target.setVersion(SnmpConstants.version1);
             TransportMapping transport;
             try {
                 transport = new DefaultUdpTransportMapping();
