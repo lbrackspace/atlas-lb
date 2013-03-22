@@ -11,8 +11,8 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
     private long bytesInLo = -1;
     private long bytesOutLo = -1;
     private long bytesOutHi = -1;
-    private int totalConnections = -1;
-    private int concurrentConnections = -1;
+    private long totalConnections = -1;
+    private long concurrentConnections = -1;
 
     @Override
     public String toString() {
@@ -36,8 +36,8 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
         d.writeLong(bytesInLo);
         d.writeLong(bytesOutHi);
         d.writeLong(bytesOutLo);
-        d.writeInt(totalConnections);
-        d.writeInt(concurrentConnections);
+        d.writeLong(totalConnections);
+        d.writeLong(concurrentConnections);
     }
 
     public void readFields(DataInput di) throws IOException {
@@ -46,8 +46,8 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
         this.bytesInLo = di.readLong();
         this.bytesOutHi = di.readLong();
         this.bytesOutLo = di.readLong();
-        this.totalConnections = di.readInt();
-        this.concurrentConnections = di.readInt();
+        this.totalConnections = di.readLong();
+        this.concurrentConnections = di.readLong();
     }
 
     public long deriveBytesIn() {
@@ -98,11 +98,7 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
         this.bytesOutHi = bytesOutHi;
     }
 
-    public int getConcurrentConnections() {
-        return concurrentConnections;
-    }
-
-    public void setConcurrentConnections(int concurrentConnections) {
+    public void setConcurrentConnections(long concurrentConnections) {
         this.concurrentConnections = concurrentConnections;
     }
 
@@ -112,21 +108,9 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
         long oBytesInLo = o.getBytesInLo();
         long oBytesOutHi = o.getBytesOutHi();
         long oBytesOutLo = o.getBytesOutLo();
-        int oConCurrent = o.getConcurrentConnections();
-        int oTotalConnections = o.getTotalConnections();
+        long oConCurrent = o.getConcurrentConnections();
+        long oTotalConnections = o.getTotalConnections();
 
-        if (bytesInHi < oBytesInHi) {
-            return -1;
-        }
-        if (bytesInHi > oBytesInHi) {
-            return 1;
-        }
-        if (bytesInLo < oBytesInLo) {
-            return -1;
-        }
-        if (bytesInLo > oBytesInLo) {
-            return 1;
-        }
         if (bytesOutHi < oBytesOutHi) {
             return -1;
         }
@@ -137,6 +121,18 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
             return -1;
         }
         if (bytesOutLo > oBytesOutLo) {
+            return 1;
+        }
+        if (bytesInHi < oBytesInHi) {
+            return -1;
+        }
+        if (bytesInHi > oBytesInHi) {
+            return 1;
+        }
+        if (bytesInLo < oBytesInLo) {
+            return -1;
+        }
+        if (bytesInLo > oBytesInLo) {
             return 1;
         }
 
@@ -155,11 +151,15 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
         return vsName.compareTo(o.getVsName());
     }
 
-    public int getTotalConnections() {
+    public void setTotalConnections(long totalConnections) {
+        this.totalConnections = totalConnections;
+    }
+
+    public long getTotalConnections() {
         return totalConnections;
     }
 
-    public void setTotalConnections(int totalConnections) {
-        this.totalConnections = totalConnections;
+    public long getConcurrentConnections() {
+        return concurrentConnections;
     }
 }

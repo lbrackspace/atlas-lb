@@ -2,7 +2,7 @@ package org.openstack.atlas.util.snmp;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openstack.atlas.util.snmp.exceptions.StingraySnmpException;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 
 import java.util.Map;
 
