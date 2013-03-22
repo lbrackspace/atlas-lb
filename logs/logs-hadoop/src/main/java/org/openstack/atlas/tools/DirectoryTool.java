@@ -159,6 +159,7 @@ public abstract class DirectoryTool implements HadoopTool {
                                                      HadoopRunner localRunner) throws IOException;
 
     private void createInputDir() {
+        LOG.debug("createInputDir localinputPath: " + new Path(getLocalInputDir()));
         FileInputFormat.setInputPaths(conf.getJobConf(), new Path(getLocalInputDir()));
         FileOutputFormat.setOutputPath(conf.getJobConf(), new Path(createOutputDir()));
         conf.getJobConf().set("hadoop.job.history.user.location", createHistoryOutputDir());

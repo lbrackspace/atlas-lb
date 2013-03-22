@@ -367,7 +367,7 @@ public class UsageRollupProcessorTest {
 
             LoadBalancer lb = new LoadBalancer();
             lb.setId(loadBalancerId);
-            recentUsage = new Usage(lb, 100.0, 100l, 100l, 100.0, 100l, 100l, createUsageStartTime, createUsageEndTime, 5, 1, 0, "CREATE_LOADBALANCER", accountId, 0, false);
+            recentUsage = new Usage(lb, 100.0, 100l, 100l, 100.0, 100l, 100l, createUsageStartTime, createUsageEndTime, 5, 1, 0, "CREATE_LOADBALANCER", accountId, 0, false, null);
             recentUsage.setId(1234);
             regularUsageRecord = new LoadBalancerUsage(accountId, loadBalancerId, 0.0, 100l, 100l, 0l, 0l, 0.0, 0l, 0l, 0l, 0l, regularUsageStartTime, regularUsageEndTime, 12, 1, 0, null);
             loadBalancerUsageSslOn = new LoadBalancerUsage(accountId, loadBalancerId, 0.0, 0l, 0l, 100l, 100l, 0.0, 0l, 0l, 0l, 0l, sslOnUsageStartTime, sslOnUsageEndTime, 0, 1, 5, "SSL_MIXED_ON");
@@ -524,7 +524,7 @@ public class UsageRollupProcessorTest {
 
             LoadBalancer lb = new LoadBalancer();
             lb.setId(loadBalancerId);
-            recentUsage = new Usage(lb, 0.0, 0l, 0l, 0.0, 0l, 0l, createUsageStartTime, createUsageEndTime, 0, 0, 0, "CREATE_LOADBALANCER", accountId, 1, true);
+            recentUsage = new Usage(lb, 0.0, 0l, 0l, 0.0, 0l, 0l, createUsageStartTime, createUsageEndTime, 0, 0, 0, "CREATE_LOADBALANCER", accountId, 1, true, null);
             recentUsage.setId(1234);
             regularUsageRecord = new LoadBalancerUsage(accountId, loadBalancerId, 0.0, 0l, 0l, null, null, 0.0, 0l, 0l, null, null, regularUsageStartTime, regularUsageEndTime, 11, 1, 0, null);
 
@@ -581,7 +581,7 @@ public class UsageRollupProcessorTest {
 
             LoadBalancer lb = new LoadBalancer();
             lb.setId(loadBalancerId);
-            recentUsage = new Usage(lb, 9.09090909090908, 26500l, 783835032l, 0.0, 0l, 0l, createUsageStartTime, createUsageEndTime, 11, 1, 0, "CREATE_LOADBALANCER", accountId, 1, true);
+            recentUsage = new Usage(lb, 9.09090909090908, 26500l, 783835032l, 0.0, 0l, 0l, createUsageStartTime, createUsageEndTime, 11, 1, 0, "CREATE_LOADBALANCER", accountId, 1, true, null);
             recentUsage.setId(1234);
             regularUsageRecord = new LoadBalancerUsage(accountId, loadBalancerId, 0.0, 1038l, 3073l, 27538l, 783838105l, 0.0, 0l, 0l, null, null, regularUsageStartTime, regularUsageEndTime, 12, 1, 0, null);
 
@@ -638,7 +638,7 @@ public class UsageRollupProcessorTest {
 
             LoadBalancer lb = new LoadBalancer();
             lb.setId(loadBalancerId);
-            recentUsage = new Usage(lb, 0.0, 0l, 0l, 0.0, 0l, 0l, createUsageStartTime, createUsageEndTime, 0, 1, BitTag.SERVICENET_LB.tagValue(), "SUSPEND_LOADBALANCER", accountId, 0, false);
+            recentUsage = new Usage(lb, 0.0, 0l, 0l, 0.0, 0l, 0l, createUsageStartTime, createUsageEndTime, 0, 1, BitTag.SERVICENET_LB.tagValue(), "SUSPEND_LOADBALANCER", accountId, 0, false, null);
             recentUsage.setId(1234);
             regularUsageRecord = new LoadBalancerUsage(accountId, loadBalancerId, 0.0, 0l, 0l, 0l, 0l, 0.0, 0l, 0l, 0l, 0l, regularUsageStartTime, regularUsageEndTime, 0, 1, BitTag.SERVICENET_LB.tagValue(), "SUSPENDED_LOADBALANCER");
 

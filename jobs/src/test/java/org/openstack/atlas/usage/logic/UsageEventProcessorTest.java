@@ -284,7 +284,7 @@ public class UsageEventProcessorTest {
             lb.setAccountId(accountId);
             lb.setId(loadBalancerId);
 
-            loadBalancerUsageCreateEvent = new Usage(lb, 0.0, 0l, 0l, 0.0, 0l, 0l, createEventStartTime, createEventEndTime, 5, 1, BitTag.SERVICENET_LB.tagValue(), "CREATE_LOADBALANCER", accountId, 0, false);
+            loadBalancerUsageCreateEvent = new Usage(lb, 0.0, 0l, 0l, 0.0, 0l, 0l, createEventStartTime, createEventEndTime, 5, 1, BitTag.SERVICENET_LB.tagValue(), "CREATE_LOADBALANCER", accountId, 0, false, null);
             loadBalancerUsageSslOnEvent = new LoadBalancerUsageEvent(accountId, loadBalancerId, sslOnEventTime, 1, "SSL_MIXED_ON", 100l, 100l, 1, 0l, 0l, 0);
 
             usageEventEntries = new ArrayList<LoadBalancerUsageEvent>();
@@ -770,6 +770,5 @@ public class UsageEventProcessorTest {
                 Assert.assertEquals(lbUsage1.getTags(), bufferRecord.getTags());
             }
         }
-
     }
 }

@@ -117,6 +117,7 @@ public class FileSystemUtils {
     }
 
     public void makeDirectories(FileSystem fs, String remotePath) throws IOException {
+        LOG.info("Path makeDirectories:" +  new Path(remotePath));
         fs.mkdirs(new Path(remotePath));
     }
 

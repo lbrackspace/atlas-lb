@@ -91,7 +91,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
 
              }
 
-             scheduleArchiveLoadBalancerLogsJob(scheduler, runner);
+//             scheduleArchiveLoadBalancerLogsJob(scheduler, runner);
          } catch (IOException e) {
              e.printStackTrace();
              failJob(state);

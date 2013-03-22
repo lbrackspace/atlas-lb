@@ -29,7 +29,7 @@
                 <sequence>
                     <any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
                 </sequence>
-                <attribute name="version" type="xsd:string" use="required" fixed="1"/>
+                <attribute name="version" type="event:NonEmptyString" use="required" fixed="1"/>
             </restriction>
         </complexContent>
     </complexType>

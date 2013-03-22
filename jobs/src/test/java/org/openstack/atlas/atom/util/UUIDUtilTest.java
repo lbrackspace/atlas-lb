@@ -7,6 +7,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Calendar;
 import java.util.UUID;
 
 @RunWith(Enclosed.class)
@@ -14,12 +15,14 @@ public class UUIDUtilTest {
     public static class WhenGeneratingHashes {
 
         String baseUUID;
+        Calendar timestamp;
 
 
         @Before
         public void standUp() {
-            //UUID=(Region, resourceID, tenantID)
-            baseUUID = "DFW_123_23456";
+            //UUID=(Region, resourceID, tenantID, timestamp)
+            timestamp = Calendar.getInstance();
+            baseUUID = "DFW_123_23456_" + timestamp;
         }
 
         @Test
@@ -37,14 +40,14 @@ public class UUIDUtilTest {
         @Test
         public void shouldNotCreateSameSHA256HashForDifferentString() throws NoSuchAlgorithmException {
             UUID uuid = UUIDUtil.genUUIDSHA256(baseUUID);
-            UUID uuid2 = UUIDUtil.genUUIDSHA256("ORD_123_23456");
+            UUID uuid2 = UUIDUtil.genUUIDSHA256("ORD_123_23456_" + timestamp);
             Assert.assertNotSame(uuid, uuid2);
         }
 
         @Test
         public void shouldNotCreateSameMD5HashForDifferentString() throws NoSuchAlgorithmException {
             UUID uuid = UUIDUtil.genUUIDMD5Hash(baseUUID);
-            UUID uuid2 = UUIDUtil.genUUIDMD5Hash("ORD_123_23456");
+            UUID uuid2 = UUIDUtil.genUUIDMD5Hash("ORD_123_23456_" + timestamp);
             Assert.assertNotSame(uuid, uuid2);
         }
 

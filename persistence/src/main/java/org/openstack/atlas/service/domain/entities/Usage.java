@@ -44,11 +44,13 @@ public class Usage extends Entity implements Serializable {
     private Integer entryVersion;
     @Column(name = "needs_pushed", nullable = false)
     private boolean needsPushed;
+    @Column(name = "uuid", nullable = true)
+    private String uuid;
 
     public Usage() {
     }
 
-    public Usage(LoadBalancer loadbalancer, Double averageConcurrentConnections, Long incomingTransfer, Long outgoingTransfer, Double averageConcurrentConnectionsSsl, Long incomingTransferSsl, Long outgoingTransferSsl, Calendar startTime, Calendar endTime, Integer numberOfPolls, Integer numVips, Integer tags, String eventType, Integer accountId, Integer entryVersion, boolean needsPushed) {
+    public Usage(LoadBalancer loadbalancer, Double averageConcurrentConnections, Long incomingTransfer, Long outgoingTransfer, Double averageConcurrentConnectionsSsl, Long incomingTransferSsl, Long outgoingTransferSsl, Calendar startTime, Calendar endTime, Integer numberOfPolls, Integer numVips, Integer tags, String eventType, Integer accountId, Integer entryVersion, boolean needsPushed, String uuid) {
         this.loadbalancer = loadbalancer;
         this.averageConcurrentConnections = averageConcurrentConnections;
         this.incomingTransfer = incomingTransfer;
@@ -65,6 +67,7 @@ public class Usage extends Entity implements Serializable {
         this.accountId = accountId;
         this.entryVersion = entryVersion;
         this.needsPushed = needsPushed;
+        this.uuid = uuid;
     }
 
     public LoadBalancer getLoadbalancer() {
@@ -195,6 +198,14 @@ public class Usage extends Entity implements Serializable {
         this.needsPushed = needsPushed;
     }
 
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
     public static Usage createNullUsageRecord() {
         Usage currUsageRecord = new Usage();
         currUsageRecord.setAccountId(null);
@@ -209,6 +220,7 @@ public class Usage extends Entity implements Serializable {
         currUsageRecord.setNumVips(null);
         currUsageRecord.setTags(0);
         currUsageRecord.setEventType(null);
+        currUsageRecord.setUuid(null);
         return currUsageRecord;
     }
 }
