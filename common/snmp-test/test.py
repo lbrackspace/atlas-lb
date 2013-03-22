@@ -3,7 +3,8 @@
 import util
 from util import *
 
-(ip,port,community,maxReps,nonReps)=("127.0.0.1","1161","public")
+ssc = StingraySnmpClient()
+ssc.setAddress("10.12.99.19")
+ssc.setPort("1161")
 
-ssc = StingraySnmpClient(ip,port,community)
-
+ssc.getSnmpUsage()

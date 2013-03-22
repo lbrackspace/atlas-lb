@@ -1,6 +1,11 @@
 package org.openstack.atlas.util.snmp;
 
-import org.openstack.atlas.util.snmp.exceptions.StingraySnmpException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.util.common.VerboseLogger;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededException;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpSetupException;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
@@ -10,18 +15,29 @@ import org.snmp4j.mp.SnmpConstants;
 import org.snmp4j.smi.*;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class StingraySnmpClient {
 
     private static final Pattern dotSplitter = Pattern.compile("\\.");
+    private static final VerboseLogger vlog = new VerboseLogger(StingraySnmpClient.class);
+    private static final Log LOG = LogFactory.getLog(StingraySnmpClient.class);
     private String address;
     private String port;
-    private String community;
+    private String community = "public"; // Sounds like a good default
+    private long reportUdpCountEveryNMilliSeconds = 1000;
+    private int maxRetrys = 13;
+    private static final Random rnd = new Random();
+    private static int requestId = 0;
+
+    public static Random getRnd() {
+        return rnd;
+    }
+
+    public StingraySnmpClient() {
+    }
 
     public StingraySnmpClient(String address, String port) {
         this.address = address;
@@ -34,7 +50,23 @@ public class StingraySnmpClient {
         this.community = community;
     }
 
-    public Map<String, RawSnmpUsage> getSnmpUsage() {
+    @Override
+    public String toString() {
+        return "StringraySnmpClient{address=" + address
+                + ", port=" + port
+                + ", community=" + community
+                + ", maxRetries=" + maxRetrys
+                + ", curRequestId=" + getRequestId()
+                + "}";
+    }
+
+    public synchronized static int incRequestId() {
+        requestId = (requestId + 1) % Integer.MAX_VALUE;
+        return requestId;
+    }
+
+    public Map<String, RawSnmpUsage> getSnmpUsage() throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {
+        vlog.printf("in call to getSnmpUsage()");
         Map<String, RawSnmpUsage> rawSnmpMap = new HashMap<String, RawSnmpUsage>();
         List<VariableBinding> bindings;
 
@@ -47,7 +79,7 @@ public class StingraySnmpClient {
                 entry.setVsName(vsName);
                 rawSnmpMap.put(vsName, entry);
             }
-            rawSnmpMap.get(vsName).setConcurrentConnections(vb.getVariable().toInt());
+            rawSnmpMap.get(vsName).setConcurrentConnections(vb.getVariable().toLong());
         }
 
         // Fetch Total Connections
@@ -59,7 +91,7 @@ public class StingraySnmpClient {
                 entry.setVsName(vsName);
                 rawSnmpMap.put(vsName, entry);
             }
-            rawSnmpMap.get(vsName).setTotalConnections(vb.getVariable().toInt());
+            rawSnmpMap.get(vsName).setTotalConnections(vb.getVariable().toLong());
         }
 
         // Fetch BytesIn hi bytes
@@ -112,10 +144,13 @@ public class StingraySnmpClient {
         return rawSnmpMap;
     }
 
-    public List<VariableBinding> getWalkOidBindingList(String oid) {
+    public List<VariableBinding> getWalkOidBindingList(String oid) throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {
+        int retryCount = maxRetrys;
+        int udpsSent = 0;
+        long delay = 1; // Start with a back off of 1 Milliseconds
+        vlog.printf("int call getWalkIudBindingList(%s)", oid);
         List<VariableBinding> bindingsList = new ArrayList<VariableBinding>();
         OID targetOID = new OID(oid);
-
         PDU requestPDU = new PDU();
         requestPDU.add(new VariableBinding(targetOID));
         requestPDU.setType(PDU.GETNEXT);
@@ -124,63 +159,82 @@ public class StingraySnmpClient {
         target.setCommunity(new OctetString(community));
         target.setAddress(new UdpAddress(address + "/" + port));
         target.setVersion(SnmpConstants.version1);
-
         try {
-            TransportMapping transport = new DefaultUdpTransportMapping();
+            TransportMapping transport;
+            try {
+                transport = new DefaultUdpTransportMapping();
+            } catch (IOException ex) {
+                throw new StingraySnmpSetupException("Error setting up DefaultUdpTransportMapping for snmp client", ex);
+            }
             Snmp snmp = new Snmp(transport);
-            transport.listen();
+            try {
+                transport.listen();
+            } catch (IOException ex) {
+                String msg = "Unable to listen to address " + transport.getListenAddress().toString();
+                throw new StingraySnmpSetupException(msg, ex);
+            }
 
             boolean finished = false;
-
+            long startMillis = System.currentTimeMillis();
             while (!finished) {
+                long endMillis = System.currentTimeMillis();
+                if (endMillis - startMillis > reportUdpCountEveryNMilliSeconds) {
+                    vlog.printf("Sent %d udp packets ", udpsSent);
+                    startMillis = endMillis;
+                }
+
                 VariableBinding vb = null;
-                ResponseEvent event = snmp.send(requestPDU, target);
+                ResponseEvent event;
+                try {
+                    event = snmp.send(requestPDU, target);
+                    udpsSent++;
+                } catch (IOException ex) {
+                    throw new StingraySnmpGeneralException("Error sending snmp request zxtm agent", ex);
+                }
                 PDU responsePDU = event.getResponse();
                 if (responsePDU != null) {
                     vb = responsePDU.get(0);
                 }
 
                 if (responsePDU == null) {
-                    throw new StingraySnmpException("responsePDU == null");
-//                    System.out.println("responsePDU == null");
-//                    finished = true;
+                    if (retryCount <= 0) {
+                        throw new StingraySnmpRetryExceededException("Exceeded maxRetries in snmp request to Zxtm agent after " + udpsSent + "udp packets sent");
+                    }
+                    retryCount--;
+                    String msg = String.format("timeout waiting for UDP packet from snmp: waiting %d millis to try again. %d retries left: send %d udps so far", delay, retryCount, udpsSent);
+                    vlog.printf("%s", msg);
+                    Thread.sleep(delay);
+                    delay *= 2; // Use a stable Exponential backoff.
                 } else if (responsePDU.getErrorStatus() != 0) {
-//                    System.out.println("responsePDU.getErrorStatus() != 0");
-//                    System.out.println(responsePDU.getErrorStatusText());
                     finished = true;
                 } else if (vb.getOid() == null) {
-//                    System.out.println("vb.getOid() == null");
                     finished = true;
                 } else if (Null.isExceptionSyntax(vb.getVariable().getSyntax())) {
-//                    System.out.println(
-//                            "Null.isExceptionSyntax(vb.getVariable().getSyntax())");
                     finished = true;
                 } else if (vb.getOid().size() < targetOID.size()) {
-//                    System.out.println("vb.getOid().size() < targetOID.size()");
                     finished = true;
                 } else if (targetOID.leftMostCompare(targetOID.size(),
                         vb.getOid()) != 0) {
-//                    System.out.println("targetOID.leftMostCompare() != 0)");
                     finished = true;
                 } else if (vb.getOid().compareTo(targetOID) <= 0) {
-//                    System.out.println("Variable received is not "
-//                            + "lexicographic successor of requested "
-//                            + "one:");
-//                    System.out.println(vb.toString() + " <= " + targetOID);
                     finished = true;
                 } else {
-                    // Dump response.
                     bindingsList.add(vb);
-
-                    // Set up the variable binding for the next entry.
-                    requestPDU.setRequestID(new Integer32(0));
+                    String vbString = vb.toString();
+                    requestPDU.setRequestID(new Integer32(incRequestId()));
                     requestPDU.set(0, vb);
                 }
             }
-            snmp.close();
-        } catch (Exception e) {
-            System.out.println("Exception: " + e);
+            try {
+                snmp.close();
+            } catch (IOException ex) {
+                throw new StingraySnmpGeneralException("Could not close low lever snmp client", ex);
+            }
+        } catch (Exception ex) {
+            // This is something unexpected
+            throw new StingraySnmpGeneralException("Unhandled exception", ex);
         }
+
         return bindingsList;
     }
 
@@ -218,5 +272,29 @@ public class StingraySnmpClient {
     }
 
     public static void nop() {
+    }
+
+    public static int getRequestId() {
+        return requestId;
+    }
+
+    public int getMaxRetrys() {
+        return maxRetrys;
+    }
+
+    public void setMaxRetrys(int maxRetrys) {
+        this.maxRetrys = maxRetrys;
+    }
+
+    public synchronized static void setRequestId(int aRequestId) {
+        requestId = aRequestId;
+    }
+
+    public long getReportUdpCountEveryNMilliSeconds() {
+        return reportUdpCountEveryNMilliSeconds;
+    }
+
+    public void setReportUdpCountEveryNMilliSeconds(long reportUdpCountEveryNMilliSeconds) {
+        this.reportUdpCountEveryNMilliSeconds = reportUdpCountEveryNMilliSeconds;
     }
 }

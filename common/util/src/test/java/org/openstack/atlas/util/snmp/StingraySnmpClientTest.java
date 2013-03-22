@@ -2,9 +2,11 @@ package org.openstack.atlas.util.snmp;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 
 import java.util.Map;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class StingraySnmpClientTest {
@@ -27,24 +29,40 @@ public class StingraySnmpClientTest {
 
     @Test
     public void shouldReturnVariableBindingList() {
-        assertTrue(client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS).size() > 0);
+        try {
+            assertTrue(client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS).size() > 0);
+        } catch (StingraySnmpGeneralException e) {
+            assertFalse(e.getMessage(), true);
+        }
     }
 
     @Test
     public void shouldReturnMapOfStringByRawUsage() {
-        Map<String, RawSnmpUsage> map = client.getSnmpUsage();
-        assertTrue(map.entrySet().size() > 0);
+        try {
+            Map<String, RawSnmpUsage> map = client.getSnmpUsage();
+            assertTrue(map.entrySet().size() > 0);
+        } catch (StingraySnmpGeneralException e) {
+            assertFalse(e.getMessage(), true);
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailWithInvalidAddress() {
         client.setAddress("10.1000.1.1");
-        client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+        try {
+            client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+        } catch (StingraySnmpGeneralException e) {
+            assertFalse(e.getMessage(), true);
+        }
     }
 
     @Test
     public void shouldFailWithIncorrectPort() {
         client.setPort("1111");
-        client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+        try {
+            client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+        } catch (StingraySnmpGeneralException e) {
+            assertFalse(e.getMessage(), true);
+        }
     }
 }
