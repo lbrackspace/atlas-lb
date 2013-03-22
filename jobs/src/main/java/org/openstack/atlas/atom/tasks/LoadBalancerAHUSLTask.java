@@ -77,15 +77,17 @@ public class LoadBalancerAHUSLTask implements Runnable {
                         usageRecord.setNeedsPushed(false);
                         response.close();
                     } else if (response != null) {
-                        LOG.error("There was an error pushing to the atom hopper service. status code: "
+                        LOG.error("There was an error pushing to the Atom Hopper service. status code: "
                                 + response.getStatus() + " for load balancer: " + usageRecord.getLoadbalancer().getId());
 
-                        String body = AHUSLUtil.processResponseBody(response);
-                        LOG.info(String.format("body %s\n", body));
+                        if (configuration.getString(AtomHopperConfigurationKeys.ahusl_log_fail_requests).equals("ENABLED")) {
+                            String body = AHUSLUtil.processResponseBody(response);
+                            LOG.info(String.format("body %s\n", body));
 
-                        response.close();
-                        LOG.debug("\n FAILED ENTRY: \n ACCOUNT: " + usageRecord.getAccountId() + " LBID: " + usageRecord.getLoadbalancer().getId()
-                                + " \nENTRY: " + entrystring + " :END FAILED ENTRY");
+                            response.close();
+                            LOG.debug("\n FAILED ENTRY: \n ACCOUNT: " + usageRecord.getAccountId() + " LBID: " + usageRecord.getLoadbalancer().getId()
+                                    + " \nENTRY: " + entrystring + " :END FAILED ENTRY");
+                        }
 
                         if (usageRecord.getEventType() != null && usageRecord.getEventType().equals(UsageEvent.DELETE_LOADBALANCER.name())) {
                             usageRecord.setNeedsPushed(false);
