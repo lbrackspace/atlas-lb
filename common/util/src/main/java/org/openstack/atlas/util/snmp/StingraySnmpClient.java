@@ -17,6 +17,7 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 public class StingraySnmpClient {
@@ -63,6 +64,61 @@ public class StingraySnmpClient {
     public synchronized static int incRequestId() {
         requestId = (requestId + 1) % Integer.MAX_VALUE;
         return requestId;
+    }
+
+    public Map<String, Long> getLongOidVals(String oid) throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {
+        Map<String, Long> oidMap = new HashMap<String, Long>();
+        List<VariableBinding> bindings = getWalkOidBindingList(oid);
+        for (VariableBinding vb : bindings) {
+            String vsName = getVirtualServerName(vb.getOid().toString());
+            oidMap.put(vsName, new Long(vb.getVariable().toLong()));
+        }
+        return oidMap;
+    }
+
+    public Map<String, Long> getAllBandWidthIn() throws StingraySnmpRetryExceededException, StingraySnmpSetupException, StingraySnmpGeneralException {
+        Map<String, Long> bytesIn64bit = new HashMap<String, Long>();
+
+        Map<String, Long> bytesInHi = getLongOidVals(OIDConstants.VS_BYTES_IN_HI);
+        Map<String, Long> bytesInLo = getLongOidVals(OIDConstants.VS_BYTES_IN_LO);
+        Set<String> vsNames = new HashSet<String>();
+        vsNames.addAll(bytesInHi.keySet());
+        vsNames.addAll(bytesInLo.keySet());
+        for (String vsName : vsNames) {
+            if (!bytesInHi.containsKey(vsName) || !bytesInLo.containsKey(vsNames)) {
+                continue; // either the high or low byte was missing so skip this entry
+            }
+            long hi = bytesInHi.get(vsName);
+            long lo = bytesInLo.get(vsName);
+            bytesIn64bit.put(vsName, (hi << 32) + lo);
+        }
+        return bytesIn64bit;
+    }
+
+    public Map<String, Long> getAllBandWidthOut() throws StingraySnmpRetryExceededException, StingraySnmpSetupException, StingraySnmpGeneralException {
+        Map<String, Long> bytesOut64bit = new HashMap<String, Long>();
+        Map<String, Long> bytesOutHi = getLongOidVals(OIDConstants.VS_BYTES_OUT_HI);
+        Map<String, Long> bytesOutLo = getLongOidVals(OIDConstants.VS_BYTES_OUT_LO);
+        Set<String> vsNames = new HashSet<String>();
+        vsNames.addAll(bytesOutHi.keySet());
+        vsNames.addAll(bytesOutLo.keySet());
+        for (String vsName : vsNames) {
+            if (!bytesOutHi.containsKey(vsName) || !bytesOutLo.containsKey(vsNames)) {
+                continue; // either the high or low byte was missing so skip this entry
+            }
+            long hi = bytesOutHi.get(vsName);
+            long lo = bytesOutLo.get(vsName);
+            bytesOut64bit.put(vsName, (hi << 32) | lo);
+        }
+        return bytesOut64bit;
+    }
+
+    public Map<String, Long> getAllTotalConnections() throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {
+        return getLongOidVals(OIDConstants.VS_TOTAL_CONNECTIONS);
+    }
+
+    public Map<String, Long> getAllConcurrentConnections() throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {
+        return getLongOidVals(OIDConstants.VS_CURRENT_CONNECTIONS);
     }
 
     public Map<String, RawSnmpUsage> getSnmpUsage() throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {
@@ -200,7 +256,7 @@ public class StingraySnmpClient {
                         throw new StingraySnmpRetryExceededException("Exceeded maxRetries in snmp request to Zxtm agent after " + udpsSent + "udp packets sent");
                     }
                     retryCount--;
-                    String msg = String.format("timeout waiting for UDP packet from snmp: waiting %d millis to try again. %d retries left: send %d udps so far", delay, retryCount, udpsSent);
+                    String msg = String.format("timeout waiting for UDP packet from snmp: waiting %d millis to try again. %d retries left: sent %d udps so far", delay, retryCount, udpsSent);
                     vlog.printf("%s", msg);
                     Thread.sleep(delay);
                     delay *= 2; // Use a stable Exponential backoff.
@@ -227,7 +283,7 @@ public class StingraySnmpClient {
             try {
                 snmp.close();
             } catch (IOException ex) {
-                throw new StingraySnmpGeneralException("Could not close low lever snmp client", ex);
+                throw new StingraySnmpGeneralException("Could not close low level snmp client", ex);
             }
         } catch (Exception ex) {
             // This is something unexpected

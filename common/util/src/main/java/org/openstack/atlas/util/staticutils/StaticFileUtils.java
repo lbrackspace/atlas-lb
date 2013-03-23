@@ -2,6 +2,8 @@ package org.openstack.atlas.util.staticutils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -13,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.DateFormat;
@@ -535,7 +538,6 @@ public class StaticFileUtils {
         return startDate;
     }
 
-
     public static String getMonthYearFromFileDate(String dateString) {
         String monthYear = "";
         try {
@@ -558,6 +560,10 @@ public class StaticFileUtils {
             e.printStackTrace();
         }
         return monthYear;
+    }
+
+    public static BufferedReader inputStreamToBufferedReader(InputStream is) {
+        return new BufferedReader(new InputStreamReader(is), DEFAULT_BUFFSIZE);
     }
 
     public static Random getRnd() {

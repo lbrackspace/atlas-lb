@@ -26,6 +26,7 @@ public class StingraySnmpClientTest {
         port = "1161";
         community = "public";
         client = new StingraySnmpClient(address, port, community);
+        client.setMaxRetrys(1);
     }
 
     @Test

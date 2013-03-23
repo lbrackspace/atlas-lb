@@ -60,16 +60,16 @@ public class StaticStringUtilsTest {
         String out = "";
         Set<String> testSet = new HashSet<String>();
 
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
 
         testSet.add("test1");
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
 
         testSet.add("test2");
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
 
         testSet.add("test3");
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
 
     }
 
@@ -78,23 +78,31 @@ public class StaticStringUtilsTest {
         String out = "";
         List<String> testSet = new ArrayList<String>();
 
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
         assertTrue(out.equals("[]"));
         assertFalse(out.equals(""));
 
         testSet.add("test1");
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
         assertTrue(out.equals("[test1]"));
         assertFalse(out.equals(""));
 
         testSet.add("test2");
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
         assertTrue(out.equals("[test1, test2]"));
         assertFalse(out.equals(""));
 
         testSet.add("test3");
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
         assertTrue(out.equals("[test1, test2, test3]"));
         assertFalse(out.equals(""));
+    }
+
+    @Test
+    public void testStripBlankArgs() {
+        String line = " arg1 arg2 arg3 arg4   ";
+        String[] args = StaticStringUtils.stripBlankArgs(line);
+        assertArrayEquals(new String[]{"arg1", "arg2", "arg3", "arg4"}, args);
+
     }
 }

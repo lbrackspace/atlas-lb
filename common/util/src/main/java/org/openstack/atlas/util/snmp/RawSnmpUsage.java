@@ -30,31 +30,18 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
 
     }
 
-    public void write(DataOutput d) throws IOException {
-        d.writeUTF(vsName);
-        d.writeLong(bytesInHi);
-        d.writeLong(bytesInLo);
-        d.writeLong(bytesOutHi);
-        d.writeLong(bytesOutLo);
-        d.writeLong(totalConnections);
-        d.writeLong(concurrentConnections);
-    }
 
-    public void readFields(DataInput di) throws IOException {
-        this.vsName = di.readUTF();
-        this.bytesInHi = di.readLong();
-        this.bytesInLo = di.readLong();
-        this.bytesOutHi = di.readLong();
-        this.bytesOutLo = di.readLong();
-        this.totalConnections = di.readLong();
-        this.concurrentConnections = di.readLong();
-    }
-
-    public long deriveBytesIn() {
+    public Long deriveBytesIn() {
+        if(bytesInHi<0 || bytesInLo<0){
+            return null;
+        }
         return ((bytesInHi & 0xffffffff) << 32) | (bytesInLo & 0xffffffff);
     }
 
-    public long deriveBytesOut() {
+    public Long deriveBytesOut() {
+        if(bytesOutHi < 0 || bytesOutLo<0){
+            return null;
+        }
         return ((bytesOutHi & 0xffffffff) << 32) | (bytesOutLo & 0xffffffff);
     }
 
