@@ -99,7 +99,7 @@ public class SnmpMain {
                     } else {
                         client = defaultClient;
                     }
-                    System.out.printf("Useing client %s\n",client.toString());
+                    System.out.printf("Useing client %s\n", client.toString());
                     usageList.addAll(client.getSnmpUsage().values());
                 } else if (cmd.equals("set_comparator") && args.length >= 2) {
                     String compArg = args[1].toLowerCase();

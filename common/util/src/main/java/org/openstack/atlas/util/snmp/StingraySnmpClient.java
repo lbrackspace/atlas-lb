@@ -70,7 +70,7 @@ public class StingraySnmpClient {
         Map<String, Long> oidMap = new HashMap<String, Long>();
         List<VariableBinding> bindings = getWalkOidBindingList(oid);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerName(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
             oidMap.put(vsName, new Long(vb.getVariable().toLong()));
         }
         return oidMap;
@@ -85,7 +85,7 @@ public class StingraySnmpClient {
         vsNames.addAll(bytesInHi.keySet());
         vsNames.addAll(bytesInLo.keySet());
         for (String vsName : vsNames) {
-            if (!bytesInHi.containsKey(vsName) || !bytesInLo.containsKey(vsNames)) {
+            if (!bytesInHi.containsKey(vsName) || !bytesInLo.containsKey(vsName)) {
                 continue; // either the high or low byte was missing so skip this entry
             }
             long hi = bytesInHi.get(vsName);
@@ -103,7 +103,7 @@ public class StingraySnmpClient {
         vsNames.addAll(bytesOutHi.keySet());
         vsNames.addAll(bytesOutLo.keySet());
         for (String vsName : vsNames) {
-            if (!bytesOutHi.containsKey(vsName) || !bytesOutLo.containsKey(vsNames)) {
+            if (!bytesOutHi.containsKey(vsName) || !bytesOutLo.containsKey(vsName)) {
                 continue; // either the high or low byte was missing so skip this entry
             }
             long hi = bytesOutHi.get(vsName);
@@ -129,7 +129,7 @@ public class StingraySnmpClient {
         // Fetch Current Connections
         bindings = getWalkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerName(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -141,7 +141,7 @@ public class StingraySnmpClient {
         // Fetch Total Connections
         bindings = getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerName(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -153,7 +153,7 @@ public class StingraySnmpClient {
         // Fetch BytesIn hi bytes
         bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_IN_HI);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerName(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -165,7 +165,7 @@ public class StingraySnmpClient {
         // Fetch Bytes In Lo
         bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_IN_LO);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerName(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -177,7 +177,7 @@ public class StingraySnmpClient {
         // Fetch Bytes out Hi
         bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_OUT_HI);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerName(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -189,7 +189,7 @@ public class StingraySnmpClient {
         // Fetch Bytes Out Lo
         bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_OUT_LO);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerName(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -293,7 +293,18 @@ public class StingraySnmpClient {
         return bindingsList;
     }
 
-    public static String getVirtualServerName(String oid) {
+    public static String getOidFromVirtualServerName(String baseOid, String vsName) {
+        StringBuilder sb = new StringBuilder();
+        char[] vsChars = vsName.toCharArray();
+        sb.append(baseOid);
+        sb.append(".").append(vsChars.length);
+        for (int i = 0; i < vsChars.length; i++) {
+            sb.append(".").append((int) vsChars[i]);
+        }
+        return sb.toString();
+    }
+
+    public static String getVirtualServerNameFromOid(String oid) {
         StringBuilder sb = new StringBuilder();
         String[] nums = dotSplitter.split(oid);
         for (int i = 14; i < nums.length; i++) {
