@@ -1,20 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-   This is a 1.0 XML Schema, generated from a 1.1 schema.
-   The purpose of the schema is to enable support for XSD 1.0 processors.
-   The official schema is the 1.1 version from which this schema was defined.
-   This schema misses some critical checks that are only performed in the 1.1 version.
-   Validation at the usage layer will always use the 1.1 schema.
--->
-<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:event="http://docs.rackspace.com/core/event" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://www.w3.org/2005/Atom">
+<?xml version="1.0"?>
 
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:event="http://docs.rackspace.com/core/event" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" xmlns:xerces="http://xerces.apache.org" xmlns:saxon="http://saxon.sf.net/" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://www.w3.org/2005/Atom">
 
+    
 
     <import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/core/event" schemaLocation="core.xsd"/>
-
-
-    <xsd:import vc:minVersion="1.0" vc:maxVersion="1.1" namespace="http://docs.rackspace.com/usage/lbaas"
-                schemaLocation="ProductExtension-LBaaS.xsd"/>
 
     <element name="entry" type="atom:UsageEntry"/>
 
@@ -27,7 +17,7 @@
                 </html:p>
             </documentation>
         </annotation>
-
+        
         <!--
             Order matters in 1.0 land :-(
         -->
@@ -36,16 +26,40 @@
             <element name="id" type="xsd:anyURI" minOccurs="0"/>
             <element name="updated" type="xsd:dateTime" minOccurs="0"/>
             <element name="category" type="atom:UsageCategory" minOccurs="0" maxOccurs="20"/>
-            <element name="content" type="atom:UsageContent"/>
+            <element name="content" type="atom:UsageContent">
+            </element>
             <any maxOccurs="20" minOccurs="0" processContents="skip"/>
         </sequence>
+        <anyAttribute processContents="skip"/>
+        
+    </complexType>
+
+    <complexType name="BaseContent" abstract="true"/>
+
+    <complexType name="LooseContent" mixed="true">
+        <complexContent>
+            <extension base="atom:BaseContent">
+                <sequence>
+                    <any minOccurs="0" processContents="skip"/>
+                </sequence>
+                <attribute name="type" type="xsd:string" use="required"/>
+                <anyAttribute processContents="skip"/>
+            </extension>
+        </complexContent>
     </complexType>
 
     <complexType name="UsageContent">
-        <sequence>
-            <element ref="event:event"/>
-        </sequence>
-        <attribute name="type" type="xsd:string" fixed="application/xml" use="required"/>
+        <complexContent>
+            <extension base="atom:BaseContent">
+                <sequence>
+                    <choice>
+                        <element ref="event:event"/>
+                        
+                    </choice>
+                </sequence>
+                <attribute name="type" type="xsd:string" fixed="application/xml" use="required"/>
+            </extension>
+        </complexContent>
     </complexType>
 
     <complexType name="UsageCategory">

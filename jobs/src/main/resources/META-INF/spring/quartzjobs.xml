@@ -116,7 +116,7 @@
     </bean>
     <bean id="lbUsageRollupJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="lbUsageRollupJob"/>
-        <property name="cronExpression" value="0 0 * * * ?"/>
+        <property name="cronExpression" value="0 */5 * * * ?"/>
         <!-- run every hour -->
     </bean>
 

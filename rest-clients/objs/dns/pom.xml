@@ -4,8 +4,8 @@
 
     <parent>
         <groupId>org.openstack.atlas</groupId>
-        <artifactId>atlas-parent</artifactId>
         <version>1.18.0-SNAPSHOT</version>
+        <artifactId>atlas-restclients-objects</artifactId>
     </parent>
 
     <artifactId>atlas-restclients-objs-dns</artifactId>

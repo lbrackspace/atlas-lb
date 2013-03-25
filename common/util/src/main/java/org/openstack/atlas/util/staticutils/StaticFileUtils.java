@@ -1,5 +1,6 @@
 package org.openstack.atlas.util.staticutils;
 
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,12 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import java.util.zip.CRC32;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.util.common.exceptions.FileUtilsException;
 
 import org.openstack.atlas.util.debug.Debug;
+import java.util.zip.CRC32;
 
 public class StaticFileUtils {
 

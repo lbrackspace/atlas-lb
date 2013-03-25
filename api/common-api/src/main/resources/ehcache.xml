@@ -26,7 +26,7 @@
                             Optional attribute. A value of 0 means that an Element can idle for infinity
         timeToLiveSeconds - Sets the time to live for an element before it expires.
                             i.e. The maximum time between creation time and when an element expires.
-                            Is only used if the element is not eternal.
+                            Is only used if the element isw not eternal.
         overflowToDisk    - Sets whether elements can overflow to disk when the in-memory cache
                             has reached the maxInMemory limit.
 

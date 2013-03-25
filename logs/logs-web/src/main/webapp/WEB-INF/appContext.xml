@@ -66,6 +66,7 @@
         <property name="triggers">
             <list>
                 <ref bean="runFileWatchdogTrigger"/>
+                <ref bean="runArchiveLogsTrigger"/>
                 <ref bean="runSystemCleanupTrigger"/>
             </list>
         </property>
@@ -79,11 +80,22 @@
         <property name="jobClass" value="org.openstack.atlas.scheduler.FileWatchdogJob"/>
     </bean>
 
+    <bean name="archiveLogsJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="org.openstack.atlas.scheduler.ArchiveLoadBalancerLogsJob"/>
+    </bean>
+
     <bean id="runFileWatchdogTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="fileWatchdogJob"/>
         <!--<property name="startDelay" value="300"/>-->
         <!--<property name="repeatInterval" value="${job.repeat.interval}"/>-->
         <property name="cronExpression" value="${job.repeat.interval}" />
+    </bean>
+
+    <bean id="runArchiveLogsTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="archiveLogsJob"/>
+        <!--<property name="startDelay" value="300"/>-->
+        <!--<property name="repeatInterval" value="${job.repeat.interval}"/>-->
+        <property name="cronExpression" value="${job.repeat.archive.interval}" />
     </bean>
 
     <bean name="systemCleanupJob" class="org.springframework.scheduling.quartz.JobDetailBean">

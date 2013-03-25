@@ -13,8 +13,8 @@ import ru.hh.jersey.hchttpclient.ApacheHttpClient;
 
 import javax.ws.rs.core.MediaType;
 
-public class AHUSLClient {
-    private final Log LOG = LogFactory.getLog(AHUSLClient.class);
+public class AtomHopperClientImpl implements AtomHopperClient {
+    private final Log LOG = LogFactory.getLog(AtomHopperClientImpl.class);
     private static Configuration configuration = new AtomHopperConfiguration();
 
 
@@ -22,7 +22,7 @@ public class AHUSLClient {
     private static final String TOKEN_HEADER = "X-AUTH-TOKEN" ;
     private ApacheHttpClient client;
 
-    public AHUSLClient(String endPoint, ApacheHttpClient client) {
+    public AtomHopperClientImpl(String endPoint, ApacheHttpClient client) {
         this.endPoint = endPoint;
         if (endPoint == null) {
             this.endPoint = configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint);
@@ -36,7 +36,7 @@ public class AHUSLClient {
      *
      * @throws Exception
      */
-    public AHUSLClient() throws Exception {
+    public AtomHopperClientImpl() throws Exception {
         this(configuration.getString(AtomHopperConfigurationKeys.atom_hopper_endpoint), AHUSLClientHandler.createHttpClient());
     }
 
@@ -54,6 +54,7 @@ public class AHUSLClient {
      * @param entry the object to post
      * @return the ClientResponse
      */
+    @Override
     public ClientResponse postEntry(Object entry) throws Exception {
         ClientResponse response = null;
         try {
@@ -76,6 +77,7 @@ public class AHUSLClient {
      * @param entry the object to post
      * @return the ClientResponse
      */
+    @Override
     public ClientResponse postEntryWithToken(Object entry, String token) throws Exception {
         ClientResponse response = null;
         try {
