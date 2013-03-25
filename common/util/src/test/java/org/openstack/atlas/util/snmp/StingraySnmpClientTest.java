@@ -1,18 +1,18 @@
 package org.openstack.atlas.util.snmp;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
-import static org.openstack.atlas.util.snmp.StingraySnmpClient.getVirtualServerNameFromOid;
-import static org.openstack.atlas.util.snmp.StingraySnmpClient.getOidFromVirtualServerName;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.openstack.atlas.util.snmp.StingraySnmpClient.getOidFromVirtualServerName;
+import static org.openstack.atlas.util.snmp.StingraySnmpClient.getVirtualServerNameFromOid;
 
 public class StingraySnmpClientTest {
 
@@ -84,6 +84,68 @@ public class StingraySnmpClientTest {
             String vsName = ent.getValue();
             String baseOid = "1.3.6.1.4.1.7146.1.2.2.2.1.9";
             assertEquals(oid, getOidFromVirtualServerName(baseOid, vsName));
+        }
+    }
+
+    @Test
+    public void testThreadRequestsAgainstAllStagingHosts() {
+        final String ipAddress1 = "10.12.99.19"; // This is staging node n01
+        final String ipAddress2 = "10.12.99.20"; // This is staging node n02
+        final String ipAddress3 = "10.12.99.21"; // This is staging node n03
+        final String ipAddress4 = "10.12.99.22"; // This is staging node n04
+        final String baseOid = "1.3.6.1.4.1.7146.1.2.2.2.1.9";
+        Runnable run1 = new Runnable() {
+            public void run() {
+                client.setAddress(ipAddress1);
+                System.out.println("First run! address: " + ipAddress1);
+                try {
+                    client.getWalkOidBindingList(baseOid);
+                } catch(Exception e) {
+                }
+            }
+        };
+        Runnable run2 = new Runnable() {
+            public void run() {
+                client.setAddress(ipAddress2);
+                System.out.println("Second run! address: " + ipAddress2);
+                try {
+                    client.getWalkOidBindingList(baseOid);
+                } catch(Exception e) {
+                }
+            }
+        };
+        Runnable run3 = new Runnable() {
+            public void run() {
+                client.setAddress(ipAddress3);
+                System.out.println("Third run! address: " + ipAddress3);
+                try {
+                    client.getWalkOidBindingList(baseOid);
+                } catch(Exception e) {
+                }
+            }
+        };
+        Runnable run4 = new Runnable() {
+            public void run() {
+                client.setAddress(ipAddress4);
+                System.out.println("Fourth run! address: " + ipAddress4);
+                try {
+                    client.getWalkOidBindingList(baseOid);
+                } catch(Exception e) {
+                }
+            }
+        };
+        Thread thread1 = new Thread(run1);
+        Thread thread2 = new Thread(run2);
+        Thread thread3 = new Thread(run3);
+        Thread thread4 = new Thread(run4);
+
+        thread1.start();
+        thread2.start();
+        thread3.start();
+        thread4.start();
+        try {
+            Thread.currentThread().sleep(1000);
+        } catch(InterruptedException ie) {
         }
     }
 }
