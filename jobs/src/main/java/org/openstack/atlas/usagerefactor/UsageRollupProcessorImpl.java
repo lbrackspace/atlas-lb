@@ -55,7 +55,6 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         if (polledUsageRecordsForLb == null || polledUsageRecordsForLb.isEmpty()) {
             return processedRecords;
         }
-        
         Calendar validHourToProcess = stripOutMinsAndSecs(hourToProcess);
 
         Usage newUsage = createInitializedUsageRecord(polledUsageRecordsForLb.get(0));
@@ -65,7 +64,9 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                 break;
             }
             
-            BandwidthUsageHelper.calculateAndSetBandwidth(polledUsageRecordsForLb.get(i), polledUsageRecordsForLb.get(i + 1), newUsage);
+            BandwidthUsageHelper.calculateAndSetBandwidth(polledUsageRecordsForLb.get(i),
+                                                          polledUsageRecordsForLb.get(i + 1), newUsage);
+
             if (polledUsageRecordsForLb.get(i + 1).getEventType() != null &&
                 !polledUsageRecordsForLb.get(i + 1).getEventType().toLowerCase().equals("null")){
                 newUsage.setEndTime(polledUsageRecordsForLb.get(i + 1).getPollTime());

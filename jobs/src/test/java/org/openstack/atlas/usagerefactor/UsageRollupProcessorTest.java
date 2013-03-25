@@ -9,7 +9,10 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openstack.atlas.jobs.EventsDeletionJob;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.events.entities.Event;
 import org.openstack.atlas.usagerefactor.generator.PolledUsageRecordGenerator;
 import org.openstack.atlas.usagerefactor.generator.GeneratorPojo;
 
@@ -74,6 +77,79 @@ public class UsageRollupProcessorTest {
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Set<Usage> processedUsagesSet = new HashSet<Usage>();
+        }
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class OneHourOfPolledUsageWithEvents {
+
+        private int accountId = 5806065;
+        private int lbId = 1234;
+
+        private List<Integer> loadbalancerIds;
+        @Mock
+        private PolledUsageRepository polledUsageRepository;
+        private List<PolledUsageRecord> polledRecords;
+        private UsageRollupProcessor usageRollupProcessor;
+        private Calendar initialPollTime;
+        private Calendar hourToProcess;
+
+        @Before
+        public void standUp() {
+            loadbalancerIds = new ArrayList<Integer>();
+            loadbalancerIds.add(lbId);
+            usageRollupProcessor = new UsageRollupProcessorImpl();
+            initialPollTime = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
+            hourToProcess = new GregorianCalendar(2013, Calendar.MARCH, 20, 11, 0, 0);
+
+            List<GeneratorPojo> generatorPojoList = new ArrayList<GeneratorPojo>();
+            generatorPojoList.add(new GeneratorPojo(accountId, lbId, 24));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojoList, initialPollTime);
+            when(polledUsageRepository.getAllRecords(loadbalancerIds)).thenReturn(polledRecords);
+        }
+
+        @Ignore
+        @Test
+        public void shouldCreateTwoRecordsIfOnlyOneEvent(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 1, 1));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime,
+                    UsageEvent.SSL_ONLY_ON.name());
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(2, processedUsages.size());
+        }
+
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenMultipleHoursOfPolledUsagesWithNoEvents{
+
+        @Ignore
+        @Test
+        public void shouldSumBandwidthUsingFirstRecordOfHourToProcessAndLastRecordOfHourBeforeHourToProcess(){
+
+        }
+
+        @Ignore
+        @Test
+        public void shouldSumBandwidthUsingFirstAndSecondRecordWhenThereAreNoRecordsBeforeTheFirstInTheHour(){
+
+        }
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenMultipleHoursOfPolledUsagesWithEvents{
+
+        @Ignore
+        @Test
+        public void shouldSumBandwidthUsingFirstRecordOfHourToProcessAndLastRecordOfHourBeforeHourToProcess(){
+
+        }
+
+        @Ignore
+        @Test
+        public void shouldSumBandwidthUsingFirstAndSecondRecordWhenThereAreNoRecordsBeforeTheFirstInTheHour(){
+
         }
     }
 

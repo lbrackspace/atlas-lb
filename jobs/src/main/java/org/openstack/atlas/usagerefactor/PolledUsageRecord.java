@@ -1,7 +1,5 @@
 package org.openstack.atlas.usagerefactor;
 
-import org.joda.time.DateTime;
-
 import java.util.Calendar;
 
 public class PolledUsageRecord {
@@ -13,10 +11,12 @@ public class PolledUsageRecord {
     private long bandwidthOutSsl;
     private long bandwidthInSsl;
     private Calendar pollTime;
-    private int numConnections;
+    private long concurrentConnections;
     private String eventType;
 
-    public PolledUsageRecord(int id, int accountId, int loadbalancerId, long bandwidthOut, long bandwidthIn, long bandwidthOutSsl, long bandwidthInSsl, Calendar pollTime, int numConnections, String eventType) {
+    public PolledUsageRecord(int id, int accountId, int loadbalancerId, long bandwidthOut, long bandwidthIn,
+                             long bandwidthOutSsl, long bandwidthInSsl, Calendar pollTime, long concurrentConnections,
+                             String eventType) {
         this.id = id;
         this.accountId = accountId;
         this.loadbalancerId = loadbalancerId;
@@ -25,7 +25,7 @@ public class PolledUsageRecord {
         this.bandwidthOutSsl = bandwidthOutSsl;
         this.bandwidthInSsl = bandwidthInSsl;
         this.pollTime = pollTime;
-        this.numConnections = numConnections;
+        this.concurrentConnections = concurrentConnections;
         this.eventType = eventType;
     }
 
@@ -85,12 +85,12 @@ public class PolledUsageRecord {
         this.bandwidthInSsl = bandwidthInSsl;
     }
 
-    public int getNumConnections() {
-        return numConnections;
+    public long getConcurrentConnections() {
+        return concurrentConnections;
     }
 
-    public void setNumConnections(int numConnections) {
-        this.numConnections = numConnections;
+    public void setConcurrentConnections(long concurrentConnections) {
+        this.concurrentConnections = concurrentConnections;
     }
 
     public String getEventType() {

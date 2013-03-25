@@ -9,18 +9,34 @@ import java.util.List;
 public class PolledUsageRecordGenerator {
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime){
-        return generate(generatorPojoList, initialPollTime, 5);
+        return generate(generatorPojoList, initialPollTime, 5, 0, 0, 0, 0, 0, null);
     }
 
-    public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime, int pollIntervalInMins) {
+    public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
+                                                   String eventType){
+        return generate(generatorPojoList, initialPollTime, 5, 0, 0, 0, 0, 0, eventType);
+    }
+
+    public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
+                                                   long bandwidthOut, long bandwidthIn,
+                                                   long bandwidthOutSsl, long bandwidthInSsl){
+        return generate(generatorPojoList, initialPollTime, 5, bandwidthOut, bandwidthIn,
+                        bandwidthOutSsl, bandwidthInSsl, 0, null);
+    }
+
+    public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
+                                                   long bandwidthOut, long bandwidthIn,
+                                                   long bandwidthOutSsl, long bandwidthInSsl, String eventType){
+        return generate(generatorPojoList, initialPollTime, 5, bandwidthOut, bandwidthIn,
+                        bandwidthOutSsl, bandwidthInSsl, 0, eventType);
+    }
+
+    public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
+                                                   int pollIntervalInMins, long bandwidthOut, long bandwidthIn,
+                                                   long bandwidthOutSsl, long bandwidthInSsl,
+                                                   long concurrentConnections, String eventType) {
         List<PolledUsageRecord> polledUsageRecords = new ArrayList<PolledUsageRecord>();
 
-        long bandwidthOut = 0;
-        long bandwidthIn = 0;
-        long bandwidthOutSsl = 0;
-        long bandwidthInSsl = 0;
-        int numConnections = 0;
-        String eventType = null;
         Calendar pollTime;
         int idCnt = 1;
 
@@ -37,7 +53,7 @@ public class PolledUsageRecordGenerator {
                         bandwidthOutSsl,
                         bandwidthInSsl,
                         pollTime,
-                        numConnections,
+                        concurrentConnections,
                         eventType
                 );
 
