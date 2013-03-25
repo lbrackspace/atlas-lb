@@ -108,13 +108,14 @@ public class UsageRollupProcessorTest {
             when(polledUsageRepository.getAllRecords(loadbalancerIds)).thenReturn(polledRecords);
         }
 
-        @Ignore
         @Test
         public void shouldCreateTwoRecordsIfOnlyOneEvent(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
-            generatorPojos.add(new GeneratorPojo(5806065, 1234, 1, 1));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime,
-                    UsageEvent.SSL_ONLY_ON.name());
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
+            List<String> eventTypes = new ArrayList<String>();
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
         }
