@@ -14,13 +14,13 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>debug</module>
-        <module>b64aes</module>
         <module>configuration</module>
         <module>util</module>
+        <module>b64aes</module>
         <module>cidr</module>
         <module>ca</module>
         <module>crypto-tool</module>
+        <module>snmp-test</module>
     </modules>
 
     <!-- <properties>
