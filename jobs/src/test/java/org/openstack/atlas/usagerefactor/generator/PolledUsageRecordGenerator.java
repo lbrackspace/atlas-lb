@@ -1,9 +1,11 @@
 package org.openstack.atlas.usagerefactor.generator;
 
 import org.openstack.atlas.usagerefactor.PolledUsageRecord;
+import sun.util.calendar.Gregorian;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 public class PolledUsageRecordGenerator {
@@ -61,7 +63,11 @@ public class PolledUsageRecordGenerator {
                 );
 
                 polledUsageRecords.add(polledUsageRecord);
-                pollTime.add(Calendar.MINUTE, pollIntervalInMins);
+                Calendar newPollTime = new GregorianCalendar(pollTime.get(Calendar.YEAR), pollTime.get(Calendar.MONTH),
+                        pollTime.get(Calendar.DAY_OF_MONTH), pollTime.get(Calendar.HOUR), pollTime.get(Calendar.MINUTE),
+                        pollTime.get(Calendar.SECOND));
+                newPollTime.add(Calendar.MINUTE, pollIntervalInMins);
+                pollTime = newPollTime;
             }
         }
 

@@ -43,7 +43,7 @@ public class UsageRollupProcessorTest {
             loadbalancerIds.add(lbId);
             usageRollupProcessor = new UsageRollupProcessorImpl();
             initialPollTime = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
-            hourToProcess = new GregorianCalendar(2013, Calendar.MARCH, 20, 11, 0, 0);
+            hourToProcess = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
 
             List<GeneratorPojo> generatorPojoList = new ArrayList<GeneratorPojo>();
             generatorPojoList.add(new GeneratorPojo(accountId, lbId, 24));
@@ -87,6 +87,30 @@ public class UsageRollupProcessorTest {
                 }
                 Assert.assertEquals(1, lbUsageList.size());
             }
+        }
+
+        @Test
+        public void shouldCreateOneRecordWithStartTimeOnTheHourAndEndTimeOnTheNextHour(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 11));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(1, processedUsages.size());
+            Assert.assertEquals(initialPollTime.get(Calendar.YEAR), processedUsages.get(0).getStartTime().get(Calendar.YEAR));
+            Assert.assertEquals(initialPollTime.get(Calendar.MONTH), processedUsages.get(0).getStartTime().get(Calendar.MONTH));
+            Assert.assertEquals(initialPollTime.get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getStartTime().get(Calendar.DAY_OF_MONTH));
+            Assert.assertEquals(initialPollTime.get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
+            Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.MILLISECOND));
+            initialPollTime.add(Calendar.HOUR, 1);
+            Assert.assertEquals(initialPollTime.get(Calendar.YEAR), processedUsages.get(0).getEndTime().get(Calendar.YEAR));
+            Assert.assertEquals(initialPollTime.get(Calendar.MONTH), processedUsages.get(0).getEndTime().get(Calendar.MONTH));
+            Assert.assertEquals(initialPollTime.get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getEndTime().get(Calendar.DAY_OF_MONTH));
+            Assert.assertEquals(initialPollTime.get(Calendar.HOUR), processedUsages.get(0).getEndTime().get(Calendar.HOUR));
+            Assert.assertEquals(0, processedUsages.get(0).getEndTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, processedUsages.get(0).getEndTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, processedUsages.get(0).getEndTime().get(Calendar.MILLISECOND));
         }
 
         @Test
@@ -275,6 +299,56 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(300, processedUsages.get(1).getOutgoingTransferSsl().longValue());
             Assert.assertEquals(3000, processedUsages.get(1).getIncomingTransferSsl().longValue());
         }
+
+        @Test
+        public void shouldStartRecordOnStartTimeOfCreateLBEvent(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 11));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            polledRecords.get(0).setEventType(UsageEvent.CREATE_LOADBALANCER.name());
+            polledRecords.get(0).getPollTime().add(Calendar.MINUTE, 2);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            initialPollTime.add(Calendar.HOUR, 1);
+            Assert.assertEquals(1, processedUsages.size());
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.YEAR), processedUsages.get(0).getStartTime().get(Calendar.YEAR));
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.MONTH), processedUsages.get(0).getStartTime().get(Calendar.MONTH));
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getStartTime().get(Calendar.DAY_OF_MONTH));
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.SECOND), processedUsages.get(0).getStartTime().get(Calendar.SECOND));
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.MILLISECOND), processedUsages.get(0).getStartTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(initialPollTime.get(Calendar.YEAR), processedUsages.get(0).getStartTime().get(Calendar.YEAR));
+            Assert.assertEquals(initialPollTime.get(Calendar.MONTH), processedUsages.get(0).getStartTime().get(Calendar.MONTH));
+            Assert.assertEquals(initialPollTime.get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getStartTime().get(Calendar.DAY_OF_MONTH));
+            Assert.assertEquals(initialPollTime.get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
+            Assert.assertEquals(initialPollTime.get(Calendar.SECOND), processedUsages.get(0).getStartTime().get(Calendar.SECOND));
+            Assert.assertEquals(initialPollTime.get(Calendar.MILLISECOND), processedUsages.get(0).getStartTime().get(Calendar.MILLISECOND));
+        }
+
+        @Test
+        public void shouldEndRecordOnEndTimeOfDeleteLBEvent(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 8));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            polledRecords.get(0).setEventType(UsageEvent.CREATE_LOADBALANCER.name());
+            polledRecords.get(0).getPollTime().add(Calendar.MINUTE, 2);
+            polledRecords.get(7).getPollTime().add(Calendar.MINUTE, -2);
+            polledRecords.get(7).setEventType(UsageEvent.DELETE_LOADBALANCER.name());
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(2, processedUsages.size());
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.YEAR), processedUsages.get(0).getStartTime().get(Calendar.YEAR));
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.MONTH), processedUsages.get(0).getStartTime().get(Calendar.MONTH));
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getStartTime().get(Calendar.DAY_OF_MONTH));
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.SECOND), processedUsages.get(0).getStartTime().get(Calendar.SECOND));
+            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.MILLISECOND), processedUsages.get(0).getStartTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.YEAR), processedUsages.get(0).getStartTime().get(Calendar.YEAR));
+            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.MONTH), processedUsages.get(0).getStartTime().get(Calendar.MONTH));
+            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getStartTime().get(Calendar.DAY_OF_MONTH));
+            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
+            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.SECOND), processedUsages.get(0).getStartTime().get(Calendar.SECOND));
+            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.MILLISECOND), processedUsages.get(0).getStartTime().get(Calendar.MILLISECOND));
+        }
+
     }
 
     @RunWith(MockitoJUnitRunner.class)

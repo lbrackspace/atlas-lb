@@ -2,6 +2,7 @@ package org.openstack.atlas.usagerefactor;
 
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.usagerefactor.helpers.BandwidthUsageHelper;
 
 import java.util.*;
@@ -62,6 +63,22 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
         for(int i = 0; i < polledUsageRecordsForLb.size(); i++){
             BandwidthUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i));
+            //If create lb event, set start time of the record to the poll time.
+            if(polledUsageRecordsForLb.get(i).getEventType() != null){
+                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.CREATE_LOADBALANCER.name())){
+                    newUsage.setStartTime(polledUsageRecordsForLb.get(i).getPollTime());
+                }
+                //If delete lb event encountered, set end time to poll time.  May need to move bandwidth off this record and onto a previous record.
+                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.DELETE_LOADBALANCER.name())){
+                    newUsage.setEndTime(polledUsageRecordsForLb.get(i).getPollTime());
+                    //if the delete event is the first record create a new NULL event record and put the bandwidth on that record.  Delete events should 0 bandwidth.
+                    if(i == 0){
+
+                    } else {
+
+                    }
+                }
+            }
 
             if ((i + 1) >= polledUsageRecordsForLb.size()){
                 break;
@@ -69,16 +86,23 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
             if (polledUsageRecordsForLb.get(i + 1).getEventType() != null &&
                 !polledUsageRecordsForLb.get(i + 1).getEventType().toLowerCase().equals("null")){
+                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.DELETE_LOADBALANCER.name())){
+                    BandwidthUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i + 1));
+                }
                 newUsage.setEndTime(polledUsageRecordsForLb.get(i + 1).getPollTime());
                 processedRecords.add(newUsage);
                 newUsage = createInitializedUsageRecord(polledUsageRecordsForLb.get(i + 1));
             }
         }
-        Calendar finalEndTime = new GregorianCalendar(validHourToProcess.get(Calendar.YEAR),
-                validHourToProcess.get(Calendar.MONTH), validHourToProcess.get(Calendar.DAY_OF_MONTH),
-                validHourToProcess.get(Calendar.HOUR), 0, 0);
-        finalEndTime.add(Calendar.HOUR, 1);
-        newUsage.setEndTime(finalEndTime);
+
+        if(newUsage.getEndTime() == null){
+            Calendar finalEndTime = new GregorianCalendar(validHourToProcess.get(Calendar.YEAR),
+                    validHourToProcess.get(Calendar.MONTH), validHourToProcess.get(Calendar.DAY_OF_MONTH),
+                    validHourToProcess.get(Calendar.HOUR), 0, 0);
+            finalEndTime.add(Calendar.HOUR, 1);
+            newUsage.setEndTime(finalEndTime);
+        }
+
         processedRecords.add(newUsage);
         return processedRecords;
     }
