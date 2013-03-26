@@ -61,19 +61,17 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         newUsage.setStartTime(validHourToProcess);
 
         for(int i = 0; i < polledUsageRecordsForLb.size(); i++){
+            BandwidthUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i));
+
             if ((i + 1) >= polledUsageRecordsForLb.size()){
                 break;
             }
-            
-            BandwidthUsageHelper.calculateAndSetBandwidth(polledUsageRecordsForLb.get(i),
-                                                          polledUsageRecordsForLb.get(i + 1), newUsage);
 
             if (polledUsageRecordsForLb.get(i + 1).getEventType() != null &&
                 !polledUsageRecordsForLb.get(i + 1).getEventType().toLowerCase().equals("null")){
                 newUsage.setEndTime(polledUsageRecordsForLb.get(i + 1).getPollTime());
                 processedRecords.add(newUsage);
                 newUsage = createInitializedUsageRecord(polledUsageRecordsForLb.get(i + 1));
-                newUsage.setStartTime(polledUsageRecordsForLb.get(i + 1).getPollTime());
             }
         }
         Calendar finalEndTime = new GregorianCalendar(validHourToProcess.get(Calendar.YEAR),

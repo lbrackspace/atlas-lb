@@ -18,6 +18,7 @@ import org.openstack.atlas.usagerefactor.generator.GeneratorPojo;
 
 import java.util.*;
 
+import static org.mockito.Matchers.longThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
@@ -58,15 +59,15 @@ public class UsageRollupProcessorTest {
             Assert.assertTrue(processedUsages.isEmpty());
         }
 
-        @Ignore
         @Test
         public void shouldCreateOneHourlyRecord() {
-            List<PolledUsageRecord> allRecords = polledUsageRepository.getAllRecords(loadbalancerIds);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(allRecords, hourToProcess);
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 11));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(1, processedUsages.size());
         }
 
-        @Ignore
         @Test
         public void shouldCreateOneHourlyRecordPerLB(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
@@ -76,7 +77,53 @@ public class UsageRollupProcessorTest {
             }
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
-            Set<Usage> processedUsagesSet = new HashSet<Usage>();
+            Assert.assertEquals(randomLBCount, processedUsages.size());
+            for(int lbId = 0; lbId < randomLBCount; lbId++){
+                List<Usage> lbUsageList = new ArrayList<Usage>();
+                for(Usage processedUsage : processedUsages){
+                    if (processedUsage.getLoadbalancer().getId() == lbId){
+                        lbUsageList.add(processedUsage);
+                    }
+                }
+                Assert.assertEquals(1, lbUsageList.size());
+            }
+        }
+
+        @Test
+        public void shouldSumAllBandwidthIntoOneRecord(){
+            int numLBPolls = 11;
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, numLBPolls));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            long increment = 20530932;
+            long bandwidthOut = 123021;
+            long bandwidthIn = 1001421;
+            long bandwidthOutSsl = 1123409;
+            long bandwidthInSsl = 5209232;
+            long totBandwidthOut = 0;
+            long totBandwidthIn = 0;
+            long totBandwidthOutSsl = 0;
+            long totBandwidthInSsl = 0;
+            for(PolledUsageRecord polledRecord : polledRecords){
+                polledRecord.setBandwidthOut(bandwidthOut);
+                polledRecord.setBandwidthIn(bandwidthIn);
+                polledRecord.setBandwidthOutSsl(bandwidthOutSsl);
+                polledRecord.setBandwidthInSsl(bandwidthInSsl);
+                totBandwidthOut += bandwidthOut;
+                totBandwidthIn += bandwidthIn;
+                totBandwidthOutSsl += bandwidthOutSsl;
+                totBandwidthInSsl += bandwidthInSsl;
+                bandwidthOut += increment;
+                bandwidthIn += increment;
+                bandwidthOutSsl += increment;
+                bandwidthInSsl += increment;
+            }
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(1, processedUsages.size());
+            Assert.assertEquals(totBandwidthOut, processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertEquals(totBandwidthIn, processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(totBandwidthOutSsl, processedUsages.get(0).getOutgoingTransferSsl().longValue());
+            Assert.assertEquals(totBandwidthInSsl, processedUsages.get(0).getIncomingTransferSsl().longValue());
         }
     }
 
@@ -109,7 +156,7 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldCreateTwoRecordsIfOnlyOneEvent(){
+        public void shouldCreateTwoRecordsIfOnlyOneEventWithFewPolls(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
             List<String> eventTypes = new ArrayList<String>();
@@ -120,38 +167,128 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(2, processedUsages.size());
         }
 
+        @Test
+        public void shouldCreateTwoRecordsIfOnlyOneEventWithManyPolls(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 6));
+            List<String> eventTypes = new ArrayList<String>();
+            eventTypes.add(null);
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            eventTypes.add(null);
+            eventTypes.add(null);
+            eventTypes.add(null);
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(2, processedUsages.size());
+        }
+
+        @Test
+        public void shouldCreateOneMoreRecordThanEvents(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 6));
+            List<String> eventTypes = new ArrayList<String>();
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            eventTypes.add(UsageEvent.SSL_MIXED_ON.name());
+            eventTypes.add(UsageEvent.SSL_OFF.name());
+            eventTypes.add(UsageEvent.SUSPEND_LOADBALANCER.name());
+            eventTypes.add(UsageEvent.UNSUSPEND_LOADBALANCER.name());
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(6, processedUsages.size());
+        }
+
+        @Test
+        public void shouldCreateTwoUsageRecordsFromTwoPolledRecordsAndBandwidthSplitBetweenFirstAndSecondUsageRecord(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
+            List<String> eventTypes = new ArrayList<String>();
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            polledRecords.get(0).setBandwidthOut(100);
+            polledRecords.get(0).setBandwidthIn(1000);
+            polledRecords.get(0).setBandwidthOutSsl(100);
+            polledRecords.get(0).setBandwidthInSsl(1000);
+            polledRecords.get(1).setBandwidthOut(100);
+            polledRecords.get(1).setBandwidthIn(1000);
+            polledRecords.get(1).setBandwidthOutSsl(100);
+            polledRecords.get(1).setBandwidthInSsl(1000);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(2, processedUsages.size());
+            Assert.assertEquals(100, processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertEquals(1000, processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(100, processedUsages.get(0).getOutgoingTransferSsl().longValue());
+            Assert.assertEquals(1000, processedUsages.get(0).getIncomingTransferSsl().longValue());
+            Assert.assertNull(processedUsages.get(0).getEventType());
+            Assert.assertEquals(100, processedUsages.get(1).getOutgoingTransfer().longValue());
+            Assert.assertEquals(1000, processedUsages.get(1).getIncomingTransfer().longValue());
+            Assert.assertEquals(100, processedUsages.get(1).getOutgoingTransferSsl().longValue());
+            Assert.assertEquals(1000, processedUsages.get(1).getIncomingTransferSsl().longValue());
+            Assert.assertEquals(UsageEvent.SSL_ONLY_ON.name(), processedUsages.get(1).getEventType());
+        }
+
+        @Test
+        public void shouldCreateTwoUsageRecordsFromManyPolledRecordsAndBandwidthSplitBetweenFirstAndSecondUsageRecord(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 5));
+            List<String> eventTypes = new ArrayList<String>();
+            eventTypes.add(null);
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            eventTypes.add(null);
+            eventTypes.add(null);
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            polledRecords.get(0).setBandwidthOut(100);
+            polledRecords.get(0).setBandwidthIn(1000);
+            polledRecords.get(0).setBandwidthOutSsl(100);
+            polledRecords.get(0).setBandwidthInSsl(1000);
+
+            polledRecords.get(1).setBandwidthOut(100);
+            polledRecords.get(1).setBandwidthIn(1000);
+            polledRecords.get(1).setBandwidthOutSsl(100);
+            polledRecords.get(1).setBandwidthInSsl(1000);
+
+            polledRecords.get(2).setBandwidthOut(100);
+            polledRecords.get(2).setBandwidthIn(1000);
+            polledRecords.get(2).setBandwidthOutSsl(100);
+            polledRecords.get(2).setBandwidthInSsl(1000);
+
+            polledRecords.get(3).setBandwidthOut(100);
+            polledRecords.get(3).setBandwidthIn(1000);
+            polledRecords.get(3).setBandwidthOutSsl(100);
+            polledRecords.get(3).setBandwidthInSsl(1000);
+
+            polledRecords.get(4).setBandwidthOut(100);
+            polledRecords.get(4).setBandwidthIn(1000);
+            polledRecords.get(4).setBandwidthOutSsl(100);
+            polledRecords.get(4).setBandwidthInSsl(1000);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(2, processedUsages.size());
+            Assert.assertEquals(200, processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertEquals(2000, processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(200, processedUsages.get(0).getOutgoingTransferSsl().longValue());
+            Assert.assertEquals(2000, processedUsages.get(0).getIncomingTransferSsl().longValue());
+            Assert.assertEquals(300, processedUsages.get(1).getOutgoingTransfer().longValue());
+            Assert.assertEquals(3000, processedUsages.get(1).getIncomingTransfer().longValue());
+            Assert.assertEquals(300, processedUsages.get(1).getOutgoingTransferSsl().longValue());
+            Assert.assertEquals(3000, processedUsages.get(1).getIncomingTransferSsl().longValue());
+        }
     }
 
     @RunWith(MockitoJUnitRunner.class)
     public static class WhenMultipleHoursOfPolledUsagesWithNoEvents{
-
         @Ignore
         @Test
-        public void shouldSumBandwidthUsingFirstRecordOfHourToProcessAndLastRecordOfHourBeforeHourToProcess(){
-
-        }
-
-        @Ignore
-        @Test
-        public void shouldSumBandwidthUsingFirstAndSecondRecordWhenThereAreNoRecordsBeforeTheFirstInTheHour(){
-
-        }
+        public void placeholder(){}
     }
 
     @RunWith(MockitoJUnitRunner.class)
     public static class WhenMultipleHoursOfPolledUsagesWithEvents{
-
         @Ignore
         @Test
-        public void shouldSumBandwidthUsingFirstRecordOfHourToProcessAndLastRecordOfHourBeforeHourToProcess(){
-
-        }
-
-        @Ignore
-        @Test
-        public void shouldSumBandwidthUsingFirstAndSecondRecordWhenThereAreNoRecordsBeforeTheFirstInTheHour(){
-
-        }
+        public void placeholder(){}
     }
 
     @RunWith(MockitoJUnitRunner.class)
