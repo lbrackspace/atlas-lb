@@ -17,7 +17,6 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 public class StingraySnmpClient {
@@ -198,6 +197,75 @@ public class StingraySnmpClient {
             rawSnmpMap.get(vsName).setBytesOutLo(vb.getVariable().toLong());
         }
         return rawSnmpMap;
+    }
+
+    //TODO: Get this working for multiple OID's as well as singular ones per request.
+    public Long getValueForServerOnHost(String hostIp, String vsName, String oid) throws StingraySnmpGeneralException {
+        Long value = 0L;
+        this.address = hostIp;
+
+        PDU requestPDU = new PDU();
+        requestPDU.add(new VariableBinding(new OID(oid)));
+        if (oid.equals(OIDConstants.VS_BYTES_IN_LO)) {
+            requestPDU.add(new VariableBinding(new OID(OIDConstants.VS_BYTES_IN_HI)));
+        } else if (oid.equals(OIDConstants.VS_BYTES_OUT_LO)) {
+            requestPDU.add(new VariableBinding(new OID(OIDConstants.VS_BYTES_OUT_HI)));
+        }
+        requestPDU.setType(PDU.GET);
+
+        CommunityTarget target = new CommunityTarget();
+        target.setCommunity(new OctetString(community));
+        target.setAddress(new UdpAddress(address + "/" + port));
+        target.setVersion(SnmpConstants.version1);
+
+        TransportMapping transport;
+        try {
+            transport = new DefaultUdpTransportMapping();
+        } catch (IOException ex) {
+            throw new StingraySnmpSetupException("Error setting up DefaultUdpTransportMapping for snmp client", ex);
+        }
+
+        Snmp snmp = new Snmp(transport);
+
+        try {
+            transport.listen();
+        } catch (IOException ex) {
+            String msg = "Unable to listen to address " + transport.getListenAddress().toString();
+            throw new StingraySnmpSetupException(msg, ex);
+        }
+
+        VariableBinding vb = null;
+        ResponseEvent event;
+        try {
+            event = snmp.send(requestPDU, target);
+        } catch (IOException ex) {
+            throw new StingraySnmpGeneralException("Error sending snmp request to zxtm agent", ex);
+        }
+
+        PDU responsePDU = event.getResponse();
+        if (responsePDU != null) {
+            vb = responsePDU.get(0);
+        }
+
+        if (responsePDU == null) {
+            throw new StingraySnmpGeneralException("timeout waiting for UDP packet from snmp");
+        } else if (responsePDU.getErrorStatus() != 0) {
+            throw new StingraySnmpGeneralException("Error in request.");
+        } else if (vb.getOid() == null) {
+            throw new StingraySnmpGeneralException("Returned OID was null.");
+        } else if (Null.isExceptionSyntax(vb.getVariable().getSyntax())) {
+            throw new StingraySnmpGeneralException("Returned value of OID was null.");
+        } else {
+            String vbString = vb.toString();
+            requestPDU.setRequestID(new Integer32(incRequestId()));
+            requestPDU.set(0, vb);
+        }
+        try {
+            snmp.close();
+        } catch (IOException ioe) {
+            throw new StingraySnmpGeneralException("Error closing snmp connection.");
+        }
+        return value;
     }
 
     public List<VariableBinding> getWalkOidBindingList(String oid) throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {

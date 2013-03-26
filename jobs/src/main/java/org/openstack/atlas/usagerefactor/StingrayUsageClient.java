@@ -12,7 +12,7 @@ public interface StingrayUsageClient {
      *  that the connection count resets to 0 if the host
      *  machine restarts as the values are stored in memory.
      */
-    Map<String, Long> getTotalConnections(Host host);
+    Map<String, Long> getConcurrentConnections(Host host);
 
     /*
      *  Given a host, returns a map of virtual server names
@@ -30,7 +30,7 @@ public interface StingrayUsageClient {
      */
     Map<String, Long> getTotalBandwidthOut(Host host);
 
-    Long getTotalConnections(Host host, String virtualServerName);
+    Long getConcurrentConnections(Host host, String virtualServerName);
 
     Long getTotalBandwidthIn(Host host, String virtualServerName);
 
