@@ -79,12 +79,6 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                 //If delete lb event encountered, set end time to poll time.  May need to move bandwidth off this record and onto a previous record.
                 if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.DELETE_LOADBALANCER.name())){
                     newUsage.setEndTime(polledUsageRecordsForLb.get(i).getPollTime());
-                    //if the delete event is the first record create a new NULL event record and put the bandwidth on that record.  Delete events should have 0 usage.
-                    if(i == 0){
-
-                    } else {
-
-                    }
                 }
                 if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.CREATE_VIRTUAL_IP.name())){
 
