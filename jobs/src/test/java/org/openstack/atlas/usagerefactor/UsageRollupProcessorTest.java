@@ -95,22 +95,12 @@ public class UsageRollupProcessorTest {
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 11));
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Calendar compTime = Calendar.getInstance();
+            compTime.setTime(hourToProcess.getTime());
             Assert.assertEquals(1, processedUsages.size());
-            Assert.assertEquals(initialPollTime.get(Calendar.YEAR), processedUsages.get(0).getStartTime().get(Calendar.YEAR));
-            Assert.assertEquals(initialPollTime.get(Calendar.MONTH), processedUsages.get(0).getStartTime().get(Calendar.MONTH));
-            Assert.assertEquals(initialPollTime.get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getStartTime().get(Calendar.DAY_OF_MONTH));
-            Assert.assertEquals(initialPollTime.get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
-            Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.MINUTE));
-            Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.SECOND));
-            Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.MILLISECOND));
-            initialPollTime.add(Calendar.HOUR, 1);
-            Assert.assertEquals(initialPollTime.get(Calendar.YEAR), processedUsages.get(0).getEndTime().get(Calendar.YEAR));
-            Assert.assertEquals(initialPollTime.get(Calendar.MONTH), processedUsages.get(0).getEndTime().get(Calendar.MONTH));
-            Assert.assertEquals(initialPollTime.get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getEndTime().get(Calendar.DAY_OF_MONTH));
-            Assert.assertEquals(initialPollTime.get(Calendar.HOUR), processedUsages.get(0).getEndTime().get(Calendar.HOUR));
-            Assert.assertEquals(0, processedUsages.get(0).getEndTime().get(Calendar.MINUTE));
-            Assert.assertEquals(0, processedUsages.get(0).getEndTime().get(Calendar.SECOND));
-            Assert.assertEquals(0, processedUsages.get(0).getEndTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(compTime, processedUsages.get(0).getStartTime());
+            compTime.add(Calendar.HOUR,  1);
+            Assert.assertEquals(compTime, processedUsages.get(0).getEndTime());
         }
 
         @Test
@@ -171,7 +161,7 @@ public class UsageRollupProcessorTest {
             loadbalancerIds.add(lbId);
             usageRollupProcessor = new UsageRollupProcessorImpl();
             initialPollTime = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
-            hourToProcess = new GregorianCalendar(2013, Calendar.MARCH, 20, 11, 0, 0);
+            hourToProcess = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
 
             List<GeneratorPojo> generatorPojoList = new ArrayList<GeneratorPojo>();
             generatorPojoList.add(new GeneratorPojo(accountId, lbId, 24));
@@ -224,7 +214,7 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldCreateTwoUsageRecordsFromTwoPolledRecordsAndBandwidthSplitBetweenFirstAndSecondUsageRecord(){
+        public void shouldCreateTwoUsageRecordsFromTwoPolledRecordsAndBandwidthOnlyOnFirstUsageRecord(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
             List<String> eventTypes = new ArrayList<String>();
@@ -241,15 +231,15 @@ public class UsageRollupProcessorTest {
             polledRecords.get(1).setBandwidthInSsl(1000);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
-            Assert.assertEquals(100, processedUsages.get(0).getOutgoingTransfer().longValue());
-            Assert.assertEquals(1000, processedUsages.get(0).getIncomingTransfer().longValue());
-            Assert.assertEquals(100, processedUsages.get(0).getOutgoingTransferSsl().longValue());
-            Assert.assertEquals(1000, processedUsages.get(0).getIncomingTransferSsl().longValue());
+            Assert.assertEquals(200, processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertEquals(2000, processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(200, processedUsages.get(0).getOutgoingTransferSsl().longValue());
+            Assert.assertEquals(2000, processedUsages.get(0).getIncomingTransferSsl().longValue());
             Assert.assertNull(processedUsages.get(0).getEventType());
-            Assert.assertEquals(100, processedUsages.get(1).getOutgoingTransfer().longValue());
-            Assert.assertEquals(1000, processedUsages.get(1).getIncomingTransfer().longValue());
-            Assert.assertEquals(100, processedUsages.get(1).getOutgoingTransferSsl().longValue());
-            Assert.assertEquals(1000, processedUsages.get(1).getIncomingTransferSsl().longValue());
+            Assert.assertEquals(0, processedUsages.get(1).getOutgoingTransfer().longValue());
+            Assert.assertEquals(0, processedUsages.get(1).getIncomingTransfer().longValue());
+            Assert.assertEquals(0, processedUsages.get(1).getOutgoingTransferSsl().longValue());
+            Assert.assertEquals(0, processedUsages.get(1).getIncomingTransferSsl().longValue());
             Assert.assertEquals(UsageEvent.SSL_ONLY_ON.name(), processedUsages.get(1).getEventType());
         }
 
@@ -290,14 +280,14 @@ public class UsageRollupProcessorTest {
             polledRecords.get(4).setBandwidthInSsl(1000);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
-            Assert.assertEquals(200, processedUsages.get(0).getOutgoingTransfer().longValue());
-            Assert.assertEquals(2000, processedUsages.get(0).getIncomingTransfer().longValue());
-            Assert.assertEquals(200, processedUsages.get(0).getOutgoingTransferSsl().longValue());
-            Assert.assertEquals(2000, processedUsages.get(0).getIncomingTransferSsl().longValue());
-            Assert.assertEquals(300, processedUsages.get(1).getOutgoingTransfer().longValue());
-            Assert.assertEquals(3000, processedUsages.get(1).getIncomingTransfer().longValue());
-            Assert.assertEquals(300, processedUsages.get(1).getOutgoingTransferSsl().longValue());
-            Assert.assertEquals(3000, processedUsages.get(1).getIncomingTransferSsl().longValue());
+            Assert.assertEquals(300, processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertEquals(3000, processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(300, processedUsages.get(0).getOutgoingTransferSsl().longValue());
+            Assert.assertEquals(3000, processedUsages.get(0).getIncomingTransferSsl().longValue());
+            Assert.assertEquals(200, processedUsages.get(1).getOutgoingTransfer().longValue());
+            Assert.assertEquals(2000, processedUsages.get(1).getIncomingTransfer().longValue());
+            Assert.assertEquals(200, processedUsages.get(1).getOutgoingTransferSsl().longValue());
+            Assert.assertEquals(2000, processedUsages.get(1).getIncomingTransferSsl().longValue());
         }
 
         @Test
@@ -308,20 +298,13 @@ public class UsageRollupProcessorTest {
             polledRecords.get(0).setEventType(UsageEvent.CREATE_LOADBALANCER.name());
             polledRecords.get(0).getPollTime().add(Calendar.MINUTE, 2);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
-            initialPollTime.add(Calendar.HOUR, 1);
+            Calendar compTime = Calendar.getInstance();
+            compTime.setTime(polledRecords.get(0).getPollTime().getTime());
             Assert.assertEquals(1, processedUsages.size());
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.YEAR), processedUsages.get(0).getStartTime().get(Calendar.YEAR));
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.MONTH), processedUsages.get(0).getStartTime().get(Calendar.MONTH));
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getStartTime().get(Calendar.DAY_OF_MONTH));
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.SECOND), processedUsages.get(0).getStartTime().get(Calendar.SECOND));
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.MILLISECOND), processedUsages.get(0).getStartTime().get(Calendar.MILLISECOND));
-            Assert.assertEquals(initialPollTime.get(Calendar.YEAR), processedUsages.get(0).getStartTime().get(Calendar.YEAR));
-            Assert.assertEquals(initialPollTime.get(Calendar.MONTH), processedUsages.get(0).getStartTime().get(Calendar.MONTH));
-            Assert.assertEquals(initialPollTime.get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getStartTime().get(Calendar.DAY_OF_MONTH));
-            Assert.assertEquals(initialPollTime.get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
-            Assert.assertEquals(initialPollTime.get(Calendar.SECOND), processedUsages.get(0).getStartTime().get(Calendar.SECOND));
-            Assert.assertEquals(initialPollTime.get(Calendar.MILLISECOND), processedUsages.get(0).getStartTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(compTime, processedUsages.get(0).getStartTime());
+            compTime.setTime(hourToProcess.getTime());
+            compTime.add(Calendar.HOUR,  1);
+            Assert.assertEquals(compTime, processedUsages.get(0).getEndTime());
         }
 
         @Test
@@ -334,21 +317,59 @@ public class UsageRollupProcessorTest {
             polledRecords.get(7).getPollTime().add(Calendar.MINUTE, -2);
             polledRecords.get(7).setEventType(UsageEvent.DELETE_LOADBALANCER.name());
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Calendar compTime = Calendar.getInstance();
+            compTime.setTime(polledRecords.get(0).getPollTime().getTime());
             Assert.assertEquals(2, processedUsages.size());
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.YEAR), processedUsages.get(0).getStartTime().get(Calendar.YEAR));
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.MONTH), processedUsages.get(0).getStartTime().get(Calendar.MONTH));
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getStartTime().get(Calendar.DAY_OF_MONTH));
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.SECOND), processedUsages.get(0).getStartTime().get(Calendar.SECOND));
-            Assert.assertEquals(polledRecords.get(0).getPollTime().get(Calendar.MILLISECOND), processedUsages.get(0).getStartTime().get(Calendar.MILLISECOND));
-            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.YEAR), processedUsages.get(0).getStartTime().get(Calendar.YEAR));
-            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.MONTH), processedUsages.get(0).getStartTime().get(Calendar.MONTH));
-            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.DAY_OF_MONTH), processedUsages.get(0).getStartTime().get(Calendar.DAY_OF_MONTH));
-            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
-            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.SECOND), processedUsages.get(0).getStartTime().get(Calendar.SECOND));
-            Assert.assertEquals(polledRecords.get(7).getPollTime().get(Calendar.MILLISECOND), processedUsages.get(0).getStartTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(compTime, processedUsages.get(0).getStartTime());
+            compTime = Calendar.getInstance();
+            compTime.setTime(polledRecords.get(7).getPollTime().getTime());
+            Assert.assertEquals(compTime, processedUsages.get(1).getStartTime());
+            Assert.assertEquals(compTime, processedUsages.get(1).getEndTime());
         }
 
+        @Test
+        public void shouldHaveBandwidthOnRecordBeforeEvent(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            polledRecords.get(1).setBandwidthOut(12345);
+            polledRecords.get(1).setBandwidthIn(54321);
+            polledRecords.get(1).setEventType(UsageEvent.DELETE_LOADBALANCER.name());
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(2, processedUsages.size());
+            Assert.assertEquals(polledRecords.get(1).getBandwidthIn(), processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(polledRecords.get(1).getBandwidthOut(), processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertEquals(0, processedUsages.get(1).getIncomingTransfer().longValue());
+            Assert.assertEquals(0, processedUsages.get(1).getOutgoingTransfer().longValue());
+        }
+
+        @Test
+        public void shouldCreateCreateTwoRecordsIfEventIsFirstPolledRecordOfHour(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 1));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            polledRecords.get(0).setBandwidthOut(12345);
+            polledRecords.get(0).setBandwidthIn(54321);
+            polledRecords.get(0).getPollTime().add(Calendar.MINUTE, 1);
+            polledRecords.get(0).setEventType(UsageEvent.DELETE_LOADBALANCER.name());
+            Calendar compTime = Calendar.getInstance();
+            compTime.setTime(initialPollTime.getTime());
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(2, processedUsages.size());
+            Assert.assertEquals(polledRecords.get(0).getBandwidthIn(), processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(polledRecords.get(0).getBandwidthOut(), processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertNull(processedUsages.get(0).getEventType());
+            Assert.assertEquals(compTime.get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
+            Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.MINUTE));
+            Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.SECOND));
+            Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.MILLISECOND));
+            Assert.assertEquals(compTime, processedUsages.get(0).getEndTime());
+            Assert.assertEquals(0, processedUsages.get(1).getIncomingTransfer().longValue());
+            Assert.assertEquals(0, processedUsages.get(1).getOutgoingTransfer().longValue());
+            Assert.assertEquals(UsageEvent.DELETE_LOADBALANCER.name(), processedUsages.get(1).getEventType());
+            Assert.assertEquals(compTime, processedUsages.get(1).getStartTime());
+            Assert.assertEquals(compTime, processedUsages.get(1).getEndTime());
+        }
     }
 
     @RunWith(MockitoJUnitRunner.class)

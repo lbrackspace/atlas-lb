@@ -64,34 +64,54 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         for(int i = 0; i < polledUsageRecordsForLb.size(); i++){
             BandwidthUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i));
             //If create lb event, set start time of the record to the poll time.
-            if(polledUsageRecordsForLb.get(i).getEventType() != null){
+            if(polledUsageRecordsForLb.get(i).getEventType() != null  &&
+                !polledUsageRecordsForLb.get(i).getEventType().toLowerCase().equals("null")){
+
+                //If first record is the CREATE_LB event, no need to create new usage record.
+                if(!polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.CREATE_LOADBALANCER.name())){
+                    newUsage.setEndTime(polledUsageRecordsForLb.get(i).getPollTime());
+                    newUsage.setEventType(null);
+                    processedRecords.add(newUsage);
+                    newUsage = createInitializedUsageRecord(polledUsageRecordsForLb.get(i));
+                }
+
                 if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.CREATE_LOADBALANCER.name())){
                     newUsage.setStartTime(polledUsageRecordsForLb.get(i).getPollTime());
                 }
                 //If delete lb event encountered, set end time to poll time.  May need to move bandwidth off this record and onto a previous record.
                 if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.DELETE_LOADBALANCER.name())){
                     newUsage.setEndTime(polledUsageRecordsForLb.get(i).getPollTime());
-                    //if the delete event is the first record create a new NULL event record and put the bandwidth on that record.  Delete events should 0 bandwidth.
+                    //if the delete event is the first record create a new NULL event record and put the bandwidth on that record.  Delete events should have 0 usage.
                     if(i == 0){
 
                     } else {
 
                     }
                 }
-            }
+                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.CREATE_VIRTUAL_IP.name())){
 
-            if ((i + 1) >= polledUsageRecordsForLb.size()){
-                break;
-            }
-
-            if (polledUsageRecordsForLb.get(i + 1).getEventType() != null &&
-                !polledUsageRecordsForLb.get(i + 1).getEventType().toLowerCase().equals("null")){
-                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.DELETE_LOADBALANCER.name())){
-                    BandwidthUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i + 1));
                 }
-                newUsage.setEndTime(polledUsageRecordsForLb.get(i + 1).getPollTime());
-                processedRecords.add(newUsage);
-                newUsage = createInitializedUsageRecord(polledUsageRecordsForLb.get(i + 1));
+                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.DELETE_VIRTUAL_IP.name())){
+
+                }
+                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.SSL_MIXED_ON.name())){
+
+                }
+                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.SSL_ONLY_ON.name())){
+
+                }
+                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.SSL_OFF.name())){
+
+                }
+                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.SUSPEND_LOADBALANCER.name())){
+
+                }
+                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.UNSUSPEND_LOADBALANCER.name())){
+
+                }
+                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.SUSPENDED_LOADBALANCER.name())){
+
+                }
             }
         }
 
