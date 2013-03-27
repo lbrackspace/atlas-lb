@@ -4,6 +4,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
+import org.snmp4j.smi.VariableBinding;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -85,6 +86,31 @@ public class StingraySnmpClientTest {
             String baseOid = "1.3.6.1.4.1.7146.1.2.2.2.1.9";
             assertEquals(oid, getOidFromVirtualServerName(baseOid, vsName));
         }
+    }
+
+    @Test
+    public void testSingleVsByteCountRequest() throws Exception {
+        VariableBinding variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_IN_HI).get(0);
+        String name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
+        Long value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_IN_HI);
+        assertTrue(value >= 0);
+        variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_IN_LO).get(0);
+        name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
+        Long value2 = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_IN_LO);
+        assertTrue(value.equals(value2));
+        variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_OUT_HI).get(0);
+        name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
+        value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_OUT_HI);
+        assertTrue(value >= 0);
+        variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_OUT_LO).get(0);
+        name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
+        value2 = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_OUT_LO);
+        assertTrue(value.equals(value2));
+        variableBinding = client.getWalkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS).get(0);
+        name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
+        value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_CURRENT_CONNECTIONS);
+        assertTrue(value >= 0);
+
     }
 
     @Test

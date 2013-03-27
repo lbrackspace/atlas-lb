@@ -199,17 +199,20 @@ public class StingraySnmpClient {
         return rawSnmpMap;
     }
 
-    //TODO: Get this working for multiple OID's as well as singular ones per request.
     public Long getValueForServerOnHost(String hostIp, String vsName, String oid) throws StingraySnmpGeneralException {
-        Long value = 0L;
+        Long bytesInHi = 0L;
+        Long bytesInLo = 0L;
         this.address = hostIp;
 
         PDU requestPDU = new PDU();
-        requestPDU.add(new VariableBinding(new OID(oid)));
-        if (oid.equals(OIDConstants.VS_BYTES_IN_LO)) {
-            requestPDU.add(new VariableBinding(new OID(OIDConstants.VS_BYTES_IN_HI)));
-        } else if (oid.equals(OIDConstants.VS_BYTES_OUT_LO)) {
-            requestPDU.add(new VariableBinding(new OID(OIDConstants.VS_BYTES_OUT_HI)));
+        if (oid.equals(OIDConstants.VS_BYTES_IN_LO) || oid.equals(OIDConstants.VS_BYTES_IN_HI)) {
+            requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(OIDConstants.VS_BYTES_IN_HI, vsName))));
+            requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(OIDConstants.VS_BYTES_IN_LO, vsName))));
+        } else if (oid.equals(OIDConstants.VS_BYTES_OUT_LO) || oid.equals(OIDConstants.VS_BYTES_OUT_HI)) {
+            requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(OIDConstants.VS_BYTES_OUT_HI, vsName))));
+            requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(OIDConstants.VS_BYTES_OUT_LO, vsName))));
+        } else {
+            requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(oid, vsName))));
         }
         requestPDU.setType(PDU.GET);
 
@@ -256,7 +259,6 @@ public class StingraySnmpClient {
         } else if (Null.isExceptionSyntax(vb.getVariable().getSyntax())) {
             throw new StingraySnmpGeneralException("Returned value of OID was null.");
         } else {
-            String vbString = vb.toString();
             requestPDU.setRequestID(new Integer32(incRequestId()));
             requestPDU.set(0, vb);
         }
@@ -265,7 +267,15 @@ public class StingraySnmpClient {
         } catch (IOException ioe) {
             throw new StingraySnmpGeneralException("Error closing snmp connection.");
         }
-        return value;
+        for (VariableBinding variableBinding : responsePDU.getVariableBindings()) {
+            if (variableBinding.getOid().startsWith(new OID(OIDConstants.VS_BYTES_IN_HI)))
+                bytesInHi = variableBinding.getVariable().toLong();
+            if (variableBinding.getOid().startsWith(new OID(OIDConstants.VS_BYTES_IN_LO)))
+                bytesInLo = variableBinding.getVariable().toLong();
+        }
+        if (responsePDU.getVariableBindings().get(0).getOid().startsWith(new OID(OIDConstants.VS_CURRENT_CONNECTIONS)))
+            return responsePDU.getVariableBindings().get(0).getVariable().toLong();
+        return (bytesInHi << 32) | bytesInLo;
     }
 
     public List<VariableBinding> getWalkOidBindingList(String oid) throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {
