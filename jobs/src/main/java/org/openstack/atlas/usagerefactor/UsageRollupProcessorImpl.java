@@ -73,9 +73,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                     newUsage.setEventType(null);
                     processedRecords.add(newUsage);
                     newUsage = createInitializedUsageRecord(polledUsageRecordsForLb.get(i));
-                }
-
-                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.CREATE_LOADBALANCER.name())){
+                } else {
                     newUsage.setStartTime(polledUsageRecordsForLb.get(i).getPollTime());
                 }
                 //If delete lb event encountered, set end time to poll time.  May need to move bandwidth off this record and onto a previous record.
