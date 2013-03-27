@@ -67,7 +67,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             if(polledUsageRecordsForLb.get(i).getEventType() != null  &&
                 !polledUsageRecordsForLb.get(i).getEventType().toLowerCase().equals("null")){
 
-                //If first record is the CREATE_LB event, no need to create new usage record.
+                //If first record is the CREATE_LB event only set the start time of the processed usage
                 if(!polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.CREATE_LOADBALANCER.name())){
                     newUsage.setEndTime(polledUsageRecordsForLb.get(i).getPollTime());
                     newUsage.setEventType(null);
