@@ -198,6 +198,7 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(6, processedUsages.size());
         }
 
+        @Ignore
         @Test
         public void shouldCreateTwoUsageRecordsFromTwoPolledRecordsAndBandwidthOnlyOnFirstUsageRecord(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
@@ -229,6 +230,7 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(UsageEvent.SSL_ONLY_ON.name(), processedUsages.get(1).getEventType());
         }
 
+        @Ignore
         @Test
         public void shouldCreateTwoUsageRecordsFromManyPolledRecordsAndBandwidthSplitBetweenFirstAndSecondUsageRecord(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
