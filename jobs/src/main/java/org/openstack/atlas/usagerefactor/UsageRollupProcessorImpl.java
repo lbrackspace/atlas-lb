@@ -63,7 +63,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
         for(int i = 0; i < polledUsageRecordsForLb.size(); i++){
             BandwidthUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i));
-            //If create lb event, set start time of the record to the poll time.
+
+            //TODO: Handle events with same poll time (Event happened for lb with multiple IPs and/or has ssl term)
             if(polledUsageRecordsForLb.get(i).getEventType() != null  &&
                 !polledUsageRecordsForLb.get(i).getEventType().toLowerCase().equals("null")){
 

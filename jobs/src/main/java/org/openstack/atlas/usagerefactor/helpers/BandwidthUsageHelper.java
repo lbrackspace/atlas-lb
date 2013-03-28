@@ -7,8 +7,13 @@ import org.openstack.atlas.usagerefactor.PolledUsageRecord;
 public class BandwidthUsageHelper {
 
     public static void calculateAndSetBandwidth(Usage usageToProcess, PolledUsageRecord polledUsageRecord){
-        usageToProcess.setIncomingTransfer(usageToProcess.getIncomingTransfer() + polledUsageRecord.getBandwidthIn());
-        usageToProcess.setOutgoingTransfer(usageToProcess.getOutgoingTransfer() + polledUsageRecord.getBandwidthOut());
+        if(polledUsageRecord.isSsl()){
+            usageToProcess.setIncomingTransferSsl(usageToProcess.getIncomingTransferSsl() + polledUsageRecord.getBandwidthIn());
+            usageToProcess.setOutgoingTransferSsl(usageToProcess.getOutgoingTransferSsl() + polledUsageRecord.getBandwidthOut());
+        } else {
+            usageToProcess.setIncomingTransfer(usageToProcess.getIncomingTransfer() + polledUsageRecord.getBandwidthIn());
+            usageToProcess.setOutgoingTransfer(usageToProcess.getOutgoingTransfer() + polledUsageRecord.getBandwidthOut());
+        }
     }
 // Old implementation.
 //    public static void calculateAndSetBandwidth(PolledUsageRecord startPolledUsageRecord, PolledUsageRecord endPolledUsageRecord, Usage usageToProcess){
