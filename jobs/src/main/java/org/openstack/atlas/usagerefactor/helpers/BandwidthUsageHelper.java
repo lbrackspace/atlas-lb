@@ -9,8 +9,6 @@ public class BandwidthUsageHelper {
     public static void calculateAndSetBandwidth(Usage usageToProcess, PolledUsageRecord polledUsageRecord){
         usageToProcess.setIncomingTransfer(usageToProcess.getIncomingTransfer() + polledUsageRecord.getBandwidthIn());
         usageToProcess.setOutgoingTransfer(usageToProcess.getOutgoingTransfer() + polledUsageRecord.getBandwidthOut());
-        usageToProcess.setIncomingTransferSsl(usageToProcess.getIncomingTransferSsl() + polledUsageRecord.getBandwidthInSsl());
-        usageToProcess.setOutgoingTransferSsl(usageToProcess.getOutgoingTransferSsl() + polledUsageRecord.getBandwidthOutSsl());
     }
 // Old implementation.
 //    public static void calculateAndSetBandwidth(PolledUsageRecord startPolledUsageRecord, PolledUsageRecord endPolledUsageRecord, Usage usageToProcess){

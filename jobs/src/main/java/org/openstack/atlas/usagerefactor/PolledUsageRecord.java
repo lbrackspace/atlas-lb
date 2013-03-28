@@ -6,24 +6,28 @@ public class PolledUsageRecord {
     private int id;
     private int accountId;
     private int loadbalancerId;
+    private String ipAddress;
+    private String protocol;
+    private int port;
+    private boolean ssl;
     private long bandwidthOut;
     private long bandwidthIn;
-    private long bandwidthOutSsl;
-    private long bandwidthInSsl;
     private Calendar pollTime;
     private long concurrentConnections;
     private String eventType;
 
-    public PolledUsageRecord(int id, int accountId, int loadbalancerId, long bandwidthOut, long bandwidthIn,
-                             long bandwidthOutSsl, long bandwidthInSsl, Calendar pollTime, long concurrentConnections,
-                             String eventType) {
+    public PolledUsageRecord(int id, int accountId, int loadbalancerId, String ipAddress, String protocol, int port,
+                             boolean ssl, long bandwidthOut, long bandwidthIn, Calendar pollTime,
+                             long concurrentConnections, String eventType) {
         this.id = id;
         this.accountId = accountId;
         this.loadbalancerId = loadbalancerId;
+        this.ipAddress = ipAddress;
+        this.protocol = protocol;
+        this.port = port;
+        this.ssl = ssl;
         this.bandwidthOut = bandwidthOut;
         this.bandwidthIn = bandwidthIn;
-        this.bandwidthOutSsl = bandwidthOutSsl;
-        this.bandwidthInSsl = bandwidthInSsl;
         this.pollTime = pollTime;
         this.concurrentConnections = concurrentConnections;
         this.eventType = eventType;
@@ -61,28 +65,12 @@ public class PolledUsageRecord {
         this.bandwidthOut = bandwidthOut;
     }
 
-    public long getBandwidthOutSsl() {
-        return bandwidthOutSsl;
-    }
-
-    public void setBandwidthOutSsl(long bandwidthOutSsl) {
-        this.bandwidthOutSsl = bandwidthOutSsl;
-    }
-
     public long getBandwidthIn() {
         return bandwidthIn;
     }
 
     public void setBandwidthIn(long bandwidthIn) {
         this.bandwidthIn = bandwidthIn;
-    }
-
-    public long getBandwidthInSsl() {
-        return bandwidthInSsl;
-    }
-
-    public void setBandwidthInSsl(long bandwidthInSsl) {
-        this.bandwidthInSsl = bandwidthInSsl;
     }
 
     public long getConcurrentConnections() {
@@ -107,5 +95,37 @@ public class PolledUsageRecord {
 
     public void setPollTime(Calendar pollTime) {
         this.pollTime = pollTime;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public boolean isSsl() {
+        return ssl;
+    }
+
+    public void setSsl(boolean ssl) {
+        this.ssl = ssl;
     }
 }
