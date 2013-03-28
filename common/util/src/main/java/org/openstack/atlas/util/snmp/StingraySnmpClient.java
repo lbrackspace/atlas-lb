@@ -25,8 +25,8 @@ public class StingraySnmpClient {
     private static final VerboseLogger vlog = new VerboseLogger(StingraySnmpClient.class);
     private static final Log LOG = LogFactory.getLog(StingraySnmpClient.class);
     private String address;
-    private String port;
-    private String community = "public"; // Sounds like a good default
+    private String port = StingraySnmpConstants.PORT;
+    private String community = StingraySnmpConstants.COMMUNITY;
     private long reportUdpCountEveryNMilliSeconds = 1000;
     private int maxRetrys = 13;
     private static final Random rnd = new Random();
@@ -39,9 +39,12 @@ public class StingraySnmpClient {
     public StingraySnmpClient() {
     }
 
+    public StingraySnmpClient(String address) {
+        this(address, "1161");
+    }
+
     public StingraySnmpClient(String address, String port) {
-        this.address = address;
-        this.port = port;
+        this(address, port, "public");
     }
 
     public StingraySnmpClient(String address, String port, String community) {

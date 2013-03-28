@@ -2,10 +2,15 @@ package org.openstack.atlas.usagerefactor;
 
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.util.snmp.OIDConstants;
+import org.openstack.atlas.util.snmp.StingraySnmpClient;
+import org.openstack.atlas.util.snmp.StingraySnmpConstants;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 
 import java.util.Map;
 
 public class StingrayUsageClientImpl implements StingrayUsageClient {
+
+    StingraySnmpClient client = new StingraySnmpClient();
 
     @Override
     public Map<String, Long> getConcurrentConnections(Host host) {
@@ -24,8 +29,14 @@ public class StingrayUsageClientImpl implements StingrayUsageClient {
 
     @Override
     public Long getConcurrentConnections(Host host, String virtualServerName) {
-        String oid = OIDConstants.VS_CURRENT_CONNECTIONS;
-        return null;
+        client.setAddress(host.getManagementIp());
+        client.setPort(StingraySnmpConstants.PORT);
+        try {
+            return client.getValueForServerOnHost(host.getManagementIp(), virtualServerName,
+                OIDConstants.VS_CURRENT_CONNECTIONS);
+        } catch(StingraySnmpGeneralException ssge) {
+            return (-1L);
+        }
     }
 
     @Override
