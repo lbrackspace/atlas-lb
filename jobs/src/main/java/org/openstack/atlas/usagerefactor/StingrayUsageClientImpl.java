@@ -5,6 +5,7 @@ import org.openstack.atlas.util.snmp.OIDConstants;
 import org.openstack.atlas.util.snmp.StingraySnmpClient;
 import org.openstack.atlas.util.snmp.StingraySnmpConstants;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
+import org.snmp4j.mp.SnmpConstants;
 
 import java.util.Map;
 
@@ -31,6 +32,7 @@ public class StingrayUsageClientImpl implements StingrayUsageClient {
     public Long getConcurrentConnections(Host host, String virtualServerName) {
         client.setAddress(host.getManagementIp());
         client.setPort(StingraySnmpConstants.PORT);
+        client.setVersion(SnmpConstants.version2c);
         try {
             return client.getValueForServerOnHost(host.getManagementIp(), virtualServerName,
                 OIDConstants.VS_CURRENT_CONNECTIONS);

@@ -32,6 +32,8 @@ public class StingraySnmpClient {
     private static final Random rnd = new Random();
     private static int requestId = 0;
 
+    private int version = SnmpConstants.version1;
+
     public static Random getRnd() {
         return rnd;
     }
@@ -222,7 +224,7 @@ public class StingraySnmpClient {
         CommunityTarget target = new CommunityTarget();
         target.setCommunity(new OctetString(community));
         target.setAddress(new UdpAddress(address + "/" + port));
-        target.setVersion(SnmpConstants.version1);
+        target.setVersion(version);
 
         TransportMapping transport;
         try {
@@ -295,7 +297,7 @@ public class StingraySnmpClient {
             CommunityTarget target = new CommunityTarget();
             target.setCommunity(new OctetString(community));
             target.setAddress(new UdpAddress(address + "/" + port));
-            target.setVersion(SnmpConstants.version1);
+            target.setVersion(version);
             TransportMapping transport;
             try {
                 transport = new DefaultUdpTransportMapping();
@@ -431,6 +433,14 @@ public class StingraySnmpClient {
 
     public void setMaxRetrys(int maxRetrys) {
         this.maxRetrys = maxRetrys;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 
     public synchronized static void setRequestId(int aRequestId) {
