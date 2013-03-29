@@ -3,7 +3,6 @@ package org.openstack.atlas.usagerefactor;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.util.snmp.OIDConstants;
 import org.openstack.atlas.util.snmp.StingraySnmpClient;
-import org.openstack.atlas.util.snmp.StingraySnmpConstants;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 import org.snmp4j.mp.SnmpConstants;
 
@@ -31,25 +30,36 @@ public class StingrayUsageClientImpl implements StingrayUsageClient {
     @Override
     public Long getConcurrentConnections(Host host, String virtualServerName) {
         client.setAddress(host.getManagementIp());
-        client.setPort(StingraySnmpConstants.PORT);
         client.setVersion(SnmpConstants.version2c);
         try {
             return client.getValueForServerOnHost(host.getManagementIp(), virtualServerName,
                 OIDConstants.VS_CURRENT_CONNECTIONS);
         } catch(StingraySnmpGeneralException ssge) {
-            return (-1L);
+            return -1L;
         }
     }
 
     @Override
     public Long getTotalBandwidthIn(Host host, String virtualServerName) {
-        String oid = OIDConstants.VS_BYTES_IN_LO;
-        return null;
+        client.setAddress(host.getManagementIp());
+        client.setVersion(SnmpConstants.version2c);
+        try {
+            return client.getValueForServerOnHost(host.getManagementIp(), virtualServerName,
+                    OIDConstants.VS_BYTES_IN);
+        } catch (StingraySnmpGeneralException ssge) {
+            return -1L;
+        }
     }
 
     @Override
     public Long getTotalBandwidthOut(Host host, String virtualServerName) {
-        String oid = OIDConstants.VS_BYTES_OUT_LO;
-        return null;
+        client.setAddress(host.getManagementIp());
+        client.setVersion(SnmpConstants.version2c);
+        try {
+            return client.getValueForServerOnHost(host.getManagementIp(), virtualServerName,
+                    OIDConstants.VS_BYTES_OUT);
+        } catch (StingraySnmpGeneralException ssge) {
+            return -1L;
+        }
     }
 }

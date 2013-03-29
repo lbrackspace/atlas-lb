@@ -31,8 +31,7 @@ public class StingraySnmpClient {
     private int maxRetrys = 13;
     private static final Random rnd = new Random();
     private static int requestId = 0;
-
-    private int version = SnmpConstants.version1;
+    private int version = SnmpConstants.version2c;
 
     public static Random getRnd() {
         return rnd;
@@ -210,15 +209,7 @@ public class StingraySnmpClient {
         this.address = hostIp;
 
         PDU requestPDU = new PDU();
-        if (oid.equals(OIDConstants.VS_BYTES_IN_LO) || oid.equals(OIDConstants.VS_BYTES_IN_HI)) {
-            requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(OIDConstants.VS_BYTES_IN_HI, vsName))));
-            requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(OIDConstants.VS_BYTES_IN_LO, vsName))));
-        } else if (oid.equals(OIDConstants.VS_BYTES_OUT_LO) || oid.equals(OIDConstants.VS_BYTES_OUT_HI)) {
-            requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(OIDConstants.VS_BYTES_OUT_HI, vsName))));
-            requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(OIDConstants.VS_BYTES_OUT_LO, vsName))));
-        } else {
-            requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(oid, vsName))));
-        }
+        requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(oid, vsName))));
         requestPDU.setType(PDU.GET);
 
         CommunityTarget target = new CommunityTarget();
