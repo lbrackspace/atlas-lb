@@ -30,7 +30,8 @@ public enum EventType implements Serializable {
     UPDATE_CONNECTION_LOGGING,
     UPDATE_CONTENT_CACHING,
     UPDATE_SSL_TERMINATION,
-    DELETE_SSL_TERMINATION;
+    DELETE_SSL_TERMINATION,
+    AH_USAGE_EXECUTION;
 
     private final static long serialVersionUID = 532512316L;
 }

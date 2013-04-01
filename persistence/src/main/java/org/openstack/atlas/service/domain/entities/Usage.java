@@ -46,6 +46,10 @@ public class Usage extends Entity implements Serializable {
     private boolean needsPushed;
     @Column(name = "uuid", nullable = true)
     private String uuid;
+    @Column(name = "corrected", nullable = false)
+    private boolean corrected;
+    @Column(name = "num_attempts", nullable = false)
+    private int numAttempts;
 
     public Usage() {
     }
@@ -204,6 +208,22 @@ public class Usage extends Entity implements Serializable {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public boolean isCorrected() {
+        return corrected;
+    }
+
+    public void setCorrected(boolean corrected) {
+        this.corrected = corrected;
+    }
+
+    public int getNumAttempts() {
+        return numAttempts;
+    }
+
+    public void setNumAttempts(int numAttempts) {
+        this.numAttempts = numAttempts;
     }
 
     public static Usage createNullUsageRecord() {
