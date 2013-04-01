@@ -83,7 +83,7 @@ public abstract class Event implements Serializable {
     }
 
     public void setTitle(String title) {
-        int threshhold = 1023;
+        int threshhold = 255;
         if (title.length() >= threshhold) {
             this.title = title.substring(0, threshhold -1);
         } else {
