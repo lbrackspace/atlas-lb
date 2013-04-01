@@ -5,6 +5,7 @@ import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
+import org.openstack.atlas.service.domain.util.Constants;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -48,8 +49,8 @@ public class AlertsResource extends ManagementDependencyProvider {
     @GET
     @Path("byloadbalancerids")
     public Response retrieveByLoadBalancerids(@QueryParam("id") List<Integer> ids,
-            @QueryParam("startDate") String startDate,
-            @QueryParam("endDate") String endDate) {
+                                              @QueryParam("startDate") String startDate,
+                                              @QueryParam("endDate") String endDate) {
         Alerts rAlerts = new Alerts();
         List<Alert> alerts;
         try {
@@ -64,7 +65,7 @@ public class AlertsResource extends ManagementDependencyProvider {
         return Response.status(200).entity(rAlerts).build();
     }
 
-        // TODO: document
+    // TODO: document
     // Working on this method for multiple accounts support
     @GET
     @Path("account")
@@ -97,9 +98,9 @@ public class AlertsResource extends ManagementDependencyProvider {
     @GET
     @Path("account/{aid: [1-9][0-9]*}")
     public Response retrieveByAccountId_(@PathParam("aid") int accountId,
-            @QueryParam("marker") Integer marker, @QueryParam("limit") Integer limit,
-            @QueryParam("startDate") String startDate,
-            @QueryParam("endDate") String endDate) {
+                                         @QueryParam("marker") Integer marker, @QueryParam("limit") Integer limit,
+                                         @QueryParam("startDate") String startDate,
+                                         @QueryParam("endDate") String endDate) {
         if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
@@ -108,7 +109,7 @@ public class AlertsResource extends ManagementDependencyProvider {
         org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts dataModelCls = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts();
         try {
 
-            domainCls = alertService.getByAccountId(accountId,startDate,endDate);
+            domainCls = alertService.getByAccountId(accountId, startDate, endDate);
             for (Alert domainCl : domainCls) {
                 dataModelCls.getAlerts().add(getDozerMapper().map(domainCl, org.openstack.atlas.docs.loadbalancers.api.management.v1.Alert.class, "SIMPLE_ALERT"));
             }
@@ -122,8 +123,8 @@ public class AlertsResource extends ManagementDependencyProvider {
     @GET
     @Path("cluster/{cid: [1-9][0-9]*}")
     public Response retrieveByClusterId(@PathParam("cid") int cid,
-            @QueryParam("startDate") String startDate,
-            @QueryParam("endDate") String endDate) {
+                                        @QueryParam("startDate") String startDate,
+                                        @QueryParam("endDate") String endDate) {
         org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts rAlerts = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts();
         List<Alert> alerts;
         try {
@@ -162,6 +163,7 @@ public class AlertsResource extends ManagementDependencyProvider {
     }
 
 
+    @GET
     @Path("unacknowledged")
     public Response retrieveAllUnacknowledged(@QueryParam("marker") Integer marker, @QueryParam("limit") Integer limit) {
         if (!isUserInRole("cp,ops,support")) {
@@ -182,7 +184,49 @@ public class AlertsResource extends ManagementDependencyProvider {
         }
     }
 
+    @GET
+    @Path("atomhopper")
+    public Response retrieveAllByAtomHopperUnacknowledged(@QueryParam("marker") Integer marker,
+                                                          @QueryParam("messageName") String messageName,
+                                                          @QueryParam("limit") Integer limit) {
+        if (!isUserInRole("cp,ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
+        List<Alert> domainCls;
+        Alerts dataModelCls = new Alerts();
+        try {
+            domainCls = alertService.getAllAtomHopperUnacknowledged(Constants.AH_USAGE_EVENT_FAILURE, messageName, marker, limit);
+
+            for (Alert domainCl : domainCls) {
+                dataModelCls.getAlerts().add(getDozerMapper().map(domainCl, org.openstack.atlas.docs.loadbalancers.api.management.v1.Alert.class, "SIMPLE_ALERT"));
+            }
+            return Response.status(200).entity(dataModelCls).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
     public void setAlertResource(AlertResource alertResource) {
         this.alertResource = alertResource;
+    }
+
+    @GET
+    @Path("atomhopper/byloadbalancerids")
+    public Response retrieveByLoadBalanceridsForAtomHopper(@QueryParam("id") List<Integer> ids,
+                                                           @QueryParam("messageName") String messageName,
+                                                           @QueryParam("startDate") String startDate,
+                                                           @QueryParam("endDate") String endDate) {
+        Alerts rAlerts = new Alerts();
+        List<Alert> alerts;
+        try {
+            alerts = alertService.getAtomHopperByLoadBalancersByIds(ids, startDate, endDate, Constants.AH_USAGE_EVENT_FAILURE);
+        } catch (BadRequestException ex) {
+            Logger.getLogger(AlertsResource.class.getName()).log(Level.SEVERE, null, ex);
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }
+        for (Alert dAlert : alerts) {
+            rAlerts.getAlerts().add(getDozerMapper().map(dAlert, org.openstack.atlas.docs.loadbalancers.api.management.v1.Alert.class, "SIMPLE_ALERT"));
+        }
+        return Response.status(200).entity(rAlerts).build();
     }
 }

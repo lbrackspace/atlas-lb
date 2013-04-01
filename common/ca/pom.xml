@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>ca-parent</artifactId>
-    <version>1.17.21-SNAPSHOT</version>
+    <version>1.17.24-SNAPSHOT</version>
     <name>Atlas :: CA :: Parent</name>
     <url>http://maven.apache.org</url>
     <packaging>pom</packaging>
@@ -13,15 +13,6 @@
         <module>rsa</module>
         <module>gui</module>
     </modules>
-
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.1</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
 
     <distributionManagement>
         <snapshotRepository>
