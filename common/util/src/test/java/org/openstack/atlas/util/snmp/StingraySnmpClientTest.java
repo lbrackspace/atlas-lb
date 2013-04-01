@@ -92,22 +92,14 @@ public class StingraySnmpClientTest {
 
     @Test
     public void testSingleVsByteCountRequest() throws Exception {
-        VariableBinding variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_IN_HI).get(0);
+        VariableBinding variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_OUT).get(0);
         String name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
-        Long value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_IN_HI);
+        Long value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_OUT);
         assertTrue(value >= 0);
-        variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_IN_LO).get(0);
+        variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_IN).get(0);
         name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
-        Long value2 = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_IN_LO);
-        assertTrue(value.equals(value2));
-        variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_OUT_HI).get(0);
-        name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
-        value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_OUT_HI);
+        value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_IN);
         assertTrue(value >= 0);
-        variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_OUT_LO).get(0);
-        name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
-        value2 = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_OUT_LO);
-        assertTrue(value.equals(value2));
         variableBinding = client.getWalkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS).get(0);
         name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
         value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_CURRENT_CONNECTIONS);
