@@ -2,8 +2,10 @@ package org.openstack.atlas.util.snmp;
 
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
+import org.snmp4j.mp.SnmpConstants;
 import org.snmp4j.smi.VariableBinding;
 
 import java.util.HashMap;
@@ -102,6 +104,14 @@ public class StingraySnmpClientTest {
         name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
         value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_CURRENT_CONNECTIONS);
         assertTrue(value >= 0);
+    }
+
+    //TODO: In the process of editing the method behind this test.
+    @Ignore
+    @Test
+    public void testBytesInBulkTest() throws Exception {
+        client.setVersion(SnmpConstants.version2c);
+        client.getBytesInBulkTest();
     }
 
     @Test
