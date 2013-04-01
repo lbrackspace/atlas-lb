@@ -11,28 +11,31 @@ import java.util.List;
 public class PolledUsageRecordGenerator {
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime){
-        return generate(generatorPojoList, initialPollTime, 5, 0, 0, 0, false, null);
+        return generate(generatorPojoList, initialPollTime, 5, 0, 0, 0, 0, 0, 0, null);
     }
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
                                                    List<String> eventTypes){
-        return generate(generatorPojoList, initialPollTime, 5, 0, 0, 0, false, eventTypes);
+        return generate(generatorPojoList, initialPollTime, 5, 0, 0, 0, 0, 0, 0, eventTypes);
     }
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
-                                                   long bandwidthOut, long bandwidthIn, boolean ssl){
-        return generate(generatorPojoList, initialPollTime, 5, bandwidthOut, bandwidthIn, 0, ssl, null);
+                                                   long outgoingTransfer, long incomingTransfer){
+        return generate(generatorPojoList, initialPollTime, 5, outgoingTransfer, incomingTransfer, 0, 0, 0, 0, null);
     }
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
-                                                   long bandwidthOut, long bandwidthIn, boolean ssl,
-                                                   List<String> eventTypes){
-        return generate(generatorPojoList, initialPollTime, 5, bandwidthOut, bandwidthIn, 0, ssl, eventTypes);
+                                                   long outgoingTransfer, long incomingTransfer, long outgoingTransferSsl,
+                                                   long incomingTransferSsl, List<String> eventTypes){
+        return generate(generatorPojoList, initialPollTime, 5, outgoingTransfer, incomingTransfer, outgoingTransferSsl,
+                        incomingTransferSsl, 0, 0, eventTypes);
     }
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
-                                                   int pollIntervalInMins, long bandwidthOut, long bandwidthIn,
-                                                   long concurrentConnections, boolean ssl, List<String> eventTypes) {
+                                                   int pollIntervalInMins, long outgoingTransfer, long incomingTransfer,
+                                                   long outgoingTransferSsl, long incomingTransferSsl,
+                                                   long averageConcurrentConnections, long averageConcurrentConnectionsSsl,
+                                                   List<String> eventTypes) {
         List<PolledUsageRecord> polledUsageRecords = new ArrayList<PolledUsageRecord>();
 
         Calendar pollTime;
@@ -45,22 +48,17 @@ public class PolledUsageRecordGenerator {
                 if(eventTypes != null && j < eventTypes.size()){
                     eventType = eventTypes.get(j);
                 }
-                int port = 80;
-                if(ssl){
-                    port = 443;
-                }
                 PolledUsageRecord polledUsageRecord = new PolledUsageRecord(
                         idCnt++,
                         generatorPojo.getAccountId(),
                         generatorPojo.getLoadbalancerId(),
-                        "10.0.0.1",
-                        "TCP",
-                        port,
-                        ssl,
-                        bandwidthOut,
-                        bandwidthIn,
+                        outgoingTransfer,
+                        incomingTransfer,
+                        incomingTransferSsl,
+                        outgoingTransferSsl,
+                        averageConcurrentConnections,
+                        averageConcurrentConnectionsSsl,
                         pollTime,
-                        concurrentConnections,
                         eventType
                 );
 

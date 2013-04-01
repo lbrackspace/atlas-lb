@@ -57,63 +57,25 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             return processedRecords;
         }
         Calendar validHourToProcess = stripOutMinsAndSecs(hourToProcess);
+        Calendar hourToStopProcess = stripOutMinsAndSecs(validHourToProcess);
+        hourToStopProcess.add(Calendar.HOUR, 1);
 
         Usage newUsage = createInitializedUsageRecord(polledUsageRecordsForLb.get(0));
         newUsage.setStartTime(validHourToProcess);
 
         for(int i = 0; i < polledUsageRecordsForLb.size(); i++){
-            BandwidthUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i));
-
-            //TODO: Handle events with same poll time (Event happened for lb with multiple IPs and/or has ssl term)
-            if(polledUsageRecordsForLb.get(i).getEventType() != null  &&
-                !polledUsageRecordsForLb.get(i).getEventType().toLowerCase().equals("null")){
-
-                //If first record is the CREATE_LB event only set the start time of the processed usage
-                if(!polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.CREATE_LOADBALANCER.name())){
-                    newUsage.setEndTime(polledUsageRecordsForLb.get(i).getPollTime());
-                    newUsage.setEventType(null);
-                    processedRecords.add(newUsage);
-                    newUsage = createInitializedUsageRecord(polledUsageRecordsForLb.get(i));
-                } else {
-                    newUsage.setStartTime(polledUsageRecordsForLb.get(i).getPollTime()); 
-                }
-                //If delete lb event encountered, set end time to poll time.  May need to move bandwidth off this record and onto a previous record.
-                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.DELETE_LOADBALANCER.name())){
-                    newUsage.setEndTime(polledUsageRecordsForLb.get(i).getPollTime());
-                }
-                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.CREATE_VIRTUAL_IP.name())){
-
-                }
-                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.DELETE_VIRTUAL_IP.name())){
-
-                }
-                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.SSL_MIXED_ON.name())){
-
-                }
-                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.SSL_ONLY_ON.name())){
-
-                }
-                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.SSL_OFF.name())){
-
-                }
-                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.SUSPEND_LOADBALANCER.name())){
-
-                }
-                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.UNSUSPEND_LOADBALANCER.name())){
-
-                }
-                if(polledUsageRecordsForLb.get(i).getEventType().equals(UsageEvent.SUSPENDED_LOADBALANCER.name())){
-
-                }
+            if(polledUsageRecordsForLb.get(i).getPollTime().compareTo(validHourToProcess) < 0){
+                continue;
             }
+            if(polledUsageRecordsForLb.get(i).getPollTime().compareTo(hourToStopProcess) >= 0){
+                break;
+            }
+            BandwidthUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i));
+            processEvents(newUsage, polledUsageRecordsForLb.get(i), processedRecords);
         }
 
         if(newUsage.getEndTime() == null){
-            Calendar finalEndTime = new GregorianCalendar(validHourToProcess.get(Calendar.YEAR),
-                    validHourToProcess.get(Calendar.MONTH), validHourToProcess.get(Calendar.DAY_OF_MONTH),
-                    validHourToProcess.get(Calendar.HOUR), 0, 0);
-            finalEndTime.add(Calendar.HOUR, 1);
-            newUsage.setEndTime(finalEndTime);
+            newUsage.setEndTime(hourToStopProcess);
         }
 
         processedRecords.add(newUsage);
@@ -141,5 +103,50 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         initUsage.setNeedsPushed(true);
         initUsage.setEntryVersion(0);
         return initUsage;
+    }
+
+    private void processEvents(Usage currentUsage, PolledUsageRecord currentPolledRecord, List<Usage> processedRecords){
+                    //TODO: Handle events with same poll time (Event happened for lb with multiple IPs and/or has ssl term)
+            if(currentPolledRecord.getEventType() != null  &&
+                !currentPolledRecord.getEventType().toLowerCase().equals("null")){
+
+                //If first record is the CREATE_LB event only set the start time of the processed usage
+                if(!currentPolledRecord.getEventType().equals(UsageEvent.CREATE_LOADBALANCER.name())){
+                    currentUsage.setEndTime(currentPolledRecord.getPollTime());
+                    currentUsage.setEventType(null);
+                    processedRecords.add(currentUsage);
+                    currentUsage = createInitializedUsageRecord(currentPolledRecord);
+                } else {
+                    currentUsage.setStartTime(currentPolledRecord.getPollTime()); 
+                }
+                //If delete lb event encountered, set end time to poll time.  May need to move bandwidth off this record and onto a previous record.
+                if(currentPolledRecord.getEventType().equals(UsageEvent.DELETE_LOADBALANCER.name())){
+                    currentUsage.setEndTime(currentPolledRecord.getPollTime());
+                }
+                if(currentPolledRecord.getEventType().equals(UsageEvent.CREATE_VIRTUAL_IP.name())){
+
+                }
+                if(currentPolledRecord.getEventType().equals(UsageEvent.DELETE_VIRTUAL_IP.name())){
+
+                }
+                if(currentPolledRecord.getEventType().equals(UsageEvent.SSL_MIXED_ON.name())){
+
+                }
+                if(currentPolledRecord.getEventType().equals(UsageEvent.SSL_ONLY_ON.name())){
+
+                }
+                if(currentPolledRecord.getEventType().equals(UsageEvent.SSL_OFF.name())){
+
+                }
+                if(currentPolledRecord.getEventType().equals(UsageEvent.SUSPEND_LOADBALANCER.name())){
+
+                }
+                if(currentPolledRecord.getEventType().equals(UsageEvent.UNSUSPEND_LOADBALANCER.name())){
+
+                }
+                if(currentPolledRecord.getEventType().equals(UsageEvent.SUSPENDED_LOADBALANCER.name())){
+
+                }
+            }
     }
 }

@@ -6,33 +6,31 @@ public class PolledUsageRecord {
     private int id;
     private int accountId;
     private int loadbalancerId;
-    private String ipAddress;
-    private String protocol;
-    private int port;
-    private boolean ssl;
-    private long bandwidthOut;
-    private long bandwidthIn;
+    private long outgoingTransfer;
+    private long incomingTransfer;
+    private long outgoingTransferSsl;
+    private long incomingTransferSsl;
+    private long averageConcurrentConnections;
+    private long averageConcurrentConnectionsSsl;
     private Calendar pollTime;
-    private long concurrentConnections;
     private String eventType;
 
-    public PolledUsageRecord(int id, int accountId, int loadbalancerId, String ipAddress, String protocol, int port,
-                             boolean ssl, long bandwidthOut, long bandwidthIn, Calendar pollTime,
-                             long concurrentConnections, String eventType) {
+    public PolledUsageRecord(int id, int accountId, int loadbalancerId, long outgoingTransfer,
+                             long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
+                             long averageConcurrentConnections, long averageConcurrentConnectionsSsl,
+                             Calendar pollTime, String eventType) {
         this.id = id;
         this.accountId = accountId;
         this.loadbalancerId = loadbalancerId;
-        this.ipAddress = ipAddress;
-        this.protocol = protocol;
-        this.port = port;
-        this.ssl = ssl;
-        this.bandwidthOut = bandwidthOut;
-        this.bandwidthIn = bandwidthIn;
+        this.outgoingTransfer = outgoingTransfer;
+        this.incomingTransfer = incomingTransfer;
+        this.outgoingTransferSsl = outgoingTransferSsl;
+        this.incomingTransferSsl = incomingTransferSsl;
+        this.averageConcurrentConnections = averageConcurrentConnections;
+        this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
         this.pollTime = pollTime;
-        this.concurrentConnections = concurrentConnections;
         this.eventType = eventType;
     }
-
     public int getId() {
         return id;
     }
@@ -57,36 +55,52 @@ public class PolledUsageRecord {
         this.loadbalancerId = loadbalancerId;
     }
 
-    public long getBandwidthOut() {
-        return bandwidthOut;
+    public long getOutgoingTransfer() {
+        return outgoingTransfer;
     }
 
-    public void setBandwidthOut(long bandwidthOut) {
-        this.bandwidthOut = bandwidthOut;
+    public void setOutgoingTransfer(long outgoingTransfer) {
+        this.outgoingTransfer = outgoingTransfer;
     }
 
-    public long getBandwidthIn() {
-        return bandwidthIn;
+    public long getIncomingTransfer() {
+        return incomingTransfer;
     }
 
-    public void setBandwidthIn(long bandwidthIn) {
-        this.bandwidthIn = bandwidthIn;
+    public void setIncomingTransfer(long incomingTransfer) {
+        this.incomingTransfer = incomingTransfer;
     }
 
-    public long getConcurrentConnections() {
-        return concurrentConnections;
+    public long getOutgoingTransferSsl() {
+        return outgoingTransferSsl;
     }
 
-    public void setConcurrentConnections(long concurrentConnections) {
-        this.concurrentConnections = concurrentConnections;
+    public void setOutgoingTransferSsl(long outgoingTransferSsl) {
+        this.outgoingTransferSsl = outgoingTransferSsl;
     }
 
-    public String getEventType() {
-        return eventType;
+    public long getIncomingTransferSsl() {
+        return incomingTransferSsl;
     }
 
-    public void setEventType(String eventType) {
-        this.eventType = eventType;
+    public void setIncomingTransferSsl(long incomingTransferSsl) {
+        this.incomingTransferSsl = incomingTransferSsl;
+    }
+
+    public long getAverageConcurrentConnections() {
+        return averageConcurrentConnections;
+    }
+
+    public void setAverageConcurrentConnections(long averageConcurrentConnections) {
+        this.averageConcurrentConnections = averageConcurrentConnections;
+    }
+
+    public long getAverageConcurrentConnectionsSsl() {
+        return averageConcurrentConnectionsSsl;
+    }
+
+    public void setAverageConcurrentConnectionsSsl(long averageConcurrentConnectionsSsl) {
+        this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
     }
 
     public Calendar getPollTime() {
@@ -97,35 +111,11 @@ public class PolledUsageRecord {
         this.pollTime = pollTime;
     }
 
-    public String getIpAddress() {
-        return ipAddress;
+    public String getEventType() {
+        return eventType;
     }
 
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
-
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public boolean isSsl() {
-        return ssl;
-    }
-
-    public void setSsl(boolean ssl) {
-        this.ssl = ssl;
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
     }
 }
