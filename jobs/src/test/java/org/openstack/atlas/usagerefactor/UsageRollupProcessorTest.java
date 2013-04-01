@@ -107,22 +107,34 @@ public class UsageRollupProcessorTest {
             generatorPojos.add(new GeneratorPojo(5806065, 1234, numLBPolls));
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
             long increment = 20530932;
-            long bandwidthOut = 123021;
-            long bandwidthIn = 1001421;
+            long outgoingTransfer = 123021;
+            long incomingTransfer = 1001421;
+            long outgoingTransferSsl = 23242;
+            long incomingTransferSsl = 928340;
             long totBandwidthOut = 0;
             long totBandwidthIn = 0;
+            long totBandwidthOutSsl = 0;
+            long totBandwidthInSsl = 0;
             for(PolledUsageRecord polledRecord : polledRecords){
-                polledRecord.setBandwidthOut(bandwidthOut);
-                polledRecord.setBandwidthIn(bandwidthIn);
-                totBandwidthOut += bandwidthOut;
-                totBandwidthIn += bandwidthIn;
-                bandwidthOut += increment;
-                bandwidthIn += increment;
+                polledRecord.setOutgoingTransfer(outgoingTransfer);
+                polledRecord.setIncomingTransfer(incomingTransfer);
+                polledRecord.setOutgoingTransferSsl(outgoingTransferSsl);
+                polledRecord.setIncomingTransferSsl(incomingTransferSsl);
+                totBandwidthOut += outgoingTransfer;
+                totBandwidthIn += incomingTransfer;
+                totBandwidthOutSsl += outgoingTransferSsl;
+                totBandwidthInSsl += incomingTransferSsl;
+                outgoingTransfer += increment;
+                incomingTransfer += increment;
+                outgoingTransferSsl += increment;
+                incomingTransferSsl += increment;
             }
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(1, processedUsages.size());
             Assert.assertEquals(totBandwidthOut, processedUsages.get(0).getOutgoingTransfer().longValue());
             Assert.assertEquals(totBandwidthIn, processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(totBandwidthOutSsl, processedUsages.get(0).getOutgoingTransferSsl().longValue());
+            Assert.assertEquals(totBandwidthInSsl, processedUsages.get(0).getIncomingTransferSsl().longValue());
         }
     }
 
@@ -206,16 +218,13 @@ public class UsageRollupProcessorTest {
             List<String> eventTypes = new ArrayList<String>();
             eventTypes.add(null);
             eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
-            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
-            polledRecords.get(0).setBandwidthOut(100);
-            polledRecords.get(0).setBandwidthIn(1000);
-            polledRecords.get(1).setBandwidthOut(100);
-            polledRecords.get(1).setBandwidthIn(1000);
-            polledRecords.get(2).setSsl(true);
-            polledRecords.get(2).getPollTime().setTime(polledRecords.get(1).getPollTime().getTime());
-            polledRecords.get(2).setBandwidthOut(100);
-            polledRecords.get(2).setBandwidthIn(1000);
+            polledRecords.get(0).setOutgoingTransfer(100);
+            polledRecords.get(0).setIncomingTransfer(1000);
+            polledRecords.get(1).setOutgoingTransfer(100);
+            polledRecords.get(1).setIncomingTransfer(1000);
+            polledRecords.get(1).setOutgoingTransferSsl(100);
+            polledRecords.get(1).setIncomingTransferSsl(1000);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
             Assert.assertEquals(200, processedUsages.get(0).getOutgoingTransfer().longValue());
@@ -238,45 +247,30 @@ public class UsageRollupProcessorTest {
             List<String> eventTypes = new ArrayList<String>();
             eventTypes.add(null);
             eventTypes.add(null);
-
-            eventTypes.add(null);
-            eventTypes.add(null);
-
             eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
-            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
-
             eventTypes.add(null);
-
             eventTypes.add(null);
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
-            polledRecords.get(0).setBandwidthOut(100);
-            polledRecords.get(0).setBandwidthIn(1000);
-            polledRecords.get(1).setSsl(true);
-            polledRecords.get(1).getPollTime().setTime(polledRecords.get(0).getPollTime().getTime());
-            polledRecords.get(1).setBandwidthOut(100);
-            polledRecords.get(1).setBandwidthIn(1000);
+            polledRecords.get(0).setOutgoingTransfer(100);
+            polledRecords.get(0).setIncomingTransfer(1000);
+            polledRecords.get(0).setOutgoingTransferSsl(100);
+            polledRecords.get(0).setIncomingTransferSsl(1000);
 
-            polledRecords.get(2).setBandwidthOut(100);
-            polledRecords.get(2).setBandwidthIn(1000);
-            polledRecords.get(3).setSsl(true);
-            polledRecords.get(3).getPollTime().setTime(polledRecords.get(2).getPollTime().getTime());
-            polledRecords.get(3).setBandwidthOut(100);
-            polledRecords.get(3).setBandwidthIn(1000);
+            polledRecords.get(1).setOutgoingTransfer(100);
+            polledRecords.get(1).setIncomingTransfer(1000);
+            polledRecords.get(1).setOutgoingTransferSsl(100);
+            polledRecords.get(1).setIncomingTransferSsl(1000);
 
-            polledRecords.get(4).setBandwidthOut(100);
-            polledRecords.get(4).setBandwidthIn(1000);
-            polledRecords.get(5).setSsl(true);
-            polledRecords.get(5).getPollTime().setTime(polledRecords.get(4).getPollTime().getTime());
-            polledRecords.get(5).setBandwidthOut(100);
-            polledRecords.get(5).setBandwidthIn(1000);
+            polledRecords.get(2).setOutgoingTransfer(100);
+            polledRecords.get(2).setIncomingTransfer(1000);
+            polledRecords.get(2).setOutgoingTransferSsl(100);
+            polledRecords.get(2).setIncomingTransferSsl(1000);
 
-            polledRecords.get(6).setSsl(true);
-            polledRecords.get(6).setBandwidthOut(100);
-            polledRecords.get(6).setBandwidthIn(1000);
+            polledRecords.get(3).setOutgoingTransferSsl(100);
+            polledRecords.get(3).setIncomingTransferSsl(1000);
 
-            polledRecords.get(7).setSsl(true);
-            polledRecords.get(7).setBandwidthOut(100);
-            polledRecords.get(7).setBandwidthIn(1000);
+            polledRecords.get(4).setOutgoingTransferSsl(100);
+            polledRecords.get(4).setIncomingTransferSsl(1000);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
             Assert.assertEquals(300, processedUsages.get(0).getOutgoingTransfer().longValue());
@@ -306,6 +300,7 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(compTime, processedUsages.get(0).getEndTime());
         }
 
+        @Ignore
         @Test
         public void shouldEndRecordOnEndTimeOfDeleteLBEvent(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
@@ -326,37 +321,39 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(compTime, processedUsages.get(1).getEndTime());
         }
 
+        @Ignore
         @Test
         public void shouldHaveBandwidthOnRecordBeforeEvent(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            polledRecords.get(1).setBandwidthOut(12345);
-            polledRecords.get(1).setBandwidthIn(54321);
+            polledRecords.get(1).setOutgoingTransfer(12345);
+            polledRecords.get(1).setIncomingTransfer(54321);
             polledRecords.get(1).setEventType(UsageEvent.DELETE_LOADBALANCER.name());
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
-            Assert.assertEquals(polledRecords.get(1).getBandwidthIn(), processedUsages.get(0).getIncomingTransfer().longValue());
-            Assert.assertEquals(polledRecords.get(1).getBandwidthOut(), processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertEquals(polledRecords.get(1).getIncomingTransfer(), processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(polledRecords.get(1).getOutgoingTransfer(), processedUsages.get(0).getOutgoingTransfer().longValue());
             Assert.assertEquals(0, processedUsages.get(1).getIncomingTransfer().longValue());
             Assert.assertEquals(0, processedUsages.get(1).getOutgoingTransfer().longValue());
         }
 
+        @Ignore
         @Test
         public void shouldCreateCreateTwoRecordsIfEventIsFirstPolledRecordOfHour(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 1));
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            polledRecords.get(0).setBandwidthOut(12345);
-            polledRecords.get(0).setBandwidthIn(54321);
+            polledRecords.get(0).setOutgoingTransfer(12345);
+            polledRecords.get(0).setIncomingTransfer(54321);
             polledRecords.get(0).getPollTime().add(Calendar.MINUTE, 1);
             polledRecords.get(0).setEventType(UsageEvent.DELETE_LOADBALANCER.name());
             Calendar compTime = Calendar.getInstance();
             compTime.setTime(initialPollTime.getTime());
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
-            Assert.assertEquals(polledRecords.get(0).getBandwidthIn(), processedUsages.get(0).getIncomingTransfer().longValue());
-            Assert.assertEquals(polledRecords.get(0).getBandwidthOut(), processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertEquals(polledRecords.get(0).getIncomingTransfer(), processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(polledRecords.get(0).getOutgoingTransfer(), processedUsages.get(0).getOutgoingTransfer().longValue());
             Assert.assertNull(processedUsages.get(0).getEventType());
             Assert.assertEquals(compTime.get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
             Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.MINUTE));
