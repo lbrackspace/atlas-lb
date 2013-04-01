@@ -41,6 +41,11 @@ public class AlertServiceImpl extends org.openstack.atlas.service.domain.service
     }
 
     @Override
+    public List<Alert> getAtomHopperByLoadBalancersByIds(List<Integer> ids, String startDate, String endDate, String queryName) throws BadRequestException {
+        return alertRepository.getAtomHopperByLoadBalancersByIds(ids, startDate, endDate, queryName);
+    }
+
+    @Override
     public List<Alert> getAll(String status, Integer marker, Integer limit) {
         return alertRepository.getAll(status, marker, limit);
     }
@@ -48,6 +53,11 @@ public class AlertServiceImpl extends org.openstack.atlas.service.domain.service
     @Override
     public List<Alert> getAllUnacknowledged(Integer marker, Integer limit) {
         return alertRepository.getAllUnacknowledged(marker, limit);
+    }
+
+    @Override
+    public List<Alert> getAllAtomHopperUnacknowledged(String type, String name, Integer marker, Integer limit) {
+        return alertRepository.getAllUnacknowledgedByName(type, name, marker, limit);
     }
 
     @Override

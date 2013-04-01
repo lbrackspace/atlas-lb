@@ -8,6 +8,7 @@ import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.CustomQuery;
 import org.openstack.atlas.service.domain.pojos.QueryParameter;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.converters.exceptions.ConverterException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -292,7 +293,7 @@ public class AlertRepository {
         String queryStr = "SELECT ht FROM Alert ht WHERE ht.accountId = :accountId AND ht.created <= :endDate AND ht.created >= :startDate";
 
         List<Alert> results = entityManager.createQuery(queryStr).setFirstResult(marker).setMaxResults(limit).setParameter("accountId", accountId).setParameter("startDate", startCal).setParameter("endDate", endCal).getResultList();
-        
+
         return results;
     }
 
@@ -347,6 +348,87 @@ public class AlertRepository {
         alts = query.getResultList();
         return alts;
     }
+
+    public List<Alert> getAllUnacknowledgedByName(String type, String name, Integer... p) {
+        List<Alert> alts = new ArrayList<Alert>();
+
+        //quick...
+        Query query;
+        if (name == null) {
+            query = entityManager.createQuery("SELECT h FROM Alert h where h.status = 'UNACKNOWLEDGED' and h.alertType = :type");
+            query.setParameter("type", type);
+        } else  {
+            query = entityManager.createQuery("SELECT h FROM Alert h where h.status = 'UNACKNOWLEDGED' and h.messageName = :name and h.alertType = :type");
+            query.setParameter("type", name).setParameter("type", type);
+        }
+        if (p.length >= 2) {
+            Integer marker = p[0];
+            Integer limit = p[1];
+            if (limit == null || limit > 100) {
+                limit = 100;
+            }
+            if (marker == null) {
+                marker = 0;
+            }
+            query = query.setFirstResult(marker).setMaxResults(limit);
+        }
+        alts = query.getResultList();
+        return alts;
+    }
+
+    public List<Alert> getAtomHopperByLoadBalancersByIds(List<Integer> loadBalancerIds, String startDate, String endDate, String queryName) throws BadRequestException {
+        List<Alert> alerts;
+        CustomQuery cq;
+        String intsAsString;
+        String qStr;
+        String qformat;
+        Calendar startCal;
+        Calendar endCal;
+        Query q;
+        try {
+            intsAsString = integerList2cdString(loadBalancerIds);
+        } catch (ConverterException ex) {
+            Logger.getLogger(AlertRepository.class.getName()).log(Level.SEVERE, null, ex);
+            throw new BadRequestException("loadBalancerIds can not be Null");
+        }
+        qformat = "SELECT al From Alert al where al.loadbalancerId "
+                + "IN (%s)";
+
+        qStr = String.format(qformat, intsAsString);
+        cq = new CustomQuery(qStr);
+        cq.setWherePrefix(""); // The where prefix was included above
+        if (startDate != null) {
+            try {
+                startCal = isoTocal(startDate);
+            } catch (ConverterException ex) {
+                Logger.getLogger(AlertRepository.class.getName()).log(Level.SEVERE, null, ex);
+                throw new BadRequestException("Invalid startDate", ex);
+            }
+            cq.addParam("al.created", ">=", "startDate", startCal);
+        }
+
+        if (endDate != null) {
+            try {
+                endCal = isoTocal(endDate);
+            } catch (ConverterException ex) {
+                Logger.getLogger(AlertRepository.class.getName()).log(Level.SEVERE, null, ex);
+                throw new BadRequestException("Invalid endDate", ex);
+            }
+            cq.addParam("al.created", "<=", "endDate", endCal);
+        }
+        cq.addParam("al.alertType", "=", "queryName", queryName);
+        if (cq.getQueryParameters().size() > 0) {
+            cq.setWherePrefix(" and ");
+        }
+        q = entityManager.createQuery(cq.getQueryString());
+        for (QueryParameter qp : cq.getQueryParameters()) {
+            String pname = qp.getPname();
+            Object val = qp.getValue();
+            q.setParameter(pname, val);
+        }
+        return q.getResultList();
+    }
+
 
     public void removeAlertEntries() {
         Calendar cal = Calendar.getInstance();

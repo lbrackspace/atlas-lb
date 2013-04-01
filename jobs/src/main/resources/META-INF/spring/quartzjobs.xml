@@ -29,6 +29,7 @@
                 <ref bean="eventsDeletionJobTrigger"/>
                 <ref bean="atomAlertDeletionJobTrigger"/>
                 <ref bean="hostEndpointPollerJobTrigger"/>
+                <!--<ref bean="atomHopperUsageRetryExecutionTrigger"/>-->
             </list>
         </property>
     </bean>
@@ -108,9 +109,9 @@
                 <entry key="usageRepository" value-ref="usageRepository"/>
                 <entry key="pollingUsageRepository" value-ref="hourlyUsageRepository"/>
                 <entry key="usageEventRepository" value-ref="usageEventRepository"/>
-                <entry key="threadPoolMonitorService" value-ref="threadPoolMonitorService"/>
-                <entry key="threadPoolExecutorService" value-ref="threadPoolExecutorService"/>
                 <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
+                <entry key="atomHopperUsageJobExecution" value-ref="atomHopperUsageJobExecution"/>
+                <entry key="atomHopperUsageJobRetryExecution" value-ref="atomHopperUsageJobRetryExecution"/>
             </map>
         </property>
     </bean>
@@ -235,4 +236,17 @@
         <!-- run every 15 mins -->
     </bean>
 
+    <!--ATOM HOPPER USAGE JOB-->
+    <!--<bean name="atomHopperUsageJobRetryRetryJob" class="org.springframework.scheduling.quartz.JobDetailBean">-->
+    <!--<property name="jobClass" value="org.openstack.atlas.usage.jobs.AtomHopperUsageRetryJob"/>-->
+    <!--<property name="jobDataAsMap">-->
+    <!--<map>-->
+    <!--<entry key="atomHopperUsageJobRetryExecution" value-ref="atomHopperUsageJobRetryExecution"/>-->
+    <!--</map>-->
+    <!--</property>-->
+    <!--</bean>-->
+    <!--<bean id="atomHopperUsageRetryExecutionTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">-->
+    <!--<property name="jobDetail" ref="atomHopperUsageJobRetryRetryJob"/>-->
+    <!--<property name="cronExpression" value="${ahusl.usage.retry.interval}"/>-->
+    <!--</bean>-->
 </beans>

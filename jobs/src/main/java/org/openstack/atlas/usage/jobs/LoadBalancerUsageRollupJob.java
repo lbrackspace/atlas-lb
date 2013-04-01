@@ -2,19 +2,10 @@ package org.openstack.atlas.usage.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
-import org.openstack.atlas.atom.auth.AHUSLAuthentication;
-import org.openstack.atlas.atom.client.AtomHopperClientImpl;
-import org.openstack.atlas.atom.config.AtomHopperConfiguration;
-import org.openstack.atlas.atom.config.AtomHopperConfigurationKeys;
-import org.openstack.atlas.atom.exception.AtomHopperUSLJobExecutionException;
-import org.openstack.atlas.atom.service.ThreadPoolExecutorService;
-import org.openstack.atlas.atom.service.ThreadPoolMonitorService;
-import org.openstack.atlas.atom.tasks.LoadBalancerAHUSLTask;
-import org.openstack.atlas.atom.util.AHUSLServiceUtil;
-import org.openstack.atlas.atom.util.AHUSLUtil;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.Job;
+import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfiguration;
+import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -23,6 +14,8 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
+import org.openstack.atlas.usage.execution.UsageToAtomHopperExecution;
+import org.openstack.atlas.usage.execution.UsageToAtomHopperRetryExecution;
 import org.openstack.atlas.usage.logic.UsageRollupProcessor;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -33,7 +26,6 @@ import javax.persistence.PersistenceException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsageRollupJob.class);
@@ -48,18 +40,11 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
     private LoadBalancerUsageEventRepository usageEventRepository;
 
     // Atom Hopper Pusher Dependencies
+    private UsageToAtomHopperExecution atomHopperUsageJobExecution;
+    private UsageToAtomHopperRetryExecution atomHopperUsageJobRetryExecution;
     private Configuration configuration = new AtomHopperConfiguration();
-    private ThreadPoolMonitorService threadPoolMonitorService;
-    private ThreadPoolExecutorService threadPoolExecutorService;
     private LoadBalancerRepository loadBalancerRepository;
-    private String authToken;
-    private ThreadPoolExecutor taskExecutor;
-    private long nTasks = Long.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_task_count));
-    private int maxPoolSize = Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_max_size));
-    private int corePoolSize = Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_core_size));
-    private long keepAliveTime = Long.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_conn_timeout));
 
-    private AtomHopperClientImpl ahclient;
 
     @Required
     public void setUsageRepository(UsageRepository usageRepository) {
@@ -82,20 +67,30 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
     }
 
     @Required
-    public void setThreadPoolMonitorService(ThreadPoolMonitorService threadPoolMonitorService) {
-        this.threadPoolMonitorService = threadPoolMonitorService;
+    public void setAtomHopperUsageJobExecution(UsageToAtomHopperExecution atomHopperUsageJobExecution) {
+        this.atomHopperUsageJobExecution = atomHopperUsageJobExecution;
     }
 
     @Required
-    public void setThreadPoolExecutorService(ThreadPoolExecutorService threadPoolExecutorService) {
-        this.threadPoolExecutorService = threadPoolExecutorService;
+    public void setAtomHopperUsageJobRetryExecution(UsageToAtomHopperRetryExecution atomHopperUsageJobRetryExecution) {
+        this.atomHopperUsageJobRetryExecution = atomHopperUsageJobRetryExecution;
     }
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         rollupUsage();
         addSuspendedUsageEvents();
-        pushUsageToAtomHopper();
+//        pushUsageToAtomHopper();
+        try {
+            atomHopperUsageJobExecution.execute();
+            if (Boolean.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_run_failed_entries))) {
+                atomHopperUsageJobRetryExecution.execute();
+            }
+        } catch (Exception e) {
+            throw new JobExecutionException(e);
+        }
+
+
     }
 
     private void addSuspendedUsageEvents() {
@@ -190,66 +185,67 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
         LOG.info(String.format("Usage rollup job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 
+    @Deprecated
     private void pushUsageToAtomHopper() {
-        Calendar startTime = Calendar.getInstance();
-        LOG.info(String.format("Atom hopper load balancer usage poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
-        jobStateService.updateJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.IN_PROGRESS);
-
-        if (configuration.getString(AtomHopperConfigurationKeys.allow_ahusl).equals("true")) {
-            try {
-                authToken = retrieveAndProcessAuthToken();
-                if (authToken != null) {
-                    threadPoolMonitorService = AHUSLServiceUtil.startThreadMonitor(taskExecutor, threadPoolMonitorService);
-                    taskExecutor = AHUSLServiceUtil.startThreadExecutor(taskExecutor, threadPoolExecutorService, corePoolSize, maxPoolSize, keepAliveTime);
-
-                    //Process usage rows, send batched rows to tasks@loadBalancerAHUSLTask
-                    LOG.debug("Setting up the client...");
-                    ahclient = new AtomHopperClientImpl();
-                    int totalUsageRowsToSend = 0;
-                    List<Usage> lbusages = loadBalancerRepository.getAllUsageNeedsPushed(AHUSLUtil.getStartCal(), AHUSLUtil.getNow());
-
-                    List<Usage> processUsage;
-                    if (!lbusages.isEmpty()) {
-                        int taskCounter = 0;
-                        while (totalUsageRowsToSend < lbusages.size()) {
-                            processUsage = new ArrayList<Usage>();
-                            LOG.debug("Processing usage into tasks.. task: " + taskCounter);
-                            for (int i = 0; i < nTasks; i++) {
-                                if (totalUsageRowsToSend <= lbusages.size() - 1) {
-                                    processUsage.add(lbusages.get(totalUsageRowsToSend));
-                                    totalUsageRowsToSend++;
-
-                                } else {
-                                    break;
-                                }
-                            }
-                            taskCounter++;
-                            taskExecutor.execute(new LoadBalancerAHUSLTask(processUsage, ahclient, authToken, usageRepository)); //TODO: Need to move repository deps...
-                        }
-                    } else {
-                        LOG.debug("No usage found for processing at this time...");
-                    }
-
-                    AHUSLServiceUtil.shutDownAHUSLServices(taskExecutor, threadPoolMonitorService, ahclient);
-                } else {
-                    LOG.error("Could not retrieve authentication token, no requests are being processed, please notify operations... ::AUTH FAILED ALERT::");
-                }
-            } catch (Throwable t) {
-                LOG.error(String.format("Exception: %s\n", AHUSLUtil.getExtendedStackTrace(t)));
-                Calendar endTime = Calendar.getInstance();
-                Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-                jobStateService.updateJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.FAILED);
-                LOG.info(String.format("Atom hopper load balancer usage poller job failed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
-                AHUSLServiceUtil.shutDownAHUSLServices(taskExecutor, threadPoolMonitorService, ahclient);
-                return;
-
-            }
-
-            Calendar endTime = Calendar.getInstance();
-            Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-            jobStateService.updateJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.FINISHED);
-            LOG.info(String.format("Atom hopper load balancer usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
-        }
+//        Calendar startTime = Calendar.getInstance();
+//        LOG.info(String.format("Atom hopper load balancer usage poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
+//        jobStateService.updateJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.IN_PROGRESS);
+//
+//        if (configuration.getString(AtomHopperConfigurationKeys.allow_ahusl).equals("true")) {
+//            try {
+//                authToken = retrieveAndProcessAuthToken();
+//                if (authToken != null) {
+////                    threadPoolMonitorService = AHUSLServiceUtil.startThreadMonitor(taskExecutor, threadPoolMonitorService);
+////                    taskExecutor = AHUSLServiceUtil.startThreadExecutor(taskExecutor, threadPoolExecutorService, corePoolSize, maxPoolSize, keepAliveTime);
+//
+//                    //Process usage rows, send batched rows to tasks@loadBalancerAHUSLTask
+//                    LOG.debug("Setting up the client...");
+//                    ahclient = new AtomHopperClientImpl();
+//                    int totalUsageRowsToSend = 0;
+//                    List<Usage> lbusages = loadBalancerRepository.getAllUsageNeedsPushed(AtomHopperUtil.getStartCal(), AtomHopperUtil.getNow());
+//
+//                    List<Usage> processUsage;
+//                    if (!lbusages.isEmpty()) {
+//                        int taskCounter = 0;
+//                        while (totalUsageRowsToSend < lbusages.size()) {
+//                            processUsage = new ArrayList<Usage>();
+//                            LOG.debug("Processing usage into tasks.. task: " + taskCounter);
+//                            for (int i = 0; i < nTasks; i++) {
+//                                if (totalUsageRowsToSend <= lbusages.size() - 1) {
+//                                    processUsage.add(lbusages.get(totalUsageRowsToSend));
+//                                    totalUsageRowsToSend++;
+//
+//                                } else {
+//                                    break;
+//                                }
+//                            }
+//                            taskCounter++;
+////                            taskExecutor.execute(new AtomHopperLBTask(processUsage, ahclient, authToken, usageRepository));
+//                        }
+//                    } else {
+//                        LOG.debug("No usage found for processing at this time...");
+//                    }
+//
+////                    AHUSLServiceUtil.shutDownAHUSLServices(taskExecutor, threadPoolMonitorService, ahclient);
+//                } else {
+//                    LOG.error("Could not retrieve authentication token, no requests are being processed, please notify operations... ::AUTH FAILED ALERT::");
+//                }
+//            } catch (Throwable t) {
+//                LOG.error(String.format("Exception: %s\n", AtomHopperUtil.getExtendedStackTrace(t)));
+//                Calendar endTime = Calendar.getInstance();
+//                Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
+//                jobStateService.updateJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.FAILED);
+//                LOG.info(String.format("Atom hopper load balancer usage poller job failed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
+////                AHUSLServiceUtil.shutDownAHUSLServices(taskExecutor, threadPoolMonitorService, ahclient);
+//                return;
+//
+//            }
+//
+//            Calendar endTime = Calendar.getInstance();
+//            Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
+//            jobStateService.updateJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.FINISHED);
+//            LOG.info(String.format("Atom hopper load balancer usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
+//        }
     }
 
     private void deleteBadEntries(List<Usage> usagesWithBadEntries) {
@@ -276,20 +272,18 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
         usagesWithBadEntries.removeAll(usageItemsToDelete);
     }
 
-    private String retrieveAndProcessAuthToken() {
-        try {
-            String username = configuration.getString(PublicApiServiceConfigurationKeys.identity_user);
-            String password = configuration.getString(PublicApiServiceConfigurationKeys.identity_pass);
-            AHUSLAuthentication ahuslAuthentication = new AHUSLAuthentication();
-            authToken = ahuslAuthentication.getToken(username, password).getToken().getId();
-            if (authToken != null) {
-                LOG.info("Token successfully retrieved: " + authToken + " For User: " + username);
-                return authToken;
-            }
-        } catch (Exception e) {
-            LOG.error("Could not retrieve authentication token, no requests are being processed, please notify operations... ::AUTH FAILED ALERT::");
-            throw new AtomHopperUSLJobExecutionException("Error retrieving auth token: " + e);
-        }
-        return null;
-    }
+//    private String retrieveAndProcessAuthToken() {
+//        try {
+//            IdentityAuthClient ahuslAuthentication = new IdentityClientImpl();
+//            authToken = ahuslAuthentication.getAuthResponse().getToken().getId();
+//            if (authToken != null) {
+//                LOG.info("Successfully retrieved token for Admin user: " + configuration.getString(AuthenticationCredentialConfigurationKeys.identity_user));
+//                return authToken;
+//            }
+//        } catch (Exception e) {
+//            LOG.error("Could not retrieve authentication token, no requests are being processed, please notify operations... ::AUTH FAILED ALERT::");
+//            throw new AtomHopperUSLJobExecutionException("Error retrieving auth token: " + e);
+//        }
+//        return null;
+//    }
 }
