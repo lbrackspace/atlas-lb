@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-rest-clients</artifactId>
-        <version>1.17.15-SNAPSHOT</version>
+        <version>1.17.24-SNAPSHOT</version>
     </parent>
 
 
@@ -42,6 +42,11 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>atlas-b64aes</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

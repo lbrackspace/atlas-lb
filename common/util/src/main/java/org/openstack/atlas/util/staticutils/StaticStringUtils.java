@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 public class StaticStringUtils {
-
     public static String lpadLong(long val, String pad, int npad) {
         return lpad(Long.toString(val), pad, npad);
     }
@@ -167,5 +166,4 @@ public class StaticStringUtils {
         }
         return argsOut;
     }
-
 }

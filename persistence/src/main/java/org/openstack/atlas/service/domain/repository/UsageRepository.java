@@ -84,18 +84,18 @@ public class UsageRepository {
 
     private String generateBatchInsertQuery(List<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed) values");
+        sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed, uuid, corrected, num_attempts) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
 
     private String generateBatchUpdateQuery(List<Usage> usages) {
-       return generateBatchUpdateQuery(usages, true);
+        return generateBatchUpdateQuery(usages, true);
     }
 
     private String generateBatchUpdateQuery(List<Usage> usages, boolean isUsageUpdate) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("REPLACE INTO lb_usage(id, loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed) values");
+        sb.append("REPLACE INTO lb_usage(id, loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed, uuid, corrected, num_attempts) values");
         sb.append(generateFormattedValues(usages, isUsageUpdate));
         return sb.toString();
     }
@@ -219,18 +219,39 @@ public class UsageRepository {
             versionBump += 1;
             sb.append(versionBump);
             sb.append(",");
-            //Mark as not pushed so job can update the AHUSL
             sb.append(1);
+            sb.append(",");
+            if (usage.getUuid() == null) {
+                sb.append("NULL");
+            } else {
+                sb.append("'");
+                sb.append(usage.getUuid());
+                sb.append("'");
+            }
+            sb.append(",");
+            sb.append(usage.isCorrected());
+            sb.append(",");
+            sb.append(usage.getNumAttempts());
             sb.append("),");
             return sb.toString();
         } else {
             sb.append(usage.getEntryVersion());
             sb.append(",");
-            //Mark as not pushed so job can update the AHUSL
             sb.append(usage.isNeedsPushed());
+            sb.append(",");
+            if (usage.getUuid() == null) {
+                sb.append("NULL");
+            } else {
+                sb.append("'");
+                sb.append(usage.getUuid());
+                sb.append("'");
+            }
+            sb.append(",");
+            sb.append(usage.isCorrected());
+            sb.append(",");
+            sb.append(usage.getNumAttempts());
             sb.append("),");
         }
-
         return sb.toString();
     }
 

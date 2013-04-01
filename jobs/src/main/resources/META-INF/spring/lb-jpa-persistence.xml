@@ -59,7 +59,8 @@
           scope="prototype"/>
     <bean id="alertRepository" class="org.openstack.atlas.service.domain.events.repository.AlertRepository"
           scope="prototype"/>
-    <bean id="loadBalancerEventRepository" class="org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository"
+    <bean id="loadBalancerEventRepository"
+          class="org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository"
           scope="prototype"/>
     <bean id="usageRepository" class="org.openstack.atlas.service.domain.repository.UsageRepository"
           scope="prototype"/>
@@ -68,16 +69,40 @@
 
 
     <!-- AHUSL -->
-    <bean id="loadBalancerAHUSLTask" class="org.openstack.atlas.atom.tasks.LoadBalancerAHUSLTask"/>
-    <bean id="threadPoolMonitorService" class="org.openstack.atlas.atom.service.serviceImpl.ThreadPoolMonitorServiceImpl">
-        <property name="monitoringPeriod"  value="5" />
+    <bean id="loadBalancerAHUSLTask" class="org.openstack.atlas.atomhopper.tasks.AtomHopperLBTask"/>
+
+    <bean id="abstractUsageExecution" abstract="true"
+          class="org.openstack.atlas.usage.execution.AbstractUsageExecution">
+        <property name="jobStateService" ref="jobStateService"/>
+        <property name="threadPoolMonitorService" ref="threadPoolMonitorService"/>
+        <property name="threadPoolExecutorService" ref="threadPoolExecutorService"/>
     </bean>
-    <bean id="rejectedExecutionHandler" class="org.openstack.atlas.atom.handler.RejectedExecutionHandler"/>
-    <bean id="threadPoolExecutorService" class="org.openstack.atlas.atom.service.serviceImpl.ThreadPoolExecutorServiceImpl">
-        <property name="corePoolSize"  value="5" />
-        <property name="maxPoolSize"   value="10" />
-        <property name="keepAliveTime" value="30" />
-        <property name="queueCapacity" value="300" />
-        <property name="rejectedExecutionHandler" ref="rejectedExecutionHandler" />
+    <bean id="atomHopperUsageJobExecution" class="org.openstack.atlas.usage.execution.UsageToAtomHopperExecution"
+          parent="abstractUsageExecution">
+        <property name="usageRepository" ref="usageRepository"/>
+        <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
+        <property name="loadBalancerEventRepository" ref="loadBalancerEventRepository"/>
+        <property name="alertRepository" ref="alertRepository"/>
+    </bean>
+    <bean id="atomHopperUsageJobRetryExecution"
+          class="org.openstack.atlas.usage.execution.UsageToAtomHopperRetryExecution"
+          parent="abstractUsageExecution">
+        <property name="usageRepository" ref="usageRepository"/>
+        <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
+        <property name="loadBalancerEventRepository" ref="loadBalancerEventRepository"/>
+        <property name="alertRepository" ref="alertRepository"/>
+    </bean>
+    <bean id="threadPoolMonitorService"
+          class="org.openstack.atlas.usage.thread.service.serviceImpl.ThreadPoolMonitorServiceImpl">
+        <property name="monitoringPeriod" value="5"/>
+    </bean>
+    <bean id="rejectedExecutionHandler" class="org.openstack.atlas.usage.thread.service.RejectedExecutionHandler"/>
+    <bean id="threadPoolExecutorService"
+          class="org.openstack.atlas.usage.thread.service.serviceImpl.ThreadPoolExecutorServiceImpl">
+        <property name="corePoolSize" value="5"/>
+        <property name="maxPoolSize" value="10"/>
+        <property name="keepAliveTime" value="30"/>
+        <property name="queueCapacity" value="300"/>
+        <property name="rejectedExecutionHandler" ref="rejectedExecutionHandler"/>
     </bean>
 </beans>

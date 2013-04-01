@@ -18,6 +18,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.util.debug.Debug;
+
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
@@ -38,6 +42,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.util.common.exceptions.FileUtilsException;
 
 import org.openstack.atlas.util.debug.Debug;
+import java.util.zip.CRC32;
 
 public class StaticFileUtils {
 

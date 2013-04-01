@@ -7,37 +7,43 @@
         Lbaas load balancer usage fields.
     </description>
     <attribute name="avgConcurrentConnections" type="double" use="required"
-               aggregateFunction="CUMULATIVE_AVG" frequencyAttribute='numPolls'
-               unitOfMeasure="COUNT">
+               aggregateFunction="CUMULATIVE_AVG" frequency='DURATION'
+               unitOfMeasure="COUNT" min="0" max="1000000">
         The amount of conncurrent connections.
     </attribute>
     <attribute name="avgConcurrentConnectionsSsl" type="double" use="required"
-               aggregateFunction="CUMULATIVE_AVG" frequencyAttribute='numPolls'
-               unitOfMeasure="COUNT">
+               aggregateFunction="CUMULATIVE_AVG" frequency='DURATION'
+               unitOfMeasure="COUNT" min="0" max="1000000">
         The amount of conncurrent ssl connections.
     </attribute>
     <attribute name="bandWidthIn" type="unsignedLong" use="required"
-               unitOfMeasure="B" aggregateFunction="SUM">
+               unitOfMeasure="B" aggregateFunction="SUM" min="0"
+               max="10995116277760">
         The amount of bandwidth in, in bytes.
     </attribute>
     <attribute name="bandWidthOut" type="unsignedLong" use="required"
-               unitOfMeasure="B" aggregateFunction="SUM">
+               unitOfMeasure="B" aggregateFunction="SUM" min="0"
+               max="10995116277760">
         The amount of bandwidth out in bytes.
     </attribute>
     <attribute name="bandWidthInSsl" type="unsignedLong" use="required"
-               unitOfMeasure="B" aggregateFunction="SUM">
+               unitOfMeasure="B" aggregateFunction="SUM" min="0"
+               max="10995116277760">
         The amount of ssl bandwidth in, in bytes.
     </attribute>
     <attribute name="bandWidthOutSsl" type="unsignedLong" use="required"
-               unitOfMeasure="B" aggregateFunction="SUM">
+               unitOfMeasure="B" aggregateFunction="SUM" min="0"
+               max="10995116277760">
         The amount of ssl bandwidth out in bytes.
     </attribute>
     <attribute name="numPolls" type="int" use="required"
-               unitOfMeasure="COUNT">
+               billable="false" unitOfMeasure="COUNT"
+               min="0" max="288">
         The number of polls per load balancer.
     </attribute>
     <attribute name="numVips" type="int" use="required"
-               billable="false" unitOfMeasure="COUNT">
+               billable="false" unitOfMeasure="COUNT"
+               min="0" max="100">
         The number of vips per load balancer.
     </attribute>
     <attribute name="vipType" type="string" use="required"
@@ -52,4 +58,25 @@
                allowedValues="ACTIVE SUSPENDED">
         Is the load balancer currently active?
     </attribute>
+    <xpathAssertion test="if (@status = 'SUSPENDED') then
+                          ((@bandWidthIn = 0) and (@bandWidthOut = 0) and
+                          (@bandWidthInSsl = 0) and (@bandWidthOutSsl = 0) and
+                          (@avgConcurrentConnections = 0) and
+                          (@avgConcurrentConnectionsSsl = 0)) else true()">
+        If the status is SUSPENDED then bandWidthIn, bandWidthOut,
+        bandWidthInSsl, bandWidthOutSsl, avgConcurrentConnections, and
+        avgConcurrentConnectinsSsl should all be 0.
+    </xpathAssertion>
+    <xpathAssertion test="if (@sslMode = 'OFF') then
+                          ((@bandWidthInSsl = 0) and (@bandWidthOutSsl = 0) and
+                          (@avgConcurrentConnectionsSsl = 0)) else true()">
+        If SslMode is OFF then bandWidthInSsl, bandWidthOutSsl, and
+        avgConcurrentConnectionsSsl should all be 0.
+    </xpathAssertion>
+    <xpathAssertion test="if (@sslMode = 'ON') then
+                          ((@bandWidthIn = 0) and (@bandWidthOut = 0) and
+                          (@avgConcurrentConnections = 0)) else true()">
+        If SslMode in ON then bandWidthIn, bandWidthOut, and
+        avgConcurrentConnections should all be 0.
+    </xpathAssertion>
 </productSchema>
