@@ -84,7 +84,7 @@ public class ErrorpageResource extends CommonDependencyProvider{
         dataContainer.setAccountId(accountId);
         dataContainer.setLoadBalancerId(loadBalancerId);
         //QuickFix for V1-D-12106
-        content = "\n" + content;
+//        content = "\n" + content;
         dataContainer.setErrorFileContents(content);
         try {
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_ERRORFILE, dataContainer);
