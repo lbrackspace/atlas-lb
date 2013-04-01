@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.atomhopper.util.UUIDUtil;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;

@@ -11,6 +11,7 @@ import org.openstack.atlas.service.domain.pojos.CustomQuery;
 import org.openstack.atlas.service.domain.pojos.DateTimeToolException;
 import org.openstack.atlas.service.domain.pojos.DateTimeTools;
 import org.openstack.atlas.service.domain.pojos.QueryParameter;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,6 +90,26 @@ public class LoadBalancerEventRepository {
             if (title.equals(DEL_PTR_FAILED) || title.equals(DEL_PTR_PASSED)) {
                 lbsEvents.getLoadBalancerServiceEvents().add(event);
             }
+        }
+        lbsEvents.setLoadbalancerId(loadbalancerId);
+        return lbsEvents;
+    }
+
+     public LoadBalancerServiceEvents getAllAtomHopperEventsByLoadBalancer(Integer loadbalancerId) {
+        String qStr = "SELECT e FROM LoadBalancerServiceEvent e "
+                + "where e.loadbalancerId = :loadbalancerId and e.type = :type";
+        Query q = entityManager.createQuery(qStr).setParameter("loadbalancerId", loadbalancerId).setParameter("type", EventType.AH_USAGE_EXECUTION);
+        List<LoadBalancerServiceEvent> events = q.getResultList();
+        LoadBalancerServiceEvents lbsEvents = new LoadBalancerServiceEvents();
+        for (LoadBalancerServiceEvent event : events) {
+            String title = event.getTitle();
+            if (title == null) {
+                continue;
+            }
+            if (title.equals(Constants.AH_USAGE_EVENT_FAILURE)) {
+//                lbsEvents.getLoadBalancerServiceEvents().add(event);
+            }
+            lbsEvents.getLoadBalancerServiceEvents().add(event);
         }
         lbsEvents.setLoadbalancerId(loadbalancerId);
         return lbsEvents;

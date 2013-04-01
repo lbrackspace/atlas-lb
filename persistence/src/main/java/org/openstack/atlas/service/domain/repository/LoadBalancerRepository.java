@@ -1017,6 +1017,40 @@ public class LoadBalancerRepository {
         return usageList;
     }
 
+    public List<Usage> getUsageNeedsPushed(Calendar startTime, Calendar endTime, int numAttempts) throws EntityNotFoundException, DeletedStatusException {
+        List<Usage> usageList;
+
+        Query query = entityManager.createQuery(
+                "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 " +
+                        "and u.numAttempts <= :numAttempts order by u.startTime asc")
+                .setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
+
+        usageList = query.getResultList();
+
+        if (usageList.isEmpty()) {
+            return new ArrayList<Usage>();
+        }
+
+        return usageList;
+    }
+
+    public List<Usage> getUsageRetryNeedsPushed(Calendar startTime, Calendar endTime, int numAttempts) throws EntityNotFoundException, DeletedStatusException {
+        List<Usage> usageList;
+
+        Query query = entityManager.createQuery(
+                "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 " +
+                        "and u.numAttempts >= :numAttempts order by u.startTime asc")
+                .setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
+
+        usageList = query.getResultList();
+
+        if (usageList.isEmpty()) {
+            return new ArrayList<Usage>();
+        }
+
+        return usageList;
+    }
+
     public Collection<AccountBilling> getAccountBillingForAllAccounts(Calendar startTime, Calendar endTime) {
         Query query;
         List<AccountUsage> accountUsageResults;

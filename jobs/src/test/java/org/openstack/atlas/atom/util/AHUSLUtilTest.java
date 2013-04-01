@@ -7,6 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.atomhopper.factory.UsageEntryFactoryImpl;
+import org.openstack.atlas.atomhopper.util.AHUSLServiceUtil;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 
@@ -26,7 +28,7 @@ public class AHUSLUtilTest {
         @Test
         public void shouldConvertCal() throws DatatypeConfigurationException {
             Calendar cal = Calendar.getInstance();
-            AHUSLUtil.processCalendar(cal);
+            AHUSLServiceUtil.processCalendar(cal);
         }
     }
 
@@ -44,7 +46,7 @@ public class AHUSLUtilTest {
 
         @Test
         public void shouldMapCreateEvent() throws NoSuchAlgorithmException, DatatypeConfigurationException {
-            EventType eventType = AHUSLUtil.mapEventType(baseUsage);
+            EventType eventType = UsageEntryFactoryImpl.mapEventType(baseUsage);
             Assert.assertEquals(EventType.CREATE, eventType);
         }
 
@@ -52,7 +54,7 @@ public class AHUSLUtilTest {
         public void shouldMapDeleteEvent() throws NoSuchAlgorithmException, DatatypeConfigurationException {
             baseUsage = new Usage();
             baseUsage.setEventType(UsageEvent.DELETE_LOADBALANCER.name());
-            EventType eventType = AHUSLUtil.mapEventType(baseUsage);
+            EventType eventType = UsageEntryFactoryImpl.mapEventType(baseUsage);
             Assert.assertEquals(EventType.DELETE, eventType);
         }
 
@@ -60,7 +62,7 @@ public class AHUSLUtilTest {
         public void shouldMapSuspend() throws NoSuchAlgorithmException, DatatypeConfigurationException {
             baseUsage = new Usage();
             baseUsage.setEventType(UsageEvent.SUSPEND_LOADBALANCER.name());
-            EventType eventType = AHUSLUtil.mapEventType(baseUsage);
+            EventType eventType = UsageEntryFactoryImpl.mapEventType(baseUsage);
             Assert.assertEquals(EventType.SUSPEND, eventType);
         }
 
@@ -68,14 +70,14 @@ public class AHUSLUtilTest {
         public void shouldMapUnSuspend() throws NoSuchAlgorithmException, DatatypeConfigurationException {
             baseUsage = new Usage();
             baseUsage.setEventType(UsageEvent.UNSUSPEND_LOADBALANCER.name());
-            EventType eventType = AHUSLUtil.mapEventType(baseUsage);
+            EventType eventType = UsageEntryFactoryImpl.mapEventType(baseUsage);
             Assert.assertEquals(EventType.UNSUSPEND, eventType);
         }
 
         @Test
         public void shouldReturnNullIfEventTypeNull() throws NoSuchAlgorithmException, DatatypeConfigurationException {
             baseUsage = new Usage();
-            EventType eventType = AHUSLUtil.mapEventType(baseUsage);
+            EventType eventType = UsageEntryFactoryImpl.mapEventType(baseUsage);
             Assert.assertEquals(null, eventType);
         }
     }
@@ -90,25 +92,25 @@ public class AHUSLUtilTest {
 
         @Test
         public void shouldMapDFWRegion() throws NoSuchAlgorithmException {
-            Region region = AHUSLUtil.mapRegion(baseRegion);
+            Region region = UsageEntryFactoryImpl.mapRegion(baseRegion);
             Assert.assertEquals(Region.DFW, region);
         }
 
         @Test
         public void shouldMapLONRegion() throws NoSuchAlgorithmException {
-            Region region = AHUSLUtil.mapRegion("LON");
+            Region region = UsageEntryFactoryImpl.mapRegion("LON");
             Assert.assertEquals(Region.LON, region);
         }
 
         @Test
         public void shouldMapORDRegion() throws NoSuchAlgorithmException {
-            Region region = AHUSLUtil.mapRegion("ORD");
+            Region region = UsageEntryFactoryImpl.mapRegion("ORD");
             Assert.assertEquals(Region.ORD, region);
         }
 
         @Test
         public void shouldMapGlobalIfRegionInvalid() throws NoSuchAlgorithmException {
-            Region region = AHUSLUtil.mapRegion("test");
+            Region region = UsageEntryFactoryImpl.mapRegion("test");
             Assert.assertEquals(Region.GLOBAL, region);
         }
     }

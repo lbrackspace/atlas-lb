@@ -22,4 +22,6 @@ public final class Constants {
     public static final String NoPrimaryNodeError = "you must have at least one primary node enabled";
     public static final String NoMonitorForSecNodes = "you must enable health monitoring to use secondary nodes";
     public static final String WontDeleteMonitorCauseSecNodes = "Can not delete HealthMonitor since this lb contains Secondary nodes that depend on it. Please remove secondary nodes first.";
+    public static final String AH_USAGE_EVENT_FAILURE = "FailedAtomHopperUsageEvent";
+    public static final String AH_USAGE_EVENT_AUTHOR = "AtomHopperUsageAuthor";
 }
