@@ -19,6 +19,7 @@ import static org.openstack.atlas.util.snmp.StingraySnmpClient.getVirtualServerN
 
 public class StingraySnmpClientTest {
 
+    public String baseOid;
     public StingraySnmpClient client;
     public String address;
     public String port;
@@ -36,10 +37,12 @@ public class StingraySnmpClientTest {
         community = "public";
         client = new StingraySnmpClient(address, port, community);
         client.setMaxRetrys(1);
+        baseOid = "1.3.6.1.4.1.7146.1.2.2.2.1.9";
         knownOidMaps = new HashMap<String, String>();
         knownOidMaps.put("1.3.6.1.4.1.7146.1.2.2.2.1.9.8.77.121.115.113.108.95.86.83", "Mysql_VS");
         knownOidMaps.put("1.3.6.1.4.1.7146.1.2.2.2.1.9.15.108.98.97.97.115.95.97.100.109.105.110.95.97.112.105", "lbaas_admin_api");
         knownOidMaps.put("1.3.6.1.4.1.7146.1.2.2.2.1.9.16.108.98.97.97.115.95.112.117.98.108.105.99.95.97.112.105", "lbaas_public_api");
+        baseOid = "1.3.6.1.4.1.7146.1.2.2.2.1.9";
     }
 
     @Test
@@ -76,7 +79,7 @@ public class StingraySnmpClientTest {
         for (Entry<String, String> ent : knownOidMaps.entrySet()) {
             String oid = ent.getKey();
             String vsName = ent.getValue();
-            assertEquals(vsName, getVirtualServerNameFromOid(oid));
+            assertEquals(vsName, getVirtualServerNameFromOid(baseOid, oid));
         }
     }
 
@@ -85,7 +88,7 @@ public class StingraySnmpClientTest {
         for (Entry<String, String> ent : knownOidMaps.entrySet()) {
             String oid = ent.getKey();
             String vsName = ent.getValue();
-            String baseOid = "1.3.6.1.4.1.7146.1.2.2.2.1.9";
+
             assertEquals(oid, getOidFromVirtualServerName(baseOid, vsName));
         }
     }
@@ -93,25 +96,17 @@ public class StingraySnmpClientTest {
     @Test
     public void testSingleVsByteCountRequest() throws Exception {
         VariableBinding variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_OUT).get(0);
-        String name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
+        String name = getVirtualServerNameFromOid(baseOid, variableBinding.getOid().toString());
         Long value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_OUT);
         assertTrue(value >= 0);
         variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_IN).get(0);
-        name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
+        name = getVirtualServerNameFromOid(baseOid, variableBinding.getOid().toString());
         value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_IN);
         assertTrue(value >= 0);
         variableBinding = client.getWalkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS).get(0);
-        name = getVirtualServerNameFromOid(variableBinding.getOid().toString());
+        name = getVirtualServerNameFromOid(baseOid, variableBinding.getOid().toString());
         value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_CURRENT_CONNECTIONS);
         assertTrue(value >= 0);
-    }
-
-    //TODO: In the process of editing the method behind this test.
-    @Ignore
-    @Test
-    public void testBytesInBulkTest() throws Exception {
-        client.setVersion(SnmpConstants.version2c);
-        client.getBytesInBulkTest();
     }
 
     @Test
@@ -122,42 +117,46 @@ public class StingraySnmpClientTest {
         final String ipAddress4 = "10.12.99.22"; // This is staging node n04
         final String baseOid = "1.3.6.1.4.1.7146.1.2.2.2.1.9";
         Runnable run1 = new Runnable() {
+
             public void run() {
                 client.setAddress(ipAddress1);
                 System.out.println("First run! address: " + ipAddress1);
                 try {
                     client.getWalkOidBindingList(baseOid);
-                } catch(Exception e) {
+                } catch (Exception e) {
                 }
             }
         };
         Runnable run2 = new Runnable() {
+
             public void run() {
                 client.setAddress(ipAddress2);
                 System.out.println("Second run! address: " + ipAddress2);
                 try {
                     client.getWalkOidBindingList(baseOid);
-                } catch(Exception e) {
+                } catch (Exception e) {
                 }
             }
         };
         Runnable run3 = new Runnable() {
+
             public void run() {
                 client.setAddress(ipAddress3);
                 System.out.println("Third run! address: " + ipAddress3);
                 try {
                     client.getWalkOidBindingList(baseOid);
-                } catch(Exception e) {
+                } catch (Exception e) {
                 }
             }
         };
         Runnable run4 = new Runnable() {
+
             public void run() {
                 client.setAddress(ipAddress4);
                 System.out.println("Fourth run! address: " + ipAddress4);
                 try {
                     client.getWalkOidBindingList(baseOid);
-                } catch(Exception e) {
+                } catch (Exception e) {
                 }
             }
         };
@@ -172,7 +171,7 @@ public class StingraySnmpClientTest {
         thread4.start();
         try {
             Thread.currentThread().sleep(1000);
-        } catch(InterruptedException ie) {
+        } catch (InterruptedException ie) {
         }
     }
 }

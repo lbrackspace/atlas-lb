@@ -17,12 +17,13 @@ import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.snmp.comparators.BandwidthInComparator;
 import org.openstack.atlas.util.snmp.comparators.BandwidthoutComparator;
 import org.openstack.atlas.util.snmp.comparators.ConcurrentConnectionsComparator;
-import org.openstack.atlas.util.snmp.comparators.TotalConnectionsComparator;
+import org.openstack.atlas.util.snmp.comparators.VsNameComparator;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpSetupException;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
+import org.snmp4j.smi.VariableBinding;
 
 public class SnmpMain {
 
@@ -66,13 +67,26 @@ public class SnmpMain {
                     System.out.printf("    gc  #Run garbage collector\n");
                     System.out.printf("    init_clients #Initialize the snmpClients\n");
                     System.out.printf("    show_state  #Show the application state and variables\n");
-                    System.out.printf("    set_comparator <bi|bo|tc|cc> #Set the comparator for to BandwidthIn BandwidthOut totalConnections or ConcurrentConnections respectivly\n");
-                    System.out.printf("    run_default #Get usage from the default host and add it to the current usage list\n");
+                    System.out.printf("    set_comparator <bi|bo|cc|vs> #Set the comparator for to BandwidthIn BandwidthOut totalConnections or ConcurrentConnections respectivly\n");
+                    System.out.printf("    run_bulk <oid> #Get usage from the default host useing the bulk on the given oid\n");
+                    System.out.printf("    run_default [clientKey]#Get usage from the default host and add it to the current usage list\n");
                     System.out.printf("    clear_usage #Clear the current usageList\n");
                     System.out.printf("    display_usage #Display the current usage\n");
                     System.out.printf("    set_retrys <num> #Sets the maximum retries\n");
+                    System.out.printf("    lookup <oid> <vsName> #Lookup the given OID for the specified virtual server on the default zxtm host\n");
+                    System.out.printf("    client <clientKey> #Set the clientKey for the default run\n");
+                    System.out.printf("    run_all #Run stats for all zxtm hosts\n");
                     System.out.printf("    exit #Exits\n");
                     System.out.printf("\n");
+                } else if (cmd.equals("client") && args.length >= 2) {
+                    String clientKey = args[1];
+                    defaultClient = clients.get(clientKey);
+                    System.out.printf("Client set to %s -> %s\n", clientKey, defaultClient.toString());
+                } else if (cmd.equals("lookup") && args.length >= 3) {
+                    String oid = args[1];
+                    String vsName = args[2];
+                    long val = defaultClient.getLongValueForVirtualServer(vsName, oid);
+                    System.out.printf("%s for %s = %d\n", oid, vsName, val);
                 } else if (cmd.equals("set_retrys") && args.length >= 2) {
                     System.out.printf("Setting retries to ");
                     System.out.flush();
@@ -91,6 +105,27 @@ public class SnmpMain {
                     for (int i = 0; i < usageList.size(); i++) {
                         System.out.printf("entry[%d]=%s\n", i, usageList.get(i).toString());
                     }
+                } else if (cmd.equals("run_bulk") && args.length >= 2) {
+                    String oid = args[1];
+                    System.out.printf("Running bulk on oid %s\n", oid);
+                    StingraySnmpClient client = defaultClient;
+                    List<VariableBinding> bindings = client.getBulkOidBindingList(oid);
+                    for (VariableBinding vb : bindings) {
+                        String vbOid = vb.getOid().toString();
+                        String vsName = StingraySnmpClient.getVirtualServerNameFromOid(oid, vbOid);
+                        long val = vb.getVariable().toLong();
+                        System.out.printf("%s %s=%d\n", vsName, vbOid, val);
+                    }
+
+                } else if (cmd.equals("run_all")) {
+                    System.out.printf("Running stats on all lbs\n");
+                    List<String> clientKeys = new ArrayList<String>(clients.keySet());
+                    Collections.sort(clientKeys);
+                    for (String clientKey : clientKeys) {
+                        StingraySnmpClient client = clients.get(clientKey);
+                        System.out.printf("Gathering info for zxtm %s -> %s\n", clientKey, client.toString());
+                        usageList.addAll(client.getSnmpUsage().values());
+                    }
                 } else if (cmd.equals("run_default")) {
                     System.out.printf("Calling run for defaultLb\n");
                     StingraySnmpClient client;
@@ -107,12 +142,12 @@ public class SnmpMain {
                         orderBy = new BandwidthInComparator();
                     } else if (compArg.equals("bo")) {
                         orderBy = new BandwidthoutComparator();
-                    } else if (compArg.equals("tc")) {
-                        orderBy = new TotalConnectionsComparator();
                     } else if (compArg.equals("cc")) {
                         orderBy = new ConcurrentConnectionsComparator();
+                    } else if (compArg.equals("vs")) {
+                        orderBy = new VsNameComparator();
                     } else {
-                        System.out.printf("Ubnknown Comparator\n");
+                        System.out.printf("unknown Comparator\n");
                     }
                 } else if (cmd.equals("show_state")) {
                     System.out.printf("%s\n", Debug.showMem());
