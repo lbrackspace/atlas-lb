@@ -71,7 +71,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                 break;
             }
             BandwidthUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i));
-            processEvents(newUsage, polledUsageRecordsForLb.get(i), processedRecords);
+            newUsage = processEvents(newUsage, polledUsageRecordsForLb.get(i), processedRecords);
         }
 
         if(newUsage.getEndTime() == null){
@@ -105,8 +105,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         return initUsage;
     }
 
-    private void processEvents(Usage currentUsage, PolledUsageRecord currentPolledRecord, List<Usage> processedRecords){
-                    //TODO: Handle events with same poll time (Event happened for lb with multiple IPs and/or has ssl term)
+    private Usage processEvents(Usage currentUsage, PolledUsageRecord currentPolledRecord, List<Usage> processedRecords){
             if(currentPolledRecord.getEventType() != null  &&
                 !currentPolledRecord.getEventType().toLowerCase().equals("null")){
 
@@ -148,5 +147,6 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
                 }
             }
+        return currentUsage;
     }
 }

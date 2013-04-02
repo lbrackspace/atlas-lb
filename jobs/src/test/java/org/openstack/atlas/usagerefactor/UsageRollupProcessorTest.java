@@ -210,11 +210,10 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(6, processedUsages.size());
         }
 
-        @Ignore
         @Test
         public void shouldCreateTwoUsageRecordsFromTwoPolledRecordsAndBandwidthOnlyOnFirstUsageRecord(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
-            generatorPojos.add(new GeneratorPojo(5806065, 1234, 3));
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
             List<String> eventTypes = new ArrayList<String>();
             eventTypes.add(null);
             eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
@@ -239,11 +238,10 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(UsageEvent.SSL_ONLY_ON.name(), processedUsages.get(1).getEventType());
         }
 
-        @Ignore
         @Test
         public void shouldCreateTwoUsageRecordsFromManyPolledRecordsAndBandwidthSplitBetweenFirstAndSecondUsageRecord(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
-            generatorPojos.add(new GeneratorPojo(5806065, 1234, 10));
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 5));
             List<String> eventTypes = new ArrayList<String>();
             eventTypes.add(null);
             eventTypes.add(null);
@@ -300,7 +298,6 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(compTime, processedUsages.get(0).getEndTime());
         }
 
-        @Ignore
         @Test
         public void shouldEndRecordOnEndTimeOfDeleteLBEvent(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
@@ -321,7 +318,6 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(compTime, processedUsages.get(1).getEndTime());
         }
 
-        @Ignore
         @Test
         public void shouldHaveBandwidthOnRecordBeforeEvent(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
@@ -338,7 +334,6 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(0, processedUsages.get(1).getOutgoingTransfer().longValue());
         }
 
-        @Ignore
         @Test
         public void shouldCreateCreateTwoRecordsIfEventIsFirstPolledRecordOfHour(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
