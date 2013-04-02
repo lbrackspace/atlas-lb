@@ -75,7 +75,7 @@ public class StingraySnmpClient {
     }
 
     public Map<String, Long> getLongOidVals(String oid) throws StingraySnmpSetupException, StingraySnmpGeneralException {
-        vlog.printf("In call getLongOidVals(%s)",oid);
+        vlog.printf("In call getLongOidVals(%s)", oid);
         Map<String, Long> oidMap = new HashMap<String, Long>();
         List<VariableBinding> bindings = getBulkOidBindingList(oid);
         for (VariableBinding vb : bindings) {
@@ -112,48 +112,24 @@ public class StingraySnmpClient {
                 rawSnmpMap.put(vsName, entry);
             }
             rawSnmpMap.get(vsName).setConcurrentConnections(vb.getVariable().toLong());
-        }   
+        }
 
-        // Fetch BytesIn hi bytes
-        bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_IN_HI);
+        // Fetch BytesIn In
+        bindings = getBulkOidBindingList(OIDConstants.VS_BYTES_IN);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_BYTES_IN_HI, vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_BYTES_IN, vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
                 rawSnmpMap.put(vsName, entry);
             }
             rawSnmpMap.get(vsName).setBytesIn(vb.getVariable().toLong());
-        }
-
-        // Fetch Bytes In Lo
-        bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_IN_LO);
-        for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_BYTES_IN_LO, vb.getOid().toString());
-            if (!rawSnmpMap.containsKey(vsName)) {
-                RawSnmpUsage entry = new RawSnmpUsage();
-                entry.setVsName(vsName);
-                rawSnmpMap.put(vsName, entry);
-            }
-            rawSnmpMap.get(vsName).setBytesIn(vb.getVariable().toLong());
-        }
-
-        // Fetch Bytes out Hi
-        bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_OUT_HI);
-        for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_BYTES_OUT_HI, vb.getOid().toString());
-            if (!rawSnmpMap.containsKey(vsName)) {
-                RawSnmpUsage entry = new RawSnmpUsage();
-                entry.setVsName(vsName);
-                rawSnmpMap.put(vsName, entry);
-            }
-            rawSnmpMap.get(vsName).setBytesOut(vb.getVariable().toLong());
         }
 
         // Fetch Bytes out
         bindings = getBulkOidBindingList(OIDConstants.VS_BYTES_OUT);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_BYTES_OUT_LO, vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_BYTES_OUT, vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -229,81 +205,6 @@ public class StingraySnmpClient {
         closeConnection(snmp, transport);
         long val = vb.getVariable().toLong();
         return val;
-    }
-
-    @Deprecated
-    public Long getValueForServerOnHost(String hostIp, String vsName, String baseOid) throws StingraySnmpGeneralException {
-        Long bytesInHi = 0L;
-        Long bytesInLo = 0L;
-        this.address = hostIp;
-
-        PDU requestPDU = new PDU();
-        requestPDU.add(new VariableBinding(new OID(getOidFromVirtualServerName(baseOid, vsName))));
-        requestPDU.setType(PDU.GET);
-
-        CommunityTarget target = new CommunityTarget();
-        target.setCommunity(new OctetString(community));
-        target.setAddress(new UdpAddress(address + "/" + port));
-        target.setVersion(version);
-
-        TransportMapping transport;
-        try {
-            transport = new DefaultUdpTransportMapping();
-        } catch (IOException ex) {
-            throw new StingraySnmpSetupException("Error setting up DefaultUdpTransportMapping for snmp client", ex);
-        }
-
-        Snmp snmp = new Snmp(transport);
-
-        try {
-            transport.listen();
-        } catch (IOException ex) {
-            String msg = "Unable to listen to address " + transport.getListenAddress().toString();
-            throw new StingraySnmpSetupException(msg, ex);
-        }
-
-        VariableBinding vb = null;
-        ResponseEvent event;
-        try {
-            event = snmp.send(requestPDU, target);
-        } catch (IOException ex) {
-            throw new StingraySnmpGeneralException("Error sending snmp request to zxtm agent", ex);
-        }
-
-        PDU responsePDU = event.getResponse();
-        if (responsePDU != null) {
-            vb = responsePDU.get(0);
-        }
-
-        if (responsePDU == null) {
-            throw new StingraySnmpGeneralException("timeout waiting for UDP packet from snmp");
-        } else if (responsePDU.getErrorStatus() != 0) {
-            throw new StingraySnmpGeneralException("Error in request.");
-        } else if (vb.getOid() == null) {
-            throw new StingraySnmpGeneralException("Returned OID was null.");
-        } else if (Null.isExceptionSyntax(vb.getVariable().getSyntax())) {
-            throw new StingraySnmpGeneralException("Returned value of OID was null.");
-        } else {
-            requestPDU.setRequestID(new Integer32(incRequestId()));
-            requestPDU.set(0, vb);
-        }
-        try {
-            snmp.close();
-        } catch (IOException ioe) {
-            throw new StingraySnmpGeneralException("Error closing snmp connection.");
-        }
-        for (VariableBinding variableBinding : responsePDU.getVariableBindings()) {
-            if (variableBinding.getOid().startsWith(new OID(OIDConstants.VS_BYTES_IN_HI))) {
-                bytesInHi = variableBinding.getVariable().toLong();
-            }
-            if (variableBinding.getOid().startsWith(new OID(OIDConstants.VS_BYTES_IN_LO))) {
-                bytesInLo = variableBinding.getVariable().toLong();
-            }
-        }
-        if (responsePDU.getVariableBindings().get(0).getOid().startsWith(new OID(OIDConstants.VS_CURRENT_CONNECTIONS))) {
-            return responsePDU.getVariableBindings().get(0).getVariable().toLong();
-        }
-        return (bytesInHi << 32) | bytesInLo;
     }
 
     @Deprecated
@@ -401,7 +302,7 @@ public class StingraySnmpClient {
     }
 
     public List<VariableBinding> getBulkOidBindingList(String oid) throws StingraySnmpSetupException, StingraySnmpGeneralException {
-        vlog.printf("in call getBulkOidBindingList(%s)",oid);
+        vlog.printf("in call getBulkOidBindingList(%s)", oid);
         List<VariableBinding> bindings = new ArrayList<VariableBinding>();
         String startOID = oid;
         String currOID = startOID;
@@ -417,9 +318,16 @@ public class StingraySnmpClient {
             req.setNonRepeaters(nonRepeaters);
             req.setMaxRepetitions(currMaxReps);
             req.setRequestID(new Integer32(incRequestId()));
-            UdpAddress udpAddr = new UdpAddress(address + "/" + port);
+            UdpAddress udpAddr;
+            try {
+                udpAddr = new UdpAddress(address + "/" + port);
+            } catch (Exception ex) {
+                String msg = String.format("Invalid udpAddress specification %s/%s", address, port);
+                LOG.error(msg, ex);
+                throw new StingraySnmpSetupException(msg, ex);
+            }
             CommunityTarget target = new CommunityTarget();
-            target.setCommunity(new OctetString(StingraySnmpConstants.COMMUNITY));
+            target.setCommunity(new OctetString(community));
             target.setVersion(version);
             target.setAddress(udpAddr);
             TransportMapping transport;

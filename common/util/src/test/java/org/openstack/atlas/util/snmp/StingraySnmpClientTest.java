@@ -1,10 +1,14 @@
 package org.openstack.atlas.util.snmp;
 
+import org.junit.Assert;
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededException;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpSetupException;
 import org.snmp4j.mp.SnmpConstants;
 import org.snmp4j.smi.VariableBinding;
 
@@ -35,8 +39,11 @@ public class StingraySnmpClientTest {
         address = "10.12.99.19";
         port = "1161";
         community = "public";
-        client = new StingraySnmpClient(address, port, community);
+        client = new StingraySnmpClient();
         client.setMaxRetrys(1);
+        client.setAddress(address);
+        client.setCommunity(community);
+        client.setPort("1161");
         baseOid = "1.3.6.1.4.1.7146.1.2.2.2.1.9";
         knownOidMaps = new HashMap<String, String>();
         knownOidMaps.put("1.3.6.1.4.1.7146.1.2.2.2.1.9.8.77.121.115.113.108.95.86.83", "Mysql_VS");
@@ -47,7 +54,7 @@ public class StingraySnmpClientTest {
 
     @Test
     public void shouldReturnVariableBindingList() throws Exception {
-        assertTrue(client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS).size() > 0);
+        assertTrue(client.getBulkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS).size() > 0);
     }
 
     @Test
@@ -56,22 +63,38 @@ public class StingraySnmpClientTest {
         assertTrue(map.entrySet().size() > 0);
     }
 
-    @Test(expected = StingraySnmpGeneralException.class)
     public void shouldFailWithInvalidAddress() throws Exception {
         client.setAddress("10.1000.1.1");
-        client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+        try {
+            client.getBulkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS);
+        } catch (Exception ex) {
+            assertTrue(ex instanceof StingraySnmpGeneralException);
+        }
+        Assert.fail();
     }
 
-    @Test(expected = StingraySnmpGeneralException.class)
+    @Test
     public void shouldFailWithIncorrectPort() throws Exception {
         client.setPort("1111");
-        client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+        try {
+            client.getBulkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS);
+        } catch (Exception ex) {
+            assertTrue(ex instanceof StingraySnmpGeneralException);
+            return;
+        }
+        Assert.fail();
     }
 
-    @Test(expected = StingraySnmpGeneralException.class)
+    @Test
     public void shouldFailWithInvalidCommunity() throws Exception {
         client.setCommunity("expensivePradaBag");
-        client.getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+        try {
+            client.getBulkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS);
+        } catch (Exception ex) {
+            assertTrue(ex instanceof StingraySnmpGeneralException);
+            return;
+        }
+        Assert.fail();
     }
 
     @Test
@@ -79,7 +102,7 @@ public class StingraySnmpClientTest {
         for (Entry<String, String> ent : knownOidMaps.entrySet()) {
             String oid = ent.getKey();
             String vsName = ent.getValue();
-            assertEquals(vsName, getVirtualServerNameFromOid(baseOid,oid));
+            assertEquals(vsName, getVirtualServerNameFromOid(baseOid, oid));
         }
     }
 
@@ -95,22 +118,22 @@ public class StingraySnmpClientTest {
 
     @Test
     public void testSingleVsByteCountRequest() throws Exception {
-        VariableBinding variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_OUT).get(0);
-        String name = getVirtualServerNameFromOid(baseOid,variableBinding.getOid().toString());
-        Long value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_OUT);
+        VariableBinding variableBinding = client.getBulkOidBindingList(OIDConstants.VS_BYTES_OUT).get(0);
+        String name = getVirtualServerNameFromOid(baseOid, variableBinding.getOid().toString());
+        Long value = client.getLongValueForVirtualServer(name, OIDConstants.VS_BYTES_OUT);
         assertTrue(value >= 0);
-        variableBinding = client.getWalkOidBindingList(OIDConstants.VS_BYTES_IN).get(0);
-        name = getVirtualServerNameFromOid(baseOid,variableBinding.getOid().toString());
-        value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_BYTES_IN);
+        variableBinding = client.getBulkOidBindingList(OIDConstants.VS_BYTES_IN).get(0);
+        name = getVirtualServerNameFromOid(baseOid, variableBinding.getOid().toString());
+        value = client.getLongValueForVirtualServer(name, OIDConstants.VS_BYTES_IN);
         assertTrue(value >= 0);
-        variableBinding = client.getWalkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS).get(0);
-        name = getVirtualServerNameFromOid(baseOid,variableBinding.getOid().toString());
-        value = client.getValueForServerOnHost("10.12.99.19", name, OIDConstants.VS_CURRENT_CONNECTIONS);
+        variableBinding = client.getBulkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS).get(0);
+        name = getVirtualServerNameFromOid(baseOid, variableBinding.getOid().toString());
+        value = client.getLongValueForVirtualServer(name, OIDConstants.VS_CURRENT_CONNECTIONS);
         assertTrue(value >= 0);
     }
 
     @Test
-    public void testThreadRequestsAgainstAllStagingHosts() {
+    public void testThreadRequestsAgainstAllStagingHosts() throws InterruptedException {
         final String ipAddress1 = "10.12.99.19"; // This is staging node n01
         final String ipAddress2 = "10.12.99.20"; // This is staging node n02
         final String ipAddress3 = "10.12.99.21"; // This is staging node n03
@@ -169,6 +192,11 @@ public class StingraySnmpClientTest {
         thread2.start();
         thread3.start();
         thread4.start();
+
+        thread1.join();
+        thread2.join();
+        thread3.join();
+        thread4.join();
         try {
             Thread.currentThread().sleep(1000);
         } catch (InterruptedException ie) {
