@@ -10,32 +10,49 @@ import java.util.List;
 
 public class PolledUsageRecordGenerator {
 
+    private static final long DEFAULT_OUTGOING_TRANSFER = 0;
+    private static final long DEFAULT_INCOMING_TRANSFER = 0;
+    private static final long DEFAULT_OUTGOING_TRANSFER_SSL = 0;
+    private static final long DEFAULT_INCOMING_TRANSFER_SSL = 0;
+    private static final long DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS = 0;
+    private static final long DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS_SSL = 0;
+    private static final int DEFAULT_NUM_VIPS = 1;
+    private static final int DEFAULT_TAGS_BITMASK = 0;
+    private static final int DEFAULT_POLL_INTERVAL = 5;
+
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime){
-        return generate(generatorPojoList, initialPollTime, 5, 0, 0, 0, 0, 0, 0, null);
+        return generate(generatorPojoList, initialPollTime, DEFAULT_POLL_INTERVAL, DEFAULT_OUTGOING_TRANSFER, DEFAULT_INCOMING_TRANSFER,
+                        DEFAULT_OUTGOING_TRANSFER_SSL, DEFAULT_INCOMING_TRANSFER_SSL, DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS,
+                        DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS_SSL, DEFAULT_NUM_VIPS, DEFAULT_TAGS_BITMASK, null);
     }
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
                                                    List<String> eventTypes){
-        return generate(generatorPojoList, initialPollTime, 5, 0, 0, 0, 0, 0, 0, eventTypes);
+        return generate(generatorPojoList, initialPollTime, DEFAULT_POLL_INTERVAL, DEFAULT_OUTGOING_TRANSFER, DEFAULT_INCOMING_TRANSFER,
+                        DEFAULT_OUTGOING_TRANSFER_SSL, DEFAULT_INCOMING_TRANSFER_SSL, DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS,
+                        DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS_SSL, DEFAULT_NUM_VIPS, DEFAULT_TAGS_BITMASK, eventTypes);
     }
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
                                                    long outgoingTransfer, long incomingTransfer){
-        return generate(generatorPojoList, initialPollTime, 5, outgoingTransfer, incomingTransfer, 0, 0, 0, 0, null);
+        return generate(generatorPojoList, initialPollTime, DEFAULT_POLL_INTERVAL, outgoingTransfer, incomingTransfer,
+                        DEFAULT_OUTGOING_TRANSFER_SSL, DEFAULT_INCOMING_TRANSFER_SSL, DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS,
+                        DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS_SSL, DEFAULT_NUM_VIPS, DEFAULT_TAGS_BITMASK, null);
     }
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
                                                    long outgoingTransfer, long incomingTransfer, long outgoingTransferSsl,
                                                    long incomingTransferSsl, List<String> eventTypes){
-        return generate(generatorPojoList, initialPollTime, 5, outgoingTransfer, incomingTransfer, outgoingTransferSsl,
-                        incomingTransferSsl, 0, 0, eventTypes);
+        return generate(generatorPojoList, initialPollTime, DEFAULT_POLL_INTERVAL, outgoingTransfer, incomingTransfer, outgoingTransferSsl,
+                        incomingTransferSsl, DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS, DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS_SSL,
+                        DEFAULT_NUM_VIPS, DEFAULT_TAGS_BITMASK, eventTypes);
     }
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
                                                    int pollIntervalInMins, long outgoingTransfer, long incomingTransfer,
                                                    long outgoingTransferSsl, long incomingTransferSsl,
                                                    long averageConcurrentConnections, long averageConcurrentConnectionsSsl,
-                                                   List<String> eventTypes) {
+                                                   int numVips, int tagsBitmask, List<String> eventTypes) {
         List<PolledUsageRecord> polledUsageRecords = new ArrayList<PolledUsageRecord>();
 
         Calendar pollTime;
@@ -58,6 +75,8 @@ public class PolledUsageRecordGenerator {
                         outgoingTransferSsl,
                         averageConcurrentConnections,
                         averageConcurrentConnectionsSsl,
+                        numVips,
+                        tagsBitmask,
                         pollTime,
                         eventType
                 );

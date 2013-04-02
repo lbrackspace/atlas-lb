@@ -361,6 +361,21 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(compTime, processedUsages.get(1).getStartTime());
             Assert.assertEquals(compTime, processedUsages.get(1).getEndTime());
         }
+
+        @Test
+        public void shouldIncreaseNumVipsWhenCreateVIPEventEncountered(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
+            List<String> eventTypes = new ArrayList<String>();
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.CREATE_VIRTUAL_IP.name());
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            polledRecords.get(1).setNumVips(2);
+            Calendar compTime = Calendar.getInstance();
+            compTime.setTime(initialPollTime.getTime());
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(2, processedUsages.size());
+        }
     }
 
     @RunWith(MockitoJUnitRunner.class)

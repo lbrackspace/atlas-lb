@@ -12,13 +12,15 @@ public class PolledUsageRecord {
     private long incomingTransferSsl;
     private long averageConcurrentConnections;
     private long averageConcurrentConnectionsSsl;
+    private int numVips;
+    private int tagsBitmask;
     private Calendar pollTime;
     private String eventType;
 
     public PolledUsageRecord(int id, int accountId, int loadbalancerId, long outgoingTransfer,
                              long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
                              long averageConcurrentConnections, long averageConcurrentConnectionsSsl,
-                             Calendar pollTime, String eventType) {
+                             int numVips, int tagsBitmask, Calendar pollTime, String eventType) {
         this.id = id;
         this.accountId = accountId;
         this.loadbalancerId = loadbalancerId;
@@ -28,6 +30,8 @@ public class PolledUsageRecord {
         this.incomingTransferSsl = incomingTransferSsl;
         this.averageConcurrentConnections = averageConcurrentConnections;
         this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
+        this.numVips = numVips;
+        this.tagsBitmask = tagsBitmask;
         this.pollTime = pollTime;
         this.eventType = eventType;
     }
@@ -117,5 +121,21 @@ public class PolledUsageRecord {
 
     public void setEventType(String eventType) {
         this.eventType = eventType;
+    }
+
+    public long getNumVips() {
+        return numVips;
+    }
+
+    public void setNumVips(int numVips) {
+        this.numVips = numVips;
+    }
+
+    public long getTagsBitmask() {
+        return tagsBitmask;
+    }
+
+    public void setTagsBitmask(int tagsBitmask) {
+        this.tagsBitmask = tagsBitmask;
     }
 }
