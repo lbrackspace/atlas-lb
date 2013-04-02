@@ -7,20 +7,10 @@ public class BandwidthInComparator implements Comparator<RawSnmpUsage> {
 
     @Override
     public int compare(RawSnmpUsage o1, RawSnmpUsage o2) {
-        long l1;
-        long l2;
 
-        l1 = o1.getBytesInHi();
-        l2 = o2.getBytesInHi();
-        if (l1 < l2) {
-            return -1;
-        }
-        if (l1 > l2) {
-            return 1;
-        }
+        long l1 = o1.getBytesIn();
+        long l2 = o2.getBytesIn();
 
-        l1 = o1.getBytesInLo();
-        l2 = o2.getBytesInLo();
         if (l1 < l2) {
             return -1;
         }

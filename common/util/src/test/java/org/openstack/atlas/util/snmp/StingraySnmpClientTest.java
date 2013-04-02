@@ -109,14 +109,6 @@ public class StingraySnmpClientTest {
         assertTrue(value >= 0);
     }
 
-    //TODO: In the process of editing the method behind this test.
-    @Ignore
-    @Test
-    public void testBytesInBulkTest() throws Exception {
-        client.setVersion(SnmpConstants.version2c);
-        client.getBytesInBulkTest();
-    }
-
     @Test
     public void testThreadRequestsAgainstAllStagingHosts() {
         final String ipAddress1 = "10.12.99.19"; // This is staging node n01

@@ -7,42 +7,22 @@ import java.io.IOException;
 public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
 
     private String vsName = "";
-    private long bytesInHi = -1;
-    private long bytesInLo = -1;
-    private long bytesOutLo = -1;
-    private long bytesOutHi = -1;
-    private long totalConnections = -1;
-    private long concurrentConnections = -1;
+    private long bytesIn = 0;
+    private long bytesOut = 0;
+    private long concurrentConnections = 0;
+
+    public RawSnmpUsage() {
+    }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         return "RawSnmpUsage{vsName=" + vsName
-                + ", bytesInHi=" + bytesInHi
-                + ", bytesInLo=" + bytesInLo
-                + ", bytesOutHi=" + bytesOutHi
-                + ", bytesOutLo=" + bytesOutLo
+                + ", bytesIn=" + bytesIn
+                + ", bytesOut=" + bytesOut
                 + ", concurrentConnections=" + concurrentConnections
-                + ", totalConnections=" + totalConnections
-                + ", bytesIn=" + deriveBytesIn()
-                + ", bytesOut=" + deriveBytesOut()
                 + "}";
 
-    }
-
-
-    public Long deriveBytesIn() {
-        if(bytesInHi<0 || bytesInLo<0){
-            return null;
-        }
-        return ((bytesInHi & 0xffffffff) << 32) | (bytesInLo & 0xffffffff);
-    }
-
-    public Long deriveBytesOut() {
-        if(bytesOutHi < 0 || bytesOutLo<0){
-            return null;
-        }
-        return ((bytesOutHi & 0xffffffff) << 32) | (bytesOutLo & 0xffffffff);
     }
 
     public String getVsName() {
@@ -53,36 +33,24 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
         this.vsName = vsName;
     }
 
-    public long getBytesInHi() {
-        return bytesInHi;
+    public long getBytesIn() {
+        return bytesIn;
     }
 
-    public void setBytesInHi(long bytesInHi) {
-        this.bytesInHi = bytesInHi;
+    public void setBytesIn(long bytesIn) {
+        this.bytesIn = bytesIn;
     }
 
-    public long getBytesInLo() {
-        return bytesInLo;
+    public long getBytesOut() {
+        return bytesOut;
     }
 
-    public void setBytesInLo(long bytesInLo) {
-        this.bytesInLo = bytesInLo;
+    public void setBytesOut(long bytesOut) {
+        this.bytesOut = bytesOut;
     }
 
-    public long getBytesOutLo() {
-        return bytesOutLo;
-    }
-
-    public void setBytesOutLo(long bytesOutLo) {
-        this.bytesOutLo = bytesOutLo;
-    }
-
-    public long getBytesOutHi() {
-        return bytesOutHi;
-    }
-
-    public void setBytesOutHi(long bytesOutHi) {
-        this.bytesOutHi = bytesOutHi;
+    public long getConcurrentConnections() {
+        return concurrentConnections;
     }
 
     public void setConcurrentConnections(long concurrentConnections) {
@@ -91,62 +59,66 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
 
     @Override
     public int compareTo(RawSnmpUsage o) {
-        long oBytesInHi = o.getBytesInHi();
-        long oBytesInLo = o.getBytesInLo();
-        long oBytesOutHi = o.getBytesOutHi();
-        long oBytesOutLo = o.getBytesOutLo();
-        long oConCurrent = o.getConcurrentConnections();
-        long oTotalConnections = o.getTotalConnections();
+        long oBytesIn = o.getBytesIn();
+        long oBytesOut = o.getBytesOut();
+        long oConcurrentConnections = o.getConcurrentConnections();
+        String oVsName = o.getVsName();
 
-        if (bytesOutHi < oBytesOutHi) {
+        if (bytesOut < oBytesOut) {
             return -1;
         }
-        if (bytesOutHi > oBytesOutHi) {
-            return 1;
-        }
-        if (bytesOutLo < oBytesOutLo) {
-            return -1;
-        }
-        if (bytesOutLo > oBytesOutLo) {
-            return 1;
-        }
-        if (bytesInHi < oBytesInHi) {
-            return -1;
-        }
-        if (bytesInHi > oBytesInHi) {
-            return 1;
-        }
-        if (bytesInLo < oBytesInLo) {
-            return -1;
-        }
-        if (bytesInLo > oBytesInLo) {
+
+        if (bytesOut > oBytesOut) {
             return 1;
         }
 
-        if (concurrentConnections < oConCurrent) {
+        if (bytesIn < oBytesIn) {
             return -1;
         }
-        if (concurrentConnections > oConCurrent) {
+        if (bytesIn > oBytesIn) {
             return 1;
         }
-        if (totalConnections < oTotalConnections) {
+
+        if (concurrentConnections < oConcurrentConnections) {
             return -1;
         }
-        if (totalConnections > oTotalConnections) {
+        if (concurrentConnections > oConcurrentConnections) {
             return 1;
         }
-        return vsName.compareTo(o.getVsName());
+        return vsName.compareTo(oVsName);
     }
 
-    public void setTotalConnections(long totalConnections) {
-        this.totalConnections = totalConnections;
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RawSnmpUsage other = (RawSnmpUsage) obj;
+        if ((this.vsName == null) ? (other.vsName != null) : !this.vsName.equals(other.vsName)) {
+            return false;
+        }
+        if (this.bytesIn != other.bytesIn) {
+            return false;
+        }
+        if (this.bytesOut != other.bytesOut) {
+            return false;
+        }
+        if (this.concurrentConnections != other.concurrentConnections) {
+            return false;
+        }
+        return true;
     }
 
-    public long getTotalConnections() {
-        return totalConnections;
-    }
-
-    public long getConcurrentConnections() {
-        return concurrentConnections;
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + (this.vsName != null ? this.vsName.hashCode() : 0);
+        hash = 89 * hash + (int) (this.bytesIn ^ (this.bytesIn >>> 32));
+        hash = 89 * hash + (int) (this.bytesOut ^ (this.bytesOut >>> 32));
+        hash = 89 * hash + (int) (this.concurrentConnections ^ (this.concurrentConnections >>> 32));
+        return hash;
     }
 }
