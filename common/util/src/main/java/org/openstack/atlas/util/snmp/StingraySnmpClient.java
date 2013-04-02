@@ -1,5 +1,7 @@
 package org.openstack.atlas.util.snmp;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.util.common.VerboseLogger;
@@ -18,9 +20,12 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
+import org.snmp4j.transport.UdpTransportMapping;
 
 public class StingraySnmpClient {
 
+    private int nonRepeaters = 0;
+    private int maxRepetitions = 1000;
     private static final Pattern dotSplitter = Pattern.compile("\\.");
     private static final VerboseLogger vlog = new VerboseLogger(StingraySnmpClient.class);
     private static final Log LOG = LogFactory.getLog(StingraySnmpClient.class);
@@ -73,7 +78,7 @@ public class StingraySnmpClient {
         Map<String, Long> oidMap = new HashMap<String, Long>();
         List<VariableBinding> bindings = getWalkOidBindingList(oid);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(oid, vb.getOid().toString());
             oidMap.put(vsName, new Long(vb.getVariable().toLong()));
         }
         return oidMap;
@@ -132,7 +137,7 @@ public class StingraySnmpClient {
         // Fetch Current Connections
         bindings = getWalkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_CURRENT_CONNECTIONS, vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -144,7 +149,7 @@ public class StingraySnmpClient {
         // Fetch Total Connections
         bindings = getWalkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_TOTAL_CONNECTIONS, vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -156,7 +161,7 @@ public class StingraySnmpClient {
         // Fetch BytesIn hi bytes
         bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_IN_HI);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_BYTES_IN_HI, vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -168,7 +173,7 @@ public class StingraySnmpClient {
         // Fetch Bytes In Lo
         bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_IN_LO);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_BYTES_IN_LO, vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -180,7 +185,7 @@ public class StingraySnmpClient {
         // Fetch Bytes out Hi
         bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_OUT_HI);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_BYTES_OUT_HI, vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -192,7 +197,7 @@ public class StingraySnmpClient {
         // Fetch Bytes Out Lo
         bindings = getWalkOidBindingList(OIDConstants.VS_BYTES_OUT_LO);
         for (VariableBinding vb : bindings) {
-            String vsName = getVirtualServerNameFromOid(vb.getOid().toString());
+            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_BYTES_OUT_LO, vb.getOid().toString());
             if (!rawSnmpMap.containsKey(vsName)) {
                 RawSnmpUsage entry = new RawSnmpUsage();
                 entry.setVsName(vsName);
@@ -323,13 +328,16 @@ public class StingraySnmpClient {
             throw new StingraySnmpGeneralException("Error closing snmp connection.");
         }
         for (VariableBinding variableBinding : responsePDU.getVariableBindings()) {
-            if (variableBinding.getOid().startsWith(new OID(OIDConstants.VS_BYTES_IN_HI)))
+            if (variableBinding.getOid().startsWith(new OID(OIDConstants.VS_BYTES_IN_HI))) {
                 bytesInHi = variableBinding.getVariable().toLong();
-            if (variableBinding.getOid().startsWith(new OID(OIDConstants.VS_BYTES_IN_LO)))
+            }
+            if (variableBinding.getOid().startsWith(new OID(OIDConstants.VS_BYTES_IN_LO))) {
                 bytesInLo = variableBinding.getVariable().toLong();
+            }
         }
-        if (responsePDU.getVariableBindings().get(0).getOid().startsWith(new OID(OIDConstants.VS_CURRENT_CONNECTIONS)))
+        if (responsePDU.getVariableBindings().get(0).getOid().startsWith(new OID(OIDConstants.VS_CURRENT_CONNECTIONS))) {
             return responsePDU.getVariableBindings().get(0).getVariable().toLong();
+        }
         return (bytesInHi << 32) | bytesInLo;
     }
 
@@ -426,6 +434,103 @@ public class StingraySnmpClient {
         return bindingsList;
     }
 
+    public List<VariableBinding> getBulkOidBindingList(String oid) throws StingraySnmpSetupException, StingraySnmpGeneralException {
+        List<VariableBinding> bindings = new ArrayList<VariableBinding>();
+        String startOID = oid;
+        String currOID = startOID;
+        int totalItems = 0;
+        int matchedItems = 0;
+        int currMaxReps = maxRepetitions;
+        boolean finished = false;
+        while (!finished) {
+            vlog.printf("total items = %d matched items= %d", totalItems, matchedItems);
+            PDU req = new PDU();
+            req.add(new VariableBinding(new OID(currOID)));
+            req.setType(PDU.GETBULK);
+            req.setNonRepeaters(nonRepeaters);
+            req.setMaxRepetitions(currMaxReps);
+            req.setRequestID(new Integer32(incRequestId()));
+            UdpAddress udpAddr = new UdpAddress(address + "/" + port);
+            CommunityTarget target = new CommunityTarget();
+            target.setCommunity(new OctetString(StingraySnmpConstants.COMMUNITY));
+            target.setVersion(version);
+            target.setAddress(udpAddr);
+            TransportMapping transport;
+            try {
+                transport = new DefaultUdpTransportMapping();
+            } catch (IOException ex) {
+                String msg = String.format("Error setting up snmp connection to %s:%s", address, port);
+                LOG.error(msg, ex);
+                throw new StingraySnmpSetupException(msg, ex);
+            }
+            Snmp snmp = new Snmp(transport);
+            try {
+                transport.listen();
+            } catch (IOException ex) {
+                String msg = String.format("Error listening on local udp port for snmp connection");
+                LOG.error(msg, ex);
+                close(snmp, transport);
+                throw new StingraySnmpSetupException(msg, ex);
+            }
+            VariableBinding vb = null;
+            ResponseEvent respEvent = null;
+            try {
+                respEvent = snmp.getBulk(req, target);
+            } catch (IOException ex) {
+                String msg = String.format("Error getting bulk request from snmp");
+                LOG.error(msg, ex);
+                close(snmp, transport);
+                throw new StingraySnmpGeneralException(msg, ex);
+            }
+            PDU respPdu = respEvent.getResponse();
+            if (respPdu == null) {
+                String msg = String.format("Error fetching bulk response reducing maxRepetitions from %d to %d", currMaxReps, currMaxReps / 2);
+                currMaxReps /= 2;
+                LOG.warn(msg);
+                if (currMaxReps <= 1) {
+                    String exMsg = String.format("Error maxRepetitions was strunk to 1");
+                    LOG.error(exMsg);
+                    close(snmp, transport);
+                    throw new StingraySnmpRetryExceededException(exMsg);
+                }
+                close(snmp, transport);
+                continue;
+            }
+            int respSize = respPdu.size();
+            for (int i = 0; i < respSize; i++) {
+                totalItems++;
+                vb = respPdu.get(i);
+                String vbOid = vb.getOid().toString();
+                if (!vbOid.startsWith(oid + ".")) {
+                    finished = true;
+                    continue;
+                }
+                matchedItems++;
+                bindings.add(vb);
+                currOID = vbOid;
+            }
+            close(snmp, transport);
+            if (respSize < currMaxReps) {
+                break; // This was the last set of entries.
+            }
+        }
+        vlog.printf("total items = %d matched items= %d", totalItems, matchedItems);
+        return bindings;
+    }
+
+    private void close(Snmp snmp, TransportMapping transport) {
+        try {
+            snmp.close();
+        } catch (Exception ex) {
+            LOG.warn("Warning unable to close snmp connection");
+        }
+        try {
+            transport.close();
+        } catch (Exception ex) {
+            LOG.warn("Warning unable to close transport");
+        }
+    }
+
     public static String getOidFromVirtualServerName(String baseOid, String vsName) {
         StringBuilder sb = new StringBuilder();
         char[] vsChars = vsName.toCharArray();
@@ -437,10 +542,12 @@ public class StingraySnmpClient {
         return sb.toString();
     }
 
-    public static String getVirtualServerNameFromOid(String oid) {
+    public static String getVirtualServerNameFromOid(String baseOid, String oid) {
         StringBuilder sb = new StringBuilder();
+        String[] baseNums = dotSplitter.split(baseOid);
         String[] nums = dotSplitter.split(oid);
-        for (int i = 14; i < nums.length; i++) {
+
+        for (int i = baseNums.length + 1; i < nums.length; i++) {
             sb.append((char) Integer.parseInt(nums[i]));
         }
         return sb.toString();
@@ -503,5 +610,21 @@ public class StingraySnmpClient {
 
     public void setReportUdpCountEveryNMilliSeconds(long reportUdpCountEveryNMilliSeconds) {
         this.reportUdpCountEveryNMilliSeconds = reportUdpCountEveryNMilliSeconds;
+    }
+
+    public int getNonRepeaters() {
+        return nonRepeaters;
+    }
+
+    public void setNonRepeaters(int nonRepeaters) {
+        this.nonRepeaters = nonRepeaters;
+    }
+
+    public int getMaxRepetitions() {
+        return maxRepetitions;
+    }
+
+    public void setMaxRepetitions(int maxRepetitions) {
+        this.maxRepetitions = maxRepetitions;
     }
 }

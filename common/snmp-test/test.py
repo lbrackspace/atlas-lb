@@ -7,4 +7,4 @@ ssc = StingraySnmpClient()
 ssc.setAddress("10.12.99.19")
 ssc.setPort("1161")
 
-ssc.getSnmpUsage()
+

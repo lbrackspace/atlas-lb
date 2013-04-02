@@ -23,6 +23,7 @@ import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededExcepti
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpSetupException;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
+import org.snmp4j.smi.VariableBinding;
 
 public class SnmpMain {
 
@@ -67,6 +68,7 @@ public class SnmpMain {
                     System.out.printf("    init_clients #Initialize the snmpClients\n");
                     System.out.printf("    show_state  #Show the application state and variables\n");
                     System.out.printf("    set_comparator <bi|bo|tc|cc> #Set the comparator for to BandwidthIn BandwidthOut totalConnections or ConcurrentConnections respectivly\n");
+                    System.out.printf("    run_bulk <oid> #Get usage from the default host useing the bulk on the given oid\n");
                     System.out.printf("    run_default #Get usage from the default host and add it to the current usage list\n");
                     System.out.printf("    clear_usage #Clear the current usageList\n");
                     System.out.printf("    display_usage #Display the current usage\n");
@@ -91,6 +93,18 @@ public class SnmpMain {
                     for (int i = 0; i < usageList.size(); i++) {
                         System.out.printf("entry[%d]=%s\n", i, usageList.get(i).toString());
                     }
+                } else if (cmd.equals("run_bulk") && args.length >= 2) {
+                    String oid = args[1];
+                    System.out.printf("Running bulk on oid %s\n", oid);
+                    StingraySnmpClient client = defaultClient;
+                    List<VariableBinding> bindings = client.getBulkOidBindingList(oid);
+                    for (VariableBinding vb : bindings) {
+                        String vbOid = vb.getOid().toString();
+                        String vsName = StingraySnmpClient.getVirtualServerNameFromOid(oid, vbOid);
+                        long val = vb.getVariable().toLong();
+                        System.out.printf("%s %s=%d\n", vsName, vbOid, val);
+                    }
+
                 } else if (cmd.equals("run_default")) {
                     System.out.printf("Calling run for defaultLb\n");
                     StingraySnmpClient client;
