@@ -27,6 +27,13 @@ public class PolledUsageRecordGenerator {
     }
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
+                                                   int tagsBitMask){
+        return generate(generatorPojoList, initialPollTime, DEFAULT_POLL_INTERVAL, DEFAULT_OUTGOING_TRANSFER, DEFAULT_INCOMING_TRANSFER,
+                        DEFAULT_OUTGOING_TRANSFER_SSL, DEFAULT_INCOMING_TRANSFER_SSL, DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS,
+                        DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS_SSL, DEFAULT_NUM_VIPS, tagsBitMask, null);
+    }
+
+    public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
                                                    List<String> eventTypes){
         return generate(generatorPojoList, initialPollTime, DEFAULT_POLL_INTERVAL, DEFAULT_OUTGOING_TRANSFER, DEFAULT_INCOMING_TRANSFER,
                         DEFAULT_OUTGOING_TRANSFER_SSL, DEFAULT_INCOMING_TRANSFER_SSL, DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS,

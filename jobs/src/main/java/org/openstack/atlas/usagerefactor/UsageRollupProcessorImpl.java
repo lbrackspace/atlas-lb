@@ -3,7 +3,7 @@ package org.openstack.atlas.usagerefactor;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
-import org.openstack.atlas.usagerefactor.helpers.BandwidthUsageHelper;
+import org.openstack.atlas.usagerefactor.helpers.RollupUsageHelper;
 
 import java.util.*;
 
@@ -70,7 +70,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             if(polledUsageRecordsForLb.get(i).getPollTime().compareTo(hourToStopProcess) >= 0){
                 break;
             }
-            BandwidthUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i));
+            RollupUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i));
+            RollupUsageHelper.calculateAndSetAverageConcurrentConnections(newUsage, polledUsageRecordsForLb.get(i));
             newUsage = processEvents(newUsage, polledUsageRecordsForLb.get(i), processedRecords);
         }
 
@@ -100,6 +101,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         initUsage.setStartTime(polledUsageRecord.getPollTime());
         initUsage.setEventType(polledUsageRecord.getEventType());
         initUsage.setAccountId(polledUsageRecord.getAccountId());
+        initUsage.setTags(polledUsageRecord.getTagsBitmask());
         initUsage.setNeedsPushed(true);
         initUsage.setEntryVersion(0);
         return initUsage;
@@ -123,19 +125,19 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                     currentUsage.setEndTime(currentPolledRecord.getPollTime());
                 }
                 if(currentPolledRecord.getEventType().equals(UsageEvent.CREATE_VIRTUAL_IP.name())){
-
+                    currentUsage.setNumVips(currentUsage.getNumVips() + 1);
                 }
                 if(currentPolledRecord.getEventType().equals(UsageEvent.DELETE_VIRTUAL_IP.name())){
-
+                    currentUsage.setNumVips(currentUsage.getNumVips() - 1);
                 }
                 if(currentPolledRecord.getEventType().equals(UsageEvent.SSL_MIXED_ON.name())){
-
+                    currentUsage.setTags(currentPolledRecord.getTagsBitmask());
                 }
                 if(currentPolledRecord.getEventType().equals(UsageEvent.SSL_ONLY_ON.name())){
-
+                    currentUsage.setTags(currentPolledRecord.getTagsBitmask());
                 }
                 if(currentPolledRecord.getEventType().equals(UsageEvent.SSL_OFF.name())){
-
+                    currentUsage.setTags(currentPolledRecord.getTagsBitmask());
                 }
                 if(currentPolledRecord.getEventType().equals(UsageEvent.SUSPEND_LOADBALANCER.name())){
 

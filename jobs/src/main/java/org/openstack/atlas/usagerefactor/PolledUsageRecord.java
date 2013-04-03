@@ -10,8 +10,8 @@ public class PolledUsageRecord {
     private long incomingTransfer;
     private long outgoingTransferSsl;
     private long incomingTransferSsl;
-    private long averageConcurrentConnections;
-    private long averageConcurrentConnectionsSsl;
+    private double concurrentConnections;
+    private double concurrentConnectionsSsl;
     private int numVips;
     private int tagsBitmask;
     private Calendar pollTime;
@@ -19,7 +19,7 @@ public class PolledUsageRecord {
 
     public PolledUsageRecord(int id, int accountId, int loadbalancerId, long outgoingTransfer,
                              long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
-                             long averageConcurrentConnections, long averageConcurrentConnectionsSsl,
+                             long concurrentConnections, long concurrentConnectionsSsl,
                              int numVips, int tagsBitmask, Calendar pollTime, String eventType) {
         this.id = id;
         this.accountId = accountId;
@@ -28,8 +28,8 @@ public class PolledUsageRecord {
         this.incomingTransfer = incomingTransfer;
         this.outgoingTransferSsl = outgoingTransferSsl;
         this.incomingTransferSsl = incomingTransferSsl;
-        this.averageConcurrentConnections = averageConcurrentConnections;
-        this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
+        this.concurrentConnections = concurrentConnections;
+        this.concurrentConnectionsSsl = concurrentConnectionsSsl;
         this.numVips = numVips;
         this.tagsBitmask = tagsBitmask;
         this.pollTime = pollTime;
@@ -91,20 +91,20 @@ public class PolledUsageRecord {
         this.incomingTransferSsl = incomingTransferSsl;
     }
 
-    public long getAverageConcurrentConnections() {
-        return averageConcurrentConnections;
+    public double getConcurrentConnections() {
+        return concurrentConnections;
     }
 
-    public void setAverageConcurrentConnections(long averageConcurrentConnections) {
-        this.averageConcurrentConnections = averageConcurrentConnections;
+    public void setConcurrentConnections(double concurrentConnections) {
+        this.concurrentConnections = concurrentConnections;
     }
 
-    public long getAverageConcurrentConnectionsSsl() {
-        return averageConcurrentConnectionsSsl;
+    public double getConcurrentConnectionsSsl() {
+        return concurrentConnectionsSsl;
     }
 
-    public void setAverageConcurrentConnectionsSsl(long averageConcurrentConnectionsSsl) {
-        this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
+    public void setConcurrentConnectionsSsl(double concurrentConnectionsSsl) {
+        this.concurrentConnectionsSsl = concurrentConnectionsSsl;
     }
 
     public Calendar getPollTime() {
@@ -131,7 +131,7 @@ public class PolledUsageRecord {
         this.numVips = numVips;
     }
 
-    public long getTagsBitmask() {
+    public int getTagsBitmask() {
         return tagsBitmask;
     }
 

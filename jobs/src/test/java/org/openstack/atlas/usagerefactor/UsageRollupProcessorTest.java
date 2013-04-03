@@ -136,6 +136,46 @@ public class UsageRollupProcessorTest {
             Assert.assertEquals(totBandwidthOutSsl, processedUsages.get(0).getOutgoingTransferSsl().longValue());
             Assert.assertEquals(totBandwidthInSsl, processedUsages.get(0).getIncomingTransferSsl().longValue());
         }
+
+        @Test
+        public void shouldAverageAllConcurrentConnectionsForOneRecord(){
+            int numLBPolls = 11;
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, numLBPolls));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            double ccs = 4;
+            double ccsIncrement = 10;
+            double ccsSsl = 8;
+            double ccsSslIncrement = 15;
+            double totalCcs = 0;
+            double totalCcsSsl = 0;
+            for(PolledUsageRecord polledRecord : polledRecords){
+                polledRecord.setConcurrentConnections(ccs);
+                polledRecord.setConcurrentConnectionsSsl(ccsSsl);
+                totalCcs += ccs;
+                totalCcsSsl += ccsSsl;
+                ccs += ccsIncrement;
+                ccsSsl += ccsSslIncrement;
+            }
+            double expectedACC = totalCcs / numLBPolls;
+            double expectedACCSsl = totalCcsSsl / numLBPolls;
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(1, processedUsages.size());
+            Assert.assertEquals(expectedACC, processedUsages.get(0).getAverageConcurrentConnections(), 0);
+            Assert.assertEquals(expectedACCSsl, processedUsages.get(0).getAverageConcurrentConnectionsSsl(), 0);
+        }
+
+        @Test
+        public void shouldMaintainTagsBitmask(){
+            int numLBPolls = 11;
+            int tagsBitmask = 1;
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, numLBPolls));
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, tagsBitmask);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(1, processedUsages.size());
+            Assert.assertEquals(tagsBitmask, (int)processedUsages.get(0).getTags());
+        }
     }
 
     @RunWith(MockitoJUnitRunner.class)
@@ -365,16 +405,77 @@ public class UsageRollupProcessorTest {
         @Test
         public void shouldIncreaseNumVipsWhenCreateVIPEventEncountered(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
-            generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 3));
             List<String> eventTypes = new ArrayList<String>();
             eventTypes.add(null);
             eventTypes.add(UsageEvent.CREATE_VIRTUAL_IP.name());
+            eventTypes.add(null);
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
             polledRecords.get(1).setNumVips(2);
+            polledRecords.get(2).setNumVips(2);
             Calendar compTime = Calendar.getInstance();
             compTime.setTime(initialPollTime.getTime());
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
+            Assert.assertEquals(1, (int)processedUsages.get(0).getNumVips());
+            Assert.assertEquals(2, (int)processedUsages.get(1).getNumVips());
+        }
+
+        @Test
+        public void shouldCalculateAverageConcurrentConnectionsWithEvents(){
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 8));
+            List<String> eventTypes = new ArrayList<String>();
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SSL_MIXED_ON.name());
+            eventTypes.add(null);
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SSL_OFF.name());
+            eventTypes.add(null);
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            polledRecords.get(0).setConcurrentConnections(20);
+            polledRecords.get(1).setConcurrentConnections(30);
+            polledRecords.get(2).setConcurrentConnectionsSsl(12);
+            polledRecords.get(3).setConcurrentConnectionsSsl(36);
+            polledRecords.get(4).setConcurrentConnections(52);
+            polledRecords.get(4).setConcurrentConnectionsSsl(43);
+            polledRecords.get(5).setConcurrentConnections(145);
+            polledRecords.get(5).setConcurrentConnectionsSsl(1);
+            polledRecords.get(6).setConcurrentConnections(123);
+            polledRecords.get(6).setConcurrentConnectionsSsl(92);
+            polledRecords.get(7).setConcurrentConnections(21);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(4, processedUsages.size());
+            double expectedACC = (20 + 30) / 2.0;
+            double expectedACCSsl = (0 + 0) / 2.0;
+            Assert.assertEquals(expectedACC, (double)processedUsages.get(0).getAverageConcurrentConnections(), 0);
+            Assert.assertEquals(expectedACCSsl, (double)processedUsages.get(0).getAverageConcurrentConnectionsSsl(), 0);
+            expectedACC = (0 + 0) / 2.0;
+            expectedACCSsl = (12 + 36) / 2.0;
+            Assert.assertEquals(expectedACC, (double)processedUsages.get(1).getAverageConcurrentConnections(), 0);
+            Assert.assertEquals(expectedACCSsl, (double)processedUsages.get(1).getAverageConcurrentConnectionsSsl(), 0);
+            expectedACC = (52 + 145 + 123) / 3.0;
+            expectedACCSsl = (43 + 1 + 92) / 3.0;
+            Assert.assertEquals(expectedACC, (double)processedUsages.get(2).getAverageConcurrentConnections(), 0);
+            Assert.assertEquals(expectedACCSsl, (double)processedUsages.get(2).getAverageConcurrentConnectionsSsl(), 0);
+            expectedACC = 21 / 1;
+            expectedACCSsl = 0 / 1;
+            Assert.assertEquals(expectedACC, (double)processedUsages.get(3).getAverageConcurrentConnections(), 0);
+            Assert.assertEquals(expectedACCSsl, (double)processedUsages.get(3).getAverageConcurrentConnectionsSsl(), 0);
+        }
+
+        @Ignore
+        @Test
+        public void shouldProcessCorrectTagsBitmaskForPublicSSLEvents(){
+
+        }
+
+        @Ignore
+        @Test
+        public void shouldProcessCorrectTagsBitmaskForServicenetSSLEvents(){
+
         }
     }
 
