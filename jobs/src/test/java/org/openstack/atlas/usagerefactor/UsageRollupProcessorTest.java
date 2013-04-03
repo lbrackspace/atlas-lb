@@ -11,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.usage.BitTag;
+import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.usagerefactor.generator.PolledUsageRecordGenerator;
 import org.openstack.atlas.usagerefactor.generator.GeneratorPojo;
 
@@ -449,48 +451,80 @@ public class UsageRollupProcessorTest {
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(4, processedUsages.size());
             double expectedACC = (20 + 30) / 2.0;
-            double expectedACCSsl = (0 + 0) / 2.0;
-            Assert.assertEquals(expectedACC, (double)processedUsages.get(0).getAverageConcurrentConnections(), 0);
-            Assert.assertEquals(expectedACCSsl, (double)processedUsages.get(0).getAverageConcurrentConnectionsSsl(), 0);
-            expectedACC = (0 + 0) / 2.0;
+            double expectedACCSsl = 0;
+            Assert.assertEquals(expectedACC, processedUsages.get(0).getAverageConcurrentConnections(), 0);
+            Assert.assertEquals(expectedACCSsl, processedUsages.get(0).getAverageConcurrentConnectionsSsl(), 0);
+            expectedACC = 0;
             expectedACCSsl = (12 + 36) / 2.0;
-            Assert.assertEquals(expectedACC, (double)processedUsages.get(1).getAverageConcurrentConnections(), 0);
-            Assert.assertEquals(expectedACCSsl, (double)processedUsages.get(1).getAverageConcurrentConnectionsSsl(), 0);
+            Assert.assertEquals(expectedACC, processedUsages.get(1).getAverageConcurrentConnections(), 0);
+            Assert.assertEquals(expectedACCSsl, processedUsages.get(1).getAverageConcurrentConnectionsSsl(), 0);
             expectedACC = (52 + 145 + 123) / 3.0;
             expectedACCSsl = (43 + 1 + 92) / 3.0;
-            Assert.assertEquals(expectedACC, (double)processedUsages.get(2).getAverageConcurrentConnections(), 0);
-            Assert.assertEquals(expectedACCSsl, (double)processedUsages.get(2).getAverageConcurrentConnectionsSsl(), 0);
-            expectedACC = 21 / 1;
-            expectedACCSsl = 0 / 1;
-            Assert.assertEquals(expectedACC, (double)processedUsages.get(3).getAverageConcurrentConnections(), 0);
-            Assert.assertEquals(expectedACCSsl, (double)processedUsages.get(3).getAverageConcurrentConnectionsSsl(), 0);
+            Assert.assertEquals(expectedACC, processedUsages.get(2).getAverageConcurrentConnections(), 0);
+            Assert.assertEquals(expectedACCSsl, processedUsages.get(2).getAverageConcurrentConnectionsSsl(), 0);
+            expectedACC = 21;
+            expectedACCSsl = 0;
+            Assert.assertEquals(expectedACC, processedUsages.get(3).getAverageConcurrentConnections(), 0);
+            Assert.assertEquals(expectedACCSsl, processedUsages.get(3).getAverageConcurrentConnectionsSsl(), 0);
         }
 
-        @Ignore
         @Test
-        public void shouldProcessCorrectTagsBitmaskForPublicSSLEvents(){
-
+        public void shouldProcessCorrectTagsBitmaskForAllEvents(){
+            BitTags tags = new BitTags();
+            List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
+            generatorPojos.add(new GeneratorPojo(5806065, 1234, 16));
+            List<String> eventTypes = new ArrayList<String>();
+            eventTypes.add(UsageEvent.CREATE_LOADBALANCER.name());
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SSL_MIXED_ON.name());
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SSL_OFF.name());
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.SUSPEND_LOADBALANCER.name());
+            eventTypes.add(null);
+            eventTypes.add(UsageEvent.UNSUSPEND_LOADBALANCER.name());
+            eventTypes.add(null);
+            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            tags.flipTagOn(BitTag.SERVICENET_LB);
+            polledRecords.get(0).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(1).setTagsBitmask(tags.getBitTags());
+            tags.flipTagOn(BitTag.SSL);
+            polledRecords.get(2).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(3).setTagsBitmask(tags.getBitTags());
+            tags.flipTagOn(BitTag.SSL);
+            tags.flipTagOn(BitTag.SSL_MIXED_MODE);
+            polledRecords.get(4).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(5).setTagsBitmask(tags.getBitTags());
+            tags.flipTagOff(BitTag.SSL);
+            tags.flipTagOff(BitTag.SSL_MIXED_MODE);
+            polledRecords.get(6).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(7).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(8).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(9).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(10).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(11).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(12).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(13).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(14).setTagsBitmask(tags.getBitTags());
+            polledRecords.get(15).setTagsBitmask(tags.getBitTags());
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            tags.flipAllTagsOff();
+            tags.flipTagOn(BitTag.SERVICENET_LB);
+            Assert.assertEquals(6, processedUsages.size());
+            Assert.assertEquals(tags.getBitTags(), (int)processedUsages.get(0).getTags());
+            tags.flipTagOn(BitTag.SSL);
+            Assert.assertEquals(tags.getBitTags(), (int)processedUsages.get(1).getTags());
+            tags.flipTagOn(BitTag.SSL);
+            tags.flipTagOn(BitTag.SSL_MIXED_MODE);
+            Assert.assertEquals(tags.getBitTags(), (int)processedUsages.get(2).getTags());
+            tags.flipTagOff(BitTag.SSL);
+            tags.flipTagOff(BitTag.SSL_MIXED_MODE);
+            Assert.assertEquals(tags.getBitTags(), (int)processedUsages.get(3).getTags());
+            Assert.assertEquals(tags.getBitTags(), (int)processedUsages.get(4).getTags());
+            Assert.assertEquals(tags.getBitTags(), (int)processedUsages.get(5).getTags());
         }
-
-        @Ignore
-        @Test
-        public void shouldProcessCorrectTagsBitmaskForServicenetSSLEvents(){
-
-        }
-    }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class WhenMultipleHoursOfPolledUsagesWithNoEvents{
-        @Ignore
-        @Test
-        public void placeholder(){}
-    }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class WhenMultipleHoursOfPolledUsagesWithEvents{
-        @Ignore
-        @Test
-        public void placeholder(){}
     }
 
     @RunWith(MockitoJUnitRunner.class)
@@ -552,4 +586,76 @@ public class UsageRollupProcessorTest {
             }
         }
     }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenMultipleHoursOfPolledUsagesWithNoEvents{
+        private int accountId = 5806065;
+        private int lbId = 1234;
+
+        private Calendar initialPollTime;
+        private Calendar hourToProcess;
+        private UsageRollupProcessor usageRollupProcessor;
+        private List<PolledUsageRecord> polledRecords;
+
+        @Before
+        public void standUp() {
+            usageRollupProcessor = new UsageRollupProcessorImpl();
+            polledRecords = new ArrayList<PolledUsageRecord>();
+            initialPollTime = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 4, 0);
+            hourToProcess = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
+        }
+
+        @Test
+        public void shouldStopProcessingRecordsBeforeTheNextHour(){
+            List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
+            usagePojoList.add(new GeneratorPojo(accountId, lbId, 36));
+            polledRecords = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+
+            Calendar compTime = Calendar.getInstance();
+            compTime.setTime(hourToProcess.getTime());
+            Assert.assertEquals(1, processedUsages.size());
+            Assert.assertEquals(compTime, processedUsages.get(0).getStartTime());
+            compTime.add(Calendar.HOUR, 1);
+            Assert.assertEquals(compTime, processedUsages.get(0).getEndTime());
+        }
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenMultipleHoursOfPolledUsagesWithEvents{
+        private int accountId = 5806065;
+        private int lbId = 1234;
+
+        private Calendar initialPollTime;
+        private Calendar hourToProcess;
+        private UsageRollupProcessor usageRollupProcessor;
+        private List<PolledUsageRecord> polledRecords;
+
+        @Before
+        public void standUp() {
+            usageRollupProcessor = new UsageRollupProcessorImpl();
+            polledRecords = new ArrayList<PolledUsageRecord>();
+            initialPollTime = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 4, 0);
+            hourToProcess = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
+        }
+
+        @Test
+        public void shouldStopProcessingRecordsBeforeTheNextHour(){
+            List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
+            usagePojoList.add(new GeneratorPojo(accountId, lbId, 36));
+            polledRecords = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
+            polledRecords.get(0).setEventType(UsageEvent.SSL_MIXED_ON.name());
+            polledRecords.get(11).setEventType(UsageEvent.SSL_ON.name());
+            polledRecords.get(17).setEventType(UsageEvent.SSL_MIXED_ON.name());
+            polledRecords.get(22).setEventType(UsageEvent.SSL_ON.name());
+            polledRecords.get(25).setEventType(UsageEvent.SSL_MIXED_ON.name());
+            polledRecords.get(36).setEventType(UsageEvent.SSL_ON.name());
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Calendar compTime = Calendar.getInstance();
+            compTime.setTime(hourToProcess.getTime());
+            Assert.assertEquals(1, processedUsages.size());
+            Assert.assertEquals(compTime, processedUsages.get(0).getStartTime());
+            compTime.add(Calendar.HOUR, 1);
+            Assert.assertEquals(compTime, processedUsages.get(0).getEndTime());
+        }
 }
