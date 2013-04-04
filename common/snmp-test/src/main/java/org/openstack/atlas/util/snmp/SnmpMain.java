@@ -76,8 +76,44 @@ public class SnmpMain {
                     System.out.printf("    lookup <oid> <vsName> #Lookup the given OID for the specified virtual server on the default zxtm host\n");
                     System.out.printf("    client <clientKey> #Set the clientKey for the default run\n");
                     System.out.printf("    run_all #Run stats for all zxtm hosts\n");
+                    System.out.printf("    run_threads #run threads for all zxtm hosts\n");
                     System.out.printf("    exit #Exits\n");
                     System.out.printf("\n");
+                } else if (cmd.equals("run_threads")) {
+                    List<String> clientKeys = new ArrayList<String>(clients.keySet());
+                    List<SnmpClientThread> threads = new ArrayList<SnmpClientThread>();
+                    Collections.sort(clientKeys);
+                    for (String clientKey : clientKeys) {
+                        StingraySnmpClient client = clients.get(clientKey);
+                        SnmpClientThread clientThread = new SnmpClientThread();
+                        clientThread.setClient(client);
+                        clientThread.setException(null);
+                        threads.add(clientThread);
+                    }
+
+                    // Start the threads
+                    for (SnmpClientThread thread : threads) {
+                        thread.start();
+                    }
+
+                    // Join them all
+                    for (SnmpClientThread thread : threads) {
+                        System.out.printf("Joining thread for client %s\n", thread.getClient().toString());
+                        thread.join();
+                        System.out.printf("thread for %s joined\n", thread.getClient().toString());
+                    }
+
+                    // Grab all the results
+                    for (SnmpClientThread thread : threads) {
+                        System.out.printf("reading rawUsage from thread for client %s\n", thread.getClient().toString());
+                        Exception ex = thread.getException();
+                        if (ex != null) {
+                            System.out.printf("%s\n",StaticStringUtils.getExtendedStackTrace(ex));
+                        } else {
+                            usageList.addAll(thread.getUsage().values());
+                        }
+                    }
+
                 } else if (cmd.equals("client") && args.length >= 2) {
                     String clientKey = args[1];
                     defaultClient = clients.get(clientKey);
