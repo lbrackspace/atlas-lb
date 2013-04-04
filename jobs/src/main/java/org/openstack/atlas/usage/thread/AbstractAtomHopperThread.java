@@ -58,6 +58,7 @@ public abstract class AbstractAtomHopperThread implements Runnable {
         List<Usage> successfullyPushedRecords = new ArrayList<Usage>();
         List<Usage> failedToPushRecords = new ArrayList<Usage>();
         try {
+            String authToken = identityAuthClient.getAuthToken();
             for (Usage usageRecord : usages) {
                 if (usageRecord.isNeedsPushed()) {
                     ClientResponse response = null;
@@ -66,7 +67,7 @@ public abstract class AbstractAtomHopperThread implements Runnable {
                     UsageEntry entryobject = (UsageEntry) entryMap.get("entryobject");
 
                     try {
-                        response = client.postEntryWithToken(entrystring, identityAuthClient.getAuthToken());
+                        response = client.postEntryWithToken(entrystring, authToken);
                     } catch (ClientHandlerException che) {
                         LOG.warn("Could not post entry because client handler exception for load balancer: "
                                 + usageRecord.getLoadbalancer().getId() + "Exception: " + getStackTrace(che));
