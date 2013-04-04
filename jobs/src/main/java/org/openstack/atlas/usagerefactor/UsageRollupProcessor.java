@@ -1,6 +1,7 @@
 package org.openstack.atlas.usagerefactor;
 
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.usage.entities.PolledUsageRecord;
 
 import java.util.Calendar;
 import java.util.List;

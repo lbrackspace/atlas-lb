@@ -3,7 +3,7 @@ package org.openstack.atlas.usagerefactor;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
-import org.openstack.atlas.service.domain.events.UsageEvent.*;
+import org.openstack.atlas.service.domain.usage.entities.PolledUsageRecord;
 import org.openstack.atlas.usagerefactor.helpers.RollupUsageHelper;
 
 import java.util.*;

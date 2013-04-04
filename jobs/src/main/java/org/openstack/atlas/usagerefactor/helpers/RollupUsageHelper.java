@@ -2,7 +2,7 @@ package org.openstack.atlas.usagerefactor.helpers;
 
 
 import org.openstack.atlas.service.domain.entities.Usage;
-import org.openstack.atlas.usagerefactor.PolledUsageRecord;
+import org.openstack.atlas.service.domain.usage.entities.PolledUsageRecord;
 
 public class RollupUsageHelper {
 

@@ -1,4 +1,4 @@
-package org.openstack.atlas.usagerefactor;
+package org.openstack.atlas.service.domain.usage.entities;
 
 import org.openstack.atlas.service.domain.events.UsageEvent;
 

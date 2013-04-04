@@ -3,7 +3,6 @@ package org.openstack.atlas.usagerefactor;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -13,6 +12,7 @@ import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
+import org.openstack.atlas.service.domain.usage.entities.PolledUsageRecord;
 import org.openstack.atlas.usagerefactor.generator.PolledUsageRecordGenerator;
 import org.openstack.atlas.usagerefactor.generator.GeneratorPojo;
 

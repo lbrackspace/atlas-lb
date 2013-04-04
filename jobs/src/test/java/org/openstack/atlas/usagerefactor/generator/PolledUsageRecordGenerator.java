@@ -1,8 +1,7 @@
 package org.openstack.atlas.usagerefactor.generator;
 
 import org.openstack.atlas.service.domain.events.UsageEvent;
-import org.openstack.atlas.usagerefactor.PolledUsageRecord;
-import sun.util.calendar.Gregorian;
+import org.openstack.atlas.service.domain.usage.entities.PolledUsageRecord;
 
 import java.util.ArrayList;
 import java.util.Calendar;
