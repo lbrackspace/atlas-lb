@@ -3,6 +3,7 @@ package org.openstack.atlas.usagerefactor;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.events.UsageEvent.*;
 import org.openstack.atlas.usagerefactor.helpers.RollupUsageHelper;
 
 import java.util.*;
@@ -72,7 +73,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             }
             RollupUsageHelper.calculateAndSetBandwidth(newUsage, polledUsageRecordsForLb.get(i));
             RollupUsageHelper.calculateAndSetAverageConcurrentConnections(newUsage, polledUsageRecordsForLb.get(i));
-            newUsage = processEvents(newUsage, polledUsageRecordsForLb.get(i), processedRecords);
+            newUsage = processEvents(newUsage, polledUsageRecordsForLb.get(i), processedRecords, i == 0);
         }
 
         if(newUsage.getEndTime() == null){
@@ -99,7 +100,9 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         Usage initUsage =  new Usage();
         initUsage.setLoadbalancer(currentLB);
         initUsage.setStartTime(polledUsageRecord.getPollTime());
-        initUsage.setEventType(polledUsageRecord.getEventType());
+        if(polledUsageRecord.getEventType() != null){
+            initUsage.setEventType(polledUsageRecord.getEventType().name());
+        }
         initUsage.setAccountId(polledUsageRecord.getAccountId());
         initUsage.setTags(polledUsageRecord.getTagsBitmask());
         initUsage.setNeedsPushed(true);
@@ -107,46 +110,49 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         return initUsage;
     }
 
-    private Usage processEvents(Usage currentUsage, PolledUsageRecord currentPolledRecord, List<Usage> processedRecords){
-            if(currentPolledRecord.getEventType() != null  &&
-                !currentPolledRecord.getEventType().toLowerCase().equals("null")){
-
-                //If first record is the CREATE_LB event only set the start time of the processed usage
-                if(!currentPolledRecord.getEventType().equals(UsageEvent.CREATE_LOADBALANCER.name())){
+    private Usage processEvents(Usage currentUsage, PolledUsageRecord currentPolledRecord, List<Usage> processedRecords, boolean isFirstOfHour){
+            if(currentPolledRecord.getEventType() != null){
+                if(currentPolledRecord.getEventType() != UsageEvent.CREATE_LOADBALANCER){
                     currentUsage.setEndTime(currentPolledRecord.getPollTime());
-                    currentUsage.setEventType(null);
+                    if(isFirstOfHour){
+                        currentUsage.setEventType(null);
+                    }
                     processedRecords.add(currentUsage);
                     currentUsage = createInitializedUsageRecord(currentPolledRecord);
-                } else {
-                    currentUsage.setStartTime(currentPolledRecord.getPollTime()); 
                 }
-                //If delete lb event encountered, set end time to poll time.  May need to move bandwidth off this record and onto a previous record.
-                if(currentPolledRecord.getEventType().equals(UsageEvent.DELETE_LOADBALANCER.name())){
-                    currentUsage.setEndTime(currentPolledRecord.getPollTime());
-                }
-                if(currentPolledRecord.getEventType().equals(UsageEvent.CREATE_VIRTUAL_IP.name())){
-                    currentUsage.setNumVips(currentUsage.getNumVips() + 1);
-                }
-                if(currentPolledRecord.getEventType().equals(UsageEvent.DELETE_VIRTUAL_IP.name())){
-                    currentUsage.setNumVips(currentUsage.getNumVips() - 1);
-                }
-                if(currentPolledRecord.getEventType().equals(UsageEvent.SSL_MIXED_ON.name())){
-                    currentUsage.setTags(currentPolledRecord.getTagsBitmask());
-                }
-                if(currentPolledRecord.getEventType().equals(UsageEvent.SSL_ONLY_ON.name())){
-                    currentUsage.setTags(currentPolledRecord.getTagsBitmask());
-                }
-                if(currentPolledRecord.getEventType().equals(UsageEvent.SSL_OFF.name())){
-                    currentUsage.setTags(currentPolledRecord.getTagsBitmask());
-                }
-                if(currentPolledRecord.getEventType().equals(UsageEvent.SUSPEND_LOADBALANCER.name())){
-
-                }
-                if(currentPolledRecord.getEventType().equals(UsageEvent.UNSUSPEND_LOADBALANCER.name())){
-
-                }
-                if(currentPolledRecord.getEventType().equals(UsageEvent.SUSPENDED_LOADBALANCER.name())){
-
+                switch(currentPolledRecord.getEventType()){
+                    case CREATE_LOADBALANCER:
+                        currentUsage.setStartTime(currentPolledRecord.getPollTime());
+                        break;
+                    case DELETE_LOADBALANCER:
+                        currentUsage.setEndTime(currentPolledRecord.getPollTime());
+                        break;
+                    case CREATE_VIRTUAL_IP:
+                        currentUsage.setNumVips(currentUsage.getNumVips() + 1);
+                        break;
+                    case DELETE_VIRTUAL_IP:
+                        currentUsage.setNumVips(currentUsage.getNumVips() - 1);
+                        break;
+                    case SSL_MIXED_ON:
+                        currentUsage.setTags(currentPolledRecord.getTagsBitmask());
+                        break;
+                    case SSL_ONLY_ON:
+                        currentUsage.setTags(currentPolledRecord.getTagsBitmask());
+                        break;
+                    case SSL_OFF:
+                        currentUsage.setTags(currentPolledRecord.getTagsBitmask());
+                        break;
+                    case SSL_ON:
+                        currentUsage.setTags(currentPolledRecord.getTagsBitmask());
+                        break;
+                    case SUSPEND_LOADBALANCER:
+                        break;
+                    case UNSUSPEND_LOADBALANCER:
+                        break;
+                    case SUSPENDED_LOADBALANCER:
+                        break;
+                    default:
+                        break;
                 }
             }
         return currentUsage;

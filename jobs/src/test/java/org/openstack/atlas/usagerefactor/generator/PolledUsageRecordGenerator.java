@@ -1,5 +1,6 @@
 package org.openstack.atlas.usagerefactor.generator;
 
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.usagerefactor.PolledUsageRecord;
 import sun.util.calendar.Gregorian;
 
@@ -34,7 +35,7 @@ public class PolledUsageRecordGenerator {
     }
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
-                                                   List<String> eventTypes){
+                                                   List<UsageEvent> eventTypes){
         return generate(generatorPojoList, initialPollTime, DEFAULT_POLL_INTERVAL, DEFAULT_OUTGOING_TRANSFER, DEFAULT_INCOMING_TRANSFER,
                         DEFAULT_OUTGOING_TRANSFER_SSL, DEFAULT_INCOMING_TRANSFER_SSL, DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS,
                         DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS_SSL, DEFAULT_NUM_VIPS, DEFAULT_TAGS_BITMASK, eventTypes);
@@ -49,7 +50,7 @@ public class PolledUsageRecordGenerator {
 
     public static List<PolledUsageRecord> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime,
                                                    long outgoingTransfer, long incomingTransfer, long outgoingTransferSsl,
-                                                   long incomingTransferSsl, List<String> eventTypes){
+                                                   long incomingTransferSsl, List<UsageEvent> eventTypes){
         return generate(generatorPojoList, initialPollTime, DEFAULT_POLL_INTERVAL, outgoingTransfer, incomingTransfer, outgoingTransferSsl,
                         incomingTransferSsl, DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS, DEFAULT_AVERAGE_CONCURRENT_CONNECTIONS_SSL,
                         DEFAULT_NUM_VIPS, DEFAULT_TAGS_BITMASK, eventTypes);
@@ -59,7 +60,7 @@ public class PolledUsageRecordGenerator {
                                                    int pollIntervalInMins, long outgoingTransfer, long incomingTransfer,
                                                    long outgoingTransferSsl, long incomingTransferSsl,
                                                    long averageConcurrentConnections, long averageConcurrentConnectionsSsl,
-                                                   int numVips, int tagsBitmask, List<String> eventTypes) {
+                                                   int numVips, int tagsBitmask, List<UsageEvent> eventTypes) {
         List<PolledUsageRecord> polledUsageRecords = new ArrayList<PolledUsageRecord>();
 
         Calendar pollTime;
@@ -67,7 +68,7 @@ public class PolledUsageRecordGenerator {
 
         for (GeneratorPojo generatorPojo : generatorPojoList) {
             pollTime = initialPollTime;
-            String eventType = null;
+            UsageEvent eventType = null;
             for (int j = 0; j < generatorPojo.getNumRecords(); j++) {
                 if(eventTypes != null && j < eventTypes.size()){
                     eventType = eventTypes.get(j);

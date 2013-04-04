@@ -1,5 +1,7 @@
 package org.openstack.atlas.usagerefactor;
 
+import org.openstack.atlas.service.domain.events.UsageEvent;
+
 import java.util.Calendar;
 
 public class PolledUsageRecord {
@@ -15,12 +17,12 @@ public class PolledUsageRecord {
     private int numVips;
     private int tagsBitmask;
     private Calendar pollTime;
-    private String eventType;
+    private UsageEvent eventType;
 
     public PolledUsageRecord(int id, int accountId, int loadbalancerId, long outgoingTransfer,
                              long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
                              long concurrentConnections, long concurrentConnectionsSsl,
-                             int numVips, int tagsBitmask, Calendar pollTime, String eventType) {
+                             int numVips, int tagsBitmask, Calendar pollTime, UsageEvent eventType) {
         this.id = id;
         this.accountId = accountId;
         this.loadbalancerId = loadbalancerId;
@@ -115,11 +117,11 @@ public class PolledUsageRecord {
         this.pollTime = pollTime;
     }
 
-    public String getEventType() {
+    public UsageEvent getEventType() {
         return eventType;
     }
 
-    public void setEventType(String eventType) {
+    public void setEventType(UsageEvent eventType) {
         this.eventType = eventType;
     }
 

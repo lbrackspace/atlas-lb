@@ -51,7 +51,7 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldNotCreateARecord() {
+        public void shouldNotCreateAnHourlyRecordWhenNoFiveMinuteRecords() {
             polledRecords.clear();
             List<PolledUsageRecord> allRecords = polledUsageRepository.getAllRecords(loadbalancerIds);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(allRecords, hourToProcess);
@@ -212,53 +212,58 @@ public class UsageRollupProcessorTest {
         public void shouldCreateTwoRecordsIfOnlyOneEventWithFewPolls(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
-            List<String> eventTypes = new ArrayList<String>();
+            List<UsageEvent> eventTypes = new ArrayList<UsageEvent>();
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            eventTypes.add(UsageEvent.SSL_ONLY_ON);
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+
             Assert.assertEquals(2, processedUsages.size());
+            Assert.assertNull(processedUsages.get(0).getEventType());
+            Assert.assertEquals(UsageEvent.SSL_ONLY_ON.name(), processedUsages.get(1).getEventType());
         }
 
         @Test
         public void shouldCreateTwoRecordsIfOnlyOneEventWithManyPolls(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 6));
-            List<String> eventTypes = new ArrayList<String>();
+            List<UsageEvent> eventTypes = new ArrayList<UsageEvent>();
             eventTypes.add(null);
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            eventTypes.add(UsageEvent.SSL_ONLY_ON);
             eventTypes.add(null);
             eventTypes.add(null);
             eventTypes.add(null);
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
+            Assert.assertNull(processedUsages.get(0).getEventType());
+            Assert.assertEquals(UsageEvent.SSL_ONLY_ON.name(), processedUsages.get(1).getEventType());
         }
 
         @Test
         public void shouldCreateOneMoreRecordThanEvents(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 6));
-            List<String> eventTypes = new ArrayList<String>();
+            List<UsageEvent> eventTypes = new ArrayList<UsageEvent>();
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
-            eventTypes.add(UsageEvent.SSL_MIXED_ON.name());
-            eventTypes.add(UsageEvent.SSL_OFF.name());
-            eventTypes.add(UsageEvent.SUSPEND_LOADBALANCER.name());
-            eventTypes.add(UsageEvent.UNSUSPEND_LOADBALANCER.name());
+            eventTypes.add(UsageEvent.SSL_ONLY_ON);
+            eventTypes.add(UsageEvent.SSL_MIXED_ON);
+            eventTypes.add(UsageEvent.SSL_OFF);
+            eventTypes.add(UsageEvent.SUSPEND_LOADBALANCER);
+            eventTypes.add(UsageEvent.UNSUSPEND_LOADBALANCER);
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(6, processedUsages.size());
         }
 
         @Test
-        public void shouldCreateTwoUsageRecordsFromTwoPolledRecordsAndBandwidthOnlyOnFirstUsageRecord(){
+        public void shouldStoreUsageFromEventRecordToPreviousRecord(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
-            List<String> eventTypes = new ArrayList<String>();
+            List<UsageEvent> eventTypes = new ArrayList<UsageEvent>();
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            eventTypes.add(UsageEvent.SSL_ONLY_ON);
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
             polledRecords.get(0).setOutgoingTransfer(100);
             polledRecords.get(0).setIncomingTransfer(1000);
@@ -281,13 +286,13 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldCreateTwoUsageRecordsFromManyPolledRecordsAndBandwidthSplitBetweenFirstAndSecondUsageRecord(){
+        public void shouldAppropriateUsageToCorrectRecordsWhenEventOccurs(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 5));
-            List<String> eventTypes = new ArrayList<String>();
+            List<UsageEvent> eventTypes = new ArrayList<UsageEvent>();
             eventTypes.add(null);
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            eventTypes.add(UsageEvent.SSL_ONLY_ON);
             eventTypes.add(null);
             eventTypes.add(null);
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
@@ -324,11 +329,11 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldStartRecordOnStartTimeOfCreateLBEvent(){
+        public void recordStartTimeShouldEqualToTimeOfCreateLBEvent(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 11));
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            polledRecords.get(0).setEventType(UsageEvent.CREATE_LOADBALANCER.name());
+            polledRecords.get(0).setEventType(UsageEvent.CREATE_LOADBALANCER);
             polledRecords.get(0).getPollTime().add(Calendar.MINUTE, 2);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Calendar compTime = Calendar.getInstance();
@@ -341,14 +346,14 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldEndRecordOnEndTimeOfDeleteLBEvent(){
+        public void recordEndTimeShouldEqualToTimeOfDeleteLBEvent(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 8));
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            polledRecords.get(0).setEventType(UsageEvent.CREATE_LOADBALANCER.name());
+            polledRecords.get(0).setEventType(UsageEvent.CREATE_LOADBALANCER);
             polledRecords.get(0).getPollTime().add(Calendar.MINUTE, 2);
             polledRecords.get(7).getPollTime().add(Calendar.MINUTE, -2);
-            polledRecords.get(7).setEventType(UsageEvent.DELETE_LOADBALANCER.name());
+            polledRecords.get(7).setEventType(UsageEvent.DELETE_LOADBALANCER);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Calendar compTime = Calendar.getInstance();
             compTime.setTime(polledRecords.get(0).getPollTime().getTime());
@@ -361,13 +366,13 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldHaveBandwidthOnRecordBeforeEvent(){
+        public void shouldHaveBandwidthOnRecordBeforeDeleteEvent(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
             polledRecords.get(1).setOutgoingTransfer(12345);
             polledRecords.get(1).setIncomingTransfer(54321);
-            polledRecords.get(1).setEventType(UsageEvent.DELETE_LOADBALANCER.name());
+            polledRecords.get(1).setEventType(UsageEvent.DELETE_LOADBALANCER);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
             Assert.assertEquals(polledRecords.get(1).getIncomingTransfer(), processedUsages.get(0).getIncomingTransfer().longValue());
@@ -377,14 +382,14 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldCreateCreateTwoRecordsIfEventIsFirstPolledRecordOfHour(){
+        public void shouldCreateTwoRecordsIfEventIsFirstRecordOfHour(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 1));
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
             polledRecords.get(0).setOutgoingTransfer(12345);
             polledRecords.get(0).setIncomingTransfer(54321);
             polledRecords.get(0).getPollTime().add(Calendar.MINUTE, 1);
-            polledRecords.get(0).setEventType(UsageEvent.DELETE_LOADBALANCER.name());
+            polledRecords.get(0).setEventType(UsageEvent.DELETE_LOADBALANCER);
             Calendar compTime = Calendar.getInstance();
             compTime.setTime(initialPollTime.getTime());
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
@@ -408,9 +413,9 @@ public class UsageRollupProcessorTest {
         public void shouldIncreaseNumVipsWhenCreateVIPEventEncountered(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 3));
-            List<String> eventTypes = new ArrayList<String>();
+            List<UsageEvent> eventTypes = new ArrayList<UsageEvent>();
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.CREATE_VIRTUAL_IP.name());
+            eventTypes.add(UsageEvent.CREATE_VIRTUAL_IP);
             eventTypes.add(null);
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
             polledRecords.get(1).setNumVips(2);
@@ -427,14 +432,14 @@ public class UsageRollupProcessorTest {
         public void shouldCalculateAverageConcurrentConnectionsWithEvents(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 8));
-            List<String> eventTypes = new ArrayList<String>();
+            List<UsageEvent> eventTypes = new ArrayList<UsageEvent>();
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            eventTypes.add(UsageEvent.SSL_ONLY_ON);
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SSL_MIXED_ON.name());
+            eventTypes.add(UsageEvent.SSL_MIXED_ON);
             eventTypes.add(null);
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SSL_OFF.name());
+            eventTypes.add(UsageEvent.SSL_OFF);
             eventTypes.add(null);
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
             polledRecords.get(0).setConcurrentConnections(20);
@@ -473,18 +478,18 @@ public class UsageRollupProcessorTest {
             BitTags tags = new BitTags();
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 16));
-            List<String> eventTypes = new ArrayList<String>();
-            eventTypes.add(UsageEvent.CREATE_LOADBALANCER.name());
+            List<UsageEvent> eventTypes = new ArrayList<UsageEvent>();
+            eventTypes.add(UsageEvent.CREATE_LOADBALANCER);
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SSL_ONLY_ON.name());
+            eventTypes.add(UsageEvent.SSL_ONLY_ON);
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SSL_MIXED_ON.name());
+            eventTypes.add(UsageEvent.SSL_MIXED_ON);
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SSL_OFF.name());
+            eventTypes.add(UsageEvent.SSL_OFF);
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.SUSPEND_LOADBALANCER.name());
+            eventTypes.add(UsageEvent.SUSPEND_LOADBALANCER);
             eventTypes.add(null);
-            eventTypes.add(UsageEvent.UNSUSPEND_LOADBALANCER.name());
+            eventTypes.add(UsageEvent.UNSUSPEND_LOADBALANCER);
             eventTypes.add(null);
             polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
             tags.flipTagOn(BitTag.SERVICENET_LB);
@@ -644,18 +649,29 @@ public class UsageRollupProcessorTest {
             List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
             usagePojoList.add(new GeneratorPojo(accountId, lbId, 36));
             polledRecords = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
-            polledRecords.get(0).setEventType(UsageEvent.SSL_MIXED_ON.name());
-            polledRecords.get(11).setEventType(UsageEvent.SSL_ON.name());
-            polledRecords.get(17).setEventType(UsageEvent.SSL_MIXED_ON.name());
-            polledRecords.get(22).setEventType(UsageEvent.SSL_ON.name());
-            polledRecords.get(25).setEventType(UsageEvent.SSL_MIXED_ON.name());
-            polledRecords.get(36).setEventType(UsageEvent.SSL_ON.name());
+            polledRecords.get(0).setEventType(UsageEvent.SSL_MIXED_ON);
+            polledRecords.get(11).setEventType(UsageEvent.SSL_ONLY_ON);
+            polledRecords.get(17).setEventType(UsageEvent.SSL_MIXED_ON);
+            polledRecords.get(22).setEventType(UsageEvent.SSL_ONLY_ON);
+            polledRecords.get(25).setEventType(UsageEvent.SSL_MIXED_ON);
+            polledRecords.get(35).setEventType(UsageEvent.SSL_ONLY_ON);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            Assert.assertEquals(3, processedUsages.size());
             Calendar compTime = Calendar.getInstance();
             compTime.setTime(hourToProcess.getTime());
-            Assert.assertEquals(1, processedUsages.size());
             Assert.assertEquals(compTime, processedUsages.get(0).getStartTime());
-            compTime.add(Calendar.HOUR, 1);
+            compTime.set(Calendar.MINUTE, polledRecords.get(0).getPollTime().get(Calendar.MINUTE));
             Assert.assertEquals(compTime, processedUsages.get(0).getEndTime());
+            Assert.assertEquals(compTime, processedUsages.get(1).getStartTime());
+            compTime.set(Calendar.MINUTE, polledRecords.get(11).getPollTime().get(Calendar.MINUTE));
+            Assert.assertEquals(compTime, processedUsages.get(1).getEndTime());
+            Assert.assertEquals(compTime, processedUsages.get(2).getStartTime());
+            compTime.set(Calendar.HOUR, hourToProcess.get(Calendar.HOUR) + 1);
+            compTime.set(Calendar.MINUTE, 0);
+            Assert.assertEquals(compTime, processedUsages.get(2).getEndTime());
+            Assert.assertNull(processedUsages.get(0).getEventType());
+            Assert.assertEquals(UsageEvent.SSL_MIXED_ON.name(), processedUsages.get(1).getEventType());
+            Assert.assertEquals(UsageEvent.SSL_ONLY_ON.name(), processedUsages.get(2).getEventType());
         }
+    }
 }
