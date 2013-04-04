@@ -12,7 +12,7 @@ import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
-import org.openstack.atlas.service.domain.usage.entities.PolledUsageRecord;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.generator.PolledUsageRecordGenerator;
 import org.openstack.atlas.usagerefactor.generator.GeneratorPojo;
 
@@ -31,7 +31,7 @@ public class UsageRollupProcessorTest {
         private List<Integer> loadbalancerIds;
         @Mock
         private PolledUsageRepository polledUsageRepository;
-        private List<PolledUsageRecord> polledRecords;
+        private List<LoadBalancerMergedHostUsage> LoadBalancerMergedHosts;
         private UsageRollupProcessor usageRollupProcessor;
         private Calendar initialPollTime;
         private Calendar hourToProcess;
@@ -46,15 +46,15 @@ public class UsageRollupProcessorTest {
 
             List<GeneratorPojo> generatorPojoList = new ArrayList<GeneratorPojo>();
             generatorPojoList.add(new GeneratorPojo(accountId, lbId, 24));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojoList, initialPollTime);
-            when(polledUsageRepository.getAllRecords(loadbalancerIds)).thenReturn(polledRecords);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojoList, initialPollTime);
+            when(polledUsageRepository.getAllRecords(loadbalancerIds)).thenReturn(LoadBalancerMergedHosts);
         }
 
         @Test
         public void shouldNotCreateAnHourlyRecordWhenNoFiveMinuteRecords() {
-            polledRecords.clear();
-            List<PolledUsageRecord> allRecords = polledUsageRepository.getAllRecords(loadbalancerIds);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(allRecords, hourToProcess);
+            LoadBalancerMergedHosts.clear();
+            List<LoadBalancerMergedHostUsage> alls = polledUsageRepository.getAllRecords(loadbalancerIds);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(alls, hourToProcess);
             Assert.assertTrue(processedUsages.isEmpty());
         }
 
@@ -62,8 +62,8 @@ public class UsageRollupProcessorTest {
         public void shouldCreateOneHourlyRecord() {
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 11));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(1, processedUsages.size());
         }
 
@@ -74,8 +74,8 @@ public class UsageRollupProcessorTest {
             for(int lbId = 0; lbId < randomLBCount; lbId++){
                 generatorPojos.add(new GeneratorPojo(5806065, lbId, 1, 30));
             }
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(randomLBCount, processedUsages.size());
             for(int lbId = 0; lbId < randomLBCount; lbId++){
                 List<Usage> lbUsageList = new ArrayList<Usage>();
@@ -92,8 +92,8 @@ public class UsageRollupProcessorTest {
         public void shouldCreateOneRecordWithStartTimeOnTheHourAndEndTimeOnTheNextHour(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 11));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Calendar compTime = Calendar.getInstance();
             compTime.setTime(hourToProcess.getTime());
             Assert.assertEquals(1, processedUsages.size());
@@ -107,7 +107,7 @@ public class UsageRollupProcessorTest {
             int numLBPolls = 11;
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, numLBPolls));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
             long increment = 20530932;
             long outgoingTransfer = 123021;
             long incomingTransfer = 1001421;
@@ -117,11 +117,11 @@ public class UsageRollupProcessorTest {
             long totBandwidthIn = 0;
             long totBandwidthOutSsl = 0;
             long totBandwidthInSsl = 0;
-            for(PolledUsageRecord polledRecord : polledRecords){
-                polledRecord.setOutgoingTransfer(outgoingTransfer);
-                polledRecord.setIncomingTransfer(incomingTransfer);
-                polledRecord.setOutgoingTransferSsl(outgoingTransferSsl);
-                polledRecord.setIncomingTransferSsl(incomingTransferSsl);
+            for(LoadBalancerMergedHostUsage LoadBalancerMergedHost : LoadBalancerMergedHosts){
+                LoadBalancerMergedHost.setOutgoingTransfer(outgoingTransfer);
+                LoadBalancerMergedHost.setIncomingTransfer(incomingTransfer);
+                LoadBalancerMergedHost.setOutgoingTransferSsl(outgoingTransferSsl);
+                LoadBalancerMergedHost.setIncomingTransferSsl(incomingTransferSsl);
                 totBandwidthOut += outgoingTransfer;
                 totBandwidthIn += incomingTransfer;
                 totBandwidthOutSsl += outgoingTransferSsl;
@@ -131,7 +131,7 @@ public class UsageRollupProcessorTest {
                 outgoingTransferSsl += increment;
                 incomingTransferSsl += increment;
             }
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(1, processedUsages.size());
             Assert.assertEquals(totBandwidthOut, processedUsages.get(0).getOutgoingTransfer().longValue());
             Assert.assertEquals(totBandwidthIn, processedUsages.get(0).getIncomingTransfer().longValue());
@@ -144,16 +144,16 @@ public class UsageRollupProcessorTest {
             int numLBPolls = 11;
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, numLBPolls));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
             double ccs = 4;
             double ccsIncrement = 10;
             double ccsSsl = 8;
             double ccsSslIncrement = 15;
             double totalCcs = 0;
             double totalCcsSsl = 0;
-            for(PolledUsageRecord polledRecord : polledRecords){
-                polledRecord.setConcurrentConnections(ccs);
-                polledRecord.setConcurrentConnectionsSsl(ccsSsl);
+            for(LoadBalancerMergedHostUsage LoadBalancerMergedHost : LoadBalancerMergedHosts){
+                LoadBalancerMergedHost.setConcurrentConnections(ccs);
+                LoadBalancerMergedHost.setConcurrentConnectionsSsl(ccsSsl);
                 totalCcs += ccs;
                 totalCcsSsl += ccsSsl;
                 ccs += ccsIncrement;
@@ -161,7 +161,7 @@ public class UsageRollupProcessorTest {
             }
             double expectedACC = totalCcs / numLBPolls;
             double expectedACCSsl = totalCcsSsl / numLBPolls;
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(1, processedUsages.size());
             Assert.assertEquals(expectedACC, processedUsages.get(0).getAverageConcurrentConnections(), 0);
             Assert.assertEquals(expectedACCSsl, processedUsages.get(0).getAverageConcurrentConnectionsSsl(), 0);
@@ -173,8 +173,8 @@ public class UsageRollupProcessorTest {
             int tagsBitmask = 1;
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, numLBPolls));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, tagsBitmask);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, tagsBitmask);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(1, processedUsages.size());
             Assert.assertEquals(tagsBitmask, (int)processedUsages.get(0).getTags());
         }
@@ -189,7 +189,7 @@ public class UsageRollupProcessorTest {
         private List<Integer> loadbalancerIds;
         @Mock
         private PolledUsageRepository polledUsageRepository;
-        private List<PolledUsageRecord> polledRecords;
+        private List<LoadBalancerMergedHostUsage> LoadBalancerMergedHosts;
         private UsageRollupProcessor usageRollupProcessor;
         private Calendar initialPollTime;
         private Calendar hourToProcess;
@@ -204,8 +204,8 @@ public class UsageRollupProcessorTest {
 
             List<GeneratorPojo> generatorPojoList = new ArrayList<GeneratorPojo>();
             generatorPojoList.add(new GeneratorPojo(accountId, lbId, 24));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojoList, initialPollTime);
-            when(polledUsageRepository.getAllRecords(loadbalancerIds)).thenReturn(polledRecords);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojoList, initialPollTime);
+            when(polledUsageRepository.getAllRecords(loadbalancerIds)).thenReturn(LoadBalancerMergedHosts);
         }
 
         @Test
@@ -215,8 +215,8 @@ public class UsageRollupProcessorTest {
             List<UsageEvent> eventTypes = new ArrayList<UsageEvent>();
             eventTypes.add(null);
             eventTypes.add(UsageEvent.SSL_ONLY_ON);
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
 
             Assert.assertEquals(2, processedUsages.size());
             Assert.assertNull(processedUsages.get(0).getEventType());
@@ -234,8 +234,8 @@ public class UsageRollupProcessorTest {
             eventTypes.add(null);
             eventTypes.add(null);
             eventTypes.add(null);
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
             Assert.assertNull(processedUsages.get(0).getEventType());
             Assert.assertEquals(UsageEvent.SSL_ONLY_ON.name(), processedUsages.get(1).getEventType());
@@ -252,8 +252,8 @@ public class UsageRollupProcessorTest {
             eventTypes.add(UsageEvent.SSL_OFF);
             eventTypes.add(UsageEvent.SUSPEND_LOADBALANCER);
             eventTypes.add(UsageEvent.UNSUSPEND_LOADBALANCER);
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(6, processedUsages.size());
         }
 
@@ -264,14 +264,14 @@ public class UsageRollupProcessorTest {
             List<UsageEvent> eventTypes = new ArrayList<UsageEvent>();
             eventTypes.add(null);
             eventTypes.add(UsageEvent.SSL_ONLY_ON);
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
-            polledRecords.get(0).setOutgoingTransfer(100);
-            polledRecords.get(0).setIncomingTransfer(1000);
-            polledRecords.get(1).setOutgoingTransfer(100);
-            polledRecords.get(1).setIncomingTransfer(1000);
-            polledRecords.get(1).setOutgoingTransferSsl(100);
-            polledRecords.get(1).setIncomingTransferSsl(1000);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            LoadBalancerMergedHosts.get(0).setOutgoingTransfer(100);
+            LoadBalancerMergedHosts.get(0).setIncomingTransfer(1000);
+            LoadBalancerMergedHosts.get(1).setOutgoingTransfer(100);
+            LoadBalancerMergedHosts.get(1).setIncomingTransfer(1000);
+            LoadBalancerMergedHosts.get(1).setOutgoingTransferSsl(100);
+            LoadBalancerMergedHosts.get(1).setIncomingTransferSsl(1000);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
             Assert.assertEquals(200, processedUsages.get(0).getOutgoingTransfer().longValue());
             Assert.assertEquals(2000, processedUsages.get(0).getIncomingTransfer().longValue());
@@ -295,28 +295,28 @@ public class UsageRollupProcessorTest {
             eventTypes.add(UsageEvent.SSL_ONLY_ON);
             eventTypes.add(null);
             eventTypes.add(null);
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
-            polledRecords.get(0).setOutgoingTransfer(100);
-            polledRecords.get(0).setIncomingTransfer(1000);
-            polledRecords.get(0).setOutgoingTransferSsl(100);
-            polledRecords.get(0).setIncomingTransferSsl(1000);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            LoadBalancerMergedHosts.get(0).setOutgoingTransfer(100);
+            LoadBalancerMergedHosts.get(0).setIncomingTransfer(1000);
+            LoadBalancerMergedHosts.get(0).setOutgoingTransferSsl(100);
+            LoadBalancerMergedHosts.get(0).setIncomingTransferSsl(1000);
 
-            polledRecords.get(1).setOutgoingTransfer(100);
-            polledRecords.get(1).setIncomingTransfer(1000);
-            polledRecords.get(1).setOutgoingTransferSsl(100);
-            polledRecords.get(1).setIncomingTransferSsl(1000);
+            LoadBalancerMergedHosts.get(1).setOutgoingTransfer(100);
+            LoadBalancerMergedHosts.get(1).setIncomingTransfer(1000);
+            LoadBalancerMergedHosts.get(1).setOutgoingTransferSsl(100);
+            LoadBalancerMergedHosts.get(1).setIncomingTransferSsl(1000);
 
-            polledRecords.get(2).setOutgoingTransfer(100);
-            polledRecords.get(2).setIncomingTransfer(1000);
-            polledRecords.get(2).setOutgoingTransferSsl(100);
-            polledRecords.get(2).setIncomingTransferSsl(1000);
+            LoadBalancerMergedHosts.get(2).setOutgoingTransfer(100);
+            LoadBalancerMergedHosts.get(2).setIncomingTransfer(1000);
+            LoadBalancerMergedHosts.get(2).setOutgoingTransferSsl(100);
+            LoadBalancerMergedHosts.get(2).setIncomingTransferSsl(1000);
 
-            polledRecords.get(3).setOutgoingTransferSsl(100);
-            polledRecords.get(3).setIncomingTransferSsl(1000);
+            LoadBalancerMergedHosts.get(3).setOutgoingTransferSsl(100);
+            LoadBalancerMergedHosts.get(3).setIncomingTransferSsl(1000);
 
-            polledRecords.get(4).setOutgoingTransferSsl(100);
-            polledRecords.get(4).setIncomingTransferSsl(1000);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts.get(4).setOutgoingTransferSsl(100);
+            LoadBalancerMergedHosts.get(4).setIncomingTransferSsl(1000);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
             Assert.assertEquals(300, processedUsages.get(0).getOutgoingTransfer().longValue());
             Assert.assertEquals(3000, processedUsages.get(0).getIncomingTransfer().longValue());
@@ -332,12 +332,12 @@ public class UsageRollupProcessorTest {
         public void recordStartTimeShouldEqualToTimeOfCreateLBEvent(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 11));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            polledRecords.get(0).setEventType(UsageEvent.CREATE_LOADBALANCER);
-            polledRecords.get(0).getPollTime().add(Calendar.MINUTE, 2);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            LoadBalancerMergedHosts.get(0).setEventType(UsageEvent.CREATE_LOADBALANCER);
+            LoadBalancerMergedHosts.get(0).getPollTime().add(Calendar.MINUTE, 2);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Calendar compTime = Calendar.getInstance();
-            compTime.setTime(polledRecords.get(0).getPollTime().getTime());
+            compTime.setTime(LoadBalancerMergedHosts.get(0).getPollTime().getTime());
             Assert.assertEquals(1, processedUsages.size());
             Assert.assertEquals(compTime, processedUsages.get(0).getStartTime());
             compTime.setTime(hourToProcess.getTime());
@@ -349,18 +349,18 @@ public class UsageRollupProcessorTest {
         public void recordEndTimeShouldEqualToTimeOfDeleteLBEvent(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 8));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            polledRecords.get(0).setEventType(UsageEvent.CREATE_LOADBALANCER);
-            polledRecords.get(0).getPollTime().add(Calendar.MINUTE, 2);
-            polledRecords.get(7).getPollTime().add(Calendar.MINUTE, -2);
-            polledRecords.get(7).setEventType(UsageEvent.DELETE_LOADBALANCER);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            LoadBalancerMergedHosts.get(0).setEventType(UsageEvent.CREATE_LOADBALANCER);
+            LoadBalancerMergedHosts.get(0).getPollTime().add(Calendar.MINUTE, 2);
+            LoadBalancerMergedHosts.get(7).getPollTime().add(Calendar.MINUTE, -2);
+            LoadBalancerMergedHosts.get(7).setEventType(UsageEvent.DELETE_LOADBALANCER);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Calendar compTime = Calendar.getInstance();
-            compTime.setTime(polledRecords.get(0).getPollTime().getTime());
+            compTime.setTime(LoadBalancerMergedHosts.get(0).getPollTime().getTime());
             Assert.assertEquals(2, processedUsages.size());
             Assert.assertEquals(compTime, processedUsages.get(0).getStartTime());
             compTime = Calendar.getInstance();
-            compTime.setTime(polledRecords.get(7).getPollTime().getTime());
+            compTime.setTime(LoadBalancerMergedHosts.get(7).getPollTime().getTime());
             Assert.assertEquals(compTime, processedUsages.get(1).getStartTime());
             Assert.assertEquals(compTime, processedUsages.get(1).getEndTime());
         }
@@ -369,14 +369,14 @@ public class UsageRollupProcessorTest {
         public void shouldHaveBandwidthOnRecordBeforeDeleteEvent(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 2));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            polledRecords.get(1).setOutgoingTransfer(12345);
-            polledRecords.get(1).setIncomingTransfer(54321);
-            polledRecords.get(1).setEventType(UsageEvent.DELETE_LOADBALANCER);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            LoadBalancerMergedHosts.get(1).setOutgoingTransfer(12345);
+            LoadBalancerMergedHosts.get(1).setIncomingTransfer(54321);
+            LoadBalancerMergedHosts.get(1).setEventType(UsageEvent.DELETE_LOADBALANCER);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
-            Assert.assertEquals(polledRecords.get(1).getIncomingTransfer(), processedUsages.get(0).getIncomingTransfer().longValue());
-            Assert.assertEquals(polledRecords.get(1).getOutgoingTransfer(), processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertEquals(LoadBalancerMergedHosts.get(1).getIncomingTransfer(), processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(LoadBalancerMergedHosts.get(1).getOutgoingTransfer(), processedUsages.get(0).getOutgoingTransfer().longValue());
             Assert.assertEquals(0, processedUsages.get(1).getIncomingTransfer().longValue());
             Assert.assertEquals(0, processedUsages.get(1).getOutgoingTransfer().longValue());
         }
@@ -385,17 +385,17 @@ public class UsageRollupProcessorTest {
         public void shouldCreateTwoRecordsIfEventIsFirstRecordOfHour(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 1));
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            polledRecords.get(0).setOutgoingTransfer(12345);
-            polledRecords.get(0).setIncomingTransfer(54321);
-            polledRecords.get(0).getPollTime().add(Calendar.MINUTE, 1);
-            polledRecords.get(0).setEventType(UsageEvent.DELETE_LOADBALANCER);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            LoadBalancerMergedHosts.get(0).setOutgoingTransfer(12345);
+            LoadBalancerMergedHosts.get(0).setIncomingTransfer(54321);
+            LoadBalancerMergedHosts.get(0).getPollTime().add(Calendar.MINUTE, 1);
+            LoadBalancerMergedHosts.get(0).setEventType(UsageEvent.DELETE_LOADBALANCER);
             Calendar compTime = Calendar.getInstance();
             compTime.setTime(initialPollTime.getTime());
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
-            Assert.assertEquals(polledRecords.get(0).getIncomingTransfer(), processedUsages.get(0).getIncomingTransfer().longValue());
-            Assert.assertEquals(polledRecords.get(0).getOutgoingTransfer(), processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertEquals(LoadBalancerMergedHosts.get(0).getIncomingTransfer(), processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(LoadBalancerMergedHosts.get(0).getOutgoingTransfer(), processedUsages.get(0).getOutgoingTransfer().longValue());
             Assert.assertNull(processedUsages.get(0).getEventType());
             Assert.assertEquals(compTime.get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
             Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.MINUTE));
@@ -417,12 +417,12 @@ public class UsageRollupProcessorTest {
             eventTypes.add(null);
             eventTypes.add(UsageEvent.CREATE_VIRTUAL_IP);
             eventTypes.add(null);
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
-            polledRecords.get(1).setNumVips(2);
-            polledRecords.get(2).setNumVips(2);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            LoadBalancerMergedHosts.get(1).setNumVips(2);
+            LoadBalancerMergedHosts.get(2).setNumVips(2);
             Calendar compTime = Calendar.getInstance();
             compTime.setTime(initialPollTime.getTime());
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
             Assert.assertEquals(1, (int)processedUsages.get(0).getNumVips());
             Assert.assertEquals(2, (int)processedUsages.get(1).getNumVips());
@@ -441,19 +441,19 @@ public class UsageRollupProcessorTest {
             eventTypes.add(null);
             eventTypes.add(UsageEvent.SSL_OFF);
             eventTypes.add(null);
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
-            polledRecords.get(0).setConcurrentConnections(20);
-            polledRecords.get(1).setConcurrentConnections(30);
-            polledRecords.get(2).setConcurrentConnectionsSsl(12);
-            polledRecords.get(3).setConcurrentConnectionsSsl(36);
-            polledRecords.get(4).setConcurrentConnections(52);
-            polledRecords.get(4).setConcurrentConnectionsSsl(43);
-            polledRecords.get(5).setConcurrentConnections(145);
-            polledRecords.get(5).setConcurrentConnectionsSsl(1);
-            polledRecords.get(6).setConcurrentConnections(123);
-            polledRecords.get(6).setConcurrentConnectionsSsl(92);
-            polledRecords.get(7).setConcurrentConnections(21);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            LoadBalancerMergedHosts.get(0).setConcurrentConnections(20);
+            LoadBalancerMergedHosts.get(1).setConcurrentConnections(30);
+            LoadBalancerMergedHosts.get(2).setConcurrentConnectionsSsl(12);
+            LoadBalancerMergedHosts.get(3).setConcurrentConnectionsSsl(36);
+            LoadBalancerMergedHosts.get(4).setConcurrentConnections(52);
+            LoadBalancerMergedHosts.get(4).setConcurrentConnectionsSsl(43);
+            LoadBalancerMergedHosts.get(5).setConcurrentConnections(145);
+            LoadBalancerMergedHosts.get(5).setConcurrentConnectionsSsl(1);
+            LoadBalancerMergedHosts.get(6).setConcurrentConnections(123);
+            LoadBalancerMergedHosts.get(6).setConcurrentConnectionsSsl(92);
+            LoadBalancerMergedHosts.get(7).setConcurrentConnections(21);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(4, processedUsages.size());
             double expectedACC = (20 + 30) / 2.0;
             double expectedACCSsl = 0;
@@ -491,30 +491,30 @@ public class UsageRollupProcessorTest {
             eventTypes.add(null);
             eventTypes.add(UsageEvent.UNSUSPEND_LOADBALANCER);
             eventTypes.add(null);
-            polledRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime, eventTypes);
             tags.flipTagOn(BitTag.SERVICENET_LB);
-            polledRecords.get(0).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(1).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(0).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(1).setTagsBitmask(tags.getBitTags());
             tags.flipTagOn(BitTag.SSL);
-            polledRecords.get(2).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(3).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(2).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(3).setTagsBitmask(tags.getBitTags());
             tags.flipTagOn(BitTag.SSL);
             tags.flipTagOn(BitTag.SSL_MIXED_MODE);
-            polledRecords.get(4).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(5).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(4).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(5).setTagsBitmask(tags.getBitTags());
             tags.flipTagOff(BitTag.SSL);
             tags.flipTagOff(BitTag.SSL_MIXED_MODE);
-            polledRecords.get(6).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(7).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(8).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(9).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(10).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(11).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(12).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(13).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(14).setTagsBitmask(tags.getBitTags());
-            polledRecords.get(15).setTagsBitmask(tags.getBitTags());
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts.get(6).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(7).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(8).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(9).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(10).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(11).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(12).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(13).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(14).setTagsBitmask(tags.getBitTags());
+            LoadBalancerMergedHosts.get(15).setTagsBitmask(tags.getBitTags());
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             tags.flipAllTagsOff();
             tags.flipTagOn(BitTag.SERVICENET_LB);
             Assert.assertEquals(6, processedUsages.size());
@@ -536,18 +536,18 @@ public class UsageRollupProcessorTest {
     public static class WhenBreakingPolledRecordsDownByLbId {
         private Calendar initialPollTime;
         private UsageRollupProcessor usageRollupProcessor;
-        private List<PolledUsageRecord> polledUsageRecords;
+        private List<LoadBalancerMergedHostUsage> LoadBalancerMergedHostUsages;
 
         @Before
         public void standUp() {
             usageRollupProcessor = new UsageRollupProcessorImpl();
-            polledUsageRecords = new ArrayList<PolledUsageRecord>();
+            LoadBalancerMergedHostUsages = new ArrayList<LoadBalancerMergedHostUsage>();
             initialPollTime = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
         }
 
         @Test
         public void shouldReturnEmptyMapWhenNoPolledRecords() {
-            Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
+            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(LoadBalancerMergedHostUsages);
 
             Assert.assertTrue(usagesByLbId.isEmpty());
         }
@@ -556,8 +556,8 @@ public class UsageRollupProcessorTest {
         public void shouldReturnARecordWhenOnePolledRecordExists() {
             List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
             usagePojoList.add(new GeneratorPojo(5806065, 1, 1));
-            polledUsageRecords = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
-            Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
+            LoadBalancerMergedHostUsages = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
+            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(LoadBalancerMergedHostUsages);
 
             Assert.assertEquals(usagePojoList.size(), usagesByLbId.size());
             Assert.assertEquals(usagePojoList.get(0).getNumRecords(), usagesByLbId.get(1).size());
@@ -567,8 +567,8 @@ public class UsageRollupProcessorTest {
         public void shouldReturnManyRecordsWhenManyPolledRecordsExistForALoadBalancer(){
             List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
             usagePojoList.add(new GeneratorPojo(5806065, 1, 1, 30));
-            polledUsageRecords = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
-            Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
+            LoadBalancerMergedHostUsages = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
+            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(LoadBalancerMergedHostUsages);
 
             Assert.assertEquals(usagePojoList.size(), usagesByLbId.size());
             Assert.assertEquals(usagePojoList.get(0).getNumRecords(), usagesByLbId.get(1).size());
@@ -582,8 +582,8 @@ public class UsageRollupProcessorTest {
                 generatorPojos.add(new GeneratorPojo(5806065, lbId, 1, 30));
             }
 
-            polledUsageRecords = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            Map<Integer, List<PolledUsageRecord>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(polledUsageRecords);
+            LoadBalancerMergedHostUsages = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
+            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(LoadBalancerMergedHostUsages);
 
             Assert.assertEquals(generatorPojos.size(), usagesByLbId.size());
             for(int i = 0; i < randomLBCount; i++){
@@ -600,12 +600,12 @@ public class UsageRollupProcessorTest {
         private Calendar initialPollTime;
         private Calendar hourToProcess;
         private UsageRollupProcessor usageRollupProcessor;
-        private List<PolledUsageRecord> polledRecords;
+        private List<LoadBalancerMergedHostUsage> LoadBalancerMergedHosts;
 
         @Before
         public void standUp() {
             usageRollupProcessor = new UsageRollupProcessorImpl();
-            polledRecords = new ArrayList<PolledUsageRecord>();
+            LoadBalancerMergedHosts = new ArrayList<LoadBalancerMergedHostUsage>();
             initialPollTime = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 4, 0);
             hourToProcess = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
         }
@@ -614,8 +614,8 @@ public class UsageRollupProcessorTest {
         public void shouldStopProcessingRecordsBeforeTheNextHour(){
             List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
             usagePojoList.add(new GeneratorPojo(accountId, lbId, 36));
-            polledRecords = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
 
             Calendar compTime = Calendar.getInstance();
             compTime.setTime(hourToProcess.getTime());
@@ -634,12 +634,12 @@ public class UsageRollupProcessorTest {
         private Calendar initialPollTime;
         private Calendar hourToProcess;
         private UsageRollupProcessor usageRollupProcessor;
-        private List<PolledUsageRecord> polledRecords;
+        private List<LoadBalancerMergedHostUsage> LoadBalancerMergedHosts;
 
         @Before
         public void standUp() {
             usageRollupProcessor = new UsageRollupProcessorImpl();
-            polledRecords = new ArrayList<PolledUsageRecord>();
+            LoadBalancerMergedHosts = new ArrayList<LoadBalancerMergedHostUsage>();
             initialPollTime = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 4, 0);
             hourToProcess = new GregorianCalendar(2013, Calendar.MARCH, 20, 10, 0, 0);
         }
@@ -648,22 +648,22 @@ public class UsageRollupProcessorTest {
         public void shouldStopProcessingRecordsBeforeTheNextHour(){
             List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
             usagePojoList.add(new GeneratorPojo(accountId, lbId, 36));
-            polledRecords = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
-            polledRecords.get(0).setEventType(UsageEvent.SSL_MIXED_ON);
-            polledRecords.get(11).setEventType(UsageEvent.SSL_ONLY_ON);
-            polledRecords.get(17).setEventType(UsageEvent.SSL_MIXED_ON);
-            polledRecords.get(22).setEventType(UsageEvent.SSL_ONLY_ON);
-            polledRecords.get(25).setEventType(UsageEvent.SSL_MIXED_ON);
-            polledRecords.get(35).setEventType(UsageEvent.SSL_ONLY_ON);
-            List<Usage> processedUsages = usageRollupProcessor.processRecords(polledRecords, hourToProcess);
+            LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
+            LoadBalancerMergedHosts.get(0).setEventType(UsageEvent.SSL_MIXED_ON);
+            LoadBalancerMergedHosts.get(11).setEventType(UsageEvent.SSL_ONLY_ON);
+            LoadBalancerMergedHosts.get(17).setEventType(UsageEvent.SSL_MIXED_ON);
+            LoadBalancerMergedHosts.get(22).setEventType(UsageEvent.SSL_ONLY_ON);
+            LoadBalancerMergedHosts.get(25).setEventType(UsageEvent.SSL_MIXED_ON);
+            LoadBalancerMergedHosts.get(35).setEventType(UsageEvent.SSL_ONLY_ON);
+            List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(3, processedUsages.size());
             Calendar compTime = Calendar.getInstance();
             compTime.setTime(hourToProcess.getTime());
             Assert.assertEquals(compTime, processedUsages.get(0).getStartTime());
-            compTime.set(Calendar.MINUTE, polledRecords.get(0).getPollTime().get(Calendar.MINUTE));
+            compTime.set(Calendar.MINUTE, LoadBalancerMergedHosts.get(0).getPollTime().get(Calendar.MINUTE));
             Assert.assertEquals(compTime, processedUsages.get(0).getEndTime());
             Assert.assertEquals(compTime, processedUsages.get(1).getStartTime());
-            compTime.set(Calendar.MINUTE, polledRecords.get(11).getPollTime().get(Calendar.MINUTE));
+            compTime.set(Calendar.MINUTE, LoadBalancerMergedHosts.get(11).getPollTime().get(Calendar.MINUTE));
             Assert.assertEquals(compTime, processedUsages.get(1).getEndTime());
             Assert.assertEquals(compTime, processedUsages.get(2).getStartTime());
             compTime.set(Calendar.HOUR, hourToProcess.get(Calendar.HOUR) + 1);

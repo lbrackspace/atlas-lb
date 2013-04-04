@@ -4,7 +4,7 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 
 import java.util.Calendar;
 
-public class PolledUsageRecord {
+public class LoadBalancerMergedHostUsage {
     private int id;
     private int accountId;
     private int loadbalancerId;
@@ -19,10 +19,10 @@ public class PolledUsageRecord {
     private Calendar pollTime;
     private UsageEvent eventType;
 
-    public PolledUsageRecord(int id, int accountId, int loadbalancerId, long outgoingTransfer,
-                             long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
-                             long concurrentConnections, long concurrentConnectionsSsl,
-                             int numVips, int tagsBitmask, Calendar pollTime, UsageEvent eventType) {
+    public LoadBalancerMergedHostUsage(int id, int accountId, int loadbalancerId, long outgoingTransfer,
+                                       long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
+                                       long concurrentConnections, long concurrentConnectionsSsl,
+                                       int numVips, int tagsBitmask, Calendar pollTime, UsageEvent eventType) {
         this.id = id;
         this.accountId = accountId;
         this.loadbalancerId = loadbalancerId;
