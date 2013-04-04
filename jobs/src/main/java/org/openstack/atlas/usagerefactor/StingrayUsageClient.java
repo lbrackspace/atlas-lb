@@ -1,8 +1,11 @@
 package org.openstack.atlas.usagerefactor;
 
+import java.util.List;
 import org.openstack.atlas.util.snmp.RawSnmpUsage;
 
 import java.util.Map;
+import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 
 public interface StingrayUsageClient {
 
@@ -12,7 +15,7 @@ public interface StingrayUsageClient {
      *  Please take note of the value returning to zero
      *  upon the host machine rebooting.
      */
-    Map<String, RawSnmpUsage> getHostUsage(String hostIp);
+    Map<Integer,SnmpUsage> getHostUsage(Host host);
 
     /*
      * Given a host ip address and virtual server name,
@@ -21,5 +24,5 @@ public interface StingrayUsageClient {
      * host.  Please take note of the value returning to
      * zero upon the host machine rebooting.
      */
-    RawSnmpUsage getVirtualServerUsage(String hostIp, String virtualServerName);
+    SnmpUsage getVirtualServerUsage(Host host, LoadBalancer lb);
 }
