@@ -20,7 +20,6 @@
         <module>cidr</module>
         <module>ca</module>
         <module>crypto-tool</module>
-        <module>snmp-test</module>
     </modules>
 
     <!-- <properties>

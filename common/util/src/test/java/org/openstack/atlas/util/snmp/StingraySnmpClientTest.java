@@ -52,17 +52,21 @@ public class StingraySnmpClientTest {
         baseOid = "1.3.6.1.4.1.7146.1.2.2.2.1.9";
     }
 
+    @Ignore
     @Test
     public void shouldReturnVariableBindingList() throws Exception {
         assertTrue(client.getBulkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS).size() > 0);
     }
 
+    @Ignore
     @Test
     public void shouldReturnMapOfStringByRawUsage() throws Exception {
         Map<String, RawSnmpUsage> map = client.getSnmpUsage();
         assertTrue(map.entrySet().size() > 0);
     }
 
+    @Ignore
+    @Test
     public void shouldFailWithInvalidAddress() throws Exception {
         client.setAddress("10.1000.1.1");
         try {
@@ -73,6 +77,7 @@ public class StingraySnmpClientTest {
         Assert.fail();
     }
 
+    @Ignore
     @Test
     public void shouldFailWithIncorrectPort() throws Exception {
         client.setPort("1111");
@@ -85,6 +90,7 @@ public class StingraySnmpClientTest {
         Assert.fail();
     }
 
+    @Ignore
     @Test
     public void shouldFailWithInvalidCommunity() throws Exception {
         client.setCommunity("expensivePradaBag");
@@ -116,6 +122,7 @@ public class StingraySnmpClientTest {
         }
     }
 
+    @Ignore
     @Test
     public void testSingleVsByteCountRequest() throws Exception {
         VariableBinding variableBinding = client.getBulkOidBindingList(OIDConstants.VS_BYTES_OUT).get(0);
@@ -132,6 +139,7 @@ public class StingraySnmpClientTest {
         assertTrue(value >= 0);
     }
 
+    @Ignore
     @Test
     public void testThreadRequestsAgainstAllStagingHosts() throws InterruptedException {
         final String ipAddress1 = "10.12.99.19"; // This is staging node n01

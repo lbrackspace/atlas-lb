@@ -43,6 +43,7 @@
         <module>logs</module>
         <module>jobs</module>
         <module>migration</module>
+        <module>itest</module>
     </modules>
 
     <build>
