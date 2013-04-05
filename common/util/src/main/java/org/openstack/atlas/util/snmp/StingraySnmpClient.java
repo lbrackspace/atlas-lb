@@ -8,18 +8,31 @@ import org.openstack.atlas.util.common.VerboseLogger;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpSetupException;
+import org.snmp4j.smi.Null;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
 import org.snmp4j.TransportMapping;
 import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.mp.SnmpConstants;
-import org.snmp4j.smi.*;
+
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 import java.util.regex.Pattern;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpObjectNotFoundException;
+import org.snmp4j.smi.Integer32;
+import org.snmp4j.smi.Null;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.UdpAddress;
+import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.UdpTransportMapping;
 
 public class StingraySnmpClient {
@@ -128,19 +141,19 @@ public class StingraySnmpClient {
         return rawSnmpMap;
     }
 
-    public long getBytesIn(String vsName) throws StingraySnmpSetupException, StingraySnmpGeneralException {
-        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_IN);
+    public long getBytesIn(String vsName,boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException{
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_IN,zeroOnNotFound);
     }
 
-    public long getBytesOut(String vsName) throws StingraySnmpSetupException, StingraySnmpGeneralException {
-        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_OUT);
+    public long getBytesOut(String vsName,boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException{
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_OUT,zeroOnNotFound);
     }
 
-    public long getConcurrentConnections(String vsName) throws StingraySnmpSetupException, StingraySnmpGeneralException {
-        return getLongValueForVirtualServer(vsName, OIDConstants.VS_CURRENT_CONNECTIONS);
+    public long getConcurrentConnections(String vsName,boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException{
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_CURRENT_CONNECTIONS,zeroOnNotFound);
     }
 
-    public long getLongValueForVirtualServer(String vsName, String baseOid) throws StingraySnmpSetupException, StingraySnmpGeneralException {
+    public long getLongValueForVirtualServer(String vsName, String baseOid,boolean zeroOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
 
         String searchOid = getOidFromVirtualServerName(baseOid, vsName);
         PDU req = new PDU();
@@ -203,6 +216,13 @@ public class StingraySnmpClient {
         vb = resp.get(0);
         String vbOid = vb.getOid().toString();
         closeConnection(snmp, transport);
+        Class vbClass = vb.getVariable().getClass();
+        if(vbClass.equals(Null.class)){
+            if(zeroOnNotFoundException){
+                return 0L;
+            }
+            throw new StingraySnmpObjectNotFoundException();
+        }
         long val = vb.getVariable().toLong();
         return val;
     }
