@@ -23,6 +23,9 @@ public class SnmpUsageComparator implements Comparator<SnmpUsage> {
                 case BYTES_SSL_IN:
                     comp = longComp(u1.getBytesInSsl(), u2.getBytesOutSsl());
                     break;
+                case BYTES_SSL_OUT:
+                    comp = longComp(u1.getBytesOutSsl(), u2.getBytesOutSsl());
+                    break;
                 case CONCURRENT_CONNECTIONS:
                     comp = intComp(u1.getConcurrentConnections(), u2.getConcurrentConnections());
                     break;

@@ -308,7 +308,7 @@ public class StingraySnmpClient {
         String currOID = startOID;
         int totalItems = 0;
         int matchedItems = 0;
-        int currMaxReps = maxRepetitions;
+        double currMaxReps = maxRepetitions;
         boolean finished = false;
         while (!finished) {
             vlog.printf("total items = %d matched items= %d", totalItems, matchedItems);
@@ -316,7 +316,7 @@ public class StingraySnmpClient {
             req.add(new VariableBinding(new OID(currOID)));
             req.setType(PDU.GETBULK);
             req.setNonRepeaters(nonRepeaters);
-            req.setMaxRepetitions(currMaxReps);
+            req.setMaxRepetitions((int) currMaxReps);
             req.setRequestID(new Integer32(incRequestId()));
             UdpAddress udpAddr;
             try {
@@ -359,10 +359,10 @@ public class StingraySnmpClient {
             }
             PDU respPdu = respEvent.getResponse();
             if (respPdu == null) {
-                String msg = String.format("Error fetching bulk response reducing maxRepetitions from %d to %d", currMaxReps, currMaxReps / 2);
-                currMaxReps /= 2;
+                String msg = String.format("Error fetching bulk response reducing maxRepetitions from %d to %d for snmpServer %s", (int) currMaxReps, (int) (currMaxReps * 0.75), address);
+                currMaxReps *= 0.75;
                 LOG.warn(msg);
-                if (currMaxReps <= 1) {
+                if (currMaxReps <= 1.0) {
                     String exMsg = String.format("Error maxRepetitions was strunk to 1");
                     LOG.error(exMsg);
                     closeConnection(snmp, transport);
