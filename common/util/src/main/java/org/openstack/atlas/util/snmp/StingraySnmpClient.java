@@ -8,18 +8,31 @@ import org.openstack.atlas.util.common.VerboseLogger;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpSetupException;
+import org.snmp4j.smi.Null;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
 import org.snmp4j.TransportMapping;
 import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.mp.SnmpConstants;
-import org.snmp4j.smi.*;
+
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 import java.util.regex.Pattern;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpObjectNotFoundException;
+import org.snmp4j.smi.Integer32;
+import org.snmp4j.smi.Null;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.UdpAddress;
+import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.UdpTransportMapping;
 
 public class StingraySnmpClient {
@@ -85,18 +98,6 @@ public class StingraySnmpClient {
         return oidMap;
     }
 
-    public Map<String, Long> getAllBandWidthIn() throws StingraySnmpRetryExceededException, StingraySnmpSetupException, StingraySnmpGeneralException {
-        return getLongOidVals(OIDConstants.VS_BYTES_IN);
-    }
-
-    public Map<String, Long> getAllBandWidthOut() throws StingraySnmpRetryExceededException, StingraySnmpSetupException, StingraySnmpGeneralException {
-        return getLongOidVals(OIDConstants.VS_BYTES_OUT);
-    }
-
-    public Map<String, Long> getAllConcurrentConnections() throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {
-        return getLongOidVals(OIDConstants.VS_CURRENT_CONNECTIONS);
-    }
-
     public Map<String, RawSnmpUsage> getSnmpUsage() throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {
         vlog.printf("in call to getSnmpUsage()");
         Map<String, RawSnmpUsage> rawSnmpMap = new HashMap<String, RawSnmpUsage>();
@@ -140,7 +141,19 @@ public class StingraySnmpClient {
         return rawSnmpMap;
     }
 
-    public long getLongValueForVirtualServer(String vsName, String baseOid) throws StingraySnmpSetupException, StingraySnmpGeneralException {
+    public long getBytesIn(String vsName,boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException{
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_IN,zeroOnNotFound);
+    }
+
+    public long getBytesOut(String vsName,boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException{
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_OUT,zeroOnNotFound);
+    }
+
+    public long getConcurrentConnections(String vsName,boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException{
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_CURRENT_CONNECTIONS,zeroOnNotFound);
+    }
+
+    public long getLongValueForVirtualServer(String vsName, String baseOid,boolean zeroOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
 
         String searchOid = getOidFromVirtualServerName(baseOid, vsName);
         PDU req = new PDU();
@@ -203,6 +216,13 @@ public class StingraySnmpClient {
         vb = resp.get(0);
         String vbOid = vb.getOid().toString();
         closeConnection(snmp, transport);
+        Class vbClass = vb.getVariable().getClass();
+        if(vbClass.equals(Null.class)){
+            if(zeroOnNotFoundException){
+                return 0L;
+            }
+            throw new StingraySnmpObjectNotFoundException();
+        }
         long val = vb.getVariable().toLong();
         return val;
     }
@@ -308,7 +328,7 @@ public class StingraySnmpClient {
         String currOID = startOID;
         int totalItems = 0;
         int matchedItems = 0;
-        int currMaxReps = maxRepetitions;
+        double currMaxReps = maxRepetitions;
         boolean finished = false;
         while (!finished) {
             vlog.printf("total items = %d matched items= %d", totalItems, matchedItems);
@@ -316,7 +336,7 @@ public class StingraySnmpClient {
             req.add(new VariableBinding(new OID(currOID)));
             req.setType(PDU.GETBULK);
             req.setNonRepeaters(nonRepeaters);
-            req.setMaxRepetitions(currMaxReps);
+            req.setMaxRepetitions((int) currMaxReps);
             req.setRequestID(new Integer32(incRequestId()));
             UdpAddress udpAddr;
             try {
@@ -359,10 +379,10 @@ public class StingraySnmpClient {
             }
             PDU respPdu = respEvent.getResponse();
             if (respPdu == null) {
-                String msg = String.format("Error fetching bulk response reducing maxRepetitions from %d to %d", currMaxReps, currMaxReps / 2);
-                currMaxReps /= 2;
+                String msg = String.format("Error fetching bulk response reducing maxRepetitions from %d to %d for snmpServer %s", (int) currMaxReps, (int) (currMaxReps * 0.75), address);
+                currMaxReps *= 0.75;
                 LOG.warn(msg);
-                if (currMaxReps <= 1) {
+                if (currMaxReps <= 1.0) {
                     String exMsg = String.format("Error maxRepetitions was strunk to 1");
                     LOG.error(exMsg);
                     closeConnection(snmp, transport);

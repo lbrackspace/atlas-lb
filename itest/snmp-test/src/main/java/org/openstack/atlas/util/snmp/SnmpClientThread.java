@@ -15,7 +15,7 @@ public class SnmpClientThread extends Thread {
     public static final VerboseLogger vlog = new VerboseLogger(SnmpClientThread.class);
     private StingraySnmpClient client;
     private Map<String, RawSnmpUsage> usage;
-    private Exception exception;
+    private Exception exception = null;
 
     @Override
     public void run() {
