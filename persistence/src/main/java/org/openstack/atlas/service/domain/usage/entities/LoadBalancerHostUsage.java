@@ -1,4 +1,6 @@
-package org.openstack.atlas.service.domain.entities;
+package org.openstack.atlas.service.domain.usage.entities;
+
+import org.openstack.atlas.service.domain.events.UsageEvent;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -6,7 +8,7 @@ import java.util.Calendar;
 
 @javax.persistence.Entity
 @Table(name = "access_list")
-public class ChangeMyNameUsageRecord extends Entity implements Serializable {
+public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.entities.Entity implements Serializable {
 
     @Column(name = "account_id")
     private int accountId;
@@ -27,17 +29,20 @@ public class ChangeMyNameUsageRecord extends Entity implements Serializable {
     private long incomingTransferSsl;
 
     @Column(name = "concurrent_connections")
-    private long averageConcurrentConnections;
+    private long concurrentConnections;
 
     @Column(name = "concurrent_connections_ssl")
-    private long averageConcurrentConnectionsSsl;
+    private long concurrentConnectionsSsl;
 
     @Column(name = "poll_time")
     private Calendar pollTime;
 
+    @Column(name = "tags_bitmask")
+    private int tagsBitmask;
+
     @Column(name = "event_type")
     @Enumerated(EnumType.STRING)
-    private String eventType;
+    private UsageEvent eventType;
 
     public int getAccountId() {
         return accountId;
@@ -87,20 +92,20 @@ public class ChangeMyNameUsageRecord extends Entity implements Serializable {
         this.incomingTransferSsl = incomingTransferSsl;
     }
 
-    public long getAverageConcurrentConnections() {
-        return averageConcurrentConnections;
+    public long getConcurrentConnections() {
+        return concurrentConnections;
     }
 
-    public void setAverageConcurrentConnections(long averageConcurrentConnections) {
-        this.averageConcurrentConnections = averageConcurrentConnections;
+    public void setConcurrentConnections(long concurrentConnections) {
+        this.concurrentConnections = concurrentConnections;
     }
 
-    public long getAverageConcurrentConnectionsSsl() {
-        return averageConcurrentConnectionsSsl;
+    public long getConcurrentConnectionsSsl() {
+        return concurrentConnectionsSsl;
     }
 
-    public void setAverageConcurrentConnectionsSsl(long averageConcurrentConnectionsSsl) {
-        this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
+    public void setConcurrentConnectionsSsl(long concurrentConnectionsSsl) {
+        this.concurrentConnectionsSsl = concurrentConnectionsSsl;
     }
 
     public Calendar getPollTime() {
@@ -111,12 +116,19 @@ public class ChangeMyNameUsageRecord extends Entity implements Serializable {
         this.pollTime = pollTime;
     }
 
-    public String getEventType() {
+    public int getTagsBitmask() {
+        return tagsBitmask;
+    }
+
+    public void setTagsBitmask(int tagsBitmask) {
+        this.tagsBitmask = tagsBitmask;
+    }
+
+    public UsageEvent getEventType() {
         return eventType;
     }
 
-    public void setEventType(String eventType) {
+    public void setEventType(UsageEvent eventType) {
         this.eventType = eventType;
     }
-
 }
