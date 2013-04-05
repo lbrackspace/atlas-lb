@@ -48,8 +48,12 @@ public class StingraySnmpClient {
     private long reportUdpCountEveryNMilliSeconds = 1000;
     private int maxRetrys = 13;
     private static final Random rnd = new Random();
-    private static int requestId = 0;
+    private static int requestId;
     private int version = SnmpConstants.version2c;
+
+    static {
+        requestId = Math.abs(rnd.nextInt());
+    }
 
     public static Random getRnd() {
         return rnd;
@@ -141,19 +145,19 @@ public class StingraySnmpClient {
         return rawSnmpMap;
     }
 
-    public long getBytesIn(String vsName,boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException{
-        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_IN,zeroOnNotFound);
+    public long getBytesIn(String vsName, boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_IN, zeroOnNotFound);
     }
 
-    public long getBytesOut(String vsName,boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException{
-        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_OUT,zeroOnNotFound);
+    public long getBytesOut(String vsName, boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_OUT, zeroOnNotFound);
     }
 
-    public long getConcurrentConnections(String vsName,boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException{
-        return getLongValueForVirtualServer(vsName, OIDConstants.VS_CURRENT_CONNECTIONS,zeroOnNotFound);
+    public long getConcurrentConnections(String vsName, boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_CURRENT_CONNECTIONS, zeroOnNotFound);
     }
 
-    public long getLongValueForVirtualServer(String vsName, String baseOid,boolean zeroOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
+    public long getLongValueForVirtualServer(String vsName, String baseOid, boolean zeroOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
 
         String searchOid = getOidFromVirtualServerName(baseOid, vsName);
         PDU req = new PDU();
@@ -217,8 +221,8 @@ public class StingraySnmpClient {
         String vbOid = vb.getOid().toString();
         closeConnection(snmp, transport);
         Class vbClass = vb.getVariable().getClass();
-        if(vbClass.equals(Null.class)){
-            if(zeroOnNotFoundException){
+        if (vbClass.equals(Null.class)) {
+            if (zeroOnNotFoundException) {
                 return 0L;
             }
             throw new StingraySnmpObjectNotFoundException();

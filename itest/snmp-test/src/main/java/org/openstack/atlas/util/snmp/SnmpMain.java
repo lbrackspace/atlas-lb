@@ -158,7 +158,7 @@ public class SnmpMain {
 
                     // Gran all the results
                     for (SnmpJobThread thread : threads) {
-                        System.out.printf("reading snmpUsage from thread for host %s\n", thread.getHost().getManagementIp());
+                        System.out.printf("reading snmpUsage from thread for host %s: in %f(secs)\n", thread.getHost().getManagementIp(), thread.getElapsedTime());
                         Exception ex = thread.getException();
                         if (ex != null) {
                             System.out.printf("%s\n", StaticStringUtils.getExtendedStackTrace(ex));
@@ -230,7 +230,7 @@ public class SnmpMain {
                 } else if (cmd.equals("lookup") && args.length >= 3) {
                     String oid = args[1];
                     String vsName = args[2];
-                    long val = defaultClient.getLongValueForVirtualServer(vsName, oid,true);
+                    long val = defaultClient.getLongValueForVirtualServer(vsName, oid, true);
                     System.out.printf("%s for %s = %d\n", oid, vsName, val);
                 } else if (cmd.equals("set_retrys") && args.length >= 2) {
                     System.out.printf("Setting retries to ");
@@ -305,6 +305,7 @@ public class SnmpMain {
                     }
                     System.out.printf("defaultClient:\n%s\n", defaultClient.toString());
                     System.out.printf("usageList contains %d entries\n", rawUsageList.size());
+                    System.out.printf("Client reqId = %d\n", StingraySnmpClient.getRequestId());
                     System.out.printf("\n");
                 } else if (cmd.equals("exit")) {
                     break;
