@@ -10,7 +10,7 @@ public interface UsagePoller {
 
     public void processRecords();
     public List<LoadBalancerHostUsage> getLoadBalancerHostUsageRecords();
-    public Map<Integer, SnmpUsage> getCurrentData();
+    public Map<Integer, SnmpUsage> getCurrentData() throws Exception;
     public void deleteLoadBalancerHostUsageRecords(int markerId);
     public void insertLoadBalancerUsagePerHost(List<LoadBalancerHostUsage> lbHostUsages);
     public void insertMergedRecords(List<LoadBalancerMergedHostUsage> mergedRecords);
