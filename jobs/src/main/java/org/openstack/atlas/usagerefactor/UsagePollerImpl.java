@@ -32,6 +32,7 @@ public class UsagePollerImpl implements UsagePoller {
         return lbHostUsages;
     }
 
+    // TODO: Run the created threads and merge the host data together to form singular, complete entries.
     @Override
     public Map<Integer, SnmpUsage> getCurrentData() throws Exception {
         LOG.info("Collecting Stingray data from each host...");
