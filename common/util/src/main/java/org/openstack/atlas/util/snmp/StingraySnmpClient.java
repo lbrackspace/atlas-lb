@@ -85,18 +85,6 @@ public class StingraySnmpClient {
         return oidMap;
     }
 
-    public Map<String, Long> getAllBandWidthIn() throws StingraySnmpRetryExceededException, StingraySnmpSetupException, StingraySnmpGeneralException {
-        return getLongOidVals(OIDConstants.VS_BYTES_IN);
-    }
-
-    public Map<String, Long> getAllBandWidthOut() throws StingraySnmpRetryExceededException, StingraySnmpSetupException, StingraySnmpGeneralException {
-        return getLongOidVals(OIDConstants.VS_BYTES_OUT);
-    }
-
-    public Map<String, Long> getAllConcurrentConnections() throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {
-        return getLongOidVals(OIDConstants.VS_CURRENT_CONNECTIONS);
-    }
-
     public Map<String, RawSnmpUsage> getSnmpUsage() throws StingraySnmpSetupException, StingraySnmpRetryExceededException, StingraySnmpGeneralException {
         vlog.printf("in call to getSnmpUsage()");
         Map<String, RawSnmpUsage> rawSnmpMap = new HashMap<String, RawSnmpUsage>();
@@ -138,6 +126,18 @@ public class StingraySnmpClient {
             rawSnmpMap.get(vsName).setBytesOut(vb.getVariable().toLong());
         }
         return rawSnmpMap;
+    }
+
+    public long getBytesIn(String vsName) throws StingraySnmpSetupException, StingraySnmpGeneralException {
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_IN);
+    }
+
+    public long getBytesOut(String vsName) throws StingraySnmpSetupException, StingraySnmpGeneralException {
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_OUT);
+    }
+
+    public long getConcurrentConnections(String vsName) throws StingraySnmpSetupException, StingraySnmpGeneralException {
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_CURRENT_CONNECTIONS);
     }
 
     public long getLongValueForVirtualServer(String vsName, String baseOid) throws StingraySnmpSetupException, StingraySnmpGeneralException {
