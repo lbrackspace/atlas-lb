@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.log4j.BasicConfigurator;
 import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.StingrayUsageClient;
 import org.openstack.atlas.usagerefactor.StingrayUsageClientImpl;
@@ -91,10 +92,24 @@ public class SnmpMain {
                     System.out.printf("    run_jobs #Run threaded jobs client for itest\n");
                     System.out.printf("    run_all #Run stats for all zxtm hosts\n");
                     System.out.printf("    run_threads #run threads for all zxtm hosts\n");
+                    System.out.printf("    run_job <lid> [clientKey] #get usage for loadbalancer id on host\n");
                     System.out.printf("    add_comparator <lid|hid|cc|ccssl|bi|bo|bissl|bossl> #Add comparator for jobs snmpUsage\n");
                     System.out.printf("    clear_comparators #Clear the comparators for snmpUsage\n");
                     System.out.printf("    exit #Exits\n");
                     System.out.printf("\n");
+                } else if (cmd.equals("run_job") && args.length >= 2) {
+                    LoadBalancer lb = new LoadBalancer();
+                    Host host = new Host();
+                    lb.setId(Integer.valueOf(args[1]));
+                    if (args.length >= 3) {
+                        host.setId(0);
+                        host.setManagementIp(defaultClient.getAddress());
+                    } else {
+                        host.setId(0);
+                        host.setManagementIp(clients.get(args[2]).getAddress());
+                    }
+                    SnmpUsage singleUsageEntry = jobClient.getVirtualServerUsage(host, lb);
+                    System.out.printf("single usage = %s\n", singleUsageEntry.toString());
                 } else if (cmd.equals("clear_comparators")) {
                     usageComparator = new SnmpUsageComparator();
                 } else if (cmd.equals("add_comparator") && args.length >= 2) {
@@ -136,35 +151,34 @@ public class SnmpMain {
                         jobThread.setClient(jobClient);
                         jobThread.setHost(zxtmHost);
                         threads.add(jobThread);
+                    }
+                    // start the threads
+                    for (SnmpJobThread thread : threads) {
+                        thread.start();
+                    }
 
-                        // start the threads
-                        for (SnmpJobThread thread : threads) {
-                            thread.start();
-                        }
+                    // Join the threads
+                    for (SnmpJobThread thread : threads) {
+                        thread.join();
+                    }
 
-                        // Join the threads
-                        for (SnmpJobThread thread : threads) {
-                            thread.join();
-                        }
-
-                        // Gran all the results
-                        for (SnmpJobThread thread : threads) {
-                            System.out.printf("reading snmpUsage from thread for host %s\n", thread.getHost().getManagementIp());
-                            Exception ex = thread.getException();
-                            if (ex != null) {
-                                System.out.printf("%s\n", StaticStringUtils.getExtendedStackTrace(ex));
-                            } else {
-                                for (Entry<Integer, SnmpUsage> ent : thread.getUsage().entrySet()) {
-                                    Integer loadbalancerId = ent.getKey();
-                                    SnmpUsage usageValue = ent.getValue();
-                                    snmpUsageList.add(usageValue);
-                                    if (!snmpUsageMap.containsKey(loadbalancerId)) {
-                                        snmpUsageMap.put(loadbalancerId, new SnmpUsage());
-                                    }
-                                    SnmpUsage usageAgg = snmpUsageMap.get(loadbalancerId);
-                                    usageAgg.add(usageValue);
-                                    snmpUsageMap.put(loadbalancerId, usageAgg);
+                    // Gran all the results
+                    for (SnmpJobThread thread : threads) {
+                        System.out.printf("reading snmpUsage from thread for host %s\n", thread.getHost().getManagementIp());
+                        Exception ex = thread.getException();
+                        if (ex != null) {
+                            System.out.printf("%s\n", StaticStringUtils.getExtendedStackTrace(ex));
+                        } else {
+                            for (Entry<Integer, SnmpUsage> ent : thread.getUsage().entrySet()) {
+                                Integer loadbalancerId = ent.getKey();
+                                SnmpUsage usageValue = ent.getValue();
+                                snmpUsageList.add(usageValue);
+                                if (!snmpUsageMap.containsKey(loadbalancerId)) {
+                                    snmpUsageMap.put(loadbalancerId, new SnmpUsage());
                                 }
+                                SnmpUsage usageAgg = snmpUsageMap.get(loadbalancerId);
+                                usageAgg.add(usageValue);
+                                snmpUsageMap.put(loadbalancerId, usageAgg);
                             }
                         }
                     }
