@@ -19,25 +19,24 @@ public class SnmpUsage {
                 + ", concurrentConnectionsSsl=" + concurrentConnectionsSsl
                 + ", bytesIn=" + bytesIn
                 + ", bytesOut=" + bytesOut
-                + ", bytesInSsl" + bytesInSsl
-                + ", bytesOutSsl" + bytesOutSsl
+                + ", bytesInSsl=" + bytesInSsl
+                + ", bytesOutSsl=" + bytesOutSsl
                 + "}";
 
     }
 
-    // Add the two rows together but after this the HostId is meaningless since its joined
-    // Accross multiple hosts if you bork the loadbalancerId then the same problem happens
-    public SnmpUsage add(SnmpUsage o) {
-        SnmpUsage sum = new SnmpUsage();
-        sum.setLoadbalancerId(loadbalancerId);
-        sum.setHostId(-1);
-        sum.setBytesIn(bytesIn + o.getBytesIn());
-        sum.setBytesOut(bytesOut + o.getBytesOut());
-        sum.setBytesInSsl(bytesInSsl + o.getBytesInSsl());
-        sum.setBytesOutSsl(bytesOutSsl + o.getBytesOutSsl());
-        sum.setConcurrentConnections(concurrentConnections + o.getConcurrentConnections());
-        sum.setConcurrentConnectionsSsl(concurrentConnectionsSsl + o.getConcurrentConnectionsSsl());
-        return sum;
+    public SnmpUsage() {
+    }
+
+    public SnmpUsage(SnmpUsage o) {
+        hostId = o.getHostId();
+        loadbalancerId = o.getLoadbalancerId();
+        bytesIn = o.getBytesIn();
+        bytesOut = o.getBytesOut();
+        bytesOutSsl = o.getBytesOutSsl();
+        bytesInSsl = o.getBytesInSsl();
+        concurrentConnections = o.getConcurrentConnections();
+        concurrentConnectionsSsl = o.getConcurrentConnectionsSsl();
     }
 
     public int getLoadbalancerId() {
@@ -102,5 +101,18 @@ public class SnmpUsage {
 
     public void setBytesOutSsl(long bytesOutSsl) {
         this.bytesOutSsl = bytesOutSsl;
+    }
+
+    public static SnmpUsage add(SnmpUsage o1, SnmpUsage o2) {
+        SnmpUsage sum = new SnmpUsage();
+        sum.setLoadbalancerId(o1.getLoadbalancerId());
+        sum.setHostId(-1);
+        sum.setBytesIn(o1.getBytesIn() + o2.getBytesIn());
+        sum.setBytesOut(o1.getBytesOut() + o2.getBytesOut());
+        sum.setBytesInSsl(o1.getBytesInSsl() + o2.getBytesInSsl());
+        sum.setBytesOutSsl(o1.getBytesOutSsl() + o2.getBytesOutSsl());
+        sum.setConcurrentConnections(o1.getConcurrentConnections() + o2.getConcurrentConnections());
+        sum.setConcurrentConnectionsSsl(o1.getConcurrentConnectionsSsl() + o2.getConcurrentConnectionsSsl());
+        return sum;
     }
 }
