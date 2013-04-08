@@ -1,21 +1,15 @@
 package org.openstack.atlas.usagerefactor;
 
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
-import org.openstack.atlas.usagerefactor.generator.GeneratorPojo;
-import org.openstack.atlas.usagerefactor.generator.PolledUsageRecordGenerator;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
-
-import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class UsagePollerTest {
@@ -38,5 +32,10 @@ public class UsagePollerTest {
             //when(usagePoller.getLoadBalancerHostUsageRecords()).thenReturn(new Map<Integer, LoadBalancerHostUsage>());
         }
 
+
+        @Test
+        public void test() {
+
+        }
     }
 }
