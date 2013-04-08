@@ -22,7 +22,7 @@ public class UsagePollerImpl implements UsagePoller {
     public void processRecords() {
         /*
          * 1. Query SNMP
-         * 2. Query host usage table for previous records. markerId = MAX(id)
+         * 2. Query host usage table for previous records. store time as deleteTimeMarker
          * 3. Process Records For Each LB
          *      a. If no record in host usage table for LB but it is in SNMP results, then write snmp results to hosts table
          *      but do NOT write any data to the Merged LB Usage table.
@@ -40,11 +40,11 @@ public class UsagePollerImpl implements UsagePoller {
 
         }
         Calendar deleteTimeMarker = Calendar.getInstance();
-        Map<Integer, LoadBalancerHostUsage> existingLBHostUsages = getLoadBalancerHostUsageRecords();
+        Map<Integer, Map<Integer, LoadBalancerHostUsage>> existingLBHostUsages = getLoadBalancerHostUsageRecords();
         List<LoadBalancerHostUsage> newHostUsage = new ArrayList<LoadBalancerHostUsage>();
         List<LoadBalancerMergedHostUsage> newMergedHostUsage = new ArrayList<LoadBalancerMergedHostUsage>();
-        for (Integer loadBalancerId : currentLBHostUsage.keySet()) {
-            if (existingLBHostUsages.containsKey(loadBalancerId)) {
+        for (Integer hostId : currentLBHostUsage.keySet()) {
+            if (existingLBHostUsages.containsKey(hostId)) {
 
             }
         }
@@ -52,9 +52,12 @@ public class UsagePollerImpl implements UsagePoller {
     }
 
     @Override
-    public Map<Integer, LoadBalancerHostUsage> getLoadBalancerHostUsageRecords() {
-        Map<Integer, LoadBalancerHostUsage> lbHostUsages = new HashMap<Integer, LoadBalancerHostUsage>();
-        return lbHostUsages;
+    public Map<Integer, Map<Integer, LoadBalancerHostUsage>> getLoadBalancerHostUsageRecords() {
+        //Key should be a Host Id
+        Map<Integer, Map<Integer, LoadBalancerHostUsage>> usagesGroupedByHostId = new HashMap<Integer, Map<Integer, LoadBalancerHostUsage>>();
+        //Key shoudl be a load balancer id
+        Map<Integer, LoadBalancerHostUsage> usagesGroupedByLoadBalancerId = new HashMap<Integer, LoadBalancerHostUsage>();
+        return usagesGroupedByHostId;
     }
 
     // TODO: Run the created threads and merge the host data together to form singular, complete entries.
