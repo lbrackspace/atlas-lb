@@ -33,18 +33,18 @@ public class UsagePollerImpl implements UsagePoller {
          *      e. Write SNMP data to LB Host Usage table.
          *      d. Delete records from LB Host Usage table that have an ID less than the markerID
          */
-        Map<Integer, List<SnmpUsage>> currentLBHostUsage = new HashMap<Integer, List<SnmpUsage>>();
-        try{
-             currentLBHostUsage= getCurrentData();
-        } catch(Exception e){
+        Map<Integer, Map<Integer, SnmpUsage>> currentLBHostUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
+        try {
+             currentLBHostUsage = getCurrentData();
+        } catch (Exception e) {
 
         }
         Calendar deleteTimeMarker = Calendar.getInstance();
         Map<Integer, LoadBalancerHostUsage> existingLBHostUsages = getLoadBalancerHostUsageRecords();
         List<LoadBalancerHostUsage> newHostUsage = new ArrayList<LoadBalancerHostUsage>();
         List<LoadBalancerMergedHostUsage> newMergedHostUsage = new ArrayList<LoadBalancerMergedHostUsage>();
-        for(Integer loadBalancerId : currentLBHostUsage.keySet()){
-            if(existingLBHostUsages.containsKey(loadBalancerId)){
+        for (Integer loadBalancerId : currentLBHostUsage.keySet()) {
+            if (existingLBHostUsages.containsKey(loadBalancerId)) {
 
             }
         }
@@ -59,9 +59,9 @@ public class UsagePollerImpl implements UsagePoller {
 
     // TODO: Run the created threads and merge the host data together to form singular, complete entries.
     @Override
-    public Map<Integer, List<SnmpUsage>> getCurrentData() throws Exception {
+    public Map<Integer, Map<Integer, SnmpUsage>> getCurrentData() throws Exception {
         LOG.info("Collecting Stingray data from each host...");
-        Map<Integer, List<SnmpUsage>> mergedHostsUsage = new HashMap<Integer, List<SnmpUsage>>();
+        Map<Integer, Map<Integer, SnmpUsage>> mergedHostsUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
         List<Host> hostList = hostRepository.getAll();
         ExecutorService threadPool = Executors.newFixedThreadPool(hostList.size());
         for (final Host host : hostList) {
