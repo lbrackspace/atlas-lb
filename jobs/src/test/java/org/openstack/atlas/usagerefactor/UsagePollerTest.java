@@ -1,5 +1,6 @@
 package org.openstack.atlas.usagerefactor;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -32,10 +33,9 @@ public class UsagePollerTest {
             //when(usagePoller.getLoadBalancerHostUsageRecords()).thenReturn(new Map<Integer, LoadBalancerHostUsage>());
         }
 
-
         @Test
         public void test() {
-
+            Assert.assertTrue(1 == 1);
         }
     }
 }
