@@ -10,8 +10,8 @@ import java.util.Map;
 public class UsagePollerHelper {
 
     public static void calculateUsage(Map<Integer, SnmpUsage> currentUsages,
-                                                       Map<Integer, LoadBalancerHostUsage> existingUsages,
-                                                       Map<Integer, LoadBalancerMergedHostUsage> newMergedHostUsages) {
+                                      Map<Integer, LoadBalancerHostUsage> existingUsages,
+                                      Map<Integer, LoadBalancerMergedHostUsage> newMergedHostUsages) {
         LoadBalancerHostUsage newLBHostUsage = new LoadBalancerHostUsage();
         for (Integer loadBalancerId : currentUsages.keySet()) {
             if (!newMergedHostUsages.containsKey(loadBalancerId)) {
