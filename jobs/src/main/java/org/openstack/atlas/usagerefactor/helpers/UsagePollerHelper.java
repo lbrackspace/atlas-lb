@@ -9,20 +9,29 @@ import java.util.Map;
 
 public class UsagePollerHelper {
 
-    public static void calculateUsage(Map<Integer, SnmpUsage> currentUsages, Map<Integer, LoadBalancerHostUsage> existingUsages) {
+    public static void calculateUsage(Map<Integer, SnmpUsage> currentUsages,
+                                                       Map<Integer, LoadBalancerHostUsage> existingUsages,
+                                                       Map<Integer, LoadBalancerMergedHostUsage> newMergedHostUsages) {
+        LoadBalancerHostUsage newLBHostUsage = new LoadBalancerHostUsage();
         for (Integer loadBalancerId : currentUsages.keySet()) {
-            
+            if (!newMergedHostUsages.containsKey(loadBalancerId)) {
+                newMergedHostUsages.put(loadBalancerId, new LoadBalancerMergedHostUsage());
+            }
+            if (isReset(currentUsages.get(loadBalancerId), existingUsages.get(loadBalancerId))) {
+                newLBHostUsage.setIncomingTransfer(0);
+                newLBHostUsage.setIncomingTransferSsl(0);
+                newLBHostUsage.setOutgoingTransfer(0);
+                newLBHostUsage.setOutgoingTransferSsl(0);
+                newLBHostUsage.setConcurrentConnections(currentUsages.get(loadBalancerId).getConcurrentConnections());
+                newLBHostUsage.setConcurrentConnectionsSsl(currentUsages.get(loadBalancerId).getConcurrentConnectionsSsl());
+            }
         }
-        //LoadBalancerMergedHostUsage mergedUsage = new LoadBalancerMergedHostUsage();
     }
 
     public static boolean isReset(SnmpUsage currentUsage, LoadBalancerHostUsage existingUsage) {
-        if (existingUsage.getIncomingTransfer() > currentUsage.getBytesIn() ||
-            existingUsage.getOutgoingTransfer() > currentUsage.getBytesOut() ||
-            existingUsage.getIncomingTransferSsl() > currentUsage.getBytesInSsl() ||
-            existingUsage.getOutgoingTransferSsl() > currentUsage.getBytesOutSsl()){
-            return true;
-        }
-        return false;
+        return existingUsage.getIncomingTransfer() > currentUsage.getBytesIn() ||
+               existingUsage.getOutgoingTransfer() > currentUsage.getBytesOut() ||
+               existingUsage.getIncomingTransferSsl() > currentUsage.getBytesInSsl() ||
+               existingUsage.getOutgoingTransferSsl() > currentUsage.getBytesOutSsl();
     }
 }
