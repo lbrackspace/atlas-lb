@@ -6,14 +6,12 @@ import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
-import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 import org.springframework.beans.factory.annotation.Required;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class UsagePollerImpl implements UsagePoller {
 
@@ -66,13 +64,13 @@ public class UsagePollerImpl implements UsagePoller {
         LOG.info("Collecting Stingray data from each host...");
         Map<Integer, Map<Integer, SnmpUsage>> mergedHostsUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
         List<Host> hostList = hostRepository.getAllHosts();
-        ArrayList<HostThread> hostThreads = new ArrayList<HostThread>();
-        for (final Host host : hostList) {
-            hostThreads.add(new HostThread(host));
+        Map<Integer, Future> futures = new HashMap<Integer, Future>();
+
+        ExecutorService executor = Executors.newFixedThreadPool(hostList.size());
+        for (Host host : hostList) {
+            futures.put(host.getId(), executor.submit(new HostThread(host)));
         }
-        for (HostThread thread : hostThreads) {
-            thread.run();
-        }
+        
         return mergedHostsUsage;
     }
 
