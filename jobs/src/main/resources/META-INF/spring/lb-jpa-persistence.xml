@@ -105,4 +105,7 @@
         <property name="queueCapacity" value="300"/>
         <property name="rejectedExecutionHandler" ref="rejectedExecutionHandler"/>
     </bean>
+    <bean id="usagePollerImpl" class="org.openstack.atlas.usagerefactor.UsagePollerImpl">
+        <property name="hostRepository" ref="hostRepository"/>
+    </bean>
 </beans>

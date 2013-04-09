@@ -1,28 +1,30 @@
 package org.openstack.atlas.usagerefactor;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Required;
 
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class UsagePollerImpl implements UsagePoller {
 
     final Log LOG = LogFactory.getLog(UsagePollerImpl.class);
-
-    HostRepository hostRepository = new HostRepository();
     StingrayUsageClientImpl stingrayUsageClient = new StingrayUsageClientImpl();
+    HostRepository hostRepository;
 
     @Override
     public void processRecords() {
         /*
          * 1. Query SNMP
-         * 2. Query host usage table for previous records. markerId = MAX(id)
+         * 2. Query host usage table for previous records. store time as deleteTimeMarker
          * 3. Process Records For Each LB
          *      a. If no record in host usage table for LB but it is in SNMP results, then write snmp results to hosts table
          *      but do NOT write any data to the Merged LB Usage table.
@@ -40,11 +42,11 @@ public class UsagePollerImpl implements UsagePoller {
 
         }
         Calendar deleteTimeMarker = Calendar.getInstance();
-        Map<Integer, LoadBalancerHostUsage> existingLBHostUsages = getLoadBalancerHostUsageRecords();
+        Map<Integer, Map<Integer, LoadBalancerHostUsage>> existingLBHostUsages = getLoadBalancerHostUsageRecords();
         List<LoadBalancerHostUsage> newHostUsage = new ArrayList<LoadBalancerHostUsage>();
         List<LoadBalancerMergedHostUsage> newMergedHostUsage = new ArrayList<LoadBalancerMergedHostUsage>();
-        for (Integer loadBalancerId : currentLBHostUsage.keySet()) {
-            if (existingLBHostUsages.containsKey(loadBalancerId)) {
+        for (Integer hostId : currentLBHostUsage.keySet()) {
+            if (existingLBHostUsages.containsKey(hostId)) {
 
             }
         }
@@ -52,29 +54,25 @@ public class UsagePollerImpl implements UsagePoller {
     }
 
     @Override
-    public Map<Integer, LoadBalancerHostUsage> getLoadBalancerHostUsageRecords() {
-        Map<Integer, LoadBalancerHostUsage> lbHostUsages = new HashMap<Integer, LoadBalancerHostUsage>();
-        return lbHostUsages;
+    public Map<Integer, Map<Integer, LoadBalancerHostUsage>> getLoadBalancerHostUsageRecords() {
+        //Key should be a Host Id
+        Map<Integer, Map<Integer, LoadBalancerHostUsage>> usagesGroupedByHostId = new HashMap<Integer, Map<Integer, LoadBalancerHostUsage>>();
+        //Key shoudl be a load balancer id
+        Map<Integer, LoadBalancerHostUsage> usagesGroupedByLoadBalancerId = new HashMap<Integer, LoadBalancerHostUsage>();
+        return usagesGroupedByHostId;
     }
 
-    // TODO: Run the created threads and merge the host data together to form singular, complete entries.
     @Override
     public Map<Integer, Map<Integer, SnmpUsage>> getCurrentData() throws Exception {
         LOG.info("Collecting Stingray data from each host...");
         Map<Integer, Map<Integer, SnmpUsage>> mergedHostsUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
-        List<Host> hostList = hostRepository.getAll();
-        ExecutorService threadPool = Executors.newFixedThreadPool(hostList.size());
+        List<Host> hostList = hostRepository.getAllHosts();
+        ArrayList<HostThread> hostThreads = new ArrayList<HostThread>();
         for (final Host host : hostList) {
-            threadPool.submit(new Runnable() {
-                public void run() {
-                    try {
-                        stingrayUsageClient.getHostUsage(host);
-                    } catch (Exception e) {
-                        String retString = String.format("Request for host %s usage from SNMP server failed.", host.getName());
-                        LOG.error(retString, e);
-                    }
-                }
-            });
+            hostThreads.add(new HostThread(host));
+        }
+        for (HostThread thread : hostThreads) {
+            thread.run();
         }
         return mergedHostsUsage;
     }
@@ -92,5 +90,10 @@ public class UsagePollerImpl implements UsagePoller {
     @Override
     public void insertMergedRecords(List<LoadBalancerMergedHostUsage> mergedRecords) {
 
+    }
+
+    @Required
+    public void setHostRepository(HostRepository hostRepository) {
+        this.hostRepository = hostRepository;
     }
 }
