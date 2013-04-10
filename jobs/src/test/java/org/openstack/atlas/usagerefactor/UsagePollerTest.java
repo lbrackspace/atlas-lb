@@ -7,12 +7,21 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class UsagePollerTest {
@@ -42,19 +51,32 @@ public class UsagePollerTest {
 
     public static class WhenTestingBasicRequests {
         private UsagePoller usagePoller;
+        private HostRepository hostRepository;
+        List<Host> hosts;
 
         @Before
         public void standUp() {
             usagePoller = new UsagePollerImpl();
+            hostRepository = mock(HostRepository.class);
         }
 
-        @Test
-        public void placementTest() {
+        @Before
+        public void createHosts() {
+            hosts = new ArrayList<Host>();
+            Host host1 = new Host();
+            host1.setId(1);
+            host1.setName("TestHost1");
+            hosts.add(host1);
+            Host host2 = new Host();
+            host2.setId(2);
+            host1.setName("TestHost2");
+            hosts.add(host2);
         }
 
         @Ignore
         @Test
         public void getCurrentDataTest() throws Exception {
+            when(hostRepository.getAll()).thenReturn(hosts);
             assertNotNull(usagePoller.getCurrentData());
         }
     }
