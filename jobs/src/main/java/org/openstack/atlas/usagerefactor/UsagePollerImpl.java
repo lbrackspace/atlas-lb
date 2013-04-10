@@ -7,6 +7,7 @@ import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.HostIdLoadbalancerIdKey;
+import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
 import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -37,35 +38,34 @@ public class UsagePollerImpl implements UsagePoller {
          *      e. Write SNMP data to LB Host Usage table.
          *      d. Delete records from LB Host Usage table that have an ID less than the markerID
          */
-        Map<HostIdLoadbalancerIdKey, SnmpUsage> currentLBHostUsage = new HashMap<HostIdLoadbalancerIdKey, SnmpUsage>();
+        Map<Integer, Map<Integer, SnmpUsage>> currentLBHostUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
         try {
              currentLBHostUsage = getCurrentData();
         } catch (Exception e) {
 
         }
         Calendar deleteTimeMarker = Calendar.getInstance();
-        Map<HostIdLoadbalancerIdKey, LoadBalancerHostUsage> existingLBHostUsages = getLoadBalancerHostUsageRecords();
+        List<LoadBalancerHostUsage> existingLBHostUsages = getLoadBalancerHostUsageRecords();
         List<LoadBalancerHostUsage> newHostUsage = new ArrayList<LoadBalancerHostUsage>();
         Map<Integer, LoadBalancerMergedHostUsage> newMergedHostUsage = new HashMap<Integer, LoadBalancerMergedHostUsage>();
-        for (HostIdLoadbalancerIdKey key : currentLBHostUsage.keySet()) {
-            
+
+        currentLBHostUsage = UsageMappingHelper.swapKeyGrouping(currentLBHostUsage);
+        for (Integer loadBalancerId : currentLBHostUsage.keySet()) {
+
         }
 
     }
 
     @Override
-    public Map<HostIdLoadbalancerIdKey, LoadBalancerHostUsage> getLoadBalancerHostUsageRecords() {
-        //Key should be a Host Id
-        Map<HostIdLoadbalancerIdKey, LoadBalancerHostUsage> usagesGroupedByHostId = new HashMap<HostIdLoadbalancerIdKey, LoadBalancerHostUsage>();
-        //Key shoudl be a load balancer id
-        Map<Integer, LoadBalancerHostUsage> usagesGroupedByLoadBalancerId = new HashMap<Integer, LoadBalancerHostUsage>();
-        return usagesGroupedByHostId;
+    public List<LoadBalancerHostUsage> getLoadBalancerHostUsageRecords() {
+        List<LoadBalancerHostUsage> existingUsages = new ArrayList<LoadBalancerHostUsage>();
+        return existingUsages;
     }
 
     @Override
-    public Map<HostIdLoadbalancerIdKey, SnmpUsage> getCurrentData() throws Exception {
+    public Map<Integer, Map<Integer, SnmpUsage>> getCurrentData() throws Exception {
         LOG.info("Collecting Stingray data from each host...");
-        Map<HostIdLoadbalancerIdKey, SnmpUsage> mergedHostsUsage = new HashMap<HostIdLoadbalancerIdKey, SnmpUsage>();
+        Map<Integer, Map<Integer, SnmpUsage>> mergedHostsUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
         List<Host> hostList = hostRepository.getAllHosts();
         ArrayList<HostThread> hostThreads = new ArrayList<HostThread>();
         for (final Host host : hostList) {

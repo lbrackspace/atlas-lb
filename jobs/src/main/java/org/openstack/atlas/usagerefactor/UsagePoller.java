@@ -16,8 +16,8 @@ public interface UsagePoller {
      * Key of first Map is hostId
      * Key of nested map is loadBalancerId
      */
-    public Map<HostIdLoadbalancerIdKey, LoadBalancerHostUsage> getLoadBalancerHostUsageRecords();
-    public Map<HostIdLoadbalancerIdKey, SnmpUsage> getCurrentData() throws Exception;
+    public List<LoadBalancerHostUsage> getLoadBalancerHostUsageRecords();
+    public Map<Integer, Map<Integer, SnmpUsage>> getCurrentData() throws Exception;
     public void deleteLoadBalancerHostUsageRecords(Calendar deleteTimeMarker);
     public void insertLoadBalancerUsagePerHost(List<LoadBalancerHostUsage> lbHostUsages);
     public void insertMergedRecords(List<LoadBalancerMergedHostUsage> mergedRecords);
