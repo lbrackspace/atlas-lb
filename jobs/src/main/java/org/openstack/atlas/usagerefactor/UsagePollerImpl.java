@@ -6,22 +6,21 @@ import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
-import org.openstack.atlas.usagerefactor.helpers.HostIdLoadbalancerIdKey;
 import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
-import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 import org.springframework.beans.factory.annotation.Required;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class UsagePollerImpl implements UsagePoller {
-
     final Log LOG = LogFactory.getLog(UsagePollerImpl.class);
-    StingrayUsageClientImpl stingrayUsageClient = new StingrayUsageClientImpl();
+
     HostRepository hostRepository;
+    StingrayUsageClientImpl stingrayUsageClient = new StingrayUsageClientImpl();
+
+    @Required
+    public void setHostRepository(HostRepository hostRepository) {
+        this.hostRepository = hostRepository;
+    }
 
     @Override
     public void processRecords() {
@@ -40,7 +39,7 @@ public class UsagePollerImpl implements UsagePoller {
          */
         Map<Integer, Map<Integer, SnmpUsage>> currentLBHostUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
         try {
-             currentLBHostUsage = getCurrentData();
+            currentLBHostUsage = getCurrentData();
         } catch (Exception e) {
 
         }
@@ -90,10 +89,5 @@ public class UsagePollerImpl implements UsagePoller {
     @Override
     public void insertMergedRecords(List<LoadBalancerMergedHostUsage> mergedRecords) {
 
-    }
-
-    @Required
-    public void setHostRepository(HostRepository hostRepository) {
-        this.hostRepository = hostRepository;
     }
 }

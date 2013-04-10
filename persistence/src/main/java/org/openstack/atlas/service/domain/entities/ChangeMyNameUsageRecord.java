@@ -5,7 +5,7 @@ import java.io.Serializable;
 import java.util.Calendar;
 
 @javax.persistence.Entity
-@Table(name = "access_list")
+@Table(name = "change_my_name")
 public class ChangeMyNameUsageRecord extends Entity implements Serializable {
 
     @Column(name = "account_id")

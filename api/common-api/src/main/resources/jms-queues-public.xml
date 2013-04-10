@@ -129,6 +129,11 @@
         <property name="virtualIpRepository" ref="virtualIpRepository"/>
     </bean>
 
+    <!--For Usage Event Processing-->
+    <bean id="usageEventProcessor" class="org.openstack.atlas.api.usage.processor.impl.UsageEventProcessorImpl" scope="prototype">
+        <property name="usageService" ref="usageService"/>
+    </bean>
+
     <bean id="baseListener" class="org.openstack.atlas.api.async.BaseListener" abstract="true">
         <property name="jmsTemplate" ref="jmsTemplate"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>

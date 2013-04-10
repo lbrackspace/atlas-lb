@@ -10,8 +10,10 @@ import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.*;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.openstack.atlas.service.domain.usage.repository.HostUsageRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
+import org.openstack.atlas.service.domain.usage.repository.UsageEventRepository;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.ip.IPv4Cidr;
 import org.openstack.atlas.util.ip.IPv4Cidrs;
@@ -46,8 +48,10 @@ public class BaseService {
     protected JobStateRepository jobStateRepository;
     protected SslTerminationRepository sslTerminationRepository;
     protected UsageRepository usageRepository;
+    protected HostUsageRepository hostUsageRepository;
     protected LoadBalancerUsageRepository loadBalancerUsageRepository;
     protected LoadBalancerUsageEventRepository loadBalancerUsageEventRepository;
+    protected UsageEventRepository usageEventRepository;
     protected AllowedDomainsRepository allowedDomainsRepository;
     protected LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
 
@@ -127,12 +131,20 @@ public class BaseService {
         this.loadBalancerUsageEventRepository = loadBalancerUsageEventRepository;
     }
 
+    public void setUsageEventRepository(UsageEventRepository usageEventRepository) {
+        this.usageEventRepository = usageEventRepository;
+    }
+
     public void setAllowedDomainsRepository(AllowedDomainsRepository allowedDomainsRepository) {
         this.allowedDomainsRepository = allowedDomainsRepository;
     }
 
     public void setLoadBalancerStatusHistoryRepository(LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository) {
         this.loadBalancerStatusHistoryRepository = loadBalancerStatusHistoryRepository;
+    }
+
+    public void setHostUsageRepository(HostUsageRepository hostUsageRepository) {
+        this.hostUsageRepository = hostUsageRepository;
     }
 
     public void isLbActive(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException {
