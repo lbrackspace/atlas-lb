@@ -9,16 +9,16 @@ import java.util.Map;
 public class UsageMappingHelper {
 
     public static Map<Integer, Map<Integer, SnmpUsage>> swapKeyGrouping(
-                  Map<Integer, Map<Integer, SnmpUsage>> groupedByHosts) {
+                Map<Integer, Map<Integer, SnmpUsage>> groupedByHosts) {
         Map<Integer, Map<Integer, SnmpUsage>> groupedByLoadBalancers = new HashMap<Integer, Map<Integer, SnmpUsage>>();
         for (Integer hostId : groupedByHosts.keySet()) {
             for (Integer loadBalancerId : groupedByHosts.get(hostId).keySet()) {
                 Map<Integer, SnmpUsage> hostMap;
                 if (!groupedByLoadBalancers.containsKey(loadBalancerId)) {
                     hostMap = new HashMap<Integer, SnmpUsage>();
-                } else {
-                    hostMap = groupedByLoadBalancers.get(loadBalancerId);
+                    groupedByLoadBalancers.put(loadBalancerId, hostMap);
                 }
+                hostMap = groupedByLoadBalancers.get(loadBalancerId);
                 hostMap.put(hostId, groupedByHosts.get(hostId).get(loadBalancerId));
                 groupedByLoadBalancers.put(loadBalancerId, hostMap);
             }

@@ -40,6 +40,9 @@ public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.en
     @Column(name = "tags_bitmask")
     private int tagsBitmask;
 
+    @Column(name = "num_vips")
+    private int numVips;
+
     @Column(name = "event_type")
     @Enumerated(EnumType.STRING)
     private UsageEvent eventType;
@@ -130,5 +133,13 @@ public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.en
 
     public void setEventType(UsageEvent eventType) {
         this.eventType = eventType;
+    }
+
+    public int getNumVips() {
+        return numVips;
+    }
+
+    public void setNumVips(int numVips) {
+        this.numVips = numVips;
     }
 }
