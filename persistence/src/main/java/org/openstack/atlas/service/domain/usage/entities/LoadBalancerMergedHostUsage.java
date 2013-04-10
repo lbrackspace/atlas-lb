@@ -19,6 +19,18 @@ public class LoadBalancerMergedHostUsage {
     private Calendar pollTime;
     private UsageEvent eventType;
 
+    public LoadBalancerMergedHostUsage(){
+        outgoingTransfer = 0;
+        incomingTransfer = 0;
+        outgoingTransferSsl = 0;
+        incomingTransferSsl = 0;
+        concurrentConnections = 0;
+        concurrentConnectionsSsl = 0;
+        numVips = 1;
+        tagsBitmask = 0;
+        eventType = null;
+    }
+
     public LoadBalancerMergedHostUsage(int id, int accountId, int loadbalancerId, long outgoingTransfer,
                                        long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
                                        long concurrentConnections, long concurrentConnectionsSsl,

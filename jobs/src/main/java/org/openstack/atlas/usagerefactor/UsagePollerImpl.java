@@ -6,6 +6,9 @@ import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
+import org.openstack.atlas.usagerefactor.helpers.HostIdLoadbalancerIdKey;
+import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
+import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.util.ArrayList;
@@ -42,24 +45,21 @@ public class UsagePollerImpl implements UsagePoller {
 
         }
         Calendar deleteTimeMarker = Calendar.getInstance();
-        Map<Integer, Map<Integer, LoadBalancerHostUsage>> existingLBHostUsages = getLoadBalancerHostUsageRecords();
+        List<LoadBalancerHostUsage> existingLBHostUsages = getLoadBalancerHostUsageRecords();
         List<LoadBalancerHostUsage> newHostUsage = new ArrayList<LoadBalancerHostUsage>();
-        List<LoadBalancerMergedHostUsage> newMergedHostUsage = new ArrayList<LoadBalancerMergedHostUsage>();
-        for (Integer hostId : currentLBHostUsage.keySet()) {
-            if (existingLBHostUsages.containsKey(hostId)) {
+        Map<Integer, LoadBalancerMergedHostUsage> newMergedHostUsage = new HashMap<Integer, LoadBalancerMergedHostUsage>();
 
-            }
+        currentLBHostUsage = UsageMappingHelper.swapKeyGrouping(currentLBHostUsage);
+        for (Integer loadBalancerId : currentLBHostUsage.keySet()) {
+
         }
 
     }
 
     @Override
-    public Map<Integer, Map<Integer, LoadBalancerHostUsage>> getLoadBalancerHostUsageRecords() {
-        //Key should be a Host Id
-        Map<Integer, Map<Integer, LoadBalancerHostUsage>> usagesGroupedByHostId = new HashMap<Integer, Map<Integer, LoadBalancerHostUsage>>();
-        //Key shoudl be a load balancer id
-        Map<Integer, LoadBalancerHostUsage> usagesGroupedByLoadBalancerId = new HashMap<Integer, LoadBalancerHostUsage>();
-        return usagesGroupedByHostId;
+    public List<LoadBalancerHostUsage> getLoadBalancerHostUsageRecords() {
+        List<LoadBalancerHostUsage> existingUsages = new ArrayList<LoadBalancerHostUsage>();
+        return existingUsages;
     }
 
     @Override
@@ -78,7 +78,7 @@ public class UsagePollerImpl implements UsagePoller {
     }
 
     @Override
-    public void deleteLoadBalancerHostUsageRecords(int markerId) {
+    public void deleteLoadBalancerHostUsageRecords(Calendar deleteTimeMarker) {
 
     }
 
