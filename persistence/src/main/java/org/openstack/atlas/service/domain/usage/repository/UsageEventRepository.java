@@ -2,7 +2,7 @@ package org.openstack.atlas.service.domain.usage.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -15,7 +15,7 @@ public class UsageEventRepository {
     @PersistenceContext(unitName = "loadbalancingUsage")
     private EntityManager entityManager;
 
-    public void create(LoadBalancerHostUsage usageEventRecord) {
+    public void create(LoadBalancerMergedHostUsage usageEventRecord) {
 //        entityManager.persist(usageEventRecord);
     }
 }

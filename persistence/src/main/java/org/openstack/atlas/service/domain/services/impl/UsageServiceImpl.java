@@ -6,7 +6,7 @@ import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.UsageService;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 
@@ -40,7 +40,7 @@ public class UsageServiceImpl extends BaseService implements UsageService {
     }
 
     @Override
-    public void createUsageEvent(LoadBalancerHostUsage changeMyNameUsageRecord) {
+    public void createUsageEvent(LoadBalancerMergedHostUsage changeMyNameUsageRecord) {
         usageEventRepository.create(changeMyNameUsageRecord);
     }
 }

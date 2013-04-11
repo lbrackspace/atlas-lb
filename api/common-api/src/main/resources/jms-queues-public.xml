@@ -130,7 +130,7 @@
     </bean>
 
     <!--For Usage Event Processing-->
-    <bean id="usageEventProcessor" class="org.openstack.atlas.api.usage.processor.impl.UsageEventProcessorImpl" scope="prototype">
+    <bean id="usageEventProcessor" class="org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl" scope="prototype">
         <property name="usageService" ref="usageService"/>
     </bean>
 

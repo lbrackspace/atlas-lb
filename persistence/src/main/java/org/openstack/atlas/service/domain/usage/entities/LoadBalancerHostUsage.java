@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.Calendar;
 
 @javax.persistence.Entity
-@Table(name = "lb_host_usage")
+@Table(name = "access_list")
 public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.entities.Entity implements Serializable {
 
     @Column(name = "account_id")

@@ -4,6 +4,7 @@ import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 
 import java.util.Calendar;
@@ -15,5 +16,5 @@ public interface UsageService {
 
     void createUsageEvent(LoadBalancerUsageEvent loadBalancerUsageEvent);
 
-    void createUsageEvent(LoadBalancerHostUsage usageRecord);
+    void createUsageEvent(LoadBalancerMergedHostUsage usageRecord);
 }
