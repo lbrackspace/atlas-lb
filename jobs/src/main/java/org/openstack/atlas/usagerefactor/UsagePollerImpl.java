@@ -35,6 +35,7 @@ public class UsagePollerImpl implements UsagePoller {
          *      c. If UNSUSPEND event encountered in host usage table disregard any earlier records unless earlier record is SUSPEND event.
          *      d. If earlier record's value is greater than current record then a reset happened.
          *          i. Record 0 Usage in Merged LB Usage table
+         *          ii. Do not modify the counter in the host usage table.
          *      e. Write SNMP data to LB Host Usage table.
          *      d. Delete records from LB Host Usage table that have an ID less than the markerID
          */
