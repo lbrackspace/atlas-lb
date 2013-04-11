@@ -42,9 +42,35 @@ public class UsagePollerHelper {
                 totConcurrentConnectionsSsl += currentUsages.get(hostId).getConcurrentConnectionsSsl() - existingUsages.get(hostId).getConcurrentConnectionsSsl();
             }
         }
+    }
 
-    public static void calculateUsage(LoadBalancerHostUsage currentRecord, LoadBalancerHostUsage previousRecord, LoadBalancerMergedHostUsage newMergedUsage) {
-
+    public static void calculateUsage(LoadBalancerHostUsage currentRecord, LoadBalancerHostUsage previousRecord,
+                                      LoadBalancerMergedHostUsage newMergedUsage) {
+        long totIncomingTransfer = newMergedUsage.getIncomingTransfer();
+        long totIncomingTransferSsl = newMergedUsage.getIncomingTransferSsl();
+        long totOutgoingTransfer = newMergedUsage.getOutgoingTransfer();
+        long totOutgoingTransferSsl = newMergedUsage.getOutgoingTransferSsl();
+        double totConcurrentConnections = newMergedUsage.getConcurrentConnections();
+        double totConcurrentConnectionsSsl = newMergedUsage.getConcurrentConnectionsSsl();
+        if (isReset(currentRecord, previousRecord)) {
+            totIncomingTransfer = 0;
+            totIncomingTransferSsl = 0;
+            totOutgoingTransfer = 0;
+            totOutgoingTransferSsl = 0;
+        } else {
+            totIncomingTransfer += currentRecord.getIncomingTransfer() - previousRecord.getIncomingTransfer();
+            totIncomingTransferSsl += currentRecord.getIncomingTransferSsl() - previousRecord.getIncomingTransferSsl();
+            totOutgoingTransfer += currentRecord.getOutgoingTransfer() - previousRecord.getOutgoingTransfer();
+            totOutgoingTransferSsl += currentRecord.getOutgoingTransferSsl() - previousRecord.getOutgoingTransferSsl();
+            totConcurrentConnections += currentRecord.getConcurrentConnections() - previousRecord.getConcurrentConnections();
+            totConcurrentConnectionsSsl += currentRecord.getConcurrentConnectionsSsl() - previousRecord.getConcurrentConnectionsSsl();
+        }
+        newMergedUsage.setIncomingTransfer(totIncomingTransfer);
+        newMergedUsage.setIncomingTransferSsl(totIncomingTransferSsl);
+        newMergedUsage.setOutgoingTransfer(totOutgoingTransfer);
+        newMergedUsage.setOutgoingTransferSsl(totOutgoingTransferSsl);
+        newMergedUsage.setConcurrentConnections(totConcurrentConnections);
+        newMergedUsage.setConcurrentConnections(totConcurrentConnectionsSsl);
     }
 
     public static boolean isReset(SnmpUsage currentUsage, LoadBalancerHostUsage existingUsage) {
@@ -61,8 +87,8 @@ public class UsagePollerHelper {
                previousRecord.getOutgoingTransferSsl() > currentRecord.getOutgoingTransferSsl();
     }
 
-    public static List<LoadBalancerHostUsage> processExistingEvents(Map<Integer, List<LoadBalancerHostUsage>> existingUsages) {
-        List<LoadBalancerHostUsage> newMergedEventRecords = new ArrayList<LoadBalancerHostUsage>();
+    public static List<LoadBalancerMergedHostUsage> processExistingEvents(Map<Integer, List<LoadBalancerHostUsage>> existingUsages) {
+        List<LoadBalancerMergedHostUsage> newMergedEventRecords = new ArrayList<LoadBalancerMergedHostUsage>();
         for (Integer loadBalancerId : existingUsages.keySet()) {
             if (existingUsages.get(loadBalancerId).size() > 0) {
                 //If very last record in the list of loadbalancer usages is not an event, then it MUST be the records inserted
@@ -85,11 +111,24 @@ public class UsagePollerHelper {
                 hostCount++;
             }
 
-            List<Integer> indicesToDelete = new ArrayList<Integer>();
-            for (int recordIndex = 0; recordIndex < lbHostUsageListRef.size(); recordIndex++) {
+            //increment index by the number of hosts so that the index is only skipping to each event section, and not
+            //going through all records
+            for (int recordIndex = hostCount; recordIndex < lbHostUsageListRef.size(); recordIndex += hostCount) {
+                //Initialize data in new record to that of current host usage record.
                 LoadBalancerMergedHostUsage newLBMergedHostUsage = initializeMergedRecord(lbHostUsageListRef.get(recordIndex));
 
-                calculateUsage(lbHostUsageListRef.get(recordIndex), lbHostUsageListRef.get(recordIndex - hostCount), newLBMergedHostUsage);
+                //Iterate through the current event records and compare to previous event/polled records to calculate usage.
+                for (int sameEventIndex = recordIndex; sameEventIndex < recordIndex + hostCount; sameEventIndex++) {
+                    calculateUsage(lbHostUsageListRef.get(recordIndex), lbHostUsageListRef.get(recordIndex - hostCount), newLBMergedHostUsage);
+                }
+
+                newMergedEventRecords.add(newLBMergedHostUsage);
+            }
+
+            //Remove records that are no longer needed.
+            int currentListSize = lbHostUsageListRef.size();
+            for (int recordIndex = 0; recordIndex < currentListSize - hostCount; recordIndex++) {
+                lbHostUsageListRef.remove(recordIndex);
             }
         }
         return newMergedEventRecords;
@@ -99,6 +138,8 @@ public class UsagePollerHelper {
         LoadBalancerMergedHostUsage newLBMergedHostUsage = new LoadBalancerMergedHostUsage();
         newLBMergedHostUsage.setAccountId(lbHostUsage.getAccountId());
         newLBMergedHostUsage.setLoadbalancerId(lbHostUsage.getLoadbalancerId());
+        newLBMergedHostUsage.setNumVips(lbHostUsage.getNumVips());
+        newLBMergedHostUsage.setEventType(lbHostUsage.getEventType());
         return newLBMergedHostUsage;
     }
 }

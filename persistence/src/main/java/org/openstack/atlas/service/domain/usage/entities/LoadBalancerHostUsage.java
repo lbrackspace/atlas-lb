@@ -17,22 +17,22 @@ public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.en
     private int loadbalancerId;
 
     @Column(name = "bandwidth_out")
-    private long outgoingTransfer;
+    private long outgoingTransfer = 0L;
 
     @Column(name = "bandwidth_in")
-    private long incomingTransfer;
+    private long incomingTransfer = 0L;
 
     @Column(name = "bandwidth_out_ssl")
-    private long outgoingTransferSsl;
+    private long outgoingTransferSsl = 0L;
 
     @Column(name = "bandwidth_in_ssl")
-    private long incomingTransferSsl;
+    private long incomingTransferSsl = 0L;
 
     @Column(name = "concurrent_connections")
-    private long concurrentConnections;
+    private long concurrentConnections = 0L;
 
     @Column(name = "concurrent_connections_ssl")
-    private long concurrentConnectionsSsl;
+    private long concurrentConnectionsSsl = 0L;
 
     @Column(name = "poll_time")
     private Calendar pollTime;
