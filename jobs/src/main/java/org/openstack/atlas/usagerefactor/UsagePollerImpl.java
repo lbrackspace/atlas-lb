@@ -44,10 +44,13 @@ public class UsagePollerImpl implements UsagePoller {
 
         }
         Calendar deleteTimeMarker = Calendar.getInstance();
-        List<LoadBalancerHostUsage> existingLBHostUsages = getLoadBalancerHostUsageRecords();
+        //Parent key should be hostId, child key should be loadbalancerId
+        Map<Integer, List<LoadBalancerHostUsage>> existingLBHostUsages = getLoadBalancerHostUsageRecords();
         List<LoadBalancerHostUsage> newHostUsage = new ArrayList<LoadBalancerHostUsage>();
         Map<Integer, LoadBalancerMergedHostUsage> newMergedHostUsage = new HashMap<Integer, LoadBalancerMergedHostUsage>();
+        //Process events that have come in between now and last poller run
 
+        //Now parent key should be loadbalancerId, and child key hostId
         currentLBHostUsage = UsageMappingHelper.swapKeyGrouping(currentLBHostUsage);
         for (Integer loadBalancerId : currentLBHostUsage.keySet()) {
 
@@ -56,8 +59,8 @@ public class UsagePollerImpl implements UsagePoller {
     }
 
     @Override
-    public List<LoadBalancerHostUsage> getLoadBalancerHostUsageRecords() {
-        List<LoadBalancerHostUsage> existingUsages = new ArrayList<LoadBalancerHostUsage>();
+    public Map<Integer, List<LoadBalancerHostUsage>> getLoadBalancerHostUsageRecords() {
+        Map<Integer, List<LoadBalancerHostUsage>> existingUsages = new HashMap<Integer, List<LoadBalancerHostUsage>>();
         return existingUsages;
     }
 
