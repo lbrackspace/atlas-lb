@@ -145,5 +145,8 @@ public class UsagePollerTest {
         }
 
         @Test
-        public void should
+        public void should(){
+            int i = 1;
+        }
+    }
 }
