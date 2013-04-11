@@ -9,6 +9,7 @@
         <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage</class>
         <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent</class>
         <class>org.openstack.atlas.service.domain.usage.entities.HostUsage</class>
+        <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage</class>
 
         <!-- Hibernate Properties -->
         <properties>

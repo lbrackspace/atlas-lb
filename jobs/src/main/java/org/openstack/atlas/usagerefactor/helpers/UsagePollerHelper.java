@@ -52,12 +52,7 @@ public class UsagePollerHelper {
         long totOutgoingTransferSsl = newMergedUsage.getOutgoingTransferSsl();
         double totConcurrentConnections = newMergedUsage.getConcurrentConnections();
         double totConcurrentConnectionsSsl = newMergedUsage.getConcurrentConnectionsSsl();
-        if (isReset(currentRecord, previousRecord)) {
-            totIncomingTransfer = 0;
-            totIncomingTransferSsl = 0;
-            totOutgoingTransfer = 0;
-            totOutgoingTransferSsl = 0;
-        } else {
+        if (!isReset(currentRecord, previousRecord)) {
             totIncomingTransfer += currentRecord.getIncomingTransfer() - previousRecord.getIncomingTransfer();
             totIncomingTransferSsl += currentRecord.getIncomingTransferSsl() - previousRecord.getIncomingTransferSsl();
             totOutgoingTransfer += currentRecord.getOutgoingTransfer() - previousRecord.getOutgoingTransfer();
@@ -119,7 +114,9 @@ public class UsagePollerHelper {
 
                 //Iterate through the current event records and compare to previous event/polled records to calculate usage.
                 for (int sameEventIndex = recordIndex; sameEventIndex < recordIndex + hostCount; sameEventIndex++) {
-                    calculateUsage(lbHostUsageListRef.get(recordIndex), lbHostUsageListRef.get(recordIndex - hostCount), newLBMergedHostUsage);
+                    if(lbHostUsageListRef.get(sameEventIndex).getHostId() == lbHostUsageListRef.get(sameEventIndex - hostCount).getHostId()){
+                        calculateUsage(lbHostUsageListRef.get(sameEventIndex), lbHostUsageListRef.get(sameEventIndex - hostCount), newLBMergedHostUsage);
+                    }
                 }
 
                 newMergedEventRecords.add(newLBMergedHostUsage);

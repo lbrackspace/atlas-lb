@@ -135,4 +135,15 @@ public class UsagePollerTest {
             Assert.assertEquals(host3lb3.getLoadbalancerId(), lbMap.get(3).get(3).getLoadbalancerId());
         }
     }
+
+    public static class WhenTestingProcessExistingEvents {
+        private UsagePoller usagePoller;
+
+        @Before
+        public void standUp() {
+
+        }
+
+        @Test
+        public void should
 }
