@@ -11,7 +11,7 @@ import java.util.*;
 public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
     @Override
-    public Map<Integer, List<LoadBalancerMergedHostUsage>> breakDownUsagesByLbId(List<LoadBalancerMergedHostUsage> LoadBalancerMergedHostUsages) {
+    public Map<Integer, List<LoadBalancerMergedHostUsage>> groupUsagesByLbId(List<LoadBalancerMergedHostUsage> LoadBalancerMergedHostUsages) {
         Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = new HashMap<Integer, List<LoadBalancerMergedHostUsage>>();
 
         for (LoadBalancerMergedHostUsage LoadBalancerMergedHostUsage : LoadBalancerMergedHostUsages) {
@@ -38,7 +38,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         }
 
 
-        Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = breakDownUsagesByLbId(LoadBalancerMergedHostUsages);
+        Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = groupUsagesByLbId(LoadBalancerMergedHostUsages);
 
         for (Integer lbId : usagesByLbId.keySet()) {
             List<LoadBalancerMergedHostUsage> LBMergedHostRecordsForLoadBalancer = usagesByLbId.get(lbId);
