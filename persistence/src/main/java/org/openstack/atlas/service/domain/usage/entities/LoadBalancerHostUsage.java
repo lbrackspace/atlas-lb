@@ -16,6 +16,9 @@ public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.en
     @Column(name = "loadbalancer_id")
     private int loadbalancerId;
 
+    @Column(name = "host_id")
+    private int hostId;
+
     @Column(name = "bandwidth_out")
     private long outgoingTransfer = 0L;
 
@@ -141,5 +144,13 @@ public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.en
 
     public void setNumVips(int numVips) {
         this.numVips = numVips;
+    }
+
+    public int getHostId() {
+        return hostId;
+    }
+
+    public void setHostId(int hostId) {
+        this.hostId = hostId;
     }
 }
