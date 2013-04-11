@@ -547,7 +547,7 @@ public class UsageRollupProcessorTest {
 
         @Test
         public void shouldReturnEmptyMapWhenNoPolledRecords() {
-            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(LoadBalancerMergedHostUsages);
+            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.groupUsagesByLbId(LoadBalancerMergedHostUsages);
 
             Assert.assertTrue(usagesByLbId.isEmpty());
         }
@@ -557,7 +557,7 @@ public class UsageRollupProcessorTest {
             List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
             usagePojoList.add(new GeneratorPojo(5806065, 1, 1));
             LoadBalancerMergedHostUsages = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
-            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(LoadBalancerMergedHostUsages);
+            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.groupUsagesByLbId(LoadBalancerMergedHostUsages);
 
             Assert.assertEquals(usagePojoList.size(), usagesByLbId.size());
             Assert.assertEquals(usagePojoList.get(0).getNumRecords(), usagesByLbId.get(1).size());
@@ -568,7 +568,7 @@ public class UsageRollupProcessorTest {
             List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
             usagePojoList.add(new GeneratorPojo(5806065, 1, 1, 30));
             LoadBalancerMergedHostUsages = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);
-            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(LoadBalancerMergedHostUsages);
+            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.groupUsagesByLbId(LoadBalancerMergedHostUsages);
 
             Assert.assertEquals(usagePojoList.size(), usagesByLbId.size());
             Assert.assertEquals(usagePojoList.get(0).getNumRecords(), usagesByLbId.get(1).size());
@@ -583,7 +583,7 @@ public class UsageRollupProcessorTest {
             }
 
             LoadBalancerMergedHostUsages = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.breakDownUsagesByLbId(LoadBalancerMergedHostUsages);
+            Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = usageRollupProcessor.groupUsagesByLbId(LoadBalancerMergedHostUsages);
 
             Assert.assertEquals(generatorPojos.size(), usagesByLbId.size());
             for(int i = 0; i < randomLBCount; i++){

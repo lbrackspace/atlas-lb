@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface UsageRollupProcessor {
-    Map<Integer, List<LoadBalancerMergedHostUsage>> breakDownUsagesByLbId(List<LoadBalancerMergedHostUsage> LoadBalancerMergedHostUsages);
+    
+    Map<Integer, List<LoadBalancerMergedHostUsage>> groupUsagesByLbId(List<LoadBalancerMergedHostUsage> LoadBalancerMergedHostUsages);
 
     /*
      *  @param hourToProcess
