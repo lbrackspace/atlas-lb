@@ -107,7 +107,7 @@ public class UsagePollerHelper {
             }
 
             //increment index by the number of hosts so that the index is only skipping to each event section, and not
-            //going through all records
+            ///going through all records
             for (int recordIndex = hostCount; recordIndex < lbHostUsageListRef.size(); recordIndex += hostCount) {
                 //Initialize data in new record to that of current host usage record.
                 LoadBalancerMergedHostUsage newLBMergedHostUsage = initializeMergedRecord(lbHostUsageListRef.get(recordIndex));
