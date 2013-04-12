@@ -1,14 +1,12 @@
-package org.openstack.atlas.service.domain.usage.entities;
-
-import org.openstack.atlas.service.domain.events.UsageEvent;
+package org.openstack.atlas.service.domain.entities;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Calendar;
 
 @javax.persistence.Entity
-@Table(name = "access_list")
-public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.entities.Entity implements Serializable {
+@Table(name = "change_my_name")
+public class ChangeMyNameUsageRecord extends Entity implements Serializable {
 
     @Column(name = "account_id")
     private int accountId;
@@ -16,39 +14,30 @@ public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.en
     @Column(name = "loadbalancer_id")
     private int loadbalancerId;
 
-    @Column(name = "host_id")
-    private int hostId;
-
     @Column(name = "bandwidth_out")
-    private long outgoingTransfer = 0L;
+    private long outgoingTransfer;
 
     @Column(name = "bandwidth_in")
-    private long incomingTransfer = 0L;
+    private long incomingTransfer;
 
     @Column(name = "bandwidth_out_ssl")
-    private long outgoingTransferSsl = 0L;
+    private long outgoingTransferSsl;
 
     @Column(name = "bandwidth_in_ssl")
-    private long incomingTransferSsl = 0L;
+    private long incomingTransferSsl;
 
     @Column(name = "concurrent_connections")
-    private long concurrentConnections = 0L;
+    private long averageConcurrentConnections;
 
     @Column(name = "concurrent_connections_ssl")
-    private long concurrentConnectionsSsl = 0L;
+    private long averageConcurrentConnectionsSsl;
 
     @Column(name = "poll_time")
     private Calendar pollTime;
 
-    @Column(name = "tags_bitmask")
-    private int tagsBitmask;
-
-    @Column(name = "num_vips")
-    private int numVips;
-
     @Column(name = "event_type")
     @Enumerated(EnumType.STRING)
-    private UsageEvent eventType;
+    private String eventType;
 
     public int getAccountId() {
         return accountId;
@@ -98,20 +87,20 @@ public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.en
         this.incomingTransferSsl = incomingTransferSsl;
     }
 
-    public long getConcurrentConnections() {
-        return concurrentConnections;
+    public long getAverageConcurrentConnections() {
+        return averageConcurrentConnections;
     }
 
-    public void setConcurrentConnections(long concurrentConnections) {
-        this.concurrentConnections = concurrentConnections;
+    public void setAverageConcurrentConnections(long averageConcurrentConnections) {
+        this.averageConcurrentConnections = averageConcurrentConnections;
     }
 
-    public long getConcurrentConnectionsSsl() {
-        return concurrentConnectionsSsl;
+    public long getAverageConcurrentConnectionsSsl() {
+        return averageConcurrentConnectionsSsl;
     }
 
-    public void setConcurrentConnectionsSsl(long concurrentConnectionsSsl) {
-        this.concurrentConnectionsSsl = concurrentConnectionsSsl;
+    public void setAverageConcurrentConnectionsSsl(long averageConcurrentConnectionsSsl) {
+        this.averageConcurrentConnectionsSsl = averageConcurrentConnectionsSsl;
     }
 
     public Calendar getPollTime() {
@@ -122,35 +111,12 @@ public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.en
         this.pollTime = pollTime;
     }
 
-    public int getTagsBitmask() {
-        return tagsBitmask;
-    }
-
-    public void setTagsBitmask(int tagsBitmask) {
-        this.tagsBitmask = tagsBitmask;
-    }
-
-    public UsageEvent getEventType() {
+    public String getEventType() {
         return eventType;
     }
 
-    public void setEventType(UsageEvent eventType) {
+    public void setEventType(String eventType) {
         this.eventType = eventType;
     }
 
-    public int getNumVips() {
-        return numVips;
-    }
-
-    public void setNumVips(int numVips) {
-        this.numVips = numVips;
-    }
-
-    public int getHostId() {
-        return hostId;
-    }
-
-    public void setHostId(int hostId) {
-        this.hostId = hostId;
-    }
 }

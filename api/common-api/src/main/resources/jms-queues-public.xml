@@ -5,6 +5,7 @@
                            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
     <import resource="db-services.xml"/>
     <import resource="db-usage-services.xml"/>
+    <import resource="db-usage-refactor-services.xml"/>
 
     <bean id="configuration" class="org.openstack.atlas.api.config.RestApiConfiguration"/>
     <!--<bean id="mgmtConfiguration" class="org.openstack.atlas.api.mgmt.config.ManagementApiConfiguration"/>-->
@@ -120,12 +121,22 @@
         <property name="sslTerminationRepository" ref="sslTerminationRepository" />
         <property name="allowedDomainsRepository" ref="allowedDomainsRepository" />
         <property name="loadBalancerStatusHistoryRepository" ref="loadBalancerStatusHistoryRepository" />
+        <property name="loadBalancerMergedHostUsageRepository" ref="loadBalancerMergedHostUsageRepository" />
+        <property name="hostUsageRefactorRepository" ref="hostUsageRefactorRepository" />
     </bean>
 
     <bean id="usageEventHelper" class="org.openstack.atlas.api.async.UsageEventHelper" scope="prototype">
         <property name="usageService" ref="usageService"/>
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
         <property name="accountUsageRepository" ref="accountUsageRepository"/>
+        <property name="virtualIpRepository" ref="virtualIpRepository"/>
+    </bean>
+
+    <!--For Usage Event Processing-->
+    <bean id="usageEventProcessor" class="org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl" scope="prototype">
+        <property name="usageService" ref="usageService"/>
+        <property name="accountUsageRepository" ref="accountUsageRepository"/>
+        <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
         <property name="virtualIpRepository" ref="virtualIpRepository"/>
     </bean>
 
@@ -146,6 +157,7 @@
         <property name="hostService" ref="hostService"/>
         <property name="sslTerminationService" ref="sslTerminationService"/>
         <property name="usageEventHelper" ref="usageEventHelper"/>
+        <property name="usageEventProcessor" ref="usageEventProcessor"/>
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
 

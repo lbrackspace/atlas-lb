@@ -20,10 +20,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class UsagePollerImpl implements UsagePoller {
-
     final Log LOG = LogFactory.getLog(UsagePollerImpl.class);
-    StingrayUsageClientImpl stingrayUsageClient = new StingrayUsageClientImpl();
+
     HostRepository hostRepository;
+    StingrayUsageClientImpl stingrayUsageClient = new StingrayUsageClientImpl();
+
+    @Required
+    public void setHostRepository(HostRepository hostRepository) {
+        this.hostRepository = hostRepository;
+    }
 
     @Override
     public void processRecords() {
@@ -37,20 +42,24 @@ public class UsagePollerImpl implements UsagePoller {
          *      c. If UNSUSPEND event encountered in host usage table disregard any earlier records unless earlier record is SUSPEND event.
          *      d. If earlier record's value is greater than current record then a reset happened.
          *          i. Record 0 Usage in Merged LB Usage table
+         *          ii. Do not modify the counter in the host usage table.
          *      e. Write SNMP data to LB Host Usage table.
          *      d. Delete records from LB Host Usage table that have an ID less than the markerID
          */
         Map<Integer, Map<Integer, SnmpUsage>> currentLBHostUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
         try {
-             currentLBHostUsage = getCurrentData();
+            currentLBHostUsage = getCurrentData();
         } catch (Exception e) {
 
         }
         Calendar deleteTimeMarker = Calendar.getInstance();
-        List<LoadBalancerHostUsage> existingLBHostUsages = getLoadBalancerHostUsageRecords();
+        //Parent key should be hostId, child key should be loadbalancerId
+        Map<Integer, List<LoadBalancerHostUsage>> existingLBHostUsages = getLoadBalancerHostUsageRecords();
         List<LoadBalancerHostUsage> newHostUsage = new ArrayList<LoadBalancerHostUsage>();
         Map<Integer, LoadBalancerMergedHostUsage> newMergedHostUsage = new HashMap<Integer, LoadBalancerMergedHostUsage>();
+        //Process events that have come in between now and last poller run
 
+        //Now parent key should be loadbalancerId, and child key hostId
         currentLBHostUsage = UsageMappingHelper.swapKeyGrouping(currentLBHostUsage);
         for (Integer loadBalancerId : currentLBHostUsage.keySet()) {
 
@@ -59,8 +68,8 @@ public class UsagePollerImpl implements UsagePoller {
     }
 
     @Override
-    public List<LoadBalancerHostUsage> getLoadBalancerHostUsageRecords() {
-        List<LoadBalancerHostUsage> existingUsages = new ArrayList<LoadBalancerHostUsage>();
+    public Map<Integer, List<LoadBalancerHostUsage>> getLoadBalancerHostUsageRecords() {
+        Map<Integer, List<LoadBalancerHostUsage>> existingUsages = new HashMap<Integer, List<LoadBalancerHostUsage>>();
         return existingUsages;
     }
 
@@ -94,10 +103,5 @@ public class UsagePollerImpl implements UsagePoller {
     @Override
     public void insertMergedRecords(List<LoadBalancerMergedHostUsage> mergedRecords) {
 
-    }
-
-    @Required
-    public void setHostRepository(HostRepository hostRepository) {
-        this.hostRepository = hostRepository;
     }
 }

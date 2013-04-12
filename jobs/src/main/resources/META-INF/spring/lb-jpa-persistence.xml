@@ -72,12 +72,12 @@
     <bean id="loadBalancerAHUSLTask" class="org.openstack.atlas.atomhopper.tasks.AtomHopperLBTask"/>
 
     <bean id="abstractUsageExecution" abstract="true"
-          class="org.openstack.atlas.usage.execution.AbstractUsageExecution">
+          class="org.openstack.atlas.usage.execution.AbstractAtomHopperUsageExecution">
         <property name="jobStateService" ref="jobStateService"/>
         <property name="threadPoolMonitorService" ref="threadPoolMonitorService"/>
         <property name="threadPoolExecutorService" ref="threadPoolExecutorService"/>
     </bean>
-    <bean id="atomHopperUsageJobExecution" class="org.openstack.atlas.usage.execution.UsageToAtomHopperExecution"
+    <bean id="atomHopperUsageJobExecution" class="org.openstack.atlas.usage.execution.UsageAtomHopperExecution"
           parent="abstractUsageExecution">
         <property name="usageRepository" ref="usageRepository"/>
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
@@ -85,7 +85,7 @@
         <property name="alertRepository" ref="alertRepository"/>
     </bean>
     <bean id="atomHopperUsageJobRetryExecution"
-          class="org.openstack.atlas.usage.execution.UsageToAtomHopperRetryExecution"
+          class="org.openstack.atlas.usage.execution.UsageAtomHopperRetryExecution"
           parent="abstractUsageExecution">
         <property name="usageRepository" ref="usageRepository"/>
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
@@ -104,8 +104,5 @@
         <property name="keepAliveTime" value="30"/>
         <property name="queueCapacity" value="300"/>
         <property name="rejectedExecutionHandler" ref="rejectedExecutionHandler"/>
-    </bean>
-    <bean id="usagePollerImpl" class="org.openstack.atlas.usagerefactor.UsagePollerImpl">
-        <property name="hostRepository" ref="hostRepository"/>
     </bean>
 </beans>

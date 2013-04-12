@@ -25,12 +25,12 @@ import org.springframework.beans.factory.annotation.Required;
 import java.util.Calendar;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public abstract class   AbstractUsageExecution implements JobInterface {
+public abstract class AbstractAtomHopperUsageExecution implements JobInterface {
 
     public abstract JobName getJobName();
     public abstract void pushUsageToAtomHopper() throws Exception;
 
-    private final Log LOG = LogFactory.getLog(UsageToAtomHopperExecution.class);
+    private final Log LOG = LogFactory.getLog(UsageAtomHopperExecution.class);
     private final Configuration configuration = new AtomHopperConfiguration();
     protected ThreadPoolExecutor poolExecutor;
     protected AtomHopperClient ahuslClient;

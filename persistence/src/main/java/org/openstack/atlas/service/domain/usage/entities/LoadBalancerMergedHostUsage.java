@@ -2,33 +2,47 @@ package org.openstack.atlas.service.domain.usage.entities;
 
 import org.openstack.atlas.service.domain.events.UsageEvent;
 
+import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Calendar;
 
-public class LoadBalancerMergedHostUsage {
+@javax.persistence.Entity
+public class LoadBalancerMergedHostUsage implements Serializable {
+    private final static long serialVersionUID = 532512317L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", unique = true, nullable = false)
     private int id;
+    @Column(name = "account_id", nullable = false)
     private int accountId;
+    @Column(name = "loadbalancer_id", nullable = false)
     private int loadbalancerId;
+    @Column(name = "outgoing_transfer", nullable = false)
     private long outgoingTransfer;
+    @Column(name = "incoming_transfer", nullable = false)
     private long incomingTransfer;
+    @Column(name = "outgoing_transfer_ssl", nullable = false)
     private long outgoingTransferSsl;
+    @Column(name = "incoming_transfer_ssl", nullable = false)
     private long incomingTransferSsl;
+    @Column(name = "concurrent_connections", nullable = false)
     private double concurrentConnections;
+    @Column(name = "concurrent_connections_ssl", nullable = false)
     private double concurrentConnectionsSsl;
+    @Column(name = "num_vips", nullable = false)
     private int numVips;
+    @Column(name = "tags_bitmask", nullable = false)
     private int tagsBitmask;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "poll_time", nullable = false)
     private Calendar pollTime;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_type", nullable = true)
     private UsageEvent eventType;
 
-    public LoadBalancerMergedHostUsage(){
-        outgoingTransfer = 0;
-        incomingTransfer = 0;
-        outgoingTransferSsl = 0;
-        incomingTransferSsl = 0;
-        concurrentConnections = 0;
-        concurrentConnectionsSsl = 0;
-        numVips = 1;
-        tagsBitmask = 0;
-        eventType = null;
+    public LoadBalancerMergedHostUsage() {
+
     }
 
     public LoadBalancerMergedHostUsage(int id, int accountId, int loadbalancerId, long outgoingTransfer,
