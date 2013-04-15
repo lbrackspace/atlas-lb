@@ -20,6 +20,9 @@ public abstract class AbstractUsageEventCollection {
     ExecutorService executorService;
     private HostRepository hostRepository;
 
+    public AbstractUsageEventCollection() {
+    }
+
     @Required
     public void setHostRepository(HostRepository hostRepository) {
         this.hostRepository = hostRepository;

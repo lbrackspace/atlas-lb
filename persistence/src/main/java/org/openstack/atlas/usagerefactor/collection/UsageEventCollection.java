@@ -22,6 +22,9 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
         super(new ArrayList<Usage>(usages));
     }
 
+    public UsageEventCollection() {
+    }
+
     @Override
     public void collectUsageRecords(List<Host> hosts, LoadBalancer lb, UsageEvent event) {
         List<Callable<SnmpUsage>> callables = new ArrayList<Callable<SnmpUsage>>();

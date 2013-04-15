@@ -29,7 +29,15 @@
     <!--Usage processing-->
     <bean id="usageRefactorService" class="org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl">
     </bean>
-    <bean id="usagePollerImpl" class="org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl">
+    <bean id="abstractUsageEventCollector"
+          class="org.openstack.atlas.usagerefactor.collection.AbstractUsageEventCollection"
+          abstract="true">
+    </bean>
+    <bean id="usageEventCollection" class="org.openstack.atlas.usagerefactor.collection.UsageEventCollection"
+          parent="abstractUsageEventCollector">
+        <property name="hostRepository" ref="hostRepository"/>
+    </bean>
+    <bean id="usageProcessor" class="org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl">
         <property name="usageService" ref="usageService"/>
         <property name="accountUsageRepository" ref="accountUsageRepository"/>
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
