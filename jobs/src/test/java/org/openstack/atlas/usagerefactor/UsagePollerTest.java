@@ -6,8 +6,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
@@ -19,14 +21,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static junit.framework.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class UsagePollerTest {
 
-    @RunWith(MockitoJUnitRunner.class)
+//    @RunWith(MockitoJUnitRunner.class)
     public static class WhenLBHostUsageTableIsEmpty {
 
         private int accountId = 5806065;
@@ -50,18 +51,17 @@ public class UsagePollerTest {
     }
 
     public static class WhenTestingBasicRequests {
-        private UsagePoller usagePoller;
+        private UsagePollerImpl usagePoller;
         private HostRepository hostRepository;
-        List<Host> hosts;
+        private StingrayUsageClient client;
+        private Map<Integer, SnmpUsage>map;
+        private List<Host> hosts;
 
         @Before
-        public void standUp() {
+        public void standUp() throws Exception {
             usagePoller = new UsagePollerImpl();
             hostRepository = mock(HostRepository.class);
-        }
-
-        @Before
-        public void createHosts() {
+            client = mock(StingrayUsageClientImpl.class);
             hosts = new ArrayList<Host>();
             Host host1 = new Host();
             host1.setId(1);
@@ -71,13 +71,33 @@ public class UsagePollerTest {
             host2.setId(2);
             host1.setName("TestHost2");
             hosts.add(host2);
+            map = new HashMap<Integer, SnmpUsage>();
+            SnmpUsage usage1 = new SnmpUsage();
+            usage1.setBytesIn(10);
+            usage1.setBytesOut(10);
+            usage1.setBytesInSsl(5);
+            usage1.setBytesOutSsl(5);
+            usage1.setConcurrentConnections(2);
+            usage1.setConcurrentConnectionsSsl(2);
+            usage1.setHostId(host1.getId());
+            SnmpUsage usage2 = new SnmpUsage();
+            usage2.setBytesIn(10);
+            usage2.setBytesOut(10);
+            usage2.setBytesInSsl(5);
+            usage2.setBytesOutSsl(5);
+            usage2.setConcurrentConnections(2);
+            usage2.setConcurrentConnectionsSsl(2);
+            usage2.setHostId(host2.getId());
+            map.put(host1.getId(), usage1);
+            map.put(host2.getId(), usage2);
+            when(hostRepository.getAllHosts()).thenReturn(hosts);
+            when(client.getHostUsage(Matchers.<Host>any())).thenReturn(map);
+            usagePoller.setHostRepository(hostRepository);
         }
 
-        @Ignore
         @Test
         public void getCurrentDataTest() throws Exception {
-            when(hostRepository.getAll()).thenReturn(hosts);
-            assertNotNull(usagePoller.getCurrentData());
+            Assert.assertNotNull(usagePoller.getCurrentData());
         }
     }
 

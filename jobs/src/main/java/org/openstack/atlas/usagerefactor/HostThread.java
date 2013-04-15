@@ -36,5 +36,5 @@ public class HostThread implements Callable {
 
     public void setResponse(HostIdUsageMap response) {
         this.response = response;
-    }
+    }   
 }
