@@ -158,9 +158,9 @@
         <property name="hostService" ref="hostService"/>
         <property name="sslTerminationService" ref="sslTerminationService"/>
         <property name="usageEventHelper" ref="usageEventHelper"/>
-        <property name="usageEventProcessor" ref="usageProcessor"/>
-        <property name="usageEventCollector" ref="usageEventCollector"/>
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
+        <property name="usageEventProcessor" ref="usageProcessor"/>
+        <property name="usageEventCollection" ref="abstractUsageEventCollector"/>
     </bean>
 
     <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>

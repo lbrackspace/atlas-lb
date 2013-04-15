@@ -88,7 +88,10 @@ public class UpdateSslTerminationListener extends BaseListener {
             LOG.warn("Couldn't retrieve load balancer concurrent connections counter.");
         }
 
-//        usageEventProcessor.processUsageEvent();
+
+        //TEMP
+//        usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_ON);
+
         try {
             LOG.info("Updating load balancer ssl termination in Zeus...");
             reverseProxyLoadBalancerService.updateSslTermination(dbLoadBalancer, queTermination);

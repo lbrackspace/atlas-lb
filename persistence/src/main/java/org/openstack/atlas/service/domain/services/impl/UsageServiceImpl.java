@@ -44,8 +44,8 @@ public class UsageServiceImpl extends BaseService implements UsageService {
         hostUsageRefactorRepository.create(loadBalancerHostUsage);
     }
 
-    public void getRecentHostUsageRecord(LoadBalancerHostUsage loadBalancerHostUsage) {
-        hostUsageRefactorRepository.create(loadBalancerHostUsage);
+    public LoadBalancerHostUsage getRecentHostUsageRecord(int lbId) {
+        return hostUsageRefactorRepository.getMostRecentUsageRecordForLbId(lbId);
     }
 
 

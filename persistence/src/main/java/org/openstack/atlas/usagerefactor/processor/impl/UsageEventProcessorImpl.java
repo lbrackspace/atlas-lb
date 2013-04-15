@@ -96,8 +96,6 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         if (usageEvent.equals(CREATE_LOADBALANCER) || usageEvent.equals(DELETE_LOADBALANCER) || usageEvent.equals(CREATE_VIRTUAL_IP) || usageEvent.equals(UsageEvent.DELETE_VIRTUAL_IP)) {
 //            createAccountUsageEntry(loadBalancer, pollTime);
         }
-
-        LOG.info(String.format("'%s' usage event processed for load balancer '%d'.", usageEvent.name(), loadBalancer.getId()));
         return newUsageEvent;
     }
 

@@ -16,4 +16,7 @@ public interface UsageService {
     void createUsageEvent(LoadBalancerUsageEvent loadBalancerUsageEvent);
 
     void createUsageEvent(LoadBalancerHostUsage loadBalancerHostUsageEvent);
+
+    LoadBalancerHostUsage getRecentHostUsageRecord(int lbId);
+
 }

@@ -1,5 +1,7 @@
 package org.openstack.atlas.usagerefactor.collection;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
@@ -16,6 +18,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 public class UsageEventCollection extends AbstractUsageEventCollection {
+    private final Log LOG = LogFactory.getLog(UsageEventCollection.class);
+
     ExecutorService executorService;
 
     public UsageEventCollection(List<Usage> usages) {
@@ -27,15 +31,19 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
 
     @Override
     public void collectUsageRecords(List<Host> hosts, LoadBalancer lb, UsageEvent event) {
+        LOG.debug("Collecting SNMP Usages for load balancer: " + lb.getId());
+
         List<Callable<SnmpUsage>> callables = new ArrayList<Callable<SnmpUsage>>();
         for (Host h : hosts) {
             callables.add(new SnmpVSCollector(h, lb));
         }
         List<Future<SnmpUsage>> futures = null;
         try {
+            LOG.debug("Executing SNMP collection tasks for loadbalancer: " + lb.getId());
             futures = executorService.invokeAll(callables);
         } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LOG.error("Im an error during invokeAll, handle me: " + e);
+
         }
         processFutures(futures, lb, event);
     }
@@ -46,9 +54,9 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
             try {
                 usages.add(f.get());
             } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                LOG.error("Im an error during futures.get, handle me: " + e);
             } catch (ExecutionException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                LOG.error("Im an error during futures.get, handle me: " + e);
             }
         }
         UsageEventProcessor eventProcessor = new UsageEventProcessorImpl();

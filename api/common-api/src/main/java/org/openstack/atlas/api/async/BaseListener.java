@@ -12,6 +12,7 @@ import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.Sync;
 import org.openstack.atlas.service.domain.pojos.ZeusEvent;
 import org.openstack.atlas.service.domain.services.*;
+import org.openstack.atlas.usagerefactor.collection.AbstractUsageEventCollection;
 import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.springframework.jms.core.JmsTemplate;
@@ -41,7 +42,7 @@ public abstract class BaseListener implements MessageListener {
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     protected UsageEventHelper usageEventHelper;
     protected UsageEventProcessor usageEventProcessor;
-    protected UsageEventCollection usageEventCollection;
+    protected AbstractUsageEventCollection usageEventCollection;
 
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
@@ -111,7 +112,7 @@ public abstract class BaseListener implements MessageListener {
         this.usageEventProcessor = usageEventProcessor;
     }
 
-    public void setUsageEventCollection(UsageEventCollection usageEventCollection) {
+    public void setUsageEventCollection(AbstractUsageEventCollection usageEventCollection) {
         this.usageEventCollection = usageEventCollection;
     }
 

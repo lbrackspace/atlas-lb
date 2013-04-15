@@ -35,15 +35,15 @@ public abstract class AbstractUsageEventCollection {
     }
 
     public void processUsageRecord(List<Host> hosts, LoadBalancer lb, UsageEvent event) {
-        //LOGGING AND STUFF HERE
-        if (!hosts.isEmpty()) {
+        LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
+        if (hosts == null || hosts.isEmpty()) {
             this.hosts = hostRepository.getAllHosts();
         } else {
             this.hosts = hosts;
         }
         this.executorService = Executors.newFixedThreadPool(hosts.size());
         collectUsageRecords(hosts, lb, event);
-        //LOGGING AND STUFF HERE
+        LOG.debug("Finished Processing Usage Records for load balancer: " + lb.getId());
     }
 
     public void processUsageRecord(LoadBalancer lb) {
