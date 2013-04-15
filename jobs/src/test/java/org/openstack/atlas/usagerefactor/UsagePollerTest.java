@@ -2,15 +2,13 @@ package org.openstack.atlas.usagerefactor;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
 
@@ -52,7 +50,7 @@ public class UsagePollerTest {
 
     public static class WhenTestingBasicRequests {
         private UsagePollerImpl usagePoller;
-        private HostRepository hostRepository;
+        private HostService hostService;
         private StingrayUsageClient client;
         private Map<Integer, SnmpUsage>map;
         private List<Host> hosts;
@@ -60,7 +58,7 @@ public class UsagePollerTest {
         @Before
         public void standUp() throws Exception {
             usagePoller = new UsagePollerImpl();
-            hostRepository = mock(HostRepository.class);
+            hostService = mock(HostService.class);
             client = mock(StingrayUsageClientImpl.class);
             hosts = new ArrayList<Host>();
             Host host1 = new Host();
@@ -90,9 +88,9 @@ public class UsagePollerTest {
             usage2.setHostId(host2.getId());
             map.put(host1.getId(), usage1);
             map.put(host2.getId(), usage2);
-            when(hostRepository.getAllHosts()).thenReturn(hosts);
+            when(hostService.getAllHosts()).thenReturn(hosts);
             when(client.getHostUsage(Matchers.<Host>any())).thenReturn(map);
-            usagePoller.setHostRepository(hostRepository);
+            usagePoller.setHostService(hostService);
         }
 
         @Test

@@ -26,6 +26,12 @@
           class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository"
           depends-on="entityManagerFactory3"/>
 
+    <!-- TODO: Get a little help from Phil and/or online -->
+    <!--<bean id="hostService" class="org.openstack.atlas.service.domain.services.impl.HostServiceImpl"/>-->
+    <!--<bean id="usageRefactorPollerImpl" class="org.openstack.atlas.usagerefactor.UsagePoller">-->
+        <!--<property name="hostService" ref="hostService" />-->
+    <!--</bean>-->
+
     <!--Usage processing-->
     <bean id="usageRefactorService" class="org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl">
     </bean>

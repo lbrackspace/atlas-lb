@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.HostIdUsageMap;
@@ -23,19 +24,12 @@ import java.util.concurrent.Future;
 public class UsagePollerImpl implements UsagePoller {
     final Log LOG = LogFactory.getLog(UsagePollerImpl.class);
 
-    HostRepository hostRepository;
+    HostService hostService;
     StingrayUsageClientImpl stingrayUsageClient = new StingrayUsageClientImpl();
 
-//    public UsagePollerImpl() {
-//    }
-//
-//    public UsagePollerImpl(HostRepository repository) {
-//        hostRepository = repository;
-//    }
-
     @Required
-    public void setHostRepository(HostRepository hostRepository) {
-        this.hostRepository = hostRepository;
+    public void setHostService(HostService hostService) {
+        this.hostService = hostService;
     }
 
     @Override
@@ -85,7 +79,7 @@ public class UsagePollerImpl implements UsagePoller {
     public Map<Integer, Map<Integer, SnmpUsage>> getCurrentData() throws Exception {
         LOG.info("Collecting Stingray data from each host...");
         Map<Integer, Map<Integer, SnmpUsage>> mergedHostsUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
-        List<Host> hostList = hostRepository.getAllHosts();
+        List<Host> hostList = hostService.getAllHosts();
         List<Callable<HostIdUsageMap>> callables = new ArrayList<Callable<HostIdUsageMap>>();
 
         ExecutorService executor = Executors.newFixedThreadPool(hostList.size());
