@@ -4,22 +4,32 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
+import org.openstack.atlas.usagerefactor.helpers.HostIdUsageMap;
 import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
 import org.springframework.beans.factory.annotation.Required;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class UsagePollerImpl implements UsagePoller {
     final Log LOG = LogFactory.getLog(UsagePollerImpl.class);
 
-    HostRepository hostRepository;
+    HostService hostService;
     StingrayUsageClientImpl stingrayUsageClient = new StingrayUsageClientImpl();
 
     @Required
-    public void setHostRepository(HostRepository hostRepository) {
-        this.hostRepository = hostRepository;
+    public void setHostService(HostService hostService) {
+        this.hostService = hostService;
     }
 
     @Override
@@ -69,14 +79,19 @@ public class UsagePollerImpl implements UsagePoller {
     public Map<Integer, Map<Integer, SnmpUsage>> getCurrentData() throws Exception {
         LOG.info("Collecting Stingray data from each host...");
         Map<Integer, Map<Integer, SnmpUsage>> mergedHostsUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
-        List<Host> hostList = hostRepository.getAllHosts();
-        ArrayList<HostThread> hostThreads = new ArrayList<HostThread>();
-        for (final Host host : hostList) {
-            hostThreads.add(new HostThread(host));
+        List<Host> hostList = hostService.getAllHosts();
+        List<Callable<HostIdUsageMap>> callables = new ArrayList<Callable<HostIdUsageMap>>();
+
+        ExecutorService executor = Executors.newFixedThreadPool(hostList.size());
+        for (Host host : hostList) {
+            callables.add(new HostThread(host));
         }
-        for (HostThread thread : hostThreads) {
-            thread.run();
+
+        List<Future<HostIdUsageMap>> futures = executor.invokeAll(callables);
+        for (Future<HostIdUsageMap> future : futures) {
+            mergedHostsUsage.put(future.get().getHostId(), future.get().getMap());
         }
+
         return mergedHostsUsage;
     }
 

@@ -23,5 +23,4 @@ public interface UsagePoller {
     public void deleteLoadBalancerHostUsageRecords(Calendar deleteTimeMarker);
     public void insertLoadBalancerUsagePerHost(List<LoadBalancerHostUsage> lbHostUsages);
     public void insertMergedRecords(List<LoadBalancerMergedHostUsage> mergedRecords);
-
 }

@@ -2,22 +2,30 @@ package org.openstack.atlas.usagerefactor;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.Matchers;
+import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static junit.framework.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class UsagePollerTest {
 
-    @RunWith(MockitoJUnitRunner.class)
+//    @RunWith(MockitoJUnitRunner.class)
     public static class WhenLBHostUsageTableIsEmpty {
 
         private int accountId = 5806065;
@@ -41,21 +49,53 @@ public class UsagePollerTest {
     }
 
     public static class WhenTestingBasicRequests {
-        private UsagePoller usagePoller;
+        private UsagePollerImpl usagePoller;
+        private HostService hostService;
+        private StingrayUsageClient client;
+        private Map<Integer, SnmpUsage>map;
+        private List<Host> hosts;
 
         @Before
-        public void standUp() {
+        public void standUp() throws Exception {
             usagePoller = new UsagePollerImpl();
+            hostService = mock(HostService.class);
+            client = mock(StingrayUsageClientImpl.class);
+            hosts = new ArrayList<Host>();
+            Host host1 = new Host();
+            host1.setId(1);
+            host1.setName("TestHost1");
+            hosts.add(host1);
+            Host host2 = new Host();
+            host2.setId(2);
+            host1.setName("TestHost2");
+            hosts.add(host2);
+            map = new HashMap<Integer, SnmpUsage>();
+            SnmpUsage usage1 = new SnmpUsage();
+            usage1.setBytesIn(10);
+            usage1.setBytesOut(10);
+            usage1.setBytesInSsl(5);
+            usage1.setBytesOutSsl(5);
+            usage1.setConcurrentConnections(2);
+            usage1.setConcurrentConnectionsSsl(2);
+            usage1.setHostId(host1.getId());
+            SnmpUsage usage2 = new SnmpUsage();
+            usage2.setBytesIn(10);
+            usage2.setBytesOut(10);
+            usage2.setBytesInSsl(5);
+            usage2.setBytesOutSsl(5);
+            usage2.setConcurrentConnections(2);
+            usage2.setConcurrentConnectionsSsl(2);
+            usage2.setHostId(host2.getId());
+            map.put(host1.getId(), usage1);
+            map.put(host2.getId(), usage2);
+            when(hostService.getAllHosts()).thenReturn(hosts);
+            when(client.getHostUsage(Matchers.<Host>any())).thenReturn(map);
+            usagePoller.setHostService(hostService);
         }
 
-        @Test
-        public void placementTest() {
-        }
-
-        @Ignore
         @Test
         public void getCurrentDataTest() throws Exception {
-            assertNotNull(usagePoller.getCurrentData());
+            Assert.assertNotNull(usagePoller.getCurrentData());
         }
     }
 
