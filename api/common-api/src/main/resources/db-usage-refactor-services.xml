@@ -13,7 +13,7 @@
 
     <bean id="transactionManager3" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory3"/>
-        <qualifier value="lb_host_usage"/>
+        <!--<qualifier value="lb_host_usage"/>-->
     </bean>
 
     <tx:annotation-driven/>

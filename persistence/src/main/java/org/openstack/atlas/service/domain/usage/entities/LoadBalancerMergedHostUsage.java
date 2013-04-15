@@ -7,13 +7,10 @@ import java.io.Serializable;
 import java.util.Calendar;
 
 @javax.persistence.Entity
-public class LoadBalancerMergedHostUsage implements Serializable {
+@Table(name = "lb_merged_host_usage")
+public class LoadBalancerMergedHostUsage extends Entity implements Serializable {
     private final static long serialVersionUID = 532512317L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", unique = true, nullable = false)
-    private int id;
     @Column(name = "account_id", nullable = false)
     private int accountId;
     @Column(name = "loadbalancer_id", nullable = false)
@@ -38,18 +35,17 @@ public class LoadBalancerMergedHostUsage implements Serializable {
     @Column(name = "poll_time", nullable = false)
     private Calendar pollTime;
     @Enumerated(EnumType.STRING)
-    @Column(name = "event_type", nullable = true)
+    @Column(name = "event_type")
     private UsageEvent eventType;
 
     public LoadBalancerMergedHostUsage() {
 
     }
 
-    public LoadBalancerMergedHostUsage(int id, int accountId, int loadbalancerId, long outgoingTransfer,
+    public LoadBalancerMergedHostUsage(int accountId, int loadbalancerId, long outgoingTransfer,
                                        long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
                                        long concurrentConnections, long concurrentConnectionsSsl,
                                        int numVips, int tagsBitmask, Calendar pollTime, UsageEvent eventType) {
-        this.id = id;
         this.accountId = accountId;
         this.loadbalancerId = loadbalancerId;
         this.outgoingTransfer = outgoingTransfer;
@@ -62,13 +58,6 @@ public class LoadBalancerMergedHostUsage implements Serializable {
         this.tagsBitmask = tagsBitmask;
         this.pollTime = pollTime;
         this.eventType = eventType;
-    }
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public int getAccountId() {

@@ -114,7 +114,7 @@ public class UsagePollerHelper {
                 ///Iterate through the current event records and compare to previous event/polled records to calculate usage.
                 for (int sameEventIndex = recordIndex; sameEventIndex < recordIndex + hostCount; sameEventIndex++) {
                     if(lbHostUsageListRef.get(sameEventIndex).getHostId() == lbHostUsageListRef.get(sameEventIndex - hostCount).getHostId()){
-                        ///calculateUsage(lbHostUsageListRef.get(sameEventIndex), lbHostUsageListRef.get(sameEventIndex - hostCount), newLBMergedHostUsage);
+                        calculateUsage(lbHostUsageListRef.get(sameEventIndex), lbHostUsageListRef.get(sameEventIndex - hostCount), newLBMergedHostUsage);
                     }
                 }
 

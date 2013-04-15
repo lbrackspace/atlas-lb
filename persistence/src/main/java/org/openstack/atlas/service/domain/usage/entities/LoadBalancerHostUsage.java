@@ -7,8 +7,9 @@ import java.io.Serializable;
 import java.util.Calendar;
 
 @javax.persistence.Entity
-@Table(name = "access_list")
-public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.entities.Entity implements Serializable {
+@Table(name = "lb_host_usage")
+public class LoadBalancerHostUsage extends Entity implements Serializable {
+    private final static long serialVersionUID = 532512316L;
 
     @Column(name = "account_id")
     private int accountId;
@@ -46,9 +47,11 @@ public class LoadBalancerHostUsage extends org.openstack.atlas.service.domain.en
     @Column(name = "num_vips")
     private int numVips;
 
-    @Column(name = "event_type")
     @Enumerated(EnumType.STRING)
+    @Column(name = "event_type")
     private UsageEvent eventType;
+
+
 
     public int getAccountId() {
         return accountId;
