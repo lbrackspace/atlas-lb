@@ -1,6 +1,5 @@
 package org.openstack.atlas.usagerefactor.helpers;
 
-import org.apache.camel.processor.loadbalancer.LoadBalancer;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
@@ -112,10 +111,10 @@ public class UsagePollerHelper {
                 //Initialize data in new record to that of current host usage record.
                 LoadBalancerMergedHostUsage newLBMergedHostUsage = initializeMergedRecord(lbHostUsageListRef.get(recordIndex));
 
-                //Iterate through the current event records and compare to previous event/polled records to calculate usage.
+                ///Iterate through the current event records and compare to previous event/polled records to calculate usage.
                 for (int sameEventIndex = recordIndex; sameEventIndex < recordIndex + hostCount; sameEventIndex++) {
                     if(lbHostUsageListRef.get(sameEventIndex).getHostId() == lbHostUsageListRef.get(sameEventIndex - hostCount).getHostId()){
-                        ///calculateUsage(lbHostUsageListRef.get(sameEventIndex), lbHostUsageListRef.get(sameEventIndex - hostCount), newLBMergedHostUsage);
+                        calculateUsage(lbHostUsageListRef.get(sameEventIndex), lbHostUsageListRef.get(sameEventIndex - hostCount), newLBMergedHostUsage);
                     }
                 }
 

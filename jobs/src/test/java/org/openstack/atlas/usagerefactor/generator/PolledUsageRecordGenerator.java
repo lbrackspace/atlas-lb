@@ -73,7 +73,6 @@ public class PolledUsageRecordGenerator {
                     eventType = eventTypes.get(j);
                 }
                 LoadBalancerMergedHostUsage LoadBalancerMergedHostUsage = new LoadBalancerMergedHostUsage(
-                        idCnt++,
                         generatorPojo.getAccountId(),
                         generatorPojo.getLoadbalancerId(),
                         outgoingTransfer,
