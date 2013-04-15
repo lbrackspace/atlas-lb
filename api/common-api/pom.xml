@@ -190,6 +190,14 @@
             <artifactId>jersey-bundle</artifactId>
             <version>1.8</version>
         </dependency>
+
+
+        <!--Added for odd javassit error 4/15/2013-->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

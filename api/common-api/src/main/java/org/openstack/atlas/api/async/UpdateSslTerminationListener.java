@@ -90,7 +90,7 @@ public class UpdateSslTerminationListener extends BaseListener {
 
 
         //TEMP
-//        usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_ON);
+        usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_ON);
 
         try {
             LOG.info("Updating load balancer ssl termination in Zeus...");

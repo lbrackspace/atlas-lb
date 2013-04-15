@@ -19,9 +19,12 @@
     <tx:annotation-driven/>
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
+    <!--DB Table: lb_host_usage-->
     <bean id="hostUsageRefactorRepository"
           class="org.openstack.atlas.service.domain.usage.repository.HostUsageRefactorRepository"
           depends-on="entityManagerFactory3"/>
+
+    <!--DB Table: lb_merged_host_usage-->
     <bean id="loadBalancerMergedHostUsageRepository"
           class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository"
           depends-on="entityManagerFactory3"/>

@@ -160,7 +160,7 @@
         <property name="usageEventHelper" ref="usageEventHelper"/>
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
         <property name="usageEventProcessor" ref="usageProcessor"/>
-        <property name="usageEventCollection" ref="abstractUsageEventCollector"/>
+        <property name="usageEventCollection" ref="usageEventCollection"/>
     </bean>
 
     <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
