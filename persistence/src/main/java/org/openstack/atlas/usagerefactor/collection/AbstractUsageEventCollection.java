@@ -8,11 +8,13 @@ import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@Component
 public abstract class AbstractUsageEventCollection {
     private final Log LOG = LogFactory.getLog(AbstractUsageEventCollection.class);
     private List<Usage> usages;

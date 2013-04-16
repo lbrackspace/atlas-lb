@@ -56,7 +56,7 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
             } catch (InterruptedException e) {
                 LOG.error("Im an error during futures.get, handle me: " + e);
             } catch (ExecutionException e) {
-                LOG.error("Im an error during futures.get, handle me: " + e);
+                LOG.error("Im an error during invokeAll, handle me: " + e);
             }
         }
         UsageEventProcessor eventProcessor = new UsageEventProcessorImpl();

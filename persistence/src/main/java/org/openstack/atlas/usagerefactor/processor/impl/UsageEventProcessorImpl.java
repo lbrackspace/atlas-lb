@@ -20,16 +20,19 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 
-import static org.openstack.atlas.service.domain.events.UsageEvent.*;
+import static org.openstack.atlas.service.domain.events.UsageEvent.CREATE_LOADBALANCER;
+import static org.openstack.atlas.service.domain.events.UsageEvent.CREATE_VIRTUAL_IP;
+import static org.openstack.atlas.service.domain.events.UsageEvent.DELETE_LOADBALANCER;
 
+@Component
 public class UsageEventProcessorImpl implements UsageEventProcessor {
     private final Log LOG = LogFactory.getLog(UsageEventProcessorImpl.class);
-
     protected UsageService usageService;
     protected UsageRefactorService usageRefactorService;
     protected VirtualIpRepository virtualIpRepository;
@@ -71,6 +74,10 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
             usageService.createUsageEvent(mapSnmpUsage(usage, loadBalancer, pollTime, usageEvent));
 
         }
+        // If account specific event then go ahead and create entry in account usage table
+        if (usageEvent.equals(CREATE_LOADBALANCER) || usageEvent.equals(DELETE_LOADBALANCER) || usageEvent.equals(CREATE_VIRTUAL_IP) || usageEvent.equals(UsageEvent.DELETE_VIRTUAL_IP)) {
+//            createAccountUsageEntry(loadBalancer, pollTime);
+        }
 
         LOG.debug(String.format("Finished processing '%s' usage event for load balancer '%d'...", usageEvent.name(), loadBalancer.getId()));
     }
@@ -90,12 +97,11 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         newUsageEvent.setConcurrentConnections(usage.getConcurrentConnections());
         newUsageEvent.setConcurrentConnectionsSsl(usage.getConcurrentConnectionsSsl());
         newUsageEvent.setNumVips(loadBalancer.getLoadBalancerJoinVipSet().size());
-        newUsageEvent.setTagsBitmask(2);
 
-        // If account specific event then go ahead and create entry in account usage table
-        if (usageEvent.equals(CREATE_LOADBALANCER) || usageEvent.equals(DELETE_LOADBALANCER) || usageEvent.equals(CREATE_VIRTUAL_IP) || usageEvent.equals(UsageEvent.DELETE_VIRTUAL_IP)) {
-//            createAccountUsageEntry(loadBalancer, pollTime);
-        }
+
+        int tags = calculateTags(loadBalancer.getAccountId(), loadBalancer.getId(), usageEvent, usageService.getRecentHostUsageRecord(loadBalancer.getId()));
+        newUsageEvent.setTagsBitmask(tags);
+
         return newUsageEvent;
     }
 
