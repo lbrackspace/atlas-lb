@@ -96,6 +96,7 @@ public class UsagePollerHelper {
             //Create reference so the accessing isn't so wonky looking.
             List<LoadBalancerHostUsage> lbHostUsageListRef = existingUsages.get(loadBalancerId);
 
+            //TODO: Implement better way of getting number of hosts
             //Not the best way to calculate number of hosts, but will suffice until a call to check the number of hosts is done
             int hostCount = 0;
             for (int recordIndex = 0; recordIndex < lbHostUsageListRef.size(); recordIndex++) {
@@ -112,9 +113,11 @@ public class UsagePollerHelper {
                 LoadBalancerMergedHostUsage newLBMergedHostUsage = initializeMergedRecord(lbHostUsageListRef.get(recordIndex));
 
                 ///Iterate through the current event records and compare to previous event/polled records to calculate usage.
-                for (int sameEventIndex = recordIndex; sameEventIndex < recordIndex + hostCount; sameEventIndex++) {
-                    if(lbHostUsageListRef.get(sameEventIndex).getHostId() == lbHostUsageListRef.get(sameEventIndex - hostCount).getHostId()){
-                        calculateUsage(lbHostUsageListRef.get(sameEventIndex), lbHostUsageListRef.get(sameEventIndex - hostCount), newLBMergedHostUsage);
+                for (int eventIndex = recordIndex; eventIndex < recordIndex + hostCount; eventIndex++) {
+                    if(lbHostUsageListRef.get(eventIndex).getHostId() == lbHostUsageListRef.get(eventIndex - hostCount).getHostId()){
+                        calculateUsage(lbHostUsageListRef.get(eventIndex),
+                                       lbHostUsageListRef.get(eventIndex - hostCount),
+                                       newLBMergedHostUsage);
                     }
                 }
 

@@ -1,5 +1,6 @@
 package org.openstack.atlas.usagerefactor;
 
+import org.apache.cxf.clustering.spring.LoadDistributorBeanDefinitionParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -7,10 +8,13 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
+import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -177,16 +181,38 @@ public class UsagePollerTest {
     }
 
     public static class WhenTestingProcessExistingEvents {
-        private UsagePoller usagePoller;
+
+        int accountId = 5806065;
+        int lbId = 1234;
+        long defOutgoing = 1100;
+        long defIncoming = 245;
+        long defOutgoingSsl = 500;
+        long defIncomingSsl = 700;
+        int defConns = 10;
+        int defConnsSsl = 20;
+        int defVips = 1;
+        int defTags = 0;
+        Calendar firstPollTime;
+        UsageEvent defaultEvent = null;
 
         @Before
-        public void standUp() {
-
+        public void standUp(){
+            firstPollTime = new GregorianCalendar(2013, 1, 1, 1, 1, 1);
         }
 
         @Test
-        public void should(){
-            int i = 1;
+        public void shouldNotReturnAnyNewRecordsToInsertWhenNoEventsTookPlace(){
+            List<LoadBalancerHostUsage> existingRecords = new ArrayList<LoadBalancerHostUsage>();
+            Map <Integer, List<LoadBalancerHostUsage>> existingRecordsMap = new HashMap<Integer, List<LoadBalancerHostUsage>>();
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 1, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
+                    defaultEvent));
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 2, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
+                    defaultEvent));
+            existingRecordsMap.put(lbId, existingRecords);
+            List<LoadBalancerMergedHostUsage> mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            Assert.assertEquals(0, mergedUsages.size());
         }
     }
 }

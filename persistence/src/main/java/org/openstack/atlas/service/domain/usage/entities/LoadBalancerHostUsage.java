@@ -51,7 +51,28 @@ public class LoadBalancerHostUsage extends Entity implements Serializable {
     @Column(name = "event_type")
     private UsageEvent eventType;
 
+    public LoadBalancerHostUsage(){
 
+    }
+
+    public LoadBalancerHostUsage(int accountId, int loadbalancerId, int hostId, long outgoingTransfer,
+                                 long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
+                                 int concurrentConnections, int concurrentConnectionsSsl, int numVips,
+                                 int tagsBitmask, Calendar pollTime, UsageEvent eventType){
+        this.accountId = accountId;
+        this.loadbalancerId = loadbalancerId;
+        this.hostId = hostId;
+        this.outgoingTransfer = outgoingTransfer;
+        this.incomingTransfer =incomingTransfer;
+        this.outgoingTransferSsl = outgoingTransferSsl;
+        this.incomingTransferSsl = incomingTransferSsl;
+        this.concurrentConnections = concurrentConnections;
+        this.concurrentConnectionsSsl = concurrentConnectionsSsl;
+        this.numVips = numVips;
+        this.tagsBitmask = tagsBitmask;
+        this.pollTime = pollTime;
+        this.eventType = eventType;
+    }
 
     public int getAccountId() {
         return accountId;
