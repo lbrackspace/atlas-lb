@@ -76,7 +76,7 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         }
         // If account specific event then go ahead and create entry in account usage table
         if (usageEvent.equals(CREATE_LOADBALANCER) || usageEvent.equals(DELETE_LOADBALANCER) || usageEvent.equals(CREATE_VIRTUAL_IP) || usageEvent.equals(UsageEvent.DELETE_VIRTUAL_IP)) {
-//            createAccountUsageEntry(loadBalancer, pollTime);
+            createAccountUsageEntry(loadBalancer, pollTime);
         }
 
         LOG.debug(String.format("Finished processing '%s' usage event for load balancer '%d'...", usageEvent.name(), loadBalancer.getId()));

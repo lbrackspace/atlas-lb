@@ -159,7 +159,6 @@
         <property name="sslTerminationService" ref="sslTerminationService"/>
         <property name="usageEventHelper" ref="usageEventHelper"/>
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
-        <property name="usageEventProcessor" ref="usageProcessor"/>
         <property name="usageEventCollection" ref="usageEventCollection"/>
     </bean>
 

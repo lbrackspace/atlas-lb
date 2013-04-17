@@ -11,7 +11,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
+import org.openstack.atlas.service.domain.entities.VirtualIp;
+import org.openstack.atlas.service.domain.entities.VirtualIpType;
 import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.AccountUsageRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
@@ -37,20 +41,23 @@ public class UsageEventProcessorTest {
 
     @RunWith(MockitoJUnitRunner.class)
     public static class WhenProcessingUsageEvents {
+        LoadBalancer lb;
         SnmpUsage snmpUsage;
         SnmpUsage snmpUsage1;
         List<SnmpUsage> snmpUsages;
-        LoadBalancer lb;
 
+        @Mock
+        VirtualIpRepository virtualIpRepository;
 
         @Mock
         UsageRefactorService usageRefactorService;
-        @Mock
-        VirtualIpRepository virtualIpRepository;
-        @Mock
-        LoadBalancerRepository loadBalancerRepository;
+
         @Mock
         AccountUsageRepository accountUsageRepository;
+
+        @Mock
+        LoadBalancerRepository loadBalancerRepository;
+
         @Mock
         HostUsageRefactorRepository hostUsageRefactorRepository;
 
@@ -77,10 +84,7 @@ public class UsageEventProcessorTest {
             snmpUsage.setBytesOutSsl(986);
             snmpUsage.setConcurrentConnections(1);
             snmpUsage.setConcurrentConnectionsSsl(3);
-
-
         }
-
 
         @Test
         public void shouldMapBasicUsageRecord() {
@@ -118,7 +122,7 @@ public class UsageEventProcessorTest {
         }
 
         @Test
-        public void shouldMapBitTags() {
+        public void shouldMapBitTagsSSLON() {
             when(usageService1.getRecentHostUsageRecord(Matchers.anyInt())).thenReturn(new LoadBalancerHostUsage());
             LoadBalancerHostUsage mappedUsage;
             Calendar now = Calendar.getInstance();
@@ -130,6 +134,179 @@ public class UsageEventProcessorTest {
             mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.SSL_ONLY_ON);
             Assert.assertEquals(BitTag.SSL.tagValue(), mappedUsage.getTagsBitmask());
 
+        }
+
+        @Test
+        public void shouldMapBitTagsCreatLB() {
+            when(usageService1.getRecentHostUsageRecord(Matchers.anyInt())).thenReturn(null);
+            LoadBalancerHostUsage mappedUsage;
+            Calendar now = Calendar.getInstance();
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.CREATE_LOADBALANCER);
+            Assert.assertEquals(0, mappedUsage.getTagsBitmask());
+        }
+
+        @Test
+        public void shouldMapBitTagsPrevUsageSSLON() {
+            LoadBalancerHostUsage usage = new LoadBalancerHostUsage();
+            usage.setTagsBitmask(BitTag.SSL.tagValue());
+
+            when(usageService1.getRecentHostUsageRecord(Matchers.anyInt())).thenReturn(usage);
+            LoadBalancerHostUsage mappedUsage;
+            Calendar now = Calendar.getInstance();
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.SSL_ONLY_ON);
+            Assert.assertEquals(BitTag.SSL.tagValue(), mappedUsage.getTagsBitmask());
+        }
+
+        @Test
+        public void shouldMapBitTagsPrevUsageSSLMixed() {
+            LoadBalancerHostUsage usage = new LoadBalancerHostUsage();
+            usage.setTagsBitmask(BitTag.SSL.tagValue());
+
+            when(usageService1.getRecentHostUsageRecord(Matchers.anyInt())).thenReturn(usage);
+            LoadBalancerHostUsage mappedUsage;
+            Calendar now = Calendar.getInstance();
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.SSL_MIXED_ON);
+            Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SSL_MIXED_MODE.tagValue(), mappedUsage.getTagsBitmask());
+        }
+
+        @Test
+        public void shouldMapServiceNetLB() throws EntityNotFoundException, DeletedStatusException {
+            Set<VirtualIp> vips = new HashSet<VirtualIp>();
+            VirtualIp vip = new VirtualIp();
+            vip.setVipType(VirtualIpType.SERVICENET);
+            vips.add(vip);
+
+            when(usageService1.getRecentHostUsageRecord(Matchers.anyInt())).thenReturn(new LoadBalancerHostUsage());
+            when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.anyInt(), Matchers.anyInt())).thenReturn(vips);
+
+            LoadBalancerHostUsage mappedUsage;
+            Calendar now = Calendar.getInstance();
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.CREATE_LOADBALANCER);
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), mappedUsage.getTagsBitmask());
+        }
+
+        @Test
+        public void shouldMapServiceNetLBSSLON() throws EntityNotFoundException, DeletedStatusException {
+            Set<VirtualIp> vips = new HashSet<VirtualIp>();
+            VirtualIp vip = new VirtualIp();
+            vip.setVipType(VirtualIpType.SERVICENET);
+            vips.add(vip);
+
+            when(usageService1.getRecentHostUsageRecord(Matchers.anyInt())).thenReturn(new LoadBalancerHostUsage());
+            when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.anyInt(), Matchers.anyInt())).thenReturn(vips);
+
+            LoadBalancerHostUsage mappedUsage;
+            Calendar now = Calendar.getInstance();
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.SSL_ONLY_ON);
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue() + BitTag.SSL.tagValue(), mappedUsage.getTagsBitmask());
+        }
+
+        @Test
+        public void shouldMapServiceNetLBSSLMixed() throws EntityNotFoundException, DeletedStatusException {
+            Set<VirtualIp> vips = new HashSet<VirtualIp>();
+            VirtualIp vip = new VirtualIp();
+            vip.setVipType(VirtualIpType.SERVICENET);
+            vips.add(vip);
+
+            when(usageService1.getRecentHostUsageRecord(Matchers.anyInt())).thenReturn(new LoadBalancerHostUsage());
+            when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.anyInt(), Matchers.anyInt())).thenReturn(vips);
+
+            LoadBalancerHostUsage mappedUsage;
+            Calendar now = Calendar.getInstance();
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.SSL_MIXED_ON);
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue() + BitTag.SSL.tagValue() + +BitTag.SSL_MIXED_MODE.tagValue(), mappedUsage.getTagsBitmask());
+        }
+
+        @Test
+        public void shouldMapDeleteServiceNetLoadBalancer() throws EntityNotFoundException, DeletedStatusException {
+            Set<VirtualIp> vips = new HashSet<VirtualIp>();
+            VirtualIp vip = new VirtualIp();
+            vip.setVipType(VirtualIpType.SERVICENET);
+            vips.add(vip);
+
+            when(usageService1.getRecentHostUsageRecord(Matchers.anyInt())).thenReturn(new LoadBalancerHostUsage());
+            when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.anyInt(), Matchers.anyInt())).thenReturn(vips);
+
+            LoadBalancerHostUsage mappedUsage;
+            Calendar now = Calendar.getInstance();
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.DELETE_LOADBALANCER);
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), mappedUsage.getTagsBitmask());
+        }
+
+        @Test
+        public void shouldMapCreateServiceNetLoadBalancer() throws EntityNotFoundException, DeletedStatusException {
+            Set<VirtualIp> vips = new HashSet<VirtualIp>();
+            VirtualIp vip = new VirtualIp();
+            vip.setVipType(VirtualIpType.SERVICENET);
+            vips.add(vip);
+
+            when(usageService1.getRecentHostUsageRecord(Matchers.anyInt())).thenReturn(new LoadBalancerHostUsage());
+            when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.anyInt(), Matchers.anyInt())).thenReturn(vips);
+
+            LoadBalancerHostUsage mappedUsage;
+            Calendar now = Calendar.getInstance();
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.CREATE_LOADBALANCER);
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), mappedUsage.getTagsBitmask());
+        }
+
+        @Test
+        public void shouldMapDeleteLoadBalancer() throws EntityNotFoundException, DeletedStatusException {
+            when(usageService1.getRecentHostUsageRecord(Matchers.anyInt())).thenReturn(new LoadBalancerHostUsage());
+
+            LoadBalancerHostUsage mappedUsage;
+            Calendar now = Calendar.getInstance();
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.DELETE_LOADBALANCER);
+            Assert.assertEquals(0, mappedUsage.getTagsBitmask());
+        }
+        @Test
+        public void shasdfouldMapDeleteLoadBalancer() throws EntityNotFoundException, DeletedStatusException {
+//            UsageEventCollection c = new UsageEventCollection();
+//            c.processUsageRecord(null, null);
         }
     }
 }
