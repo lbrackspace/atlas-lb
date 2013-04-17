@@ -37,7 +37,7 @@ public abstract class AbstractUsageEventCollection {
         this.usageEventProcessor = usageEventProcessor;
     }
 
-    public abstract void    collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor, List<Host> hosts, LoadBalancer lb, UsageEvent event);
+    public abstract void collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor, List<Host> hosts, LoadBalancer lb, UsageEvent event);
 
     public void processUsageRecord(List<Host> hosts, LoadBalancer lb, UsageEvent event) {
         LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
@@ -66,6 +66,7 @@ public abstract class AbstractUsageEventCollection {
     }
 
     public void processUsageRecord() {
-        processUsageRecord(null, null, null);
+        LOG.info("Test Request");
+//        processUsageRecord(null, null, null);
     }
 }
