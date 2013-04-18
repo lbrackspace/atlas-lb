@@ -26,6 +26,7 @@ import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRefactorRepository;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
+import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl;
 
@@ -303,10 +304,12 @@ public class UsageEventProcessorTest {
             mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.DELETE_LOADBALANCER);
             Assert.assertEquals(0, mappedUsage.getTagsBitmask());
         }
+
+
         @Test
         public void shasdfouldMapDeleteLoadBalancer() throws EntityNotFoundException, DeletedStatusException {
-//            UsageEventCollection c = new UsageEventCollection();
-//            c.processUsageRecord(null, null);
+            UsageEventCollection c = new UsageEventCollection();
+            c.processUsageRecord(null, null);
         }
     }
 }

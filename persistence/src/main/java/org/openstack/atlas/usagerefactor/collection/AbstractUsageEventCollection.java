@@ -46,9 +46,17 @@ public abstract class AbstractUsageEventCollection {
         } else {
             this.hosts = hosts;
         }
-        executorService = Executors.newFixedThreadPool(hosts.size());
-        collectUsageRecords(executorService, usageEventProcessor, hosts, lb, event);
-        LOG.debug("Finished Processing Usage Records for load balancer: " + lb.getId());
+
+        if (this.hosts != null && !this.hosts.isEmpty()) {
+
+                ExecutorService blah = Executors.newFixedThreadPool(hosts.size());
+            collectUsageRecords(executorService, usageEventProcessor, hosts, lb, event);
+            LOG.debug("Finished Processing Usage Records for load balancer: " + lb.getId());
+        }
+
+        System.out.print("No Hosts to Process!...");
+        LOG.error("This shouldnt happen...., throw error...");
+
     }
 
     public void processUsageRecord(LoadBalancer lb) {
@@ -66,7 +74,16 @@ public abstract class AbstractUsageEventCollection {
     }
 
     public void processUsageRecord() {
-        LOG.info("Test Request");
+        System.out.print("TEST PPROCESS");
 //        processUsageRecord(null, null, null);
     }
+
+    public List<Host> getHosts() {
+        return this.hosts;
+    }
+
+    public ExecutorService getExecutorService() {
+        return this.executorService;
+    }
+
 }

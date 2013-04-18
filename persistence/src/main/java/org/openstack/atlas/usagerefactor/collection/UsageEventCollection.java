@@ -17,6 +17,7 @@ import java.util.concurrent.Future;
 
 public class UsageEventCollection extends AbstractUsageEventCollection {
     private final Log LOG = LogFactory.getLog(UsageEventCollection.class);
+    private List<Future<SnmpUsage>> futures;
 
     public UsageEventCollection() {
     }
@@ -39,11 +40,11 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
             LOG.error("Im an error during invokeAll, handle me: " + e);
 
         }
-        processFutures(usageEventProcessor, futures, lb, event);
+        this.futures = futures;
+        processFutures(usageEventProcessor, lb, event);
     }
 
-    private void processFutures(UsageEventProcessor usageEventProcessor,
-                                List<Future<SnmpUsage>> futures, LoadBalancer lb, UsageEvent event) {
+    private void processFutures(UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event) {
         List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
         for (Future<SnmpUsage> f : futures) {
             try {
@@ -55,5 +56,9 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
             }
         }
         usageEventProcessor.processUsageEvent(usages, lb, event);
+    }
+
+    public List<Future<SnmpUsage>> getFutures() {
+        return this.futures;
     }
 }
