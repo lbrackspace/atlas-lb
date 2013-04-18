@@ -50,10 +50,16 @@ public class UsagePollerHelper {
         long totIncomingTransferSsl = newMergedUsage.getIncomingTransferSsl();
         long totOutgoingTransfer = newMergedUsage.getOutgoingTransfer();
         long totOutgoingTransferSsl = newMergedUsage.getOutgoingTransferSsl();
-        if (!isReset(currentRecord, previousRecord)) {
+        //Handle normal virtual server resetting
+        if (!isReset(currentRecord.getIncomingTransfer(), previousRecord.getIncomingTransfer()) &&
+            !isReset(currentRecord.getOutgoingTransfer(), previousRecord.getOutgoingTransfer())) {
             totIncomingTransfer += currentRecord.getIncomingTransfer() - previousRecord.getIncomingTransfer();
-            totIncomingTransferSsl += currentRecord.getIncomingTransferSsl() - previousRecord.getIncomingTransferSsl();
             totOutgoingTransfer += currentRecord.getOutgoingTransfer() - previousRecord.getOutgoingTransfer();
+        }
+        //Handle SSL virtual server resetting
+        if (!isReset(currentRecord.getIncomingTransferSsl(), previousRecord.getIncomingTransferSsl()) &&
+            !isReset(currentRecord.getOutgoingTransferSsl(), previousRecord.getOutgoingTransferSsl())) {
+            totIncomingTransferSsl += currentRecord.getIncomingTransferSsl() - previousRecord.getIncomingTransferSsl();
             totOutgoingTransferSsl += currentRecord.getOutgoingTransferSsl() - previousRecord.getOutgoingTransferSsl();
         }
         newMergedUsage.setIncomingTransfer(totIncomingTransfer);
@@ -74,11 +80,8 @@ public class UsagePollerHelper {
                existingUsage.getOutgoingTransferSsl() > currentUsage.getBytesOutSsl();
     }
 
-    public static boolean isReset(LoadBalancerHostUsage currentRecord, LoadBalancerHostUsage previousRecord) {
-        return previousRecord.getIncomingTransfer() > currentRecord.getIncomingTransfer() ||
-               previousRecord.getOutgoingTransfer() > currentRecord.getOutgoingTransfer() ||
-               previousRecord.getIncomingTransferSsl() > currentRecord.getIncomingTransferSsl() ||
-               previousRecord.getOutgoingTransferSsl() > currentRecord.getOutgoingTransferSsl();
+    public static boolean isReset(long currentBandwidth, long previousBandwidth) {
+        return currentBandwidth < previousBandwidth;
     }
 
     public static List<LoadBalancerMergedHostUsage> processExistingEvents(Map<Integer, List<LoadBalancerHostUsage>> existingUsages) {
@@ -125,6 +128,7 @@ public class UsagePollerHelper {
             }
 
             //Remove records that are no longer needed.
+            //Can definitely optimize this
             while(lbHostUsageListRef.size() > hostCount) {
                 lbHostUsageListRef.remove(0);
             }
