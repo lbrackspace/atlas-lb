@@ -5,6 +5,7 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostU
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -18,8 +19,8 @@ public class UsagePollerHelper {
         long totIncomingTransferSsl = 0;
         long totOutgoingTransfer = 0;
         long totOutgoingTransferSsl = 0;
-        long totConcurrentConnections = 0;
-        long totConcurrentConnectionsSsl = 0;
+        int totConcurrentConnections = 0;
+        int totConcurrentConnectionsSsl = 0;
         for (Integer hostId : currentUsages.keySet()) {
             LoadBalancerHostUsage newLBHostUsage = new LoadBalancerHostUsage();
             newLBHostUsage.setAccountId(existingUsages.get(hostId).getAccountId());
@@ -49,22 +50,21 @@ public class UsagePollerHelper {
         long totIncomingTransferSsl = newMergedUsage.getIncomingTransferSsl();
         long totOutgoingTransfer = newMergedUsage.getOutgoingTransfer();
         long totOutgoingTransferSsl = newMergedUsage.getOutgoingTransferSsl();
-        double totConcurrentConnections = newMergedUsage.getConcurrentConnections();
-        double totConcurrentConnectionsSsl = newMergedUsage.getConcurrentConnectionsSsl();
         if (!isReset(currentRecord, previousRecord)) {
             totIncomingTransfer += currentRecord.getIncomingTransfer() - previousRecord.getIncomingTransfer();
             totIncomingTransferSsl += currentRecord.getIncomingTransferSsl() - previousRecord.getIncomingTransferSsl();
             totOutgoingTransfer += currentRecord.getOutgoingTransfer() - previousRecord.getOutgoingTransfer();
             totOutgoingTransferSsl += currentRecord.getOutgoingTransferSsl() - previousRecord.getOutgoingTransferSsl();
-            totConcurrentConnections += currentRecord.getConcurrentConnections() - previousRecord.getConcurrentConnections();
-            totConcurrentConnectionsSsl += currentRecord.getConcurrentConnectionsSsl() - previousRecord.getConcurrentConnectionsSsl();
         }
         newMergedUsage.setIncomingTransfer(totIncomingTransfer);
         newMergedUsage.setIncomingTransferSsl(totIncomingTransferSsl);
         newMergedUsage.setOutgoingTransfer(totOutgoingTransfer);
         newMergedUsage.setOutgoingTransferSsl(totOutgoingTransferSsl);
-        newMergedUsage.setConcurrentConnections(totConcurrentConnections);
-        newMergedUsage.setConcurrentConnections(totConcurrentConnectionsSsl);
+        //Using concurrent connections regardless of reset since this is not a counter, only a snapshot
+        int ccs = currentRecord.getConcurrentConnections() + newMergedUsage.getConcurrentConnections();
+        int ccsSsl = currentRecord.getConcurrentConnectionsSsl() + newMergedUsage.getConcurrentConnectionsSsl();
+        newMergedUsage.setConcurrentConnections(ccs);
+        newMergedUsage.setConcurrentConnectionsSsl(ccsSsl);
     }
 
     public static boolean isReset(SnmpUsage currentUsage, LoadBalancerHostUsage existingUsage) {
@@ -99,8 +99,8 @@ public class UsagePollerHelper {
             //TODO: Implement better way of getting number of hosts
             //Not the best way to calculate number of hosts, but will suffice until a call to check the number of hosts is done
             int hostCount = 0;
-            for (int recordIndex = 0; recordIndex < lbHostUsageListRef.size(); recordIndex++) {
-                if (lbHostUsageListRef.get(recordIndex).getEventType() == null){
+            for (int recordIndex = 0; recordIndex < lbHostUsageListRef.size() ; recordIndex++) {
+                if (lbHostUsageListRef.get(recordIndex).getEventType() != null){
                     break;
                 }
                 hostCount++;
@@ -125,9 +125,8 @@ public class UsagePollerHelper {
             }
 
             //Remove records that are no longer needed.
-            int currentListSize = lbHostUsageListRef.size();
-            for (int recordIndex = 0; recordIndex < currentListSize - hostCount; recordIndex++) {
-                lbHostUsageListRef.remove(recordIndex);
+            while(lbHostUsageListRef.size() > hostCount) {
+                lbHostUsageListRef.remove(0);
             }
         }
         return newMergedEventRecords;
@@ -139,6 +138,10 @@ public class UsagePollerHelper {
         newLBMergedHostUsage.setLoadbalancerId(lbHostUsage.getLoadbalancerId());
         newLBMergedHostUsage.setNumVips(lbHostUsage.getNumVips());
         newLBMergedHostUsage.setEventType(lbHostUsage.getEventType());
+        Calendar pollTime = Calendar.getInstance();
+        pollTime.setTime(lbHostUsage.getPollTime().getTime());
+        newLBMergedHostUsage.setPollTime(pollTime);
+        newLBMergedHostUsage.setTagsBitmask(lbHostUsage.getTagsBitmask());
         return newLBMergedHostUsage;
     }
 }

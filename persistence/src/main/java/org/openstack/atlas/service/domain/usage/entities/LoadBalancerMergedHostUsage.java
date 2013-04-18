@@ -24,9 +24,9 @@ public class LoadBalancerMergedHostUsage extends Entity implements Serializable 
     @Column(name = "incoming_transfer_ssl", nullable = false)
     private long incomingTransferSsl;
     @Column(name = "concurrent_connections", nullable = false)
-    private double concurrentConnections;
+    private int concurrentConnections;
     @Column(name = "concurrent_connections_ssl", nullable = false)
-    private double concurrentConnectionsSsl;
+    private int concurrentConnectionsSsl;
     @Column(name = "num_vips", nullable = false)
     private int numVips;
     @Column(name = "tags_bitmask", nullable = false)
@@ -44,7 +44,7 @@ public class LoadBalancerMergedHostUsage extends Entity implements Serializable 
 
     public LoadBalancerMergedHostUsage(int accountId, int loadbalancerId, long outgoingTransfer,
                                        long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
-                                       long concurrentConnections, long concurrentConnectionsSsl,
+                                       int concurrentConnections, int concurrentConnectionsSsl,
                                        int numVips, int tagsBitmask, Calendar pollTime, UsageEvent eventType) {
         this.accountId = accountId;
         this.loadbalancerId = loadbalancerId;
@@ -108,19 +108,19 @@ public class LoadBalancerMergedHostUsage extends Entity implements Serializable 
         this.incomingTransferSsl = incomingTransferSsl;
     }
 
-    public double getConcurrentConnections() {
+    public int getConcurrentConnections() {
         return concurrentConnections;
     }
 
-    public void setConcurrentConnections(double concurrentConnections) {
+    public void setConcurrentConnections(int concurrentConnections) {
         this.concurrentConnections = concurrentConnections;
     }
 
-    public double getConcurrentConnectionsSsl() {
+    public int getConcurrentConnectionsSsl() {
         return concurrentConnectionsSsl;
     }
 
-    public void setConcurrentConnectionsSsl(double concurrentConnectionsSsl) {
+    public void setConcurrentConnectionsSsl(int concurrentConnectionsSsl) {
         this.concurrentConnectionsSsl = concurrentConnectionsSsl;
     }
 

@@ -194,16 +194,23 @@ public class UsagePollerTest {
         int defTags = 0;
         Calendar firstPollTime;
         UsageEvent defaultEvent = null;
+        long bandwidthIncrease = 1200;
+        long bandwidthDecrease = 1;
+        int ccIncrease = 12;
+
+        List<LoadBalancerHostUsage> existingRecords;
+        Map <Integer, List<LoadBalancerHostUsage>> existingRecordsMap;
+        List<LoadBalancerMergedHostUsage> mergedUsages;
 
         @Before
         public void standUp(){
             firstPollTime = new GregorianCalendar(2013, 1, 1, 1, 1, 1);
+            existingRecords = new ArrayList<LoadBalancerHostUsage>();
+            existingRecordsMap = new HashMap<Integer, List<LoadBalancerHostUsage>>();
         }
 
         @Test
         public void shouldNotReturnAnyNewRecordsToInsertWhenNoEventsTookPlace(){
-            List<LoadBalancerHostUsage> existingRecords = new ArrayList<LoadBalancerHostUsage>();
-            Map <Integer, List<LoadBalancerHostUsage>> existingRecordsMap = new HashMap<Integer, List<LoadBalancerHostUsage>>();
             existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 1, defOutgoing, defIncoming,
                     defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
                     defaultEvent));
@@ -211,8 +218,135 @@ public class UsagePollerTest {
                     defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
                     defaultEvent));
             existingRecordsMap.put(lbId, existingRecords);
-            List<LoadBalancerMergedHostUsage> mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
             Assert.assertEquals(0, mergedUsages.size());
+            Assert.assertEquals(1, existingRecordsMap.size());
+            Assert.assertEquals(2, existingRecordsMap.get(lbId).size());
+        }
+
+        @Test
+        public void shouldReturnMergedRecordsWithOneEventNoUsage(){
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 1, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
+                    defaultEvent));
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 2, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
+                    defaultEvent));
+            Calendar nextPollTime = Calendar.getInstance();
+            nextPollTime.setTime(firstPollTime.getTime());
+            nextPollTime.add(Calendar.MINUTE, 5);
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 1, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, nextPollTime,
+                    UsageEvent.SSL_MIXED_ON));
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 2, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, nextPollTime,
+                    UsageEvent.SSL_MIXED_ON));
+            existingRecordsMap.put(lbId, existingRecords);
+            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            Assert.assertEquals(1, mergedUsages.size());
+            Assert.assertEquals(1, existingRecordsMap.size());
+            Assert.assertEquals(2, existingRecordsMap.get(lbId).size());
+            Assert.assertEquals(0, mergedUsages.get(0).getOutgoingTransfer());
+            Assert.assertEquals(0, mergedUsages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(0, mergedUsages.get(0).getIncomingTransfer());
+            Assert.assertEquals(0, mergedUsages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(defConns*2, mergedUsages.get(0).getConcurrentConnections());
+            Assert.assertEquals(defConnsSsl*2, mergedUsages.get(0).getConcurrentConnectionsSsl());
+            Assert.assertEquals(UsageEvent.SSL_MIXED_ON, mergedUsages.get(0).getEventType());
+            Assert.assertEquals(defVips, mergedUsages.get(0).getNumVips());
+            Assert.assertEquals(defTags, mergedUsages.get(0).getTagsBitmask());
+            Assert.assertEquals(nextPollTime, mergedUsages.get(0).getPollTime());
+        }
+
+        @Test
+        public void shouldReturnMergedRecordsWithOneEventWithUsage(){
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 1, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
+                    defaultEvent));
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 2, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
+                    defaultEvent));
+            Calendar nextPollTime = Calendar.getInstance();
+            nextPollTime.setTime(firstPollTime.getTime());
+            nextPollTime.add(Calendar.MINUTE, 5);
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 1, defOutgoing + bandwidthIncrease,
+                    defIncoming + bandwidthIncrease, defOutgoingSsl + bandwidthIncrease,
+                    defIncomingSsl + bandwidthIncrease, defConns + ccIncrease, defConnsSsl + ccIncrease, defVips,
+                    defTags, nextPollTime, UsageEvent.SSL_MIXED_ON));
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 2, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, nextPollTime,
+                    UsageEvent.SSL_MIXED_ON));
+            existingRecordsMap.put(lbId, existingRecords);
+            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            Assert.assertEquals(1, mergedUsages.size());
+            Assert.assertEquals(1, existingRecordsMap.size());
+            Assert.assertEquals(2, existingRecordsMap.get(lbId).size());
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getOutgoingTransfer());
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getIncomingTransfer());
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(defConns * 2 + ccIncrease, mergedUsages.get(0).getConcurrentConnections());
+            Assert.assertEquals(defConnsSsl * 2 + ccIncrease, mergedUsages.get(0).getConcurrentConnectionsSsl());
+            Assert.assertEquals(UsageEvent.SSL_MIXED_ON, mergedUsages.get(0).getEventType());
+            Assert.assertEquals(defVips, mergedUsages.get(0).getNumVips());
+            Assert.assertEquals(defTags, mergedUsages.get(0).getTagsBitmask());
+            Assert.assertEquals(nextPollTime, mergedUsages.get(0).getPollTime());
+        }
+
+        @Test
+        public void shouldReturnMergedRecordsWithMultipleEventsWithUsage(){
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 1, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
+                    defaultEvent));
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 2, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
+                    defaultEvent));
+            Calendar secondPollTime = Calendar.getInstance();
+            secondPollTime.setTime(firstPollTime.getTime());
+            secondPollTime.add(Calendar.MINUTE, 5);
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 1, defOutgoing + bandwidthIncrease,
+                    defIncoming + bandwidthIncrease, defOutgoingSsl + bandwidthIncrease,
+                    defIncomingSsl + bandwidthIncrease, defConns + ccIncrease, defConnsSsl + ccIncrease, defVips,
+                    defTags, secondPollTime, UsageEvent.SSL_MIXED_ON));
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 2, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, secondPollTime,
+                    UsageEvent.SSL_MIXED_ON));
+            Calendar thirdPollTime = Calendar.getInstance();
+            thirdPollTime.setTime(firstPollTime.getTime());
+            thirdPollTime.add(Calendar.MINUTE, 5);
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 1, defOutgoing + bandwidthIncrease * 2,
+                    defIncoming + bandwidthIncrease * 2, defOutgoingSsl + bandwidthIncrease * 2,
+                    defIncomingSsl + bandwidthIncrease * 2, defConns + ccIncrease, defConnsSsl + ccIncrease, defVips,
+                    defTags, thirdPollTime, UsageEvent.SSL_MIXED_ON));
+            existingRecords.add(new LoadBalancerHostUsage(accountId, lbId, 2, defOutgoing, defIncoming,
+                    defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, thirdPollTime,
+                    UsageEvent.SSL_MIXED_ON));
+            existingRecordsMap.put(lbId, existingRecords);
+            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            Assert.assertEquals(2, mergedUsages.size());
+            Assert.assertEquals(1, existingRecordsMap.size());
+            Assert.assertEquals(2, existingRecordsMap.get(lbId).size());
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getOutgoingTransfer());
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getIncomingTransfer());
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(defConns * 2 + ccIncrease, mergedUsages.get(0).getConcurrentConnections());
+            Assert.assertEquals(defConnsSsl * 2 + ccIncrease, mergedUsages.get(0).getConcurrentConnectionsSsl());
+            Assert.assertEquals(UsageEvent.SSL_MIXED_ON, mergedUsages.get(0).getEventType());
+            Assert.assertEquals(defVips, mergedUsages.get(0).getNumVips());
+            Assert.assertEquals(defTags, mergedUsages.get(0).getTagsBitmask());
+            Assert.assertEquals(secondPollTime, mergedUsages.get(0).getPollTime());
+
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getOutgoingTransfer());
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getIncomingTransfer());
+            Assert.assertEquals(bandwidthIncrease, mergedUsages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(defConns * 2 + ccIncrease, mergedUsages.get(0).getConcurrentConnections());
+            Assert.assertEquals(defConnsSsl * 2 + ccIncrease, mergedUsages.get(0).getConcurrentConnectionsSsl());
+            Assert.assertEquals(UsageEvent.SSL_MIXED_ON, mergedUsages.get(0).getEventType());
+            Assert.assertEquals(defVips, mergedUsages.get(0).getNumVips());
+            Assert.assertEquals(defTags, mergedUsages.get(0).getTagsBitmask());
+            Assert.assertEquals(thirdPollTime, mergedUsages.get(0).getPollTime());
         }
     }
 }
