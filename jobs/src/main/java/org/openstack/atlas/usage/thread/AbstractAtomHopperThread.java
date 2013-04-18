@@ -128,10 +128,15 @@ public abstract class AbstractAtomHopperThread implements Runnable {
                 }
             }
 
-            LOG.info("Batch updating: " + usages.size() + " usage rows in the database...");
-            updatePushedRecords(usages);
-            LOG.info("Successfully batch updated: " + usages.size() + " usage rows in the database...");
-
+            try {
+                LOG.info("Batch updating: " + usages.size() + " usage rows in the database...");
+                updatePushedRecords(usages);
+                LOG.info("Successfully batch updated: " + usages.size() + " usage rows in the database...");
+            } catch (Exception lex) {
+                LOG.error("There was batch updating usages, number of usages affected: " + usages.size() +
+                        " Retrying because of deadlock: Exception: " + lex);
+                batchUpdateRecords();
+            }
         } catch (ConcurrentModificationException cme) {
             System.out.printf("Exception: %s\n", getExtendedStackTrace(cme));
             LOG.warn(String.format("Warning: %s\n", getExtendedStackTrace(cme)));
@@ -173,5 +178,11 @@ public abstract class AbstractAtomHopperThread implements Runnable {
         alert.setMessageName(alertName);
         alert.setMessage(alertMessage);
         alertRepository.save(alert);
+    }
+
+    private void batchUpdateRecords() {
+        LOG.info("Batch updating: " + usages.size() + " usage rows in the database...");
+        updatePushedRecords(usages);
+        LOG.info("Successfully batch updated: " + usages.size() + " usage rows in the database...");
     }
 }
