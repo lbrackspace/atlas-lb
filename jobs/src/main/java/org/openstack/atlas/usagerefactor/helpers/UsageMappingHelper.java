@@ -4,6 +4,7 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class UsageMappingHelper {

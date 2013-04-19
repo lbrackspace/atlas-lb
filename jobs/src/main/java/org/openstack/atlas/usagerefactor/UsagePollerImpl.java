@@ -5,10 +5,12 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.services.HostService;
+import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.HostIdUsageMap;
 import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
+import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.util.ArrayList;
@@ -25,11 +27,18 @@ public class UsagePollerImpl implements UsagePoller {
     final Log LOG = LogFactory.getLog(UsagePollerImpl.class);
 
     HostService hostService;
+    UsageRefactorService usageRefactorService;
+
     StingrayUsageClientImpl stingrayUsageClient = new StingrayUsageClientImpl();
 
     @Required
     public void setHostService(HostService hostService) {
         this.hostService = hostService;
+    }
+
+    @Required
+    public void setUsageRefactorService(UsageRefactorService usageRefactorService) {
+        this.usageRefactorService = usageRefactorService;
     }
 
     @Override
@@ -48,24 +57,29 @@ public class UsagePollerImpl implements UsagePoller {
          *      e. Write SNMP data to LB Host Usage table.
          *      d. Delete records from LB Host Usage table that have an ID less than the markerID
          */
+        LOG.info("Usage Poller Starting...");
+        UsagePollerHelper usagePollerHelper = new UsagePollerHelper(this.hostService.getAllHosts().size());
+        //Once currentdata is retrieved, the parent key will be hostId and the child key loadbalancerId
         Map<Integer, Map<Integer, SnmpUsage>> currentLBHostUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
         try {
             currentLBHostUsage = getCurrentData();
         } catch (Exception e) {
-
+            LOG.error("Could not get current data...\n" + e.getMessage());
         }
         Calendar deleteTimeMarker = Calendar.getInstance();
-        //Parent key should be hostId, child key should be loadbalancerId
-        Map<Integer, List<LoadBalancerHostUsage>> existingLBHostUsages = getLoadBalancerHostUsageRecords();
+        //Key is loadbalancerId
+        LOG.info("Querying database for existing load balancer host usage records...");
+        Map<Integer, List<LoadBalancerHostUsage>> existingLBHostUsages = usageRefactorService.getAllLoadBalancerHostUsages();
         List<LoadBalancerHostUsage> newHostUsage = new ArrayList<LoadBalancerHostUsage>();
-        Map<Integer, LoadBalancerMergedHostUsage> newMergedHostUsage = new HashMap<Integer, LoadBalancerMergedHostUsage>();
+
         //Process events that have come in between now and last poller run
+        List<LoadBalancerMergedHostUsage> mergedHostUsage = usagePollerHelper.processExistingEvents(existingLBHostUsages);
 
         //Now parent key should be loadbalancerId, and child key hostId
         currentLBHostUsage = UsageMappingHelper.swapKeyGrouping(currentLBHostUsage);
-        for (Integer loadBalancerId : currentLBHostUsage.keySet()) {
-
-        }
+        mergedHostUsage.addAll(usagePollerHelper.processCurrentUsage(existingLBHostUsages, currentLBHostUsage));
+        //TODO: Insert mergedHostUsage
+        //TODO: Delete records in lb_host_usage table prior to deleteTimeMarker
 
     }
 
