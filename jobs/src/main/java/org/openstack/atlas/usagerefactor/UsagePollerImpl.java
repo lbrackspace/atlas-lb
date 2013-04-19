@@ -84,12 +84,6 @@ public class UsagePollerImpl implements UsagePoller {
     }
 
     @Override
-    public Map<Integer, List<LoadBalancerHostUsage>> getLoadBalancerHostUsageRecords() {
-        Map<Integer, List<LoadBalancerHostUsage>> existingUsages = new HashMap<Integer, List<LoadBalancerHostUsage>>();
-        return existingUsages;
-    }
-
-    @Override
     public Map<Integer, Map<Integer, SnmpUsage>> getCurrentData() throws Exception {
         LOG.info("Collecting Stingray data from each host...");
         Map<Integer, Map<Integer, SnmpUsage>> mergedHostsUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
@@ -107,20 +101,5 @@ public class UsagePollerImpl implements UsagePoller {
         }
 
         return mergedHostsUsage;
-    }
-
-    @Override
-    public void deleteLoadBalancerHostUsageRecords(Calendar deleteTimeMarker) {
-
-    }
-
-    @Override
-    public void insertLoadBalancerUsagePerHost(List<LoadBalancerHostUsage> lbHostUsages) {
-
-    }
-
-    @Override
-    public void insertMergedRecords(List<LoadBalancerMergedHostUsage> mergedRecords) {
-
     }
 }
