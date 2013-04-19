@@ -42,7 +42,7 @@ public class UsagePollerImpl implements UsagePoller {
     }
 
     @Override
-    public void processRecords() {
+    public List<LoadBalancerMergedHostUsage> processRecords() {
         /*
          * 1. Query SNMP
          * 2. Query host usage table for previous records. store time as deleteTimeMarker
@@ -81,6 +81,7 @@ public class UsagePollerImpl implements UsagePoller {
         //TODO: Insert mergedHostUsage
         //TODO: Delete records in lb_host_usage table prior to deleteTimeMarker
 
+        return mergedHostUsage;
     }
 
     @Override

@@ -2,11 +2,9 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class UsageRefactorServiceImpl extends BaseService implements UsageRefactorService {
 
@@ -32,4 +30,26 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
         }
         return lbMap;
     }
+
+    @Override
+    public void batchCreateLoadBalancerHostUsages(List<LoadBalancerHostUsage> usages) {
+        hostUsageRefactorRepository.batchCreate(usages);
+    }
+
+    @Override
+    public void deleteOldLoadBalancerHostUsages(Calendar deleteTimeMarker) {
+        hostUsageRefactorRepository.deleteOldHostUsage(deleteTimeMarker);
+    }
+
+    @Override
+    public void batchCreateLoadBalancerMergedHostUsages(List<LoadBalancerMergedHostUsage> usages) {
+        loadBalancerMergedHostUsageRepository.batchCreate(usages);
+    }
+
+    @Override
+    public void batchDeleteLoadBalancerMergedHostUsages(Collection<LoadBalancerMergedHostUsage> usages) {
+        loadBalancerMergedHostUsageRepository.batchDelete(usages);
+    }
+
+
 }
