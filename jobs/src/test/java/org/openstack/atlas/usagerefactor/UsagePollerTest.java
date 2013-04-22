@@ -1,18 +1,26 @@
 package org.openstack.atlas.usagerefactor;
 
+import org.apache.camel.processor.loadbalancer.LoadBalancer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
+import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.services.HostService;
+import org.openstack.atlas.service.domain.services.UsageRefactorService;
+import org.openstack.atlas.service.domain.services.impl.HostServiceImpl;
+import org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
+import org.openstack.atlas.usagerefactor.generator.UsagePollerGenerator;
 import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
 import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -176,6 +184,7 @@ public class UsagePollerTest {
         }
     }
 
+    @RunWith(MockitoJUnitRunner.class)
     public static class WhenTestingProcessExistingEvents {
 
         int accountId = 5806065;
@@ -194,18 +203,24 @@ public class UsagePollerTest {
         long bandwidthIncrease = 1200;
         long bandwidthDecrease = 1;
         int ccIncrease = 12;
+        int numHosts = 2;
 
         List<LoadBalancerHostUsage> existingRecordsLB1;
         List<LoadBalancerHostUsage> existingRecordsLB2;
         Map <Integer, List<LoadBalancerHostUsage>> existingRecordsMap;
         List<LoadBalancerMergedHostUsage> mergedUsages;
+        UsagePollerHelper usagePollerHelper;
+
+        HostService hostService;
 
         @Before
         public void standUp(){
+            mock(HostService.class);
             firstPollTime = new GregorianCalendar(2013, 1, 1, 1, 1, 1);
             existingRecordsLB1 = new ArrayList<LoadBalancerHostUsage>();
             existingRecordsLB2 = new ArrayList<LoadBalancerHostUsage>();
             existingRecordsMap = new HashMap<Integer, List<LoadBalancerHostUsage>>();
+            usagePollerHelper = new UsagePollerHelper(numHosts);
         }
 
         //TODO: Test for when there are no existing records?
@@ -220,7 +235,7 @@ public class UsagePollerTest {
                     defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
                     defaultEvent));
             existingRecordsMap.put(lbId1, existingRecordsLB1);
-            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            mergedUsages = usagePollerHelper.processExistingEvents(existingRecordsMap);
             Assert.assertEquals(0, mergedUsages.size());
             Assert.assertEquals(1, existingRecordsMap.size());
             Assert.assertEquals(2, existingRecordsMap.get(lbId1).size());
@@ -244,7 +259,7 @@ public class UsagePollerTest {
                     defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, nextPollTime,
                     UsageEvent.SSL_MIXED_ON));
             existingRecordsMap.put(lbId1, existingRecordsLB1);
-            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            mergedUsages = usagePollerHelper.processExistingEvents(existingRecordsMap);
             Assert.assertEquals(1, mergedUsages.size());
             Assert.assertEquals(1, existingRecordsMap.size());
             Assert.assertEquals(2, existingRecordsMap.get(lbId1).size());
@@ -279,7 +294,7 @@ public class UsagePollerTest {
                     defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, nextPollTime,
                     UsageEvent.SSL_MIXED_ON));
             existingRecordsMap.put(lbId1, existingRecordsLB1);
-            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            mergedUsages = usagePollerHelper.processExistingEvents(existingRecordsMap);
             Assert.assertEquals(1, mergedUsages.size());
             Assert.assertEquals(1, existingRecordsMap.size());
             Assert.assertEquals(2, existingRecordsMap.get(lbId1).size());
@@ -314,7 +329,7 @@ public class UsagePollerTest {
                     defIncoming + bandwidthIncrease, defOutgoingSsl + bandwidthIncrease, defIncomingSsl + bandwidthIncrease,
                     defConns, defConnsSsl, defVips, defTags, nextPollTime, UsageEvent.SSL_MIXED_ON));
             existingRecordsMap.put(lbId1, existingRecordsLB1);
-            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            mergedUsages = usagePollerHelper.processExistingEvents(existingRecordsMap);
             Assert.assertEquals(1, mergedUsages.size());
             Assert.assertEquals(1, existingRecordsMap.size());
             Assert.assertEquals(2, existingRecordsMap.get(lbId1).size());
@@ -332,6 +347,7 @@ public class UsagePollerTest {
 
         @Test
         public void shouldAggregateUsageForAllHostsWithManyHosts(){
+            usagePollerHelper.setNumHosts(8);
             existingRecordsLB1.add(new LoadBalancerHostUsage(accountId, lbId1, 1, defOutgoing, defIncoming,
                     defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, firstPollTime,
                     defaultEvent));
@@ -392,7 +408,7 @@ public class UsagePollerTest {
                     defIncomingSsl + bandwidthIncrease, defConns, defConnsSsl, defVips, defTags, nextPollTime,
                     UsageEvent.SSL_MIXED_ON));
             existingRecordsMap.put(lbId1, existingRecordsLB1);
-            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            mergedUsages = usagePollerHelper.processExistingEvents(existingRecordsMap);
             Assert.assertEquals(1, mergedUsages.size());
             Assert.assertEquals(1, existingRecordsMap.size());
             Assert.assertEquals(8, existingRecordsMap.get(lbId1).size());
@@ -437,7 +453,7 @@ public class UsagePollerTest {
                     defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, thirdPollTime,
                     UsageEvent.SSL_MIXED_ON));
             existingRecordsMap.put(lbId1, existingRecordsLB1);
-            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            mergedUsages = usagePollerHelper.processExistingEvents(existingRecordsMap);
             Assert.assertEquals(2, mergedUsages.size());
             Assert.assertEquals(1, existingRecordsMap.size());
             Assert.assertEquals(2, existingRecordsMap.get(lbId1).size());
@@ -483,7 +499,7 @@ public class UsagePollerTest {
                     defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, nextPollTime,
                     UsageEvent.SSL_MIXED_ON));
             existingRecordsMap.put(lbId1, existingRecordsLB1);
-            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            mergedUsages = usagePollerHelper.processExistingEvents(existingRecordsMap);
             Assert.assertEquals(1, mergedUsages.size());
             Assert.assertEquals(1, existingRecordsMap.size());
             Assert.assertEquals(2, existingRecordsMap.get(lbId1).size());
@@ -518,7 +534,7 @@ public class UsagePollerTest {
                     defIncoming + bandwidthIncrease, defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl,
                     defVips, defTags, nextPollTime, UsageEvent.SSL_MIXED_ON));
             existingRecordsMap.put(lbId1, existingRecordsLB1);
-            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            mergedUsages = usagePollerHelper.processExistingEvents(existingRecordsMap);
             Assert.assertEquals(1, mergedUsages.size());
             Assert.assertEquals(1, existingRecordsMap.size());
             Assert.assertEquals(2, existingRecordsMap.get(lbId1).size());
@@ -553,7 +569,7 @@ public class UsagePollerTest {
                     defOutgoingSsl, defIncomingSsl, defConns, defConnsSsl, defVips, defTags, nextPollTime,
                     UsageEvent.SSL_OFF));
             existingRecordsMap.put(lbId1, existingRecordsLB1);
-            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            mergedUsages = usagePollerHelper.processExistingEvents(existingRecordsMap);
             Assert.assertEquals(1, existingRecordsMap.size());
             Assert.assertEquals(2, existingRecordsMap.get(lbId1).size());
             Assert.assertEquals(UsageEvent.SSL_OFF, existingRecordsMap.get(lbId1).get(0).getEventType());
@@ -616,12 +632,13 @@ public class UsagePollerTest {
                     UsageEvent.SSL_OFF));
             existingRecordsMap.put(lbId2, existingRecordsLB2);
 
-            mergedUsages = UsagePollerHelper.processExistingEvents(existingRecordsMap);
+            mergedUsages = usagePollerHelper.processExistingEvents(existingRecordsMap);
             Assert.assertEquals(2, mergedUsages.size());
             Assert.assertEquals(2, existingRecordsMap.size());
             Assert.assertEquals(2, existingRecordsMap.get(lbId1).size());
             Assert.assertEquals(2, existingRecordsMap.get(lbId2).size());
 
+            Assert.assertEquals(accountId, mergedUsages.get(0).getAccountId());
             Assert.assertEquals(lbId1, mergedUsages.get(0).getLoadbalancerId());
             Assert.assertEquals(0, mergedUsages.get(0).getOutgoingTransfer());
             Assert.assertEquals(0, mergedUsages.get(0).getOutgoingTransferSsl());
@@ -634,6 +651,7 @@ public class UsagePollerTest {
             Assert.assertEquals(defTags, mergedUsages.get(0).getTagsBitmask());
             Assert.assertEquals(nextPollTime, mergedUsages.get(0).getPollTime());
 
+            Assert.assertEquals(accountId, mergedUsages.get(1).getAccountId());
             Assert.assertEquals(lbId2, mergedUsages.get(1).getLoadbalancerId());
             Assert.assertEquals(0, mergedUsages.get(1).getOutgoingTransfer());
             Assert.assertEquals(0, mergedUsages.get(1).getOutgoingTransferSsl());
@@ -645,6 +663,341 @@ public class UsagePollerTest {
             Assert.assertEquals(defVips, mergedUsages.get(1).getNumVips());
             Assert.assertEquals(defTags, mergedUsages.get(1).getTagsBitmask());
             Assert.assertEquals(nextPollTime2, mergedUsages.get(1).getPollTime());
+        }
+    }
+
+    public static class WhenTestingIsReset {
+
+        private UsagePollerHelper usagePollerHelper;
+
+        @Before
+        public void standUp() {
+            usagePollerHelper = new UsagePollerHelper(2);
+        }
+
+        @Test
+        public void shouldBeResetIfCurrentBandwidthIsLessThanPrevious(){
+            long currentBandwidth = 1000;
+            long previousBandwidth = 1001;
+            Assert.assertTrue(usagePollerHelper.isReset(currentBandwidth, previousBandwidth));
+        }
+
+        @Test
+        public void shouldNotBeResetIfCurrentBandwidthIsEqualToPrevious(){
+            long currentBandwidth = 1000;
+            long previousBandwidth = 1000;
+            Assert.assertFalse(usagePollerHelper.isReset(currentBandwidth, previousBandwidth));
+        }
+
+        @Test
+        public void shouldNotBeResetIfCurrentBandwidthIsGreaterThanPrevious(){
+            long currentBandwidth = 1000;
+            long previousBandwidth = 999;
+            Assert.assertFalse(usagePollerHelper.isReset(currentBandwidth, previousBandwidth));
+        }
+
+    }
+    public static class WhenTestingCalculateCurrentUsage {
+
+        private UsagePollerHelper usagePollerHelper;
+
+        private SnmpUsage currentRecord;
+        private LoadBalancerHostUsage previousRecord;
+        private LoadBalancerMergedHostUsage newMergedRecord;
+        private Calendar previousTime;
+        private Calendar currentTime;
+        @Before
+        public void standUp() {
+            usagePollerHelper = new UsagePollerHelper(2);
+            previousTime = new GregorianCalendar(2013, 4, 10, 11, 1, 0);
+            currentTime = new GregorianCalendar(2013, 4, 10, 11, 4, 0);
+            currentRecord = new SnmpUsage();
+            currentRecord.setBytesIn(0);
+            currentRecord.setBytesInSsl(0);
+            currentRecord.setBytesOut(0);
+            currentRecord.setBytesOutSsl(0);
+            currentRecord.setConcurrentConnections(0);
+            currentRecord.setConcurrentConnectionsSsl(0);
+            currentRecord.setHostId(1);
+            currentRecord.setLoadbalancerId(111);
+            previousRecord = new LoadBalancerHostUsage(111, 111, 1, 0, 0, 0, 0, 0, 0, 1, 0, previousTime, null);
+            newMergedRecord = new LoadBalancerMergedHostUsage(111, 111, 0, 0, 0, 0, 0, 0, 1, 0, currentTime, null);
+        }
+
+        @Test
+        public void shouldStoreDifferenceOfIncomingTransferToNewMergedRecord(){
+            previousRecord.setIncomingTransfer(1000);
+            currentRecord.setBytesIn(1200);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(200, newMergedRecord.getIncomingTransfer());
+        }
+
+        @Test
+        public void shouldStoreDifferenceOfIncomingTransferSslToNewMergedRecord() {
+            previousRecord.setIncomingTransferSsl(1000);
+            currentRecord.setBytesInSsl(1200);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(200, newMergedRecord.getIncomingTransferSsl());
+        }
+
+        @Test
+        public void shouldStoreDifferenceOfOutgoingTransferToNewMergedRecord() {
+            previousRecord.setOutgoingTransfer(1000);
+            currentRecord.setBytesOut(1200);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(200, newMergedRecord.getOutgoingTransfer());
+        }
+
+        @Test
+        public void shouldStoreDifferenceOfOutgoingTransferSslToNewMergedRecord() {
+            previousRecord.setOutgoingTransferSsl(1000);
+            currentRecord.setBytesOutSsl(1200);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(200, newMergedRecord.getOutgoingTransferSsl());
+        }
+
+        @Test
+        public void shouldStoreCurrentRecordsConcurrentConnectionsToNewMergedRecord() {
+            previousRecord.setConcurrentConnections(10);
+            currentRecord.setConcurrentConnections(15);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(15, newMergedRecord.getConcurrentConnections());
+        }
+
+        @Test
+        public void shouldStoreCurrentRecordsConcurrentConnectionsSslToNewMergedRecord() {
+            previousRecord.setConcurrentConnectionsSsl(10);
+            currentRecord.setConcurrentConnectionsSsl(15);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(15, newMergedRecord.getConcurrentConnectionsSsl());
+        }
+
+        @Test
+        public void shouldStoreNoBandwidthIfResetHappenedOnNormalVirtualServer() {
+            previousRecord.setIncomingTransfer(1000);
+            currentRecord.setBytesIn(999);
+            previousRecord.setOutgoingTransfer(1000);
+            currentRecord.setBytesOut(1001);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(0, newMergedRecord.getIncomingTransfer());
+            Assert.assertEquals(0, newMergedRecord.getOutgoingTransfer());
+        }
+
+        @Test
+        public void shouldStoreNoBandwidthIfResetHappenedOnSslVirtualServer() {
+            previousRecord.setIncomingTransferSsl(1000);
+            currentRecord.setBytesInSsl(999);
+            previousRecord.setOutgoingTransferSsl(1000);
+            currentRecord.setBytesOutSsl(1001);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(0, newMergedRecord.getIncomingTransferSsl());
+            Assert.assertEquals(0, newMergedRecord.getOutgoingTransferSsl());
+        }
+
+        @Test
+        public void shouldStillStoreNormalBandwidthIfResetHappenedOnSslVirtualServer() {
+            previousRecord.setIncomingTransfer(1000);
+            currentRecord.setBytesIn(1050);
+            previousRecord.setOutgoingTransfer(1000);
+            currentRecord.setBytesOut(1100);
+            previousRecord.setIncomingTransferSsl(1000);
+            currentRecord.setBytesInSsl(999);
+            previousRecord.setOutgoingTransferSsl(1000);
+            currentRecord.setBytesOutSsl(1001);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(50, newMergedRecord.getIncomingTransfer());
+            Assert.assertEquals(100, newMergedRecord.getOutgoingTransfer());
+            Assert.assertEquals(0, newMergedRecord.getIncomingTransferSsl());
+            Assert.assertEquals(0, newMergedRecord.getOutgoingTransferSsl());
+        }
+
+        @Test
+        public void shouldStillStoreSslBandwidthIfResetHappenedOnNormalVirtualServer() {
+            previousRecord.setIncomingTransfer(1000);
+            currentRecord.setBytesIn(999);
+            previousRecord.setOutgoingTransfer(1000);
+            currentRecord.setBytesOut(1100);
+            previousRecord.setIncomingTransferSsl(1000);
+            currentRecord.setBytesInSsl(1050);
+            previousRecord.setOutgoingTransferSsl(1000);
+            currentRecord.setBytesOutSsl(1100);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(0, newMergedRecord.getIncomingTransfer());
+            Assert.assertEquals(0, newMergedRecord.getOutgoingTransfer());
+            Assert.assertEquals(50, newMergedRecord.getIncomingTransferSsl());
+            Assert.assertEquals(100, newMergedRecord.getOutgoingTransferSsl());
+        }
+    }
+
+    public static class WhenTestingCalculateExistingUsage {
+
+        private UsagePollerHelper usagePollerHelper;
+
+        private LoadBalancerHostUsage currentRecord;
+        private LoadBalancerHostUsage previousRecord;
+        private LoadBalancerMergedHostUsage newMergedRecord;
+        private Calendar previousTime;
+        private Calendar currentTime;
+
+        @Before
+        public void standUp() {
+            usagePollerHelper = new UsagePollerHelper(2);
+            previousTime = new GregorianCalendar(2013, 4, 10, 11, 1, 0);
+            currentTime = new GregorianCalendar(2013, 4, 10, 11, 4, 0);
+            currentRecord = new LoadBalancerHostUsage(111, 111, 1, 0, 0, 0, 0, 0, 0, 1, 0, currentTime, null);
+            previousRecord = new LoadBalancerHostUsage(111, 111, 1, 0, 0, 0, 0, 0, 0, 1, 0, previousTime, null);
+            newMergedRecord = new LoadBalancerMergedHostUsage(111, 111, 0, 0, 0, 0, 0, 0, 1, 0, currentTime, null);
+        }
+
+        @Test
+        public void shouldStoreDifferenceOfIncomingTransferToNewMergedRecord(){
+            previousRecord.setIncomingTransfer(1000);
+            currentRecord.setIncomingTransfer(1200);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(200, newMergedRecord.getIncomingTransfer());
+        }
+
+        @Test
+        public void shouldStoreDifferenceOfIncomingTransferSslToNewMergedRecord() {
+            previousRecord.setIncomingTransferSsl(1000);
+            currentRecord.setIncomingTransferSsl(1200);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(200, newMergedRecord.getIncomingTransferSsl());
+        }
+
+        @Test
+        public void shouldStoreDifferenceOfOutgoingTransferToNewMergedRecord() {
+            previousRecord.setOutgoingTransfer(1000);
+            currentRecord.setOutgoingTransfer(1200);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(200, newMergedRecord.getOutgoingTransfer());
+        }
+
+        @Test
+        public void shouldStoreDifferenceOfOutgoingTransferSslToNewMergedRecord() {
+            previousRecord.setOutgoingTransferSsl(1000);
+            currentRecord.setOutgoingTransferSsl(1200);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(200, newMergedRecord.getOutgoingTransferSsl());
+        }
+
+        @Test
+        public void shouldStoreCurrentRecordsConcurrentConnectionsToNewMergedRecord() {
+            previousRecord.setConcurrentConnections(10);
+            currentRecord.setConcurrentConnections(15);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(15, newMergedRecord.getConcurrentConnections());
+        }
+
+        @Test
+        public void shouldStoreCurrentRecordsConcurrentConnectionsSslToNewMergedRecord() {
+            previousRecord.setConcurrentConnectionsSsl(10);
+            currentRecord.setConcurrentConnectionsSsl(15);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(15, newMergedRecord.getConcurrentConnectionsSsl());
+        }
+
+        @Test
+        public void shouldStoreNoBandwidthIfResetHappenedOnNormalVirtualServer() {
+            previousRecord.setIncomingTransfer(1000);
+            currentRecord.setIncomingTransfer(999);
+            previousRecord.setOutgoingTransfer(1000);
+            currentRecord.setOutgoingTransfer(1001);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(0, newMergedRecord.getIncomingTransfer());
+            Assert.assertEquals(0, newMergedRecord.getOutgoingTransfer());
+        }
+
+        @Test
+        public void shouldStoreNoBandwidthIfResetHappenedOnSslVirtualServer() {
+            previousRecord.setIncomingTransferSsl(1000);
+            currentRecord.setIncomingTransferSsl(999);
+            previousRecord.setOutgoingTransferSsl(1000);
+            currentRecord.setOutgoingTransferSsl(1001);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(0, newMergedRecord.getIncomingTransferSsl());
+            Assert.assertEquals(0, newMergedRecord.getOutgoingTransferSsl());
+        }
+
+        @Test
+        public void shouldStillStoreNormalBandwidthIfResetHappenedOnSslVirtualServer() {
+            previousRecord.setIncomingTransfer(1000);
+            currentRecord.setIncomingTransfer(1050);
+            previousRecord.setOutgoingTransfer(1000);
+            currentRecord.setOutgoingTransfer(1100);
+            previousRecord.setIncomingTransferSsl(1000);
+            currentRecord.setIncomingTransferSsl(999);
+            previousRecord.setOutgoingTransferSsl(1000);
+            currentRecord.setOutgoingTransferSsl(1001);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(50, newMergedRecord.getIncomingTransfer());
+            Assert.assertEquals(100, newMergedRecord.getOutgoingTransfer());
+            Assert.assertEquals(0, newMergedRecord.getIncomingTransferSsl());
+            Assert.assertEquals(0, newMergedRecord.getOutgoingTransferSsl());
+        }
+
+        @Test
+        public void shouldStillStoreSslBandwidthIfResetHappenedOnNormalVirtualServer() {
+            previousRecord.setIncomingTransfer(1000);
+            currentRecord.setIncomingTransfer(999);
+            previousRecord.setOutgoingTransfer(1000);
+            currentRecord.setOutgoingTransfer(1100);
+            previousRecord.setIncomingTransferSsl(1000);
+            currentRecord.setIncomingTransferSsl(1050);
+            previousRecord.setOutgoingTransferSsl(1000);
+            currentRecord.setOutgoingTransferSsl(1100);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(0, newMergedRecord.getIncomingTransfer());
+            Assert.assertEquals(0, newMergedRecord.getOutgoingTransfer());
+            Assert.assertEquals(50, newMergedRecord.getIncomingTransferSsl());
+            Assert.assertEquals(100, newMergedRecord.getOutgoingTransferSsl());
+        }
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenTestingProcessRecords {
+
+        @MockitoAnnotations.Mock
+        private UsagePoller usagePoller;
+
+        @Autowired
+        @MockitoAnnotations.Mock
+        private HostService hostService;
+
+        @Autowired
+        @MockitoAnnotations.Mock
+        private UsageRefactorService usageRefactorService;
+
+        private int numHosts = 2;
+        private int numLoadBalancers = 3;
+        private Calendar firstPollTime;
+
+        private Map<Integer, Map<Integer, SnmpUsage>> currentUsage;
+
+        @Before
+        public void standUp() {
+            usagePoller = new UsagePollerImpl();
+            firstPollTime = new GregorianCalendar(2013, 4, 13, 11, 1, 0);
+            List<Host> hostList = new ArrayList<Host>();
+            for(int i = 0; i < numHosts; i++) {
+                hostList.add(new Host());
+            }
+            Map<Integer, Map<Integer, SnmpUsage>> snmpMap = UsagePollerGenerator.generateSnmpMap(numHosts, numLoadBalancers);
+            when(hostService.getAllHosts()).thenReturn(hostList);
+            try{
+                when(usagePoller.getCurrentData()).thenReturn(snmpMap);
+            }catch(Exception e){
+                
+            }
+            Map<Integer, List<LoadBalancerHostUsage>> lbHostMap =
+                    UsagePollerGenerator.generateLoadBalancerHostUsageMap(numHosts, numLoadBalancers, 1, firstPollTime);
+
+            when(usageRefactorService.getAllLoadBalancerHostUsages()).thenReturn(lbHostMap);
+        }
+
+        @Test
+        public void placeHolder(){
+            List<LoadBalancerMergedHostUsage> mergedHostUsages = usagePoller.processRecords();
         }
     }
 }

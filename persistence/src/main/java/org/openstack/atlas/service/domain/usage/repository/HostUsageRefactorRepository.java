@@ -107,8 +107,11 @@ public class HostUsageRefactorRepository {
                 numRowsDeleted, deleteTimeMarker.getTime()));
     }
 
-    public Map<Integer, List<LoadBalancerHostUsage>> getLoadBalancerHostUsageRecords() {
-        return new HashMap<Integer, List<LoadBalancerHostUsage>>();
+    public List<LoadBalancerHostUsage> getAllLoadBalancerHostUsageRecords() {
+        String queryStr = "from LoadBalancerHostUsage";
+        List<LoadBalancerHostUsage> hosts;
+        hosts = entityManager.createQuery(queryStr).getResultList();
+        return hosts;
     }
 
 }
