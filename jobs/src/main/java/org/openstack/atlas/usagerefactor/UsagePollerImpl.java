@@ -28,8 +28,7 @@ public class UsagePollerImpl implements UsagePoller {
 
     HostService hostService;
     UsageRefactorService usageRefactorService;
-
-    StingrayUsageClientImpl stingrayUsageClient = new StingrayUsageClientImpl();
+    SnmpUsageCollector snmpUsageCollector = new SnmpUsageCollectorImpl();
 
     @Required
     public void setHostService(HostService hostService) {
@@ -62,7 +61,7 @@ public class UsagePollerImpl implements UsagePoller {
         //Once currentdata is retrieved, the parent key will be hostId and the child key loadbalancerId
         Map<Integer, Map<Integer, SnmpUsage>> currentLBHostUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
         try {
-            currentLBHostUsage = getCurrentData();
+            currentLBHostUsage = snmpUsageCollector.getCurrentData();
         } catch (Exception e) {
             LOG.error("Could not get current data...\n" + e.getMessage());
         }
@@ -82,25 +81,5 @@ public class UsagePollerImpl implements UsagePoller {
         //TODO: Delete records in lb_host_usage table prior to deleteTimeMarker
 
         return mergedHostUsage;
-    }
-
-    @Override
-    public Map<Integer, Map<Integer, SnmpUsage>> getCurrentData() throws Exception {
-        LOG.info("Collecting Stingray data from each host...");
-        Map<Integer, Map<Integer, SnmpUsage>> mergedHostsUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
-        List<Host> hostList = hostService.getAllHosts();
-        List<Callable<HostIdUsageMap>> callables = new ArrayList<Callable<HostIdUsageMap>>();
-
-        ExecutorService executor = Executors.newFixedThreadPool(hostList.size());
-        for (Host host : hostList) {
-            callables.add(new HostThread(host));
-        }
-
-        List<Future<HostIdUsageMap>> futures = executor.invokeAll(callables);
-        for (Future<HostIdUsageMap> future : futures) {
-            mergedHostsUsage.put(future.get().getHostId(), future.get().getMap());
-        }
-
-        return mergedHostsUsage;
     }
 }
