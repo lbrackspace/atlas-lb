@@ -74,6 +74,7 @@ public class UsageRepository {
         LOG.info(String.format("batchUpdate() called with %d records", usages.size()));
 
         String query = generateBatchUpdateQuery(usages, isUsageUpdate);
+        LOG.info(String.format("Query for batch update: %s", query));
         entityManager.createNativeQuery(query).executeUpdate();
     }
 
