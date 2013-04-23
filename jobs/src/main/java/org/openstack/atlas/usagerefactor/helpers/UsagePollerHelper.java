@@ -93,7 +93,8 @@ public class UsagePollerHelper{
     }
 
     public List<LoadBalancerMergedHostUsage> processCurrentUsage(Map<Integer, List<LoadBalancerHostUsage>> existingUsages,
-                                                                 Map<Integer, Map<Integer, SnmpUsage>> currentUsages){
+                                                                 Map<Integer, Map<Integer, SnmpUsage>> currentUsages,
+                                                                 Calendar pollTime){
         List<LoadBalancerMergedHostUsage> mergedUsages = new ArrayList<LoadBalancerMergedHostUsage>();
         for (Integer loadbalancerId : existingUsages.keySet()) {
             if(!currentUsages.containsKey(loadbalancerId)) {
@@ -104,6 +105,8 @@ public class UsagePollerHelper{
                 continue;
             }
             LoadBalancerMergedHostUsage newMergedUsage = initializeMergedRecord(existingUsages.get(loadbalancerId).get(0));
+            newMergedUsage.setEventType(null);
+            newMergedUsage.setPollTime(pollTime);
             for (LoadBalancerHostUsage existingUsage : existingUsages.get(loadbalancerId)) {
                 calculateUsage(currentUsages.get(loadbalancerId).get(existingUsage.getHostId()), existingUsage,
                                newMergedUsage);

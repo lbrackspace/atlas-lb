@@ -65,7 +65,7 @@ public class UsagePollerImpl implements UsagePoller {
         } catch (Exception e) {
             LOG.error("Could not get current data...\n" + e.getMessage());
         }
-        Calendar deleteTimeMarker = Calendar.getInstance();
+        Calendar pollTime = Calendar.getInstance();
         //Key is loadbalancerId
         LOG.info("Querying database for existing load balancer host usage records...");
         Map<Integer, List<LoadBalancerHostUsage>> existingLBHostUsages = usageRefactorService.getAllLoadBalancerHostUsages();
@@ -76,7 +76,8 @@ public class UsagePollerImpl implements UsagePoller {
 
         //Now parent key should be loadbalancerId, and child key hostId
         currentLBHostUsage = UsageMappingHelper.swapKeyGrouping(currentLBHostUsage);
-        mergedHostUsage.addAll(usagePollerHelper.processCurrentUsage(existingLBHostUsages, currentLBHostUsage));
+        mergedHostUsage.addAll(usagePollerHelper.processCurrentUsage(existingLBHostUsages, currentLBHostUsage,
+                pollTime));
         //TODO: Insert mergedHostUsage
         //TODO: Delete records in lb_host_usage table prior to deleteTimeMarker
 
