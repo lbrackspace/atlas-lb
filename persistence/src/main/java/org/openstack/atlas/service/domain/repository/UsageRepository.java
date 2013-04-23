@@ -74,21 +74,21 @@ public class UsageRepository {
         LOG.info(String.format("batchUpdate() called with %d records", usages.size()));
 
         String query = generateBatchUpdateQuery(usages, isUsageUpdate);
-        LOG.info(String.format("Query for batch update: %s", query));
-        StringBuilder sb = new StringBuilder();
-        sb.append("usage IDS[");
-        for (Usage usage : usages) {
-            sb.append(" ").append(usage.getId()).append(",");
-        }
-        sb.append("]");
-        LOG.info(sb.toString());
+//        LOG.info(String.format("Query for batch update: %s", query));
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("usage IDS[");
+//        for (Usage usage : usages) {
+//            sb.append(" ").append(usage.getId()).append(",");
+//        }
+//        sb.append("]");
+//        LOG.info(sb.toString());
         entityManager.createNativeQuery(query).executeUpdate();
-        try {
-            Thread.sleep(30000);
-        } catch (InterruptedException e) {
-            LOG.error("We had an interrupted exception");
-            LOG.error(String.format("Problem in sleep thread: %s", e));
-        }
+//        try {
+//            Thread.sleep(30000);
+//        } catch (InterruptedException e) {
+//            LOG.error("We had an interrupted exception");
+//            LOG.error(String.format("Problem in sleep thread: %s", e));
+//        }
     }
 
     public void updatePushedRecord(Usage usageRecord) {
