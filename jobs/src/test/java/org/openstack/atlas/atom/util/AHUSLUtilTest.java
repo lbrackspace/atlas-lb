@@ -14,7 +14,7 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Calendar;
+import java.util.*;
 
 @RunWith(Enclosed.class)
 public class AHUSLUtilTest {
@@ -113,5 +113,34 @@ public class AHUSLUtilTest {
             Region region = UsageEntryFactoryImpl.mapRegion("test");
             Assert.assertEquals(Region.GLOBAL, region);
         }
+
+        @Test
+        public void shouldSortUsageList() throws NoSuchAlgorithmException {
+            List<Usage> usages = new ArrayList<Usage>();
+            Usage u1 = new Usage();
+            u1.setId(5);
+            usages.add(u1);
+            Usage u2 = new Usage();
+            u2.setId(4);
+            usages.add(u2);
+            Usage u3 = new Usage();
+            u3.setId(3);
+            usages.add(u3);
+            Usage u4 = new Usage();
+            u4.setId(2);
+            usages.add(u4);
+            Usage u5 = new Usage();
+            u5.setId(1);
+            usages.add(u5);
+            Assert.assertEquals(5, (int)usages.get(0).getId());
+
+             Collections.sort(usages, new Comparator<Usage>() {
+                 public int compare(Usage s1, Usage s2) {
+                     return s1.getId().compareTo(s2.getId());
+                 }
+             });
+            Assert.assertEquals(1, (int)usages.get(0).getId());
+        }
+
     }
 }
