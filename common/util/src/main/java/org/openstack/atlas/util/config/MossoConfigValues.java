@@ -2,60 +2,35 @@ package org.openstack.atlas.util.config;
 
 import org.openstack.atlas.cfg.ConfigurationKey;
 
-/**
- * Defines a set of public and protected configuration names and values. Used by MossoConfig.
- */
 public enum MossoConfigValues implements ConfigurationKey {
 
-    /**
-     * The alt crypto key for data cryptography
-     */
     hm_crypto_key,
-    /**
-     * The crypto key for sensitive data cryptography
-     */
     hm_crypto_key_alt,
-    /**
-     * The base url for this services public endpoint
-     */
     base_uri,
-    /**
-     * The crypto key used to encrypt the rdns_admin_passwd
-     */
     rdns_crypto_key,
-    /**
-     * The endpoint for the management dns service. Used to delete PTR records
-     */
     rdns_admin_url,
-    /**
-     * The endpoint for the public dns service. Used to delete PTR records
-     */
     rdns_public_url,
-    /**
-     * The management user for the rDNS service
-     */
     rdns_admin_user,
-    /**
-     * The base64 encrypted password for the rDNS user
-     */
     rdns_admin_passwd,
-    /**
-     * Auth management url
-     */
     auth_management_uri,
-
-    /**
-     * The Auth public endpoint
-     */
     auth_public_uri,
-
-    /**
-     * the admin auth key
-     */
     basic_auth_key,
-
-    /**
-     * The admin auth user account
-     */
-    basic_auth_user;
+    basic_auth_user,
+    ahusl_region,
+    allow_ahusl,
+    ahusl_data_center,
+    atom_hopper_endpoint,
+    ahusl_max_total_connections,
+    ahusl_time_out,
+    ahusl_max_redirects,
+    http_protocol,
+    ahusl_pool_task_count,
+    ahusl_pool_max_size,
+    ahusl_pool_core_size,
+    ahusl_pool_conn_timeout,
+    ahusl_auth_username,
+    ahusl_auth_password,
+    ahusl_log_requests,
+    ahusl_num_attempts,
+    ahusl_run_failed_entries
 }
