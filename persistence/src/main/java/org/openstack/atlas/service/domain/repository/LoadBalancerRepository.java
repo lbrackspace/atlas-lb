@@ -1022,7 +1022,7 @@ public class LoadBalancerRepository {
 
         Query query = entityManager.createQuery(
                 "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 " +
-                        "and u.numAttempts <= :numAttempts order by u.startTime asc")
+                        "and u.numAttempts <= :numAttempts order by u.id asc")
                 .setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
 
         usageList = query.getResultList();
