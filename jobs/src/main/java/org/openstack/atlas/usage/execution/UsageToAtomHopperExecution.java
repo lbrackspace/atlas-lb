@@ -14,9 +14,7 @@ import org.openstack.atlas.usage.ExecutionUtilities;
 import org.openstack.atlas.usage.thread.UsageThread;
 import org.springframework.beans.factory.annotation.Required;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class UsageToAtomHopperExecution extends AbstractUsageExecution {
     private final Log LOG = LogFactory.getLog(UsageToAtomHopperExecution.class);
@@ -56,6 +54,13 @@ public class UsageToAtomHopperExecution extends AbstractUsageExecution {
                 .getUsageNeedsPushed(AtomHopperUtil.getStartCal(), AtomHopperUtil.getNow(), NUM_ATTEMPTS);
 
         if (!allUsages.isEmpty()) {
+            //Sort usages...
+            Collections.sort(allUsages, new Comparator<Usage>() {
+                public int compare(Usage s1, Usage s2) {
+                    return s1.getId().compareTo(s2.getId());
+                }
+            });
+
             BatchAction<Usage> batchAction = new BatchAction<Usage>() {
                 public void execute(Collection<Usage> allUsages) throws Exception {
                     executeTasks(allUsages);
