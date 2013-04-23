@@ -502,22 +502,26 @@ public class UsagePollerTest {
         public void shouldCreateCreateCorrectAmountOfMergedRecordsForNLoadBalancers(){
             List<LoadBalancerMergedHostUsage> mergedHostUsages = usagePoller.processRecords();
             Assert.assertEquals(9, mergedHostUsages.size());
+
+            //Events are processed first in order by load balancer.
             Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 1, mergedHostUsages.get(0).getLoadbalancerId());
             Assert.assertEquals(UsageEvent.CREATE_VIRTUAL_IP, mergedHostUsages.get(0).getEventType());
             Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 1, mergedHostUsages.get(1).getLoadbalancerId());
             Assert.assertEquals(UsageEvent.DELETE_VIRTUAL_IP, mergedHostUsages.get(1).getEventType());
-            Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 1, mergedHostUsages.get(2).getLoadbalancerId());
-            Assert.assertNull(mergedHostUsages.get(2).getEventType());
+            Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 2, mergedHostUsages.get(2).getLoadbalancerId());
+            Assert.assertEquals(UsageEvent.SSL_ONLY_ON, mergedHostUsages.get(2).getEventType());
             Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 2, mergedHostUsages.get(3).getLoadbalancerId());
-            Assert.assertEquals(UsageEvent.SSL_ONLY_ON, mergedHostUsages.get(3).getEventType());
-            Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 2, mergedHostUsages.get(4).getLoadbalancerId());
+            Assert.assertEquals(UsageEvent.SSL_MIXED_ON, mergedHostUsages.get(3).getEventType());
+            Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 3, mergedHostUsages.get(4).getLoadbalancerId());
             Assert.assertEquals(UsageEvent.SSL_MIXED_ON, mergedHostUsages.get(4).getEventType());
-            Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 2, mergedHostUsages.get(5).getLoadbalancerId());
-            Assert.assertNull(mergedHostUsages.get(5).getEventType());
-            Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 3, mergedHostUsages.get(6).getLoadbalancerId());
-            Assert.assertEquals(UsageEvent.SSL_MIXED_ON, mergedHostUsages.get(6).getEventType());
-            Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 3, mergedHostUsages.get(7).getLoadbalancerId());
-            Assert.assertEquals(UsageEvent.SSL_OFF, mergedHostUsages.get(7).getEventType());
+            Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 3, mergedHostUsages.get(5).getLoadbalancerId());
+            Assert.assertEquals(UsageEvent.SSL_OFF, mergedHostUsages.get(5).getEventType());
+
+            //Then the current usage is processed where event type should be null
+            Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 1, mergedHostUsages.get(6).getLoadbalancerId());
+            Assert.assertNull(mergedHostUsages.get(6).getEventType());
+            Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 2, mergedHostUsages.get(7).getLoadbalancerId());
+            Assert.assertNull(mergedHostUsages.get(7).getEventType());
             Assert.assertEquals(FIRST_LB_ID + NUM_LBS - 3, mergedHostUsages.get(8).getLoadbalancerId());
             Assert.assertNull(mergedHostUsages.get(8).getEventType());
         }
@@ -525,11 +529,23 @@ public class UsagePollerTest {
         @Test
         public void shouldStoreCorrectPollTimeOnMergedRecords(){
             List<LoadBalancerMergedHostUsage> mergedHostUsages = usagePoller.processRecords();
-            Calendar compTime = Calendar.getInstance();
-            compTime.setTime(firstPollTime.getTime());
-            Assert.assertEquals(compTime, mergedHostUsages.get(0).getPollTime());
-            Assert.assertEquals(compTime, mergedHostUsages.get(1).getPollTime());
-            Assert.assertEquals(compTime, mergedHostUsages.get(2).getPollTime());
+            Calendar compTime1 = Calendar.getInstance();
+            compTime1.setTime(firstPollTime.getTime());
+            compTime1.add(Calendar.MINUTE, 1);
+            Calendar compTime2 = Calendar.getInstance();
+            compTime2.setTime(firstPollTime.getTime());
+            compTime2.add(Calendar.MINUTE, 2);
+            Assert.assertEquals(compTime1, mergedHostUsages.get(0).getPollTime());
+            Assert.assertEquals(compTime2, mergedHostUsages.get(1).getPollTime());
+            Assert.assertEquals(compTime1, mergedHostUsages.get(2).getPollTime());
+            Assert.assertEquals(compTime2, mergedHostUsages.get(3).getPollTime());
+            Assert.assertEquals(compTime1, mergedHostUsages.get(4).getPollTime());
+            Assert.assertEquals(compTime2, mergedHostUsages.get(5).getPollTime());
+            Assert.assertTrue(mergedHostUsages.get(6).getPollTime().compareTo(compTime2) < 0);
+            Assert.assertTrue(mergedHostUsages.get(7).getPollTime().compareTo(compTime2) < 0);
+            Assert.assertTrue(mergedHostUsages.get(8).getPollTime().compareTo(compTime2) < 0);
+            Assert.assertTrue(mergedHostUsages.get(6).getPollTime().equals(mergedHostUsages.get(7).getPollTime()) &&
+                              mergedHostUsages.get(6).getPollTime().equals(mergedHostUsages.get(8).getPollTime()));
         }
 
         @Test
@@ -538,31 +554,55 @@ public class UsagePollerTest {
             lbHostMap.get(123).get(1).setOutgoingTransfer(100);
             lbHostMap.get(123).get(0).setIncomingTransfer(1200);
             lbHostMap.get(123).get(1).setIncomingTransfer(200);
+            lbHostMap.get(123).get(0).setOutgoingTransferSsl(1000);
+            lbHostMap.get(123).get(1).setOutgoingTransferSsl(100);
+            lbHostMap.get(123).get(0).setIncomingTransferSsl(1200);
+            lbHostMap.get(123).get(1).setIncomingTransferSsl(200);
 
             lbHostMap.get(124).get(0).setOutgoingTransfer(3000);
             lbHostMap.get(124).get(1).setOutgoingTransfer(1200);
             lbHostMap.get(124).get(0).setIncomingTransfer(1500);
             lbHostMap.get(124).get(1).setIncomingTransfer(250);
+            lbHostMap.get(124).get(0).setOutgoingTransferSsl(3000);
+            lbHostMap.get(124).get(1).setOutgoingTransferSsl(1200);
+            lbHostMap.get(124).get(0).setIncomingTransferSsl(1500);
+            lbHostMap.get(124).get(1).setIncomingTransferSsl(250);
 
             lbHostMap.get(125).get(0).setOutgoingTransfer(1700);
             lbHostMap.get(125).get(1).setOutgoingTransfer(50);
             lbHostMap.get(125).get(0).setIncomingTransfer(2000);
             lbHostMap.get(125).get(1).setIncomingTransfer(300);
+            lbHostMap.get(125).get(0).setOutgoingTransferSsl(1700);
+            lbHostMap.get(125).get(1).setOutgoingTransferSsl(50);
+            lbHostMap.get(125).get(0).setIncomingTransferSsl(2000);
+            lbHostMap.get(125).get(1).setIncomingTransferSsl(300);
 
             snmpMap.get(1).get(123).setBytesOut(1100);
             snmpMap.get(2).get(123).setBytesOut(300);
             snmpMap.get(1).get(123).setBytesIn(1300);
             snmpMap.get(2).get(123).setBytesIn(300);
+            snmpMap.get(1).get(123).setBytesOutSsl(1200);
+            snmpMap.get(2).get(123).setBytesOutSsl(400);
+            snmpMap.get(1).get(123).setBytesInSsl(1350);
+            snmpMap.get(2).get(123).setBytesInSsl(350);
 
             snmpMap.get(1).get(124).setBytesOut(4000);
             snmpMap.get(2).get(124).setBytesOut(2000);
             snmpMap.get(1).get(124).setBytesIn(2000);
             snmpMap.get(2).get(124).setBytesIn(500);
+            snmpMap.get(1).get(124).setBytesOutSsl(3500);
+            snmpMap.get(2).get(124).setBytesOutSsl(1700);
+            snmpMap.get(1).get(124).setBytesInSsl(2200);
+            snmpMap.get(2).get(124).setBytesInSsl(800);
 
             snmpMap.get(1).get(125).setBytesOut(1700);
             snmpMap.get(2).get(125).setBytesOut(51);
             snmpMap.get(1).get(125).setBytesIn(2001);
             snmpMap.get(2).get(125).setBytesIn(301);
+            snmpMap.get(1).get(125).setBytesOutSsl(1701);
+            snmpMap.get(2).get(125).setBytesOutSsl(51);
+            snmpMap.get(1).get(125).setBytesInSsl(2002);
+            snmpMap.get(2).get(125).setBytesInSsl(302);
 
             List<LoadBalancerMergedHostUsage> mergedHostUsages = usagePoller.processRecords();
             Assert.assertEquals(3, mergedHostUsages.size());
@@ -571,14 +611,20 @@ public class UsagePollerTest {
                     case FIRST_LB_ID:
                         Assert.assertEquals(300, mergedHostUsage.getOutgoingTransfer());
                         Assert.assertEquals(200, mergedHostUsage.getIncomingTransfer());
+                        Assert.assertEquals(500, mergedHostUsage.getOutgoingTransferSsl());
+                        Assert.assertEquals(300, mergedHostUsage.getIncomingTransferSsl());
                         break;
                     case FIRST_LB_ID + 1:
                         Assert.assertEquals(1800, mergedHostUsage.getOutgoingTransfer());
                         Assert.assertEquals(750, mergedHostUsage.getIncomingTransfer());
+                        Assert.assertEquals(1000, mergedHostUsage.getOutgoingTransferSsl());
+                        Assert.assertEquals(1250, mergedHostUsage.getIncomingTransferSsl());
                         break;
                     case FIRST_LB_ID + 2:
                         Assert.assertEquals(1, mergedHostUsage.getOutgoingTransfer());
                         Assert.assertEquals(2, mergedHostUsage.getIncomingTransfer());
+                        Assert.assertEquals(2, mergedHostUsage.getOutgoingTransferSsl());
+                        Assert.assertEquals(4, mergedHostUsage.getIncomingTransferSsl());
                         break;
                     default:
                         Assert.assertTrue("There was a load balancer id that was not handled.", false);
@@ -592,31 +638,55 @@ public class UsagePollerTest {
             lbHostMap.get(123).get(1).setOutgoingTransfer(100);
             lbHostMap.get(123).get(0).setIncomingTransfer(1200);
             lbHostMap.get(123).get(1).setIncomingTransfer(200);
+            lbHostMap.get(123).get(0).setOutgoingTransferSsl(1000);
+            lbHostMap.get(123).get(1).setOutgoingTransferSsl(100);
+            lbHostMap.get(123).get(0).setIncomingTransferSsl(1200);
+            lbHostMap.get(123).get(1).setIncomingTransferSsl(200);
 
             lbHostMap.get(124).get(0).setOutgoingTransfer(3000);
             lbHostMap.get(124).get(1).setOutgoingTransfer(1200);
             lbHostMap.get(124).get(0).setIncomingTransfer(1500);
             lbHostMap.get(124).get(1).setIncomingTransfer(250);
+            lbHostMap.get(124).get(0).setOutgoingTransferSsl(3000);
+            lbHostMap.get(124).get(1).setOutgoingTransferSsl(1200);
+            lbHostMap.get(124).get(0).setIncomingTransferSsl(1500);
+            lbHostMap.get(124).get(1).setIncomingTransferSsl(250);
 
             lbHostMap.get(125).get(0).setOutgoingTransfer(1700);
             lbHostMap.get(125).get(1).setOutgoingTransfer(50);
             lbHostMap.get(125).get(0).setIncomingTransfer(2000);
             lbHostMap.get(125).get(1).setIncomingTransfer(300);
+            lbHostMap.get(125).get(0).setOutgoingTransferSsl(1700);
+            lbHostMap.get(125).get(1).setOutgoingTransferSsl(50);
+            lbHostMap.get(125).get(0).setIncomingTransferSsl(2000);
+            lbHostMap.get(125).get(1).setIncomingTransferSsl(300);
 
             snmpMap.get(1).get(123).setBytesOut(999);
             snmpMap.get(2).get(123).setBytesOut(300);
             snmpMap.get(1).get(123).setBytesIn(1300);
             snmpMap.get(2).get(123).setBytesIn(199);
+            snmpMap.get(1).get(123).setBytesOutSsl(1200);
+            snmpMap.get(2).get(123).setBytesOutSsl(400);
+            snmpMap.get(1).get(123).setBytesInSsl(1350);
+            snmpMap.get(2).get(123).setBytesInSsl(350);
 
             snmpMap.get(1).get(124).setBytesOut(1500);
             snmpMap.get(2).get(124).setBytesOut(2000);
             snmpMap.get(1).get(124).setBytesIn(2000);
             snmpMap.get(2).get(124).setBytesIn(500);
+            snmpMap.get(1).get(124).setBytesOutSsl(2900);
+            snmpMap.get(2).get(124).setBytesOutSsl(2500);
+            snmpMap.get(1).get(124).setBytesInSsl(2100);
+            snmpMap.get(2).get(124).setBytesInSsl(400);
 
             snmpMap.get(1).get(125).setBytesOut(1700);
             snmpMap.get(2).get(125).setBytesOut(51);
             snmpMap.get(1).get(125).setBytesIn(2001);
             snmpMap.get(2).get(125).setBytesIn(301);
+            snmpMap.get(1).get(125).setBytesOutSsl(1699);
+            snmpMap.get(2).get(125).setBytesOutSsl(50);
+            snmpMap.get(1).get(125).setBytesInSsl(2000);
+            snmpMap.get(2).get(125).setBytesInSsl(299);
 
             List<LoadBalancerMergedHostUsage> mergedHostUsages = usagePoller.processRecords();
             Assert.assertEquals(3, mergedHostUsages.size());
@@ -625,14 +695,20 @@ public class UsagePollerTest {
                     case FIRST_LB_ID:
                         Assert.assertEquals(0, mergedHostUsage.getOutgoingTransfer());
                         Assert.assertEquals(0, mergedHostUsage.getIncomingTransfer());
+                        Assert.assertEquals(500, mergedHostUsage.getOutgoingTransferSsl());
+                        Assert.assertEquals(300, mergedHostUsage.getIncomingTransferSsl());
                         break;
                     case FIRST_LB_ID + 1:
                         Assert.assertEquals(800, mergedHostUsage.getOutgoingTransfer());
                         Assert.assertEquals(250, mergedHostUsage.getIncomingTransfer());
+                        Assert.assertEquals(1300, mergedHostUsage.getOutgoingTransferSsl());
+                        Assert.assertEquals(150, mergedHostUsage.getIncomingTransferSsl());
                         break;
                     case FIRST_LB_ID + 2:
                         Assert.assertEquals(1, mergedHostUsage.getOutgoingTransfer());
                         Assert.assertEquals(2, mergedHostUsage.getIncomingTransfer());
+                        Assert.assertEquals(0, mergedHostUsage.getOutgoingTransferSsl());
+                        Assert.assertEquals(0, mergedHostUsage.getIncomingTransferSsl());
                         break;
                     default:
                         Assert.assertTrue("There was a load balancer id that was not handled.", false);
@@ -750,5 +826,6 @@ public class UsagePollerTest {
                 }
             }
         }
+
     }
 }
