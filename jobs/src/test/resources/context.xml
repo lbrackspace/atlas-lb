@@ -30,7 +30,6 @@
 
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory" />
-        <qualifier value="lb_merged_host_usage"/>
-        <qualifier value="lb_host_usage"/>
+        <qualifier value="usage"/>
     </bean>
 </beans>
