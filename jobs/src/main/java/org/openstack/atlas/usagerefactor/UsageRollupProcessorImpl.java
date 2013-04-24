@@ -30,15 +30,15 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     }
 
     @Override
-    public List<Usage> processRecords(List<LoadBalancerMergedHostUsage> LoadBalancerMergedHostUsages, Calendar hourToProcess) {
+    public List<Usage> processRecords(List<LoadBalancerMergedHostUsage> loadBalancerMergedHostUsages, Calendar hourToProcess) {
         List<Usage> processedRecords = new ArrayList<Usage>();
 
-        if (LoadBalancerMergedHostUsages == null || LoadBalancerMergedHostUsages.isEmpty()) {
+        if (loadBalancerMergedHostUsages == null || loadBalancerMergedHostUsages.isEmpty()) {
             return processedRecords;
         }
 
 
-        Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = groupUsagesByLbId(LoadBalancerMergedHostUsages);
+        Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = groupUsagesByLbId(loadBalancerMergedHostUsages);
 
         for (Integer lbId : usagesByLbId.keySet()) {
             List<LoadBalancerMergedHostUsage> LBMergedHostRecordsForLoadBalancer = usagesByLbId.get(lbId);
