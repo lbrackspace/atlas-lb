@@ -118,8 +118,8 @@
     <bean id="lbUsageRollupJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="lbUsageRollupJob"/>
         <!-- run every hour -->
-        <!--<property name="cronExpression" value="0 0 */1 * * ?"/>-->
-        <property name="cronExpression" value="0 */10 * * * ?"/>
+        <property name="cronExpression" value="0 0 */1 * * ?"/>
+        <!--<property name="cronExpression" value="0 */10 * * * ?"/>-->
     </bean>
 
 
