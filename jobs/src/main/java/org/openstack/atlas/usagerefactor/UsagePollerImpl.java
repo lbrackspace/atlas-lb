@@ -66,10 +66,11 @@ public class UsagePollerImpl implements UsagePoller {
             LOG.error("Could not get current data...\n" + e.getMessage());
         }
         Calendar pollTime = Calendar.getInstance();
-        //Key is loadbalancerId
+
         LOG.info("Querying database for existing load balancer host usage records...");
+        List<LoadBalancerHostUsage> newLBHostUsages = new ArrayList<LoadBalancerHostUsage>();
+        //Key is loadbalancerId
         Map<Integer, List<LoadBalancerHostUsage>> existingLBHostUsages = usageRefactorService.getAllLoadBalancerHostUsages();
-        List<LoadBalancerHostUsage> newHostUsage = new ArrayList<LoadBalancerHostUsage>();
 
         //Process events that have come in between now and last poller run
         List<LoadBalancerMergedHostUsage> mergedHostUsage = usagePollerHelper.processExistingEvents(existingLBHostUsages);
@@ -78,8 +79,14 @@ public class UsagePollerImpl implements UsagePoller {
         currentLBHostUsage = UsageMappingHelper.swapKeyGrouping(currentLBHostUsage);
         mergedHostUsage.addAll(usagePollerHelper.processCurrentUsage(existingLBHostUsages, currentLBHostUsage,
                 pollTime));
-        //TODO: Insert mergedHostUsage
-        //TODO: Delete records in lb_host_usage table prior to deleteTimeMarker
+
+        //Insert all merged records into merged host usage table
+        usageRefactorService.batchCreateLoadBalancerMergedHostUsages(mergedHostUsage);
+
+        //TODO: Insert SnmpUsage into lb host usage table
+
+        //Delete all records prior to the time stored
+        usageRefactorService.deleteOldLoadBalancerHostUsages(pollTime);
 
         return mergedHostUsage;
     }

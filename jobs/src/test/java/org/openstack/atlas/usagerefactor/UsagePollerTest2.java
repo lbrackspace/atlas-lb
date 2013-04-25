@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
     file for more information.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
+//@RunWith(MockitoJUnitRunner.class)
 @ContextConfiguration(locations = {"classpath:context.xml"})
 @TestExecutionListeners({
         DependencyInjectionTestExecutionListener.class,
@@ -45,9 +46,39 @@ public class UsagePollerTest2 {
     @Autowired
     private HostUsageRefactorRepository hostUsageRefactorRepository;
 
-    @Before
-    public void standUp() {
+    @MockitoAnnotations.Mock
+    private HostService hostService;
 
+    @MockitoAnnotations.Mock
+    private SnmpUsageCollector snmpUsageCollector;
+
+    @InjectMocks
+    private UsagePoller usagePoller = new UsagePollerImpl();
+
+    @MockitoAnnotations.Mock
+    private UsageRefactorService usageRefactorService;
+
+    @MockitoAnnotations.Mock
+    private HostRepository hostRepository;
+
+    private static final int NUM_HOSTS = 2;
+    private static final int NUM_LBS = 3;
+    private static final int FIRST_LB_ID = 123;
+    private Calendar firstPollTime = new GregorianCalendar(2013, 4, 13, 11, 1, 0);;
+
+    private List<Host> hostList;
+    private Map<Integer, Map<Integer, SnmpUsage>> snmpMap;
+    private Map<Integer, List<LoadBalancerHostUsage>> lbHostMap;
+
+    @Before
+    public void standUp() throws Exception {
+//        hostList = UsagePollerGenerator.generateHosts(NUM_HOSTS);
+//        snmpMap = UsagePollerGenerator.generateSnmpMap(NUM_HOSTS, NUM_LBS);
+//        lbHostMap = UsagePollerGenerator.generateLoadBalancerHostUsageMap(NUM_HOSTS,
+//                        NUM_LBS, 1, firstPollTime, FIRST_LB_ID);
+//        when(hostService.getAllHosts()).thenReturn(hostList);
+//        when(hostRepository.getAllHosts()).thenReturn(hostList);
+//        when(snmpUsageCollector.getCurrentData()).thenReturn(snmpMap);
     }
 
     @Test
