@@ -32,10 +32,6 @@ public class UsageRefactorServiceImplTest {
             hostUsageRefactorRepository = mock(HostUsageRefactorRepository.class);
             loadBalancerMergedHostUsageRepository = mock(LoadBalancerMergedHostUsageRepository.class);
             usageRefactorService = new UsageRefactorServiceImpl();
-        }
-
-        @Before
-        public void buildMockResponses() {
             hostUsageList = new ArrayList<LoadBalancerHostUsage>();
             mergedUsageList = new ArrayList<LoadBalancerMergedHostUsage>();
             when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords()).thenReturn(hostUsageList);
