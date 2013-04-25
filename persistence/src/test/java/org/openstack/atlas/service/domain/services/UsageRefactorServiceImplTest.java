@@ -1,6 +1,5 @@
 package org.openstack.atlas.service.domain.services;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -14,6 +13,7 @@ import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHos
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -44,7 +44,7 @@ public class UsageRefactorServiceImplTest {
 
         @Test
         public void placeHolder() {
-            Assert.assertFalse(false);
+            assertTrue(hostUsageList.size() == 0);
         }
     }
 }
