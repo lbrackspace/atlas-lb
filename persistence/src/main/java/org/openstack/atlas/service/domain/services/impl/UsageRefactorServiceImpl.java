@@ -3,9 +3,11 @@ package org.openstack.atlas.service.domain.services.impl;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Service
 public class UsageRefactorServiceImpl extends BaseService implements UsageRefactorService {
 
     @Override

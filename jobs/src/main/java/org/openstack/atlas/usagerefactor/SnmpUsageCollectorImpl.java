@@ -4,7 +4,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.services.HostService;
-import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.usagerefactor.helpers.HostIdUsageMap;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -18,7 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class SnmpUsageCollectorImpl implements SnmpUsageCollector {
-    final Log LOG = LogFactory.getLog(UsagePollerImpl.class);
+    final Log LOG = LogFactory.getLog(UsageProcessor.class);
 
     HostService hostService;
 
