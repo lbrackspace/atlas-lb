@@ -22,6 +22,7 @@ import org.openstack.atlas.service.domain.usage.repository.HostUsageRefactorRepo
 import org.openstack.atlas.usagerefactor.generator.UsagePollerGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestContextManager;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
@@ -42,6 +43,8 @@ import static org.mockito.Mockito.when;
         DependencyInjectionTestExecutionListener.class,
         DbUnitTestExecutionListener.class})
 public class UsagePollerTest2 {
+
+    private TestContextManager testContextManager;
 
     @Autowired
     private HostUsageRefactorRepository hostUsageRefactorRepository;
@@ -64,7 +67,7 @@ public class UsagePollerTest2 {
     private static final int NUM_HOSTS = 2;
     private static final int NUM_LBS = 3;
     private static final int FIRST_LB_ID = 123;
-    private Calendar firstPollTime = new GregorianCalendar(2013, 4, 13, 11, 1, 0);;
+    private Calendar firstPollTime = new GregorianCalendar(2013, 4, 13, 11, 1, 0);
 
     private List<Host> hostList;
     private Map<Integer, Map<Integer, SnmpUsage>> snmpMap;
@@ -72,18 +75,20 @@ public class UsagePollerTest2 {
 
     @Before
     public void standUp() throws Exception {
-//        hostList = UsagePollerGenerator.generateHosts(NUM_HOSTS);
-//        snmpMap = UsagePollerGenerator.generateSnmpMap(NUM_HOSTS, NUM_LBS);
-//        lbHostMap = UsagePollerGenerator.generateLoadBalancerHostUsageMap(NUM_HOSTS,
-//                        NUM_LBS, 1, firstPollTime, FIRST_LB_ID);
-//        when(hostService.getAllHosts()).thenReturn(hostList);
-//        when(hostRepository.getAllHosts()).thenReturn(hostList);
-//        when(snmpUsageCollector.getCurrentData()).thenReturn(snmpMap);
+        MockitoAnnotations.initMocks(this);
+        hostList = UsagePollerGenerator.generateHosts(NUM_HOSTS);
+        snmpMap = UsagePollerGenerator.generateSnmpMap(NUM_HOSTS, NUM_LBS);
+        lbHostMap = UsagePollerGenerator.generateLoadBalancerHostUsageMap(NUM_HOSTS,
+                        NUM_LBS, 1, firstPollTime, FIRST_LB_ID);
+        when(hostService.getAllHosts()).thenReturn(hostList);
+        when(hostRepository.getAllHosts()).thenReturn(hostList);
+        when(snmpUsageCollector.getCurrentData()).thenReturn(snmpMap);
     }
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/case3.xml")
     public void test() {
+        List<LoadBalancerMergedHostUsage> mergedUsages = usagePoller.processRecords();
         int i = 0;
     }
 }
