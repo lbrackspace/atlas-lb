@@ -26,7 +26,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -145,7 +144,7 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
                 + "_" + usageRecord.getId()
                 + "_" + usageRecord.getLoadbalancer().getId()
                 + "_" + atomHopperConfig.getString(AtomHopperConfigurationKeys.ahusl_region)
-                + "_" + Calendar.getInstance();
+                + "_" + usageRecord.getEntryVersion();
     }
 
     private UsageEntry buildEntry() {
@@ -208,6 +207,8 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
             return Region.ORD;
         } else if (configRegion.equals("LON")) {
             return Region.LON;
+        } else if (configRegion.equals("SYD")) {
+            return Region.SYD;
         } else {
             LOG.error("Region could not be mapped from config, using default");
             return Region.GLOBAL;
