@@ -1,5 +1,4 @@
-<?xml version="1.0"?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:event="http://docs.rackspace.com/core/event" xmlns:xerces="http://xerces.apache.org" xmlns:saxon="http://saxon.sf.net/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://docs.rackspace.com/core/event">
 
     <complexType name="EventBase" abstract="true">
@@ -139,7 +138,9 @@
                     <annotation>
                         <documentation>
                             <html:p>
-                                UTC, ISO Format start time.
+                                UTC, ISO Format start time. startTime is 
+                                inclusive (i.e. the event occurred starting 
+                                at the startTime, not after).
                             </html:p>
                         </documentation>
                     </annotation>
@@ -150,7 +151,10 @@
                             <html:p>
                                 UTC, ISO Format end time.  For an EXISTs
                                 event, the startTime and endTime reflect the
-                                event duriation for the resource instance.
+                                event duriation for the resource instance. 
+                                endTime is exclusive (i.e. the event occurred
+                                up to, but not during the endTime).
+                                endTime must come after startTime.
                             </html:p>
                         </documentation>
                     </annotation>
@@ -230,6 +234,7 @@
             <enumeration value="UNSUSPEND"/>
             <enumeration value="UP"/>
             <enumeration value="DOWN"/>
+            <enumeration value="INFO"/>
             <enumeration value="EXTENDED"/>
         </restriction>
     </simpleType>
@@ -271,6 +276,7 @@
             <enumeration value="IAD"/>
             <enumeration value="LON"/>
             <enumeration value="ORD"/>
+            <enumeration value="SYD"/>
         </restriction>
     </simpleType>
 
@@ -301,6 +307,7 @@
             <enumeration value="LON1"/>
             <enumeration value="LON3"/>
             <enumeration value="ORD1"/>
+            <enumeration value="SYD2"/>
         </restriction>
     </simpleType>
 
