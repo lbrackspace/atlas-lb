@@ -5,10 +5,12 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.services.HostService;
+import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.HostIdUsageMap;
 import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
+import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.util.ArrayList;
@@ -25,15 +27,21 @@ public class UsagePollerImpl implements UsagePoller {
     final Log LOG = LogFactory.getLog(UsagePollerImpl.class);
 
     HostService hostService;
-    StingrayUsageClientImpl stingrayUsageClient = new StingrayUsageClientImpl();
+    UsageRefactorService usageRefactorService;
+    SnmpUsageCollector snmpUsageCollector = new SnmpUsageCollectorImpl();
 
     @Required
     public void setHostService(HostService hostService) {
         this.hostService = hostService;
     }
 
+    @Required
+    public void setUsageRefactorService(UsageRefactorService usageRefactorService) {
+        this.usageRefactorService = usageRefactorService;
+    }
+
     @Override
-    public void processRecords() {
+    public List<LoadBalancerMergedHostUsage> processRecords() {
         /*
          * 1. Query SNMP
          * 2. Query host usage table for previous records. store time as deleteTimeMarker
@@ -48,65 +56,38 @@ public class UsagePollerImpl implements UsagePoller {
          *      e. Write SNMP data to LB Host Usage table.
          *      d. Delete records from LB Host Usage table that have an ID less than the markerID
          */
+        LOG.info("Usage Poller Starting...");
+        UsagePollerHelper usagePollerHelper = new UsagePollerHelper(this.hostService.getAllHosts().size());
+        //Once currentdata is retrieved, the parent key will be hostId and the child key loadbalancerId
         Map<Integer, Map<Integer, SnmpUsage>> currentLBHostUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
         try {
-            currentLBHostUsage = getCurrentData();
+            currentLBHostUsage = snmpUsageCollector.getCurrentData();
         } catch (Exception e) {
-
+            LOG.error("Could not get current data...\n" + e.getMessage());
         }
-        Calendar deleteTimeMarker = Calendar.getInstance();
-        //Parent key should be hostId, child key should be loadbalancerId
-        Map<Integer, List<LoadBalancerHostUsage>> existingLBHostUsages = getLoadBalancerHostUsageRecords();
-        List<LoadBalancerHostUsage> newHostUsage = new ArrayList<LoadBalancerHostUsage>();
-        Map<Integer, LoadBalancerMergedHostUsage> newMergedHostUsage = new HashMap<Integer, LoadBalancerMergedHostUsage>();
+        Calendar pollTime = Calendar.getInstance();
+
+        LOG.info("Querying database for existing load balancer host usage records...");
+        List<LoadBalancerHostUsage> newLBHostUsages = new ArrayList<LoadBalancerHostUsage>();
+        //Key is loadbalancerId
+        Map<Integer, List<LoadBalancerHostUsage>> existingLBHostUsages = usageRefactorService.getAllLoadBalancerHostUsages();
+
         //Process events that have come in between now and last poller run
+        List<LoadBalancerMergedHostUsage> mergedHostUsage = usagePollerHelper.processExistingEvents(existingLBHostUsages);
 
         //Now parent key should be loadbalancerId, and child key hostId
         currentLBHostUsage = UsageMappingHelper.swapKeyGrouping(currentLBHostUsage);
-        for (Integer loadBalancerId : currentLBHostUsage.keySet()) {
+        mergedHostUsage.addAll(usagePollerHelper.processCurrentUsage(existingLBHostUsages, currentLBHostUsage,
+                pollTime));
 
-        }
+        //Insert all merged records into merged host usage table
+        usageRefactorService.batchCreateLoadBalancerMergedHostUsages(mergedHostUsage);
 
-    }
+        //TODO: Insert SnmpUsage into lb host usage table
 
-    @Override
-    public Map<Integer, List<LoadBalancerHostUsage>> getLoadBalancerHostUsageRecords() {
-        Map<Integer, List<LoadBalancerHostUsage>> existingUsages = new HashMap<Integer, List<LoadBalancerHostUsage>>();
-        return existingUsages;
-    }
+        //Delete all records prior to the time stored
+        usageRefactorService.deleteOldLoadBalancerHostUsages(pollTime);
 
-    @Override
-    public Map<Integer, Map<Integer, SnmpUsage>> getCurrentData() throws Exception {
-        LOG.info("Collecting Stingray data from each host...");
-        Map<Integer, Map<Integer, SnmpUsage>> mergedHostsUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
-        List<Host> hostList = hostService.getAllHosts();
-        List<Callable<HostIdUsageMap>> callables = new ArrayList<Callable<HostIdUsageMap>>();
-
-        ExecutorService executor = Executors.newFixedThreadPool(hostList.size());
-        for (Host host : hostList) {
-            callables.add(new HostThread(host));
-        }
-
-        List<Future<HostIdUsageMap>> futures = executor.invokeAll(callables);
-        for (Future<HostIdUsageMap> future : futures) {
-            mergedHostsUsage.put(future.get().getHostId(), future.get().getMap());
-        }
-
-        return mergedHostsUsage;
-    }
-
-    @Override
-    public void deleteLoadBalancerHostUsageRecords(Calendar deleteTimeMarker) {
-
-    }
-
-    @Override
-    public void insertLoadBalancerUsagePerHost(List<LoadBalancerHostUsage> lbHostUsages) {
-
-    }
-
-    @Override
-    public void insertMergedRecords(List<LoadBalancerMergedHostUsage> mergedRecords) {
-
+        return mergedHostUsage;
     }
 }

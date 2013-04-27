@@ -54,5 +54,7 @@
         <property name="virtualIpRepository" ref="virtualIpRepository"/>
         <property name="usageRefactorService" ref="usageRefactorService"/>
     </bean>
+    <bean id="usagePollerHelper" class="org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper"
+          scope="prototype"
 
 </beans>

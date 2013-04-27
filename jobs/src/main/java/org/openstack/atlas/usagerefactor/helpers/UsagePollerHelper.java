@@ -1,87 +1,122 @@
 package org.openstack.atlas.usagerefactor.helpers;
 
+import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.service.domain.services.impl.BaseService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-public class UsagePollerHelper {
+public class UsagePollerHelper{
 
-    public static void calculateUsage(Map<Integer, SnmpUsage> currentUsages,
-                                      Map<Integer, LoadBalancerHostUsage> existingUsages,
-                                      Map<Integer, LoadBalancerHostUsage> currentUsageToInsert,
-                                      List<LoadBalancerMergedHostUsage> newMergedHostUsages) {
-        long totIncomingTransfer = 0;
-        long totIncomingTransferSsl = 0;
-        long totOutgoingTransfer = 0;
-        long totOutgoingTransferSsl = 0;
-        long totConcurrentConnections = 0;
-        long totConcurrentConnectionsSsl = 0;
-        for (Integer hostId : currentUsages.keySet()) {
-            LoadBalancerHostUsage newLBHostUsage = new LoadBalancerHostUsage();
-            newLBHostUsage.setAccountId(existingUsages.get(hostId).getAccountId());
-            newLBHostUsage.setLoadbalancerId(currentUsages.get(hostId).getLoadbalancerId());
-            newLBHostUsage.setTagsBitmask(existingUsages.get(hostId).getTagsBitmask());
-            if (isReset(currentUsages.get(hostId), existingUsages.get(hostId))) {
-                newLBHostUsage.setIncomingTransfer(0);
-                newLBHostUsage.setIncomingTransferSsl(0);
-                newLBHostUsage.setOutgoingTransfer(0);
-                newLBHostUsage.setOutgoingTransferSsl(0);
-                newLBHostUsage.setConcurrentConnections(currentUsages.get(hostId).getConcurrentConnections());
-                newLBHostUsage.setConcurrentConnectionsSsl(currentUsages.get(hostId).getConcurrentConnectionsSsl());
-            } else {
-                totIncomingTransfer += currentUsages.get(hostId).getBytesIn() - existingUsages.get(hostId).getIncomingTransfer();
-                totIncomingTransferSsl += currentUsages.get(hostId).getBytesInSsl() - existingUsages.get(hostId).getIncomingTransferSsl();
-                totOutgoingTransfer += currentUsages.get(hostId).getBytesOut() - existingUsages.get(hostId).getOutgoingTransfer();
-                totOutgoingTransferSsl += currentUsages.get(hostId).getBytesOutSsl() - existingUsages.get(hostId).getOutgoingTransferSsl();
-                totConcurrentConnections += currentUsages.get(hostId).getConcurrentConnections() - existingUsages.get(hostId).getConcurrentConnections();
-                totConcurrentConnectionsSsl += currentUsages.get(hostId).getConcurrentConnectionsSsl() - existingUsages.get(hostId).getConcurrentConnectionsSsl();
-            }
-        }
+    private int numHosts;
+
+    public UsagePollerHelper() {}
+
+    public UsagePollerHelper(int numHosts) {
+        this.numHosts = numHosts;
     }
 
-    public static void calculateUsage(LoadBalancerHostUsage currentRecord, LoadBalancerHostUsage previousRecord,
-                                      LoadBalancerMergedHostUsage newMergedUsage) {
+    public int getNumHosts() {
+        return numHosts;
+    }
+
+    public void setNumHosts(int numHosts) {
+        this.numHosts = numHosts;
+    }
+
+    public void calculateUsage(SnmpUsage currentUsage, LoadBalancerHostUsage previousRecord,
+                               LoadBalancerMergedHostUsage newMergedUsage) {
         long totIncomingTransfer = newMergedUsage.getIncomingTransfer();
         long totIncomingTransferSsl = newMergedUsage.getIncomingTransferSsl();
         long totOutgoingTransfer = newMergedUsage.getOutgoingTransfer();
         long totOutgoingTransferSsl = newMergedUsage.getOutgoingTransferSsl();
-        double totConcurrentConnections = newMergedUsage.getConcurrentConnections();
-        double totConcurrentConnectionsSsl = newMergedUsage.getConcurrentConnectionsSsl();
-        if (!isReset(currentRecord, previousRecord)) {
-            totIncomingTransfer += currentRecord.getIncomingTransfer() - previousRecord.getIncomingTransfer();
-            totIncomingTransferSsl += currentRecord.getIncomingTransferSsl() - previousRecord.getIncomingTransferSsl();
-            totOutgoingTransfer += currentRecord.getOutgoingTransfer() - previousRecord.getOutgoingTransfer();
-            totOutgoingTransferSsl += currentRecord.getOutgoingTransferSsl() - previousRecord.getOutgoingTransferSsl();
-            totConcurrentConnections += currentRecord.getConcurrentConnections() - previousRecord.getConcurrentConnections();
-            totConcurrentConnectionsSsl += currentRecord.getConcurrentConnectionsSsl() - previousRecord.getConcurrentConnectionsSsl();
+        //Handle normal virtual server resetting
+        if (!isReset(currentUsage.getBytesIn(), previousRecord.getIncomingTransfer()) &&
+            !isReset(currentUsage.getBytesOut(), previousRecord.getOutgoingTransfer())) {
+            totIncomingTransfer += currentUsage.getBytesIn() - previousRecord.getIncomingTransfer();
+            totOutgoingTransfer += currentUsage.getBytesOut() - previousRecord.getOutgoingTransfer();
+        }
+        //Handle SSL virtual server resetting
+        if (!isReset(currentUsage.getBytesInSsl(), previousRecord.getIncomingTransferSsl()) &&
+            !isReset(currentUsage.getBytesOutSsl(), previousRecord.getOutgoingTransferSsl())) {
+            totIncomingTransferSsl += currentUsage.getBytesInSsl() - previousRecord.getIncomingTransferSsl();
+            totOutgoingTransferSsl += currentUsage.getBytesOutSsl() - previousRecord.getOutgoingTransferSsl();
         }
         newMergedUsage.setIncomingTransfer(totIncomingTransfer);
         newMergedUsage.setIncomingTransferSsl(totIncomingTransferSsl);
         newMergedUsage.setOutgoingTransfer(totOutgoingTransfer);
         newMergedUsage.setOutgoingTransferSsl(totOutgoingTransferSsl);
-        newMergedUsage.setConcurrentConnections(totConcurrentConnections);
-        newMergedUsage.setConcurrentConnections(totConcurrentConnectionsSsl);
+        //Using concurrent connections regardless of reset since this is not a counter, only a snapshot
+        int ccs = currentUsage.getConcurrentConnections() + newMergedUsage.getConcurrentConnections();
+        int ccsSsl = currentUsage.getConcurrentConnectionsSsl() + newMergedUsage.getConcurrentConnectionsSsl();
+        newMergedUsage.setConcurrentConnections(ccs);
+        newMergedUsage.setConcurrentConnectionsSsl(ccsSsl);
     }
 
-    public static boolean isReset(SnmpUsage currentUsage, LoadBalancerHostUsage existingUsage) {
-        return existingUsage.getIncomingTransfer() > currentUsage.getBytesIn() ||
-               existingUsage.getOutgoingTransfer() > currentUsage.getBytesOut() ||
-               existingUsage.getIncomingTransferSsl() > currentUsage.getBytesInSsl() ||
-               existingUsage.getOutgoingTransferSsl() > currentUsage.getBytesOutSsl();
+    public void calculateUsage(LoadBalancerHostUsage currentRecord, LoadBalancerHostUsage previousRecord,
+                               LoadBalancerMergedHostUsage newMergedUsage) {
+        long totIncomingTransfer = newMergedUsage.getIncomingTransfer();
+        long totIncomingTransferSsl = newMergedUsage.getIncomingTransferSsl();
+        long totOutgoingTransfer = newMergedUsage.getOutgoingTransfer();
+        long totOutgoingTransferSsl = newMergedUsage.getOutgoingTransferSsl();
+        //Handle normal virtual server resetting
+        if (!isReset(currentRecord.getIncomingTransfer(), previousRecord.getIncomingTransfer()) &&
+            !isReset(currentRecord.getOutgoingTransfer(), previousRecord.getOutgoingTransfer())) {
+            totIncomingTransfer += currentRecord.getIncomingTransfer() - previousRecord.getIncomingTransfer();
+            totOutgoingTransfer += currentRecord.getOutgoingTransfer() - previousRecord.getOutgoingTransfer();
+        }
+        //Handle SSL virtual server resetting
+        if (!isReset(currentRecord.getIncomingTransferSsl(), previousRecord.getIncomingTransferSsl()) &&
+            !isReset(currentRecord.getOutgoingTransferSsl(), previousRecord.getOutgoingTransferSsl())) {
+            totIncomingTransferSsl += currentRecord.getIncomingTransferSsl() - previousRecord.getIncomingTransferSsl();
+            totOutgoingTransferSsl += currentRecord.getOutgoingTransferSsl() - previousRecord.getOutgoingTransferSsl();
+        }
+        newMergedUsage.setIncomingTransfer(totIncomingTransfer);
+        newMergedUsage.setIncomingTransferSsl(totIncomingTransferSsl);
+        newMergedUsage.setOutgoingTransfer(totOutgoingTransfer);
+        newMergedUsage.setOutgoingTransferSsl(totOutgoingTransferSsl);
+        //Using concurrent connections regardless of reset since this is not a counter, only a snapshot
+        int ccs = currentRecord.getConcurrentConnections() + newMergedUsage.getConcurrentConnections();
+        int ccsSsl = currentRecord.getConcurrentConnectionsSsl() + newMergedUsage.getConcurrentConnectionsSsl();
+        newMergedUsage.setConcurrentConnections(ccs);
+        newMergedUsage.setConcurrentConnectionsSsl(ccsSsl);
     }
 
-    public static boolean isReset(LoadBalancerHostUsage currentRecord, LoadBalancerHostUsage previousRecord) {
-        return previousRecord.getIncomingTransfer() > currentRecord.getIncomingTransfer() ||
-               previousRecord.getOutgoingTransfer() > currentRecord.getOutgoingTransfer() ||
-               previousRecord.getIncomingTransferSsl() > currentRecord.getIncomingTransferSsl() ||
-               previousRecord.getOutgoingTransferSsl() > currentRecord.getOutgoingTransferSsl();
+    public boolean isReset(long currentBandwidth, long previousBandwidth) {
+        return currentBandwidth < previousBandwidth;
     }
 
-    public static List<LoadBalancerMergedHostUsage> processExistingEvents(Map<Integer, List<LoadBalancerHostUsage>> existingUsages) {
+    public List<LoadBalancerMergedHostUsage> processCurrentUsage(Map<Integer, List<LoadBalancerHostUsage>> existingUsages,
+                                                                 Map<Integer, Map<Integer, SnmpUsage>> currentUsages,
+                                                                 Calendar pollTime){
+        List<LoadBalancerMergedHostUsage> mergedUsages = new ArrayList<LoadBalancerMergedHostUsage>();
+        for (Integer loadbalancerId : existingUsages.keySet()) {
+            if(!currentUsages.containsKey(loadbalancerId)) {
+                if(existingUsages.get(loadbalancerId).get(0).getEventType() != UsageEvent.DELETE_LOADBALANCER ||
+                   existingUsages.get(loadbalancerId).get(0).getEventType() != UsageEvent.SUSPEND_LOADBALANCER) {
+                    //TODO: Do something if snmp does not have usage and last record in db was not a DELETE LB event.
+                }
+                continue;
+            }
+            LoadBalancerMergedHostUsage newMergedUsage = initializeMergedRecord(existingUsages.get(loadbalancerId).get(0));
+            newMergedUsage.setEventType(null);
+            newMergedUsage.setPollTime(pollTime);
+            for (LoadBalancerHostUsage existingUsage : existingUsages.get(loadbalancerId)) {
+                calculateUsage(currentUsages.get(loadbalancerId).get(existingUsage.getHostId()), existingUsage,
+                               newMergedUsage);
+            }
+            mergedUsages.add(newMergedUsage);
+        }
+        //TODO: Do something with snmp usages that did not exist in the database
+        return mergedUsages;
+    }
+    public List<LoadBalancerMergedHostUsage> processExistingEvents(Map<Integer, List<LoadBalancerHostUsage>> existingUsages) {
         List<LoadBalancerMergedHostUsage> newMergedEventRecords = new ArrayList<LoadBalancerMergedHostUsage>();
         for (Integer loadBalancerId : existingUsages.keySet()) {
             if (existingUsages.get(loadBalancerId).size() > 0) {
@@ -96,27 +131,17 @@ public class UsagePollerHelper {
             //Create reference so the accessing isn't so wonky looking.
             List<LoadBalancerHostUsage> lbHostUsageListRef = existingUsages.get(loadBalancerId);
 
-            //TODO: Implement better way of getting number of hosts
-            //Not the best way to calculate number of hosts, but will suffice until a call to check the number of hosts is done
-            int hostCount = 0;
-            for (int recordIndex = 0; recordIndex < lbHostUsageListRef.size(); recordIndex++) {
-                if (lbHostUsageListRef.get(recordIndex).getEventType() == null){
-                    break;
-                }
-                hostCount++;
-            }
-
             //increment index by the number of hosts so that the index is only skipping to each event section, and not
             ///going through all records
-            for (int recordIndex = hostCount; recordIndex < lbHostUsageListRef.size(); recordIndex += hostCount) {
+            for (int recordIndex = numHosts; recordIndex < lbHostUsageListRef.size(); recordIndex += numHosts) {
                 //Initialize data in new record to that of current host usage record.
                 LoadBalancerMergedHostUsage newLBMergedHostUsage = initializeMergedRecord(lbHostUsageListRef.get(recordIndex));
 
                 ///Iterate through the current event records and compare to previous event/polled records to calculate usage.
-                for (int eventIndex = recordIndex; eventIndex < recordIndex + hostCount; eventIndex++) {
-                    if(lbHostUsageListRef.get(eventIndex).getHostId() == lbHostUsageListRef.get(eventIndex - hostCount).getHostId()){
+                for (int eventIndex = recordIndex; eventIndex < recordIndex + numHosts; eventIndex++) {
+                    if(lbHostUsageListRef.get(eventIndex).getHostId() == lbHostUsageListRef.get(eventIndex - numHosts).getHostId()){
                         calculateUsage(lbHostUsageListRef.get(eventIndex),
-                                       lbHostUsageListRef.get(eventIndex - hostCount),
+                                       lbHostUsageListRef.get(eventIndex - numHosts),
                                        newLBMergedHostUsage);
                     }
                 }
@@ -125,20 +150,24 @@ public class UsagePollerHelper {
             }
 
             //Remove records that are no longer needed.
-            int currentListSize = lbHostUsageListRef.size();
-            for (int recordIndex = 0; recordIndex < currentListSize - hostCount; recordIndex++) {
-                lbHostUsageListRef.remove(recordIndex);
+            //Can definitely optimize this
+            while(lbHostUsageListRef.size() > numHosts) {
+                lbHostUsageListRef.remove(0);
             }
         }
         return newMergedEventRecords;
     }
 
-    public static LoadBalancerMergedHostUsage initializeMergedRecord(LoadBalancerHostUsage lbHostUsage) {
+    public LoadBalancerMergedHostUsage initializeMergedRecord(LoadBalancerHostUsage lbHostUsage) {
         LoadBalancerMergedHostUsage newLBMergedHostUsage = new LoadBalancerMergedHostUsage();
         newLBMergedHostUsage.setAccountId(lbHostUsage.getAccountId());
         newLBMergedHostUsage.setLoadbalancerId(lbHostUsage.getLoadbalancerId());
         newLBMergedHostUsage.setNumVips(lbHostUsage.getNumVips());
         newLBMergedHostUsage.setEventType(lbHostUsage.getEventType());
+        Calendar pollTime = Calendar.getInstance();
+        pollTime.setTime(lbHostUsage.getPollTime().getTime());
+        newLBMergedHostUsage.setPollTime(pollTime);
+        newLBMergedHostUsage.setTagsBitmask(lbHostUsage.getTagsBitmask());
         return newLBMergedHostUsage;
     }
 }

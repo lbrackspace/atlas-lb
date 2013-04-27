@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -14,7 +15,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@Transactional(value = "lb_host_usage")
+@Repository
+@Transactional(value = "usage")
 public class HostUsageRefactorRepository {
     final Log LOG = LogFactory.getLog(HostUsageRefactorRepository.class);
 
@@ -98,8 +100,11 @@ public class HostUsageRefactorRepository {
                 numRowsDeleted, deleteTimeMarker.getTime()));
     }
 
-    public Map<Integer, List<LoadBalancerHostUsage>> getLoadBalancerHostUsageRecords() {
-        return new HashMap<Integer, List<LoadBalancerHostUsage>>();
+    public List<LoadBalancerHostUsage> getAllLoadBalancerHostUsageRecords() {
+        String queryStr = "from LoadBalancerHostUsage";
+        List<LoadBalancerHostUsage> hosts;
+        hosts = entityManager.createQuery(queryStr).getResultList();
+        return hosts;
     }
 
 }

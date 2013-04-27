@@ -39,27 +39,27 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
     protected LoadBalancerRepository loadBalancerRepository;
     protected AccountUsageRepository accountUsageRepository;
 
-    @Required
+    //@Required
     public void setUsageService(UsageService usageService) {
         this.usageService = usageService;
     }
 
-    @Required
+    //@Required
     public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
         this.loadBalancerRepository = loadBalancerRepository;
     }
 
-    @Required
+    //@Required
     public void setAccountUsageRepository(AccountUsageRepository accountUsageRepository) {
         this.accountUsageRepository = accountUsageRepository;
     }
 
-    @Required
+    //@Required
     public void setVirtualIpRepository(VirtualIpRepository virtualIpRepository) {
         this.virtualIpRepository = virtualIpRepository;
     }
 
-    @Required
+    //@Required
     public void setUsageRefactorService(UsageRefactorService usageRefactorService) {
         this.usageRefactorService = usageRefactorService;
     }
