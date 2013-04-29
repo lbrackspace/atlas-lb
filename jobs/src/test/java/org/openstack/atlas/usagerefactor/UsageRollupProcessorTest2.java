@@ -2,6 +2,7 @@ package org.openstack.atlas.usagerefactor;
 
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
+import com.github.springtestdbunit.annotation.DbUnitConfiguration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -11,6 +12,7 @@ import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
+import org.openstack.atlas.usagerefactor.dbunit.FlatXmlLoader;
 import org.openstack.atlas.usagerefactor.junit.AssertUsage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -32,6 +34,7 @@ import java.util.List;
 @TestExecutionListeners({
         DependencyInjectionTestExecutionListener.class,
         DbUnitTestExecutionListener.class})
+@DbUnitConfiguration(dataSetLoader = FlatXmlLoader.class)
 public class UsageRollupProcessorTest2 {
 
     @Autowired
@@ -158,7 +161,7 @@ public class UsageRollupProcessorTest2 {
                 12, 1, 0, UsageEvent.SSL_OFF.name(), 0, true, null, actualUsage);
     }
 
-    @Ignore
+    @Ignore 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/case012.xml")
     public void case12() throws Exception {
