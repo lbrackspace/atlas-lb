@@ -14,7 +14,7 @@ public class AssertLoadBalancerMergedHostUsage {
         public static void hasValues(Integer accountId, Integer lbId, Long incomingTransfer,
                                  Long incomingTransferSsl, Long outgoingTransfer, Long outgoingTransferSsl,
                                  Integer ccs, Integer ccsSsl,
-                                 Integer numVips, Integer tags, UsageEvent eventType, Calendar pollTime,
+                                 Integer numVips, Integer tags, UsageEvent eventType, String pollTime,
                                  LoadBalancerMergedHostUsage actualUsage) throws ParseException {
         Assert.assertEquals(accountId.intValue(), actualUsage.getAccountId());
         Assert.assertEquals(lbId.intValue(), actualUsage.getLoadbalancerId());
@@ -27,7 +27,9 @@ public class AssertLoadBalancerMergedHostUsage {
         Assert.assertEquals(numVips.intValue(), actualUsage.getNumVips());
         Assert.assertEquals(tags.intValue(), actualUsage.getTagsBitmask());
         Assert.assertEquals(eventType, actualUsage.getEventType());
-        Assert.assertEquals(pollTime, actualUsage.getPollTime());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String actualTimeStr = sdf.format(actualUsage.getPollTime().getTime());
+        Assert.assertEquals(pollTime, actualTimeStr);
     }
 
     private static Calendar stringToCalendar(String calAsString) throws ParseException {

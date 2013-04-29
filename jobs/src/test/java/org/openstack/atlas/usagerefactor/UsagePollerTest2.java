@@ -7,16 +7,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.MockitoAnnotations;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.repository.HostRepository;
-import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
-import org.openstack.atlas.service.domain.usage.repository.HostUsageRefactorRepository;
 import org.openstack.atlas.usagerefactor.generator.UsagePollerGenerator;
-import org.openstack.atlas.usagerefactor.helpers.UsagePollerTestHelper;
 import org.openstack.atlas.usagerefactor.helpers.UsageProcessorResult;
 import org.openstack.atlas.usagerefactor.junit.AssertLoadBalancerMergedHostUsage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +18,8 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /*
     To see what each case is testing please refer to their respective xml
@@ -54,6 +45,7 @@ public class UsagePollerTest2 {
         private Map<Integer, List<LoadBalancerHostUsage>> lbHostMap;
         private int numHosts;
         private Calendar pollTime;
+        String pollTimeStr;
         private int numLBs;
 
         @Before
@@ -63,25 +55,23 @@ public class UsagePollerTest2 {
             snmpMap = UsagePollerGenerator.generateSnmpMap(numHosts, numLBs);
             lbHostMap = usageRefactorService.getAllLoadBalancerHostUsages();
             pollTime = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            pollTimeStr = sdf.format(pollTime.getTime());
         }
 
         @Test
-        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/case1.xml")
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordsnoevents/case1.xml")
         public void case1() throws Exception{
             UsageProcessorResult result = UsageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime, numHosts);
             Assert.assertEquals(2, result.getMergedUsages().size());
             AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTime, result.getMergedUsages().get(0));
+                    null, pollTimeStr, result.getMergedUsages().get(0));
             AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTime, result.getMergedUsages().get(1));
-            Calendar compTime = Calendar.getInstance();
-            compTime.setTime(lbHostMap.get(FIRST_LB_ID).get(0).getPollTime().getTime());
-            Assert.assertTrue(result.getMergedUsages().get(0).getPollTime().compareTo(compTime) > 0);
-            Assert.assertTrue(result.getMergedUsages().get(1).getPollTime().compareTo(compTime) > 0);
+                    null, pollTimeStr, result.getMergedUsages().get(1));
         }
 
         @Test
-        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/case2.xml")
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordsnoevents/case2.xml")
         public void case2() throws Exception {
             snmpMap.get(1).get(123).setBytesIn(1000);
             snmpMap.get(2).get(123).setBytesIn(100);
@@ -104,9 +94,175 @@ public class UsagePollerTest2 {
             UsageProcessorResult result = UsageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime, numHosts);
             Assert.assertEquals(2, result.getMergedUsages().size());
             AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 5500L, 6600L, 7700L, 8800L, 0, 0, 1, 0,
-                    null, pollTime, result.getMergedUsages().get(0));
+                    null, pollTimeStr, result.getMergedUsages().get(0));
             AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 1100L, 2200L, 3300L, 4400L, 0, 0, 1, 0,
-                    null, pollTime, result.getMergedUsages().get(1));
+                    null, pollTimeStr, result.getMergedUsages().get(1));
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordsnoevents/case3.xml")
+        public void case3() throws Exception {
+            snmpMap.get(1).get(123).setBytesIn(5000);
+            snmpMap.get(2).get(123).setBytesIn(5500);
+            snmpMap.get(1).get(123).setBytesInSsl(7000);
+            snmpMap.get(2).get(123).setBytesInSsl(7700);
+            snmpMap.get(1).get(123).setBytesOut(1000);
+            snmpMap.get(2).get(123).setBytesOut(1100);
+            snmpMap.get(1).get(123).setBytesOutSsl(3000);
+            snmpMap.get(2).get(123).setBytesOutSsl(3300);
+
+            snmpMap.get(1).get(124).setBytesIn(6000);
+            snmpMap.get(2).get(124).setBytesIn(6600);
+            snmpMap.get(1).get(124).setBytesInSsl(8000);
+            snmpMap.get(2).get(124).setBytesInSsl(8800);
+            snmpMap.get(1).get(124).setBytesOut(2000);
+            snmpMap.get(2).get(124).setBytesOut(2200);
+            snmpMap.get(1).get(124).setBytesOutSsl(4000);
+            snmpMap.get(2).get(124).setBytesOutSsl(4400);
+
+            UsageProcessorResult result = UsageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime, numHosts);
+            Assert.assertEquals(2, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 6000L, 8000L, 2000L, 4000L, 0, 0, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 5000L, 7000L, 1000L, 3000L, 0, 0, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages().get(1));
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordsnoevents/case4.xml")
+        public void case4() throws Exception {
+            snmpMap.get(1).get(123).setBytesIn(499);
+            snmpMap.get(2).get(123).setBytesIn(4999);
+            snmpMap.get(1).get(123).setBytesInSsl(699);
+            snmpMap.get(2).get(123).setBytesInSsl(7700);
+            snmpMap.get(1).get(123).setBytesOut(1000);
+            snmpMap.get(2).get(123).setBytesOut(1100);
+            snmpMap.get(1).get(123).setBytesOutSsl(3000);
+            snmpMap.get(2).get(123).setBytesOutSsl(3300);
+
+            snmpMap.get(1).get(124).setBytesIn(601);
+            snmpMap.get(2).get(124).setBytesIn(6001);
+            snmpMap.get(1).get(124).setBytesInSsl(10);
+            snmpMap.get(2).get(124).setBytesInSsl(1000);
+            snmpMap.get(1).get(124).setBytesOut(2000);
+            snmpMap.get(2).get(124).setBytesOut(1999);
+            snmpMap.get(1).get(124).setBytesOutSsl(4000);
+            snmpMap.get(2).get(124).setBytesOutSsl(4400);
+
+            UsageProcessorResult result = UsageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime, numHosts);
+            Assert.assertEquals(2, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 1L, 0L, 1800L, 0L, 0, 0, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 700L, 0L, 300L, 0, 0, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages().get(1));
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordsnoevents/case5.xml")
+        public void case5() throws Exception {
+            snmpMap.get(1).get(123).setBytesIn(5000);
+            snmpMap.get(2).get(123).setBytesIn(5500);
+            snmpMap.get(1).get(123).setBytesInSsl(7000);
+            snmpMap.get(2).get(123).setBytesInSsl(7700);
+            snmpMap.get(1).get(123).setBytesOut(1000);
+            snmpMap.get(2).get(123).setBytesOut(1100);
+            snmpMap.get(1).get(123).setBytesOutSsl(3000);
+            snmpMap.get(2).get(123).setBytesOutSsl(3300);
+            snmpMap.get(1).get(123).setConcurrentConnections(10);
+            snmpMap.get(2).get(123).setConcurrentConnectionsSsl(7);
+
+            snmpMap.get(1).get(124).setBytesIn(6000);
+            snmpMap.get(2).get(124).setBytesIn(6600);
+            snmpMap.get(1).get(124).setBytesInSsl(8000);
+            snmpMap.get(2).get(124).setBytesInSsl(8800);
+            snmpMap.get(1).get(124).setBytesOut(2000);
+            snmpMap.get(2).get(124).setBytesOut(2200);
+            snmpMap.get(1).get(124).setBytesOutSsl(4000);
+            snmpMap.get(2).get(124).setBytesOutSsl(4400);
+            snmpMap.get(1).get(124).setConcurrentConnections(12);
+            snmpMap.get(2).get(124).setConcurrentConnections(11);
+            snmpMap.get(1).get(124).setConcurrentConnectionsSsl(8);
+            snmpMap.get(2).get(124).setConcurrentConnectionsSsl(3);
+
+            UsageProcessorResult result = UsageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime, numHosts);
+            Assert.assertEquals(2, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 6000L, 8000L, 2000L, 4000L, 23, 11, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 5000L, 7000L, 1000L, 3000L, 10, 7, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages().get(1));
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordsnoevents/case6.xml")
+        public void case6() throws Exception {
+            snmpMap.get(1).get(123).setBytesIn(499);
+            snmpMap.get(2).get(123).setBytesIn(4999);
+            snmpMap.get(1).get(123).setBytesInSsl(699);
+            snmpMap.get(2).get(123).setBytesInSsl(7700);
+            snmpMap.get(1).get(123).setBytesOut(1000);
+            snmpMap.get(2).get(123).setBytesOut(1100);
+            snmpMap.get(1).get(123).setBytesOutSsl(3000);
+            snmpMap.get(2).get(123).setBytesOutSsl(3300);
+            snmpMap.get(1).get(123).setConcurrentConnections(10);
+            snmpMap.get(2).get(123).setConcurrentConnectionsSsl(7);
+
+            snmpMap.get(1).get(124).setBytesIn(601);
+            snmpMap.get(2).get(124).setBytesIn(6001);
+            snmpMap.get(1).get(124).setBytesInSsl(10);
+            snmpMap.get(2).get(124).setBytesInSsl(1000);
+            snmpMap.get(1).get(124).setBytesOut(2000);
+            snmpMap.get(2).get(124).setBytesOut(1999);
+            snmpMap.get(1).get(124).setBytesOutSsl(4000);
+            snmpMap.get(2).get(124).setBytesOutSsl(4400);
+            snmpMap.get(1).get(124).setConcurrentConnections(12);
+            snmpMap.get(2).get(124).setConcurrentConnections(11);
+            snmpMap.get(1).get(124).setConcurrentConnectionsSsl(8);
+            snmpMap.get(2).get(124).setConcurrentConnectionsSsl(3);
+
+            UsageProcessorResult result = UsageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime, numHosts);
+            Assert.assertEquals(2, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 1L, 0L, 1800L, 0L, 23, 11, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 700L, 0L, 300L, 10, 7, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages().get(1));
+        }
+    }
+
+    public static class WhenTestingProcessRecordsWithEvents {
+
+        @Autowired
+        private UsageRefactorService usageRefactorService;
+
+
+        private final int FIRST_LB_ID = 123;
+
+        private Map<Integer, Map<Integer, SnmpUsage>> snmpMap;
+        private Map<Integer, List<LoadBalancerHostUsage>> lbHostMap;
+        private int numHosts;
+        private Calendar pollTime;
+        String pollTimeStr;
+        private int numLBs;
+
+        @Before
+        public void standUp() throws Exception {
+            numHosts = 2;
+            numLBs = 2;
+            snmpMap = UsagePollerGenerator.generateSnmpMap(numHosts, numLBs);
+            lbHostMap = usageRefactorService.getAllLoadBalancerHostUsages();
+            pollTime = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            pollTimeStr = sdf.format(pollTime.getTime());
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case1.xml")
+        public void case1() throws Exception{
+            UsageProcessorResult result = UsageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime, numHosts);
+            Assert.assertEquals(2, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(1));
         }
     }
 }
