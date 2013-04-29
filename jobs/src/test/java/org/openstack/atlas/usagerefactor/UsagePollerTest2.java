@@ -2,6 +2,7 @@ package org.openstack.atlas.usagerefactor;
 
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
+import com.github.springtestdbunit.annotation.DbUnitConfiguration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -10,6 +11,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
+import org.openstack.atlas.usagerefactor.dbunit.FlatXmlLoader;
 import org.openstack.atlas.usagerefactor.generator.UsagePollerGenerator;
 import org.openstack.atlas.usagerefactor.helpers.UsageProcessorResult;
 import org.openstack.atlas.usagerefactor.junit.AssertLoadBalancerHostUsage;
@@ -35,6 +37,7 @@ public class UsagePollerTest2 {
     @TestExecutionListeners({
         DependencyInjectionTestExecutionListener.class,
         DbUnitTestExecutionListener.class})
+    @DbUnitConfiguration(dataSetLoader = FlatXmlLoader.class)
     public static class WhenTestingProcessRecordsNoEvents {
 
         @Autowired
@@ -302,6 +305,12 @@ public class UsagePollerTest2 {
         }
     }
 
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(locations = {"classpath:context.xml"})
+    @TestExecutionListeners({
+        DependencyInjectionTestExecutionListener.class,
+        DbUnitTestExecutionListener.class})
+    @DbUnitConfiguration(dataSetLoader = FlatXmlLoader.class)
     public static class WhenTestingProcessRecordsWithEvents {
 
         @Autowired
