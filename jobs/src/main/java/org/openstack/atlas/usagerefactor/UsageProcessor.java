@@ -38,16 +38,16 @@ public class UsageProcessor {
         LOG.info("Merging load balancer host usage records...");
         UsagePollerHelper usagePollerHelper = new UsagePollerHelper(numHosts);
 
-        List<LoadBalancerHostUsage> newLBHostUsages = new ArrayList<LoadBalancerHostUsage>();
-
         //Process events that have come in between now and last poller run
-        List<LoadBalancerMergedHostUsage> mergedHostUsage = usagePollerHelper.processExistingEvents(existingUsages);
+        List<LoadBalancerMergedHostUsage> mergedHostUsages = usagePollerHelper.processExistingEvents(existingUsages);
 
         //Now parent key should be loadbalancerId, and child key hostId
         currentUsages = UsageMappingHelper.swapKeyGrouping(currentUsages);
-        mergedHostUsage.addAll(usagePollerHelper.processCurrentUsage(existingUsages, currentUsages,
-                pollTime));
 
-        return new UsageProcessorResult(mergedHostUsage, new ArrayList<LoadBalancerHostUsage>());
+        //Process current usage now. The method processExistingEvents should have removed
+        UsageProcessorResult processorResult = usagePollerHelper.processCurrentUsage(existingUsages, currentUsages, pollTime);
+        mergedHostUsages.addAll(processorResult.getMergedUsages());
+
+        return new UsageProcessorResult(mergedHostUsages, processorResult.getLbHostUsages());
     }
 }
