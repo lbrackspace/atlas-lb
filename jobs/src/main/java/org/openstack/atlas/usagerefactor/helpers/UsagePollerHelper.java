@@ -6,6 +6,7 @@ import org.openstack.atlas.service.domain.services.impl.BaseService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
+import org.openstack.atlas.usagerefactor.UsageProcessor;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -92,15 +93,18 @@ public class UsagePollerHelper{
         return currentBandwidth < previousBandwidth;
     }
 
-    public List<LoadBalancerMergedHostUsage> processCurrentUsage(Map<Integer, List<LoadBalancerHostUsage>> existingUsages,
-                                                                 Map<Integer, Map<Integer, SnmpUsage>> currentUsages,
-                                                                 Calendar pollTime){
+    public UsageProcessorResult processCurrentUsage(Map<Integer, List<LoadBalancerHostUsage>> existingUsages,
+                                                    Map<Integer, Map<Integer, SnmpUsage>> currentUsages,
+                                                    Calendar pollTime){
         List<LoadBalancerMergedHostUsage> mergedUsages = new ArrayList<LoadBalancerMergedHostUsage>();
+        List<LoadBalancerHostUsage> newLBHostUsages = new ArrayList<LoadBalancerHostUsage>();
+
         for (Integer loadbalancerId : existingUsages.keySet()) {
             if(!currentUsages.containsKey(loadbalancerId)) {
                 if(existingUsages.get(loadbalancerId).get(0).getEventType() != UsageEvent.DELETE_LOADBALANCER ||
                    existingUsages.get(loadbalancerId).get(0).getEventType() != UsageEvent.SUSPEND_LOADBALANCER) {
-                    //TODO: Do something if snmp does not have usage and last record in db was not a DELETE LB event.
+                    LoadBalancerHostUsage existingUsage = existingUsages.get(loadbalancerId).get(0);
+                    newLBHostUsages.add(convertSnmpUsageToLBHostUsage(null, existingUsage, pollTime));
                 }
                 continue;
             }
@@ -108,13 +112,14 @@ public class UsagePollerHelper{
             newMergedUsage.setEventType(null);
             newMergedUsage.setPollTime(pollTime);
             for (LoadBalancerHostUsage existingUsage : existingUsages.get(loadbalancerId)) {
-                calculateUsage(currentUsages.get(loadbalancerId).get(existingUsage.getHostId()), existingUsage,
-                               newMergedUsage);
+                SnmpUsage currentUsage = currentUsages.get(loadbalancerId).get(existingUsage.getHostId());
+                calculateUsage(currentUsage, existingUsage, newMergedUsage);
+                newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage, pollTime));
             }
             mergedUsages.add(newMergedUsage);
         }
-        //TODO: Do something with snmp usages that did not exist in the database
-        return mergedUsages;
+
+        return new UsageProcessorResult(mergedUsages, newLBHostUsages);
     }
     public List<LoadBalancerMergedHostUsage> processExistingEvents(Map<Integer, List<LoadBalancerHostUsage>> existingUsages) {
         List<LoadBalancerMergedHostUsage> newMergedEventRecords = new ArrayList<LoadBalancerMergedHostUsage>();
@@ -169,5 +174,25 @@ public class UsagePollerHelper{
         newLBMergedHostUsage.setPollTime(pollTime);
         newLBMergedHostUsage.setTagsBitmask(lbHostUsage.getTagsBitmask());
         return newLBMergedHostUsage;
+    }
+
+    public LoadBalancerHostUsage convertSnmpUsageToLBHostUsage(SnmpUsage snmpUsage, LoadBalancerHostUsage previousUsage, Calendar pollTime) {
+        LoadBalancerHostUsage newlbHostUsage = new LoadBalancerHostUsage();
+        newlbHostUsage.setAccountId(previousUsage.getAccountId());
+        newlbHostUsage.setLoadbalancerId(previousUsage.getLoadbalancerId());
+        newlbHostUsage.setTagsBitmask(previousUsage.getTagsBitmask());
+        newlbHostUsage.setNumVips(previousUsage.getNumVips());
+        newlbHostUsage.setPollTime(pollTime);
+        newlbHostUsage.setHostId(previousUsage.getHostId());
+        if  (snmpUsage != null) {
+            newlbHostUsage.setOutgoingTransfer(snmpUsage.getBytesOut());
+            newlbHostUsage.setOutgoingTransferSsl(snmpUsage.getBytesOutSsl());
+            newlbHostUsage.setIncomingTransfer(snmpUsage.getBytesIn());
+            newlbHostUsage.setIncomingTransferSsl(snmpUsage.getBytesInSsl());
+            newlbHostUsage.setConcurrentConnections(snmpUsage.getConcurrentConnections());
+            newlbHostUsage.setConcurrentConnectionsSsl(snmpUsage.getConcurrentConnectionsSsl());
+        }
+
+        return newlbHostUsage;
     }
 }
