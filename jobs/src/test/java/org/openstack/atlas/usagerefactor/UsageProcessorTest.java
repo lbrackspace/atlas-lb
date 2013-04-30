@@ -691,4 +691,58 @@ public class UsageProcessorTest {
                     result.getLbHostUsages().get(3));
         }
     }
+
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(locations = {"classpath:context.xml"})
+    @TestExecutionListeners({
+        DependencyInjectionTestExecutionListener.class,
+        DbUnitTestExecutionListener.class})
+    @DbUnitConfiguration(dataSetLoader = FlatXmlLoader.class)
+    public static class WhenTestingProcessRecordsWithNoPreviousRecords {
+
+        @Autowired
+        private UsageRefactorService usageRefactorService;
+
+        private Map<Integer, Map<Integer, SnmpUsage>> snmpMap;
+        private Map<Integer, List<LoadBalancerHostUsage>> lbHostMap;
+        private int numHosts;
+        private Calendar pollTime;
+        String pollTimeStr;
+        private int numLBs;
+
+        @Before
+        public void standUp() throws Exception {
+            numHosts = 2;
+            numLBs = 2;
+            snmpMap = UsagePollerGenerator.generateSnmpMap(numHosts, numLBs);
+            lbHostMap = usageRefactorService.getAllLoadBalancerHostUsages();
+            pollTime = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            pollTimeStr = sdf.format(pollTime.getTime());
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithnopreviousrecords/case1.xml")
+        public void case1() throws Exception{
+            UsageProcessorResult result = UsageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime, numHosts);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(2, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(2));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(3));
+
+            //New lb_host_usage records assertions
+            Assert.assertEquals(4, result.getLbHostUsages().size());
+            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(0));
+            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(2));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(3));
+        }
+    }
 }
