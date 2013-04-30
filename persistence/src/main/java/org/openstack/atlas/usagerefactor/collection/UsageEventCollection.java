@@ -46,7 +46,6 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
         }
         this.futures = futures;
         return futures;
-//        processFutures(usageEventProcessor, lb, event);
     }
 
     public void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event) {

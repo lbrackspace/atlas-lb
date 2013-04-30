@@ -50,7 +50,6 @@ public abstract class AbstractUsageEventCollection {
         }
 
         if (this.hosts != null && !this.hosts.isEmpty()) {
-//                ExecutorService blah = Executors.newFixedThreadPool(hosts.size());
             collectUsageRecords(executorService, usageEventProcessor, hosts, lb, event);
             processFutures(usageEventProcessor, lb, event);
             LOG.debug("Finished Processing Usage Records for load balancer: " + lb.getId());

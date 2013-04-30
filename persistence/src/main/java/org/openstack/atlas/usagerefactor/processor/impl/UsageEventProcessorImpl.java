@@ -18,6 +18,7 @@ import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
@@ -35,27 +36,27 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
     protected LoadBalancerRepository loadBalancerRepository;
     protected AccountUsageRepository accountUsageRepository;
 
-    //@Required
+    @Required
     public void setUsageService(UsageRefactorService usageService) {
         this.usageService = usageService;
     }
 
-    //@Required
+    @Required
     public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
         this.loadBalancerRepository = loadBalancerRepository;
     }
 
-    //@Required
+    @Required
     public void setAccountUsageRepository(AccountUsageRepository accountUsageRepository) {
         this.accountUsageRepository = accountUsageRepository;
     }
 
-    //@Required
+    @Required
     public void setVirtualIpRepository(VirtualIpRepository virtualIpRepository) {
         this.virtualIpRepository = virtualIpRepository;
     }
 
-    //@Required
+    @Required
     public void setUsageRefactorService(UsageRefactorService usageRefactorService) {
         this.usageRefactorService = usageRefactorService;
     }
