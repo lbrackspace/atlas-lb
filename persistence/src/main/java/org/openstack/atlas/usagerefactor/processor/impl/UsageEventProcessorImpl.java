@@ -13,34 +13,30 @@ import org.openstack.atlas.service.domain.repository.AccountUsageRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
-import org.openstack.atlas.service.domain.services.UsageService;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 
-import static org.openstack.atlas.service.domain.events.UsageEvent.CREATE_LOADBALANCER;
-import static org.openstack.atlas.service.domain.events.UsageEvent.CREATE_VIRTUAL_IP;
-import static org.openstack.atlas.service.domain.events.UsageEvent.DELETE_LOADBALANCER;
+import static org.openstack.atlas.service.domain.events.UsageEvent.*;
 
 @Component
 public class UsageEventProcessorImpl implements UsageEventProcessor {
     private final Log LOG = LogFactory.getLog(UsageEventProcessorImpl.class);
-    protected UsageService usageService;
+    protected UsageRefactorService usageService;
     protected UsageRefactorService usageRefactorService;
     protected VirtualIpRepository virtualIpRepository;
     protected LoadBalancerRepository loadBalancerRepository;
     protected AccountUsageRepository accountUsageRepository;
 
     //@Required
-    public void setUsageService(UsageService usageService) {
+    public void setUsageService(UsageRefactorService usageService) {
         this.usageService = usageService;
     }
 

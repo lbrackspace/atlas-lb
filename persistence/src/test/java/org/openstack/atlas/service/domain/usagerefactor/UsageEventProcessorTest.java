@@ -20,8 +20,7 @@ import org.openstack.atlas.service.domain.repository.AccountUsageRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
-import org.openstack.atlas.service.domain.services.UsageService;
-import org.openstack.atlas.service.domain.services.impl.UsageServiceImpl;
+import org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRefactorRepository;
@@ -62,10 +61,10 @@ public class UsageEventProcessorTest {
         HostUsageRefactorRepository hostUsageRefactorRepository;
 
         @InjectMocks
-        UsageService usageService1 = new UsageServiceImpl();
+        UsageRefactorService usageService1 = new UsageRefactorServiceImpl();
 
         @Mock
-        UsageService usageService;
+        UsageRefactorService usageService;
 
         @InjectMocks
         UsageEventProcessor processor = new UsageEventProcessorImpl();
@@ -304,11 +303,7 @@ public class UsageEventProcessorTest {
             Assert.assertEquals(0, mappedUsage.getTagsBitmask());
         }
 
+        //TODO: TEST ACCOUNt
 
-//        @Test
-//        public void shasdfouldMapDeleteLoadBalancer() throws EntityNotFoundException, DeletedStatusException {
-//            UsageEventCollection c = new UsageEventCollection();
-//            c.processUsageRecord(null, null);
-//        }
     }
 }

@@ -29,8 +29,15 @@ public class SnmpVSCollector implements Callable<SnmpUsage> {
         try {
             snmpusage = stingrayUsageClient.getVirtualServerUsage(host, lb);
         } catch (Exception e) {
-            String retString = String.format("Request for host %s usage from SNMP server failed.", host.getName());
+            String hostname;
+            if (host.getName() == null) {
+                hostname = "NULL-HOST";
+            } else {
+                hostname = host.getName();
+            }
+            String retString = String.format("Request for host %s usage from SNMP server failed.", hostname);
             LOG.error(retString, e);
+
         }
         return snmpusage;
     }

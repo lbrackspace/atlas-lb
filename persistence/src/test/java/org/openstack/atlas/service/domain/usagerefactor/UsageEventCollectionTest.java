@@ -1,13 +1,16 @@
 package org.openstack.atlas.service.domain.usagerefactor;
 
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.AccountUsageRepository;
@@ -19,15 +22,22 @@ import org.openstack.atlas.service.domain.services.UsageService;
 import org.openstack.atlas.service.domain.services.impl.UsageServiceImpl;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRefactorRepository;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
+import org.openstack.atlas.usagerefactor.StingrayUsageClient;
+import org.openstack.atlas.usagerefactor.collection.SnmpVSCollector;
 import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(Enclosed.class)
 public class UsageEventCollectionTest {
@@ -84,19 +94,45 @@ public class UsageEventCollectionTest {
 
         }
 
-        @Ignore
         @Test
         public void shasdfouldMapDeleteLoadBalancer() throws EntityNotFoundException, DeletedStatusException {
-//            mockStatic(Executors.class);
+            mockStatic(Executors.class);
 //            PowerMockito.when(Executors.newFixedThreadPool(1)).thenReturn();
-//
-//            List<Host> hosts = new ArrayList<Host>();
-//            Host host = new Host();
-//            hosts.add(host);
-//
-//            when(hostRepository.getAllHosts()).thenReturn(hosts);
-//
-//            usageEventCollection.processUsageRecord(new LoadBalancer(), UsageEvent.SSL_ONLY_ON);
+
+            List<Host> hosts = new ArrayList<Host>();
+            Host host = new Host();
+            hosts.add(host);
+
+            when(hostRepository.getAllHosts()).thenReturn(hosts);
+
+            usageEventCollection.processUsageRecord(new LoadBalancer(), UsageEvent.SSL_ONLY_ON);
+        }
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PrepareForTest(Executors.class)
+    public static class WhenSnmpVSCollectorRuns {
+        LoadBalancer lb;
+        SnmpUsage snmpUsage;
+        SnmpUsage snmpUsage1;
+        List<SnmpUsage> snmpUsages;
+
+        @Mock
+        StingrayUsageClient stingrayUsageClient;
+
+        @InjectMocks
+        SnmpVSCollector vsCollector = new SnmpVSCollector(new Host(), new LoadBalancer());
+
+        @Before
+        public void standUp() {
+
+        }
+
+        @Test
+        public void shouldReturnSnmpUsageObject() throws EntityNotFoundException, DeletedStatusException, StingraySnmpGeneralException {
+            when(stingrayUsageClient.getVirtualServerUsage(Matchers.<Host>any(), Matchers.<LoadBalancer>any())).thenReturn(new SnmpUsage());
+            SnmpUsage usage = vsCollector.call();
+            Assert.assertNotNull(usage);
         }
     }
 }

@@ -50,6 +50,4 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
     public void batchDeleteLoadBalancerMergedHostUsages(Collection<LoadBalancerMergedHostUsage> usages) {
         loadBalancerMergedHostUsageRepository.batchDelete(usages);
     }
-
-
 }

@@ -7,13 +7,14 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Component
 public abstract class AbstractUsageEventCollection {
@@ -37,7 +38,8 @@ public abstract class AbstractUsageEventCollection {
         this.usageEventProcessor = usageEventProcessor;
     }
 
-    public abstract void collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor, List<Host> hosts, LoadBalancer lb, UsageEvent event);
+    public abstract List<Future<SnmpUsage>> collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor, List<Host> hosts, LoadBalancer lb, UsageEvent event);
+    public abstract void processFutures(UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event);
 
     public void processUsageRecord(List<Host> hosts, LoadBalancer lb, UsageEvent event) {
         LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
@@ -48,9 +50,9 @@ public abstract class AbstractUsageEventCollection {
         }
 
         if (this.hosts != null && !this.hosts.isEmpty()) {
-
-                ExecutorService blah = Executors.newFixedThreadPool(hosts.size());
+//                ExecutorService blah = Executors.newFixedThreadPool(hosts.size());
             collectUsageRecords(executorService, usageEventProcessor, hosts, lb, event);
+            processFutures(usageEventProcessor, lb, event);
             LOG.debug("Finished Processing Usage Records for load balancer: " + lb.getId());
         }
 
