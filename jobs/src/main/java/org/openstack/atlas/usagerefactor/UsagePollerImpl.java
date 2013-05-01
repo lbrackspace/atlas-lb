@@ -20,7 +20,7 @@ public class UsagePollerImpl implements UsagePoller{
     @Override
     public void poll() throws Exception {
         int numHosts = hostService.getAllHosts().size();
-        Map<Integer, List<LoadBalancerHostUsage>> existingUsages = usageRefactorService.getAllLoadBalancerHostUsages();
+        Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages = usageRefactorService.getAllLoadBalancerHostUsages();
         Calendar pollTime = Calendar.getInstance();
         Map<Integer, Map<Integer, SnmpUsage>> currentUsages = snmpUsageCollector.getCurrentData();
         currentUsages = UsageMappingHelper.swapKeyGrouping(currentUsages);
