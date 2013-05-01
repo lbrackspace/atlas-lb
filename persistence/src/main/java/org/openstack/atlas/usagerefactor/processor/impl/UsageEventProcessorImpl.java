@@ -27,6 +27,7 @@ import java.util.Set;
 
 import static org.openstack.atlas.service.domain.events.UsageEvent.*;
 
+
 @Component
 public class UsageEventProcessorImpl implements UsageEventProcessor {
     private final Log LOG = LogFactory.getLog(UsageEventProcessorImpl.class);
@@ -63,24 +64,36 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
 
     @Override
     public void processUsageEvent(List<SnmpUsage> usages, LoadBalancer loadBalancer, UsageEvent usageEvent) {
-        LOG.info(String.format("Processing '%s' usage event for load balancer '%d'...", usageEvent.name(), loadBalancer.getId()));
+        LOG.info(String.format("Processing '%s' usage event for load balancer '%d'...", usageEvent.name(),
+                loadBalancer.getId()));
         Calendar pollTime = Calendar.getInstance();
 
-        //Batch this??
+        //TODO: Batch this??
         for (SnmpUsage usage : usages) {
+            LOG.info(String.format("Creating usage event for load balancer '%d'...", loadBalancer.getId()));
             usageService.createUsageEvent(mapSnmpUsage(usage, loadBalancer, pollTime, usageEvent));
-
+            LOG.info(String.format("Successfully created usage event for load balancer '%d'...",
+                    loadBalancer.getId()));
         }
+
+
         // If account specific event then go ahead and create entry in account usage table
-        if (usageEvent.equals(CREATE_LOADBALANCER) || usageEvent.equals(DELETE_LOADBALANCER) || usageEvent.equals(CREATE_VIRTUAL_IP) || usageEvent.equals(UsageEvent.DELETE_VIRTUAL_IP)) {
+        if (usageEvent.equals(CREATE_LOADBALANCER) || usageEvent.equals(DELETE_LOADBALANCER)
+                || usageEvent.equals(CREATE_VIRTUAL_IP) || usageEvent.equals(DELETE_VIRTUAL_IP)) {
+            LOG.info(String.format("Creating account usage event for load balancer '%d'...",
+                    loadBalancer.getId()));
             createAccountUsageEntry(loadBalancer, pollTime);
+            LOG.info(String.format("Successfully created account usage event for load balancer '%d'...",
+                    loadBalancer.getId()));
         }
 
-        LOG.debug(String.format("Finished processing '%s' usage event for load balancer '%d'...", usageEvent.name(), loadBalancer.getId()));
+        LOG.debug(String.format("Finished processing '%s' usage event for load balancer '%d'...",
+                usageEvent.name(), loadBalancer.getId()));
     }
 
     @Override
-    public LoadBalancerHostUsage mapSnmpUsage(SnmpUsage usage, LoadBalancer loadBalancer, Calendar pollTime, UsageEvent usageEvent) {
+    public LoadBalancerHostUsage mapSnmpUsage(SnmpUsage usage, LoadBalancer loadBalancer,
+                                              Calendar pollTime, UsageEvent usageEvent) {
         LoadBalancerHostUsage newUsageEvent = new LoadBalancerHostUsage();
         newUsageEvent.setAccountId(loadBalancer.getAccountId());
         newUsageEvent.setLoadbalancerId(loadBalancer.getId());
@@ -96,13 +109,15 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         newUsageEvent.setNumVips(loadBalancer.getLoadBalancerJoinVipSet().size());
 
 
-        int tags = calculateTags(loadBalancer.getAccountId(), loadBalancer.getId(), usageEvent, usageService.getRecentHostUsageRecord(loadBalancer.getId()));
+        int tags = calculateTags(loadBalancer.getAccountId(), loadBalancer.getId(),
+                usageEvent, (LoadBalancerHostUsage) null);
         newUsageEvent.setTagsBitmask(tags);
 
         return newUsageEvent;
     }
 
-    public void createAccountUsageEntry(LoadBalancer loadBalancer, Calendar eventTime) {
+    @Override
+    public AccountUsage createAccountUsageEntry(LoadBalancer loadBalancer, Calendar eventTime) {
         Integer accountId = loadBalancer.getAccountId();
         AccountUsage usage = new AccountUsage();
         usage.setAccountId(accountId);
@@ -111,9 +126,11 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         usage.setNumPublicVips(virtualIpRepository.getNumUniqueVipsForAccount(accountId, VirtualIpType.PUBLIC));
         usage.setNumServicenetVips(virtualIpRepository.getNumUniqueVipsForAccount(accountId, VirtualIpType.SERVICENET));
         accountUsageRepository.save(usage);
+        return usage;
     }
 
-    public int calculateTags(Integer accountId, Integer lbId, UsageEvent usageEvent, LoadBalancerHostUsage recentUsage) {
+    public int calculateTags(Integer accountId, Integer lbId, UsageEvent usageEvent,
+                             LoadBalancerHostUsage recentUsage) {
         BitTags tags;
 
         if (recentUsage != null) {
@@ -160,7 +177,8 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
 
     public boolean isServiceNetLoadBalancer(Integer accountId, Integer lbId) {
         try {
-            final Set<VirtualIp> vipsByAccountIdLoadBalancerId = loadBalancerRepository.getVipsByAccountIdLoadBalancerId(accountId, lbId);
+            final Set<VirtualIp> vipsByAccountIdLoadBalancerId =
+                    loadBalancerRepository.getVipsByAccountIdLoadBalancerId(accountId, lbId);
 
             for (VirtualIp virtualIp : vipsByAccountIdLoadBalancerId) {
                 if (virtualIp.getVipType().equals(VirtualIpType.SERVICENET)) return true;

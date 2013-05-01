@@ -48,6 +48,7 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
         return futures;
     }
 
+    @Override
     public void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event) {
         List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
         if (futures != null) {
@@ -63,11 +64,6 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
             }
         }
         usageEventProcessor.processUsageEvent(usages, lb, event);
-    }
-
-    @Override
-    public void processFutures(UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event) {
-        processFutures(null, usageEventProcessor, lb, event);
     }
 
     public List<Future<SnmpUsage>> getFutures() {

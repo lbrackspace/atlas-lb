@@ -12,6 +12,9 @@ import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.HostStatus;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.repository.AccountUsageRepository;
 import org.openstack.atlas.service.domain.repository.HostRepository;
@@ -28,13 +31,17 @@ import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import static org.mockito.Mockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(Enclosed.class)
@@ -92,19 +99,22 @@ public class UsageEventCollectionTest {
 
         }
 
-//        @Test
-//        public void shasdfouldMapDeleteLoadBalancer() throws EntityNotFoundException, DeletedStatusException {
-//            mockStatic(Executors.class);
-////            PowerMockito.when(Executors.newFixedThreadPool(1)).thenReturn();
-//
-//            List<Host> hosts = new ArrayList<Host>();
-//            Host host = new Host();
-//            hosts.add(host);
-//
-//            when(hostRepository.getAllHosts()).thenReturn(hosts);
-//
-//            usageEventCollection.processUsageRecord(new LoadBalancer(), UsageEvent.SSL_ONLY_ON);
-//        }
+        @Test
+        public void shouldNotFailWhenCollectingUsageRecords() throws EntityNotFoundException, DeletedStatusException, InterruptedException {
+            mock(ExecutorService.class);
+            List<Future<SnmpUsage>> futures = new ArrayList<Future<SnmpUsage>>();
+            PowerMockito.when(executorService.invokeAll(Matchers.anyCollection())).thenReturn(new ArrayList<java.util.concurrent.Future<Object>>());
+
+            List<Host> hosts = new ArrayList<Host>();
+            Host host = new Host();
+            hosts.add(host);
+
+            when(hostRepository.getAllHosts()).thenReturn(hosts);
+            usageEventCollection.collectUsageRecords(executorService, new UsageEventProcessorImpl(), hosts, new LoadBalancer(), UsageEvent.SSL_ONLY_ON);
+
+            Assert.assertNotNull(usageEventCollection.getFutures());
+            usageEventCollection.processFutures(null, new UsageEventProcessorImpl(), new LoadBalancer(), UsageEvent.SSL_ONLY_ON);
+        }
     }
 
     @RunWith(PowerMockRunner.class)

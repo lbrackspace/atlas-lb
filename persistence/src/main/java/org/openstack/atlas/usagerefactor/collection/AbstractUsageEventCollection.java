@@ -39,7 +39,7 @@ public abstract class AbstractUsageEventCollection {
     }
 
     public abstract List<Future<SnmpUsage>> collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor, List<Host> hosts, LoadBalancer lb, UsageEvent event);
-    public abstract void processFutures(UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event);
+    public abstract void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event);
 
     public void processUsageRecord(List<Host> hosts, LoadBalancer lb, UsageEvent event) {
         LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
@@ -51,7 +51,7 @@ public abstract class AbstractUsageEventCollection {
 
         if (this.hosts != null && !this.hosts.isEmpty()) {
             collectUsageRecords(executorService, usageEventProcessor, hosts, lb, event);
-            processFutures(usageEventProcessor, lb, event);
+            processFutures(null, usageEventProcessor, lb, event);
             LOG.debug("Finished Processing Usage Records for load balancer: " + lb.getId());
         }
 

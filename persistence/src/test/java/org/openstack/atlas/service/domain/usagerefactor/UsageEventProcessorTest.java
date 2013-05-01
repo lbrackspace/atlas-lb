@@ -9,10 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
-import org.openstack.atlas.service.domain.entities.VirtualIp;
-import org.openstack.atlas.service.domain.entities.VirtualIpType;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -302,8 +299,60 @@ public class UsageEventProcessorTest {
             mappedUsage = processor.mapSnmpUsage(snmpUsage, lb, now, UsageEvent.DELETE_LOADBALANCER);
             Assert.assertEquals(0, mappedUsage.getTagsBitmask());
         }
+    }
 
-        //TODO: TEST ACCOUNt
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenProcessingAccountUsageEvents {
+        LoadBalancer lb;
+        SnmpUsage snmpUsage;
+        SnmpUsage snmpUsage1;
+        List<SnmpUsage> snmpUsages;
 
+        @Mock
+        VirtualIpRepository virtualIpRepository;
+
+        @Mock
+        UsageRefactorService usageRefactorService;
+
+        @Mock
+        AccountUsageRepository accountUsageRepository;
+
+        @Mock
+        LoadBalancerRepository loadBalancerRepository;
+
+        @Mock
+        HostUsageRefactorRepository hostUsageRefactorRepository;
+
+        @InjectMocks
+        UsageRefactorService usageService1 = new UsageRefactorServiceImpl();
+
+        @Mock
+        UsageRefactorService usageService;
+
+        @InjectMocks
+        UsageEventProcessor processor = new UsageEventProcessorImpl();
+
+        @Before
+        public void standUp() {
+            lb = new LoadBalancer();
+            lb.setId(543221);
+            lb.setAccountId(55555);
+        }
+
+        @Test
+        public void shouldMapBasicAccountUsageRecord() {
+            when(loadBalancerRepository.getNumNonDeletedLoadBalancersForAccount(Matchers.<Integer>any())).thenReturn(2);
+            when(virtualIpRepository.getNumUniqueVipsForAccount(Matchers.<Integer>any(), Matchers.<VirtualIpType>any())).thenReturn(6);
+
+            AccountUsage mappedUsage;
+            Calendar now = Calendar.getInstance();
+            mappedUsage = processor.createAccountUsageEntry(lb, now);
+            Assert.assertEquals(lb.getAccountId(), mappedUsage.getAccountId());
+            Assert.assertEquals(6, (int) mappedUsage.getNumServicenetVips());
+            Assert.assertEquals(6, (int) mappedUsage.getNumPublicVips());
+            Assert.assertEquals(2, (int) mappedUsage.getNumLoadBalancers());
+            Assert.assertEquals(now, mappedUsage.getStartTime());
+
+        }
     }
 }
