@@ -3,6 +3,7 @@ package org.openstack.atlas.usagerefactor;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -382,6 +383,7 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
+        @Ignore
         public void shouldCreateTwoRecordsIfEventIsFirstRecordOfHour(){
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 1));
@@ -645,6 +647,7 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
+        @Ignore
         public void shouldStopProcessingRecordsBeforeTheNextHour(){
             List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
             usagePojoList.add(new GeneratorPojo(accountId, lbId, 36));

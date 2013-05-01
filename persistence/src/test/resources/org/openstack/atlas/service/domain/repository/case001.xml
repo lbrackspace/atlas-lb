@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details: Only one record.
+-->
+<dataset>
+    <loadbalancer id="1234" account_id="1234" name="TestLb" algorithm="RANDOM" protocol="HTTP" port="80" status="ACTIVE" timeout="0" connection_logging="false" content_caching="false" half_closed="false" sessionPersistence="NONE" is_sticky="false" />
+    <lb_usage id="1" account_id="1234" loadbalancer_id="1234" bandwidth_out="0" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" avg_concurrent_conns="0.0" avg_concurrent_conns_ssl="0.0" num_vips="1" tags_bitmask="0" num_polls="1" start_time="2013-04-10 20:58:59" end_time="2013-04-10 21:00:00" entry_version="1" needs_pushed="true" corrected="false" uuid="cf54e41e-62fe-3b48-9c06-c01db38ae9be" num_attempts="1" event_type="CREATE_LOADBALANCER" />
+</dataset>
