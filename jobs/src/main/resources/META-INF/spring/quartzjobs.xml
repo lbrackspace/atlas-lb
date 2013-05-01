@@ -243,7 +243,7 @@
     if this is indeed a 'job'..-->
     <bean name="usageRefactorPoller" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass"
-                  value="org.openstack.atlas.usagerefactor.UsagePollerImpl"/>
+                  value="org.openstack.atlas.usagerefactor.UsageProcessor"/>
         <property name="jobDataAsMap">
             <map>
                 <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
