@@ -721,6 +721,7 @@ public class UsageProcessorTest {
             pollTimeStr = sdf.format(pollTime.getTime());
         }
 
+        @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithnopreviousrecords/case1.xml")
         public void case1() throws Exception{

@@ -6,7 +6,6 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
@@ -93,7 +92,7 @@ public class UsageRefactorServiceImplTest {
             when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords()).thenReturn(hostUsageList);
             when(loadBalancerMergedHostUsageRepository.getAllUsageRecordsInOrder()).thenReturn(mergedUsageList);
             when(hostUsageRefactorRepository.getMostRecentUsageRecordForLbId(anyInt())).thenReturn(hostUsage2);
-            Mockito.doNothing().when(hostUsageRefactorRepository.getMostRecentUsageRecordForLbId(anyInt()));
+//            doNothing().when(hostUsageRefactorRepository.getMostRecentUsageRecordForLbId(anyInt()));
         }
 
         @Test
