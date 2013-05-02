@@ -1,4 +1,4 @@
-package org.openstack.atlas.usagerefactor.dbunit;
+package org.openstack.atlas.dbunit;
 
 import com.github.springtestdbunit.dataset.AbstractDataSetLoader;
 import org.dbunit.dataset.IDataSet;

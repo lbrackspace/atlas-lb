@@ -5,22 +5,22 @@ import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.openstack.atlas.dbunit.FlatXmlLoader;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
-import org.openstack.atlas.usagerefactor.dbunit.FlatXmlLoader;
 import org.openstack.atlas.usagerefactor.generator.UsagePollerGenerator;
 import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
 import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 import org.openstack.atlas.usagerefactor.helpers.UsageProcessorResult;
-import org.openstack.atlas.usagerefactor.junit.AssertLoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.junit.AssertLoadBalancerMergedHostUsage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -29,7 +29,6 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.mockito.Mockito.mock;
 
 @RunWith(Enclosed.class)
 public class UsagePollerHelperTest {
@@ -143,9 +142,10 @@ public class UsagePollerHelperTest {
         DependencyInjectionTestExecutionListener.class,
         DbUnitTestExecutionListener.class})
     @DbUnitConfiguration(dataSetLoader = FlatXmlLoader.class)
-    public static class WhenTestingProcessExistingEvents2 {
+    public static class WhenTestingProcessExistingEvents {
 
         @Autowired
+        @Qualifier("usageRefactorService")
         private UsageRefactorService usageRefactorService;
 
         private UsagePollerHelper usagePollerHelper;
@@ -231,6 +231,45 @@ public class UsagePollerHelperTest {
                     UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:00", mergedUsages.get(0));
             AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 10L, 0L, 0L, 50L, 0, 0, 1, 5,
                     UsageEvent.SSL_MIXED_ON, "2013-04-10 20:02:00", mergedUsages.get(1));
+        }
+    }
+
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(locations = {"classpath:context.xml"})
+    @TestExecutionListeners({
+        DependencyInjectionTestExecutionListener.class,
+        DbUnitTestExecutionListener.class})
+    @DbUnitConfiguration(dataSetLoader = FlatXmlLoader.class)
+    public static class WhenTestingProcessCurrentUsage {
+
+        @Autowired
+        @Qualifier("usageRefactorService")
+        private UsageRefactorService usageRefactorService;
+
+        private UsagePollerHelper usagePollerHelper;
+        private Map<Integer, Map<Integer, SnmpUsage>> snmpMap;
+        private Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> lbHostMap;
+        private Calendar pollTime;
+        String pollTimeStr;
+        private int numHosts = 2;
+        private int numLBs = 2;
+
+        @Before
+        public void standUp() throws Exception {
+            usagePollerHelper = new UsagePollerHelper();
+            snmpMap = UsagePollerGenerator.generateSnmpMap(numHosts, numLBs);
+            lbHostMap = usageRefactorService.getAllLoadBalancerHostUsages();
+            pollTime = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            pollTimeStr = sdf.format(pollTime.getTime());
+        }
+
+        @Ignore
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/usagepollerhelper/processcurrentusage/case1.xml")
+        public void shouldCalculateUsageNormallyWhenThereAreNoEvents() throws Exception{
+            UsageProcessorResult result = usagePollerHelper.processCurrentUsage(lbHostMap, snmpMap, pollTime);
+            Assert.assertEquals(2, result.getMergedUsages().size());
         }
     }
 
