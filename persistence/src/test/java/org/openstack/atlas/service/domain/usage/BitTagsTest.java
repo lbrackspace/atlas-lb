@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 public class BitTagsTest {
 
     private static final int sslOnly = BitTag.SSL.tagValue();
+    private static final int sslMixed = BitTag.SSL_MIXED_MODE.tagValue();
     private static final int servicenetOnly = BitTag.SERVICENET_LB.tagValue();
     private static final int sslAndServicenet = sslOnly + servicenetOnly;
 
@@ -88,6 +89,33 @@ public class BitTagsTest {
             bitTags.flipTagOff(BitTag.SERVICENET_LB);
             Assert.assertFalse(bitTags.isTagOn(BitTag.SSL));
             Assert.assertFalse(bitTags.isTagOn(BitTag.SERVICENET_LB));
+        }
+    }
+
+    public static class WhenFlippingTagsMultipleTimes {
+
+        @Test
+        public void shouldHaveNoSslWhenDisablingSslOnlyMultipleTimes() {
+            BitTags bitTags = new BitTags(sslOnly);
+            Assert.assertTrue(bitTags.isTagOn(BitTag.SSL));
+            bitTags.flipTagOff(BitTag.SSL);
+            Assert.assertFalse(bitTags.isTagOn(BitTag.SSL));
+            bitTags.flipTagOff(BitTag.SSL);
+            Assert.assertFalse(bitTags.isTagOn(BitTag.SSL));
+            bitTags.flipTagOff(BitTag.SSL);
+            Assert.assertFalse(bitTags.isTagOn(BitTag.SSL));
+        }
+
+        @Test
+        public void shouldHaveNoSslWhenDisablingSslMixedMultipleTimes() {
+            BitTags bitTags = new BitTags(sslMixed);
+            Assert.assertTrue(bitTags.isTagOn(BitTag.SSL_MIXED_MODE));
+            bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
+            Assert.assertFalse(bitTags.isTagOn(BitTag.SSL_MIXED_MODE));
+            bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
+            Assert.assertFalse(bitTags.isTagOn(BitTag.SSL_MIXED_MODE));
+            bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
+            Assert.assertFalse(bitTags.isTagOn(BitTag.SSL_MIXED_MODE));
         }
     }
 }

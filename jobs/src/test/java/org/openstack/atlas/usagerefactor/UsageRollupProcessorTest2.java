@@ -210,4 +210,28 @@ public class UsageRollupProcessorTest2 {
         AssertUsage.hasValues(null, 1234, 1234, 600l, 0l, 1200l, 0l, 1.0, 0.0, "2013-04-10 20:00:01", "2013-04-10 21:00:00",
                 12, 1, 0, UsageEvent.SSL_OFF.name(), 0, true, null, actualUsage);
     }
+
+    @Test
+    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/case013.xml")
+    public void case13() throws Exception {
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
+        Assert.assertEquals(1, processedUsages.size());
+        Usage actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 350l, 0l, 700l, 0l, 1.0, 0.0, "2013-04-10 20:00:00", "2013-04-10 21:00:00",
+                7, 1, 5, null, 0, true, null, actualUsage);
+
+        hourToProcess.add(Calendar.HOUR, 1);
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
+        Assert.assertEquals(1, processedUsages.size());
+        actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 21:00:00", "2013-04-10 22:00:00",
+                0, 1, 5, null, 0, true, null, actualUsage);
+
+        hourToProcess.add(Calendar.HOUR, 1);
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
+        Assert.assertEquals(1, processedUsages.size());
+        actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 200l, 0l, 400l, 0l, 1.0, 0.0, "2013-04-10 22:00:00", "2013-04-10 23:00:00",
+                5, 1, 5, null, 0, true, null, actualUsage);
+    }
 }

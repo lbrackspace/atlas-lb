@@ -2,16 +2,18 @@ package org.openstack.atlas.usagerefactor;
 
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.SslTerminationRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
+import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.RollupUsageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import sun.rmi.runtime.Log;
 
 import java.util.*;
 
@@ -20,6 +22,10 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
     @Autowired
     private UsageRepository usageRepository;
+    @Autowired
+    private SslTerminationRepository sslTerminationRepository;
+    @Autowired
+    private LoadBalancerService loadbalancerService;
 
     @Override
     public Map<Integer, List<LoadBalancerMergedHostUsage>> groupUsagesByLbId(List<LoadBalancerMergedHostUsage> LoadBalancerMergedHostUsages) {
@@ -152,23 +158,27 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             if (currentLoadBalancerMergedHost.getEventType() != UsageEvent.CREATE_LOADBALANCER) {
                 currentUsage.setEndTime(currentLoadBalancerMergedHost.getPollTime());
                 if (isFirstOfHour) {
-                    currentUsage.setEventType(null);
-                    if(mostRecentTagsBitmask == null) {
-                        Usage mostRecentUsageForLoadBalancer = null;
+                    if (mostRecentTagsBitmask == null) {
+                        Usage mostRecentUsageForLoadBalancer;
                         try {
                             mostRecentUsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(currentUsage.getLoadbalancer().getId());
                             mostRecentTagsBitmask = mostRecentUsageForLoadBalancer.getTags();
                         } catch (EntityNotFoundException e) {
                             // TODO: Put an alert and monitor it!
-                            LOG.error("Unable to get tags for record. Please update manually!", e);
-                            mostRecentTagsBitmask = BitTag.SERVICENET_LB.tagValue(); // Set to tags that will deterministically not overbill.
+                            LOG.error("Unable to get proper tags for record. Please verify manually!", e);
+                            BitTags bitTags = getCurrentBitTags(currentUsage.getLoadbalancer().getId(), currentUsage.getAccountId());
+                            mostRecentTagsBitmask = bitTags.getBitTags();
                         }
                     }
+
                     currentUsage.setTags(mostRecentTagsBitmask);
+                    currentUsage.setEventType(null);
                 }
+
                 processedRecords.add(currentUsage);
                 currentUsage = createInitializedUsageRecord(currentLoadBalancerMergedHost);
             }
+
             switch (currentLoadBalancerMergedHost.getEventType()) {
                 case CREATE_LOADBALANCER:
                     currentUsage.setStartTime(currentLoadBalancerMergedHost.getPollTime());
@@ -204,6 +214,33 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                     break;
             }
         }
+
         return currentUsage;
+    }
+
+    // TODO: Move to other class?
+    private BitTags getCurrentBitTags(Integer lbId, Integer accountId) {
+        BitTags bitTags = new BitTags();
+
+        try {
+            SslTermination sslTerm = sslTerminationRepository.getSslTerminationByLbId(lbId, accountId);
+
+            if (sslTerm.isEnabled()) {
+                bitTags.flipTagOn(BitTag.SSL);
+            }
+
+            if (!sslTerm.isSecureTrafficOnly()) {
+                bitTags.flipTagOn(BitTag.SSL_MIXED_MODE);
+            }
+        } catch (EntityNotFoundException e1) {
+            bitTags.flipTagOff(BitTag.SSL);
+            bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
+        }
+
+        if (loadbalancerService.isServiceNetLoadBalancer(accountId, lbId)) {
+            bitTags.flipTagOn(BitTag.SERVICENET_LB);
+        }
+
+        return bitTags;
     }
 }

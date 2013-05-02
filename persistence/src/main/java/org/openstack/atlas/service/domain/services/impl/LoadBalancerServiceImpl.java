@@ -1156,6 +1156,24 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return domainLbs;
     }
 
+    @Override
+    public boolean isServiceNetLoadBalancer(Integer accountId, Integer lbId) {
+        try {
+            final Set<VirtualIp> vipsByAccountIdLoadBalancerId = loadBalancerRepository.getVipsByAccountIdLoadBalancerId(accountId, lbId);
+
+            for (VirtualIp virtualIp : vipsByAccountIdLoadBalancerId) {
+                if (virtualIp.getVipType().equals(VirtualIpType.SERVICENET)) return true;
+            }
+
+        } catch (EntityNotFoundException e) {
+            return false;
+        } catch (DeletedStatusException e) {
+            return false;
+        }
+
+        return false;
+    }
+
     private List<LoadBalancer> verifySharedVipsOnLoadBalancers(List<LoadBalancer> lbs) throws EntityNotFoundException, BadRequestException {
         List<LoadBalancer> lbsWithSharedVips = new ArrayList<LoadBalancer>();
         List<LoadBalancer> lbsNeededForRequest = new ArrayList<LoadBalancer>();
