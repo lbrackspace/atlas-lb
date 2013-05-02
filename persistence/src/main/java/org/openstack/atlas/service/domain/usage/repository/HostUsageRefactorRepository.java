@@ -24,8 +24,7 @@ public class HostUsageRefactorRepository {
     private EntityManager entityManager;
 
     public void create(LoadBalancerHostUsage usageRecord) {
-        String queryString = generateFormattedValues(usageRecord);
-//        entityManager.persist(usageEventRecord);
+        entityManager.persist(usageRecord);
     }
 
     // TODO:  Logic needs tested in the requests

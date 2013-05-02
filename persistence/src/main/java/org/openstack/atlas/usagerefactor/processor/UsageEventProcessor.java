@@ -3,7 +3,6 @@ package org.openstack.atlas.usagerefactor.processor;
 import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.events.UsageEvent;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 
 import java.util.Calendar;
@@ -13,7 +12,4 @@ public interface UsageEventProcessor {
     public void processUsageEvent(List<SnmpUsage> usages, LoadBalancer loadBalancer, UsageEvent usageEvent);
 
     public AccountUsage createAccountUsageEntry(LoadBalancer loadBalancer, Calendar eventTime);
-
-    public LoadBalancerHostUsage mapSnmpUsage(SnmpUsage usage, LoadBalancer loadBalancer, Calendar pollTime, UsageEvent usageEvent);
-
 }

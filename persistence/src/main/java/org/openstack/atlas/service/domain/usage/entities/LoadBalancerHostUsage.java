@@ -33,10 +33,10 @@ public class LoadBalancerHostUsage extends Entity implements Serializable {
     private long incomingTransferSsl = 0L;
 
     @Column(name = "concurrent_connections")
-    private int concurrentConnections = 0;
+    private long concurrentConnections = 0;
 
     @Column(name = "concurrent_connections_ssl")
-    private int concurrentConnectionsSsl = 0;
+    private long concurrentConnectionsSsl = 0;
 
     @Column(name = "poll_time")
     private Calendar pollTime = Calendar.getInstance();
@@ -122,7 +122,7 @@ public class LoadBalancerHostUsage extends Entity implements Serializable {
         this.incomingTransferSsl = incomingTransferSsl;
     }
 
-    public int getConcurrentConnections() {
+    public long getConcurrentConnections() {
         return concurrentConnections;
     }
 
@@ -130,7 +130,7 @@ public class LoadBalancerHostUsage extends Entity implements Serializable {
         this.concurrentConnections = concurrentConnections;
     }
 
-    public int getConcurrentConnectionsSsl() {
+    public long getConcurrentConnectionsSsl() {
         return concurrentConnectionsSsl;
     }
 

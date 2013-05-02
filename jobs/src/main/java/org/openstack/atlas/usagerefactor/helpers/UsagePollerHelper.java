@@ -1,12 +1,9 @@
 package org.openstack.atlas.usagerefactor.helpers;
 
 import org.openstack.atlas.service.domain.events.UsageEvent;
-import org.openstack.atlas.service.domain.repository.HostRepository;
-import org.openstack.atlas.service.domain.services.impl.BaseService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
-import org.openstack.atlas.usagerefactor.UsageProcessor;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,8 +51,8 @@ public class UsagePollerHelper{
         newMergedUsage.setOutgoingTransfer(totOutgoingTransfer);
         newMergedUsage.setOutgoingTransferSsl(totOutgoingTransferSsl);
         //Using concurrent connections regardless of reset since this is not a counter, only a snapshot
-        int ccs = currentUsage.getConcurrentConnections() + newMergedUsage.getConcurrentConnections();
-        int ccsSsl = currentUsage.getConcurrentConnectionsSsl() + newMergedUsage.getConcurrentConnectionsSsl();
+        long ccs = currentUsage.getConcurrentConnections() + newMergedUsage.getConcurrentConnections();
+        long ccsSsl = currentUsage.getConcurrentConnectionsSsl() + newMergedUsage.getConcurrentConnectionsSsl();
         newMergedUsage.setConcurrentConnections(ccs);
         newMergedUsage.setConcurrentConnectionsSsl(ccsSsl);
     }
@@ -83,8 +80,8 @@ public class UsagePollerHelper{
         newMergedUsage.setOutgoingTransfer(totOutgoingTransfer);
         newMergedUsage.setOutgoingTransferSsl(totOutgoingTransferSsl);
         //Using concurrent connections regardless of reset since this is not a counter, only a snapshot
-        int ccs = currentRecord.getConcurrentConnections() + newMergedUsage.getConcurrentConnections();
-        int ccsSsl = currentRecord.getConcurrentConnectionsSsl() + newMergedUsage.getConcurrentConnectionsSsl();
+        long ccs = currentRecord.getConcurrentConnections() + newMergedUsage.getConcurrentConnections();
+        long ccsSsl = currentRecord.getConcurrentConnectionsSsl() + newMergedUsage.getConcurrentConnectionsSsl();
         newMergedUsage.setConcurrentConnections(ccs);
         newMergedUsage.setConcurrentConnectionsSsl(ccsSsl);
     }
