@@ -90,7 +90,6 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
             throw new JobExecutionException(e);
         }
 
-
     }
 
     private void addSuspendedUsageEvents() {
