@@ -104,7 +104,7 @@ public class UsagePollerHelper{
                 }
                 LoadBalancerHostUsage existingUsage = loadBalancerHostUsages.get(loadBalancerHostUsages.size() - 1);
                 if (isFirstPass) {
-                    newMergedRecord = initializeMergedRecord(loadBalancerHostUsages.get(0));
+                    newMergedRecord = initializeMergedRecord(existingUsage);
                     newMergedRecord.setPollTime(pollTime);
                     newMergedRecord.setEventType(null);
                     isFirstPass = false;
