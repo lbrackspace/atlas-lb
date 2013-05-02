@@ -17,21 +17,7 @@ public class UsagePollerHelper{
 
     final static org.apache.commons.logging.Log LOG = LogFactory.getLog(UsageProcessor.class);
 
-    private int numHosts;
-
     public UsagePollerHelper() {}
-
-    public UsagePollerHelper(int numHosts) {
-        this.numHosts = numHosts;
-    }
-
-    public int getNumHosts() {
-        return numHosts;
-    }
-
-    public void setNumHosts(int numHosts) {
-        this.numHosts = numHosts;
-    }
 
     public void calculateUsage(SnmpUsage currentUsage, LoadBalancerHostUsage previousRecord,
                                LoadBalancerMergedHostUsage newMergedUsage) {
@@ -163,8 +149,8 @@ public class UsagePollerHelper{
         List<LoadBalancerMergedHostUsage> newMergedEventRecords = new ArrayList<LoadBalancerMergedHostUsage>();
 
         for (Integer loadBalancerId : existingUsages.keySet()) {
-            LoadBalancerMergedHostUsage newMergedUsage = null;
-            boolean isFirstPass = true;
+            HashMap<String, LoadBalancerMergedHostUsage> mergedUsagesMap = new HashMap<String, LoadBalancerMergedHostUsage>();
+
             for (Integer hostId : existingUsages.get(loadBalancerId).keySet()) {
                 List<LoadBalancerHostUsage> loadBalancerHostUsages = existingUsages.get(loadBalancerId).get(hostId);
 
@@ -173,7 +159,7 @@ public class UsagePollerHelper{
                     continue;
                 }
 
-                //If there is only one record. then it is most likely just the previous poll.
+                //If there is only one record. then it is most likely just the previous poll. Check event just in case.
                 if (loadBalancerHostUsages.size() == 1) {
                     if (loadBalancerHostUsages.get(0).getEventType() != null) {
                         LOG.info("Event record encountered that did not have a previous record to compare with.");
@@ -185,24 +171,20 @@ public class UsagePollerHelper{
                 if (loadBalancerHostUsages.get(loadBalancerHostUsages.size() - 1).getEventType() == null) {
                     continue;
                 }
-                if (newMergedUsage == null) {
-                    newMergedUsage = initializeMergedRecord(loadBalancerHostUsages.get(1));
-                }
-                for(int i = 0; i < loadBalancerHostUsages.size(); i++) {
-                    if (i == 0) {
-                        //First record is an event, which means something bad happened.  Merged usage should store 0 usage but
-                        //still store the correct concurrent connections.
-                        if (loadBalancerHostUsages.get(i).getEventType() != null) {
-                            newMergedUsage.setConcurrentConnections(loadBalancerHostUsages.get(i).getConcurrentConnections());
-                            newMergedUsage.setConcurrentConnections(loadBalancerHostUsages.get(i).getConcurrentConnectionsSsl());
-                        }
-                        continue;
+
+                for(int i = 1; i < loadBalancerHostUsages.size(); i++) {
+                    String timeKey = loadBalancerHostUsages.get(i).getPollTime().getTime().toString();
+                    if (!mergedUsagesMap.containsKey(timeKey)) {
+                        mergedUsagesMap.put(timeKey, initializeMergedRecord(loadBalancerHostUsages.get(i)));
                     }
+                    LoadBalancerMergedHostUsage newMergedUsage = mergedUsagesMap.get(timeKey);
                     calculateUsage(loadBalancerHostUsages.get(i), loadBalancerHostUsages.get(i - 1), newMergedUsage);
                 }
             }
-            if (newMergedUsage != null) {
-                newMergedEventRecords.add(newMergedUsage);
+
+            //Add all events into list that shall be returned
+            for(String timeKey : mergedUsagesMap.keySet()) {
+                newMergedEventRecords.add(mergedUsagesMap.get(timeKey));
             }
         }
 //        for (Integer loadBalancerId : existingUsages.keySet()) {
@@ -243,17 +225,6 @@ public class UsagePollerHelper{
 //            }
 //        }
         return newMergedEventRecords;
-    }
-
-    public Map<String, List<LoadBalancerHostUsage>> groupLoadBalancerHostUsagesByTime(List<LoadBalancerHostUsage> lbHostUsages) {
-        Map<String, List<LoadBalancerHostUsage>> groups = new HashMap<String, List<LoadBalancerHostUsage>>();
-        for (LoadBalancerHostUsage lbHostUsage : lbHostUsages) {
-            if (!groups.containsKey(lbHostUsage.getPollTime().getTime().toString())) {
-                groups.put(lbHostUsage.getPollTime().getTime().toString(), new ArrayList<LoadBalancerHostUsage>());
-            }
-            groups.get(lbHostUsage.getPollTime().getTime().toString()).add(lbHostUsage);
-        }
-        return groups;
     }
 
     public LoadBalancerMergedHostUsage initializeMergedRecord(LoadBalancerHostUsage lbHostUsage) {
