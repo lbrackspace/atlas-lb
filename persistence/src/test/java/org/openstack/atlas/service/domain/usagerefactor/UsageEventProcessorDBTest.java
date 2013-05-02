@@ -79,7 +79,7 @@ public class UsageEventProcessorDBTest {
             Calendar starttime = Calendar.getInstance();
             starttime.roll(Calendar.MONTH, false);
 
-            Map<Integer, List<LoadBalancerHostUsage>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
+            Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(0, oUsages.size());
         }
@@ -92,7 +92,7 @@ public class UsageEventProcessorDBTest {
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.<Integer>any())).thenReturn(true);
 
             usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
-            Map<Integer, List<LoadBalancerHostUsage>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
+            Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
             Assert.assertEquals(true, oUsages.containsKey(543221));
