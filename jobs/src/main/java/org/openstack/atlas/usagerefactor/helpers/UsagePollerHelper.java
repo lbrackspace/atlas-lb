@@ -95,6 +95,9 @@ public class UsagePollerHelper{
             LoadBalancerMergedHostUsage newMergedRecord = new LoadBalancerMergedHostUsage();
             boolean isFirstPass = true;
             for (Integer hostId : currentUsages.get(loadbalancerId).keySet()) {
+                if (!existingUsages.get(loadbalancerId).containsKey(hostId)) {
+
+                }
                 List<LoadBalancerHostUsage> loadBalancerHostUsages = existingUsages.get(loadbalancerId).get(hostId);
                 SnmpUsage currentUsage = currentUsages.get(loadbalancerId).get(hostId);
                 if (loadBalancerHostUsages.size() == 0) {
