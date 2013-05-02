@@ -8,7 +8,6 @@ import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
 import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 import org.openstack.atlas.usagerefactor.helpers.UsageProcessorResult;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,7 @@ public class UsageProcessor {
 
     final static Log LOG = LogFactory.getLog(UsageProcessor.class);
 
-    public static UsageProcessorResult mergeRecords(Map<Integer, List<LoadBalancerHostUsage>> existingUsages,
+    public static UsageProcessorResult mergeRecords(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages,
                                                  Map<Integer, Map<Integer, SnmpUsage>> currentUsages,
                                                  Calendar pollTime, int numHosts)
     {
@@ -36,7 +35,7 @@ public class UsageProcessor {
          *      d. Delete records from LB Host Usage table that have an ID less than the markerID
          */
         LOG.info("Merging load balancer host usage records...");
-        UsagePollerHelper usagePollerHelper = new UsagePollerHelper(numHosts);
+        UsagePollerHelper usagePollerHelper = new UsagePollerHelper();
 
         //Process events that have come in between now and last poller run
         List<LoadBalancerMergedHostUsage> mergedHostUsages = usagePollerHelper.processExistingEvents(existingUsages);

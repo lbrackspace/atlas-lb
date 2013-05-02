@@ -45,7 +45,7 @@ public class UsageProcessorTest {
         private UsageRefactorService usageRefactorService;
 
         private Map<Integer, Map<Integer, SnmpUsage>> snmpMap;
-        private Map<Integer, List<LoadBalancerHostUsage>> lbHostMap;
+        private Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> lbHostMap;
         private int numHosts;
         private Calendar pollTime;
         String pollTimeStr;
@@ -357,7 +357,7 @@ public class UsageProcessorTest {
         private UsageRefactorService usageRefactorService;
 
         private Map<Integer, Map<Integer, SnmpUsage>> snmpMap;
-        private Map<Integer, List<LoadBalancerHostUsage>> lbHostMap;
+        private Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> lbHostMap;
         private int numHosts;
         private Calendar pollTime;
         String pollTimeStr;
@@ -448,6 +448,7 @@ public class UsageProcessorTest {
                     result.getLbHostUsages().get(3));
         }
 
+        @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case3.xml")
         public void case3() throws Exception {
@@ -494,6 +495,7 @@ public class UsageProcessorTest {
                     result.getLbHostUsages().get(3));
         }
 
+        @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case4.xml")
         public void case4() throws Exception {
@@ -540,6 +542,7 @@ public class UsageProcessorTest {
                     result.getLbHostUsages().get(3));
         }
 
+        @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case5.xml")
         public void case5() throws Exception {
@@ -592,6 +595,7 @@ public class UsageProcessorTest {
                     result.getLbHostUsages().get(3));
         }
 
+        @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case6.xml")
         public void case6() throws Exception {
@@ -644,6 +648,7 @@ public class UsageProcessorTest {
                     result.getLbHostUsages().get(3));
         }
 
+        @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case7.xml")
         public void case7() throws Exception {
@@ -690,6 +695,52 @@ public class UsageProcessorTest {
             AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 5, null, pollTimeStr,
                     result.getLbHostUsages().get(3));
         }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case8.xml")
+        public void case8() throws Exception {
+            snmpMap.get(1).get(123).setBytesIn(1000);
+            snmpMap.get(2).get(123).setBytesIn(100);
+            snmpMap.get(1).get(123).setBytesInSsl(2000);
+            snmpMap.get(2).get(123).setBytesInSsl(200);
+            snmpMap.get(1).get(123).setBytesOut(3000);
+            snmpMap.get(2).get(123).setBytesOut(300);
+            snmpMap.get(1).get(123).setBytesOutSsl(4000);
+            snmpMap.get(2).get(123).setBytesOutSsl(400);
+
+            snmpMap.get(1).get(124).setBytesIn(5000);
+            snmpMap.get(2).get(124).setBytesIn(500);
+            snmpMap.get(1).get(124).setBytesInSsl(6000);
+            snmpMap.get(2).get(124).setBytesInSsl(600);
+            snmpMap.get(1).get(124).setBytesOut(7000);
+            snmpMap.get(2).get(124).setBytesOut(700);
+            snmpMap.get(1).get(124).setBytesOutSsl(8000);
+            snmpMap.get(2).get(124).setBytesOutSsl(800);
+
+            UsageProcessorResult result = UsageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime, numHosts);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(4, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 5500L, 6600L, 7700L, 8800L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(2));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 1100L, 2200L, 3300L, 4400L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(3));
+
+            //New lb_host_usage records assertions
+            Assert.assertEquals(4, result.getLbHostUsages().size());
+            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 5000L, 6000L, 7000L, 8000L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(0));
+            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 500L, 600L, 700L, 800L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 1000L, 2000L, 3000L, 4000L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(2));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 100L, 200L, 300L, 400L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(3));
+        }
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
@@ -704,7 +755,7 @@ public class UsageProcessorTest {
         private UsageRefactorService usageRefactorService;
 
         private Map<Integer, Map<Integer, SnmpUsage>> snmpMap;
-        private Map<Integer, List<LoadBalancerHostUsage>> lbHostMap;
+        private Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> lbHostMap;
         private int numHosts;
         private Calendar pollTime;
         String pollTimeStr;
@@ -721,6 +772,13 @@ public class UsageProcessorTest {
             pollTimeStr = sdf.format(pollTime.getTime());
         }
 
+        //Test cases
+        //Entire table is empty
+        //Only Events with no previous records for the lbs
+            //One event with no previous polled record.
+            //Two events with no previous polled records.
+        //Some previous records.  Some lbs do not have some.
+        //Mixture of events with some and poll with some.
         @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithnopreviousrecords/case1.xml")

@@ -14,7 +14,8 @@ public interface UsageRefactorService {
 
     public LoadBalancerHostUsage getRecentHostUsageRecord(int lbId);
 
-    public Map<Integer, List<LoadBalancerHostUsage>> getAllLoadBalancerHostUsages();
+    //Keys loadbalancerId, hostId
+    public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getAllLoadBalancerHostUsages();
 
     public void batchCreateLoadBalancerHostUsages(List<LoadBalancerHostUsage> usages);
 
