@@ -453,7 +453,6 @@ public class UsageProcessorTest {
                     result.getLbHostUsages().get(3));
         }
 
-        @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case3.xml")
         public void case3() throws Exception {
@@ -500,7 +499,6 @@ public class UsageProcessorTest {
                     result.getLbHostUsages().get(3));
         }
 
-        @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case4.xml")
         public void case4() throws Exception {
@@ -547,7 +545,6 @@ public class UsageProcessorTest {
                     result.getLbHostUsages().get(3));
         }
 
-        @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case5.xml")
         public void case5() throws Exception {
@@ -600,7 +597,6 @@ public class UsageProcessorTest {
                     result.getLbHostUsages().get(3));
         }
 
-        @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case6.xml")
         public void case6() throws Exception {
@@ -653,7 +649,6 @@ public class UsageProcessorTest {
                     result.getLbHostUsages().get(3));
         }
 
-        @Ignore
         @Test
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case7.xml")
         public void case7() throws Exception {
