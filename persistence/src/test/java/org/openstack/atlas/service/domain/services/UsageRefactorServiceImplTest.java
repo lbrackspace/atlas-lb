@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
@@ -34,6 +35,7 @@ public class UsageRefactorServiceImplTest {
         int secondLoadBalancerId;
         int firstHostId;
         int secondHostId;
+        Calendar recentPollTime;
 
         @Mock
         HostUsageRefactorRepository hostUsageRefactorRepository;
@@ -117,12 +119,15 @@ public class UsageRefactorServiceImplTest {
             hostUsage4.setOutgoingTransferSsl(0);
             hostUsage4.setLoadbalancerId(secondLoadBalancerId);
             hostUsage4.setNumVips(2);
-            hostUsage4.setPollTime(Calendar.getInstance());
+            recentPollTime = Calendar.getInstance();
+            hostUsage4.setPollTime(recentPollTime);
             hostUsage4.setTagsBitmask(0);
             hostUsage4.setHostId(secondHostId);
             thirdUsageList.add(hostUsage4);
             fourthUsageList.add(hostUsage4);
             fifthUsageList.add(hostUsage4);
+
+            when(hostUsageRefactorRepository.getMostRecentUsageRecordForLbId(anyInt())).thenReturn(hostUsage4);
         }
 
         @Test
@@ -173,6 +178,12 @@ public class UsageRefactorServiceImplTest {
             assertTrue(!firstList.get(secondHostId).isEmpty());
             assertTrue(!secondList.get(firstHostId).isEmpty());
             assertTrue(!secondList.get(secondHostId).isEmpty());
+        }
+
+        @Test
+        public void shouldRetrieveOneEntryForLoadBalancerId() {
+            LoadBalancerHostUsage recentEvent = usageRefactorService.getRecentHostUsageRecord(secondLoadBalancerId);
+            assertTrue(recentEvent.getPollTime().equals(recentPollTime));
         }
     }
 }
