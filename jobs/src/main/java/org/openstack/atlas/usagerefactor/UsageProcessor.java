@@ -17,7 +17,7 @@ public class UsageProcessor {
 
     final static Log LOG = LogFactory.getLog(UsageProcessor.class);
 
-    public static UsageProcessorResult mergeRecords(Map<Integer, List<LoadBalancerHostUsage>> existingUsages,
+    public static UsageProcessorResult mergeRecords(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages,
                                                  Map<Integer, Map<Integer, SnmpUsage>> currentUsages,
                                                  Calendar pollTime, int numHosts)
     {
