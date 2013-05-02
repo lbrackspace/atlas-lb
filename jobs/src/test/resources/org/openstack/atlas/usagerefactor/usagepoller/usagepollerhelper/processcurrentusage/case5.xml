@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details: No events to process.
+-->
+<dataset>
+    <lb_host_usage id="1" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_in="10" bandwidth_in_ssl="20" bandwidth_out="30" bandwidth_out_ssl="40" concurrent_connections="10" concurrent_connections_ssl="5" num_vips="3" tags_bitmask="3" poll_time="2013-04-10 20:01:00" />
+    <lb_host_usage id="2" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_in="20" bandwidth_in_ssl="30" bandwidth_out="40" bandwidth_out_ssl="50" concurrent_connections="1"  concurrent_connections_ssl="4" num_vips="3" tags_bitmask="3" poll_time="2013-04-10 20:01:00" />
+    <lb_host_usage id="3" account_id="1234" loadbalancer_id="124" host_id="1" bandwidth_in="30" bandwidth_in_ssl="40" bandwidth_out="50" bandwidth_out_ssl="60" concurrent_connections="11" concurrent_connections_ssl="6" num_vips="2" tags_bitmask="5" poll_time="2013-04-10 20:01:00" />
+    <lb_host_usage id="4" account_id="1234" loadbalancer_id="124" host_id="2" bandwidth_in="40" bandwidth_in_ssl="50" bandwidth_out="60" bandwidth_out_ssl="70" concurrent_connections="2"  concurrent_connections_ssl="3" num_vips="2" tags_bitmask="5" poll_time="2013-04-10 20:01:00" />
+
+    <lb_host_usage id="5" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_in="11" bandwidth_in_ssl="21" bandwidth_out="31" bandwidth_out_ssl="41" concurrent_connections="11" concurrent_connections_ssl="6" num_vips="2" tags_bitmask="5" poll_time="2013-04-10 20:02:00" event_type="SSL_MIXED_ON"  />
+    <lb_host_usage id="6" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_in="21" bandwidth_in_ssl="31" bandwidth_out="41" bandwidth_out_ssl="51" concurrent_connections="2"  concurrent_connections_ssl="5" num_vips="2" tags_bitmask="5" poll_time="2013-04-10 20:02:00" event_type="SSL_MIXED_ON"  />
+    <lb_host_usage id="7" account_id="1234" loadbalancer_id="124" host_id="1" bandwidth_in="31" bandwidth_in_ssl="41" bandwidth_out="51" bandwidth_out_ssl="61" concurrent_connections="12" concurrent_connections_ssl="7" num_vips="3" tags_bitmask="3" poll_time="2013-04-10 20:03:00" event_type="SSL_ONLY_ON"   />
+    <lb_host_usage id="8" account_id="1234" loadbalancer_id="124" host_id="2" bandwidth_in="41" bandwidth_in_ssl="51" bandwidth_out="61" bandwidth_out_ssl="71" concurrent_connections="3"  concurrent_connections_ssl="4" num_vips="3" tags_bitmask="3" poll_time="2013-04-10 20:03:00" event_type="SSL_ONLY_ON"   />
+</dataset>
