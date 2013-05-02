@@ -101,7 +101,7 @@ public class HdfsCliHelpers {
         String dir = (stat.isDir()) ? "d" : "-";
         String path = stat.getPath().toUri().getPath();
         String perms = stat.getPermission().toString();
-        String owner = StaticStringUtils.lpad(stat.getOwner() + ":" + stat.getGroup(), " ", 30);
+        String owner = StaticStringUtils.lpad(stat.getOwner() + ":" + stat.getGroup(), " ", 60);
         String size = StaticStringUtils.lpadLong(stat.getLen(), " ", 13);
         String blockSize = StaticStringUtils.lpadLong(stat.getBlockSize(), " ", 10);
         String reps = StaticStringUtils.lpadLong(stat.getReplication(), " ", 6);

@@ -4,16 +4,12 @@ import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.config.HadoopLogsConfigs;
-import java.beans.XMLEncoder;
 import com.hadoop.compression.lzo.LzoIndex;
-import java.io.PrintStream;
 import java.net.URI;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileSystem.Statistics;
-import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import java.io.BufferedReader;
@@ -27,30 +23,16 @@ import java.util.List;
 import com.hadoop.compression.lzo.LzopCodec;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
 import org.openstack.atlas.logs.hadoop.jobs.HadoopJob;
-import org.openstack.atlas.logs.hadoop.sequencefiles.EndOfIteratorException;
-import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileEntry;
-import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileIterator;
-import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileReaderException;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
-import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 import org.openstack.atlas.util.debug.Debug;
 
@@ -83,7 +65,7 @@ public class HdfsCli {
 
         while (true) {
             try {
-                System.out.printf("hdfs %s$ ", fs.getWorkingDirectory().toUri().toString());
+                System.out.printf("lbaas_hadoop_client %s> ", fs.getWorkingDirectory().toUri().toString());
                 cmdLine = stdin.readLine();
                 if (cmdLine == null) {
                     break; // EOF
@@ -536,6 +518,7 @@ public class HdfsCli {
                     System.out.printf("joinedPath = %s\n", joinPathString);
                     continue;
                 }
+                System.out.printf("Unrecognized command\n");
                 continue;
             } catch (Exception ex) {
                 System.out.printf("Exception: %s\n", StaticStringUtils.getExtendedStackTrace(ex));
