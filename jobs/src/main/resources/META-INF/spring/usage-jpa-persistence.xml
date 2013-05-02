@@ -40,7 +40,8 @@
     </bean>
 
     <!-- Repo's go here, they MUST be prototype, they are not thread safe -->
-    <bean id="hourlyUsageRepository" class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository"
+    <bean id="hourlyUsageRepository"
+          class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository"
           scope="prototype"/>
     <bean id="usageEventRepository"
           class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository"
@@ -49,10 +50,24 @@
           scope="prototype"/>
     <bean id="jobStateRepository" class="org.openstack.atlas.service.domain.repository.JobStateRepository"
           scope="prototype"/>
+    <bean id="hostUsageRefactorRepository"
+          class="org.openstack.atlas.service.domain.usage.repository.HostUsageRefactorRepository"
+          scope="prototype"/>
 
     <!--Services go here-->
     <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
-        <property name="jobStateRepository" ref="jobStateRepository" />
+        <property name="jobStateRepository" ref="jobStateRepository"/>
     </bean>
-    <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl" parent="baseService"/>
+    <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl"
+          parent="baseService"/>
+    <bean id="hostService" class="org.openstack.atlas.service.domain.services.impl.HostServiceImpl"
+          parent="baseService"/>
+    <bean id="usageRefactorService" class="org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl"
+          parent="baseService"/>
+
+    <!--Usage processing-->
+    <bean id="baseUsageProcessor" class="org.openstack.atlas.service.domain.services.impl.BaseService">
+        <property name="jobStateRepository" ref="jobStateRepository"/>
+        <property name="hostRepository" ref="hostRepository"/>
+    </bean>
 </beans>

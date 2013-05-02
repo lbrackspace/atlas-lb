@@ -3,17 +3,17 @@ package org.openstack.atlas.usage.jobs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.jobs.Job;
-import org.openstack.atlas.usage.execution.UsageToAtomHopperRetryExecution;
+import org.openstack.atlas.usage.execution.UsageAtomHopperRetryExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Required;
 
 public class AtomHopperUsageRetryJob extends Job {
     private final Log LOG = LogFactory.getLog(AtomHopperUsageRetryJob.class);
-    private UsageToAtomHopperRetryExecution atomHopperUsageJobRetryExecution;
+    private UsageAtomHopperRetryExecution atomHopperUsageJobRetryExecution;
 
     @Required
-    public void setAtomHopperUsageJobExecution(UsageToAtomHopperRetryExecution atomHopperUsageJobRetryExecution) {
+    public void setAtomHopperUsageJobExecution(UsageAtomHopperRetryExecution atomHopperUsageJobRetryExecution) {
         this.atomHopperUsageJobRetryExecution = atomHopperUsageJobRetryExecution;
     }
 

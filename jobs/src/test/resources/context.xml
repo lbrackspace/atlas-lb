@@ -32,4 +32,12 @@
         <property name="entityManagerFactory" ref="entityManagerFactory" />
         <qualifier value="usage"/>
     </bean>
+
+    <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
+        <property name="hostUsageRefactorRepository" ref="hostUsageRefactorRepository" />
+        <property name="loadBalancerMergedHostUsageRepository" ref="loadBalancerMergedHostUsageRepository" />
+    </bean>
+
+    <bean id="usageRefactorService" class="org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl"
+          parent="baseService"/>
 </beans>
