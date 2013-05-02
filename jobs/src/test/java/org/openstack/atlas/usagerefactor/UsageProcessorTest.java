@@ -18,13 +18,16 @@ import org.openstack.atlas.usagerefactor.helpers.UsageProcessorResult;
 import org.openstack.atlas.usagerefactor.junit.AssertLoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.junit.AssertLoadBalancerMergedHostUsage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 
 /*
     To see what each case is testing please refer to their respective xml
@@ -42,6 +45,7 @@ public class UsageProcessorTest {
     public static class WhenTestingProcessRecordsNoEvents {
 
         @Autowired
+        @Qualifier("usageRefactorService")
         private UsageRefactorService usageRefactorService;
 
         private Map<Integer, Map<Integer, SnmpUsage>> snmpMap;
@@ -354,6 +358,7 @@ public class UsageProcessorTest {
     public static class WhenTestingProcessRecordsWithEvents {
 
         @Autowired
+        @Qualifier("usageRefactorService")
         private UsageRefactorService usageRefactorService;
 
         private Map<Integer, Map<Integer, SnmpUsage>> snmpMap;
@@ -752,6 +757,7 @@ public class UsageProcessorTest {
     public static class WhenTestingProcessRecordsWithNoPreviousRecords {
 
         @Autowired
+        @Qualifier("usageRefactorService")
         private UsageRefactorService usageRefactorService;
 
         private Map<Integer, Map<Integer, SnmpUsage>> snmpMap;

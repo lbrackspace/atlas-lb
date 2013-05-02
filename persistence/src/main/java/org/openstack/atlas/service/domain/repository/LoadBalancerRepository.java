@@ -356,6 +356,14 @@ public class LoadBalancerRepository {
         return vips;
     }
 
+    public boolean isServicenetLoadBalancer(Integer loadBalancerId) {
+        List<LoadBalancerJoinVip> vips;
+        for (LoadBalancerJoinVip vip : getVipsByLoadBalancerId(loadBalancerId)) {
+           if (VirtualIpType.SERVICENET == vip.getVirtualIp().getVipType()) return true;
+        }
+        return false;
+    }
+
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
                                                       String status, LbQueryStatus queryStatus, Calendar changedSince,
                                                       Integer offset, Integer limit, Integer marker) throws BadRequestException {

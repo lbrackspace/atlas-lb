@@ -17,13 +17,18 @@ import java.util.concurrent.Future;
 
 public class UsageEventCollection extends AbstractUsageEventCollection {
     private final Log LOG = LogFactory.getLog(UsageEventCollection.class);
+    private List<Future<SnmpUsage>> futures;
 
     public UsageEventCollection() {
     }
 
+    public UsageEventCollection(List<Future<SnmpUsage>> futures) {
+        this.futures = futures;
+    }
+
     @Override
-    public void collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor,
-                                    List<Host> hosts, LoadBalancer lb, UsageEvent event) {
+    public List<Future<SnmpUsage>> collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor,
+                                                       List<Host> hosts, LoadBalancer lb, UsageEvent event) {
 
         LOG.debug("Collecting SNMP Usages for load balancer: " + lb.getId());
 
@@ -39,13 +44,17 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
             LOG.error("Im an error during invokeAll, handle me: " + e);
 
         }
-        processFutures(usageEventProcessor, futures, lb, event);
+        this.futures = futures;
+        return futures;
     }
 
-    private void processFutures(UsageEventProcessor usageEventProcessor,
-                                List<Future<SnmpUsage>> futures, LoadBalancer lb, UsageEvent event) {
+    @Override
+    public void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event) {
         List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
-        for (Future<SnmpUsage> f : futures) {
+        if (futures != null) {
+          this.futures = futures;
+        }
+        for (Future<SnmpUsage> f : this.futures) {
             try {
                 usages.add(f.get());
             } catch (InterruptedException e) {
@@ -55,5 +64,9 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
             }
         }
         usageEventProcessor.processUsageEvent(usages, lb, event);
+    }
+
+    public List<Future<SnmpUsage>> getFutures() {
+        return this.futures;
     }
 }
