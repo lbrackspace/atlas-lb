@@ -135,10 +135,10 @@ public class UsageRepository {
 //            }
 //            sb.append(usage.getLoadbalancer().getId()).append(",");
 //            sb.append(usage.getAccountId()).append(",");
-//            sb.append(usage.getAverageConcurrentConnections()).append(",");
+//            sb.append(usage.getConcurrentConnections()).append(",");
 //            sb.append(usage.getIncomingTransfer()).append(",");
 //            sb.append(usage.getOutgoingTransfer()).append(",");
-//            sb.append(usage.getAverageConcurrentConnectionsSsl()).append(",");
+//            sb.append(usage.getConcurrentConnectionsSsl()).append(",");
 //            sb.append(usage.getIncomingTransferSsl()).append(",");
 //            sb.append(usage.getOutgoingTransferSsl()).append(",");
 //

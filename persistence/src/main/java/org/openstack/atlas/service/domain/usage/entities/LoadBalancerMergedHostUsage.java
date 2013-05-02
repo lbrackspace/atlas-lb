@@ -7,48 +7,56 @@ import java.io.Serializable;
 import java.util.Calendar;
 
 @javax.persistence.Entity
-public class LoadBalancerMergedHostUsage implements Serializable {
+@Table(name = "lb_merged_host_usage")
+public class LoadBalancerMergedHostUsage extends Entity implements Serializable {
     private final static long serialVersionUID = 532512317L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", unique = true, nullable = false)
-    private int id;
     @Column(name = "account_id", nullable = false)
     private int accountId;
+
     @Column(name = "loadbalancer_id", nullable = false)
     private int loadbalancerId;
+
     @Column(name = "outgoing_transfer", nullable = false)
     private long outgoingTransfer;
+
     @Column(name = "incoming_transfer", nullable = false)
     private long incomingTransfer;
+
     @Column(name = "outgoing_transfer_ssl", nullable = false)
     private long outgoingTransferSsl;
+
     @Column(name = "incoming_transfer_ssl", nullable = false)
     private long incomingTransferSsl;
+
     @Column(name = "concurrent_connections", nullable = false)
-    private double concurrentConnections;
+    private long concurrentConnections;
+
     @Column(name = "concurrent_connections_ssl", nullable = false)
-    private double concurrentConnectionsSsl;
+    private long concurrentConnectionsSsl;
+
     @Column(name = "num_vips", nullable = false)
     private int numVips;
+
     @Column(name = "tags_bitmask", nullable = false)
     private int tagsBitmask;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "poll_time", nullable = false)
     private Calendar pollTime;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "event_type", nullable = true)
+    @Column(name = "event_type")
     private UsageEvent eventType;
 
     public LoadBalancerMergedHostUsage() {
+
     }
 
-    public LoadBalancerMergedHostUsage(int id, int accountId, int loadbalancerId, long outgoingTransfer,
+    public LoadBalancerMergedHostUsage(int accountId, int loadbalancerId, long outgoingTransfer,
                                        long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
-                                       long concurrentConnections, long concurrentConnectionsSsl,
+                                       int concurrentConnections, int concurrentConnectionsSsl,
                                        int numVips, int tagsBitmask, Calendar pollTime, UsageEvent eventType) {
-        this.id = id;
         this.accountId = accountId;
         this.loadbalancerId = loadbalancerId;
         this.outgoingTransfer = outgoingTransfer;
@@ -61,13 +69,6 @@ public class LoadBalancerMergedHostUsage implements Serializable {
         this.tagsBitmask = tagsBitmask;
         this.pollTime = pollTime;
         this.eventType = eventType;
-    }
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public int getAccountId() {
@@ -118,19 +119,19 @@ public class LoadBalancerMergedHostUsage implements Serializable {
         this.incomingTransferSsl = incomingTransferSsl;
     }
 
-    public double getConcurrentConnections() {
+    public long getConcurrentConnections() {
         return concurrentConnections;
     }
 
-    public void setConcurrentConnections(double concurrentConnections) {
+    public void setConcurrentConnections(long concurrentConnections) {
         this.concurrentConnections = concurrentConnections;
     }
 
-    public double getConcurrentConnectionsSsl() {
+    public long getConcurrentConnectionsSsl() {
         return concurrentConnectionsSsl;
     }
 
-    public void setConcurrentConnectionsSsl(double concurrentConnectionsSsl) {
+    public void setConcurrentConnectionsSsl(long concurrentConnectionsSsl) {
         this.concurrentConnectionsSsl = concurrentConnectionsSsl;
     }
 

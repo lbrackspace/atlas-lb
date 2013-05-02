@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details: Usage is merged correctly when counters are not starting at 0 and there are resets.
+-->
+<dataset>
+    <lb_host_usage id="1" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_out="100" bandwidth_out_ssl="300" bandwidth_in="500" bandwidth_in_ssl="700" concurrent_connections="10" concurrent_connections_ssl="25" num_vips="1" tags_bitmask="5" poll_time="2013-04-13 11:01:00" />
+    <lb_host_usage id="2" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_out="1000" bandwidth_out_ssl="3000" bandwidth_in="5000" bandwidth_in_ssl="7000" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="5" poll_time="2013-04-13 11:01:00" />
+    <lb_host_usage id="3" account_id="1234" loadbalancer_id="124" host_id="1" bandwidth_out="200" bandwidth_out_ssl="400" bandwidth_in="600" bandwidth_in_ssl="800" concurrent_connections="0" concurrent_connections_ssl="20" num_vips="1" tags_bitmask="5" poll_time="2013-04-13 11:01:00" />
+    <lb_host_usage id="4" account_id="1234" loadbalancer_id="124" host_id="2" bandwidth_out="2000" bandwidth_out_ssl="4000" bandwidth_in="6000" bandwidth_in_ssl="8000" concurrent_connections="15" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="5" poll_time="2013-04-13 11:01:00" />
+</dataset>

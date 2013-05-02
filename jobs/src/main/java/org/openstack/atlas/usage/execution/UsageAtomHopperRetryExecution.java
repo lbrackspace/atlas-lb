@@ -14,10 +14,12 @@ import org.openstack.atlas.usage.ExecutionUtilities;
 import org.openstack.atlas.usage.thread.UsageThread;
 import org.springframework.beans.factory.annotation.Required;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-public class UsageToAtomHopperExecution extends AbstractUsageExecution {
-    private final Log LOG = LogFactory.getLog(UsageToAtomHopperExecution.class);
+public class UsageAtomHopperRetryExecution extends AbstractAtomHopperUsageExecution {
+    private final Log LOG = LogFactory.getLog(UsageAtomHopperRetryExecution.class);
     private AlertRepository alertRepository;
     private UsageRepository usageRepository;
     private LoadBalancerRepository loadBalancerRepository;
@@ -50,18 +52,12 @@ public class UsageToAtomHopperExecution extends AbstractUsageExecution {
 
     @Override
     public void pushUsageToAtomHopper() throws Exception {
-        final List<Usage> allUsages = loadBalancerRepository
-                .getUsageNeedsPushed(AtomHopperUtil.getStartCal(), AtomHopperUtil.getNow(), NUM_ATTEMPTS);
+        final List<Usage> allUsages = loadBalancerRepository.getUsageRetryNeedsPushed(AtomHopperUtil.getStartCal(),
+                AtomHopperUtil.getNow(), NUM_ATTEMPTS);
 
         if (!allUsages.isEmpty()) {
-            //Sort usages...
-            Collections.sort(allUsages, new Comparator<Usage>() {
-                public int compare(Usage s1, Usage s2) {
-                    return s1.getId().compareTo(s2.getId());
-                }
-            });
-
-            BatchAction<Usage> batchAction = new BatchAction<Usage>() {
+            LOG.info(String.format("Processing %d records marked for retry", allUsages.size()));
+            BatchAction<Usage> batchAction = new BatchAction<Usage>(){
                 public void execute(Collection<Usage> allUsages) throws Exception {
                     executeTasks(allUsages);
                 }
@@ -69,14 +65,14 @@ public class UsageToAtomHopperExecution extends AbstractUsageExecution {
 
             ExecutionUtilities.ExecuteInBatches(allUsages, BATCH_SIZE, batchAction);
         } else {
-            LOG.debug("No usage found for processing at this time...");
+            LOG.debug("No usage to retry found for processing at this time...");
         }
     }
 
     private void executeTasks(Collection<Usage> allUsages) throws Exception {
         ArrayList<Usage> usageList = new ArrayList<Usage>();
         usageList.addAll(allUsages);
-        poolExecutor.execute(new UsageThread(usageList, ahuslClient,
-                identityClient, usageRepository, loadBalancerEventRepository, alertRepository));
+        poolExecutor.execute(new UsageThread(usageList, ahuslClient, identityClient, usageRepository,
+                loadBalancerEventRepository, alertRepository));
     }
 }

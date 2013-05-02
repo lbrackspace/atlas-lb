@@ -146,12 +146,12 @@ public class UsageRollupProcessorTest {
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, numLBPolls));
             LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
-            double ccs = 4;
-            double ccsIncrement = 10;
-            double ccsSsl = 8;
-            double ccsSslIncrement = 15;
-            double totalCcs = 0;
-            double totalCcsSsl = 0;
+            int ccs = 4;
+            int ccsIncrement = 10;
+            int ccsSsl = 8;
+            int ccsSslIncrement = 15;
+            int totalCcs = 0;
+            int totalCcsSsl = 0;
             for(LoadBalancerMergedHostUsage LoadBalancerMergedHost : LoadBalancerMergedHosts){
                 LoadBalancerMergedHost.setConcurrentConnections(ccs);
                 LoadBalancerMergedHost.setConcurrentConnectionsSsl(ccsSsl);

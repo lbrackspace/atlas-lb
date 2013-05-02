@@ -14,8 +14,8 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
-import org.openstack.atlas.usage.execution.UsageToAtomHopperExecution;
-import org.openstack.atlas.usage.execution.UsageToAtomHopperRetryExecution;
+import org.openstack.atlas.usage.execution.UsageAtomHopperExecution;
+import org.openstack.atlas.usage.execution.UsageAtomHopperRetryExecution;
 import org.openstack.atlas.usage.logic.UsageRollupProcessor;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -40,8 +40,8 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
     private LoadBalancerUsageEventRepository usageEventRepository;
 
     // Atom Hopper Pusher Dependencies
-    private UsageToAtomHopperExecution atomHopperUsageJobExecution;
-    private UsageToAtomHopperRetryExecution atomHopperUsageJobRetryExecution;
+    private UsageAtomHopperExecution atomHopperUsageJobExecution;
+    private UsageAtomHopperRetryExecution atomHopperUsageJobRetryExecution;
     private Configuration configuration = new AtomHopperConfiguration();
     private LoadBalancerRepository loadBalancerRepository;
 
@@ -67,12 +67,12 @@ public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
     }
 
     @Required
-    public void setAtomHopperUsageJobExecution(UsageToAtomHopperExecution atomHopperUsageJobExecution) {
+    public void setAtomHopperUsageJobExecution(UsageAtomHopperExecution atomHopperUsageJobExecution) {
         this.atomHopperUsageJobExecution = atomHopperUsageJobExecution;
     }
 
     @Required
-    public void setAtomHopperUsageJobRetryExecution(UsageToAtomHopperRetryExecution atomHopperUsageJobRetryExecution) {
+    public void setAtomHopperUsageJobRetryExecution(UsageAtomHopperRetryExecution atomHopperUsageJobRetryExecution) {
         this.atomHopperUsageJobRetryExecution = atomHopperUsageJobRetryExecution;
     }
 
