@@ -92,7 +92,11 @@ public class UsageEventCollectionTest {
         UsageEventProcessor processor2;
 
         @InjectMocks
-        UsageEventCollection usageEventCollection = new UsageEventCollection();
+        UsageEventCollection usageEventCollection;
+
+        public WhenCollectingEventData() throws UsageEventCollectionException {
+            usageEventCollection = new UsageEventCollection();
+        }
 
         @Before
         public void standUp() {
@@ -100,7 +104,7 @@ public class UsageEventCollectionTest {
         }
 
         @Test
-        public void shouldNotFailWhenCollectingUsageRecords() throws EntityNotFoundException, DeletedStatusException, InterruptedException {
+        public void shouldNotFailWhenCollectingUsageRecords() throws EntityNotFoundException, DeletedStatusException, InterruptedException, UsageEventCollectionException {
             mock(ExecutorService.class);
             List<Future<SnmpUsage>> futures = new ArrayList<Future<SnmpUsage>>();
             PowerMockito.when(executorService.invokeAll(Matchers.anyCollection())).thenReturn(new ArrayList<java.util.concurrent.Future<Object>>());
