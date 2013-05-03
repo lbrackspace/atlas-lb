@@ -14,7 +14,7 @@ public class UsagePollerHelper{
 
     final static org.apache.commons.logging.Log LOG = LogFactory.getLog(UsageProcessor.class);
 
-    public UsagePollerHelper() {} 
+    public UsagePollerHelper() {}
 
     public void calculateUsage(SnmpUsage currentUsage, LoadBalancerHostUsage previousRecord,
                                LoadBalancerMergedHostUsage newMergedUsage) {
