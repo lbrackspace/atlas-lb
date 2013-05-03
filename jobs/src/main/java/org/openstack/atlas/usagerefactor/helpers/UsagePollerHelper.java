@@ -123,25 +123,7 @@ public class UsagePollerHelper{
             }
             mergedUsages.add(newMergedRecord);
         }
-//        for (Integer loadbalancerId : existingUsages.keySet()) {
-//            if(!currentUsages.containsKey(loadbalancerId)) {
-//                if(existingUsages.get(loadbalancerId).get(0).getEventType() != UsageEvent.DELETE_LOADBALANCER ||
-//                   existingUsages.get(loadbalancerId).get(0).getEventType() != UsageEvent.SUSPEND_LOADBALANCER) {
-//                    LoadBalancerHostUsage existingUsage = existingUsages.get(loadbalancerId).get(0);
-//                    newLBHostUsages.add(convertSnmpUsageToLBHostUsage(null, existingUsage, pollTime));
-//                }
-//                continue;
-//            }
-//            LoadBalancerMergedHostUsage newMergedUsage = initializeMergedRecord(existingUsages.get(loadbalancerId).get(0));
-//            newMergedUsage.setEventType(null);
-//            newMergedUsage.setPollTime(pollTime);
-//            for (LoadBalancerHostUsage existingUsage : existingUsages.get(loadbalancerId)) {
-//                SnmpUsage currentUsage = currentUsages.get(loadbalancerId).get(existingUsage.getHostId());
-//                calculateUsage(currentUsage, existingUsage, newMergedUsage);
-//                newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage, pollTime));
-//            }
-//            mergedUsages.add(newMergedUsage);
-//        }
+        //TODO: Check for loadbalancers that exist in existingUsages and not in currentUsages
 
         return new UsageProcessorResult(mergedUsages, newLBHostUsages);
     }
@@ -187,43 +169,7 @@ public class UsagePollerHelper{
                 newMergedEventRecords.add(mergedUsagesMap.get(timeKey));
             }
         }
-//        for (Integer loadBalancerId : existingUsages.keySet()) {
-//            if (existingUsages.get(loadBalancerId).size() > 0) {
-//                //If very last record in the list of loadbalancer usages is not an event, then it MUST be the records inserted
-//                //during the previous poll, which means no events occurred between now and previous poll.
-//                if (existingUsages.get(loadBalancerId).get(existingUsages.get(loadBalancerId).size() - 1).getEventType() == null) {
-//                    //There are no events to process so continue with next loadbalancer.
-//                    continue;
-//                }
-//            }
-//            //There must be events to process at this point
-//            //Create reference so the accessing isn't so wonky looking.
-//            List<LoadBalancerHostUsage> lbHostUsageListRef = existingUsages.get(loadBalancerId);
-//
-//            //increment index by the number of hosts so that the index is only skipping to each event section, and not
-//            ///going through all records
-//            for (int recordIndex = numHosts; recordIndex < lbHostUsageListRef.size(); recordIndex += numHosts) {
-//                //Initialize data in new record to that of current host usage record.
-//                LoadBalancerMergedHostUsage newLBMergedHostUsage = initializeMergedRecord(lbHostUsageListRef.get(recordIndex));
-//
-//                ///Iterate through the current event records and compare to previous event/polled records to calculate usage.
-//                for (int eventIndex = recordIndex; eventIndex < recordIndex + numHosts; eventIndex++) {
-//                    if(lbHostUsageListRef.get(eventIndex).getHostId() == lbHostUsageListRef.get(eventIndex - numHosts).getHostId()){
-//                        calculateUsage(lbHostUsageListRef.get(eventIndex),
-//                                       lbHostUsageListRef.get(eventIndex - numHosts),
-//                                       newLBMergedHostUsage);
-//                    }
-//                }
-//
-//                newMergedEventRecords.add(newLBMergedHostUsage);
-//            }
-//
-//            //Remove records that are no longer needed.
-//            //Can definitely optimize this
-//            while(lbHostUsageListRef.size() > numHosts) {
-//                lbHostUsageListRef.remove(0);
-//            }
-//        }
+
         return newMergedEventRecords;
     }
 
