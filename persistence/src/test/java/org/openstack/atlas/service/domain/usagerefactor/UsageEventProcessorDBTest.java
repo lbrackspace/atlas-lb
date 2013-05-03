@@ -13,6 +13,7 @@ import org.openstack.atlas.service.domain.entities.VirtualIpType;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
+import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl;
@@ -142,7 +143,157 @@ public class UsageEventProcessorDBTest {
             Assert.assertEquals(986, lbusages.get(0).getOutgoingTransferSsl());
             Assert.assertEquals(1, lbusages.get(0).getConcurrentConnections());
             Assert.assertEquals(3, lbusages.get(0).getConcurrentConnectionsSsl());
-            Assert.assertEquals(2, lbusages.get(0).getTagsBitmask());
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), lbusages.get(0).getTagsBitmask());
+        }
+
+        @Test
+        public void shouldCreateServicenetSSLONUsageRecord() {
+            Calendar starttime = Calendar.getInstance();
+            starttime.roll(Calendar.MONTH, false);
+
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            VirtualIp vip = new VirtualIp();
+            vip.setVipType(VirtualIpType.SERVICENET);
+            jv.setVirtualIp(vip);
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
+            when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(true);
+
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON);
+            Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
+            Assert.assertNotNull(oUsages);
+            Assert.assertEquals(1, oUsages.size());
+            Assert.assertEquals(true, oUsages.containsKey(543221));
+
+            Map<Integer, List<LoadBalancerHostUsage>> usagemap = oUsages.get(543221);
+            List<LoadBalancerHostUsage> lbusages = usagemap.get(1);
+
+            Assert.assertEquals(543221, lbusages.get(0).getLoadbalancerId());
+            Assert.assertEquals(55555, lbusages.get(0).getAccountId());
+            Assert.assertEquals(1, lbusages.get(0).getHostId());
+            Assert.assertEquals(1234455, lbusages.get(0).getIncomingTransfer());
+            Assert.assertEquals(4321, lbusages.get(0).getIncomingTransferSsl());
+            Assert.assertEquals(987, lbusages.get(0).getOutgoingTransfer());
+            Assert.assertEquals(986, lbusages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(1, lbusages.get(0).getConcurrentConnections());
+            Assert.assertEquals(3, lbusages.get(0).getConcurrentConnectionsSsl());
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue() + BitTag.SSL.tagValue(), lbusages.get(0).getTagsBitmask());
+        }
+
+        @Test
+        public void shouldCreateServicenetSSLMixedUsageRecord() {
+            Calendar starttime = Calendar.getInstance();
+            starttime.roll(Calendar.MONTH, false);
+
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            VirtualIp vip = new VirtualIp();
+            vip.setVipType(VirtualIpType.SERVICENET);
+            jv.setVirtualIp(vip);
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
+            when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(true);
+
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
+            Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
+            Assert.assertNotNull(oUsages);
+            Assert.assertEquals(1, oUsages.size());
+            Assert.assertEquals(true, oUsages.containsKey(543221));
+
+            Map<Integer, List<LoadBalancerHostUsage>> usagemap = oUsages.get(543221);
+            List<LoadBalancerHostUsage> lbusages = usagemap.get(1);
+
+            Assert.assertEquals(543221, lbusages.get(0).getLoadbalancerId());
+            Assert.assertEquals(55555, lbusages.get(0).getAccountId());
+            Assert.assertEquals(1, lbusages.get(0).getHostId());
+            Assert.assertEquals(1234455, lbusages.get(0).getIncomingTransfer());
+            Assert.assertEquals(4321, lbusages.get(0).getIncomingTransferSsl());
+            Assert.assertEquals(987, lbusages.get(0).getOutgoingTransfer());
+            Assert.assertEquals(986, lbusages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(1, lbusages.get(0).getConcurrentConnections());
+            Assert.assertEquals(3, lbusages.get(0).getConcurrentConnectionsSsl());
+            Assert.assertEquals(BitTag.SERVICENET_LB.tagValue() + BitTag.SSL.tagValue()
+                    + BitTag.SSL_MIXED_MODE.tagValue(), lbusages.get(0).getTagsBitmask());
+        }
+
+        @Test
+        public void shouldCreateSSLONUsageRecord() {
+            Calendar starttime = Calendar.getInstance();
+            starttime.roll(Calendar.MONTH, false);
+
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            VirtualIp vip = new VirtualIp();
+            vip.setVipType(VirtualIpType.SERVICENET);
+            jv.setVirtualIp(vip);
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
+            when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(false);
+
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON);
+            Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
+            Assert.assertNotNull(oUsages);
+            Assert.assertEquals(1, oUsages.size());
+            Assert.assertEquals(true, oUsages.containsKey(543221));
+
+            Map<Integer, List<LoadBalancerHostUsage>> usagemap = oUsages.get(543221);
+            List<LoadBalancerHostUsage> lbusages = usagemap.get(1);
+
+            Assert.assertEquals(543221, lbusages.get(0).getLoadbalancerId());
+            Assert.assertEquals(55555, lbusages.get(0).getAccountId());
+            Assert.assertEquals(1, lbusages.get(0).getHostId());
+            Assert.assertEquals(1234455, lbusages.get(0).getIncomingTransfer());
+            Assert.assertEquals(4321, lbusages.get(0).getIncomingTransferSsl());
+            Assert.assertEquals(987, lbusages.get(0).getOutgoingTransfer());
+            Assert.assertEquals(986, lbusages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(1, lbusages.get(0).getConcurrentConnections());
+            Assert.assertEquals(3, lbusages.get(0).getConcurrentConnectionsSsl());
+            Assert.assertEquals(BitTag.SSL.tagValue(), lbusages.get(0).getTagsBitmask());
+        }
+
+        @Test
+        public void shouldCreateSSLMixedUsageRecord() {
+            Calendar starttime = Calendar.getInstance();
+            starttime.roll(Calendar.MONTH, false);
+
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            VirtualIp vip = new VirtualIp();
+            vip.setVipType(VirtualIpType.SERVICENET);
+            jv.setVirtualIp(vip);
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
+            when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(false);
+
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
+            Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
+            Assert.assertNotNull(oUsages);
+            Assert.assertEquals(1, oUsages.size());
+            Assert.assertEquals(true, oUsages.containsKey(543221));
+
+            Map<Integer, List<LoadBalancerHostUsage>> usagemap = oUsages.get(543221);
+            List<LoadBalancerHostUsage> lbusages = usagemap.get(1);
+
+            Assert.assertEquals(543221, lbusages.get(0).getLoadbalancerId());
+            Assert.assertEquals(55555, lbusages.get(0).getAccountId());
+            Assert.assertEquals(1, lbusages.get(0).getHostId());
+            Assert.assertEquals(1234455, lbusages.get(0).getIncomingTransfer());
+            Assert.assertEquals(4321, lbusages.get(0).getIncomingTransferSsl());
+            Assert.assertEquals(987, lbusages.get(0).getOutgoingTransfer());
+            Assert.assertEquals(986, lbusages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(1, lbusages.get(0).getConcurrentConnections());
+            Assert.assertEquals(3, lbusages.get(0).getConcurrentConnectionsSsl());
+            Assert.assertEquals(BitTag.SSL.tagValue()
+                    + BitTag.SSL_MIXED_MODE.tagValue(), lbusages.get(0).getTagsBitmask());
         }
     }
 }
