@@ -4,9 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
-import org.openstack.atlas.usagerefactor.helpers.UsageMappingHelper;
 import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 import org.openstack.atlas.usagerefactor.helpers.UsageProcessorResult;
+import org.openstack.atlas.util.common.MapUtil;
 
 import java.util.Calendar;
 import java.util.List;
@@ -41,7 +41,7 @@ public class UsageProcessor {
         List<LoadBalancerMergedHostUsage> mergedHostUsages = usagePollerHelper.processExistingEvents(existingUsages);
 
         //Now parent key should be loadbalancerId, and child key hostId
-        currentUsages = UsageMappingHelper.swapKeyGrouping(currentUsages);
+        currentUsages = MapUtil.swapKeys(currentUsages);
 
         //Process current usage now. The method processExistingEvents should have removed
         UsageProcessorResult processorResult = usagePollerHelper.processCurrentUsage(existingUsages, currentUsages, pollTime);
