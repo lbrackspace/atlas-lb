@@ -86,36 +86,37 @@ public class UsagePollerHelper{
 
         for (Integer loadbalancerId : currentUsages.keySet()) {
             if (!existingUsages.containsKey(loadbalancerId)) {
-                //TODO:
-                //There are no previous records for this load balancer.
-                //Pull numVips and tags from DB and 0 everything else out for the merged record.
-                //Store the counters as they are in the lb_host_usage table.
+                //TODO: There are no previous records in lb_host_usage for this loadbalancer
+                //Get all records from VirtualIP table and SSLTermination table.
+                //Store new record in lb_merged_host_usage table with appropriate numVips and tags and 0 usage.
+                //Store counters in current usage in lb_host_usage
                 continue;
             }
-            LoadBalancerMergedHostUsage newMergedRecord = new LoadBalancerMergedHostUsage();
-            boolean isFirstPass = true;
+            LoadBalancerMergedHostUsage newMergedRecord = null;
             for (Integer hostId : currentUsages.get(loadbalancerId).keySet()) {
-                if (!existingUsages.get(loadbalancerId).containsKey(hostId)) {
-
-                }
-                List<LoadBalancerHostUsage> loadBalancerHostUsages = existingUsages.get(loadbalancerId).get(hostId);
                 SnmpUsage currentUsage = currentUsages.get(loadbalancerId).get(hostId);
-                if (loadBalancerHostUsages.size() == 0) {
-                    //TODO:
-                    //There are no previous records for this load balancer on this host.
-                    //This condition shouldn't ever be met though.
+
+                if(!existingUsages.get(loadbalancerId).containsKey(hostId)) {
+                    //No previous record exists for this load balancer. Still need to add the current
+                    //counters to the lb_host_usaget able. Have to use an existing usage not from
+                    //this host to get the correct numVips and tagsBitmask.
+                    //There will be issues if there are events that a record for a host got deleted somehow.
+                    LoadBalancerHostUsage existingUsage = existingUsages.get(loadbalancerId).entrySet().iterator().next().getValue().get(0);
+                    newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage, pollTime));
+                    continue;
                 }
+
+                List<LoadBalancerHostUsage> loadBalancerHostUsages = existingUsages.get(loadbalancerId).get(hostId);
+                if (loadBalancerHostUsages.size() == 0) {
+                    LOG.info("Encountered a list of loadBalancerHostUsages that is empty.  This should not have happened.");
+                    continue;
+                }
+
                 LoadBalancerHostUsage existingUsage = loadBalancerHostUsages.get(loadBalancerHostUsages.size() - 1);
-                if (isFirstPass) {
+                if (newMergedRecord == null) {
                     newMergedRecord = initializeMergedRecord(existingUsage);
                     newMergedRecord.setPollTime(pollTime);
                     newMergedRecord.setEventType(null);
-                    isFirstPass = false;
-                }
-                if(!existingUsages.get(loadbalancerId).containsKey(hostId)) {
-                    //TODO:
-                    //No previous records exist for this load balancer on this host.
-                    //What should be done? Nothing methinks
                 }
 
                 calculateUsage(currentUsage, existingUsage, newMergedRecord);
@@ -123,7 +124,6 @@ public class UsagePollerHelper{
             }
             mergedUsages.add(newMergedRecord);
         }
-        //TODO: Check for loadbalancers that exist in existingUsages and not in currentUsages
 
         return new UsageProcessorResult(mergedUsages, newLBHostUsages);
     }
