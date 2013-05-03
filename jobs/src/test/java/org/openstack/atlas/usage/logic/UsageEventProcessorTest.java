@@ -78,7 +78,7 @@ public class UsageEventProcessorTest {
             virtualIps.add(vip1);
 
             when(hourlyUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenReturn(null);
-            when(rollupUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenReturn(null);
+            when(rollupUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenThrow(new EntityNotFoundException());
             when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(virtualIps);
         }
 
@@ -186,7 +186,7 @@ public class UsageEventProcessorTest {
             virtualIps.add(vip1);
 
             when(hourlyUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenReturn(null);
-            when(rollupUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenReturn(null);
+            when(rollupUsageRepository.getMostRecentUsageForLoadBalancer(Matchers.<Integer>any())).thenThrow(new EntityNotFoundException());
             when(loadBalancerRepository.getVipsByAccountIdLoadBalancerId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(virtualIps);
         }
 

@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-@Transactional(value = "lb_merged_host_usage")
+@Transactional(value = "usage")
 public class LoadBalancerMergedHostUsageRepository {
 
     final Log LOG = LogFactory.getLog(LoadBalancerMergedHostUsageRepository.class);

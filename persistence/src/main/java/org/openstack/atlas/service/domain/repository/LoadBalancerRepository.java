@@ -348,12 +348,21 @@ public class LoadBalancerRepository {
         vips = entityManager.createQuery(query).setParameter("loadBalancerId", loadBalancerId).getResultList();
         return vips;
     }
+
     public List<LoadBalancerJoinVip6> getVips6ByLoadBalancerId(Integer loadBalancerId) {
         List<LoadBalancerJoinVip6> vips;
         String query = "select j from LoadBalancerJoinVip6 j where j.loadBalancer.id = :loadBalancerId";
         //String query = "select l.virtualIps from LoadBalancer l where l.id = :loadBalancerId";
         vips = entityManager.createQuery(query).setParameter("loadBalancerId", loadBalancerId).getResultList();
         return vips;
+    }
+
+    public boolean isServicenetLoadBalancer(Integer loadBalancerId) {
+        List<LoadBalancerJoinVip> vips;
+        for (LoadBalancerJoinVip vip : getVipsByLoadBalancerId(loadBalancerId)) {
+           if (VirtualIpType.SERVICENET == vip.getVirtualIp().getVipType()) return true;
+        }
+        return false;
     }
 
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,

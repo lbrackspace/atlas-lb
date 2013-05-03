@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -14,7 +15,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@Transactional(value = "lb_host_usage")
+@Repository
+@Transactional(value = "usage")
 public class HostUsageRefactorRepository {
     final Log LOG = LogFactory.getLog(HostUsageRefactorRepository.class);
 
@@ -22,12 +24,13 @@ public class HostUsageRefactorRepository {
     private EntityManager entityManager;
 
     public void create(LoadBalancerHostUsage usageRecord) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO lb_usage_event (account_id, loadbalancer_id, host_id, bandwidth_out," +
-                "bandwidth_in, bandwidth_out_ssl, bandwidth_in_ssl, concurrent_connections," +
-                "concurrent_connections_ssl, tags_bitmask, num_vips, poll_time) VALUES");
-        String queryString = generateFormattedValues(usageRecord);
-        entityManager.createNativeQuery(queryString);
+//        final StringBuilder sb = new StringBuilder();
+//        sb.append("INSERT INTO lb_usage_event (account_id, loadbalancer_id, host_id, bandwidth_out," +
+//                "bandwidth_in, bandwidth_out_ssl, bandwidth_in_ssl, concurrent_connections," +
+//                "concurrent_connections_ssl, tags_bitmask, num_vips, poll_time) VALUES");
+//        String queryString = generateFormattedValues(usageRecord);
+//        entityManager.createNativeQuery(queryString);
+        entityManager.persist(usageRecord);
     }
 
     public void batchCreate(List<LoadBalancerHostUsage> usageRecords) {

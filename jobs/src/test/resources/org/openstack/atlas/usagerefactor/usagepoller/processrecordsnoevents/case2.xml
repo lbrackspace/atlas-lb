@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details: Usage counters start at 0.
+-->
+<dataset>
+    <lb_host_usage id="1" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_out="0" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 20:01:00" />
+    <lb_host_usage id="2" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_out="0" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 20:01:00" />
+    <lb_host_usage id="3" account_id="1234" loadbalancer_id="124" host_id="1" bandwidth_out="0" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 20:01:00" />
+    <lb_host_usage id="4" account_id="1234" loadbalancer_id="124" host_id="2" bandwidth_out="0" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 20:01:00" />
+</dataset>

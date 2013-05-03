@@ -68,7 +68,7 @@ public class UsageEventProcessor {
 
                 // Update recent usage end time
                 Calendar newEndTimeForRecentUsage = calculateEndTime(recentUsage.getEndTime(), firstNewUsage.getStartTime());
-                if(!recentUsage.getEndTime().equals(newEndTimeForRecentUsage)) {
+                if (!recentUsage.getEndTime().equals(newEndTimeForRecentUsage)) {
                     recentUsage.setEndTime(newEndTimeForRecentUsage);
                     usagesToUpdate.add(recentUsage);
                 }
@@ -83,15 +83,20 @@ public class UsageEventProcessor {
                 int updatedTags = calculateTags(recentUsage.getAccountId(), lbId, usageEvent, recentUsage);
                 firstNewUsage.setTags(updatedTags);
             } else {
-                final Usage recentUsage = rollupUsageRepository.getMostRecentUsageForLoadBalancer(lbId);
-                if (recentUsage != null) {
+                final Usage recentUsage;
+                try {
+                    recentUsage = rollupUsageRepository.getMostRecentUsageForLoadBalancer(lbId);
                     final LoadBalancerUsage firstNewUsage = loadBalancerUsages.get(0);
 
                     // Update the tags to the proper tags.
                     UsageEvent usageEvent = UsageEvent.valueOf(firstNewUsage.getEventType());
                     int updatedTags = calculateTags(recentUsage.getAccountId(), lbId, usageEvent, recentUsage);
                     firstNewUsage.setTags(updatedTags);
+                } catch (EntityNotFoundException e) {
+                    // TODO: How should we handle this exception?
+                    e.printStackTrace();
                 }
+
             }
 
             for (int i = 0; i < loadBalancerUsages.size(); i++) {
@@ -239,7 +244,7 @@ public class UsageEventProcessor {
                 || recentUsageEndTime.get(Calendar.DAY_OF_MONTH) != nextUsageStartTime.get(Calendar.DAY_OF_MONTH)
                 || recentUsageEndTime.get(Calendar.MONTH) != nextUsageStartTime.get(Calendar.MONTH)
                 || recentUsageEndTime.get(Calendar.YEAR) != nextUsageStartTime.get(Calendar.YEAR))
-                ||(newEndTime.get(Calendar.MINUTE) != 0
+                || (newEndTime.get(Calendar.MINUTE) != 0
                 || newEndTime.get(Calendar.SECOND) != 0
                 || newEndTime.get(Calendar.MILLISECOND) != 0)) {
             newEndTime.set(Calendar.MINUTE, 59);
@@ -277,7 +282,7 @@ public class UsageEventProcessor {
         newUsage.setNumVips(inOrderUsageEventEntry.getNumVips());
         newUsage.setStartTime(inOrderUsageEventEntry.getStartTime());
         newUsage.setEndTime(inOrderUsageEventEntry.getStartTime());
-        if(inOrderUsageEventEntry.getEventType().equals(UsageEvent.SUSPEND_LOADBALANCER.name()) ||
+        if (inOrderUsageEventEntry.getEventType().equals(UsageEvent.SUSPEND_LOADBALANCER.name()) ||
                 inOrderUsageEventEntry.getEventType().equals(UsageEvent.SUSPENDED_LOADBALANCER.name())) {
             newUsage.getEndTime().add(Calendar.SECOND, 1);
         }

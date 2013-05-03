@@ -3,9 +3,11 @@ package org.openstack.atlas.service.domain.services.impl;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Service
 public class UsageRefactorServiceImpl extends BaseService implements UsageRefactorService {
 
     @Override
@@ -19,14 +21,17 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
     }
 
     @Override
-    public Map<Integer, List<LoadBalancerHostUsage>> getAllLoadBalancerHostUsages() {
+    public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getAllLoadBalancerHostUsages() {
         List<LoadBalancerHostUsage> lbHostUsages = hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords();
-        Map<Integer, List<LoadBalancerHostUsage>> lbMap = new HashMap<Integer, List<LoadBalancerHostUsage>>();
+        Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> lbMap = new HashMap<Integer, Map<Integer, List<LoadBalancerHostUsage>>>();
         for (LoadBalancerHostUsage lbHostUsage : lbHostUsages) {
             if (!lbMap.containsKey(lbHostUsage.getLoadbalancerId())){
-                lbMap.put(lbHostUsage.getLoadbalancerId(), new ArrayList<LoadBalancerHostUsage>());
+                lbMap.put(lbHostUsage.getLoadbalancerId(), new HashMap<Integer, List<LoadBalancerHostUsage>>());
             }
-            lbMap.get(lbHostUsage.getLoadbalancerId()).add(lbHostUsage);
+            if (!lbMap.get(lbHostUsage.getLoadbalancerId()).containsKey(lbHostUsage.getHostId())) {
+                lbMap.get(lbHostUsage.getLoadbalancerId()).put(lbHostUsage.getHostId(), new ArrayList<LoadBalancerHostUsage>());
+            }
+            lbMap.get(lbHostUsage.getLoadbalancerId()).get(lbHostUsage.getHostId()).add(lbHostUsage);
         }
         return lbMap;
     }
@@ -50,6 +55,4 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
     public void batchDeleteLoadBalancerMergedHostUsages(Collection<LoadBalancerMergedHostUsage> usages) {
         loadBalancerMergedHostUsageRepository.batchDelete(usages);
     }
-
-
 }

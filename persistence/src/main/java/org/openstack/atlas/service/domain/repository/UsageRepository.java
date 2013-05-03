@@ -6,16 +6,15 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.Usage_;
 import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -45,18 +44,30 @@ public class UsageRepository {
         return usage;
     }
 
-    public Usage getMostRecentUsageForLoadBalancer(Integer loadBalancerId) {
-        if (loadBalancerId == null) return null;
+    public Usage getMostRecentUsageForLoadBalancer(Integer loadBalancerId) throws EntityNotFoundException {
+        if (loadBalancerId == null) throw new EntityNotFoundException("Lb id passed in is null.");
 
-        Query query = entityManager.createNativeQuery("SELECT a.* " +
-                "FROM lb_usage a, " +
-                "(SELECT loadbalancer_id, max(start_time) as start_time FROM lb_usage WHERE loadbalancer_id = :loadbalancerId GROUP BY loadbalancer_id) b " +
-                "WHERE a.loadbalancer_id = :loadbalancerId and a.loadbalancer_id = b.loadbalancer_id and a.start_time = b.start_time;", Usage.class)
-                .setParameter("loadbalancerId", loadBalancerId);
+        LoadBalancer lb = new LoadBalancer();
+        lb.setId(loadBalancerId);
 
-        List<Usage> usage = (List<Usage>) query.getResultList();
-        if (usage == null || usage.isEmpty()) return null;
-        return usage.get(0);
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Usage> criteria = builder.createQuery(Usage.class);
+        Root<Usage> usageRoot = criteria.from(Usage.class);
+
+        Predicate hasLbId = builder.equal(usageRoot.get(Usage_.loadbalancer), lb);
+        Order descStartTime = builder.desc(usageRoot.get(Usage_.startTime));
+
+        criteria.select(usageRoot);
+        criteria.where(hasLbId);
+        criteria.orderBy(descStartTime);
+
+        try {
+            return entityManager.createQuery(criteria).getSingleResult();
+        } catch (NoResultException e) {
+            String message = "No recent usage record found.";
+            LOG.debug(message);
+            throw new EntityNotFoundException(message);
+        }
     }
 
     public void batchCreate(List<Usage> usages) {

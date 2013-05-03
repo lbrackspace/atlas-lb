@@ -70,8 +70,4 @@
         <property name="jobStateRepository" ref="jobStateRepository"/>
         <property name="hostRepository" ref="hostRepository"/>
     </bean>
-    <bean id="usagePollerImpl" class="org.openstack.atlas.usagerefactor.UsagePollerImpl" parent="baseUsageProcessor">
-        <property name="hostService" ref="hostService"/>
-        <property name="usageRefactorService" ref="usageRefactorService"/>
-    </bean>
 </beans>

@@ -30,7 +30,14 @@
 
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory" />
-        <qualifier value="lb_merged_host_usage"/>
-        <qualifier value="lb_host_usage"/>
+        <qualifier value="usage"/>
     </bean>
+
+    <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
+        <property name="hostUsageRefactorRepository" ref="hostUsageRefactorRepository" />
+        <property name="loadBalancerMergedHostUsageRepository" ref="loadBalancerMergedHostUsageRepository" />
+    </bean>
+
+    <bean id="usageRefactorService" class="org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl"
+          parent="baseService"/>
 </beans>

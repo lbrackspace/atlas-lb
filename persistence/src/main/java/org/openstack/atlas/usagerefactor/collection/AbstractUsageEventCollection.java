@@ -6,7 +6,9 @@ import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Component
 public abstract class AbstractUsageEventCollection {
@@ -24,7 +27,7 @@ public abstract class AbstractUsageEventCollection {
     private UsageEventProcessor usageEventProcessor;
     private HostRepository hostRepository;
 
-    public AbstractUsageEventCollection() {
+    public AbstractUsageEventCollection() throws UsageEventCollectionException {
     }
 
     @Required
@@ -37,36 +40,54 @@ public abstract class AbstractUsageEventCollection {
         this.usageEventProcessor = usageEventProcessor;
     }
 
-    public abstract void collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor, List<Host> hosts, LoadBalancer lb, UsageEvent event);
+    public abstract List<Future<SnmpUsage>> collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor, List<Host> hosts, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException;
 
-    public void processUsageRecord(List<Host> hosts, LoadBalancer lb, UsageEvent event) {
+    public abstract void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException;
+
+    public void processUsageRecord(List<Host> hosts, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
         LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
         if (hosts == null || hosts.isEmpty()) {
             this.hosts = hostRepository.getAllHosts();
         } else {
             this.hosts = hosts;
         }
-        executorService = Executors.newFixedThreadPool(hosts.size());
-        collectUsageRecords(executorService, usageEventProcessor, hosts, lb, event);
-        LOG.debug("Finished Processing Usage Records for load balancer: " + lb.getId());
+
+        if (this.hosts != null && !this.hosts.isEmpty()) {
+            executorService = Executors.newFixedThreadPool(this.hosts.size());
+            collectUsageRecords(executorService, usageEventProcessor, this.hosts, lb, event);
+            processFutures(null, usageEventProcessor, lb, event);
+            LOG.debug("Finished Processing Usage Records for load balancer: " + lb.getId());
+        } else {
+            LOG.error("Hosts data invalid, this shouldnt happen... notify developer immediately. ");
+            throw new UsageEventCollectionException("Hosts data invalid, please contact support.");
+        }
+
     }
 
-    public void processUsageRecord(LoadBalancer lb) {
+    public void processUsageRecord(LoadBalancer lb) throws UsageEventCollectionException {
         processUsageRecord(null, lb, null);
 
     }
 
-    public void processUsageRecord(LoadBalancer lb, UsageEvent event) {
+    public void processUsageRecord(LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
         processUsageRecord(null, lb, event);
 
     }
 
-    public void processUsageRecord(List<Host> hosts) {
+    public void processUsageRecord(List<Host> hosts) throws UsageEventCollectionException {
         processUsageRecord(hosts, null, null);
     }
 
     public void processUsageRecord() {
-        LOG.info("Test Request");
-//        processUsageRecord(null, null, null);
+        System.out.print("TEST PPROCESS");
     }
+
+    public List<Host> getHosts() {
+        return this.hosts;
+    }
+
+    public ExecutorService getExecutorService() {
+        return this.executorService;
+    }
+
 }
