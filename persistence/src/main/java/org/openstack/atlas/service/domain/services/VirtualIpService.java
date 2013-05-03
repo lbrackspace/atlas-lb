@@ -6,6 +6,7 @@ import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface VirtualIpService {
@@ -81,5 +82,7 @@ public interface VirtualIpService {
     public String getVirtualIpv6String(Integer vip6Id) throws EntityNotFoundException, IPStringConversionException;
 
     public String getVirtualIpv6String(VirtualIpv6 vip6) throws IPStringConversionException;
+
+    public Map<Integer, List<VirtualIp>> getAllVipsMappedByLbId();
 
 }
