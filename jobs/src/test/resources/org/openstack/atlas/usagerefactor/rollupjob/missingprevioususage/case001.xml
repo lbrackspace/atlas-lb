@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    Case Details: No events, usage records for 1 hour in SSL_MIXED mode. Similar to case9 except the previous hour's
+    Case Details: No events, usage records for 1 hour in SSL_MIXED mode. Previous hour's
                   usage is missing resulting in "zeroing" out the first record's usage values.
 -->
 <dataset>
