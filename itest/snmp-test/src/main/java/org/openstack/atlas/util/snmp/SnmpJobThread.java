@@ -3,7 +3,7 @@ package org.openstack.atlas.util.snmp;
 import java.util.Map;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
-import org.openstack.atlas.usagerefactor.StingrayUsageClient;
+import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClient;
 import org.openstack.atlas.util.common.VerboseLogger;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
