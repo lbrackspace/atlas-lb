@@ -30,9 +30,6 @@ public class AtlasCache {
         }
     }
 
-    public AtlasCache() {
-    }
-
     /**
      * This method will set the object in cache using the provided key and ttl
      *
