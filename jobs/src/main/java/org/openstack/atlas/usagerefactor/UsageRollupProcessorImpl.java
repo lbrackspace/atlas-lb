@@ -155,7 +155,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
     private Usage processEvents(Usage currentUsage, LoadBalancerMergedHostUsage currentLoadBalancerMergedHost, List<Usage> processedRecords, boolean isFirstOfHour, Integer mostRecentTagsBitmask) {
         if (currentLoadBalancerMergedHost.getEventType() != null) {
-            if (currentLoadBalancerMergedHost.getEventType() != UsageEvent.CREATE_LOADBALANCER) {
+            if (currentLoadBalancerMergedHost.getEventType() != UsageEvent.CREATE_LOADBALANCER && (currentLoadBalancerMergedHost.getPollTime().get(Calendar.MINUTE) != 0
+                    || currentLoadBalancerMergedHost.getPollTime().get(Calendar.SECOND) != 0)) {
                 currentUsage.setEndTime(currentLoadBalancerMergedHost.getPollTime());
                 if (isFirstOfHour) {
                     if (mostRecentTagsBitmask == null) {
@@ -184,6 +185,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                     currentUsage.setStartTime(currentLoadBalancerMergedHost.getPollTime());
                     break;
                 case DELETE_LOADBALANCER:
+                    currentUsage.setNumVips(0);
                     currentUsage.setEndTime(currentLoadBalancerMergedHost.getPollTime());
                     break;
                 case CREATE_VIRTUAL_IP:
@@ -209,6 +211,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                 case UNSUSPEND_LOADBALANCER:
                     break;
                 case SUSPENDED_LOADBALANCER:
+                    currentUsage.setNumberOfPolls(0);
                     break;
                 default:
                     break;
