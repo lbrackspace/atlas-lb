@@ -3,7 +3,6 @@ package org.openstack.atlas.service.domain.usage.repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,7 +12,8 @@ import javax.persistence.Query;
 import javax.persistence.TemporalType;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.List;
 
 @Repository
 @Transactional(value = "usage")
@@ -41,9 +41,9 @@ public class HostUsageRefactorRepository {
 
     private String generateBatchInsertQuery(List<LoadBalancerHostUsage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO lb_usage_event (account_id, loadbalancer_id, host_id, bandwidth_out," +
+        sb.append("INSERT INTO lb_host_usage (account_id, loadbalancer_id, host_id, bandwidth_out," +
                 "bandwidth_in, bandwidth_out_ssl, bandwidth_in_ssl, concurrent_connections," +
-                "concurrent_connections_ssl, tags_bitmask, num_vips, poll_time) VALUES");
+                "concurrent_connections_ssl, tags_bitmask, num_vips, poll_time, event_type) VALUES");
         sb.append(generateFormattedValuesForList(usages));
         return sb.toString();
     }
@@ -88,7 +88,6 @@ public class HostUsageRefactorRepository {
         } else {
             sb.append("'").append(usage.getEventType()).append("'");
         }
-        sb.append(")");
 
         return sb.toString();
     }
@@ -103,7 +102,7 @@ public class HostUsageRefactorRepository {
     }
 
     public void deleteOldHostUsage(Calendar deleteTimeMarker) {
-        Query query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.snapshotTime < :deleteTimeMarker")
+        Query query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.pollTime < :deleteTimeMarker")
                 .setParameter("deleteTimeMarker", deleteTimeMarker, TemporalType.TIMESTAMP);
         int numRowsDeleted = query.executeUpdate();
         LOG.info(String.format("Deleted %d rows with endTime before %s from 'lb_host_usage' table.",
