@@ -6,8 +6,8 @@ import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
-import org.openstack.atlas.usagerefactor.StingrayUsageClient;
-import org.openstack.atlas.usagerefactor.StingrayUsageClientImpl;
+import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClient;
+import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClientImpl;
 
 import java.util.concurrent.Callable;
 

@@ -154,7 +154,26 @@ public class UsageEventMapperTest {
         }
 
         @Test
-        public void shouldMapBitTagsCreatLB() {
+        public void shouldMapBasicUsageRecordWithMulipleNumVipsAndPollTimeAndSSLOn() {
+            LoadBalancerHostUsage mappedUsage;
+            Calendar now = Calendar.getInstance();
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            LoadBalancerJoinVip jv2 = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            jvs.add(jv);
+            jvs.add(jv2);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            usageEventMapper = new UsageEventMapper(lb, false, snmpUsage, UsageEvent.SSL_ONLY_ON, now);
+            mappedUsage = usageEventMapper.mapSnmpUsageToUsageEvent();
+
+            Assert.assertEquals(2, mappedUsage.getNumVips());
+            Assert.assertEquals(now, mappedUsage.getPollTime());
+            Assert.assertEquals(BitTag.SSL.tagValue(), mappedUsage.getTagsBitmask());
+        }
+
+        @Test
+        public void shouldMapCreatLB() {
             LoadBalancerHostUsage mappedUsage;
             Calendar now = Calendar.getInstance();
             LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
@@ -162,7 +181,7 @@ public class UsageEventMapperTest {
             jvs.add(jv);
             lb.setLoadBalancerJoinVipSet(jvs);
 
-            usageEventMapper = new UsageEventMapper(lb, false, snmpUsage, UsageEvent.SSL_OFF, now);
+            usageEventMapper = new UsageEventMapper(lb, false, snmpUsage, UsageEvent.CREATE_LOADBALANCER, now);
             mappedUsage = usageEventMapper.mapSnmpUsageToUsageEvent();
             Assert.assertEquals(0, mappedUsage.getTagsBitmask());
         }
@@ -202,7 +221,7 @@ public class UsageEventMapperTest {
         }
 
         @Test
-        public void shouldMapServiceNetLB() throws EntityNotFoundException, DeletedStatusException {
+        public void shouldMapServiceNeCreatetLB() throws EntityNotFoundException, DeletedStatusException {
             Set<VirtualIp> vips = new HashSet<VirtualIp>();
             VirtualIp vip = new VirtualIp();
             vip.setVipType(VirtualIpType.SERVICENET);
