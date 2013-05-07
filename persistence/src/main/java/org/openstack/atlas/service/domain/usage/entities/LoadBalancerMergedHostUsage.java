@@ -151,7 +151,7 @@ public class LoadBalancerMergedHostUsage extends Entity implements Serializable 
         this.eventType = eventType;
     }
 
-    public long getNumVips() {
+    public int getNumVips() {
         return numVips;
     }
 

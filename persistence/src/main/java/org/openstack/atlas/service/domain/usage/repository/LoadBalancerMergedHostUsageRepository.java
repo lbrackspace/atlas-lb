@@ -2,12 +2,14 @@ package org.openstack.atlas.service.domain.usage.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage_;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
@@ -66,6 +68,25 @@ public class LoadBalancerMergedHostUsageRepository {
 
     public void create(LoadBalancerMergedHostUsage loadBalancerMergedHostUsage) {
         entityManager.persist(loadBalancerMergedHostUsage);
+    }
+
+    public LoadBalancerMergedHostUsage getMostRecentRecordForLoadBalancer(int lbId) throws EntityNotFoundException{
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerMergedHostUsage> criteria = builder.createQuery(LoadBalancerMergedHostUsage.class);
+        Root<LoadBalancerMergedHostUsage> usageRoot = criteria.from(LoadBalancerMergedHostUsage.class);
+
+        Predicate hasLbId = builder.equal(usageRoot.get(LoadBalancerMergedHostUsage_.loadbalancerId), lbId);
+
+        criteria.select(usageRoot);
+        criteria.where(hasLbId);
+
+        try {
+            return entityManager.createQuery(criteria).getSingleResult();
+        } catch (NoResultException e) {
+            String message = "No recent usage record found.";
+            LOG.debug(message);
+            throw new EntityNotFoundException(message);
+        }
     }
 
     public void batchCreate(List<LoadBalancerMergedHostUsage> usages) {
