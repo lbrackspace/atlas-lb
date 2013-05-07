@@ -127,7 +127,7 @@ public class UsageRefactorServiceImplTest {
             fourthUsageList.add(hostUsage4);
             fifthUsageList.add(hostUsage4);
 
-            when(hostUsageRefactorRepository.getMostRecentUsageRecordForLbId(anyInt())).thenReturn(hostUsage4);
+            when(hostUsageRefactorRepository.getMostRecentUsageRecordForLbIdAndHostId(anyInt(), anyInt())).thenReturn(hostUsage4);
         }
 
         @Test
@@ -182,7 +182,7 @@ public class UsageRefactorServiceImplTest {
 
         @Test
         public void shouldRetrieveOneEntryForLoadBalancerId() {
-            LoadBalancerHostUsage recentEvent = usageRefactorService.getRecentHostUsageRecord(secondLoadBalancerId);
+            LoadBalancerHostUsage recentEvent = usageRefactorService.getLastRecordForLbIdAndHostId(secondLoadBalancerId, secondHostId);
             assertTrue(recentEvent.getPollTime().equals(recentPollTime));
         }
     }

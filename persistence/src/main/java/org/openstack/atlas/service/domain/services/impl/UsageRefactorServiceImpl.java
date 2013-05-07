@@ -16,8 +16,8 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
     }
 
     @Override
-    public LoadBalancerHostUsage getRecentHostUsageRecord(int lbId) {
-        return hostUsageRefactorRepository.getMostRecentUsageRecordForLbId(lbId);
+    public LoadBalancerHostUsage getLastRecordForLbIdAndHostId(int lbId, int hostId) {
+        return hostUsageRefactorRepository.getMostRecentUsageRecordForLbIdAndHostId(lbId, hostId);
     }
 
     @Override

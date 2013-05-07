@@ -13,6 +13,7 @@ import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,23 +46,49 @@ public abstract class AbstractUsageEventCollection {
     public abstract void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException;
 
     public void processUsageRecord(List<Host> hosts, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
+        this.hosts = null;
         LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
-        if (hosts == null || hosts.isEmpty()) {
-            this.hosts = hostRepository.getAllHosts();
-        } else {
-            this.hosts = hosts;
-        }
+        gatherHostsData(hosts);
 
         if (this.hosts != null && !this.hosts.isEmpty()) {
             executorService = Executors.newFixedThreadPool(this.hosts.size());
             collectUsageRecords(executorService, usageEventProcessor, this.hosts, lb, event);
             processFutures(null, usageEventProcessor, lb, event);
-            LOG.debug("Finished Processing Usage Records for load balancer: " + lb.getId());
+            LOG.debug("Finished Processing Usage Event Record for load balancer: " + lb.getId());
         } else {
-            LOG.error("Hosts data invalid, this shouldnt happen... notify developer immediately. ");
+            LOG.error("Hosts data invalid, this shouldn't happen... Verify DB for data and notify developer immediately. ");
             throw new UsageEventCollectionException("Hosts data invalid, please contact support.");
         }
 
+    }
+
+    public void processSnmpUsage(SnmpUsage snmpUsage, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
+        processSnmpUsage(null, snmpUsage, lb, event);
+    }
+
+    public void processSnmpUsage(List<Host> hosts, SnmpUsage snmpUsage, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
+        gatherHostsData(hosts);
+
+        List<SnmpUsage> snmpUsages = new ArrayList<SnmpUsage>();
+        if (this.hosts != null && !this.hosts.isEmpty()) {
+            for (Host h : this.hosts) {
+                snmpUsage = new SnmpUsage();
+                snmpUsage.setHostId(h.getId());
+                snmpUsages.add(snmpUsage);
+                usageEventProcessor.processUsageEvent(snmpUsages, lb, event);
+            }
+        } else {
+            LOG.error("Hosts data invalid, this shouldn't happen... Verify DB for data and notify developer immediately. ");
+            throw new UsageEventCollectionException("Hosts data invalid, please contact support.");
+        }
+    }
+
+    private void gatherHostsData(List<Host> hosts) {
+        if (hosts == null || hosts.isEmpty()) {
+            this.hosts = hostRepository.getAllHosts();
+        } else {
+            this.hosts = hosts;
+        }
     }
 
     public void processUsageRecord(LoadBalancer lb) throws UsageEventCollectionException {
@@ -77,6 +104,7 @@ public abstract class AbstractUsageEventCollection {
     public void processUsageRecord(List<Host> hosts) throws UsageEventCollectionException {
         processUsageRecord(hosts, null, null);
     }
+
 
     public void processUsageRecord() {
         System.out.print("TEST PPROCESS");

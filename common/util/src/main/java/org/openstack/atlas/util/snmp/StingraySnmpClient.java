@@ -184,14 +184,14 @@ public class StingraySnmpClient {
             throw new StingraySnmpGeneralException(msg, ex);
         }
         if (respEvent == null) {
-            String msg = String.format("Error Object ID: %d IP: %s response for OID %s for vs %s was null", hashCode(), address, baseOid, vsName);
+            String msg = String.format("Error response for OID %s for vs %s was null", baseOid, vsName);
             LOG.error(msg);
             closeConnection(snmp, transport);
         }
         PDU resp;
         resp = respEvent.getResponse();
         if (resp == null) {
-            String msg = String.format("Error Object ID: %d IP: %s response for OID %s for vs %s was null", hashCode(), address, baseOid, vsName);
+            String msg = String.format("Error response for OID %s for vs %s was null", baseOid, vsName);
             LOG.error(msg);
             closeConnection(snmp, transport);
             throw new StingraySnmpGeneralException(msg);

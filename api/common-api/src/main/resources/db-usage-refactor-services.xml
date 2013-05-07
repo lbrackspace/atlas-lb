@@ -19,13 +19,9 @@
           class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository"
           depends-on="entityManagerFactory2"/>
 
-    <!-- TODO: Get a little help from Phil and/or online -->
-    <!--TODO: view quartzjob.xml in the 'jobs' module for springing the 'job' itself, can make ref to service here or we can decide where all this will go later..-->
-    <bean id="hostRefactorService" class="org.openstack.atlas.service.domain.services.impl.HostServiceImpl"/>
-
-
     <!--Usage processing-->
-    <bean id="usageRefactorService" class="org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl">
+    <bean id="usageRefactorService" class="org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl"
+            parent = "baseService">
     </bean>
 
     <bean id="abstractUsageEventCollector"

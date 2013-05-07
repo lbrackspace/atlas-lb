@@ -8,6 +8,8 @@ import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionExcepti
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClient;
 import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClientImpl;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpObjectNotFoundException;
 
 import java.util.concurrent.Callable;
 
@@ -29,20 +31,26 @@ public class SnmpVSCollector implements Callable<SnmpUsage> {
 
     @Override
     public SnmpUsage call() throws UsageEventCollectionException {
-        SnmpUsage snmpusage = null;
+        SnmpUsage snmpusage;
         try {
             snmpusage = stingrayUsageClient.getVirtualServerUsage(host, lb);
+        } catch (StingraySnmpObjectNotFoundException ex) {
+            //Set host ID so we can still process the usage event for this host...
+            snmpusage = new SnmpUsage();
+            snmpusage.setHostId(host.getId());
+            String retString = String.format("Request for host %s usage from SNMP server failed. SnmpUsage Object" +
+                    "is Not foud for host", host.getName());
+            LOG.error(retString, ex);
+        } catch (StingraySnmpGeneralException eg) {
+            //Set host ID so we can still process the usage event for this host...
+            snmpusage = new SnmpUsage();
+            snmpusage.setHostId(host.getId());
+            String retString = String.format("Request for host %s usage from SNMP server failed. SnmpUsage is Null", host.getName());
+            LOG.error(retString, eg);
         } catch (Exception e) {
-            String hostname;
-            if (host.getName() == null) {
-                hostname = "NULL-HOST";
-            } else {
-                hostname = host.getName();
-            }
-            String retString = String.format("Request for host %s usage from SNMP server failed.", hostname);
+            String retString = String.format("Request for host %s usage from SNMP server failed.", host.getName());
             LOG.error(retString, e);
             throw new UsageEventCollectionException(retString, e);
-
         }
         return snmpusage;
     }
