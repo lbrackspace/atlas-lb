@@ -4,6 +4,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.usagerefactor.helpers.HostIdUsageMap;
+import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClient;
+import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClientImpl;
 
 import java.util.HashMap;
 import java.util.concurrent.Callable;

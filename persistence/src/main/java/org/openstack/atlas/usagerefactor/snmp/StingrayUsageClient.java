@@ -1,13 +1,12 @@
-package org.openstack.atlas.usagerefactor;
+package org.openstack.atlas.usagerefactor.snmp;
 
-import java.util.List;
-import org.openstack.atlas.util.snmp.RawSnmpUsage;
-
-import java.util.Map;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
+
+import java.util.List;
+import java.util.Map;
 
 public interface StingrayUsageClient {
 

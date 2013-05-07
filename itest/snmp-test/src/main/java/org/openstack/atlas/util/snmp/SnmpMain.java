@@ -14,8 +14,8 @@ import org.apache.log4j.BasicConfigurator;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
-import org.openstack.atlas.usagerefactor.StingrayUsageClient;
-import org.openstack.atlas.usagerefactor.StingrayUsageClientImpl;
+import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClient;
+import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClientImpl;
 import org.openstack.atlas.usagerefactor.helpers.SnmpUsageComparator;
 import org.openstack.atlas.usagerefactor.helpers.SnmpUsageComparatorType;
 import org.openstack.atlas.util.debug.Debug;
@@ -230,7 +230,7 @@ public class SnmpMain {
                 } else if (cmd.equals("lookup") && args.length >= 3) {
                     String oid = args[1];
                     String vsName = args[2];
-                    long val = defaultClient.getLongValueForVirtualServer(vsName, oid, true);
+                    long val = defaultClient.getLongValueForVirtualServer(vsName, oid, false);
                     System.out.printf("%s for %s = %d\n", oid, vsName, val);
                 } else if (cmd.equals("set_retrys") && args.length >= 2) {
                     System.out.printf("Setting retries to ");

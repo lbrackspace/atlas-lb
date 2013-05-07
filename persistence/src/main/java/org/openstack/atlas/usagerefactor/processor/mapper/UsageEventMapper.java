@@ -27,6 +27,7 @@ public class UsageEventMapper {
 
     public LoadBalancerHostUsage mapSnmpUsageToUsageEvent() {
         LoadBalancerHostUsage newUsageEvent = new LoadBalancerHostUsage();
+
         newUsageEvent.setAccountId(loadBalancer.getAccountId());
         newUsageEvent.setLoadbalancerId(loadBalancer.getId());
         newUsageEvent.setHostId(snmpUsage.getHostId());

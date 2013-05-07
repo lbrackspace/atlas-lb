@@ -10,6 +10,7 @@ import org.openstack.atlas.service.domain.repository.AccountUsageRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.openstack.atlas.usagerefactor.processor.mapper.UsageEventMapper;
@@ -55,10 +56,29 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         Calendar pollTime = Calendar.getInstance();
 
         for (SnmpUsage usage : usages) {
+            LoadBalancerHostUsage usageRecordToProcess;
+            LoadBalancerHostUsage prevUsageRecord = null;
+
+            //This usage record failed to collect from SNMP, handle accordingly...
+            if (usage.getHostId() != 0 && usage.getLoadbalancerId() == 0) {
+                //Gather previous usage record
+                prevUsageRecord = usageRefactorService.getLastRecordForLbIdAndHostId(loadBalancer.getId(), usage.getHostId());
+                if (prevUsageRecord != null) {
+                    //Set event and pollTime for no previous record in DB
+                    prevUsageRecord.setEventType(usageEvent);
+                    prevUsageRecord.setPollTime(pollTime);
+                }
+            }
+
             LOG.info(String.format("Creating usage event for load balancer '%d'...", loadBalancer.getId()));
-            UsageEventMapper mapper = new UsageEventMapper(loadBalancer,
-                    loadBalancerRepository.isServicenetLoadBalancer(loadBalancer.getId()), usage, usageEvent, pollTime);
-            usageRefactorService.createUsageEvent(mapper.mapSnmpUsageToUsageEvent());
+            if (prevUsageRecord != null) {
+                usageRecordToProcess = prevUsageRecord;
+            } else {
+                usageRecordToProcess = new UsageEventMapper(loadBalancer,
+                        loadBalancerRepository.isServicenetLoadBalancer(loadBalancer.getId()), usage, usageEvent, pollTime)
+                        .mapSnmpUsageToUsageEvent();
+            }
+            usageRefactorService.createUsageEvent(usageRecordToProcess);
             LOG.info(String.format("Successfully created usage event for load balancer '%d'...",
                     loadBalancer.getId()));
         }
@@ -78,7 +98,7 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
     }
 
     @Override
-    public AccountUsage createAccountUsageEntry(LoadBalancer loadBalancer, Calendar eventTime) {
+    public AccountUsage createAccountUsageEntry (LoadBalancer loadBalancer, Calendar eventTime) {
         Integer accountId = loadBalancer.getAccountId();
         AccountUsage usage = new AccountUsage();
         usage.setAccountId(accountId);
