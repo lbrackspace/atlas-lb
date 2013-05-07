@@ -151,7 +151,7 @@ public class UsagePollerHelper{
         List<LoadBalancerMergedHostUsage> newMergedEventRecords = new ArrayList<LoadBalancerMergedHostUsage>();
 
         for (Integer loadBalancerId : existingUsages.keySet()) {
-            HashMap<String, LoadBalancerMergedHostUsage> mergedUsagesMap = new HashMap<String, LoadBalancerMergedHostUsage>();
+            LinkedHashMap<String, LoadBalancerMergedHostUsage> mergedUsagesMap = new LinkedHashMap<String, LoadBalancerMergedHostUsage>();
 
             for (Integer hostId : existingUsages.get(loadBalancerId).keySet()) {
                 List<LoadBalancerHostUsage> loadBalancerHostUsages = existingUsages.get(loadBalancerId).get(hostId);
@@ -161,10 +161,16 @@ public class UsagePollerHelper{
                     continue;
                 }
 
+                //If first record is the CREATE_LOADBALANCER event then add that event to the records to be merged.
+                if (loadBalancerHostUsages.get(0).getEventType() == UsageEvent.CREATE_LOADBALANCER) {
+                    String timeKey = loadBalancerHostUsages.get(0).getPollTime().getTime().toString();
+                    mergedUsagesMap.put(timeKey, initializeMergedRecord(loadBalancerHostUsages.get(0)));
+                }
+
                 //If there is only one record. then it is most likely just the previous poll. Check event just in case.
                 if (loadBalancerHostUsages.size() == 1) {
                     if (loadBalancerHostUsages.get(0).getEventType() != null) {
-                        LOG.info("Event record encountered that did not have a previous record to compare with.");
+                        LOG.info("Non-CREATE_LOADBALANCER Event record encountered that did not have a previous record to compare with.");
                     }
                     continue;
                 }
@@ -174,6 +180,7 @@ public class UsagePollerHelper{
                     continue;
                 }
 
+                //This assumes that no events for a load balancer will ever have the same time.
                 for(int i = 1; i < loadBalancerHostUsages.size(); i++) {
                     String timeKey = loadBalancerHostUsages.get(i).getPollTime().getTime().toString();
                     if (!mergedUsagesMap.containsKey(timeKey)) {
