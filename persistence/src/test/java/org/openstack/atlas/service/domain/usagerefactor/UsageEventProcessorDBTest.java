@@ -297,7 +297,7 @@ public class UsageEventProcessorDBTest {
         }
 
         @Test
-        public void hs() {
+        public void shouldProcessWhenSnmpCollectorFails() {
             Calendar starttime = Calendar.getInstance();
             starttime.roll(Calendar.MONTH, false);
 
@@ -312,11 +312,30 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(false);
 
+            SnmpUsage usage = new SnmpUsage();
+            usage.setHostId(1);
+            snmpUsages.clear();
+            snmpUsages.add(usage);
             usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
             Assert.assertEquals(true, oUsages.containsKey(543221));
+
+            Map<Integer, List<LoadBalancerHostUsage>> usagemap = oUsages.get(543221);
+            List<LoadBalancerHostUsage> lbusages = usagemap.get(1);
+
+            Assert.assertEquals(543221, lbusages.get(0).getLoadbalancerId());
+            Assert.assertEquals(55555, lbusages.get(0).getAccountId());
+            Assert.assertEquals(1, lbusages.get(0).getHostId());
+            Assert.assertEquals(0, lbusages.get(0).getIncomingTransfer());
+            Assert.assertEquals(0, lbusages.get(0).getIncomingTransferSsl());
+            Assert.assertEquals(0, lbusages.get(0).getOutgoingTransfer());
+            Assert.assertEquals(0, lbusages.get(0).getOutgoingTransferSsl());
+            Assert.assertEquals(0, lbusages.get(0).getConcurrentConnections());
+            Assert.assertEquals(0, lbusages.get(0).getConcurrentConnectionsSsl());
+            Assert.assertEquals(BitTag.SSL.tagValue()
+                    + BitTag.SSL_MIXED_MODE.tagValue(), lbusages.get(0).getTagsBitmask());
 
 
         }
