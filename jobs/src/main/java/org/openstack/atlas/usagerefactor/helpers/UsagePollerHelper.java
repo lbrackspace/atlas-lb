@@ -250,7 +250,7 @@ public class UsagePollerHelper{
         return newLBMergedHostUsage;
     }
 
-    public LoadBalancerHostUsage convertSnmpUsageToLBHostUsage(SnmpUsage snmpUsage, Integer accountId, Integer loadBalancerId,
+    public LoadBalancerHostUsage convertSnmpUsageToLBHostUsage(SnmpUsage snmpUsage, int accountId, int loadBalancerId,
                                                                int tagsBitmask, int numVips, int hostId, Calendar pollTime) {
         LoadBalancerHostUsage newlbHostUsage = new LoadBalancerHostUsage();
         newlbHostUsage.setAccountId(accountId);
