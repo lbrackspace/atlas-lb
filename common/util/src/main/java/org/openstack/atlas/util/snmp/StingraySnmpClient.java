@@ -1,55 +1,41 @@
 package org.openstack.atlas.util.snmp;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.util.common.VerboseLogger;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
+import org.openstack.atlas.util.snmp.exceptions.StingraySnmpObjectNotFoundException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpSetupException;
-import org.snmp4j.smi.Null;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
 import org.snmp4j.TransportMapping;
 import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.mp.SnmpConstants;
-
+import org.snmp4j.smi.*;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
+import java.util.*;
 import java.util.regex.Pattern;
-import org.openstack.atlas.util.snmp.exceptions.StingraySnmpObjectNotFoundException;
-import org.snmp4j.smi.Integer32;
-import org.snmp4j.smi.Null;
-import org.snmp4j.smi.OID;
-import org.snmp4j.smi.OctetString;
-import org.snmp4j.smi.UdpAddress;
-import org.snmp4j.smi.VariableBinding;
-import org.snmp4j.transport.UdpTransportMapping;
 
 public class StingraySnmpClient {
 
     private int nonRepeaters = 0;
     private int maxRepetitions = 1000;
-    private static final Pattern dotSplitter = Pattern.compile("\\.");
-    private static final VerboseLogger vlog = new VerboseLogger(StingraySnmpClient.class);
-    private static final Log LOG = LogFactory.getLog(StingraySnmpClient.class);
     private String address;
     private String port = StingraySnmpConstants.PORT;
     private String community = StingraySnmpConstants.COMMUNITY;
     private long reportUdpCountEveryNMilliSeconds = 1000;
     private int maxRetrys = 13;
-    private static final Random rnd = new Random();
-    private static int requestId;
     private int version = SnmpConstants.version2c;
+
+    private static final Random rnd = new Random();
+    private static final Pattern dotSplitter = Pattern.compile("\\.");
+    private static final VerboseLogger vlog = new VerboseLogger(StingraySnmpClient.class);
+    private static final Log LOG = LogFactory.getLog(StingraySnmpClient.class);
+    private static int requestId;
 
     static {
         requestId = Math.abs(rnd.nextInt());
@@ -198,7 +184,7 @@ public class StingraySnmpClient {
             throw new StingraySnmpGeneralException(msg, ex);
         }
         if (respEvent == null) {
-            String msg = String.format("Error responseEvent for OID %s for vs %s was null", baseOid, vsName);
+            String msg = String.format("Error response for OID %s for vs %s was null", baseOid, vsName);
             LOG.error(msg);
             closeConnection(snmp, transport);
         }
@@ -450,6 +436,38 @@ public class StingraySnmpClient {
             sb.append((char) Integer.parseInt(nums[i]));
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof StingraySnmpClient)) return false;
+
+        StingraySnmpClient that = (StingraySnmpClient) o;
+
+        if (maxRepetitions != that.maxRepetitions) return false;
+        if (maxRetrys != that.maxRetrys) return false;
+        if (nonRepeaters != that.nonRepeaters) return false;
+        if (reportUdpCountEveryNMilliSeconds != that.reportUdpCountEveryNMilliSeconds) return false;
+        if (version != that.version) return false;
+        if (address != null ? !address.equals(that.address) : that.address != null) return false;
+        if (community != null ? !community.equals(that.community) : that.community != null) return false;
+        if (port != null ? !port.equals(that.port) : that.port != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = nonRepeaters;
+        result = 31 * result + maxRepetitions;
+        result = 31 * result + (address != null ? address.hashCode() : 0);
+        result = 31 * result + (port != null ? port.hashCode() : 0);
+        result = 31 * result + (community != null ? community.hashCode() : 0);
+        result = 31 * result + (int) (reportUdpCountEveryNMilliSeconds ^ (reportUdpCountEveryNMilliSeconds >>> 32));
+        result = 31 * result + maxRetrys;
+        result = 31 * result + version;
+        return result;
     }
 
     public String getAddress() {

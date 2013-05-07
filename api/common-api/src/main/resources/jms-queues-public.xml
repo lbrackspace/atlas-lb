@@ -65,7 +65,6 @@
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
     <bean id="loadBalancerStatusHistoryService" class="org.openstack.atlas.service.domain.services.impl.LoadBalancerStatusHistoryServiceImpl" parent="baseService">
-        <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
     <bean id="healthMonitorService" class="org.openstack.atlas.service.domain.services.impl.HealthMonitorServiceImpl" parent="baseService">
     <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>

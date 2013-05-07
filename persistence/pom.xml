@@ -95,9 +95,9 @@
             <version>1.6.5</version>
         </dependency>
         <dependency>
-                <groupId>commons-collections</groupId>
-                <artifactId>commons-collections</artifactId>
-                <version>3.2.1</version>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.1</version>
         </dependency>
         <!--Testing Dependencies-->
         <dependency>
@@ -120,11 +120,11 @@
             <artifactId>hsqldb</artifactId>
             <scope>test</scope>
         </dependency>
-            <dependency>
-                <groupId>com.github.springtestdbunit</groupId>
-                <artifactId>spring-test-dbunit</artifactId>
-                <scope>test</scope>
-            </dependency>
+        <dependency>
+            <groupId>com.github.springtestdbunit</groupId>
+            <artifactId>spring-test-dbunit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -135,6 +135,8 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
+                    <optimize>false</optimize>
+                    <debug>true</debug>
                     <compilerArguments>
                         <processor>org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor</processor>
                     </compilerArguments>

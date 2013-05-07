@@ -96,10 +96,15 @@ public class HostUsageRefactorRepository {
 //        entityManager.persist(usageEventRecord);
     }
 
-    public LoadBalancerHostUsage getMostRecentUsageRecordForLbId(int lbId) {
-//        entityManager.persist(usageEventRecord);
-        return new LoadBalancerHostUsage();
+    public LoadBalancerHostUsage getMostRecentUsageRecordForLbIdAndHostId(int lbId, int hostId) {
+        Query query = entityManager.createQuery("SELECT h FROM LoadBalancerHostUsage h WHERE h.loadbalancerId = :lbId AND h.hostId = :hostId")
+                .setParameter("lbId", lbId)
+                .setParameter("hostId", hostId);
+        List usages = query.getResultList();
+        if (!usages.isEmpty()) return (LoadBalancerHostUsage) usages.get(0);
+        return null;
     }
+
 
     public void deleteOldHostUsage(Calendar deleteTimeMarker) {
         Query query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.pollTime < :deleteTimeMarker")

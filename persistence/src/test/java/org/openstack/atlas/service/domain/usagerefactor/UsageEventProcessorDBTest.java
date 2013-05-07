@@ -295,5 +295,30 @@ public class UsageEventProcessorDBTest {
             Assert.assertEquals(BitTag.SSL.tagValue()
                     + BitTag.SSL_MIXED_MODE.tagValue(), lbusages.get(0).getTagsBitmask());
         }
+
+        @Test
+        public void hs() {
+            Calendar starttime = Calendar.getInstance();
+            starttime.roll(Calendar.MONTH, false);
+
+            LoadBalancerJoinVip jv = new LoadBalancerJoinVip();
+            Set<LoadBalancerJoinVip> jvs = new HashSet<LoadBalancerJoinVip>();
+            VirtualIp vip = new VirtualIp();
+            vip.setVipType(VirtualIpType.SERVICENET);
+            jv.setVirtualIp(vip);
+            jvs.add(jv);
+            lb.setLoadBalancerJoinVipSet(jvs);
+
+            usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
+            when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(false);
+
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
+            Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
+            Assert.assertNotNull(oUsages);
+            Assert.assertEquals(1, oUsages.size());
+            Assert.assertEquals(true, oUsages.containsKey(543221));
+
+
+        }
     }
 }

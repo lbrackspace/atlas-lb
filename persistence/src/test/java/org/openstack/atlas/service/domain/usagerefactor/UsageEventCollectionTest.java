@@ -25,7 +25,7 @@ import org.openstack.atlas.service.domain.services.UsageService;
 import org.openstack.atlas.service.domain.services.impl.UsageServiceImpl;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRefactorRepository;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
-import org.openstack.atlas.usagerefactor.StingrayUsageClient;
+import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClient;
 import org.openstack.atlas.usagerefactor.collection.SnmpVSCollector;
 import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;

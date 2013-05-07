@@ -1,11 +1,5 @@
-package org.openstack.atlas.usagerefactor;
+package org.openstack.atlas.usagerefactor.snmp;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
@@ -15,6 +9,13 @@ import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpObjectNotFoundException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpSetupException;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StingrayUsageClientImpl implements StingrayUsageClient {
 
@@ -71,15 +72,15 @@ public class StingrayUsageClientImpl implements StingrayUsageClient {
         usage.setHostId(host.getId());
         // Fetch Virtual Server Usage
         String vsName = buildVsName(lb, false);
-        usage.setBytesIn(client.getBytesIn(vsName, true));
-        usage.setBytesOut(client.getBytesOut(vsName, true));
-        usage.setConcurrentConnections((int) client.getConcurrentConnections(vsName, true));
+        usage.setBytesIn(client.getBytesIn(vsName, false));
+        usage.setBytesOut(client.getBytesOut(vsName, false));
+        usage.setConcurrentConnections((int) client.getConcurrentConnections(vsName, false));
 
         // Fetch Shadow Server Usage
         String shadowName = buildVsName(lb, true);
-        usage.setBytesInSsl(client.getBytesIn(shadowName, true));
-        usage.setBytesOutSsl(client.getBytesOut(shadowName, true));
-        usage.setConcurrentConnectionsSsl((int) client.getConcurrentConnections(shadowName, true));
+        usage.setBytesInSsl(client.getBytesIn(shadowName, false));
+        usage.setBytesOutSsl(client.getBytesOut(shadowName, false));
+        usage.setConcurrentConnectionsSsl((int) client.getConcurrentConnections(shadowName, false));
         return usage;
     }
 

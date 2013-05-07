@@ -12,7 +12,7 @@ import java.util.Map;
 public interface UsageRefactorService {
     public void createUsageEvent(LoadBalancerHostUsage loadBalancerHostUsageEvent);
 
-    public LoadBalancerHostUsage getRecentHostUsageRecord(int lbId);
+    public LoadBalancerHostUsage getLastRecordForLbIdAndHostId(int lbId, int hostId);
 
     //Keys loadbalancerId, hostId
     public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getAllLoadBalancerHostUsages();
