@@ -1,15 +1,13 @@
 package org.openstack.atlas.usagerefactor.helpers;
 
-import com.sun.xml.internal.bind.v2.TODO;
-import org.apache.camel.processor.loadbalancer.LoadBalancer;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
+import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
@@ -28,6 +26,9 @@ public class UsagePollerHelper{
 
     @Autowired
     private UsageRepository usageRepository;
+
+    @Autowired
+    private LoadBalancerService loadBalancerService;
 
     public UsagePollerHelper() {} 
 
@@ -125,6 +126,7 @@ public class UsagePollerHelper{
                         //There was not a previous record in loadbalancing.lb_usaget able
                         //Grab what is possible from ssltermination and virtualip tables
                         //TODO: Implement
+                        tagsBitmask = loadBalancerService.getCurrentBitTags(loadbalancerId, accountId).getBitTags();
                     }
                 }
                 //Create new mergedHostUsage with zero usage and copied values.
@@ -176,8 +178,8 @@ public class UsagePollerHelper{
 
                 calculateUsage(currentUsage, existingUsage, newMergedRecord);
                  newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage.getAccountId(),
-                            existingUsage.getLoadbalancerId(), existingUsage.getTagsBitmask(),
-                            existingUsage.getNumVips(), existingUsage.getHostId(), pollTime));
+                         existingUsage.getLoadbalancerId(), existingUsage.getTagsBitmask(),
+                         existingUsage.getNumVips(), existingUsage.getHostId(), pollTime));
             }
             mergedUsages.add(newMergedRecord);
         }
