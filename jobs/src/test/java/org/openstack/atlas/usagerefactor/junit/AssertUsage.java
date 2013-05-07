@@ -21,8 +21,8 @@ public class AssertUsage {
         Assert.assertEquals(incomingTransferSsl, actualUsage.getIncomingTransferSsl());
         Assert.assertEquals(outgoingTransfer, actualUsage.getOutgoingTransfer());
         Assert.assertEquals(outgoingTransferSsl, actualUsage.getOutgoingTransferSsl());
-        Assert.assertEquals(avgCcs, actualUsage.getAverageConcurrentConnections());
-        Assert.assertEquals(avgCcsSsl, actualUsage.getAverageConcurrentConnectionsSsl());
+        Assert.assertEquals(avgCcs, actualUsage.getAverageConcurrentConnections(), .001);
+        Assert.assertEquals(avgCcsSsl, actualUsage.getAverageConcurrentConnectionsSsl(), .001);
         Assert.assertEquals(stringToCalendar(startTime), actualUsage.getStartTime());
         Assert.assertEquals(stringToCalendar(endTime), actualUsage.getEndTime());
         Assert.assertEquals(numPolls, actualUsage.getNumberOfPolls());

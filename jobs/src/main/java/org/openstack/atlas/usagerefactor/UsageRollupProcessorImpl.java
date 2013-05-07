@@ -28,10 +28,10 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     private LoadBalancerService loadbalancerService;
 
     @Override
-    public Map<Integer, List<LoadBalancerMergedHostUsage>> groupUsagesByLbId(List<LoadBalancerMergedHostUsage> LoadBalancerMergedHostUsages) {
+    public Map<Integer, List<LoadBalancerMergedHostUsage>> groupUsagesByLbId(List<LoadBalancerMergedHostUsage> lbMergedHostUsages) {
         Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = new HashMap<Integer, List<LoadBalancerMergedHostUsage>>();
 
-        for (LoadBalancerMergedHostUsage LoadBalancerMergedHostUsage : LoadBalancerMergedHostUsages) {
+        for (LoadBalancerMergedHostUsage LoadBalancerMergedHostUsage : lbMergedHostUsages) {
             List<LoadBalancerMergedHostUsage> usageList;
 
             if (!usagesByLbId.containsKey(LoadBalancerMergedHostUsage.getLoadbalancerId())) {
@@ -47,14 +47,14 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     }
 
     @Override
-    public List<Usage> processRecords(List<LoadBalancerMergedHostUsage> loadBalancerMergedHostUsages, Calendar hourToProcess) {
+    public List<Usage> processRecords(List<LoadBalancerMergedHostUsage> lbMergedHostUsages, Calendar hourToProcess) {
         List<Usage> processedRecords = new ArrayList<Usage>();
 
-        if (loadBalancerMergedHostUsages == null || loadBalancerMergedHostUsages.isEmpty()) {
+        if (lbMergedHostUsages == null || lbMergedHostUsages.isEmpty()) {
             return processedRecords;
         }
 
-        Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = groupUsagesByLbId(loadBalancerMergedHostUsages);
+        Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = groupUsagesByLbId(lbMergedHostUsages);
 
         for (Integer lbId : usagesByLbId.keySet()) {
             List<LoadBalancerMergedHostUsage> lbMergedHostRecordsForLoadBalancer = usagesByLbId.get(lbId);
@@ -136,27 +136,35 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         return newCal;
     }
 
-    private Usage createInitializedUsageRecord(LoadBalancerMergedHostUsage LoadBalancerMergedHostUsage) {
+    private Usage createInitializedUsageRecord(LoadBalancerMergedHostUsage loadBalancerMergedHostUsage) {
         LoadBalancer currentLB = new LoadBalancer();
-        currentLB.setId(LoadBalancerMergedHostUsage.getLoadbalancerId());
-        currentLB.setAccountId(LoadBalancerMergedHostUsage.getAccountId());
         Usage initUsage = new Usage();
+
+        currentLB.setId(loadBalancerMergedHostUsage.getLoadbalancerId());
+        currentLB.setAccountId(loadBalancerMergedHostUsage.getAccountId());
+
         initUsage.setLoadbalancer(currentLB);
-        initUsage.setStartTime(LoadBalancerMergedHostUsage.getPollTime());
-        if (LoadBalancerMergedHostUsage.getEventType() != null) {
-            initUsage.setEventType(LoadBalancerMergedHostUsage.getEventType().name());
-        }
-        initUsage.setAccountId(LoadBalancerMergedHostUsage.getAccountId());
-        initUsage.setTags(LoadBalancerMergedHostUsage.getTagsBitmask());
+        initUsage.setStartTime(loadBalancerMergedHostUsage.getPollTime());
+        initUsage.setAccountId(loadBalancerMergedHostUsage.getAccountId());
+        initUsage.setTags(loadBalancerMergedHostUsage.getTagsBitmask());
         initUsage.setNeedsPushed(true);
         initUsage.setEntryVersion(0);
+
+        if (loadBalancerMergedHostUsage.getEventType() != null) {
+            initUsage.setEventType(loadBalancerMergedHostUsage.getEventType().name());
+        }
+
         return initUsage;
     }
 
     private Usage processEvents(Usage currentUsage, LoadBalancerMergedHostUsage currentLoadBalancerMergedHost, List<Usage> processedRecords, boolean isFirstOfHour, Integer mostRecentTagsBitmask) {
         if (currentLoadBalancerMergedHost.getEventType() != null) {
-            if (currentLoadBalancerMergedHost.getEventType() != UsageEvent.CREATE_LOADBALANCER && (currentLoadBalancerMergedHost.getPollTime().get(Calendar.MINUTE) != 0
-                    || currentLoadBalancerMergedHost.getPollTime().get(Calendar.SECOND) != 0)) {
+
+            boolean containsNonCreateEvent = currentLoadBalancerMergedHost.getEventType() != UsageEvent.CREATE_LOADBALANCER;
+            boolean isTopOfTheHour = currentLoadBalancerMergedHost.getPollTime().get(Calendar.MINUTE) == 0 && currentLoadBalancerMergedHost.getPollTime().get(Calendar.SECOND) == 0;
+            boolean createBufferRecord = containsNonCreateEvent && !isTopOfTheHour;
+
+            if (createBufferRecord) {
                 currentUsage.setEndTime(currentLoadBalancerMergedHost.getPollTime());
                 if (isFirstOfHour) {
                     if (mostRecentTagsBitmask == null) {
@@ -182,36 +190,47 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
             switch (currentLoadBalancerMergedHost.getEventType()) {
                 case CREATE_LOADBALANCER:
+                    currentUsage.setEventType(UsageEvent.CREATE_LOADBALANCER.name());
                     currentUsage.setStartTime(currentLoadBalancerMergedHost.getPollTime());
                     break;
                 case DELETE_LOADBALANCER:
+                    currentUsage.setEventType(UsageEvent.DELETE_LOADBALANCER.name());
                     currentUsage.setNumVips(0);
                     currentUsage.setEndTime(currentLoadBalancerMergedHost.getPollTime());
                     break;
                 case CREATE_VIRTUAL_IP:
+                    currentUsage.setEventType(UsageEvent.CREATE_VIRTUAL_IP.name());
                     currentUsage.setNumVips(currentUsage.getNumVips() + 1);
                     break;
                 case DELETE_VIRTUAL_IP:
+                    currentUsage.setEventType(UsageEvent.DELETE_VIRTUAL_IP.name());
                     currentUsage.setNumVips(currentUsage.getNumVips() - 1);
                     break;
                 case SSL_MIXED_ON:
+                    currentUsage.setEventType(UsageEvent.SSL_MIXED_ON.name());
                     currentUsage.setTags(currentLoadBalancerMergedHost.getTagsBitmask());
                     break;
                 case SSL_ONLY_ON:
+                    currentUsage.setEventType(UsageEvent.SSL_ONLY_ON.name());
                     currentUsage.setTags(currentLoadBalancerMergedHost.getTagsBitmask());
                     break;
                 case SSL_OFF:
+                    currentUsage.setEventType(UsageEvent.SSL_OFF.name());
                     currentUsage.setTags(currentLoadBalancerMergedHost.getTagsBitmask());
                     break;
                 case SSL_ON:
+                    currentUsage.setEventType(UsageEvent.SSL_ON.name());
                     currentUsage.setTags(currentLoadBalancerMergedHost.getTagsBitmask());
                     break;
                 case SUSPEND_LOADBALANCER:
+                    currentUsage.setEventType(UsageEvent.SUSPEND_LOADBALANCER.name());
                     break;
                 case UNSUSPEND_LOADBALANCER:
+                    currentUsage.setEventType(UsageEvent.UNSUSPEND_LOADBALANCER.name());
                     break;
                 case SUSPENDED_LOADBALANCER:
                     currentUsage.setNumberOfPolls(0);
+                    currentUsage.setEventType(UsageEvent.SUSPENDED_LOADBALANCER.name());
                     break;
                 default:
                     break;
