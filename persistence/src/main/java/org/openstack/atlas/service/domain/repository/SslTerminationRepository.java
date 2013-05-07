@@ -51,6 +51,10 @@ public class SslTerminationRepository {
         return sslTermination;
     }
 
+    public List<SslTermination> getAll() {
+        return entityManager.createQuery("SELECT s FROM SslTermination s").getResultList();
+    }
+
     private LoadBalancer getLbById(Integer id) throws EntityNotFoundException {
         LoadBalancer lb = entityManager.find(LoadBalancer.class, id);
         if (lb == null) {

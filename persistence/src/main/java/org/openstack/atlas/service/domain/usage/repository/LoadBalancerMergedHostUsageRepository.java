@@ -2,6 +2,7 @@ package org.openstack.atlas.service.domain.usage.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage_;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
@@ -9,11 +10,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,6 +39,25 @@ public class LoadBalancerMergedHostUsageRepository {
 
         List<LoadBalancerMergedHostUsage> usageEvents = entityManager.createQuery(criteria).getResultList();
         return (usageEvents == null) ? new ArrayList<LoadBalancerMergedHostUsage>() : usageEvents;
+    }
+
+    public LoadBalancerMergedHostUsage getMostRecentRecordForLoadBalancer(int lbId) throws EntityNotFoundException{
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerMergedHostUsage> criteria = builder.createQuery(LoadBalancerMergedHostUsage.class);
+        Root<LoadBalancerMergedHostUsage> usageRoot = criteria.from(LoadBalancerMergedHostUsage.class);
+
+        Predicate hasLbId = builder.equal(usageRoot.get(LoadBalancerMergedHostUsage_.loadbalancerId), lbId);
+
+        criteria.select(usageRoot);
+        criteria.where(hasLbId);
+
+        try {
+            return entityManager.createQuery(criteria).getSingleResult();
+        } catch (NoResultException e) {
+            String message = "No recent usage record found.";
+            LOG.debug(message);
+            throw new EntityNotFoundException(message);
+        }
     }
 
     public void batchCreate(List<LoadBalancerMergedHostUsage> usages) {

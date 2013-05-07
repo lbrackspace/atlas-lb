@@ -21,10 +21,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Service
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
@@ -159,6 +156,16 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         return StringUtilities.buildDelemtedListFromIntegerArray(uniques.toArray(new Integer[uniques.size()]), ",");
+    }
+
+    @Override
+    public Map<Integer, org.openstack.atlas.service.domain.entities.SslTermination> getAllMappedByLbId() {
+        Map<Integer, org.openstack.atlas.service.domain.entities.SslTermination> sslMap = new HashMap<Integer, org.openstack.atlas.service.domain.entities.SslTermination>();
+        List<org.openstack.atlas.service.domain.entities.SslTermination> sslTerms = sslTerminationRepository.getAll();
+        for (org.openstack.atlas.service.domain.entities.SslTermination sslTerm : sslTerms) {
+            sslMap.put(sslTerm.getLoadbalancer().getId(), sslTerm);
+        }
+        return sslMap;
     }
 }
 
