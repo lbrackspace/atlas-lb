@@ -260,6 +260,7 @@
             <xsd:enumeration value="DFW"/>
             <xsd:enumeration value="ORD"/>
             <xsd:enumeration value="LON"/>
+            <xsd:enumeration value="SYD"/>
         </xsd:restriction>
     </xsd:simpleType>
 
