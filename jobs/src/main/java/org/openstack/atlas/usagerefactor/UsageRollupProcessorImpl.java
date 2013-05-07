@@ -23,8 +23,6 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     @Autowired
     private UsageRepository usageRepository;
     @Autowired
-    private SslTerminationRepository sslTerminationRepository;
-    @Autowired
     private LoadBalancerService loadbalancerService;
 
     @Override
@@ -175,7 +173,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                         } catch (EntityNotFoundException e) {
                             // TODO: Put an alert and monitor it!
                             LOG.error("Unable to get proper tags for record. Please verify manually!", e);
-                            BitTags bitTags = getCurrentBitTags(currentUsage.getLoadbalancer().getId(), currentUsage.getAccountId());
+                            BitTags bitTags = loadbalancerService.getCurrentBitTags(currentUsage.getLoadbalancer().getId(), currentUsage.getAccountId());
                             mostRecentTagsBitmask = bitTags.getBitTags();
                         }
                     }
@@ -238,31 +236,5 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         }
 
         return currentUsage;
-    }
-
-    // TODO: Move to other class?
-    private BitTags getCurrentBitTags(Integer lbId, Integer accountId) {
-        BitTags bitTags = new BitTags();
-
-        try {
-            SslTermination sslTerm = sslTerminationRepository.getSslTerminationByLbId(lbId, accountId);
-
-            if (sslTerm.isEnabled()) {
-                bitTags.flipTagOn(BitTag.SSL);
-            }
-
-            if (!sslTerm.isSecureTrafficOnly()) {
-                bitTags.flipTagOn(BitTag.SSL_MIXED_MODE);
-            }
-        } catch (EntityNotFoundException e1) {
-            bitTags.flipTagOff(BitTag.SSL);
-            bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
-        }
-
-        if (loadbalancerService.isServiceNetLoadBalancer(accountId, lbId)) {
-            bitTags.flipTagOn(BitTag.SERVICENET_LB);
-        }
-
-        return bitTags;
     }
 }
