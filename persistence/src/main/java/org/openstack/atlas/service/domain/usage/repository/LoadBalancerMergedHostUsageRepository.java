@@ -4,19 +4,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage_;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Root;
+import javax.persistence.Query;
+import javax.persistence.TemporalType;
+import javax.persistence.criteria.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,15 +30,42 @@ public class LoadBalancerMergedHostUsageRepository {
     public List<LoadBalancerMergedHostUsage> getAllUsageRecordsInOrder() {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<LoadBalancerMergedHostUsage> criteria = builder.createQuery(LoadBalancerMergedHostUsage.class);
-        Root<LoadBalancerMergedHostUsage> usageEventRoot = criteria.from(LoadBalancerMergedHostUsage.class);
+        Root<LoadBalancerMergedHostUsage> lbMergedHostUsageRoot = criteria.from(LoadBalancerMergedHostUsage.class);
 
-        Order startTimeOrder = builder.asc(usageEventRoot.get(LoadBalancerMergedHostUsage_.pollTime));
+        Order startTimeOrder = builder.asc(lbMergedHostUsageRoot.get(LoadBalancerMergedHostUsage_.pollTime));
 
-        criteria.select(usageEventRoot);
+        criteria.select(lbMergedHostUsageRoot);
         criteria.orderBy(startTimeOrder);
 
         List<LoadBalancerMergedHostUsage> usageEvents = entityManager.createQuery(criteria).getResultList();
         return (usageEvents == null) ? new ArrayList<LoadBalancerMergedHostUsage>() : usageEvents;
+    }
+
+    public List<LoadBalancerMergedHostUsage> getAllUsageRecordsInOrderBeforeTime(Calendar timestamp) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<LoadBalancerMergedHostUsage> criteria = builder.createQuery(LoadBalancerMergedHostUsage.class);
+        Root<LoadBalancerMergedHostUsage> lbMergedHostUsageRoot = criteria.from(LoadBalancerMergedHostUsage.class);
+
+        Predicate endTimeBeforeTime = builder.lessThan(lbMergedHostUsageRoot.get(LoadBalancerMergedHostUsage_.pollTime), timestamp);
+        Order startTimeOrder = builder.asc(lbMergedHostUsageRoot.get(LoadBalancerMergedHostUsage_.pollTime));
+
+        criteria.select(lbMergedHostUsageRoot);
+        criteria.where(endTimeBeforeTime);
+        criteria.orderBy(startTimeOrder);
+
+        List<LoadBalancerMergedHostUsage> usageEvents = entityManager.createQuery(criteria).getResultList();
+        return (usageEvents == null) ? new ArrayList<LoadBalancerMergedHostUsage>() : usageEvents;
+    }
+
+    public void deleteAllRecordsBefore(Calendar timestamp) {
+        Query query = entityManager.createQuery("DELETE LoadBalancerMergedHostUsage u WHERE u.pollTime < :timestamp")
+                .setParameter("timestamp", timestamp, TemporalType.TIMESTAMP);
+        int numRowsDeleted = query.executeUpdate();
+        LOG.info(String.format("Deleted %d rows with pollTime before %s", numRowsDeleted, timestamp.getTime()));
+    }
+
+    public void create(LoadBalancerMergedHostUsage loadBalancerMergedHostUsage) {
+        entityManager.persist(loadBalancerMergedHostUsage);
     }
 
     public void batchCreate(List<LoadBalancerMergedHostUsage> usages) {
@@ -91,7 +117,7 @@ public class LoadBalancerMergedHostUsageRepository {
             String pollTime = formatter.format(usage.getPollTime().getTime());
             sb.append("'").append(pollTime).append("',");
 
-            if(usage.getEventType() == null) {
+            if (usage.getEventType() == null) {
                 sb.append(usage.getEventType());
             } else {
                 sb.append("'").append(usage.getEventType()).append("'");

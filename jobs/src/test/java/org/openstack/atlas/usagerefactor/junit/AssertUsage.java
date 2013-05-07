@@ -2,6 +2,7 @@ package org.openstack.atlas.usagerefactor.junit;
 
 import org.junit.Assert;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.util.common.CalendarUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,8 +24,8 @@ public class AssertUsage {
         Assert.assertEquals(outgoingTransferSsl, actualUsage.getOutgoingTransferSsl());
         Assert.assertEquals(avgCcs, actualUsage.getAverageConcurrentConnections(), .001);
         Assert.assertEquals(avgCcsSsl, actualUsage.getAverageConcurrentConnectionsSsl(), .001);
-        Assert.assertEquals(stringToCalendar(startTime), actualUsage.getStartTime());
-        Assert.assertEquals(stringToCalendar(endTime), actualUsage.getEndTime());
+        Assert.assertEquals(CalendarUtils.stringToCalendar(startTime), actualUsage.getStartTime());
+        Assert.assertEquals(CalendarUtils.stringToCalendar(endTime), actualUsage.getEndTime());
         Assert.assertEquals(numPolls, actualUsage.getNumberOfPolls());
         Assert.assertEquals(numVips, actualUsage.getNumVips());
         Assert.assertEquals(tags, actualUsage.getTags());
@@ -32,12 +33,5 @@ public class AssertUsage {
         Assert.assertEquals(entryVersion, actualUsage.getEntryVersion());
         Assert.assertEquals(needsPushed, actualUsage.isNeedsPushed());
         Assert.assertEquals(uuid, actualUsage.getUuid());
-    }
-    
-    private static Calendar stringToCalendar(String calAsString) throws ParseException {
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        cal.setTime(sdf.parse(calAsString));
-        return cal;
     }
 }

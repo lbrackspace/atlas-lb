@@ -13,6 +13,7 @@ import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.RollupUsageHelper;
+import org.openstack.atlas.util.common.CalendarUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
@@ -78,10 +79,10 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             return processedRecords;
         }
 
-        Calendar validHourToProcess = stripOutMinsAndSecs(hourToProcess);
-        Calendar previousHour = stripOutMinsAndSecs(validHourToProcess);
+        Calendar validHourToProcess = CalendarUtils.stripOutMinsAndSecs(hourToProcess);
+        Calendar previousHour = CalendarUtils.stripOutMinsAndSecs(validHourToProcess);
         previousHour.add(Calendar.HOUR, -1);
-        Calendar hourToStopProcess = stripOutMinsAndSecs(validHourToProcess);
+        Calendar hourToStopProcess = CalendarUtils.stripOutMinsAndSecs(validHourToProcess);
         hourToStopProcess.add(Calendar.HOUR, 1);
 
         Usage newUsage = createInitializedUsageRecord(lbMergedHostUsageRecordsForLoadBalancer.get(0));
@@ -123,15 +124,6 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
         processedRecords.add(newUsage);
         return processedRecords;
-    }
-
-    private Calendar stripOutMinsAndSecs(Calendar cal) {
-        Calendar newCal = Calendar.getInstance();
-        newCal.setTime(cal.getTime());
-        newCal.set(Calendar.MINUTE, 0);
-        newCal.set(Calendar.SECOND, 0);
-        newCal.set(Calendar.MILLISECOND, 0);
-        return newCal;
     }
 
     private Usage createInitializedUsageRecord(LoadBalancerMergedHostUsage loadBalancerMergedHostUsage) {
