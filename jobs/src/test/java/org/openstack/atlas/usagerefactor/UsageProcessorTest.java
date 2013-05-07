@@ -839,6 +839,7 @@ public class UsageProcessorTest {
         @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithcreatelbevent/case1.xml")
         public void case1() throws Exception{
             UsageProcessorResult result = UsageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime, numHosts);
+
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(3, result.getMergedUsages().size());
             AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,

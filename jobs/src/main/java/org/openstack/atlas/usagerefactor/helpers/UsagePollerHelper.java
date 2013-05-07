@@ -1,21 +1,33 @@
 package org.openstack.atlas.usagerefactor.helpers;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import org.apache.camel.processor.loadbalancer.LoadBalancer;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
+import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.UsageProcessor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
 public class UsagePollerHelper{
 
     final static org.apache.commons.logging.Log LOG = LogFactory.getLog(UsageProcessor.class);
+
+    @Autowired
+    private LoadBalancerMergedHostUsageRepository mergedHostUsageRepository;
+
+    @Autowired
+    private UsageRepository usageRepository;
 
     public UsagePollerHelper() {} 
 
@@ -91,25 +103,46 @@ public class UsagePollerHelper{
         Map<Integer, SslTermination> sslMap = null;
         for (Integer loadbalancerId : currentUsages.keySet()) {
             if (!existingUsages.containsKey(loadbalancerId)) {
-                //TODO: There are no previous records in lb_host_usage for this loadbalancer
-                //Get all records from VirtualIP table and SSLTermination table.
-                if (vipMap == null) {
-                    
-                }
-                if (sslMap == null) {
-
-                }
-                //Get number of virtual Ips
-                int numVips = 0;
-                for (VirtualIp vip : vipMap.get(loadbalancerId)) {
-                    if (vip.getIpVersion() == IpVersion.IPV4) {
-                        numVips++;
+                //There are no previous records in lb_host_usage for this loadbalancer
+                //Attempt to get previous record from lb_merged_host_usage table
+                int tagsBitmask = 0;
+                int numVips = 1;
+                int accountId = -1;
+                try {
+                    LoadBalancerMergedHostUsage mostRecentMerged = mergedHostUsageRepository.getMostRecentRecordForLoadBalancer(loadbalancerId);
+                    tagsBitmask = mostRecentMerged.getTagsBitmask();
+                    numVips = mostRecentMerged.getNumVips();
+                    accountId = mostRecentMerged.getAccountId();
+                } catch(EntityNotFoundException mergedE) {
+                    //There was not a previous record in lb_merged_host_usage table
+                    //Attempt to grab from loadbalancing.lb_usage table
+                    try {
+                        Usage mostRecentUsage = usageRepository.getMostRecentUsageForLoadBalancer(loadbalancerId);
+                        tagsBitmask = mostRecentUsage.getTags();
+                        numVips = mostRecentUsage.getNumVips();
+                        accountId = mostRecentUsage.getAccountId();
+                    } catch(EntityNotFoundException usageE) {
+                        //There was not a previous record in loadbalancing.lb_usaget able
+                        //Grab what is possible from ssltermination and virtualip tables
+                        //TODO: Implement
                     }
                 }
+                //Create new mergedHostUsage with zero usage and copied values.
+                LoadBalancerMergedHostUsage zeroedMergedRecord = new LoadBalancerMergedHostUsage();
+                zeroedMergedRecord.setTagsBitmask(tagsBitmask);
+                zeroedMergedRecord.setNumVips(numVips);
+                zeroedMergedRecord.setPollTime(pollTime);
+                zeroedMergedRecord.setLoadbalancerId(loadbalancerId);
+                zeroedMergedRecord.setAccountId(accountId);
+                mergedUsages.add(zeroedMergedRecord);
 
-                //Get 
-                //Store new record in lb_merged_host_usage table with appropriate numVips and tags and 0 usage.
-                //Store counters in current usage in lb_host_usage
+                //Create new LoadBalancerHostUsage records using current counters
+                for (Integer hostId : currentUsages.get(loadbalancerId).keySet()) {
+                    SnmpUsage currentUsage = currentUsages.get(loadbalancerId).get(hostId);
+                    LoadBalancerHostUsage newLBHostUsage = convertSnmpUsageToLBHostUsage(currentUsage,
+                            accountId, loadbalancerId, tagsBitmask, numVips, hostId, pollTime);
+                    newLBHostUsages.add(newLBHostUsage);
+                }
                 continue;
             }
             LoadBalancerMergedHostUsage newMergedRecord = null;
@@ -122,7 +155,9 @@ public class UsagePollerHelper{
                     //this host to get the correct numVips and tagsBitmask.
                     //There will be issues if there are events that a record for a host got deleted somehow.
                     LoadBalancerHostUsage existingUsage = existingUsages.get(loadbalancerId).entrySet().iterator().next().getValue().get(0);
-                    newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage, pollTime));
+                    newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage.getAccountId(),
+                            existingUsage.getLoadbalancerId(), existingUsage.getTagsBitmask(),
+                            existingUsage.getNumVips(), existingUsage.getHostId(), pollTime));
                     continue;
                 }
 
@@ -140,7 +175,9 @@ public class UsagePollerHelper{
                 }
 
                 calculateUsage(currentUsage, existingUsage, newMergedRecord);
-                newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage, pollTime));
+                 newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage.getAccountId(),
+                            existingUsage.getLoadbalancerId(), existingUsage.getTagsBitmask(),
+                            existingUsage.getNumVips(), existingUsage.getHostId(), pollTime));
             }
             mergedUsages.add(newMergedRecord);
         }
@@ -213,14 +250,15 @@ public class UsagePollerHelper{
         return newLBMergedHostUsage;
     }
 
-    public LoadBalancerHostUsage convertSnmpUsageToLBHostUsage(SnmpUsage snmpUsage, LoadBalancerHostUsage previousUsage, Calendar pollTime) {
+    public LoadBalancerHostUsage convertSnmpUsageToLBHostUsage(SnmpUsage snmpUsage, Integer accountId, Integer loadBalancerId,
+                                                               int tagsBitmask, int numVips, int hostId, Calendar pollTime) {
         LoadBalancerHostUsage newlbHostUsage = new LoadBalancerHostUsage();
-        newlbHostUsage.setAccountId(previousUsage.getAccountId());
-        newlbHostUsage.setLoadbalancerId(previousUsage.getLoadbalancerId());
-        newlbHostUsage.setTagsBitmask(previousUsage.getTagsBitmask());
-        newlbHostUsage.setNumVips(previousUsage.getNumVips());
+        newlbHostUsage.setAccountId(accountId);
+        newlbHostUsage.setLoadbalancerId(loadBalancerId);
+        newlbHostUsage.setTagsBitmask(tagsBitmask);
+        newlbHostUsage.setNumVips(numVips);
         newlbHostUsage.setPollTime(pollTime);
-        newlbHostUsage.setHostId(previousUsage.getHostId());
+        newlbHostUsage.setHostId(hostId);
         if  (snmpUsage != null) {
             newlbHostUsage.setOutgoingTransfer(snmpUsage.getBytesOut());
             newlbHostUsage.setOutgoingTransferSsl(snmpUsage.getBytesOutSsl());
