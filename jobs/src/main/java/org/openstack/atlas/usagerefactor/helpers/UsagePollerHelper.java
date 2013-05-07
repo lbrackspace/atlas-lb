@@ -1,12 +1,14 @@
 package org.openstack.atlas.usagerefactor.helpers;
 
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
+import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
@@ -29,6 +31,9 @@ public class UsagePollerHelper{
 
     @Autowired
     private LoadBalancerService loadBalancerService;
+
+    @Autowired
+    private VirtualIpRepository virtualIpRepository;
 
     public UsagePollerHelper() {} 
 
@@ -125,8 +130,15 @@ public class UsagePollerHelper{
                     } catch(EntityNotFoundException usageE) {
                         //There was not a previous record in loadbalancing.lb_usaget able
                         //Grab what is possible from ssltermination and virtualip tables
-                        //TODO: Implement
-                        tagsBitmask = loadBalancerService.getCurrentBitTags(loadbalancerId, accountId).getBitTags();
+                        try {
+                            LoadBalancer loadbalancer = loadBalancerService.get(loadbalancerId);
+                            accountId = loadbalancer.getAccountId();
+                            tagsBitmask = loadBalancerService.getCurrentBitTags(loadbalancerId, accountId).getBitTags();
+                            numVips = virtualIpRepository.getNumIpv4VipsForLoadBalancer(loadbalancer).intValue();
+                        } catch (EntityNotFoundException lbE) {
+                            //What to do now??
+                            LOG.info("Unable to get find numVips, tagsBitmask, or accountId for a load balancer: " + lbE.getMessage());
+                        }
                     }
                 }
                 //Create new mergedHostUsage with zero usage and copied values.
@@ -147,13 +159,15 @@ public class UsagePollerHelper{
                 }
                 continue;
             }
+
+            //At this point there are previous records to use
             LoadBalancerMergedHostUsage newMergedRecord = null;
             for (Integer hostId : currentUsages.get(loadbalancerId).keySet()) {
                 SnmpUsage currentUsage = currentUsages.get(loadbalancerId).get(hostId);
 
                 if(!existingUsages.get(loadbalancerId).containsKey(hostId)) {
                     //No previous record exists for this load balancer. Still need to add the current
-                    //counters to the lb_host_usaget able. Have to use an existing usage not from
+                    //counters to the lb_host_usage table. Have to use an existing usage not from
                     //this host to get the correct numVips and tagsBitmask.
                     //There will be issues if there are events that a record for a host got deleted somehow.
                     LoadBalancerHostUsage existingUsage = existingUsages.get(loadbalancerId).entrySet().iterator().next().getValue().get(0);

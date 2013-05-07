@@ -514,30 +514,30 @@ public class UsagePollerHelperTest {
         }
 
         //This fails but this scenario should only happen if an accidental delete happens with the event records.
-        @Ignore
-        @Test
-        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/usagepollerhelper/processcurrentusage/case9.xml")
-        public void shouldReturnCorrectDataWhenCurrentUsageHasEventsZeroUsageWithMissingHostRecord() throws Exception{
-            UsageProcessorResult result = usagePollerHelper.processCurrentUsage(lbHostMap, snmpMap, pollTime);
-
-            //new lb_merged_host_usage records assertions
-            Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 3, 3,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 2, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
-
-            //New lb_host_usage records assertions
-            Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
-        }
+//        @Ignore
+//        @Test
+//        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/usagepollerhelper/processcurrentusage/case9.xml")
+//        public void shouldReturnCorrectDataWhenCurrentUsageHasEventsZeroUsageWithMissingHostRecord() throws Exception{
+//            UsageProcessorResult result = usagePollerHelper.processCurrentUsage(lbHostMap, snmpMap, pollTime);
+//
+//            //new lb_merged_host_usage records assertions
+//            Assert.assertEquals(2, result.getMergedUsages().size());
+//            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 3, 3,
+//                    null, pollTimeStr, result.getMergedUsages().get(0));
+//            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 2, 5,
+//                    null, pollTimeStr, result.getMergedUsages().get(1));
+//
+//            //New lb_host_usage records assertions
+//            Assert.assertEquals(4, result.getLbHostUsages().size());
+//            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 3, 3, null, pollTimeStr,
+//                    result.getLbHostUsages().get(0));
+//            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 3, 3, null, pollTimeStr,
+//                    result.getLbHostUsages().get(1));
+//            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 2, 5, null, pollTimeStr,
+//                    result.getLbHostUsages().get(2));
+//            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 2, 5, null, pollTimeStr,
+//                    result.getLbHostUsages().get(3));
+//        }
     }
 
     public static class WhenTestingCalculateCurrentUsage {
