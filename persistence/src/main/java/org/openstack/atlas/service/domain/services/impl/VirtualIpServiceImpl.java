@@ -765,7 +765,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     }
 
     @Override
-    public Map<Integer, List<VirtualIp>> getAllVipsMappedByLbId() {
+    public Map<Integer, List<VirtualIp>> getAllocatedVipsMappedByLbId() {
         Map<Integer, List<VirtualIp>> vipMap = new HashMap<Integer, List<VirtualIp>>();
         List<VirtualIp> vips = virtualIpRepository.getAll();
         for (VirtualIp vip : vips) {
@@ -773,11 +773,11 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
                 continue;
             }
             Integer lbId = vip.getLoadBalancerJoinVipSet().iterator().next().getLoadBalancer().getId();
-            if (!vipMap.containsKey(lbId)) {
-                    vipMap.put(lbId, new ArrayList<VirtualIp>());
-            }
             if (vip.isAllocated() && vip.getLoadBalancerJoinVipSet() != null &&
                     !vip.getLoadBalancerJoinVipSet().isEmpty()) {
+                if (!vipMap.containsKey(lbId)) {
+                    vipMap.put(lbId, new ArrayList<VirtualIp>());
+                }
                 vipMap.get(lbId).add(vip);
             }
         }

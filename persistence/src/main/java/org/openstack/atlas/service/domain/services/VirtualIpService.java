@@ -83,6 +83,6 @@ public interface VirtualIpService {
 
     public String getVirtualIpv6String(VirtualIpv6 vip6) throws IPStringConversionException;
 
-    public Map<Integer, List<VirtualIp>> getAllVipsMappedByLbId();
+    public Map<Integer, List<VirtualIp>> getAllocatedVipsMappedByLbId();
 
 }

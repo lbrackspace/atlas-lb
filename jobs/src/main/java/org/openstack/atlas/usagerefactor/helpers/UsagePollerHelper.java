@@ -2,6 +2,9 @@ package org.openstack.atlas.usagerefactor.helpers;
 
 import org.apache.camel.processor.loadbalancer.LoadBalancer;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.IpVersion;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
@@ -84,10 +87,27 @@ public class UsagePollerHelper{
         List<LoadBalancerMergedHostUsage> mergedUsages = new ArrayList<LoadBalancerMergedHostUsage>();
         List<LoadBalancerHostUsage> newLBHostUsages = new ArrayList<LoadBalancerHostUsage>();
 
+        Map<Integer, List<VirtualIp>> vipMap = null;
+        Map<Integer, SslTermination> sslMap = null;
         for (Integer loadbalancerId : currentUsages.keySet()) {
             if (!existingUsages.containsKey(loadbalancerId)) {
                 //TODO: There are no previous records in lb_host_usage for this loadbalancer
                 //Get all records from VirtualIP table and SSLTermination table.
+                if (vipMap == null) {
+                    
+                }
+                if (sslMap == null) {
+
+                }
+                //Get number of virtual Ips
+                int numVips = 0;
+                for (VirtualIp vip : vipMap.get(loadbalancerId)) {
+                    if (vip.getIpVersion() == IpVersion.IPV4) {
+                        numVips++;
+                    }
+                }
+
+                //Get 
                 //Store new record in lb_merged_host_usage table with appropriate numVips and tags and 0 usage.
                 //Store counters in current usage in lb_host_usage
                 continue;
