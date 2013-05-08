@@ -96,6 +96,9 @@
           class="org.openstack.atlas.usage.thread.service.serviceImpl.ThreadPoolMonitorServiceImpl">
         <property name="monitoringPeriod" value="5"/>
     </bean>
+    <bean id="jobStateService"
+          class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl">
+    </bean>
     <bean id="rejectedExecutionHandler" class="org.openstack.atlas.usage.thread.service.RejectedExecutionHandler"/>
     <bean id="threadPoolExecutorService"
           class="org.openstack.atlas.usage.thread.service.serviceImpl.ThreadPoolExecutorServiceImpl">
