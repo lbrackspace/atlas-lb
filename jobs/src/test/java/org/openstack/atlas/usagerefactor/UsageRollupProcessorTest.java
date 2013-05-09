@@ -3,6 +3,7 @@ package org.openstack.atlas.usagerefactor;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -24,6 +25,7 @@ import java.util.*;
 
 import static org.mockito.Mockito.when;
 
+@Ignore
 @RunWith(Enclosed.class)
 public class UsageRollupProcessorTest {
 

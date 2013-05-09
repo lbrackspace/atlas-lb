@@ -85,4 +85,98 @@ public class CalendarUtilsTest {
             Assert.assertEquals("2013-01-29 23:59:59", calAsString);
         }
     }
+
+    public static class WhenDeterminingIfBetweenTwoTimesInclusive {
+
+        @Test
+        public void shouldReturnTrueWhenEqualToStartTime() throws ParseException {
+            Calendar cal = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 01:00:00");
+
+            boolean isBetween = CalendarUtils.isBetween(cal, startTime, endTime, true);
+
+            Assert.assertTrue(isBetween);
+        }
+
+        @Test
+        public void shouldReturnFalseWhenBeforeStartTime() throws ParseException {
+            Calendar cal = CalendarUtils.stringToCalendar("2013-01-28 23:59:59");
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 01:00:00");
+
+            boolean isBetween = CalendarUtils.isBetween(cal, startTime, endTime, true);
+
+            Assert.assertFalse(isBetween);
+        }
+
+        @Test
+        public void shouldReturnTrueWhenEqualToEndTime() throws ParseException {
+            Calendar cal = CalendarUtils.stringToCalendar("2013-01-29 01:00:00");
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 01:00:00");
+
+            boolean isBetween = CalendarUtils.isBetween(cal, startTime, endTime, true);
+
+            Assert.assertTrue(isBetween);
+        }
+
+        @Test
+        public void shouldReturnFalseWhenAfterEndTime() throws ParseException {
+            Calendar cal = CalendarUtils.stringToCalendar("2013-01-29 01:00:01");
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 01:00:00");
+
+            boolean isBetween = CalendarUtils.isBetween(cal, startTime, endTime, true);
+
+            Assert.assertFalse(isBetween);
+        }
+    }
+
+    public static class WhenDeterminingIfBetweenTwoTimesExclusive {
+
+        @Test
+        public void shouldReturnTrueWhenEqualToStartTime() throws ParseException {
+            Calendar cal = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 01:00:00");
+
+            boolean isBetween = CalendarUtils.isBetween(cal, startTime, endTime, false);
+
+            Assert.assertTrue(isBetween);
+        }
+
+        @Test
+        public void shouldReturnFalseWhenBeforeStartTime() throws ParseException {
+            Calendar cal = CalendarUtils.stringToCalendar("2013-01-28 23:59:59");
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 01:00:00");
+
+            boolean isBetween = CalendarUtils.isBetween(cal, startTime, endTime, false);
+
+            Assert.assertFalse(isBetween);
+        }
+
+        @Test
+        public void shouldReturnTrueWhenRightBeforeEndTime() throws ParseException {
+            Calendar cal = CalendarUtils.stringToCalendar("2013-01-29 00:59:59");
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 01:00:00");
+
+            boolean isBetween = CalendarUtils.isBetween(cal, startTime, endTime, false);
+
+            Assert.assertTrue(isBetween);
+        }
+
+        @Test
+        public void shouldReturnFalseWhenEqualToEndTime() throws ParseException {
+            Calendar cal = CalendarUtils.stringToCalendar("2013-01-29 01:00:00");
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 01:00:00");
+
+            boolean isBetween = CalendarUtils.isBetween(cal, startTime, endTime, false);
+
+            Assert.assertFalse(isBetween);
+        }
+    }
 }

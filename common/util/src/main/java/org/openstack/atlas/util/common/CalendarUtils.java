@@ -34,4 +34,19 @@ public class CalendarUtils {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
         return sdf.format(cal.getTime());
     }
+
+    public static boolean isTopOfTheHour(Calendar cal) {
+        return cal.get(Calendar.MINUTE) == 0 && cal.get(Calendar.SECOND) == 0 && cal.get(Calendar.MILLISECOND) == 0;
+    }
+
+    /*
+     *  This method returns true if cal is between startTime (inclusive) and endTime (inclusive or exclusive).
+     */
+    public static boolean isBetween(Calendar cal, Calendar startTime, Calendar endTime, boolean endTimeInclusive) {
+        if (endTimeInclusive) {
+            return cal.compareTo(startTime) >= 0 && cal.compareTo(endTime) <= 0;
+        }
+
+        return cal.compareTo(startTime) >= 0 && cal.compareTo(endTime) < 0;
+    }
 }
