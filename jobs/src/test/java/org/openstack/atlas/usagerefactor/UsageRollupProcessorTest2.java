@@ -130,6 +130,23 @@ public class UsageRollupProcessorTest2 {
     }
 
     @Test
+    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/edgecases/case006.xml")
+    public void edgeCasesCase006() throws Exception {
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
+
+        Assert.assertEquals(3, processedUsages.size());
+        Usage actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 50l, 50l, 100l, 100l, 1.0, 1.0, "2013-04-10 20:00:00", "2013-04-10 20:03:00",
+                1, 1, 5, null, 0, true, null, actualUsage);
+        actualUsage = processedUsages.get(1);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:03:00", "2013-04-10 20:33:00",
+                0, 1, 5, SUSPEND_LOADBALANCER.name(), 0, true, null, actualUsage);
+        actualUsage = processedUsages.get(2);
+        AssertUsage.hasValues(null, 1234, 1234, 250l, 250l, 500l, 500l, 1.0, 1.0, "2013-04-10 20:33:00", "2013-04-10 21:00:00",
+                5, 1, 5, UNSUSPEND_LOADBALANCER.name(), 0, true, null, actualUsage);
+    }
+
+    @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/missingprevioususage/case001.xml")
     public void missingPreviousUsageCase001() throws Exception {
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
@@ -140,7 +157,6 @@ public class UsageRollupProcessorTest2 {
                 11, 1, 5, null, 0, true, null, actualUsage);
     }
 
-    @Ignore
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/missingprevioususage/case002.xml")
     public void missingPreviousUsageCase002() throws Exception {
@@ -154,6 +170,23 @@ public class UsageRollupProcessorTest2 {
         actualUsage = processedUsages.get(1);
         AssertUsage.hasValues(null, 1234, 1234, 600l, 0l, 1200l, 0l, 1.0, 0.0, "2013-04-10 20:00:01", "2013-04-10 21:00:00",
                 12, 1, 0, SSL_OFF.name(), 0, true, null, actualUsage);
+    }
+
+    @Test
+    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/missingprevioususage/case003.xml")
+    public void missingPreviousUsageCase003() throws Exception {
+        mostRecentUsage.setTags(5);
+        mostRecentUsage.setNumVips(2);
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
+
+        Assert.assertEquals(2, processedUsages.size());
+        Usage actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:00:00", "2013-04-10 20:01:00",
+                1, 2, 5, null, 0, true, null, actualUsage);
+
+        actualUsage = processedUsages.get(1);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:01:00", "2013-04-10 20:01:00",
+                0, 0, 0, DELETE_LOADBALANCER.name(), 0, true, null, actualUsage);
     }
 
     @Test
@@ -249,6 +282,53 @@ public class UsageRollupProcessorTest2 {
         Usage actualUsage = processedUsages.get(0);
         AssertUsage.hasValues(null, 1234, 1234, 600l, 600l, 1200l, 1200l, 1.0, 1.0, "2013-04-10 20:00:00", "2013-04-10 21:00:00",
                 12, 1, 5, null, 0, true, null, actualUsage);
+    }
+
+    @Test
+    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case006.xml")
+    public void normalUsageCase006() throws Exception {
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
+
+        Assert.assertEquals(2, processedUsages.size());
+        Usage actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 50l, 50l, 100l, 100l, 0.0, 0.0, "2013-04-10 20:00:00", "2013-04-10 20:01:00",
+                1, 1, 5, null, 0, true, null, actualUsage);
+
+        actualUsage = processedUsages.get(1);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:01:00", "2013-04-10 20:01:00",
+                0, 0, 0, DELETE_LOADBALANCER.name(), 0, true, null, actualUsage);
+    }
+
+    @Test
+    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case007.xml")
+    public void normalUsageCase007() throws Exception {
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
+
+        Assert.assertEquals(2, processedUsages.size());
+        Usage actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 400l, 400l, 800l, 800l, 1.0, 1.0, "2013-04-10 20:00:00", "2013-04-10 20:33:00",
+                8, 1, 5, null, 0, true, null, actualUsage);
+
+        actualUsage = processedUsages.get(1);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:33:00", "2013-04-10 21:00:00",
+                0, 1, 5, SUSPEND_LOADBALANCER.name(), 0, true, null, actualUsage);
+
+        hourToProcess.add(Calendar.HOUR, 1);
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
+        Assert.assertEquals(1, processedUsages.size());
+        actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 21:00:00", "2013-04-10 22:00:00",
+                0, 1, 5, SUSPENDED_LOADBALANCER.name(), 0, true, null, actualUsage);
+
+        hourToProcess.add(Calendar.HOUR, 1);
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
+        Assert.assertEquals(2, processedUsages.size());
+        actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 22:00:00", "2013-04-10 22:33:00",
+                0, 1, 5, SUSPENDED_LOADBALANCER.name(), 0, true, null, actualUsage);
+        actualUsage = processedUsages.get(1);
+        AssertUsage.hasValues(null, 1234, 1234, 250l, 250l, 500l, 500l, 1.0, 1.0, "2013-04-10 22:33:00", "2013-04-10 23:00:00",
+                5, 1, 5, UNSUSPEND_LOADBALANCER.name(), 0, true, null, actualUsage);
     }
 
     @Test
@@ -363,14 +443,14 @@ public class UsageRollupProcessorTest2 {
         Assert.assertEquals(1, processedUsages.size());
         actualUsage = processedUsages.get(0);
         AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 22:00:00", "2013-04-10 23:00:00",
-                1, 1, 5, SUSPENDED_LOADBALANCER.name(), 0, true, null, actualUsage);
+                0, 1, 5, SUSPENDED_LOADBALANCER.name(), 0, true, null, actualUsage);
 
         hourToProcess.add(Calendar.HOUR, 1);
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
         Assert.assertEquals(2, processedUsages.size());
         actualUsage = processedUsages.get(0);
         AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 23:00:00", "2013-04-10 23:35:05",
-                1, 1, 5, SUSPENDED_LOADBALANCER.name(), 0, true, null, actualUsage);
+                0, 1, 5, SUSPENDED_LOADBALANCER.name(), 0, true, null, actualUsage);
         actualUsage = processedUsages.get(1);
         AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 23:35:05", "2013-04-11 00:00:00",
                 0, 1, 5, UNSUSPEND_LOADBALANCER.name(), 0, true, null, actualUsage);

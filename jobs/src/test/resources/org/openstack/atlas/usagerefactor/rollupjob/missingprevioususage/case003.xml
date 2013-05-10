@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details: DELETE_LOADBALANCER as the first record of the hour and its pollTime is after the hour mark.
+                  Missing previous hour's usage.
+-->
+<dataset>
+    <lb_merged_host_usage id="1" account_id="1234" loadbalancer_id="1234" outgoing_transfer="100" outgoing_transfer_ssl="100" incoming_transfer="50" incoming_transfer_ssl="50" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="0" tags_bitmask="0" poll_time="2013-04-10 20:01:00" event_type="DELETE_LOADBALANCER"/>
+</dataset>

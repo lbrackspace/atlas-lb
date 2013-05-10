@@ -25,7 +25,6 @@ import java.util.*;
 
 import static org.mockito.Mockito.when;
 
-@Ignore
 @RunWith(Enclosed.class)
 public class UsageRollupProcessorTest {
 
@@ -166,8 +165,8 @@ public class UsageRollupProcessorTest {
                 ccs += ccsIncrement;
                 ccsSsl += ccsSslIncrement;
             }
-            double expectedACC = totalCcs / numLBPolls;
-            double expectedACCSsl = totalCcsSsl / numLBPolls;
+            double expectedACC = (totalCcs - LoadBalancerMergedHosts.get(0).getConcurrentConnections()) / (numLBPolls - 1.0);
+            double expectedACCSsl = (totalCcsSsl - LoadBalancerMergedHosts.get(0).getConcurrentConnectionsSsl()) / (numLBPolls - 1.0);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(LoadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(1, processedUsages.size());
             Assert.assertEquals(expectedACC, processedUsages.get(0).getAverageConcurrentConnections(), 0);
@@ -404,8 +403,8 @@ public class UsageRollupProcessorTest {
             compTime.setTime(initialPollTime.getTime());
             List<Usage> processedUsages = usageRollupProcessor.processRecords(loadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(2, processedUsages.size());
-            Assert.assertEquals(loadBalancerMergedHosts.get(0).getIncomingTransfer(), processedUsages.get(0).getIncomingTransfer().longValue());
-            Assert.assertEquals(loadBalancerMergedHosts.get(0).getOutgoingTransfer(), processedUsages.get(0).getOutgoingTransfer().longValue());
+            Assert.assertEquals(0, processedUsages.get(0).getIncomingTransfer().longValue());
+            Assert.assertEquals(0, processedUsages.get(0).getOutgoingTransfer().longValue());
             Assert.assertNull(processedUsages.get(0).getEventType());
             Assert.assertEquals(compTime.get(Calendar.HOUR), processedUsages.get(0).getStartTime().get(Calendar.HOUR));
             Assert.assertEquals(0, processedUsages.get(0).getStartTime().get(Calendar.MINUTE));
@@ -465,7 +464,7 @@ public class UsageRollupProcessorTest {
             loadBalancerMergedHosts.get(7).setConcurrentConnections(21);
             List<Usage> processedUsages = usageRollupProcessor.processRecords(loadBalancerMergedHosts, hourToProcess);
             Assert.assertEquals(4, processedUsages.size());
-            double expectedACC = (20 + 30) / 2.0;
+            double expectedACC = 30;
             double expectedACCSsl = 0;
             Assert.assertEquals(expectedACC, processedUsages.get(0).getAverageConcurrentConnections(), 0);
             Assert.assertEquals(expectedACCSsl, processedUsages.get(0).getAverageConcurrentConnectionsSsl(), 0);

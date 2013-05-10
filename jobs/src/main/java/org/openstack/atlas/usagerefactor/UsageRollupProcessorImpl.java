@@ -6,6 +6,7 @@ import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
+import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.RollupUsageHelper;
@@ -56,7 +57,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         for (Integer lbId : usagesByLbId.keySet()) {
             List<LoadBalancerMergedHostUsage> lbMergedHostRecordsForLoadBalancer = usagesByLbId.get(lbId);
 
-            List<Usage> processedRecordsForLb = processRecsForLb(lbMergedHostRecordsForLoadBalancer, hourToProcess);
+            List<Usage> processedRecordsForLb = processRecordsForLb(lbMergedHostRecordsForLoadBalancer, hourToProcess);
             processedRecords.addAll(processedRecordsForLb);
         }
 
@@ -64,12 +65,17 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     }
 
 
-    public List<Usage> processRecsForLb(List<LoadBalancerMergedHostUsage> lbMergedHostUsageRecordsForLoadBalancer, Calendar hourToProcess) {
+    /*
+        @param lbMergedHostUsageRecordsForLoadBalancer: Expected to be in order by pollTime.
+     */
+    @Override
+    public List<Usage> processRecordsForLb(List<LoadBalancerMergedHostUsage> lbMergedHostUsageRecordsForLoadBalancer, Calendar hourToProcess) {
         List<Usage> processedRecords = new ArrayList<Usage>();
         Calendar previousHour;
         Calendar hourToStop;
         boolean previousHourRecordExists = false;
         boolean isFirstRecordOfHourToProcess = true;
+        LoadBalancerMergedHostUsage mostRecentPreviousRecord = null;
 
         if (lbMergedHostUsageRecordsForLoadBalancer == null || lbMergedHostUsageRecordsForLoadBalancer.isEmpty()) {
             return processedRecords;
@@ -94,6 +100,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             if (pollTime.before(hourToProcess)) {
                 if (withinPreviousHour) {
                     previousHourRecordExists = true;
+                    mostRecentPreviousRecord = lbMergedHostUsage;
                 }
                 newRecordForLb.setTags(lbMergedHostUsage.getTagsBitmask());
                 continue;
@@ -105,7 +112,6 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             }
 
             if (withinHourToProcess) {
-                isFirstRecordOfHourToProcess = false;
                 RollupUsageHelper.calculateAndSetAverageConcurrentConnections(newRecordForLb, lbMergedHostUsage);
 
                 if (allowedToAddBandwidth) {
@@ -120,9 +126,28 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                     if (lbMergedHostUsage.getEventType().equals(CREATE_LOADBALANCER) || equalToHourToProcess) {
                         newRecordForLb.setStartTime(pollTime);
                         newRecordForLb.setEventType(lbMergedHostUsage.getEventType().name());
+                    } else if (lbMergedHostUsage.getEventType().equals(SUSPENDED_LOADBALANCER)) {
+                        if (previousHourRecordExists && mostRecentPreviousRecord.getEventType() != null && (mostRecentPreviousRecord.getEventType().equals(SUSPEND_LOADBALANCER) || mostRecentPreviousRecord.getEventType().equals(SUSPENDED_LOADBALANCER))) {
+                            newRecordForLb.setEventType(SUSPENDED_LOADBALANCER.name());
+                            newRecordForLb.setEndTime(hourToStop);
+                            newRecordForLb.setNumberOfPolls(0);
+                        }
                     } else {
+
+                        if (isFirstRecordOfHourToProcess && !previousHourRecordExists) {
+                            int tags = getTags(lbMergedHostUsage);
+                            int numVips = getNumVips(lbMergedHostUsage);
+                            newRecordForLb.setTags(tags);
+                            newRecordForLb.setNumVips(numVips);
+                        }
+
+                        if (lbMergedHostUsage.getEventType().equals(UNSUSPEND_LOADBALANCER)) {
+                            newRecordForLb.setNumberOfPolls(0);
+                        }
+
                         newRecordForLb.setEndTime(pollTime);
                         processedRecords.add(newRecordForLb);
+
                         newRecordForLb = initializeRecordForLb(lbMergedHostUsage, pollTime, hourToStop);
                         newRecordForLb.setEventType(lbMergedHostUsage.getEventType().name());
                     }
@@ -131,6 +156,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                         newRecordForLb.setEndTime(pollTime);
                     }
                 }
+
+                isFirstRecordOfHourToProcess = false;
             }
         }
 
@@ -139,6 +166,39 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         }
 
         return processedRecords;
+    }
+
+    private int getTags(LoadBalancerMergedHostUsage lbMergedHostUsage) {
+        int mostRecentTagsBitmask;
+
+        try {
+            Usage mostRecentUæsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbMergedHostUsage.getLoadbalancerId());
+            mostRecentTagsBitmask = mostRecentUæsageForLoadBalancer.getTags();
+        } catch (EntityNotFoundException e) {
+            // TODO: Put an alert and monitor it!
+            LOG.error("Unable to get proper tags for record. Please verify manually!", e);
+            BitTags bitTags = loadbalancerService.getCurrentBitTags(lbMergedHostUsage.getLoadbalancerId(), lbMergedHostUsage.getAccountId());
+            bitTags.flipTagOff(BitTag.SSL);
+            bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
+            mostRecentTagsBitmask = bitTags.getBitTags();
+        }
+
+        return mostRecentTagsBitmask;
+    }
+
+    private int getNumVips(LoadBalancerMergedHostUsage lbMergedHostUsage) {
+        final int DEFAULT_NUM_VIPS = 1;
+        int numVips = DEFAULT_NUM_VIPS;
+
+        try {
+            Usage mostRecentUæsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbMergedHostUsage.getLoadbalancerId());
+            numVips = mostRecentUæsageForLoadBalancer.getNumVips();
+        } catch (EntityNotFoundException e) {
+            // TODO: Put an alert and monitor it!
+            LOG.error("Unable to get proper vips for record. Please verify manually!", e);
+        }
+
+        return numVips;
     }
 
     private Usage initializeRecordForLb(LoadBalancerMergedHostUsage lbMergedHostUsage, Calendar startTime, Calendar endTime) {
@@ -159,184 +219,5 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         usage.setEntryVersion(0);
 
         return usage;
-    }
-
-
-    /*
-        @param lbMergedHostUsageRecordsForLoadBalancer: Expected to be in order by pollTime.
-     */
-    @Override
-    public List<Usage> processRecordsForLb(List<LoadBalancerMergedHostUsage> lbMergedHostUsageRecordsForLoadBalancer, Calendar hourToProcess) {
-        List<Usage> processedRecords = new ArrayList<Usage>();
-        Integer mostRecentTagsBeforeHourToProcess = null;
-        boolean useBandwidthFromRecord = false;
-        boolean isFirstRecord = true;
-
-        if (lbMergedHostUsageRecordsForLoadBalancer == null || lbMergedHostUsageRecordsForLoadBalancer.isEmpty()) {
-            return processedRecords;
-        }
-
-        Calendar validHourToProcess = CalendarUtils.stripOutMinsAndSecs(hourToProcess);
-        Calendar previousHour = CalendarUtils.stripOutMinsAndSecs(validHourToProcess);
-        previousHour.add(Calendar.HOUR, -1);
-        Calendar hourToStopProcess = CalendarUtils.stripOutMinsAndSecs(validHourToProcess);
-        hourToStopProcess.add(Calendar.HOUR, 1);
-
-        Usage newUsage = createInitializedUsageRecord(lbMergedHostUsageRecordsForLoadBalancer.get(0));
-        newUsage.setStartTime(validHourToProcess);
-
-        for (LoadBalancerMergedHostUsage loadBalancerMergedHostUsage : lbMergedHostUsageRecordsForLoadBalancer) {
-            Calendar mergedHostUsagePollTime = loadBalancerMergedHostUsage.getPollTime();
-
-            if (mergedHostUsagePollTime.compareTo(validHourToProcess) < 0) {
-                if (mergedHostUsagePollTime.compareTo(previousHour) >= 0) {
-                    useBandwidthFromRecord = true;
-                }
-                mostRecentTagsBeforeHourToProcess = loadBalancerMergedHostUsage.getTagsBitmask();
-                continue;
-            }
-
-            if (mergedHostUsagePollTime.compareTo(hourToStopProcess) > 0) {
-                break;
-            }
-
-            if (isFirstRecord) {
-                if (loadBalancerMergedHostUsage.getEventType() == null) {
-                    newUsage.setEventType(null);
-                } else {
-                    newUsage.setEventType(loadBalancerMergedHostUsage.getEventType().name());
-                }
-            }
-
-            if (CalendarUtils.isTopOfTheHour(mergedHostUsagePollTime) && mergedHostUsagePollTime.equals(validHourToProcess)) {
-                useBandwidthFromRecord = true;
-                continue;
-            }
-
-            // Works only if usage is in order by time. Be careful when modifying.
-            if (!useBandwidthFromRecord) {
-                loadBalancerMergedHostUsage.setOutgoingTransfer(0);
-                loadBalancerMergedHostUsage.setOutgoingTransferSsl(0);
-                loadBalancerMergedHostUsage.setIncomingTransfer(0);
-                loadBalancerMergedHostUsage.setIncomingTransferSsl(0);
-                useBandwidthFromRecord = true;
-            }
-
-            RollupUsageHelper.calculateAndSetBandwidth(newUsage, loadBalancerMergedHostUsage);
-            RollupUsageHelper.calculateAndSetAverageConcurrentConnections(newUsage, loadBalancerMergedHostUsage);
-            newUsage = processEvents(newUsage, loadBalancerMergedHostUsage, processedRecords, isFirstRecord, mostRecentTagsBeforeHourToProcess);
-            isFirstRecord = false;
-        }
-
-        if (newUsage.getEndTime() == null) {
-            newUsage.setEndTime(hourToStopProcess);
-        }
-
-        processedRecords.add(newUsage);
-        return processedRecords;
-    }
-
-    private Usage createInitializedUsageRecord(LoadBalancerMergedHostUsage loadBalancerMergedHostUsage) {
-        LoadBalancer currentLB = new LoadBalancer();
-        Usage initUsage = new Usage();
-
-        currentLB.setId(loadBalancerMergedHostUsage.getLoadbalancerId());
-        currentLB.setAccountId(loadBalancerMergedHostUsage.getAccountId());
-
-        initUsage.setLoadbalancer(currentLB);
-        initUsage.setStartTime(loadBalancerMergedHostUsage.getPollTime());
-        initUsage.setAccountId(loadBalancerMergedHostUsage.getAccountId());
-        initUsage.setTags(loadBalancerMergedHostUsage.getTagsBitmask());
-        initUsage.setNeedsPushed(true);
-        initUsage.setEntryVersion(0);
-
-        if (loadBalancerMergedHostUsage.getEventType() != null) {
-            initUsage.setEventType(loadBalancerMergedHostUsage.getEventType().name());
-        }
-
-        return initUsage;
-    }
-
-    private Usage processEvents(Usage currentUsage, LoadBalancerMergedHostUsage currentLoadBalancerMergedHost, List<Usage> processedRecords, boolean isFirstOfHour, Integer mostRecentTagsBitmask) {
-        if (currentLoadBalancerMergedHost.getEventType() != null) {
-
-            boolean containsNonCreateEvent = currentLoadBalancerMergedHost.getEventType() != CREATE_LOADBALANCER;
-            boolean isTopOfTheHour = CalendarUtils.isTopOfTheHour(currentLoadBalancerMergedHost.getPollTime());
-            boolean createBufferRecord = containsNonCreateEvent && !isTopOfTheHour;
-
-            if (createBufferRecord) {
-                currentUsage.setEndTime(currentLoadBalancerMergedHost.getPollTime());
-                if (isFirstOfHour) {
-                    if (mostRecentTagsBitmask == null) {
-                        Usage mostRecentUsageForLoadBalancer;
-                        try {
-                            mostRecentUsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(currentUsage.getLoadbalancer().getId());
-                            mostRecentTagsBitmask = mostRecentUsageForLoadBalancer.getTags();
-                        } catch (EntityNotFoundException e) {
-                            // TODO: Put an alert and monitor it!
-                            LOG.error("Unable to get proper tags for record. Please verify manually!", e);
-                            BitTags bitTags = loadbalancerService.getCurrentBitTags(currentUsage.getLoadbalancer().getId(), currentUsage.getAccountId());
-                            mostRecentTagsBitmask = bitTags.getBitTags();
-                        }
-                    }
-
-                    currentUsage.setTags(mostRecentTagsBitmask);
-                    currentUsage.setEventType(null);
-                }
-
-                processedRecords.add(currentUsage);
-                currentUsage = createInitializedUsageRecord(currentLoadBalancerMergedHost);
-            }
-
-            switch (currentLoadBalancerMergedHost.getEventType()) {
-                case CREATE_LOADBALANCER:
-                    currentUsage.setEventType(CREATE_LOADBALANCER.name());
-                    currentUsage.setStartTime(currentLoadBalancerMergedHost.getPollTime());
-                    break;
-                case DELETE_LOADBALANCER:
-                    currentUsage.setEventType(DELETE_LOADBALANCER.name());
-                    currentUsage.setNumVips(0);
-                    currentUsage.setEndTime(currentLoadBalancerMergedHost.getPollTime());
-                    break;
-                case CREATE_VIRTUAL_IP:
-                    currentUsage.setEventType(CREATE_VIRTUAL_IP.name());
-                    currentUsage.setNumVips(currentUsage.getNumVips() + 1);
-                    break;
-                case DELETE_VIRTUAL_IP:
-                    currentUsage.setEventType(DELETE_VIRTUAL_IP.name());
-                    currentUsage.setNumVips(currentUsage.getNumVips() - 1);
-                    break;
-                case SSL_MIXED_ON:
-                    currentUsage.setEventType(SSL_MIXED_ON.name());
-                    currentUsage.setTags(currentLoadBalancerMergedHost.getTagsBitmask());
-                    break;
-                case SSL_ONLY_ON:
-                    currentUsage.setEventType(SSL_ONLY_ON.name());
-                    currentUsage.setTags(currentLoadBalancerMergedHost.getTagsBitmask());
-                    break;
-                case SSL_OFF:
-                    currentUsage.setEventType(SSL_OFF.name());
-                    currentUsage.setTags(currentLoadBalancerMergedHost.getTagsBitmask());
-                    break;
-                case SSL_ON:
-                    currentUsage.setEventType(SSL_ON.name());
-                    currentUsage.setTags(currentLoadBalancerMergedHost.getTagsBitmask());
-                    break;
-                case SUSPEND_LOADBALANCER:
-                    currentUsage.setEventType(SUSPEND_LOADBALANCER.name());
-                    break;
-                case UNSUSPEND_LOADBALANCER:
-                    currentUsage.setEventType(UNSUSPEND_LOADBALANCER.name());
-                    break;
-                case SUSPENDED_LOADBALANCER:
-                    currentUsage.setNumberOfPolls(0);
-                    currentUsage.setEventType(SUSPENDED_LOADBALANCER.name());
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return currentUsage;
     }
 }
