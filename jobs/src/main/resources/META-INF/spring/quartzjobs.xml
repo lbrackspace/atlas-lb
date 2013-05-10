@@ -19,8 +19,8 @@
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
-                <ref bean="lbUsagePollerTrigger"/>
-                <ref bean="lbUsageRollupJobTrigger"/>
+                <!--<ref bean="lbUsagePollerTrigger"/>-->
+                <!--<ref bean="lbUsageRollupJobTrigger"/>-->
                 <ref bean="accountUsagePollerTrigger"/>
                 <ref bean="hostUsagePollerTrigger"/>
                 <ref bean="rateLimitDeletionJobTrigger"/>
@@ -29,6 +29,7 @@
                 <ref bean="eventsDeletionJobTrigger"/>
                 <ref bean="atomAlertDeletionJobTrigger"/>
                 <ref bean="hostEndpointPollerJobTrigger"/>
+                <ref bean="usageRefactorPollerTrigger" />
                 <!--<ref bean="atomHopperUsageRetryExecutionTrigger"/>-->
             </list>
         </property>
@@ -242,23 +243,19 @@
     <!--TODO: Trevor, not sure this is where you want it. But you need to set up bean here and then call dependency for usageservice here
     if this is indeed a 'job'..-->
     <bean name="usageRefactorPoller" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"
-                  value="org.openstack.atlas.usagerefactor.UsageProcessor"/>
+        <property name="jobClass" value="org.openstack.atlas.usagerefactor.UsagePollerImpl"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
-                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
-                <entry key="sslTerminationRepository" value-ref="sslTerminationRepository"/>
-                <entry key="hostRepository" value-ref="hostRepository"/>
+                <entry key="usageRefactorService" value-ref="usageRefactorService"/>
                 <entry key="alertRepository" value-ref="alertRepository"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
     </bean>
     <bean id="usageRefactorPollerTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-        <property name="jobDetail" ref="lbDeletionJob"/>
-        <property name="cronExpression" value="0 */15 * * * ?"/>
-        <!-- run every 15 mins -->
+        <property name="jobDetail" ref="usageRefactorPoller"/>
+        <property name="cronExpression" value="0 */1 * * * ?"/>
+        <!-- run every 5 mins -->
     </bean>
 
 

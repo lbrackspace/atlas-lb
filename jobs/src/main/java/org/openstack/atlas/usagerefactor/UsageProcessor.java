@@ -18,7 +18,7 @@ public class UsageProcessor {
 
     public static UsageProcessorResult mergeRecords(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages,
                                                  Map<Integer, Map<Integer, SnmpUsage>> currentUsages,
-                                                 Calendar pollTime, int numHosts)
+                                                 Calendar pollTime)
     {
         /*
          * 1. Query SNMP

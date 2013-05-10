@@ -10,6 +10,8 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
+import org.openstack.atlas.service.domain.usage.BitTag;
+import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
@@ -133,7 +135,12 @@ public class UsagePollerHelper{
                         try {
                             LoadBalancer loadbalancer = loadBalancerService.get(loadbalancerId);
                             accountId = loadbalancer.getAccountId();
-                            tagsBitmask = loadBalancerService.getCurrentBitTags(loadbalancerId, accountId).getBitTags();
+                            BitTags tags = loadBalancerService.getCurrentBitTags(loadbalancerId, accountId);
+                            //We want to default to nonssl to ensure no overcharges.
+                            //Servicenet tags will remain though.
+                            tags.flipTagOff(BitTag.SSL);
+                            tags.flipTagOff(BitTag.SSL_MIXED_MODE);
+                            tagsBitmask = tags.getBitTags();
                             numVips = virtualIpRepository.getNumIpv4VipsForLoadBalancer(loadbalancer).intValue();
                         } catch (EntityNotFoundException lbE) {
                             //What to do now??

@@ -23,6 +23,9 @@ public class UsageAtomHopperExecution extends AbstractAtomHopperUsageExecution {
     private LoadBalancerRepository loadBalancerRepository;
     private LoadBalancerEventRepository loadBalancerEventRepository;
 
+    public UsageAtomHopperExecution() {
+    }
+
     @Required
     public void setUsageRepository(UsageRepository usageRepository) {
         this.usageRepository = usageRepository;
