@@ -172,8 +172,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         int mostRecentTagsBitmask;
 
         try {
-            Usage mostRecentUæsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbMergedHostUsage.getLoadbalancerId());
-            mostRecentTagsBitmask = mostRecentUæsageForLoadBalancer.getTags();
+            Usage mostRecentUasageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbMergedHostUsage.getLoadbalancerId());
+            mostRecentTagsBitmask = mostRecentUasageForLoadBalancer.getTags();
         } catch (EntityNotFoundException e) {
             // TODO: Put an alert and monitor it!
             LOG.error("Unable to get proper tags for record. Please verify manually!", e);
@@ -191,8 +191,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         int numVips = DEFAULT_NUM_VIPS;
 
         try {
-            Usage mostRecentUæsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbMergedHostUsage.getLoadbalancerId());
-            numVips = mostRecentUæsageForLoadBalancer.getNumVips();
+            Usage mostRecentUasageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbMergedHostUsage.getLoadbalancerId());
+            numVips = mostRecentUasageForLoadBalancer.getNumVips();
         } catch (EntityNotFoundException e) {
             // TODO: Put an alert and monitor it!
             LOG.error("Unable to get proper vips for record. Please verify manually!", e);
