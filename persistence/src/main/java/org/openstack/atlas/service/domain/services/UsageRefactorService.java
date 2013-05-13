@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-
 public interface UsageRefactorService {
     public void createUsageEvent(LoadBalancerHostUsage loadBalancerHostUsageEvent);
 

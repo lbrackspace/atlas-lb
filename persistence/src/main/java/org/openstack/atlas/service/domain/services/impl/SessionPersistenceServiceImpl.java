@@ -10,22 +10,21 @@ import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.SessionPersistenceService;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.*;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.*;
 
-
+@Service
 public class SessionPersistenceServiceImpl extends BaseService implements SessionPersistenceService {
     private final Log LOG = LogFactory.getLog(SessionPersistenceServiceImpl.class);
-    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
+    @Autowired
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     @Override
     public SessionPersistence get(Integer accountId, Integer lbId) throws EntityNotFoundException, BadRequestException, DeletedStatusException {

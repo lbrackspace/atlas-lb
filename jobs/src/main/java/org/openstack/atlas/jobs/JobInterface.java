@@ -1,4 +1,4 @@
-package org.openstack.atlas.usage;
+package org.openstack.atlas.jobs;
 
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;

@@ -17,6 +17,7 @@ import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,12 +27,9 @@ import java.util.*;
 @Service
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
     protected final Log LOG = LogFactory.getLog(SslTerminationServiceImpl.class);
-    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
+    @Autowired
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     @Override
     @Transactional

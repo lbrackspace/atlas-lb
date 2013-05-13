@@ -12,6 +12,7 @@ import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityExceptio
 import org.openstack.atlas.service.domain.services.AccountLimitService;
 import org.openstack.atlas.service.domain.services.NodeMetadataService;
 import org.openstack.atlas.util.converters.StringConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +21,9 @@ import java.util.*;
 @Service
 public class NodeMetadataServiceImpl extends BaseService implements NodeMetadataService {
     private final Log LOG = LogFactory.getLog(NodeMetadataServiceImpl.class);
-    private AccountLimitService accountLimitService;
 
-    @Required
-    public void setAccountLimitService(AccountLimitService accountLimitService) {
-        this.accountLimitService = accountLimitService;
-    }
+    @Autowired
+    private AccountLimitService accountLimitService;
 
     @Override
     public List<NodeMeta> createNodeMetadata(Integer accountId, Integer loadbalancerId, Integer nodeId, List<NodeMeta> nodeMetadata) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {

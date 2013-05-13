@@ -11,7 +11,9 @@ import org.openstack.atlas.service.domain.services.CallbackService;
 import org.openstack.atlas.service.domain.services.NodeService;
 import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.service.domain.services.helpers.CallbackHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
@@ -19,17 +21,19 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.I
 import static org.openstack.atlas.service.domain.events.entities.EventType.UPDATE_NODE;
 import static org.openstack.atlas.service.domain.services.helpers.CallbackHelper.*;
 
+@Service
 public class CallbackServiceImpl extends BaseService implements CallbackService {
     private final Log LOG = LogFactory.getLog(CallbackServiceImpl.class);
+
+    @Autowired
     private NodeService nodeService;
+    @Autowired
     private NotificationService notificationService;
 
-    @Required
     public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    @Required
     public void setNotificationService(NotificationService notificationService) {
         this.notificationService = notificationService;
     }

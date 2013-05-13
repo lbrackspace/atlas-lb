@@ -39,7 +39,7 @@ import static org.openstack.atlas.service.domain.events.UsageEvent.*;
     file for more information.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:context.xml"})
+@ContextConfiguration(locations = {"classpath:dbunit-context.xml"})
 @TestExecutionListeners({
         DependencyInjectionTestExecutionListener.class,
         DbUnitTestExecutionListener.class})

@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+@org.springframework.stereotype.Repository
 @Transactional
 public class JobStateRepository {
 

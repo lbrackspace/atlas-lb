@@ -18,22 +18,20 @@ import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHos
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.UsageProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-public class UsagePollerHelper{
-
-    final static org.apache.commons.logging.Log LOG = LogFactory.getLog(UsageProcessor.class);
+@Component
+public class UsagePollerHelper {
+    private final org.apache.commons.logging.Log LOG = LogFactory.getLog(UsagePollerHelper.class);
 
     @Autowired
     private LoadBalancerMergedHostUsageRepository mergedHostUsageRepository;
-
     @Autowired
     private UsageRepository usageRepository;
-
     @Autowired
     private LoadBalancerService loadBalancerService;
-
     @Autowired
     private VirtualIpRepository virtualIpRepository;
 

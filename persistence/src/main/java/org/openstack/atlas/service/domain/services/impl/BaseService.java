@@ -19,6 +19,7 @@ import org.openstack.atlas.util.ip.IPv6Cidr;
 import org.openstack.atlas.util.ip.IPv6Cidrs;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Set;
@@ -27,39 +28,99 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ACT
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DELETED;
 
 public class BaseService {
-    protected final Log LOG = LogFactory.getLog(LoadBalancerServiceImpl.class);
+    protected final Log LOG = LogFactory.getLog(BaseService.class);
 
+    @Autowired
     protected LoadBalancerRepository loadBalancerRepository;
+    @Autowired
     protected AccountLimitRepository accountLimitRepository;
+    @Autowired
     protected VirtualIpRepository virtualIpRepository;
+    @Autowired
     protected VirtualIpv6Repository virtualIpv6Repository;
+    @Autowired
     protected BlacklistRepository blacklistRepository;
+    @Autowired
     protected HostRepository hostRepository;
+    @Autowired
     protected LoadBalancerEventRepository loadBalancerEventRepository;
+    @Autowired
     protected AlertRepository alertRepository;
+    @Autowired
     protected GroupRepository groupRepository;
+    @Autowired
     protected ClusterRepository clusterRepository;
+    @Autowired
     protected LoadbalancerMetadataRepository loadbalancerMetadataRepository;
+    @Autowired
     protected NodeMetadataRepository nodeMetadataRepository;
+    @Autowired
     protected NodeRepository nodeRepository;
+    @Autowired
     protected RateLimitRepository rateLimitRepository;
+    @Autowired
     protected JobStateRepository jobStateRepository;
+    @Autowired
     protected SslTerminationRepository sslTerminationRepository;
+    @Autowired
     protected UsageRepository usageRepository;
+    @Autowired
     protected HostUsageRepository hostUsageRepository;
+    @Autowired
     protected LoadBalancerUsageRepository loadBalancerUsageRepository;
+    @Autowired
     protected LoadBalancerUsageEventRepository loadBalancerUsageEventRepository;
+    @Autowired
     protected AllowedDomainsRepository allowedDomainsRepository;
+    @Autowired
     protected LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
+    @Autowired
     protected LoadBalancerMergedHostUsageRepository loadBalancerMergedHostUsageRepository;
+    @Autowired
     protected HostUsageRefactorRepository hostUsageRefactorRepository;
 
     static {
         org.openstack.atlas.util.ca.primitives.RsaConst.init();
     }
 
-    public void setRateLimitRepository(RateLimitRepository rateLimitRepository) {
-        this.rateLimitRepository = rateLimitRepository;
+    public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
+        this.loadBalancerRepository = loadBalancerRepository;
+    }
+
+    public void setAccountLimitRepository(AccountLimitRepository accountLimitRepository) {
+        this.accountLimitRepository = accountLimitRepository;
+    }
+
+    public void setVirtualIpRepository(VirtualIpRepository virtualIpRepository) {
+        this.virtualIpRepository = virtualIpRepository;
+    }
+
+    public void setVirtualIpv6Repository(VirtualIpv6Repository virtualIpv6Repository) {
+        this.virtualIpv6Repository = virtualIpv6Repository;
+    }
+
+    public void setBlacklistRepository(BlacklistRepository blacklistRepository) {
+        this.blacklistRepository = blacklistRepository;
+    }
+
+    public void setHostRepository(HostRepository hostRepository) {
+        this.hostRepository = hostRepository;
+    }
+
+    public void setLoadBalancerEventRepository(LoadBalancerEventRepository loadBalancerEventRepository) {
+        this.loadBalancerEventRepository = loadBalancerEventRepository;
+    }
+
+    public void setAlertRepository(AlertRepository alertRepository) {
+        this.alertRepository = alertRepository;
+    }
+
+    public void setGroupRepository(GroupRepository groupRepository) {
+        this.groupRepository = groupRepository;
+    }
+
+    public void setClusterRepository(ClusterRepository clusterRepository) {
+        this.clusterRepository = clusterRepository;
     }
 
     public void setLoadbalancerMetadataRepository(LoadbalancerMetadataRepository loadbalancerMetadataRepository) {
@@ -74,40 +135,8 @@ public class BaseService {
         this.nodeRepository = nodeRepository;
     }
 
-    public void setAlertRepository(AlertRepository alertRepository) {
-        this.alertRepository = alertRepository;
-    }
-
-    public void setLoadBalancerEventRepository(LoadBalancerEventRepository loadBalancerEventRepository) {
-        this.loadBalancerEventRepository = loadBalancerEventRepository;
-    }
-
-    public void setHostRepository(HostRepository hostRepository) {
-        this.hostRepository = hostRepository;
-    }
-
-    public void setVirtualIpRepository(VirtualIpRepository virtualIpRepository) {
-        this.virtualIpRepository = virtualIpRepository;
-    }
-
-    public void setAccountLimitRepository(AccountLimitRepository accountLimitRepository) {
-        this.accountLimitRepository = accountLimitRepository;
-    }
-
-    public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
-        this.loadBalancerRepository = loadBalancerRepository;
-    }
-
-    public void setBlacklistRepository(BlacklistRepository blacklistRepository) {
-        this.blacklistRepository = blacklistRepository;
-    }
-
-    public void setGroupRepository(GroupRepository groupRepository) {
-        this.groupRepository = groupRepository;
-    }
-
-    public void setClusterRepository(ClusterRepository clusterRepository) {
-        this.clusterRepository = clusterRepository;
+    public void setRateLimitRepository(RateLimitRepository rateLimitRepository) {
+        this.rateLimitRepository = rateLimitRepository;
     }
 
     public void setJobStateRepository(JobStateRepository jobStateRepository) {
@@ -122,16 +151,16 @@ public class BaseService {
         this.usageRepository = usageRepository;
     }
 
+    public void setHostUsageRepository(HostUsageRepository hostUsageRepository) {
+        this.hostUsageRepository = hostUsageRepository;
+    }
+
     public void setLoadBalancerUsageRepository(LoadBalancerUsageRepository loadBalancerUsageRepository) {
         this.loadBalancerUsageRepository = loadBalancerUsageRepository;
     }
 
     public void setLoadBalancerUsageEventRepository(LoadBalancerUsageEventRepository loadBalancerUsageEventRepository) {
         this.loadBalancerUsageEventRepository = loadBalancerUsageEventRepository;
-    }
-
-    public void setHostUsageRefactorRepository(HostUsageRefactorRepository hostUsageRefactorRepository) {
-        this.hostUsageRefactorRepository = hostUsageRefactorRepository;
     }
 
     public void setAllowedDomainsRepository(AllowedDomainsRepository allowedDomainsRepository) {
@@ -142,12 +171,12 @@ public class BaseService {
         this.loadBalancerStatusHistoryRepository = loadBalancerStatusHistoryRepository;
     }
 
-    public void setHostUsageRepository(HostUsageRepository hostUsageRepository) {
-        this.hostUsageRepository = hostUsageRepository;
-    }
-
     public void setLoadBalancerMergedHostUsageRepository(LoadBalancerMergedHostUsageRepository loadBalancerMergedHostUsageRepository) {
         this.loadBalancerMergedHostUsageRepository = loadBalancerMergedHostUsageRepository;
+    }
+
+    public void setHostUsageRefactorRepository(HostUsageRefactorRepository hostUsageRefactorRepository) {
+        this.hostUsageRefactorRepository = hostUsageRefactorRepository;
     }
 
     public void isLbActive(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException {
@@ -160,7 +189,6 @@ public class BaseService {
             LOG.warn(message);
             throw new ImmutableEntityException(message);
         }
-
     }
 
     protected boolean isActiveLoadBalancer(LoadBalancer rLb, boolean refetch) throws EntityNotFoundException {
@@ -175,7 +203,7 @@ public class BaseService {
         return out;
     }
 
-   protected Node blackListedItemNode(Set<Node> nodes) throws IPStringConversionException, IpTypeMissMatchException {
+    protected Node blackListedItemNode(Set<Node> nodes) throws IPStringConversionException, IpTypeMissMatchException {
         IPv4Cidrs ip4Cidr = new IPv4Cidrs();
         IPv6Cidrs ip6Cidr = new IPv6Cidrs();
         Node badNode = new Node();
@@ -229,9 +257,5 @@ public class BaseService {
             }
         }
         return null;
-    }
-
-    public void setVirtualIpv6Repository(VirtualIpv6Repository virtualIpv6Repository) {
-        this.virtualIpv6Repository = virtualIpv6Repository;
     }
 }

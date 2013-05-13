@@ -1,4 +1,4 @@
-package org.openstack.atlas.usage;
+package org.openstack.atlas.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,7 +13,7 @@ public class DelegatingJobBean extends QuartzJobBean implements StatefulJob {
 
     @Override
     protected final void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        SchedulerContext schedulerContext = null;
+        SchedulerContext schedulerContext;
 
         try {
             schedulerContext = jobExecutionContext.getScheduler().getContext();

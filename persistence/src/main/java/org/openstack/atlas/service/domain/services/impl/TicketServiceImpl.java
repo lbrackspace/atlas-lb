@@ -1,20 +1,21 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Ticket;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.TicketService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TicketServiceImpl extends  BaseService implements TicketService{
-
-    final Log LOG = LogFactory.getLog(TicketServiceImpl.class);
+@Service
+public class TicketServiceImpl extends BaseService implements TicketService {
+    private final Log LOG = LogFactory.getLog(TicketServiceImpl.class);
 
     @Override
     @Transactional

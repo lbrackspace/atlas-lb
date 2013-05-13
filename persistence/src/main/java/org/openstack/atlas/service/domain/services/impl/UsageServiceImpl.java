@@ -8,10 +8,12 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.UsageService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
+import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
 import java.util.List;
 
+@Service
 public class UsageServiceImpl extends BaseService implements UsageService {
 
     @Override

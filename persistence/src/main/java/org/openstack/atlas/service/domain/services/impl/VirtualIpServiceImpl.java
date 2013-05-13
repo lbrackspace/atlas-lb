@@ -22,6 +22,7 @@ import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,23 +39,16 @@ import org.openstack.atlas.util.debug.Debug;
 
 @Service
 public class VirtualIpServiceImpl extends BaseService implements VirtualIpService {
-
-    private static final int SB_INIT_SIZE = 1024 * 8;
     private final Log LOG = LogFactory.getLog(VirtualIpServiceImpl.class);
-    private AccountLimitService accountLimitService;
-    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+    private static final int SB_INIT_SIZE = 1024 * 8;
     public static final String DEL_PTR_FAILED = "Delete PTR on Virtual IP Fail";
     public static final String DEL_PTR_PASSED = "Delete PTR on Virtual IP Passed";
 
-    @Required
-    public void setAccountLimitService(AccountLimitService accountLimitService) {
-        this.accountLimitService = accountLimitService;
-    }
+    @Autowired
+    private AccountLimitService accountLimitService;
 
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
+    @Autowired
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     @Override
     public VirtualIp get(Integer id) throws EntityNotFoundException {

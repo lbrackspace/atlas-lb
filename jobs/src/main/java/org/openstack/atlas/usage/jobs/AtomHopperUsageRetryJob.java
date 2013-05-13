@@ -2,24 +2,20 @@ package org.openstack.atlas.usage.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.jobs.Job;
+import org.openstack.atlas.jobs.AbstractJob;
+import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.usage.execution.UsageAtomHopperRetryExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Required;
 
-public class AtomHopperUsageRetryJob extends Job {
+public class AtomHopperUsageRetryJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(AtomHopperUsageRetryJob.class);
     private UsageAtomHopperRetryExecution atomHopperUsageJobRetryExecution;
 
     @Required
     public void setAtomHopperUsageJobExecution(UsageAtomHopperRetryExecution atomHopperUsageJobRetryExecution) {
         this.atomHopperUsageJobRetryExecution = atomHopperUsageJobRetryExecution;
-    }
-
-    @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        startPoller();
     }
 
     private void startPoller() throws JobExecutionException {
@@ -32,4 +28,28 @@ public class AtomHopperUsageRetryJob extends Job {
         }
     }
 
+    @Override
+    public Log getLogger() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public JobName getJobName() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void run() throws Exception {
+        startPoller();
+    }
+
+    @Override
+    public void cleanup() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 }

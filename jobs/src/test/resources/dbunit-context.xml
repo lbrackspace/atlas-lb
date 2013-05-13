@@ -11,32 +11,27 @@
     <context:component-scan base-package="org.openstack.atlas.usagerefactor" />
     <context:component-scan base-package="org.openstack.atlas.service.domain.usage" />
     <context:component-scan base-package="org.openstack.atlas.service.domain.repository" />
+    <context:component-scan base-package="org.openstack.atlas.service.domain.services" />
+    <context:component-scan base-package="org.openstack.atlas.service.domain.cache" />
     <context:component-scan base-package="org.openstack.atlas.service.domain.events" />
     <tx:annotation-driven transaction-manager="transactionManager" />
 
-    <bean id="dataSource"
+    <!--'loadbalancing_usage' DATABASE SETUP-->
+    <bean id="loadbalancing_usage" name="dataSource"
         class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-        <property name="url" value="jdbc:hsqldb:mem:paging" />
+        <property name="url" value="jdbc:hsqldb:mem:loadbalancing_usage" />
         <property name="username" value="sa" />
         <property name="password" value="" />
     </bean>
 
     <bean id="entityManagerFactory"
         class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-        <property name="dataSource" ref="dataSource" />
+        <property name="dataSource" ref="loadbalancing_usage" />
         <property name="jpaDialect">
             <bean class="org.springframework.orm.jpa.vendor.HibernateJpaDialect"/>
         </property>
-        <property name="persistenceUnitName" value="loadbalancingUsage"/>
-    </bean>
-    <bean id="entityManagerFactory2"
-        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-        <property name="dataSource" ref="dataSource" />
-        <property name="jpaDialect">
-            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaDialect"/>
-        </property>
-        <property name="persistenceUnitName" value="loadbalancing"/>
+        <property name="persistenceUnitName" value="loadbalancingUsage" />
     </bean>
 
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
@@ -44,21 +39,26 @@
         <qualifier value="usage"/>
     </bean>
 
-    <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
-        <property name="hostUsageRefactorRepository" ref="hostUsageRefactorRepository" />
-        <property name="loadBalancerMergedHostUsageRepository" ref="loadBalancerMergedHostUsageRepository" />
+
+    <!--'loadbalancing' DATABASE SETUP-->
+    <bean id="loadbalancing" name="dataSource2"
+        class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+        <property name="url" value="jdbc:hsqldb:mem:loadbalancing" />
+        <property name="username" value="sa" />
+        <property name="password" value="" />
     </bean>
 
-    <bean id="usageRefactorService" class="org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl"
-          parent="baseService"/>
+    <bean id="entityManagerFactory2"
+        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="loadbalancing" />
+        <property name="jpaDialect">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaDialect"/>
+        </property>
+        <property name="persistenceUnitName" value="loadbalancing"/>
+    </bean>
 
-    <bean id="usageEventProcessor" class="org.openstack.atlas.usagerefactor.processor.UsageEventProcessor"
-          abstract="true"/>
-
-    <bean id="usageEventProcessorImpl" class="org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl"
-          parent="usageEventProcessor"/>
-
-    <bean id="accountUsageRepostiory" class="org.openstack.atlas.service.domain.repository.AccountUsageRepository" depends-on="entityManagerFactory2" />
-
-
+    <bean id="transactionManager2" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory2" />
+    </bean>
 </beans>

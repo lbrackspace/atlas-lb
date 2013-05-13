@@ -30,7 +30,6 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-
 @RunWith(Enclosed.class)
 public class UsagePollerHelperTest {
 
@@ -67,7 +66,7 @@ public class UsagePollerHelperTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {"classpath:context.xml"})
+    @ContextConfiguration(locations = {"classpath:dbunit-context.xml"})
     @TestExecutionListeners({
         DependencyInjectionTestExecutionListener.class,
         DbUnitTestExecutionListener.class})
@@ -75,7 +74,6 @@ public class UsagePollerHelperTest {
     public static class WhenTestingProcessExistingEvents {
 
         @Autowired
-        @Qualifier("usageRefactorService")
         private UsageRefactorService usageRefactorService;
 
         private UsagePollerHelper usagePollerHelper;
@@ -165,7 +163,7 @@ public class UsagePollerHelperTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {"classpath:context.xml"})
+    @ContextConfiguration(locations = {"classpath:dbunit-context.xml"})
     @TestExecutionListeners({
         DependencyInjectionTestExecutionListener.class,
         DbUnitTestExecutionListener.class})
@@ -173,7 +171,6 @@ public class UsagePollerHelperTest {
     public static class WhenTestingProcessCurrentUsage {
 
         @Autowired
-        @Qualifier("usageRefactorService")
         private UsageRefactorService usageRefactorService;
 
         private UsagePollerHelper usagePollerHelper;

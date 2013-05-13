@@ -12,11 +12,13 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostU
 import org.openstack.atlas.usagerefactor.helpers.RollupUsageHelper;
 import org.openstack.atlas.util.common.CalendarUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 import static org.openstack.atlas.service.domain.events.UsageEvent.*;
 
+@Component
 public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     final org.apache.commons.logging.Log LOG = LogFactory.getLog(UsageRollupProcessorImpl.class);
 
@@ -172,8 +174,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         int mostRecentTagsBitmask;
 
         try {
-            Usage mostRecentUasageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbMergedHostUsage.getLoadbalancerId());
-            mostRecentTagsBitmask = mostRecentUasageForLoadBalancer.getTags();
+            Usage mostRecentUsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbMergedHostUsage.getLoadbalancerId());
+            mostRecentTagsBitmask = mostRecentUsageForLoadBalancer.getTags();
         } catch (EntityNotFoundException e) {
             // TODO: Put an alert and monitor it!
             LOG.error("Unable to get proper tags for record. Please verify manually!", e);

@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Required;
 import java.util.Calendar;
 import java.util.List;
 
-public class LoadBalancerDeletionJob extends Job {
+public class LoadBalancerDeletionJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerDeletionJob.class);
     private LoadBalancerRepository loadBalancerRepository;
     private SslTerminationRepository sslTerminationRepository;
@@ -33,7 +33,22 @@ public class LoadBalancerDeletionJob extends Job {
     }
 
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public Log getLogger() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public JobName getJobName() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void run() throws Exception {
         Calendar startTime = Calendar.getInstance();
         LOG.info(String.format("Load balancer deletion job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
         jobStateService.updateJobState(JobName.LB_DELETION_JOB, JobStateVal.IN_PROGRESS);
@@ -70,5 +85,10 @@ public class LoadBalancerDeletionJob extends Job {
         Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
         jobStateService.updateJobState(JobName.LB_DELETION_JOB, JobStateVal.FINISHED);
         LOG.info(String.format("Load balancer deletion job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
+    }
+
+    @Override
+    public void cleanup() {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

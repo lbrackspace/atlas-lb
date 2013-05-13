@@ -8,13 +8,18 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.config.ServicesConfigurationKeys;
 import org.openstack.atlas.service.domain.exceptions.MissingFieldException;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component
 public class AtlasCache {
     final Log LOG = LogFactory.getLog(AtlasCache.class);
     private static MemcachedClient cacheClient;
     private String ttl = "300";
+
+    public AtlasCache() {
+    }
 
     private AtlasCache(Configuration configuration) throws IOException {
         String cacheHosts;

@@ -12,12 +12,6 @@ import java.util.Calendar;
 @Service
 public class LoadBalancerStatusHistoryServiceImpl extends BaseService implements LoadBalancerStatusHistoryService {
     private final Log LOG = LogFactory.getLog(LoadBalancerStatusHistoryServiceImpl.class);
-    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-
-//    @Required
-//    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-//        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-//    }
 
     @Override
     public LoadBalancerStatusHistory save(LoadBalancerStatusHistory loadBalancerStatusHistory) {

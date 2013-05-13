@@ -13,14 +13,13 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
 import java.util.List;
 
-public class RateLimitDeletionJob extends Job {
+public class RateLimitDeletionJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(RateLimitDeletionJob.class);
     private LoadBalancerRepository loadBalancerRepository;
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
@@ -41,8 +40,29 @@ public class RateLimitDeletionJob extends Job {
         this.hostRepository = hostRepository;
     }
 
+    private LoadBalancerEndpointConfiguration getConfig(Host hostIn) throws DecryptException, MalformedURLException {
+        Host hostEnd = hostRepository.getEndPointHost(hostIn.getCluster().getId());
+        Cluster cluster = hostEnd.getCluster();
+        return new LoadBalancerEndpointConfiguration(hostEnd, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), hostEnd, hostRepository.getFailoverHostNames(cluster.getId()));
+    }
+
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public Log getLogger() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public JobName getJobName() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void run() throws Exception {
         Calendar startTime = Calendar.getInstance();
         LOG.info(String.format("Rate limit deletion job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
         jobStateService.updateJobState(JobName.RATE_LIMIT_DELETION_JOB, JobStateVal.IN_PROGRESS);
@@ -82,9 +102,8 @@ public class RateLimitDeletionJob extends Job {
         LOG.info(String.format("Rate limit deletion job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 
-    private LoadBalancerEndpointConfiguration getConfig(Host hostIn) throws DecryptException, MalformedURLException {
-        Host hostEnd = hostRepository.getEndPointHost(hostIn.getCluster().getId());
-        Cluster cluster = hostEnd.getCluster();
-        return new LoadBalancerEndpointConfiguration(hostEnd, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), hostEnd, hostRepository.getFailoverHostNames(cluster.getId()));
+    @Override
+    public void cleanup() {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

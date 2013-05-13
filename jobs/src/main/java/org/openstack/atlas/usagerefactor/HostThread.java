@@ -10,11 +10,10 @@ import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClientImpl;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
 
-public class HostThread implements Callable {
+public class HostThread implements Callable<HostIdUsageMap> {
     final Log LOG = LogFactory.getLog(HostThread.class);
     public final StingrayUsageClient stingrayUsageClient;
     public final Host host;
-    public HostIdUsageMap response;
 
     public HostThread(Host host) {
         stingrayUsageClient = new StingrayUsageClientImpl();
@@ -26,17 +25,11 @@ public class HostThread implements Callable {
         try {
             return new HostIdUsageMap(host.getId(), stingrayUsageClient.getHostUsage(host));
         } catch (Exception e) {
-            String retString = String.format("Request for host %s usage from SNMP server failed.", host.getName());
-            LOG.error(retString, e);
+            String retString = String.format("Warning! Request for host %s usage from SNMP server failed.", host.getName());
+            LOG.warn(retString, e);
         }
+
         return new HostIdUsageMap(host.getId(), new HashMap<Integer, SnmpUsage>());
     }
 
-    public HostIdUsageMap getResponse() {
-        return response;
-    }
-
-    public void setResponse(HostIdUsageMap response) {
-        this.response = response;
-    }   
 }

@@ -2,7 +2,7 @@ package org.openstack.atlas.usage.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.jobs.Job;
+import org.openstack.atlas.jobs.AbstractJob;
 import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Required;
 import java.util.Calendar;
 import java.util.List;
 
-public class AccountUsagePoller extends Job implements StatefulJob {
+public class AccountUsagePoller extends AbstractJob implements StatefulJob {
     private final Log LOG = LogFactory.getLog(AccountUsagePoller.class);
     private LoadBalancerRepository loadBalancerRepository;
     private AccountUsageRepository accountUsageRepository;
@@ -37,11 +37,6 @@ public class AccountUsagePoller extends Job implements StatefulJob {
     @Required
     public void setVirtualIpRepository(VirtualIpRepository virtualIpRepository) {
         this.virtualIpRepository = virtualIpRepository;
-    }
-
-    @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        startPoller();
     }
 
     private void startPoller() {
@@ -76,5 +71,35 @@ public class AccountUsagePoller extends Job implements StatefulJob {
         usage.setNumServicenetVips(virtualIpRepository.getNumUniqueVipsForAccount(accountId, VirtualIpType.SERVICENET));
         usage.setStartTime(Calendar.getInstance());
         accountUsageRepository.save(usage);
+    }
+
+    @Override
+    public Log getLogger() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public JobName getJobName() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void run() throws Exception {
+        startPoller();
+    }
+
+    @Override
+    public void cleanup() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

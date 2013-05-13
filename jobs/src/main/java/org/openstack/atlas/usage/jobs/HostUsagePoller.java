@@ -5,7 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
-import org.openstack.atlas.jobs.Job;
+import org.openstack.atlas.jobs.AbstractJob;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
@@ -18,13 +18,12 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.net.ConnectException;
 import java.util.Calendar;
 import java.util.List;
 
-public class HostUsagePoller extends Job implements StatefulJob {
+public class HostUsagePoller extends AbstractJob implements StatefulJob {
     private final Log LOG = LogFactory.getLog(HostUsagePoller.class);
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
     private HostRepository hostRepository;
@@ -43,11 +42,6 @@ public class HostUsagePoller extends Job implements StatefulJob {
     @Required
     public void setHostUsageRepository(HostUsageRepository hostUsageRepository) {
         this.hostUsageRepository = hostUsageRepository;
-    }
-
-    @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        startPoller();
     }
 
     private void startPoller() {
@@ -108,5 +102,35 @@ public class HostUsagePoller extends Job implements StatefulJob {
         hostUsage.setBandwidthBytesOut(hostBytesOut);
         hostUsage.setSnapshotTime(pollTime);
         hostUsageRepository.save(hostUsage);
+    }
+
+    @Override
+    public Log getLogger() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public JobName getJobName() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void run() throws Exception {
+        startPoller();
+    }
+
+    @Override
+    public void cleanup() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.events.entities.Alert;
-import org.openstack.atlas.service.domain.events.repository.AlertRepository;
 import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository;
 import org.openstack.atlas.service.domain.services.helpers.AlertHelper;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
@@ -15,7 +14,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import java.util.Calendar;
 
-public class EventsDeletionJob extends Job {
+public class EventsDeletionJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(EventsDeletionJob.class);
     LoadBalancerEventRepository loadBalancerEventRepository;
 
@@ -25,7 +24,22 @@ public class EventsDeletionJob extends Job {
     }
 
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public Log getLogger() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public JobName getJobName() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void run() throws Exception {
         Calendar startTime = Calendar.getInstance();
         LOG.info(String.format("Atom events deletion job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
         jobStateService.updateJobState(JobName.ATOM_EVENTS_DELETION_JOB, JobStateVal.IN_PROGRESS);
@@ -90,5 +104,10 @@ public class EventsDeletionJob extends Job {
         Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
         jobStateService.updateJobState(JobName.ATOM_EVENTS_DELETION_JOB, JobStateVal.FINISHED);
         LOG.info(String.format("Atom events deletion job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
+    }
+
+    @Override
+    public void cleanup() {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

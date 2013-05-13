@@ -13,6 +13,7 @@ import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ip.IPv6Cidr;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -20,9 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Service
 public class BlackListServiceImpl extends BaseService implements BlackListService {
-
-    final Log LOG = LogFactory.getLog(BlackListServiceImpl.class);
+    private final Log LOG = LogFactory.getLog(BlackListServiceImpl.class);
 
     @Override
     @Transactional

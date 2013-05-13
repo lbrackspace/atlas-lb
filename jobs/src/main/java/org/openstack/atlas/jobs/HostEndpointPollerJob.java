@@ -24,7 +24,7 @@ import java.net.MalformedURLException;
 import java.util.Calendar;
 import java.util.List;
 
-public class HostEndpointPollerJob extends Job implements StatefulJob {
+public class HostEndpointPollerJob extends AbstractJob implements StatefulJob {
     private final Log LOG = LogFactory.getLog(HostEndpointPollerJob.class);
     private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
@@ -46,9 +46,31 @@ public class HostEndpointPollerJob extends Job implements StatefulJob {
         this.hostRepository = hostRepository;
     }
 
+    //TODO: refactor to use service/null adapter
+    public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException {
+        Cluster cluster = host.getCluster();
+        List<String> failoverHosts = hostRepository.getFailoverHostNames(cluster.getId());
+        return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, null);
+    }
+
+    @Override
+    public Log getLogger() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public JobName getJobName() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     //TODO: refactor to use the async service...
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public void run() throws Exception {
         Calendar startTime = Calendar.getInstance();
         LOG.info(String.format("Host endpoint poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
         jobStateService.updateJobState(JobName.HOST_ENDPOINT_POLLER, JobStateVal.IN_PROGRESS);
@@ -83,10 +105,13 @@ public class HostEndpointPollerJob extends Job implements StatefulJob {
         LOG.info(String.format("Host endpoint poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 
-    //TODO: refactor to use service/null adapter
-    public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException {
-        Cluster cluster = host.getCluster();
-        List<String> failoverHosts = hostRepository.getFailoverHostNames(cluster.getId());
-        return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, null);
+    @Override
+    public void cleanup() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

@@ -288,8 +288,8 @@ public class LoadBalancerServiceImplTest {
             loadBalancerStatusHistoryService.setLoadBalancerStatusHistoryRepository(loadBalancerStatusHistoryRepository);
 
             hostService.setClusterRepository(clusterRepository);
-            lbService.setHostService(hostService);
-            lbService.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
+//            lbService.setHostService(hostService);
+//            lbService.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
             lbService.setVirtualIpRepository(virtualIpRepository);
 
             lb.setStatus(LoadBalancerStatus.ACTIVE);

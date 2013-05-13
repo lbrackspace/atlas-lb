@@ -7,16 +7,24 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostU
 import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 import org.openstack.atlas.usagerefactor.helpers.UsageProcessorResult;
 import org.openstack.atlas.util.common.MapUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class UsageProcessor {
+    private final Log LOG = LogFactory.getLog(UsageProcessor.class);
 
-    final static Log LOG = LogFactory.getLog(UsageProcessor.class);
+    @Autowired
+    private UsagePollerHelper usagePollerHelper;
 
-    public static UsageProcessorResult mergeRecords(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages,
+    public UsageProcessor() {
+    }
+
+    public UsageProcessorResult mergeRecords(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages,
                                                  Map<Integer, Map<Integer, SnmpUsage>> currentUsages,
                                                  Calendar pollTime)
     {
@@ -35,7 +43,6 @@ public class UsageProcessor {
          *      d. Delete records from LB Host Usage table that have an ID less than the markerID
          */
         LOG.info("Merging load balancer host usage records...");
-        UsagePollerHelper usagePollerHelper = new UsagePollerHelper();
 
         //Process events that have come in between now and last poller run
         List<LoadBalancerMergedHostUsage> mergedHostUsages = usagePollerHelper.processExistingEvents(existingUsages);

@@ -6,6 +6,7 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage_;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -20,6 +21,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
+@Repository
 @Transactional(value = "usage")
 public class LoadBalancerUsageRepository {
 

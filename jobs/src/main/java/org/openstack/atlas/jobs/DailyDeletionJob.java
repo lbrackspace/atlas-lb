@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import java.util.Calendar;
 
-public class DailyDeletionJob extends Job {
+public class DailyDeletionJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(DailyDeletionJob.class);
     private LoadBalancerUsageRepository hourlyUsageRepository;
     private HostUsageRepository hostUsageRepository;
@@ -30,8 +30,35 @@ public class DailyDeletionJob extends Job {
         this.hostUsageRepository = hostUsageRepository;
     }
 
+    private void deleteLoadBalancerUsageRecords() {
+        LOG.info("Deleting old loadbalancer usage records...");
+        hourlyUsageRepository.deleteOldRecords();
+        LOG.info("Completed deleting old loadbalancer usage records.");
+    }
+
+    private void deleteHostUsageRecords() {
+        LOG.info("Deleting old host usage records...");
+        hostUsageRepository.deleteOldRecords();
+        LOG.info("Completed deleting old host usage records.");
+    }
+
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public Log getLogger() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public JobName getJobName() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void run() throws Exception {
         Calendar startTime = Calendar.getInstance();
         LOG.info(String.format("Daily deletion job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
         jobStateService.updateJobState(JobName.DAILY_DELETION_JOB, JobStateVal.IN_PROGRESS);
@@ -53,15 +80,8 @@ public class DailyDeletionJob extends Job {
         LOG.info(String.format("Daily deletion job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 
-    private void deleteLoadBalancerUsageRecords() {
-        LOG.info("Deleting old loadbalancer usage records...");
-        hourlyUsageRepository.deleteOldRecords();
-        LOG.info("Completed deleting old loadbalancer usage records.");
-    }
-
-    private void deleteHostUsageRecords() {
-        LOG.info("Deleting old host usage records...");
-        hostUsageRepository.deleteOldRecords();
-        LOG.info("Completed deleting old host usage records.");
+    @Override
+    public void cleanup() {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }
