@@ -18,12 +18,12 @@ public class SnmpVSCollector implements Callable<SnmpUsage> {
 
     public StingrayUsageClient stingrayUsageClient;
     public Host host;
-    public LoadBalancer lb;
+    public LoadBalancer loadbalancer;
 
     public SnmpVSCollector(Host host, LoadBalancer lb) {
         stingrayUsageClient = new StingrayUsageClientImpl();
         this.host = host;
-        this.lb = lb;
+        this.loadbalancer = lb;
     }
 
     public SnmpVSCollector() {
@@ -33,7 +33,7 @@ public class SnmpVSCollector implements Callable<SnmpUsage> {
     public SnmpUsage call() throws UsageEventCollectionException {
         SnmpUsage snmpusage;
         try {
-            snmpusage = stingrayUsageClient.getVirtualServerUsage(host, lb);
+            snmpusage = stingrayUsageClient.getVirtualServerUsage(host, loadbalancer);
         } catch (StingraySnmpObjectNotFoundException ex) {
             //Set host ID so we can still process the usage event for this host...
             snmpusage = new SnmpUsage();
@@ -71,11 +71,11 @@ public class SnmpVSCollector implements Callable<SnmpUsage> {
         this.host = host;
     }
 
-    public LoadBalancer getLb() {
-        return lb;
+    public LoadBalancer getLoadbalancer() {
+        return loadbalancer;
     }
 
-    public void setLb(LoadBalancer lb) {
-        this.lb = lb;
+    public void setLoadbalancer(LoadBalancer loadbalancer) {
+        this.loadbalancer = loadbalancer;
     }
 }

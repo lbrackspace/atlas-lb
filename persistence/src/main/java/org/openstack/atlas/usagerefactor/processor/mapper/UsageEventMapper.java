@@ -46,6 +46,27 @@ public class UsageEventMapper {
         return newUsageEvent;
     }
 
+    public LoadBalancerHostUsage mapPreviousUsageEvent(LoadBalancerHostUsage previousUsage) {
+        LoadBalancerHostUsage newUsageEvent = new LoadBalancerHostUsage();
+
+        newUsageEvent.setAccountId(previousUsage.getAccountId());
+        newUsageEvent.setLoadbalancerId(previousUsage.getLoadbalancerId());
+        newUsageEvent.setHostId(previousUsage.getHostId());
+        newUsageEvent.setPollTime(pollTime);
+        newUsageEvent.setEventType(usageEvent);
+        newUsageEvent.setOutgoingTransfer(previousUsage.getOutgoingTransfer());
+        newUsageEvent.setOutgoingTransferSsl(previousUsage.getOutgoingTransferSsl());
+        newUsageEvent.setIncomingTransfer(previousUsage.getIncomingTransfer());
+        newUsageEvent.setIncomingTransferSsl(previousUsage.getIncomingTransferSsl());
+        newUsageEvent.setConcurrentConnections(previousUsage.getConcurrentConnections());
+        newUsageEvent.setConcurrentConnectionsSsl(previousUsage.getConcurrentConnectionsSsl());
+        newUsageEvent.setNumVips(loadBalancer.getLoadBalancerJoinVipSet().size());
+
+        int tags = calculateTags();
+        newUsageEvent.setTagsBitmask(tags);
+        return newUsageEvent;
+    }
+
     public int calculateTags() {
         BitTags tags = new BitTags(0);
 

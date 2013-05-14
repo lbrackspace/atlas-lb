@@ -58,15 +58,16 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         for (SnmpUsage usage : usages) {
             LoadBalancerHostUsage usageRecordToProcess;
             LoadBalancerHostUsage prevUsageRecord = null;
+            boolean isServicenetLb = loadBalancerRepository.isServicenetLoadBalancer(loadBalancer.getId());
 
             //This usage record failed to collect from SNMP, handle accordingly...
             if (usage.getHostId() != 0 && usage.getLoadbalancerId() == 0) {
-                //Gather previous usage record
-                prevUsageRecord = usageRefactorService.getLastRecordForLbIdAndHostId(loadBalancer.getId(), usage.getHostId());
-                if (prevUsageRecord != null) {
-                    //Set event and pollTime for no previous record in DB
-                    prevUsageRecord.setEventType(usageEvent);
-                    prevUsageRecord.setPollTime(pollTime);
+                LoadBalancerHostUsage recentRecord;
+                recentRecord = usageRefactorService.getLastRecordForLbIdAndHostId(loadBalancer.getId(), usage.getHostId());
+                if (recentRecord != null) {
+                    //Prep for new record...
+                    prevUsageRecord = new UsageEventMapper(loadBalancer, isServicenetLb, null, usageEvent, pollTime)
+                            .mapPreviousUsageEvent(recentRecord);
                 }
             }
 
@@ -74,8 +75,7 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
             if (prevUsageRecord != null) {
                 usageRecordToProcess = prevUsageRecord;
             } else {
-                usageRecordToProcess = new UsageEventMapper(loadBalancer,
-                        loadBalancerRepository.isServicenetLoadBalancer(loadBalancer.getId()), usage, usageEvent, pollTime)
+                usageRecordToProcess = new UsageEventMapper(loadBalancer,isServicenetLb, usage, usageEvent, pollTime)
                         .mapSnmpUsageToUsageEvent();
             }
             usageRefactorService.createUsageEvent(usageRecordToProcess);
@@ -98,7 +98,7 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
     }
 
     @Override
-    public AccountUsage createAccountUsageEntry (LoadBalancer loadBalancer, Calendar eventTime) {
+    public AccountUsage createAccountUsageEntry(LoadBalancer loadBalancer, Calendar eventTime) {
         Integer accountId = loadBalancer.getAccountId();
         AccountUsage usage = new AccountUsage();
         usage.setAccountId(accountId);

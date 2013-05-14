@@ -24,12 +24,6 @@ public class HostUsageRefactorRepository {
     private EntityManager entityManager;
 
     public void create(LoadBalancerHostUsage usageRecord) {
-//        final StringBuilder sb = new StringBuilder();
-//        sb.append("INSERT INTO lb_usage_event (account_id, loadbalancer_id, host_id, bandwidth_out," +
-//                "bandwidth_in, bandwidth_out_ssl, bandwidth_in_ssl, concurrent_connections," +
-//                "concurrent_connections_ssl, tags_bitmask, num_vips, poll_time) VALUES");
-//        String queryString = generateFormattedValues(usageRecord);
-//        entityManager.createNativeQuery(queryString);
         entityManager.persist(usageRecord);
     }
 
@@ -97,7 +91,7 @@ public class HostUsageRefactorRepository {
     }
 
     public LoadBalancerHostUsage getMostRecentUsageRecordForLbIdAndHostId(int lbId, int hostId) {
-        Query query = entityManager.createQuery("SELECT h FROM LoadBalancerHostUsage h WHERE h.loadbalancerId = :lbId AND h.hostId = :hostId")
+        Query query = entityManager.createQuery("SELECT h FROM LoadBalancerHostUsage h WHERE h.loadbalancerId = :lbId AND h.hostId = :hostId ORDER BY h.id DESC")
                 .setParameter("lbId", lbId)
                 .setParameter("hostId", hostId);
         List usages = query.getResultList();
