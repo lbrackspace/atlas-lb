@@ -12,39 +12,24 @@ import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.usage.BatchAction;
 import org.openstack.atlas.usage.ExecutionUtilities;
 import org.openstack.atlas.usage.thread.UsageThread;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+@Component
 public class UsageAtomHopperExecution extends AbstractAtomHopperUsageExecution {
     private final Log LOG = LogFactory.getLog(UsageAtomHopperExecution.class);
+
+    @Autowired
     private AlertRepository alertRepository;
+    @Autowired
     private UsageRepository usageRepository;
+    @Autowired
     private LoadBalancerRepository loadBalancerRepository;
+    @Autowired
     private LoadBalancerEventRepository loadBalancerEventRepository;
-
-    public UsageAtomHopperExecution() {
-    }
-
-    @Required
-    public void setUsageRepository(UsageRepository usageRepository) {
-        this.usageRepository = usageRepository;
-    }
-
-    @Required
-    public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
-        this.loadBalancerRepository = loadBalancerRepository;
-    }
-
-    @Required
-    public void setLoadBalancerEventRepository(LoadBalancerEventRepository loadBalancerEventRepository) {
-        this.loadBalancerEventRepository = loadBalancerEventRepository;
-    }
-
-    @Required
-    public void setAlertRepository(AlertRepository alertRepository) {
-        this.alertRepository = alertRepository;
-    }
 
     @Override
     public JobName getJobName() {

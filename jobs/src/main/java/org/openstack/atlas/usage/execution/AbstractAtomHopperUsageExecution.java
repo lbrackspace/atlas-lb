@@ -20,17 +20,18 @@ import org.openstack.atlas.usage.thread.service.ThreadPoolMonitorService;
 import org.openstack.atlas.usage.thread.util.ThreadServiceUtil;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.util.Calendar;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public abstract class AbstractAtomHopperUsageExecution implements JobInterface {
+    private final Log LOG = LogFactory.getLog(UsageAtomHopperExecution.class);
 
     public abstract JobName getJobName();
     public abstract void pushUsageToAtomHopper() throws Exception;
 
-    private final Log LOG = LogFactory.getLog(UsageAtomHopperExecution.class);
     private final Configuration configuration = new AtomHopperConfiguration();
     protected ThreadPoolExecutor poolExecutor;
     protected AtomHopperClient ahuslClient;
@@ -38,24 +39,12 @@ public abstract class AbstractAtomHopperUsageExecution implements JobInterface {
 
     private final static int QUERY_SIZE = 1000;
 
+    @Autowired
     private JobStateService jobStateService;
+    @Autowired
     private ThreadPoolMonitorService threadPoolMonitorService;
+    @Autowired
     private ThreadPoolExecutorService threadPoolExecutorService;
-
-    @Required
-    public void setJobStateService(JobStateService jobStateService) {
-        this.jobStateService = jobStateService;
-    }
-
-    @Required
-    public void setThreadPoolMonitorService(ThreadPoolMonitorService threadPoolMonitorService) {
-        this.threadPoolMonitorService = threadPoolMonitorService;
-    }
-
-    @Required
-    public void setThreadPoolExecutorService(ThreadPoolExecutorService threadPoolExecutorService) {
-        this.threadPoolExecutorService = threadPoolExecutorService;
-    }
 
     protected final int NUM_ATTEMPTS = Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_num_attempts));
     protected final int BATCH_SIZE = Integer.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_pool_task_count));

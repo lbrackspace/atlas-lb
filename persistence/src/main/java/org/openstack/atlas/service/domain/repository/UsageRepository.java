@@ -11,10 +11,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -39,7 +41,7 @@ public class UsageRepository {
                 .setParameter("loadbalancerIds", loadBalancerIds);
 
         List<Usage> usage = (List<Usage>) query.getResultList();
-        if (usage == null) return new ArrayList<Usage>();
+        if (usage == null || usage.isEmpty()) return new ArrayList<Usage>();
 
         return usage;
     }
@@ -47,27 +49,20 @@ public class UsageRepository {
     public Usage getMostRecentUsageForLoadBalancer(Integer loadBalancerId) throws EntityNotFoundException {
         if (loadBalancerId == null) throw new EntityNotFoundException("Lb id passed in is null.");
 
-        LoadBalancer lb = new LoadBalancer();
-        lb.setId(loadBalancerId);
+        Query query = entityManager.createNativeQuery("SELECT u.id, u.loadbalancer_id, u.avg_concurrent_conns, u.bandwidth_in, u.bandwidth_out, u.avg_concurrent_conns_ssl, u.bandwidth_in_ssl, u.bandwidth_out_ssl, u.start_time, u.end_time, u.num_polls, u.num_vips, u.tags_bitmask, u.event_type, u.account_id" +
+                " FROM lb_usage u WHERE u.loadbalancer_id = :loadBalancerId" +
+                " ORDER BY u.start_time DESC LIMIT 1")
+                .setParameter("loadBalancerId", loadBalancerId);
 
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Usage> criteria = builder.createQuery(Usage.class);
-        Root<Usage> usageRoot = criteria.from(Usage.class);
+        final List<Object[]> resultList = query.getResultList();
 
-        Predicate hasLbId = builder.equal(usageRoot.get(Usage_.loadbalancer), lb);
-        Order descStartTime = builder.desc(usageRoot.get(Usage_.startTime));
-
-        criteria.select(usageRoot);
-        criteria.where(hasLbId);
-        criteria.orderBy(descStartTime);
-
-        try {
-            return entityManager.createQuery(criteria).getSingleResult();
-        } catch (NoResultException e) {
+        if (resultList == null || resultList.isEmpty()) {
             String message = "No recent usage record found.";
             LOG.debug(message);
             throw new EntityNotFoundException(message);
         }
+
+        return rowToUsage(resultList.get(0));
     }
 
     public void batchCreate(List<Usage> usages) {
@@ -320,34 +315,39 @@ public class UsageRepository {
         List<Usage> usages = new ArrayList<Usage>();
 
         for (Object[] row : resultList) {
-            Long startTimeMillis = ((Timestamp) row[8]).getTime();
-            Long endTimeMillis = ((Timestamp) row[9]).getTime();
-            Calendar startTimeCal = new GregorianCalendar();
-            Calendar endTimeCal = new GregorianCalendar();
-            startTimeCal.setTimeInMillis(startTimeMillis);
-            endTimeCal.setTimeInMillis(endTimeMillis);
-
-            Usage usageItem = new Usage();
-            usageItem.setId((Integer) row[0]);
-            LoadBalancer lb = new LoadBalancer();
-            lb.setId((Integer) row[1]);
-            usageItem.setLoadbalancer(lb);
-            usageItem.setAverageConcurrentConnections((Double) row[2]);
-            usageItem.setIncomingTransfer(((BigInteger) row[3]).longValue());
-            usageItem.setOutgoingTransfer(((BigInteger) row[4]).longValue());
-            usageItem.setAverageConcurrentConnectionsSsl((Double) row[5]);
-            usageItem.setIncomingTransferSsl(((BigInteger) row[6]).longValue());
-            usageItem.setOutgoingTransferSsl(((BigInteger) row[7]).longValue());
-            usageItem.setStartTime(startTimeCal);
-            usageItem.setEndTime(endTimeCal);
-            usageItem.setNumberOfPolls((Integer) row[10]);
-            usageItem.setNumVips((Integer) row[11]);
-            usageItem.setTags((Integer) row[12]);
-            usageItem.setEventType((String) row[13]);
-            usageItem.setAccountId((Integer) row[14]);
+            Usage usageItem = rowToUsage(row);
             usages.add(usageItem);
         }
 
         return usages;
+    }
+
+    private Usage rowToUsage(Object[] row) {
+        Long startTimeMillis = ((Timestamp) row[8]).getTime();
+        Long endTimeMillis = ((Timestamp) row[9]).getTime();
+        Calendar startTimeCal = new GregorianCalendar();
+        Calendar endTimeCal = new GregorianCalendar();
+        startTimeCal.setTimeInMillis(startTimeMillis);
+        endTimeCal.setTimeInMillis(endTimeMillis);
+
+        Usage usageItem = new Usage();
+        usageItem.setId((Integer) row[0]);
+        LoadBalancer lb = new LoadBalancer();
+        lb.setId((Integer) row[1]);
+        usageItem.setLoadbalancer(lb);
+        usageItem.setAverageConcurrentConnections((Double) row[2]);
+        usageItem.setIncomingTransfer(((BigInteger) row[3]).longValue());
+        usageItem.setOutgoingTransfer(((BigInteger) row[4]).longValue());
+        usageItem.setAverageConcurrentConnectionsSsl((Double) row[5]);
+        usageItem.setIncomingTransferSsl(((BigInteger) row[6]).longValue());
+        usageItem.setOutgoingTransferSsl(((BigInteger) row[7]).longValue());
+        usageItem.setStartTime(startTimeCal);
+        usageItem.setEndTime(endTimeCal);
+        usageItem.setNumberOfPolls((Integer) row[10]);
+        usageItem.setNumVips((Integer) row[11]);
+        usageItem.setTags((Integer) row[12]);
+        usageItem.setEventType((String) row[13]);
+        usageItem.setAccountId((Integer) row[14]);
+        return usageItem;
     }
 }

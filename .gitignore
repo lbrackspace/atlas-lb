@@ -13,6 +13,7 @@ classes/
 */target/*
 */*/target
 */*/*/target/*
+atlas-parent.ids
 
 ## generic files to ignore
 *~

@@ -84,7 +84,7 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
         boolean rollup = false;
         final JobState lbUsagePollerJobState = jobStateService.getByName(JobName.LB_USAGE_POLLER);
         Calendar thisHour = Calendar.getInstance();
-        CalendarUtils.stripOutMinsAndSecs(thisHour);
+        thisHour = CalendarUtils.stripOutMinsAndSecs(thisHour);
 
         if (lbUsagePollerJobState.getEndTime().after(thisHour) && !lbUsagePollerJobState.getState().equals(JobStateVal.FAILED)) {
             rollup = true;
@@ -126,6 +126,7 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
         }
     }
 
+    // TODO: Write test methods
     private Calendar getHourToRollup() throws ParseException {
         Calendar hourToRollup;
 

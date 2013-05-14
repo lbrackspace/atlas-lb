@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Calendar;
 
 public abstract class AbstractJob implements JobInterface {
+
     @Autowired
     protected JobStateService jobStateService;
     @Autowired

@@ -12,38 +12,25 @@ import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.usage.BatchAction;
 import org.openstack.atlas.usage.ExecutionUtilities;
 import org.openstack.atlas.usage.thread.UsageThread;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Component
 public class UsageAtomHopperRetryExecution extends AbstractAtomHopperUsageExecution {
     private final Log LOG = LogFactory.getLog(UsageAtomHopperRetryExecution.class);
+
+    @Autowired
     private AlertRepository alertRepository;
+    @Autowired
     private UsageRepository usageRepository;
+    @Autowired
     private LoadBalancerRepository loadBalancerRepository;
+    @Autowired
     private LoadBalancerEventRepository loadBalancerEventRepository;
-
-    @Required
-    public void setUsageRepository(UsageRepository usageRepository) {
-        this.usageRepository = usageRepository;
-    }
-
-    @Required
-    public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
-        this.loadBalancerRepository = loadBalancerRepository;
-    }
-
-    @Required
-    public void setLoadBalancerEventRepository(LoadBalancerEventRepository loadBalancerEventRepository) {
-        this.loadBalancerEventRepository = loadBalancerEventRepository;
-    }
-
-    @Required
-    public void setAlertRepository(AlertRepository alertRepository) {
-        this.alertRepository = alertRepository;
-    }
 
     @Override
     public JobName getJobName() {
@@ -57,7 +44,7 @@ public class UsageAtomHopperRetryExecution extends AbstractAtomHopperUsageExecut
 
         if (!allUsages.isEmpty()) {
             LOG.info(String.format("Processing %d records marked for retry", allUsages.size()));
-            BatchAction<Usage> batchAction = new BatchAction<Usage>(){
+            BatchAction<Usage> batchAction = new BatchAction<Usage>() {
                 public void execute(Collection<Usage> allUsages) throws Exception {
                     executeTasks(allUsages);
                 }

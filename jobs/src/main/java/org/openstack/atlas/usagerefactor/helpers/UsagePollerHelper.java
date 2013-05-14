@@ -141,8 +141,9 @@ public class UsagePollerHelper {
                             tagsBitmask = tags.getBitTags();
                             numVips = virtualIpRepository.getNumIpv4VipsForLoadBalancer(loadbalancer).intValue();
                         } catch (EntityNotFoundException lbE) {
-                            //What to do now??
+                            //What to do now?? Continue?????????
                             LOG.info("Unable to get find numVips, tagsBitmask, or accountId for a load balancer: " + lbE.getMessage());
+                            continue;
                         }
                     }
                 }
