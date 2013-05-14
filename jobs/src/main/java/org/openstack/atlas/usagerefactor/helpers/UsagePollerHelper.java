@@ -122,6 +122,8 @@ public class UsagePollerHelper {
                 } catch(EntityNotFoundException mergedE) {
                     //There was not a previous record in lb_merged_host_usage table
                     //Attempt to grab from loadbalancing.lb_usage table
+                    LOG.info("Loadbalancer " + loadbalancerId + " has no previous usage entry in lb_merged_host_usage table." +
+                            " Attempting to pull from loadbalancing.lb_usage...");
                     try {
                         Usage mostRecentUsage = usageRepository.getMostRecentUsageForLoadBalancer(loadbalancerId);
                         tagsBitmask = mostRecentUsage.getTags();
@@ -130,6 +132,8 @@ public class UsagePollerHelper {
                     } catch(EntityNotFoundException usageE) {
                         //There was not a previous record in loadbalancing.lb_usaget able
                         //Grab what is possible from ssltermination and virtualip tables
+                        LOG.info("Loadbalancer " + loadbalancerId + " has no previous usage entry loadbalancing.lb_usage table." +
+                            " Attempting to pull from loadbalancing.loadbalancer table...");
                         try {
                             LoadBalancer loadbalancer = loadBalancerService.get(loadbalancerId);
                             accountId = loadbalancer.getAccountId();
@@ -142,7 +146,8 @@ public class UsagePollerHelper {
                             numVips = virtualIpRepository.getNumIpv4VipsForLoadBalancer(loadbalancer).intValue();
                         } catch (EntityNotFoundException lbE) {
                             //What to do now?? Continue?????????
-                            LOG.info("Unable to get find numVips, tagsBitmask, or accountId for a load balancer: " + lbE.getMessage());
+                            LOG.info("Loadbalancer " + loadbalancerId + " has usage returned by SNMP but there are no" +
+                                    " entries in any table for that loadbalancer. " + lbE.getMessage());
                             continue;
                         }
                     }

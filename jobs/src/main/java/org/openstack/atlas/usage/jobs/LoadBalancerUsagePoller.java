@@ -68,7 +68,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         usageRefactorService.batchCreateLoadBalancerMergedHostUsages(result.getMergedUsages());
         LOG.info("Completed insertion of " + result.getMergedUsages().size() + " new records into lb_merged_host_usage table.");
         usageRefactorService.batchCreateLoadBalancerHostUsages(result.getLbHostUsages());
-        LOG.info("Completed insertion of " + result.getLbHostUsages() + " new records into lb_host_usage table.");
+        LOG.info("Completed insertion of " + result.getLbHostUsages().size() + " new records into lb_host_usage table.");
         usageRefactorService.deleteOldLoadBalancerHostUsages(pollTime);
         LOG.info("Completed deletion of records from lb_host_usage table prior to poll time: " + pollTime.getTime().toString());
     }
@@ -94,6 +94,12 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         }
 
         return mergedHostsUsage;
+    }
+
+    private void removeInaccessibleHostsFromList(List<Host> hostList) {
+        for(Host host : hostList) {
+
+        }
     }
 
 }
