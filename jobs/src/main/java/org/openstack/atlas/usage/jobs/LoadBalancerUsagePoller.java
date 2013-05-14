@@ -2,7 +2,10 @@ package org.openstack.atlas.usage.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
+import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.jobs.AbstractJob;
+import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.services.HostService;
@@ -13,11 +16,15 @@ import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.UsageProcessor;
 import org.openstack.atlas.usagerefactor.helpers.HostIdUsageMap;
 import org.openstack.atlas.usagerefactor.helpers.UsageProcessorResult;
+import org.openstack.atlas.util.crypto.CryptoUtil;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.net.MalformedURLException;
+import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -34,6 +41,8 @@ public class LoadBalancerUsagePoller extends AbstractJob {
     private HostService hostService;
     @Autowired
     private UsageProcessor usageProcessor;
+    @Autowired
+    private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
 
     @Override
     public Log getLogger() {
@@ -80,7 +89,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
     private Map<Integer, Map<Integer, SnmpUsage>> getCurrentData() throws Exception {
         LOG.info("Collecting Stingray data from each host...");
         Map<Integer, Map<Integer, SnmpUsage>> mergedHostsUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
-        List<Host> hostList = hostService.getAllHosts();
+        List<Host> hostList = getAccessibleHosts();
         List<Callable<HostIdUsageMap>> callables = new ArrayList<Callable<HostIdUsageMap>>();
 
         ExecutorService executor = Executors.newFixedThreadPool(hostList.size());
@@ -96,10 +105,25 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         return mergedHostsUsage;
     }
 
-    private void removeInaccessibleHostsFromList(List<Host> hostList) {
+    private List<Host> getAccessibleHosts() {
+        List<Host> hostList = hostService.getAllHosts();
+        List<Host> accessibleHosts = new ArrayList<Host>();
         for(Host host : hostList) {
+            try{
+                if(reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host))) {
+                    accessibleHosts.add(host);
+                }
+            }catch(Exception e) {
 
+            }
         }
+        return accessibleHosts;
+    }
+
+    private LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException {
+        Cluster cluster = host.getCluster();
+        List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
+        return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, null);
     }
 
 }

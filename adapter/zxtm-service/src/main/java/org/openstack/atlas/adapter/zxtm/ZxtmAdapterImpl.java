@@ -19,12 +19,14 @@ import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 import org.openstack.atlas.util.converters.StringConverter;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
+import org.springframework.stereotype.Component;
 
 import java.rmi.RemoteException;
 import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.NONE;
 
+@Component
 public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     public static Log LOG = LogFactory.getLog(ZxtmAdapterImpl.class.getName());
