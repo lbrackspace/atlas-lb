@@ -80,7 +80,7 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
     public void cleanup() {
     }
 
-    private boolean shouldRollup() {
+    protected boolean shouldRollup() {
         boolean rollup = false;
         final JobState lbUsagePollerJobState = jobStateService.getByName(JobName.LB_USAGE_POLLER);
         Calendar thisHour = Calendar.getInstance();
@@ -100,7 +100,8 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
 
         while (hourToRollup == null || hourToRollup.before(hourToStop)) {
             try {
-                hourToRollup = getHourToRollup();
+                hourToRollup = getHourToRollup(hourToStop);
+                if(hourToRollup == null) return;
                 rollupMarker = CalendarUtils.copy(hourToRollup);
                 rollupMarker.add(Calendar.HOUR, 1);
             } catch (ParseException pe) {
@@ -126,28 +127,32 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
         }
     }
 
-    // TODO: Write test methods
-    private Calendar getHourToRollup() throws ParseException {
+    protected Calendar getHourToStop() {
+        Calendar hourToStop = Calendar.getInstance();
+        hourToStop = CalendarUtils.stripOutMinsAndSecs(hourToStop);
+        return hourToStop;
+    }
+
+    protected Calendar getHourToRollup(Calendar hourToStop) throws ParseException {
         Calendar hourToRollup;
 
         try {
             JobState jobState = jobStateService.getByName(JobName.LB_USAGE_ROLLUP);
-            String lastSuccessfulHourProcessed = jobState.getInputPath();
-            hourToRollup = CalendarUtils.stringToCalendar(lastSuccessfulHourProcessed);
+            String lastHourProcessedString = jobState.getInputPath();
+            hourToRollup = CalendarUtils.stringToCalendar(lastHourProcessedString);
             hourToRollup.add(Calendar.HOUR, 1);
+            hourToRollup = CalendarUtils.stripOutMinsAndSecs(hourToRollup);
+
+            if (hourToRollup.compareTo(hourToStop) >= 0) {
+                return null;
+            }
         } catch (NullPointerException npe) {
             hourToRollup = Calendar.getInstance();
             hourToRollup.add(Calendar.HOUR, -1);
+            hourToRollup = CalendarUtils.stripOutMinsAndSecs(hourToRollup);
         }
 
-        hourToRollup = CalendarUtils.stripOutMinsAndSecs(hourToRollup);
         return hourToRollup;
-    }
-
-    private Calendar getHourToStop() {
-        Calendar hourToStop = Calendar.getInstance();
-        hourToStop = CalendarUtils.stripOutMinsAndSecs(hourToStop);
-        return hourToStop;
     }
 
 }
