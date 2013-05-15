@@ -143,10 +143,6 @@ public class UpdateSslTerminationListener extends BaseListener {
 //            LOG.warn("Couldn't retrieve load balancer concurrent connections counter.");
 //        }
 
-        // Update load balancer status in DB
-        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
-
-        addAtomEntriesForSslTermination(dbLoadBalancer, dbLoadBalancer.getSslTermination());
 
         // Notify usage processor
         try {
@@ -168,8 +164,14 @@ public class UpdateSslTerminationListener extends BaseListener {
             }
             LOG.info(String.format("Finished processing usage event for load balancer: %s", dbLoadBalancer.getId()));
         } catch (UsageEventCollectionException uex) {
-            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
         }
+
+        // Update load balancer status in DB
+        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+
+        addAtomEntriesForSslTermination(dbLoadBalancer, dbLoadBalancer.getSslTermination());
 
         LOG.info(String.format("Updated load balancer '%d' ssl termination successfully for loadbalancer: ", dbLoadBalancer.getId()));
     }

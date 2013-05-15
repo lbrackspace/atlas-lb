@@ -88,9 +88,10 @@ public class DeleteSslTerminationListener extends BaseListener {
             // Notify usage processor with a usage event
 //            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
             try {
-                usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);
+                usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF);
             } catch (UsageEventCollectionException uex) {
-                LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
+                LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                        ":: Exception: %s", dbLoadBalancer.getId(), uex));
             }
             return;
         }
@@ -111,8 +112,8 @@ public class DeleteSslTerminationListener extends BaseListener {
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF);
         } catch (UsageEventCollectionException uex) {
-            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
-        }
+LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                        ":: Exception: %s", dbLoadBalancer.getId(), uex));        }
         LOG.info(String.format("Load balancer ssl termination '%d' successfully deleted.", dbLoadBalancer.getId()));
     }
 

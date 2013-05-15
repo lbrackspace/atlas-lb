@@ -66,8 +66,22 @@ public class CreateLoadBalancerListener extends BaseListener {
 
             // Notify usage processor
 //            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
-            usageEventCollection.processSnmpUsage(null, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+            try {
+                usageEventCollection.processUsageRecord(null, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+            } catch (UsageEventCollectionException uex) {
+                LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                        ":: Exception: %s", dbLoadBalancer.getId(), uex));
+            }
             return;
+        }
+
+        // Notify usage processor
+//        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
+        try {
+            usageEventCollection.processSnmpUsage(null, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+        } catch (UsageEventCollectionException uex) {
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
         }
 
         // Update load balancer in DB
@@ -87,13 +101,6 @@ public class CreateLoadBalancerListener extends BaseListener {
         addAtomEntryForConnectionLimit(queueLb, dbLoadBalancer);
         addAtomEntriesForAccessList(queueLb, dbLoadBalancer);
 
-        // Notify usage processor
-//        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
-        try {
-            usageEventCollection.processSnmpUsage(null, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
-        } catch (UsageEventCollectionException uex) {
-            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
-        }
         LOG.info(String.format("Created load balancer '%d' successfully.", dbLoadBalancer.getId()));
     }
 
