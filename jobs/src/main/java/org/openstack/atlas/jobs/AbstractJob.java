@@ -2,6 +2,7 @@ package org.openstack.atlas.jobs;
 
 import org.apache.commons.logging.Log;
 import org.openstack.atlas.service.domain.entities.JobName;
+import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.events.repository.AlertRepository;
 import org.openstack.atlas.service.domain.services.JobStateService;
@@ -35,7 +36,10 @@ public abstract class AbstractJob implements JobInterface {
         jobStateService.updateJobState(getJobName(), JobStateVal.IN_PROGRESS);
 
         try {
-            run();
+            JobState masterJob = jobStateService.getByName(JobName.THE_ONE_TO_RULE_THEM_ALL);
+            if (masterJob.getState().equals(JobStateVal.GO)) {
+                run();
+            }
         } catch (Exception e) {
             getLogger().error(String.format("%s failed!", getJobName().name()));
             getLogger().error(e.getCause(), e);
