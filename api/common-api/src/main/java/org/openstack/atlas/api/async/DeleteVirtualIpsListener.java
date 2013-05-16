@@ -72,19 +72,21 @@ public class DeleteVirtualIpsListener extends BaseListener {
             return;
         }
 
+        // Notify usage processor
+//        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
+        try {
+            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
+        } catch (UsageEventCollectionException uex) {
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
+        }
+
         // Update load balancer status in DB
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
         // Add atom entry
         sendSuccessToEventResource(dataContainer);
 
-        // Notify usage processor
-//        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
-        try {
-            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
-        } catch (UsageEventCollectionException uex) {
-            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
-        }
         LOG.info(String.format("Delete virtual ip operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }
 

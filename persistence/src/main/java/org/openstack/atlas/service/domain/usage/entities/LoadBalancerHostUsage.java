@@ -57,7 +57,7 @@ public class LoadBalancerHostUsage extends Entity implements Serializable {
 
     public LoadBalancerHostUsage(int accountId, int loadbalancerId, int hostId, long outgoingTransfer,
                                  long incomingTransfer, long outgoingTransferSsl, long incomingTransferSsl,
-                                 int concurrentConnections, int concurrentConnectionsSsl, int numVips,
+                                 long concurrentConnections, long concurrentConnectionsSsl, int numVips,
                                  int tagsBitmask, Calendar pollTime, UsageEvent eventType){
         this.accountId = accountId;
         this.loadbalancerId = loadbalancerId;
@@ -126,7 +126,7 @@ public class LoadBalancerHostUsage extends Entity implements Serializable {
         return concurrentConnections;
     }
 
-    public void setConcurrentConnections(int concurrentConnections) {
+    public void setConcurrentConnections(long concurrentConnections) {
         this.concurrentConnections = concurrentConnections;
     }
 
@@ -134,7 +134,7 @@ public class LoadBalancerHostUsage extends Entity implements Serializable {
         return concurrentConnectionsSsl;
     }
 
-    public void setConcurrentConnectionsSsl(int concurrentConnectionsSsl) {
+    public void setConcurrentConnectionsSsl(long concurrentConnectionsSsl) {
         this.concurrentConnectionsSsl = concurrentConnectionsSsl;
     }
 

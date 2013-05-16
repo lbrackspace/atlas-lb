@@ -86,7 +86,8 @@ public class DeleteLoadBalancerListener extends BaseListener {
             try {
                 usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
             } catch (UsageEventCollectionException uex) {
-                LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
+                LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                        ":: Exception: %s", dbLoadBalancer.getId(), uex));
             }
             return;
         }
@@ -97,22 +98,22 @@ public class DeleteLoadBalancerListener extends BaseListener {
             LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in database.", dbLoadBalancer.getId()));
         }
 
+        // Notify usage processor
+//        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+        try {
+            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+        } catch (UsageEventCollectionException uex) {
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
+        }
+
         dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);
         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.DELETED);
-
 
         // Add atom entry
         String atomTitle = "Load Balancer Successfully Deleted";
         String atomSummary = "Load balancer successfully deleted";
         notificationService.saveLoadBalancerEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
-        // Notify usage processor
-//        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
-        try {
-            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);
-        } catch (UsageEventCollectionException uex) {
-            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
-        }
         LOG.info(String.format("Load balancer '%d' successfully deleted.", dbLoadBalancer.getId()));
     }
 

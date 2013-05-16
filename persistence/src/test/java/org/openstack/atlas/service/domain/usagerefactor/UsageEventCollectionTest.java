@@ -123,6 +123,92 @@ public class UsageEventCollectionTest {
 
     @RunWith(PowerMockRunner.class)
     @PrepareForTest(Executors.class)
+    public static class WhenProcessingSingleUsageEvent {
+        LoadBalancer lb;
+        SnmpUsage snmpUsage;
+        SnmpUsage snmpUsage1;
+        List<SnmpUsage> snmpUsages;
+
+        @Mock
+        VirtualIpRepository virtualIpRepository;
+
+        @Mock
+        UsageRefactorService usageRefactorService;
+
+        @Mock
+        AccountUsageRepository accountUsageRepository;
+
+        @Mock
+        LoadBalancerRepository loadBalancerRepository;
+
+        @Mock
+        HostUsageRefactorRepository hostUsageRefactorRepository;
+
+        @Mock
+        HostRepository hostRepository;
+
+        @Mock
+        ExecutorService executorService;
+
+        @Mock
+        Executors executors;
+
+        @InjectMocks
+        UsageService usageService1 = new UsageServiceImpl();
+
+        @Mock
+        UsageService usageService;
+
+        @InjectMocks
+        UsageEventProcessor processor = new UsageEventProcessorImpl();
+
+        @Mock
+        UsageEventProcessor processor2;
+
+        @InjectMocks
+        UsageEventCollection usageEventCollection;
+
+        public WhenProcessingSingleUsageEvent() throws UsageEventCollectionException {
+            usageEventCollection = new UsageEventCollection();
+        }
+
+        @Before
+        public void standUp() {
+
+        }
+
+        @Test(expected = UsageEventCollectionException.class)
+        public void shouldFailWhenNoHost() throws EntityNotFoundException, DeletedStatusException, InterruptedException, UsageEventCollectionException {
+            when(hostRepository.getAllHosts()).thenReturn(null);
+            usageEventCollection.processSnmpUsage(new SnmpUsage(),  lb, UsageEvent.CREATE_LOADBALANCER);
+        }
+
+        @Test
+        public void shouldProcessSnmpUsageCreateEvent() throws EntityNotFoundException, DeletedStatusException, InterruptedException, UsageEventCollectionException {
+            List<Host> hosts = new ArrayList<Host>();
+            Host host = new Host();
+            host.setId(7);
+            hosts.add(host);
+
+            when(hostRepository.getAllHosts()).thenReturn(hosts);
+            usageEventCollection.processSnmpUsage(new SnmpUsage(),  lb, UsageEvent.CREATE_LOADBALANCER);
+        }
+
+        @Test
+        public void shouldProcessSnmpUsageCreateEventVerifyHosts() throws EntityNotFoundException, DeletedStatusException, InterruptedException, UsageEventCollectionException {
+            List<Host> hosts = new ArrayList<Host>();
+            Host host = new Host();
+            host.setId(7);
+            hosts.add(host);
+
+            when(hostRepository.getAllHosts()).thenReturn(hosts);
+            usageEventCollection.processSnmpUsage(new SnmpUsage(),  lb, UsageEvent.CREATE_LOADBALANCER);
+            Assert.assertEquals(host, usageEventCollection.getHosts().get(0));
+        }
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PrepareForTest(Executors.class)
     public static class WhenSnmpVSCollectorRuns {
         LoadBalancer lb;
         SnmpUsage snmpUsage;
@@ -159,7 +245,7 @@ public class UsageEventCollectionTest {
         @Test
         public void shouldReturnSnmpUsage() throws UsageEventCollectionException, StingraySnmpGeneralException {
             vsCollector.setHost(host);
-            vsCollector.setLb(loadBalancer);
+            vsCollector.setLoadbalancer(loadBalancer);
             when(stingrayUsageClient.getVirtualServerUsage(Matchers.<Host>any(), Matchers.<LoadBalancer>any())).thenReturn(new SnmpUsage());
             SnmpUsage usage = vsCollector.call();
             Assert.assertNotNull(usage);

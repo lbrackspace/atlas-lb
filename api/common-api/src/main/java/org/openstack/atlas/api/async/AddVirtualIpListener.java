@@ -57,20 +57,21 @@ public class AddVirtualIpListener extends BaseListener {
             return;
         }
 
-        // Update load balancer in DB
-        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
-
-        // Add atom entry
-        for (Integer newVipId : dataContainer.getNewVipIds()) {
-            notificationService.saveVirtualIpEvent(dataContainer.getUserName(), dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), newVipId, CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(), EventType.CREATE_VIRTUAL_IP, CREATE, INFO);
-        }
-
         // Notify usage processor
 //        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);
         } catch (UsageEventCollectionException uex) {
-            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
+        }
+
+         // Update load balancer in DB
+        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+
+        // Add atom entry
+        for (Integer newVipId : dataContainer.getNewVipIds()) {
+            notificationService.saveVirtualIpEvent(dataContainer.getUserName(), dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), newVipId, CREATE_VIP_TITLE, EntryHelper.createVirtualIpSummary(), EventType.CREATE_VIRTUAL_IP, CREATE, INFO);
         }
 
         LOG.info(String.format("Add virtual ip operation complete for load balancer '%d'.", dbLoadBalancer.getId()));

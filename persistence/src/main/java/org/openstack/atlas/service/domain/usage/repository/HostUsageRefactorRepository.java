@@ -91,7 +91,7 @@ public class HostUsageRefactorRepository {
     }
 
     public LoadBalancerHostUsage getMostRecentUsageRecordForLbIdAndHostId(int lbId, int hostId) {
-        Query query = entityManager.createQuery("SELECT h FROM LoadBalancerHostUsage h WHERE h.loadbalancerId = :lbId AND h.hostId = :hostId")
+        Query query = entityManager.createQuery("SELECT h FROM LoadBalancerHostUsage h WHERE h.loadbalancerId = :lbId AND h.hostId = :hostId ORDER BY h.id DESC")
                 .setParameter("lbId", lbId)
                 .setParameter("hostId", hostId);
         List usages = query.getResultList();
