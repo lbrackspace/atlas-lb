@@ -179,4 +179,91 @@ public class CalendarUtilsTest {
             Assert.assertFalse(isBetween);
         }
     }
+
+    public static class WhenCalculatingDuration {
+
+        @Test
+        public void shouldCalculateCorrectlyWhenNoDuration() throws ParseException {
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+
+            Duration duration = CalendarUtils.calcDuration(startTime, endTime);
+
+            Assert.assertEquals(0, duration.getHours());
+            Assert.assertEquals(0, duration.getMins());
+            Assert.assertEquals(0, duration.getSecs());
+        }
+
+        @Test
+        public void shouldCalculateCorrectlyWhenOneSecond() throws ParseException {
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:01");
+
+            Duration duration = CalendarUtils.calcDuration(startTime, endTime);
+
+            Assert.assertEquals(0, duration.getHours());
+            Assert.assertEquals(0, duration.getMins());
+            Assert.assertEquals(1, duration.getSecs());
+        }
+
+        @Test
+        public void shouldCalculateCorrectlyWhenLessThanAMinute() throws ParseException {
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:59");
+
+            Duration duration = CalendarUtils.calcDuration(startTime, endTime);
+
+            Assert.assertEquals(0, duration.getHours());
+            Assert.assertEquals(0, duration.getMins());
+            Assert.assertEquals(59, duration.getSecs());
+        }
+
+        @Test
+        public void shouldCalculateCorrectlyWhenMoreThanAMinute() throws ParseException {
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 00:01:01");
+
+            Duration duration = CalendarUtils.calcDuration(startTime, endTime);
+
+            Assert.assertEquals(0, duration.getHours());
+            Assert.assertEquals(1, duration.getMins());
+            Assert.assertEquals(1, duration.getSecs());
+        }
+
+        @Test
+        public void shouldCalculateCorrectlyWhenLessThanAnHour() throws ParseException {
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 00:59:59");
+
+            Duration duration = CalendarUtils.calcDuration(startTime, endTime);
+
+            Assert.assertEquals(0, duration.getHours());
+            Assert.assertEquals(59, duration.getMins());
+            Assert.assertEquals(59, duration.getSecs());
+        }
+
+        @Test
+        public void shouldCalculateCorrectlyWhenEqualToHour() throws ParseException {
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 01:00:00");
+
+            Duration duration = CalendarUtils.calcDuration(startTime, endTime);
+
+            Assert.assertEquals(1, duration.getHours());
+            Assert.assertEquals(0, duration.getMins());
+            Assert.assertEquals(0, duration.getSecs());
+        }
+
+        @Test
+        public void shouldCalculateCorrectlyWhenMoreThanAnHour() throws ParseException {
+            Calendar startTime = CalendarUtils.stringToCalendar("2013-01-29 00:00:00");
+            Calendar endTime = CalendarUtils.stringToCalendar("2013-01-29 01:00:01");
+
+            Duration duration = CalendarUtils.calcDuration(startTime, endTime);
+
+            Assert.assertEquals(1, duration.getHours());
+            Assert.assertEquals(0, duration.getMins());
+            Assert.assertEquals(1, duration.getSecs());
+        }
+    }
 }
