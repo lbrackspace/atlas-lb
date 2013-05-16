@@ -3,7 +3,6 @@ package org.openstack.atlas.jobs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.JobName;
-import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
@@ -12,50 +11,38 @@ import org.openstack.atlas.service.domain.services.helpers.AlertHelper;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.util.Calendar;
 import java.util.List;
 
+@Component
 public class LoadBalancerDeletionJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerDeletionJob.class);
+
+    @Autowired
     private LoadBalancerRepository loadBalancerRepository;
+    @Autowired
     private SslTerminationRepository sslTerminationRepository;
-
-    @Required
-    public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
-        this.loadBalancerRepository = loadBalancerRepository;
-    }
-
-    @Required
-    public void setSslTerminationRepository(SslTerminationRepository sslTerminationRepository) {
-        this.sslTerminationRepository = sslTerminationRepository;
-    }
 
     @Override
     public Log getLogger() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return LOG;
     }
 
     @Override
     public JobName getJobName() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return JobName.LB_DELETION_JOB;
     }
 
     @Override
     public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     public void run() throws Exception {
-        Calendar startTime = Calendar.getInstance();
-        LOG.info(String.format("Load balancer deletion job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
-        jobStateService.updateJobState(JobName.LB_DELETION_JOB, JobStateVal.IN_PROGRESS);
-
-        List<LoadBalancer> elbs;
         try {
-            elbs = loadBalancerRepository.getExpiredLbs();
+            List<LoadBalancer> elbs = loadBalancerRepository.getExpiredLbs();
             LOG.info(String.format("There are '%s' expired load balancers...", elbs.size()));
             if (!elbs.isEmpty()) {
                 for (LoadBalancer deleteLb : elbs) {
@@ -66,29 +53,19 @@ public class LoadBalancerDeletionJob extends AbstractJob {
                         sslTerminationRepository.removeSslTermination(deleteLb.getId(), deleteLb.getAccountId());
                     } catch (Exception e) {
                         LOG.debug("SSL Termination is not found for load balancer: " + deleteLb.getId());
-                        //No need for alert here, causing logging clutter for no benefits... 11/07/12
-//                        Alert alert = AlertHelper.createAlert(deleteLb.getAccountId(), deleteLb.getId(), e, AlertType.DATABASE_FAILURE.name(), e.getMessage());
-//                        alertRepository.save(alert);
                     }
                     loadBalancerRepository.removeExpiredLb(deleteLb.getId());
                 }
             }
         } catch (Exception e) {
-            jobStateService.updateJobState(JobName.LB_DELETION_JOB, JobStateVal.FAILED);
-            LOG.error(String.format("Load balancer deletion job failed while removing load balancers: %s", e.getMessage()));
             Alert alert = AlertHelper.createAlert(null, null, e, AlertType.API_FAILURE.name(), e.getMessage());
             alertRepository.save(alert);
-            return;
+            throw e;
         }
-
-        Calendar endTime = Calendar.getInstance();
-        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-        jobStateService.updateJobState(JobName.LB_DELETION_JOB, JobStateVal.FINISHED);
-        LOG.info(String.format("Load balancer deletion job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 
     @Override
     public void cleanup() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
+
 }

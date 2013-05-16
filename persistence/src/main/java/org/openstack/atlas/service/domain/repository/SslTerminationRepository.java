@@ -2,7 +2,8 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.springframework.stereotype.Repository;
@@ -10,17 +11,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import java.util.List;
 
 @Repository
 @Transactional
 public class SslTerminationRepository {
+    private final Log LOG = LogFactory.getLog(SslTerminationRepository.class);
 
-    final Log LOG = LogFactory.getLog(SslTerminationRepository.class);
     @PersistenceContext(unitName = "loadbalancing")
-    private EntityManager entityManager;/**/
-
+    private EntityManager entityManager;
 
     public boolean removeSslTermination(Integer lid, Integer aid) throws EntityNotFoundException {
         SslTermination up = getSslTerminationByLbId(lid, aid);

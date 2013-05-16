@@ -7,11 +7,6 @@
     <import resource="lb-jpa-persistence.xml"/>
     <import resource="usage-jpa-persistence.xml"/>
 
-    <bean id="reverseProxyLoadBalancerAdapter"
-          class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
-    <bean id="reverseProxyLoadBalancerService"
-          class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl"/>
-
     <!--ENABLED TRIGGERS-->
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
@@ -25,7 +20,7 @@
                 <ref bean="lbDeletionJobTrigger"/>
                 <ref bean="dailyDeletionJobTrigger"/>
                 <ref bean="eventsDeletionJobTrigger"/>
-                <ref bean="atomAlertDeletionJobTrigger"/>
+                <ref bean="alertDeletionJobTrigger"/>
                 <ref bean="hostEndpointPollerJobTrigger"/>
             </list>
         </property>
@@ -66,16 +61,13 @@
     </bean>
 
     <!--ACCOUNT USAGE POLLER CONFIG-->
+    <bean id="accountUsagePollerBean" class="org.openstack.atlas.usage.jobs.AccountUsagePoller"
+          autowire="byName"/>
     <bean name="accountUsagePoller" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"
-                  value="org.openstack.atlas.usage.jobs.AccountUsagePoller"/>
+        <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
-                <entry key="accountUsageRepository" value-ref="accountUsageRepository"/>
-                <entry key="virtualIpRepository" value-ref="virtualIpRepository"/>
-                <entry key="alertRepository" value-ref="alertRepository"/>
-                <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="job.bean.name" value="accountUsagePollerBean"/>
             </map>
         </property>
     </bean>
@@ -85,16 +77,13 @@
     </bean>
 
     <!--HOST USAGE POLLER CONFIG-->
+    <bean id="hostUsagePollerBean" class="org.openstack.atlas.usage.jobs.HostUsagePoller"
+          autowire="byName"/>
     <bean name="hostUsagePoller" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"
-                  value="org.openstack.atlas.usage.jobs.HostUsagePoller"/>
+        <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
-                <entry key="hostRepository" value-ref="hostRepository"/>
-                <entry key="hostUsageRepository" value-ref="hostUsageRepository"/>
-                <entry key="alertRepository" value-ref="alertRepository"/>
-                <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="job.bean.name" value="hostUsagePollerBean"/>
             </map>
         </property>
     </bean>
@@ -104,7 +93,8 @@
     </bean>
 
     <!--SUSPENDED EVENT JOB CONFIG-->
-    <bean id="suspendedEventJobBean" class="org.openstack.atlas.usage.jobs.SuspendedEventJob" autowire="byName"/>
+    <bean id="suspendedEventJobBean" class="org.openstack.atlas.usage.jobs.SuspendedEventJob"
+          autowire="byName"/>
     <bean name="suspendedEventJob" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
@@ -119,15 +109,13 @@
     </bean>
 
     <!--USAGE DELETION JOB CONFIG-->
+    <bean id="dailyDeletionJobBean" class="org.openstack.atlas.jobs.DailyDeletionJob"
+          autowire="byName"/>
     <bean name="dailyDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"
-                  value="org.openstack.atlas.jobs.DailyDeletionJob"/>
+        <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="hourlyUsageRepository" value-ref="hourlyUsageRepository"/>
-                <entry key="hostUsageRepository" value-ref="hostUsageRepository"/>
-                <entry key="alertRepository" value-ref="alertRepository"/>
-                <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="job.bean.name" value="dailyDeletionJobBean"/>
             </map>
         </property>
     </bean>
@@ -137,16 +125,13 @@
     </bean>
 
     <!--RATE LIMIT DELETION JOB CONFIG-->
+    <bean id="rateLimitDeletionJobBean" class="org.openstack.atlas.jobs.RateLimitDeletionJob"
+          autowire="byName"/>
     <bean name="rateLimitDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"
-                  value="org.openstack.atlas.jobs.RateLimitDeletionJob"/>
+        <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
-                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
-                <entry key="hostRepository" value-ref="hostRepository"/>
-                <entry key="alertRepository" value-ref="alertRepository"/>
-                <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="job.bean.name" value="rateLimitDeletionJobBean"/>
             </map>
         </property>
     </bean>
@@ -156,16 +141,13 @@
     </bean>
 
     <!--HOST ENDPOINT POLLER JOB CONFIG-->
+    <bean id="hostEndpointPollerJobBean" class="org.openstack.atlas.jobs.HostEndpointPollerJob"
+          autowire="byName"/>
     <bean name="hostEndpointPollerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"
-                  value="org.openstack.atlas.jobs.HostEndpointPollerJob"/>
+        <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="reverseProxyLoadBalancerService" value-ref="reverseProxyLoadBalancerService"/>
-                <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
-                <entry key="hostRepository" value-ref="hostRepository"/>
-                <entry key="alertRepository" value-ref="alertRepository"/>
-                <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="job.bean.name" value="hostEndpointPollerJobBean"/>
             </map>
         </property>
     </bean>
@@ -175,29 +157,29 @@
     </bean>
 
     <!--ALERT DELETION JOB CONFIG-->
-    <bean name="atomAlertDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass" value="org.openstack.atlas.jobs.AlertDeletionJob"/>
+    <bean id="alertDeletionJobBean" class="org.openstack.atlas.jobs.AlertDeletionJob"
+          autowire="byName"/>
+    <bean name="alertDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="alertRepository" value-ref="alertRepository"/>
-                <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="job.bean.name" value="alertDeletionJobBean"/>
             </map>
         </property>
     </bean>
-    <bean id="atomAlertDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-        <property name="jobDetail" ref="atomAlertDeletionJob"/>
+    <bean id="alertDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="alertDeletionJob"/>
         <property name="cronExpression" value="${alert-deletion-job.interval}"/>
     </bean>
 
     <!--EVENTS DELETION JOB CONFIG-->
+    <bean id="eventsDeletionJobBean" class="org.openstack.atlas.jobs.EventsDeletionJob"
+          autowire="byName"/>
     <bean name="eventsDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"
-                  value="org.openstack.atlas.jobs.EventsDeletionJob"/>
+        <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="loadBalancerEventRepository" value-ref="loadBalancerEventRepository"/>
-                <entry key="alertRepository" value-ref="alertRepository"/>
-                <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="job.bean.name" value="eventsDeletionJobBean"/>
             </map>
         </property>
     </bean>
@@ -207,17 +189,13 @@
     </bean>
 
     <!--LB DELETION JOB CONFIG-->
+    <bean id="lbDeletionJobBean" class="org.openstack.atlas.jobs.LoadBalancerDeletionJob"
+          autowire="byName"/>
     <bean name="lbDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"
-                  value="org.openstack.atlas.jobs.LoadBalancerDeletionJob"/>
+        <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="reverseProxyLoadBalancerAdapter" value-ref="reverseProxyLoadBalancerAdapter"/>
-                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
-                <entry key="sslTerminationRepository" value-ref="sslTerminationRepository"/>
-                <entry key="hostRepository" value-ref="hostRepository"/>
-                <entry key="alertRepository" value-ref="alertRepository"/>
-                <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="job.bean.name" value="lbDeletionJobBean"/>
             </map>
         </property>
     </bean>

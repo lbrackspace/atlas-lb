@@ -40,11 +40,10 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DEL
 @Repository
 @Transactional
 public class LoadBalancerRepository {
+    private final Log LOG = LogFactory.getLog(LoadBalancerRepository.class);
 
-    final Log LOG = LogFactory.getLog(LoadBalancerRepository.class);
     @PersistenceContext(unitName = "loadbalancing")
-    private EntityManager entityManager;/**/
-
+    private EntityManager entityManager;
 
     public LoadBalancer getById(Integer id) throws EntityNotFoundException {
         LoadBalancer lb = entityManager.find(LoadBalancer.class, id);

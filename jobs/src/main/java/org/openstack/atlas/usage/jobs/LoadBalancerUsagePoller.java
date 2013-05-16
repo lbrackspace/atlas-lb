@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
-import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -108,12 +107,12 @@ public class LoadBalancerUsagePoller extends AbstractJob {
     private List<Host> getAccessibleHosts() {
         List<Host> hostList = hostService.getAllHosts();
         List<Host> accessibleHosts = new ArrayList<Host>();
-        for(Host host : hostList) {
-            try{
-                if(reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host))) {
+        for (Host host : hostList) {
+            try {
+                if (reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host))) {
                     accessibleHosts.add(host);
                 }
-            }catch(Exception e) {
+            } catch (Exception e) {
 
             }
         }

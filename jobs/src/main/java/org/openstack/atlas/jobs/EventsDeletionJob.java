@@ -10,40 +10,35 @@ import org.openstack.atlas.service.domain.services.helpers.AlertHelper;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
 
+@Component
 public class EventsDeletionJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(EventsDeletionJob.class);
-    LoadBalancerEventRepository loadBalancerEventRepository;
 
-    @Required
-    public void setLoadBalancerEventRepository(LoadBalancerEventRepository loadBalancerEventRepository) {
-        this.loadBalancerEventRepository = loadBalancerEventRepository;
-    }
+    @Autowired
+    LoadBalancerEventRepository loadBalancerEventRepository;
 
     @Override
     public Log getLogger() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return LOG;
     }
 
     @Override
     public JobName getJobName() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return JobName.ATOM_EVENTS_DELETION_JOB;
     }
 
     @Override
     public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     public void run() throws Exception {
-        Calendar startTime = Calendar.getInstance();
-        LOG.info(String.format("Atom events deletion job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
-        jobStateService.updateJobState(JobName.ATOM_EVENTS_DELETION_JOB, JobStateVal.IN_PROGRESS);
-
         try {
             //LoadBalancerEvent
             LOG.info("Loadbalancer events deletion job started...");
@@ -93,21 +88,14 @@ public class EventsDeletionJob extends AbstractJob {
             loadBalancerEventRepository.removeHealthMonitorEventEntries();
             LOG.info("Health monitor events deletion job completed.");
         } catch (Exception e) {
-            jobStateService.updateJobState(JobName.ATOM_EVENTS_DELETION_JOB, JobStateVal.FAILED);
-            LOG.error(String.format("Failed while removing one of the event entries: %s", e.getMessage()));
             Alert alert = AlertHelper.createAlert(1, 1, e, AlertType.API_FAILURE.name(), "Failed removing an event entry...");
             alertRepository.save(alert);
-            return;
+            throw e;
         }
-
-        Calendar endTime = Calendar.getInstance();
-        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-        jobStateService.updateJobState(JobName.ATOM_EVENTS_DELETION_JOB, JobStateVal.FINISHED);
-        LOG.info(String.format("Atom events deletion job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
     }
 
     @Override
     public void cleanup() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
+
 }

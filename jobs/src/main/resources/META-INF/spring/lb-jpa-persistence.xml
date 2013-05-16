@@ -33,29 +33,8 @@
 
     <!-- The EM Factory is where the magic happens :) -->
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-        <property name="persistenceXmlLocation"
-                  value="classpath:META-INF/lb-persistence.xml"/>
+        <property name="persistenceXmlLocation" value="classpath:META-INF/lb-persistence.xml"/>
         <property name="persistenceUnitName" value="loadbalancing"/>
     </bean>
 
-    <!-- Repo's go here, they MUST be prototype, they are not thread safe -->
-    <bean id="loadBalancerRepository" class="org.openstack.atlas.service.domain.repository.LoadBalancerRepository"
-          scope="prototype"/>
-    <bean id="hostRepository" class="org.openstack.atlas.service.domain.repository.HostRepository"
-          scope="prototype"/>
-    <bean id="accountUsageRepository" class="org.openstack.atlas.service.domain.repository.AccountUsageRepository"
-          scope="prototype"/>
-    <bean id="virtualIpRepository" class="org.openstack.atlas.service.domain.repository.VirtualIpRepository"
-          scope="prototype"/>
-    <bean id="alertRepository" class="org.openstack.atlas.service.domain.events.repository.AlertRepository"
-          scope="prototype"/>
-    <bean id="loadBalancerEventRepository"
-          class="org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository"
-          scope="prototype"/>
-    <bean id="sslTerminationRepository" class="org.openstack.atlas.service.domain.repository.SslTerminationRepository"
-          scope="prototype"/>
-
-
-    <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl"/>
-    <bean id="rejectedExecutionHandler" class="org.openstack.atlas.usage.thread.service.RejectedExecutionHandler"/>
 </beans>
