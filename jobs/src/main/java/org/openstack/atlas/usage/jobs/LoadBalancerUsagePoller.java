@@ -105,15 +105,19 @@ public class LoadBalancerUsagePoller extends AbstractJob {
     }
 
     private List<Host> getAccessibleHosts() {
+        LOG.info("Discovering accessible hosts...");
         List<Host> hostList = hostService.getAllHosts();
         List<Host> accessibleHosts = new ArrayList<Host>();
-        for (Host host : hostList) {
-            try {
-                if (reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host))) {
+        for(Host host : hostList) {
+            try{
+                if(reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host))) {
+                    LOG.info("Host: " + host.getName() + " is accessible.");
                     accessibleHosts.add(host);
+                } else {
+                    LOG.info("Host: " + host.getName() + " is NOT accessible.");
                 }
-            } catch (Exception e) {
-
+            }catch(Exception e) {
+                LOG.info("Exception while checking host: " + host.getName() + " endpoint. " + e.getMessage());
             }
         }
         return accessibleHosts;

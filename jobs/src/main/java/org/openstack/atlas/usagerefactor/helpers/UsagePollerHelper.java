@@ -183,8 +183,8 @@ public class UsagePollerHelper {
                     //There will be issues if there are events that a record for a host got deleted somehow.
                     LoadBalancerHostUsage existingUsage = existingUsages.get(loadbalancerId).entrySet().iterator().next().getValue().get(0);
                     newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage.getAccountId(),
-                            existingUsage.getLoadbalancerId(), existingUsage.getTagsBitmask(),
-                            existingUsage.getNumVips(), existingUsage.getHostId(), pollTime));
+                            loadbalancerId, existingUsage.getTagsBitmask(),
+                            existingUsage.getNumVips(), hostId, pollTime));
                     continue;
                 }
 
@@ -203,8 +203,8 @@ public class UsagePollerHelper {
 
                 calculateUsage(currentUsage, existingUsage, newMergedRecord);
                  newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage.getAccountId(),
-                         existingUsage.getLoadbalancerId(), existingUsage.getTagsBitmask(),
-                         existingUsage.getNumVips(), existingUsage.getHostId(), pollTime));
+                         loadbalancerId, existingUsage.getTagsBitmask(),
+                         existingUsage.getNumVips(), hostId, pollTime));
             }
             mergedUsages.add(newMergedRecord);
         }

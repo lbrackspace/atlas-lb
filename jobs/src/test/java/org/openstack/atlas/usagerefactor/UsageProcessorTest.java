@@ -989,5 +989,30 @@ public class UsageProcessorTest {
             AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
                     result.getLbHostUsages().get(3));
         }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/whenhostsaredown/case3.xml")
+        public void case3() throws Exception {
+
+            UsageProcessorResult result = usageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(2, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(1));
+
+            //New lb_host_usage records assertions
+            Assert.assertEquals(4, result.getLbHostUsages().size());
+            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(0));
+            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(2));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(3));
+        }
     }
 }
