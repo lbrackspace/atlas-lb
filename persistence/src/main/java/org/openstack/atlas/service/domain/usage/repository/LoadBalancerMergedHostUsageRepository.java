@@ -2,6 +2,9 @@ package org.openstack.atlas.service.domain.usage.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage_;
@@ -14,12 +17,11 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
 import javax.persistence.criteria.*;
+import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Repository
 @Transactional(value = "usage")
@@ -71,22 +73,47 @@ public class LoadBalancerMergedHostUsageRepository {
     }
 
     public LoadBalancerMergedHostUsage getMostRecentRecordForLoadBalancer(int lbId) throws EntityNotFoundException{
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<LoadBalancerMergedHostUsage> criteria = builder.createQuery(LoadBalancerMergedHostUsage.class);
-        Root<LoadBalancerMergedHostUsage> usageRoot = criteria.from(LoadBalancerMergedHostUsage.class);
+        Query query = entityManager.createNativeQuery("SELECT u.id, u.loadbalancer_id, u.concurrent_connections, u.incoming_transfer, " +
+                "u.outgoing_transfer, u.concurrent_connections_ssl, u.incoming_transfer_ssl, u.outgoing_transfer_ssl, u.poll_time, " +
+                "u.num_vips, u.tags_bitmask, u.event_type, u.account_id" +
+                " FROM lb_merged_host_usage u WHERE u.loadbalancer_id = :loadBalancerId" +
+                " ORDER BY u.poll_time DESC LIMIT 1")
+                .setParameter("loadBalancerId", lbId);
 
-        Predicate hasLbId = builder.equal(usageRoot.get(LoadBalancerMergedHostUsage_.loadbalancerId), lbId);
+        final List<Object[]> resultList = query.getResultList();
 
-        criteria.select(usageRoot);
-        criteria.where(hasLbId);
-
-        try {
-            return entityManager.createQuery(criteria).getSingleResult();
-        } catch (NoResultException e) {
+        if (resultList == null || resultList.isEmpty()) {
             String message = "No recent usage record found.";
             LOG.debug(message);
             throw new EntityNotFoundException(message);
         }
+
+        return rowToUsage(resultList.get(0));
+    }
+
+    private LoadBalancerMergedHostUsage rowToUsage(Object[] row) {
+        Long pollTimeMillis = ((Timestamp) row[8]).getTime();
+        Calendar pollTimeCal = new GregorianCalendar();
+        pollTimeCal.setTimeInMillis(pollTimeMillis);
+
+        LoadBalancerMergedHostUsage usageItem = new LoadBalancerMergedHostUsage();
+        usageItem.setId((Integer) row[0]);
+        usageItem.setLoadbalancerId((Integer) row[1]);
+        usageItem.setConcurrentConnections(((BigInteger) row[2]).longValue());
+        usageItem.setIncomingTransfer(((BigInteger) row[3]).longValue());
+        usageItem.setOutgoingTransfer(((BigInteger) row[4]).longValue());
+        usageItem.setConcurrentConnectionsSsl(((BigInteger) row[5]).longValue());
+        usageItem.setIncomingTransferSsl(((BigInteger) row[6]).longValue());
+        usageItem.setOutgoingTransferSsl(((BigInteger) row[7]).longValue());
+        usageItem.setPollTime(pollTimeCal);
+        usageItem.setNumVips((Integer) row[9]);
+        usageItem.setTagsBitmask((Integer) row[10]);
+        usageItem.setEventType(null);
+        if(row[11] != null) {
+            usageItem.setEventType(UsageEvent.valueOf((String)row[11]));
+        }
+        usageItem.setAccountId((Integer) row[12]);
+        return usageItem;
     }
 
     public void batchCreate(List<LoadBalancerMergedHostUsage> usages) {
