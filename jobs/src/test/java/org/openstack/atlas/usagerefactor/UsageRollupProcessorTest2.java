@@ -20,6 +20,7 @@ import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
 import org.openstack.atlas.usagerefactor.junit.AssertUsage;
+import org.openstack.atlas.util.common.CalendarUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
@@ -144,6 +145,25 @@ public class UsageRollupProcessorTest2 {
         actualUsage = processedUsages.get(2);
         AssertUsage.hasValues(null, 1234, 1234, 250l, 250l, 500l, 500l, 1.0, 1.0, "2013-04-10 20:33:00", "2013-04-10 21:00:00",
                 5, 1, 5, UNSUSPEND_LOADBALANCER.name(), 0, true, null, actualUsage);
+    }
+
+    @Ignore // We decided that this extreme case is not worth the code complexity. Leaving here just in case.
+    @Test
+    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/edgecases/case007.xml")
+    public void edgeCasesCase007() throws Exception {
+        mostRecentUsage.setEventType(SUSPENDED_LOADBALANCER.name());
+        mostRecentUsage.setStartTime(CalendarUtils.stringToCalendar("2013-04-10 18:00:00"));
+        mostRecentUsage.setEndTime(CalendarUtils.stringToCalendar("2013-04-10 19:00:00"));
+
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess);
+
+        Assert.assertEquals(2, processedUsages.size());
+        Usage actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 19:00:00", "2013-04-10 20:00:00",
+                0, 1, 5, SUSPENDED_LOADBALANCER.name(), 0, true, null, actualUsage);
+        actualUsage = processedUsages.get(1);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:00:00", "2013-04-10 21:00:00",
+                0, 1, 5, SUSPENDED_LOADBALANCER.name(), 0, true, null, actualUsage);
     }
 
     @Test
