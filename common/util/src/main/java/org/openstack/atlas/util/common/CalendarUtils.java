@@ -49,4 +49,22 @@ public class CalendarUtils {
 
         return cal.compareTo(startTime) >= 0 && cal.compareTo(endTime) < 0;
     }
+
+    public static Duration calcDuration(Calendar startTime, Calendar endTime) {
+        final int MILLI_TO_SEC_CONVERSION = 1000;
+        final int SEC_TO_MIN_CONVERSION = 60;
+        final int MIN_TO_HOUR_CONVERSION = 60;
+
+        Duration duration = new Duration();
+        long elapsedTimeInMillis = endTime.getTimeInMillis() - startTime.getTimeInMillis();
+        long elapsedTimeInSecs = elapsedTimeInMillis / MILLI_TO_SEC_CONVERSION;
+        long elapsedTimeInMins = elapsedTimeInSecs / SEC_TO_MIN_CONVERSION;
+        long elapsedTimeInHours = elapsedTimeInMins / MIN_TO_HOUR_CONVERSION;
+
+        duration.setHours(elapsedTimeInHours);
+        duration.setMins(elapsedTimeInMins - elapsedTimeInHours * MIN_TO_HOUR_CONVERSION);
+        duration.setSecs(elapsedTimeInSecs - elapsedTimeInMins * SEC_TO_MIN_CONVERSION);
+
+        return duration;
+    }
 }

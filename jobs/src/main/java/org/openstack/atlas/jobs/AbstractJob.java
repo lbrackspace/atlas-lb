@@ -5,6 +5,8 @@ import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.events.repository.AlertRepository;
 import org.openstack.atlas.service.domain.services.JobStateService;
+import org.openstack.atlas.util.common.CalendarUtils;
+import org.openstack.atlas.util.common.Duration;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +44,9 @@ public abstract class AbstractJob implements JobInterface {
         }
 
         Calendar endTime = Calendar.getInstance();
-        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
+        Duration duration = CalendarUtils.calcDuration(startTime, endTime);
         jobStateService.updateJobState(getJobName(), JobStateVal.FINISHED);
-        getLogger().info(String.format("%s completed at '%s' (Total Time: %f mins)", getJobName().name(), endTime.getTime(), elapsedMins));
+        getLogger().info(String.format("%s completed at '%s' (Total Time: %s)", getJobName().name(), endTime.getTime(), duration.toString()));
     }
 
     @Override
