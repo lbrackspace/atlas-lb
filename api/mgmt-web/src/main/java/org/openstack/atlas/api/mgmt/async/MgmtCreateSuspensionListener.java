@@ -6,6 +6,7 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 
 import javax.jms.Message;
 
@@ -44,27 +45,32 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
         }
 
         // Try to get non-ssl usage
+//        try {
+//            bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
+//            bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
+//            concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
+//        } catch (Exception e) {
+//            LOG.warn("Couldn't retrieve load balancer usage stats. Setting them to null.");
+//            bytesOut = null;
+//            bytesIn = null;
+//            concurrentConns = null;
+//        }
+//
+//        // Try to get ssl usage
+//        try {
+//            bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
+//            bytesInSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, true);
+//            concurrentConnsSsl = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, true);
+//        } catch (Exception e) {
+//            LOG.warn("Couldn't retrieve load balancer usage stats for ssl virtual server. Setting them to null.");
+//            bytesOutSsl = null;
+//            bytesInSsl = null;
+//            concurrentConnsSsl = null;
+//        }
         try {
-            bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
-            bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
-            concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer usage stats. Setting them to null.");
-            bytesOut = null;
-            bytesIn = null;
-            concurrentConns = null;
-        }
-
-        // Try to get ssl usage
-        try {
-            bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
-            bytesInSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, true);
-            concurrentConnsSsl = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, true);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer usage stats for ssl virtual server. Setting them to null.");
-            bytesOutSsl = null;
-            bytesInSsl = null;
-            concurrentConnsSsl = null;
+            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER);
+        } catch (UsageEventCollectionException uex) {
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
         }
 
         try {
@@ -92,7 +98,7 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
         notificationService.saveLoadBalancerEvent(requestLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, UPDATE_LOADBALANCER, UPDATE, INFO);
 
         // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+//        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
 
 
         LOG.info(String.format("Suspend load balancer operation complete for load balancer '%d'.", dbLoadBalancer.getId()));

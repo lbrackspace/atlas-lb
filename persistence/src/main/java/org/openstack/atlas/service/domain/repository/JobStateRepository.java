@@ -102,7 +102,7 @@ public class JobStateRepository {
         criteria.where(hasName);
 
         try {
-            return entityManager.createQuery(criteria).getSingleResult();
+            return entityManager.createQuery(criteria).getResultList().get(0);
         } catch (NoResultException e) {
             logAndThrowException();
         }
