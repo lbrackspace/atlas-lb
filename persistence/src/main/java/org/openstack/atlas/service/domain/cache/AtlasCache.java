@@ -18,8 +18,8 @@ public class AtlasCache {
     private static MemcachedClient cacheClient;
     private String ttl = "300";
 
-    public AtlasCache() {
-    }
+//    public AtlasCache() {
+//    }
 
     private AtlasCache(Configuration configuration) throws IOException {
         String cacheHosts;
