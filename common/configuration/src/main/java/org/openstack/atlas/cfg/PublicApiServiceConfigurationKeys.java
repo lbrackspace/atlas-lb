@@ -1,6 +1,4 @@
-package org.openstack.atlas.api.config;
-
-import org.openstack.atlas.cfg.ConfigurationKey;
+package org.openstack.atlas.cfg;
 
 public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     auth_callback_uri,

@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.integration;
 
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.api.helpers.CacheKeyGen;
 import org.openstack.atlas.api.helpers.DateHelpers;
@@ -17,7 +18,6 @@ import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.NotificationService;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import com.zxtm.service.client.ObjectDoesNotExist;

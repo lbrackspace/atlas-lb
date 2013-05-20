@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.resources;
 
-import java.net.URI;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
 import java.util.Calendar;
@@ -38,7 +38,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 import javax.ws.rs.core.Response;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;

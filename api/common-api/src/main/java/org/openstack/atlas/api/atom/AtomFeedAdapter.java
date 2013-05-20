@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.atom;
 
 import org.openstack.atlas.cfg.Configuration;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;

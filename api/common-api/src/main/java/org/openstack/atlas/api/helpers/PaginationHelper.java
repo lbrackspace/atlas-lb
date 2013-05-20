@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.helpers;
 
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
-import org.openstack.atlas.api.config.RestApiConfiguration;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.springframework.beans.factory.annotation.Required;
 import org.w3.atom.Link;
 

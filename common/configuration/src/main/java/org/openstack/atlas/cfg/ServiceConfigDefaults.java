@@ -1,4 +1,4 @@
-package org.openstack.atlas.api.config;
+package org.openstack.atlas.cfg;
 
 public class ServiceConfigDefaults {
     public static final String AUTH_LOCATION_URI = "https://auth.staging.us.ccp.rackspace.net/v1.1/auth";

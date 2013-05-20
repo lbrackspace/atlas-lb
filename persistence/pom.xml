@@ -11,15 +11,30 @@
 
     <artifactId>atlas-persistence</artifactId>
     <name>Openstack :: Atlas :: Persistence</name>
-
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-configuration</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>atlas-data-model</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-ca-rsa</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-dns-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -68,16 +83,7 @@
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.openstack.atlas</groupId>
-            <artifactId>atlas-ca-rsa</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openstack.atlas</groupId>
-            <artifactId>atlas-dns-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
 
         <dependency>
             <groupId>org.openstack.client.keystone</groupId>
