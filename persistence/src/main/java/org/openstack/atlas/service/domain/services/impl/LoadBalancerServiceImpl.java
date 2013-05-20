@@ -22,7 +22,6 @@ import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -1100,9 +1099,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
-    public boolean isServiceNetLoadBalancer(Integer accountId, Integer lbId) {
+    public boolean isServiceNetLoadBalancer(Integer lbId) {
         try {
-            final Set<VirtualIp> vipsByAccountIdLoadBalancerId = loadBalancerRepository.getVipsByAccountIdLoadBalancerId(accountId, lbId);
+            final Set<VirtualIp> vipsByAccountIdLoadBalancerId = loadBalancerRepository.getVipsByLbId(lbId);
 
             for (VirtualIp virtualIp : vipsByAccountIdLoadBalancerId) {
                 if (virtualIp.getVipType().equals(VirtualIpType.SERVICENET)) return true;
@@ -1118,11 +1117,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
-    public BitTags getCurrentBitTags(Integer lbId, Integer accountId) {
+    public BitTags getCurrentBitTags(Integer lbId) {
         BitTags bitTags = new BitTags();
 
         try {
-            SslTermination sslTerm = sslTerminationRepository.getSslTerminationByLbId(lbId, accountId);
+            SslTermination sslTerm = sslTerminationRepository.getSslTerminationByLbId(lbId);
 
             if (sslTerm.isEnabled()) {
                 bitTags.flipTagOn(BitTag.SSL);
@@ -1136,7 +1135,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
         }
 
-        if (isServiceNetLoadBalancer(accountId, lbId)) {
+        if (isServiceNetLoadBalancer(lbId)) {
             bitTags.flipTagOn(BitTag.SERVICENET_LB);
         }
 

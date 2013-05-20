@@ -165,7 +165,7 @@ public class VirtualIpsResource extends CommonDependencyProvider {
 
         if (feed.getEntries().isEmpty()) {
             try {
-                lbRepository.getVipsByAccountIdLoadBalancerId(accountId, loadBalancerId);
+                lbRepository.getVipsByLoadBalancerId(loadBalancerId);
             } catch (Exception e) {
                 return ResponseFactory.getErrorResponse(e, null, null);
             }

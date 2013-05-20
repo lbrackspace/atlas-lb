@@ -690,9 +690,8 @@ public class LoadBalancerRepository {
         return lb.getHealthMonitor();
     }
 
-    public Set<VirtualIp> getVipsByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId,
-                                                           Integer... p) throws EntityNotFoundException, DeletedStatusException {
-        LoadBalancer lb = getByIdAndAccountId(loadBalancerId, accountId);
+    public Set<VirtualIp> getVipsByLbId(Integer loadBalancerId, Integer... p) throws EntityNotFoundException, DeletedStatusException {
+        LoadBalancer lb = getById(loadBalancerId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
         }
@@ -1592,6 +1591,25 @@ public class LoadBalancerRepository {
         criteria.select(lbRoot);
         criteria.where(builder.and(hasAccountId, builder.or(createdBetweenDates, updatedBetweenDates)));
         return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit + 1).getResultList();
+    }
+
+    public Set<LbIdAccountId> getLoadBalancersActiveDuringPeriod(Calendar startTime, Calendar endTime) {
+        Set<LbIdAccountId> lbIds = new HashSet<LbIdAccountId>();
+
+        Query query = entityManager.createNativeQuery("SELECT id, account_id FROM loadbalancer where !(status = 'DELETED' and updated < :startTime) and created < :endTime and status not in ('BUILD')")
+                .setParameter("startTime", startTime)
+                .setParameter("endTime", endTime);
+
+        final List<Object[]> resultList = query.getResultList();
+
+        for (Object[] row : resultList) {
+            Integer loadBalancerId = (Integer) row[0];
+            Integer accountId = (Integer) row[1];
+            LbIdAccountId lbIdAccountId = new LbIdAccountId(loadBalancerId, accountId);
+            lbIds.add(lbIdAccountId);
+        }
+
+        return lbIds;
     }
 
     public Map<Integer, Integer> getAccountIdMapForUsageRecords(List<Usage> rawLoadBalancerUsageList) {

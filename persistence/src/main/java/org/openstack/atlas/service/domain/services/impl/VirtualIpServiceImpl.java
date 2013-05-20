@@ -1,11 +1,6 @@
 package org.openstack.atlas.service.domain.services.impl;
 
 import com.sun.jersey.api.client.ClientResponse;
-import java.io.UnsupportedEncodingException;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.ws.rs.core.MultivaluedMap;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
@@ -23,7 +18,6 @@ import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,7 +51,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     @Override
     public Set<VirtualIp> get(Integer accountId, Integer loadBalancerId, Integer offset, Integer limit, Integer marker) throws EntityNotFoundException, DeletedStatusException {
-        return loadBalancerRepository.getVipsByAccountIdLoadBalancerId(accountId, loadBalancerId, offset, limit, marker);
+        return loadBalancerRepository.getVipsByLbId(loadBalancerId, offset, limit, marker);
     }
 
     @Override

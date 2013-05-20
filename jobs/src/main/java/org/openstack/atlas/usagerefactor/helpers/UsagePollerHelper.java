@@ -137,7 +137,7 @@ public class UsagePollerHelper {
                         try {
                             LoadBalancer loadbalancer = loadBalancerService.get(loadbalancerId);
                             accountId = loadbalancer.getAccountId();
-                            BitTags tags = loadBalancerService.getCurrentBitTags(loadbalancerId, accountId);
+                            BitTags tags = loadBalancerService.getCurrentBitTags(loadbalancerId);
                             //We want to default to nonssl to ensure no overcharges.
                             //Servicenet tags will remain though.
                             tags.flipTagOff(BitTag.SSL);
