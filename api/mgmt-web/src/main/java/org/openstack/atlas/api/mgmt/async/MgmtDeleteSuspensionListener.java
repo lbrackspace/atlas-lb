@@ -52,6 +52,7 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
             return;
         }
 
+        // Notify usage processor
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER);
         } catch (UsageEventCollectionException uex) {
@@ -67,9 +68,6 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
         String atomTitle = "Load Balancer Un-Suspended";
         String atomSummary = "Load balancer un-suspended";
         notificationService.saveLoadBalancerEvent(requestLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, UPDATE_LOADBALANCER, UPDATE, INFO);
-
-        // Notify usage processor
-//        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER);
 
         LOG.info(String.format("Remove suspension operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }

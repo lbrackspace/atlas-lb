@@ -73,7 +73,6 @@ public class DeleteVirtualIpsListener extends BaseListener {
         }
 
         // Notify usage processor
-//        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
         } catch (UsageEventCollectionException uex) {

@@ -27,12 +27,6 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
         LOG.debug(message);
         LoadBalancer requestLb = getEsbRequestFromMessage(message).getLoadBalancer();
         LoadBalancer dbLoadBalancer;
-        Long bytesOut;
-        Long bytesIn;
-        Integer concurrentConns;
-        Long bytesOutSsl;
-        Long bytesInSsl;
-        Integer concurrentConnsSsl;
 
         try {
             dbLoadBalancer = loadBalancerService.get(requestLb.getId());
@@ -44,29 +38,6 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
             return;
         }
 
-        // Try to get non-ssl usage
-//        try {
-//            bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
-//            bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
-//            concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
-//        } catch (Exception e) {
-//            LOG.warn("Couldn't retrieve load balancer usage stats. Setting them to null.");
-//            bytesOut = null;
-//            bytesIn = null;
-//            concurrentConns = null;
-//        }
-//
-//        // Try to get ssl usage
-//        try {
-//            bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
-//            bytesInSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, true);
-//            concurrentConnsSsl = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, true);
-//        } catch (Exception e) {
-//            LOG.warn("Couldn't retrieve load balancer usage stats for ssl virtual server. Setting them to null.");
-//            bytesOutSsl = null;
-//            bytesInSsl = null;
-//            concurrentConnsSsl = null;
-//        }
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER);
         } catch (UsageEventCollectionException uex) {

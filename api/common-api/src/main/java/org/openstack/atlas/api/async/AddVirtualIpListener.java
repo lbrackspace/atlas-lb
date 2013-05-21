@@ -58,7 +58,6 @@ public class AddVirtualIpListener extends BaseListener {
         }
 
         // Notify usage processor
-//        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);
         } catch (UsageEventCollectionException uex) {
