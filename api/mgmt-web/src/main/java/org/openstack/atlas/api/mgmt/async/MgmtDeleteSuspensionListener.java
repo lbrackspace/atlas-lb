@@ -7,6 +7,7 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 
 import javax.jms.Message;
 
@@ -51,6 +52,12 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
             return;
         }
 
+        try {
+            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER);
+        } catch (UsageEventCollectionException uex) {
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
+        }
+
         // Update load balancer in DB
         LOG.debug("Deleting Suspension from database...");
         loadBalancerService.removeSuspension(dbLoadBalancer.getId());
@@ -62,7 +69,7 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
         notificationService.saveLoadBalancerEvent(requestLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, UPDATE_LOADBALANCER, UPDATE, INFO);
 
         // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER);
+//        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER);
 
         LOG.info(String.format("Remove suspension operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }
