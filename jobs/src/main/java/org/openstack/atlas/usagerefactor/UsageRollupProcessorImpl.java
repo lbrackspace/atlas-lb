@@ -4,6 +4,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.LbIdAccountId;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.usage.BitTag;
@@ -28,18 +29,19 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     private LoadBalancerService loadbalancerService;
 
     @Override
-    public Map<Integer, List<LoadBalancerMergedHostUsage>> groupUsagesByLbId(List<LoadBalancerMergedHostUsage> lbMergedHostUsages) {
-        Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = new HashMap<Integer, List<LoadBalancerMergedHostUsage>>();
+    public Map<LbIdAccountId, List<LoadBalancerMergedHostUsage>> groupUsagesByLbIdAccountId(List<LoadBalancerMergedHostUsage> lbMergedHostUsages) {
+        Map<LbIdAccountId, List<LoadBalancerMergedHostUsage>> usagesByLbId = new HashMap<LbIdAccountId, List<LoadBalancerMergedHostUsage>>();
 
         for (LoadBalancerMergedHostUsage LoadBalancerMergedHostUsage : lbMergedHostUsages) {
             List<LoadBalancerMergedHostUsage> usageList;
+            LbIdAccountId key = new LbIdAccountId(LoadBalancerMergedHostUsage.getLoadbalancerId(), LoadBalancerMergedHostUsage.getAccountId());
 
-            if (!usagesByLbId.containsKey(LoadBalancerMergedHostUsage.getLoadbalancerId())) {
+            if (!usagesByLbId.containsKey(key)) {
                 usageList = new ArrayList<LoadBalancerMergedHostUsage>();
-                usagesByLbId.put(LoadBalancerMergedHostUsage.getLoadbalancerId(), usageList);
+                usagesByLbId.put(key, usageList);
             }
 
-            usageList = usagesByLbId.get(LoadBalancerMergedHostUsage.getLoadbalancerId());
+            usageList = usagesByLbId.get(key);
             usageList.add(LoadBalancerMergedHostUsage);
         }
 
@@ -47,19 +49,21 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     }
 
     @Override
-    public List<Usage> processRecords(List<LoadBalancerMergedHostUsage> lbMergedHostUsages, Calendar hourToProcess) {
+    public List<Usage> processRecords(List<LoadBalancerMergedHostUsage> lbMergedHostUsages, Calendar hourToProcess, Set<LbIdAccountId> lbsActiveDuringHour) {
         List<Usage> processedRecords = new ArrayList<Usage>();
 
-        if (lbMergedHostUsages == null || lbMergedHostUsages.isEmpty()) {
-            return processedRecords;
+        Map<LbIdAccountId, List<LoadBalancerMergedHostUsage>> usagesByLbId = groupUsagesByLbIdAccountId(lbMergedHostUsages);
+
+        for (LbIdAccountId lbActiveDuringHour : lbsActiveDuringHour) {
+            if (!usagesByLbId.containsKey(lbActiveDuringHour)) {
+                usagesByLbId.put(lbActiveDuringHour, new ArrayList<LoadBalancerMergedHostUsage>());
+            }
         }
 
-        Map<Integer, List<LoadBalancerMergedHostUsage>> usagesByLbId = groupUsagesByLbId(lbMergedHostUsages);
+        for (LbIdAccountId lbIdAccountId : usagesByLbId.keySet()) {
+            List<LoadBalancerMergedHostUsage> lbMergedHostRecordsForLoadBalancer = usagesByLbId.get(lbIdAccountId);
 
-        for (Integer lbId : usagesByLbId.keySet()) {
-            List<LoadBalancerMergedHostUsage> lbMergedHostRecordsForLoadBalancer = usagesByLbId.get(lbId);
-
-            List<Usage> processedRecordsForLb = processRecordsForLb(lbMergedHostRecordsForLoadBalancer, hourToProcess);
+            List<Usage> processedRecordsForLb = processRecordsForLb(lbIdAccountId.getAccountId(), lbIdAccountId.getLbId(), lbMergedHostRecordsForLoadBalancer, hourToProcess);
             processedRecords.addAll(processedRecordsForLb);
         }
 
@@ -71,7 +75,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         @param lbMergedHostUsageRecordsForLoadBalancer: Expected to be in order by pollTime.
      */
     @Override
-    public List<Usage> processRecordsForLb(List<LoadBalancerMergedHostUsage> lbMergedHostUsageRecordsForLoadBalancer, Calendar hourToProcess) {
+    public List<Usage> processRecordsForLb(Integer accountId, Integer lbId, List<LoadBalancerMergedHostUsage> lbMergedHostUsageRecordsForLoadBalancer, Calendar hourToProcess) {
         List<Usage> processedRecords = new ArrayList<Usage>();
         Calendar previousHour;
         Calendar hourToStop;
@@ -79,17 +83,27 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         boolean isFirstRecordOfHourToProcess = true;
         LoadBalancerMergedHostUsage mostRecentPreviousRecord = null;
 
-        if (lbMergedHostUsageRecordsForLoadBalancer == null || lbMergedHostUsageRecordsForLoadBalancer.isEmpty()) {
-            return processedRecords;
-        }
-
         hourToProcess = CalendarUtils.stripOutMinsAndSecs(hourToProcess);
         previousHour = CalendarUtils.stripOutMinsAndSecs(hourToProcess);
         previousHour.add(Calendar.HOUR, -1);
         hourToStop = CalendarUtils.stripOutMinsAndSecs(hourToProcess);
         hourToStop.add(Calendar.HOUR, 1);
 
-        Usage newRecordForLb = initializeRecordForLb(lbMergedHostUsageRecordsForLoadBalancer.get(0), hourToProcess, hourToStop);
+        if (lbMergedHostUsageRecordsForLoadBalancer == null || lbMergedHostUsageRecordsForLoadBalancer.isEmpty()) {
+            Usage zeroedOutUsage = initializeRecordForLb(accountId, lbId, hourToProcess, hourToStop);
+            processedRecords.add(zeroedOutUsage);
+            return processedRecords;
+        }
+
+        final LoadBalancerMergedHostUsage firstRecordInList = lbMergedHostUsageRecordsForLoadBalancer.get(0);
+
+        if (firstRecordInList.getEventType() != null
+            && firstRecordInList.getEventType().equals(CREATE_LOADBALANCER)
+            && firstRecordInList.getPollTime().compareTo(hourToStop) >= 0) {
+            return processedRecords;
+        }
+
+        Usage newRecordForLb = initializeRecordForLb(firstRecordInList, hourToProcess, hourToStop);
 
         for (LoadBalancerMergedHostUsage lbMergedHostUsage : lbMergedHostUsageRecordsForLoadBalancer) {
             Calendar pollTime = lbMergedHostUsage.getPollTime();
@@ -137,8 +151,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                     } else {
 
                         if (isFirstRecordOfHourToProcess && !previousHourRecordExists) {
-                            int tags = getTags(lbMergedHostUsage);
-                            int numVips = getNumVips(lbMergedHostUsage);
+                            int tags = getTags(lbMergedHostUsage.getLoadbalancerId());
+                            int numVips = getNumVips(lbMergedHostUsage.getLoadbalancerId());
                             newRecordForLb.setTags(tags);
                             newRecordForLb.setNumVips(numVips);
                         }
@@ -170,16 +184,16 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         return processedRecords;
     }
 
-    private int getTags(LoadBalancerMergedHostUsage lbMergedHostUsage) {
+    private int getTags(Integer lbId) {
         int mostRecentTagsBitmask;
 
         try {
-            Usage mostRecentUsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbMergedHostUsage.getLoadbalancerId());
+            Usage mostRecentUsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbId);
             mostRecentTagsBitmask = mostRecentUsageForLoadBalancer.getTags();
         } catch (EntityNotFoundException e) {
             // TODO: Put an alert and monitor it!
             LOG.error("Unable to get proper tags for record. Please verify manually!", e);
-            BitTags bitTags = loadbalancerService.getCurrentBitTags(lbMergedHostUsage.getLoadbalancerId(), lbMergedHostUsage.getAccountId());
+            BitTags bitTags = loadbalancerService.getCurrentBitTags(lbId);
             bitTags.flipTagOff(BitTag.SSL);
             bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
             mostRecentTagsBitmask = bitTags.getBitTags();
@@ -188,12 +202,12 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         return mostRecentTagsBitmask;
     }
 
-    private int getNumVips(LoadBalancerMergedHostUsage lbMergedHostUsage) {
+    private int getNumVips(Integer lbId) {
         final int DEFAULT_NUM_VIPS = 1;
         int numVips = DEFAULT_NUM_VIPS;
 
         try {
-            Usage mostRecentUasageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbMergedHostUsage.getLoadbalancerId());
+            Usage mostRecentUasageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbId);
             numVips = mostRecentUasageForLoadBalancer.getNumVips();
         } catch (EntityNotFoundException e) {
             // TODO: Put an alert and monitor it!
@@ -201,6 +215,26 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         }
 
         return numVips;
+    }
+
+    private Usage initializeRecordForLb(Integer accountId, Integer loadbalancerId, Calendar startTime, Calendar endTime) {
+        Usage usage = new Usage();
+
+        LoadBalancer lb = new LoadBalancer();
+        lb.setAccountId(accountId);
+        lb.setId(loadbalancerId);
+
+        usage.setLoadbalancer(lb);
+        usage.setAccountId(accountId);
+        usage.setStartTime(startTime);
+        usage.setEndTime(endTime);
+        usage.setTags(getTags(loadbalancerId));
+        usage.setNumVips(getNumVips(loadbalancerId));
+        usage.setCorrected(false);
+        usage.setNeedsPushed(true);
+        usage.setEntryVersion(0);
+
+        return usage;
     }
 
     private Usage initializeRecordForLb(LoadBalancerMergedHostUsage lbMergedHostUsage, Calendar startTime, Calendar endTime) {

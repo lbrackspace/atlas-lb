@@ -85,7 +85,7 @@ public interface LoadBalancerService {
 
     List<LoadBalancer> getLoadBalancersWithUsage(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit);
 
-    boolean isServiceNetLoadBalancer(Integer accountId, Integer lbId);
+    boolean isServiceNetLoadBalancer(Integer lbId);
 
-    BitTags getCurrentBitTags(Integer lbId, Integer accountId);
+    BitTags getCurrentBitTags(Integer lbId);
 }

@@ -4,13 +4,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.AbstractJob;
-import org.openstack.atlas.jobs.JobInterface;
 import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfiguration;
 import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.pojos.LbIdAccountId;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Component;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class LoadBalancerUsageRollupJob extends AbstractJob {
@@ -36,6 +38,8 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
     private UsageRepository usageRepository;
     @Autowired
     private LoadBalancerMergedHostUsageRepository lbMergedHostUsageRepository;
+    @Autowired
+    private LoadBalancerRepository loadBalancerRepository;
     @Autowired
     private UsageRollupProcessor usageRollupProcessor;
     @Autowired
@@ -109,11 +113,15 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
                 throw pe;
             }
 
+            LOG.info(String.format("Finding loadbalancers that were active for hour '%s'...", hourToRollup.getTime().toString()));
+            Set<LbIdAccountId> loadBalancersActiveDuringPeriod = loadBalancerRepository.getLoadBalancersActiveDuringPeriod(hourToRollup, rollupMarker);
+            LOG.info(String.format("%d loadbalancers were active for hour '%s'.", loadBalancersActiveDuringPeriod.size(), hourToRollup.getTime().toString()));
+
             LOG.info(String.format("Retrieving usage entries to process from polling DB for hour '%s'...", hourToRollup.getTime().toString()));
             List<LoadBalancerMergedHostUsage> pollingUsages = lbMergedHostUsageRepository.getAllUsageRecordsInOrderBeforeTime(rollupMarker);
 
             LOG.info(String.format("Processing usage entries for hour '%s'...", hourToRollup.getTime().toString()));
-            List<Usage> usagesToInsert = usageRollupProcessor.processRecords(pollingUsages, hourToRollup);
+            List<Usage> usagesToInsert = usageRollupProcessor.processRecords(pollingUsages, hourToRollup, loadBalancersActiveDuringPeriod);
 
             if (!usagesToInsert.isEmpty()) {
                 usageRepository.batchCreate(usagesToInsert);
