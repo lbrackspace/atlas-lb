@@ -38,7 +38,7 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
             sendErrorToEventResource(requestLb);
             return;
         }
-            
+
         try {
             LOG.debug(String.format("Removing suspension from load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
             reverseProxyLoadBalancerService.removeSuspension(dbLoadBalancer);
@@ -56,7 +56,8 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER);
         } catch (UsageEventCollectionException uex) {
-            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
         }
 
         // Update load balancer in DB

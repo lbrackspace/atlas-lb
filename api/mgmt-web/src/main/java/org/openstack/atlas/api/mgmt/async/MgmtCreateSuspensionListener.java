@@ -17,7 +17,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.UPDATE_LOADBALANCER;
 
-public class MgmtCreateSuspensionListener  extends BaseListener{
+public class MgmtCreateSuspensionListener extends BaseListener {
 
     private final Log LOG = LogFactory.getLog(MgmtCreateSuspensionListener.class);
 
@@ -41,7 +41,8 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER);
         } catch (UsageEventCollectionException uex) {
-            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
         }
 
         try {

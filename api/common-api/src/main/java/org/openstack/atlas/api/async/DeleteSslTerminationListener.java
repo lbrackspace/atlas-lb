@@ -55,7 +55,7 @@ public class DeleteSslTerminationListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(errorMsgLB);
-            // Notify usage processor with a usage event
+            // Notify usage processor
             try {
                 usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF);
             } catch (UsageEventCollectionException uex) {

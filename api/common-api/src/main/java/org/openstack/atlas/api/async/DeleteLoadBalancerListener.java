@@ -71,7 +71,8 @@ public class DeleteLoadBalancerListener extends BaseListener {
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
         } catch (UsageEventCollectionException uex) {
-            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s", dbLoadBalancer.getId()));
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
         }
 
         dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);
