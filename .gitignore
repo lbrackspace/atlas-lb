@@ -10,6 +10,7 @@
 .classpath
 */target
 classes/
+target/
 */target/*
 */*/target
 */*/*/target/*
