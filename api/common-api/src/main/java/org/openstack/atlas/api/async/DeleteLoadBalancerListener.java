@@ -67,8 +67,6 @@ public class DeleteLoadBalancerListener extends BaseListener {
             LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in database.", dbLoadBalancer.getId()));
         }
 
-        dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);
-
         // Notify usage processor
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
@@ -77,6 +75,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
                     ":: Exception: %s", dbLoadBalancer.getId(), uex));
         }
 
+        dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);
         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.DELETED);
 
         // Add atom entry

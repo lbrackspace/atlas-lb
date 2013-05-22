@@ -82,6 +82,9 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
                 usageRecordToProcess = new UsageEventMapper(loadBalancer,isServicenetLb, usage, usageEvent, pollTime)
                         .mapSnmpUsageToUsageEvent();
             }
+            if(usageEvent == UsageEvent.DELETE_LOADBALANCER) {
+                usageRecordToProcess.setNumVips(0);
+            }
             usageRecordsToCreate.add(usageRecordToProcess);
             LOG.info(String.format("Added usage record for load balancer id '%d' to list to be inserted.",
                     loadBalancer.getId()));
