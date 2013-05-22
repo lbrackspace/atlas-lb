@@ -92,9 +92,9 @@ public abstract class AbstractUsageEventCollection {
     public void processSnmpUsage(List<Host> hosts, SnmpUsage snmpUsage, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
         gatherHostsData(hosts);
 
-        List<SnmpUsage> snmpUsages = new ArrayList<SnmpUsage>();
         if (this.hosts != null && !this.hosts.isEmpty()) {
             for (Host h : this.hosts) {
+                List<SnmpUsage> snmpUsages = new ArrayList<SnmpUsage>();
                 snmpUsage = new SnmpUsage();
                 snmpUsage.setHostId(h.getId());
                 snmpUsages.add(snmpUsage);
