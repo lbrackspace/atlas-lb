@@ -3,10 +3,7 @@ package org.openstack.atlas.usagerefactor;
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
@@ -67,6 +64,13 @@ public class UsageRollupProcessorTest2 {
 
         hourToProcess = new GregorianCalendar(2013, Calendar.APRIL, 10, 20, 0, 0);
         allUsageRecordsInOrder = loadBalancerMergedHostUsageRepository.getAllUsageRecordsInOrder();
+    }
+
+    @After
+    public void tearDown() {
+        lbsActiveDuringHour.clear();
+        allUsageRecordsInOrder.clear();
+        processedUsages.clear();
     }
 
     @Test
@@ -360,6 +364,14 @@ public class UsageRollupProcessorTest2 {
         Usage actualUsage = processedUsages.get(0);
         AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:00:00", "2013-04-10 21:00:00",
                 1, 1, 0, null, 0, true, null, actualUsage);
+    }
+
+    @Test
+    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case009.xml")
+    public void normalUsageCase009() throws Exception {
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess, lbsActiveDuringHour);
+
+        Assert.assertEquals(0, processedUsages.size());
     }
 
     @Test

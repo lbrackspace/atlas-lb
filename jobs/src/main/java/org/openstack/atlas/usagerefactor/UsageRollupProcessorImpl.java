@@ -117,6 +117,12 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                 if (withinPreviousHour) {
                     previousHourRecordExists = true;
                     mostRecentPreviousRecord = lbMergedHostUsage;
+
+                    if(mostRecentPreviousRecord.getEventType() != null
+                       && mostRecentPreviousRecord.getEventType().equals(DELETE_LOADBALANCER)) {
+                        return processedRecords;
+                    }
+
                 }
                 newRecordForLb.setTags(lbMergedHostUsage.getTagsBitmask());
                 continue;
