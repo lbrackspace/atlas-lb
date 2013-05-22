@@ -9,7 +9,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public interface UsageEventProcessor {
-    public void processUsageEvent(List<SnmpUsage> usages, LoadBalancer loadBalancer, UsageEvent usageEvent);
+    public void processUsageEvent(List<SnmpUsage> usages, LoadBalancer loadBalancer, UsageEvent usageEvent, Calendar pollTime);
 
     public AccountUsage createAccountUsageEntry(LoadBalancer loadBalancer, Calendar eventTime);
 }

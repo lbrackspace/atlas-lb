@@ -66,7 +66,7 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
                 throw new UsageEventCollectionException("Error retrieving SNMP futures: ", e);
             }
         }
-        usageEventProcessor.processUsageEvent(usages, lb, event);
+        usageEventProcessor.processUsageEvent(usages, lb, event, null);
     }
 
     public List<Future<SnmpUsage>> getFutures() {

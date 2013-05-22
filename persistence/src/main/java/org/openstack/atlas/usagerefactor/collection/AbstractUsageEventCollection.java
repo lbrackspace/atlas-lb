@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -92,13 +93,14 @@ public abstract class AbstractUsageEventCollection {
     public void processSnmpUsage(List<Host> hosts, SnmpUsage snmpUsage, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
         gatherHostsData(hosts);
 
+        Calendar pollTime = Calendar.getInstance();
         if (this.hosts != null && !this.hosts.isEmpty()) {
             for (Host h : this.hosts) {
                 List<SnmpUsage> snmpUsages = new ArrayList<SnmpUsage>();
                 snmpUsage = new SnmpUsage();
                 snmpUsage.setHostId(h.getId());
                 snmpUsages.add(snmpUsage);
-                usageEventProcessor.processUsageEvent(snmpUsages, lb, event);
+                usageEventProcessor.processUsageEvent(snmpUsages, lb, event, pollTime);
             }
         } else {
             LOG.error("Hosts data invalid, this shouldn't happen... Verify DB for data and notify developer immediately. ");

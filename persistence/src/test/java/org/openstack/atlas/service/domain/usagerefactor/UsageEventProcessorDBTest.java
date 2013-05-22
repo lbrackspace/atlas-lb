@@ -88,7 +88,7 @@ public class UsageEventProcessorDBTest {
             Calendar starttime = Calendar.getInstance();
             starttime.roll(Calendar.MONTH, false);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -125,7 +125,7 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(true);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -162,7 +162,7 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(true);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -199,7 +199,7 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(true);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -237,7 +237,7 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(false);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -274,7 +274,7 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(false);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -316,7 +316,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -359,7 +359,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -400,7 +400,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -441,7 +441,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -484,7 +484,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -525,7 +525,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -562,7 +562,7 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(false);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -586,7 +586,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> allUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(allUsages);
             Assert.assertEquals(1, allUsages.size());
@@ -623,7 +623,7 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(false);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -647,7 +647,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> allUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(allUsages);
             Assert.assertEquals(1, allUsages.size());
@@ -684,7 +684,7 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(false);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -709,7 +709,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> allUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(allUsages);
             Assert.assertEquals(1, allUsages.size());
@@ -747,7 +747,7 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(true);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -771,7 +771,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_OFF, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> allUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(allUsages);
             Assert.assertEquals(1, allUsages.size());
@@ -808,7 +808,7 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(true);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -832,7 +832,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ONLY_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> allUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(allUsages);
             Assert.assertEquals(1, allUsages.size());
@@ -869,7 +869,7 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
             when(loadBalancerRepository.isServicenetLoadBalancer(Matchers.anyInt())).thenReturn(true);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -895,7 +895,7 @@ public class UsageEventProcessorDBTest {
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> allUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(allUsages);
             Assert.assertEquals(1, allUsages.size());

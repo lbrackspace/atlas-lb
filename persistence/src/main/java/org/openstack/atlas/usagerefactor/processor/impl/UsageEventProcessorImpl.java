@@ -16,6 +16,7 @@ import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.openstack.atlas.usagerefactor.processor.mapper.UsageEventMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -50,11 +51,14 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
     }
 
     @Override
-    public void processUsageEvent(List<SnmpUsage> usages, LoadBalancer loadBalancer, UsageEvent usageEvent) {
+    public void processUsageEvent(List<SnmpUsage> usages, LoadBalancer loadBalancer, UsageEvent usageEvent, Calendar pollTime) {
         LOG.info(String.format("Processing '%s' usage event for load balancer '%d'...", usageEvent.name(),
                 loadBalancer.getId()));
-        Calendar pollTime = Calendar.getInstance();
+        if(pollTime == null) {
+            pollTime = Calendar.getInstance();
+        }
 
+        List<LoadBalancerHostUsage> usageRecordsToCreate = new ArrayList<LoadBalancerHostUsage>();
         for (SnmpUsage usage : usages) {
             LoadBalancerHostUsage usageRecordToProcess;
             LoadBalancerHostUsage prevUsageRecord = null;
@@ -78,10 +82,16 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
                 usageRecordToProcess = new UsageEventMapper(loadBalancer,isServicenetLb, usage, usageEvent, pollTime)
                         .mapSnmpUsageToUsageEvent();
             }
-            usageRefactorService.createUsageEvent(usageRecordToProcess);
-            LOG.info(String.format("Successfully created usage event for load balancer '%d'...",
+            usageRecordsToCreate.add(usageRecordToProcess);
+            LOG.info(String.format("Added usage record for load balancer id '%d' to list to be inserted.",
                     loadBalancer.getId()));
         }
+
+        if(!usageRecordsToCreate.isEmpty()){
+            usageRefactorService.batchCreateLoadBalancerHostUsages(usageRecordsToCreate);
+        }
+
+        LOG.info(String.format("Successfully inserted '%d' usage records into lb_host_usage table.", usageRecordsToCreate.size()));
 
         // If account specific event then go ahead and create entry in account usage table
         if (usageEvent.equals(CREATE_LOADBALANCER) || usageEvent.equals(DELETE_LOADBALANCER)
