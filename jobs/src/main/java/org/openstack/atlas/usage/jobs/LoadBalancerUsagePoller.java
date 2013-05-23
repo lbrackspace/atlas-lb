@@ -8,6 +8,7 @@ import org.openstack.atlas.jobs.AbstractJob;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
@@ -70,6 +71,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
             LOG.error("There was an error retrieving current usage from stingray using snmp. " + e);
             return;
         }
+
         LOG.info("Retrieved records for " + currentUsages.size() + " hosts from stingray by SNMP.");
         UsageProcessorResult result = usageProcessor.mergeRecords(existingUsages, currentUsages, pollTime);
         LOG.info("Completed processing of current usage");
@@ -110,7 +112,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         List<Host> accessibleHosts = new ArrayList<Host>();
         for(Host host : hostList) {
             try{
-                if(reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host))) {
+                if(host.isSoapEndpointActive()) {
                     LOG.info("Host: " + host.getName() + " is accessible.");
                     accessibleHosts.add(host);
                 } else {

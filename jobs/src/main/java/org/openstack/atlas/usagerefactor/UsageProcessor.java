@@ -2,6 +2,7 @@ package org.openstack.atlas.usagerefactor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
@@ -51,7 +52,8 @@ public class UsageProcessor {
         currentUsages = MapUtil.swapKeys(currentUsages);
 
         //Process current usage now. The method processExistingEvents should have removed
-        UsageProcessorResult processorResult = usagePollerHelper.processCurrentUsage(existingUsages, currentUsages, pollTime);
+        UsageProcessorResult processorResult = usagePollerHelper.processCurrentUsage(existingUsages, currentUsages,
+                pollTime);
         mergedHostUsages.addAll(processorResult.getMergedUsages());
 
         return new UsageProcessorResult(mergedHostUsages, processorResult.getLbHostUsages());

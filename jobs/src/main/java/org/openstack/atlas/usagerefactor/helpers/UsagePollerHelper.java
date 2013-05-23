@@ -102,12 +102,21 @@ public class UsagePollerHelper {
     public UsageProcessorResult processCurrentUsage(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages,
                                                     Map<Integer, Map<Integer, SnmpUsage>> currentUsages,
                                                     Calendar pollTime){
+        LOG.info("Retrieving load balancers that are in BUILD status...");
+        Map<Integer, LoadBalancer> buildingLoadBalancers = getMapOfBuildingLoadBalancers();
         List<LoadBalancerMergedHostUsage> mergedUsages = new ArrayList<LoadBalancerMergedHostUsage>();
         List<LoadBalancerHostUsage> newLBHostUsages = new ArrayList<LoadBalancerHostUsage>();
 
         Map<Integer, List<VirtualIp>> vipMap = null;
         Map<Integer, SslTermination> sslMap = null;
         for (Integer loadbalancerId : currentUsages.keySet()) {
+            if(buildingLoadBalancers.containsKey(loadbalancerId)){
+                //This is to handle an issue when zeus is under heavy load on the create load balancer call and the
+                //api has not inserted the create load balancer record yet.
+                LOG.info(String.format("Load balancer '%d' is in BUILD status but SNMP still returned usage for it.",
+                        loadbalancerId));
+                continue;
+            }
             if (!existingUsages.containsKey(loadbalancerId)) {
                 //There are no previous records in lb_host_usage for this loadbalancer
                 //Attempt to get previous record from lb_merged_host_usage table
@@ -296,5 +305,24 @@ public class UsagePollerHelper {
         }
 
         return newlbHostUsage;
+    }
+
+    private Map<Integer, LoadBalancer> getMapOfBuildingLoadBalancers() {
+        List<LoadBalancer> buildingLoadBalancerList = null;
+        try {
+            buildingLoadBalancerList = loadBalancerService.getLoadBalancersForAudit("BUILD", null);
+        } catch(Exception e) {
+            LOG.error("Retrieval error of load balancers in BUILD status. " + e);
+        }
+
+        Map<Integer, LoadBalancer> buildingLoadBalancerMap = new HashMap<Integer, LoadBalancer>();
+
+        if(buildingLoadBalancerList != null) {
+            for(LoadBalancer lb : buildingLoadBalancerList) {
+                buildingLoadBalancerMap.put(lb.getId(), lb);
+            }
+        }
+
+        return buildingLoadBalancerMap;
     }
 }
