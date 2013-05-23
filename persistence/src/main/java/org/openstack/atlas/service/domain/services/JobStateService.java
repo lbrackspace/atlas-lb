@@ -19,7 +19,7 @@ public interface JobStateService {
 
     JobState updateJobState(JobName jobName, JobStateVal jobStateVal);
 
-    JobState updateJobState(JobName jobName, JobStateVal jobStateVal, String inputPath);
+    public JobState updateInputPath(JobName jobName, String inputPath);
 
     void deleteOldLoggingStates();
 

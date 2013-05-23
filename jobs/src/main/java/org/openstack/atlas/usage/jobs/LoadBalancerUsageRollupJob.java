@@ -2,10 +2,7 @@ package org.openstack.atlas.usage.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.jobs.AbstractJob;
-import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfiguration;
-import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfigurationKeys;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
@@ -15,8 +12,6 @@ import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
-import org.openstack.atlas.usage.execution.UsageAtomHopperExecution;
-import org.openstack.atlas.usage.execution.UsageAtomHopperRetryExecution;
 import org.openstack.atlas.usagerefactor.UsageRollupProcessor;
 import org.openstack.atlas.util.common.CalendarUtils;
 import org.quartz.JobExecutionContext;
@@ -32,7 +27,6 @@ import java.util.Set;
 @Component
 public class LoadBalancerUsageRollupJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsageRollupJob.class);
-    private Configuration configuration = new AtomHopperConfiguration();
 
     @Autowired
     private UsageRepository usageRepository;
@@ -42,10 +36,6 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
     private LoadBalancerRepository loadBalancerRepository;
     @Autowired
     private UsageRollupProcessor usageRollupProcessor;
-    @Autowired
-    private UsageAtomHopperExecution atomHopperUsageJobExecution;
-    @Autowired
-    private UsageAtomHopperRetryExecution atomHopperUsageJobRetryExecution;
 
     @Override
     public Log getLogger() {
@@ -67,16 +57,6 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
             rollupUsage();
         } else {
             throw new Exception("Warning! We are currently not rolling up usage! Something may be wrong with the usage poller!");
-        }
-
-        // TODO: Move to separate class
-        try {
-            atomHopperUsageJobExecution.execute();
-            if (Boolean.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_run_failed_entries))) {
-                atomHopperUsageJobRetryExecution.execute();
-            }
-        } catch (Exception e) {
-            throw new JobExecutionException(e);
         }
     }
 
@@ -105,7 +85,7 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
         while (hourToRollup == null || hourToRollup.before(hourToStop)) {
             try {
                 hourToRollup = getHourToRollup(hourToStop);
-                if(hourToRollup == null) return;
+                if (hourToRollup == null) return;
                 rollupMarker = CalendarUtils.copy(hourToRollup);
                 rollupMarker.add(Calendar.HOUR, 1);
             } catch (ParseException pe) {
@@ -128,7 +108,7 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
             }
 
             String lastSuccessfulHourProcessed = CalendarUtils.calendarToString(hourToRollup);
-            jobStateService.updateJobState(JobName.LB_USAGE_ROLLUP, JobStateVal.IN_PROGRESS, lastSuccessfulHourProcessed);
+            jobStateService.updateInputPath(JobName.LB_USAGE_ROLLUP, lastSuccessfulHourProcessed);
 
             LOG.info(String.format("Deleting polling usage entries before hour '%s'...", hourToRollup.getTime().toString()));
             lbMergedHostUsageRepository.deleteAllRecordsBefore(hourToRollup);

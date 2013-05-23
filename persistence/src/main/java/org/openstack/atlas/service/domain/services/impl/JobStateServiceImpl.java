@@ -61,7 +61,7 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
 
     @Override
     /* Creates an entry in the database if it doesn't exist */
-    public JobState updateJobState(JobName jobName, JobStateVal jobStateVal, String inputPath) {
+    public JobState updateInputPath(JobName jobName, String inputPath) {
         JobState jobState;
 
         try {
@@ -70,10 +70,7 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
             jobState = jobStateRepository.create(jobName, inputPath);
         }
 
-        jobState.setState(jobStateVal);
         jobState.setInputPath(inputPath);
-        if (jobStateVal.equals(JobStateVal.IN_PROGRESS)) jobState.setStartTime(Calendar.getInstance());
-        if (jobStateVal.equals(JobStateVal.FINISHED)) jobState.setEndTime(Calendar.getInstance());
         jobStateRepository.update(jobState);
         return jobState;
     }

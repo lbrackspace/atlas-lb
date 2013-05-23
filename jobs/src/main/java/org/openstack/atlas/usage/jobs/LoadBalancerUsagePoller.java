@@ -8,7 +8,6 @@ import org.openstack.atlas.jobs.AbstractJob;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
@@ -26,10 +25,7 @@ import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 @Component
 public class LoadBalancerUsagePoller extends AbstractJob {
@@ -41,8 +37,6 @@ public class LoadBalancerUsagePoller extends AbstractJob {
     private HostService hostService;
     @Autowired
     private UsageProcessor usageProcessor;
-    @Autowired
-    private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
 
     @Override
     public Log getLogger() {
@@ -93,32 +87,36 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         List<Host> hostList = getAccessibleHosts();
         List<Callable<HostIdUsageMap>> callables = new ArrayList<Callable<HostIdUsageMap>>();
 
-        ExecutorService executor = Executors.newFixedThreadPool(hostList.size());
+        ExecutorService threadPool = Executors.newFixedThreadPool(hostList.size());
         for (Host host : hostList) {
             callables.add(new HostThread(host));
         }
 
-        List<Future<HostIdUsageMap>> futures = executor.invokeAll(callables);
-        for (Future<HostIdUsageMap> future : futures) {
-            mergedHostsUsage.put(future.get().getHostId(), future.get().getMap());
-        }
+        try {
+            List<Future<HostIdUsageMap>> futures = threadPool.invokeAll(callables);
+            for (Future<HostIdUsageMap> future : futures) {
+                mergedHostsUsage.put(future.get().getHostId(), future.get().getMap());
+            }
 
-        return mergedHostsUsage;
+            return mergedHostsUsage;
+        } finally {
+            shutdownAndAwaitTermination(threadPool);
+        }
     }
 
     private List<Host> getAccessibleHosts() {
         LOG.info("Discovering accessible hosts...");
         List<Host> hostList = hostService.getAllHosts();
         List<Host> accessibleHosts = new ArrayList<Host>();
-        for(Host host : hostList) {
-            try{
-                if(host.isSoapEndpointActive()) {
+        for (Host host : hostList) {
+            try {
+                if (host.isSoapEndpointActive()) {
                     LOG.info("Host: " + host.getName() + " is accessible.");
                     accessibleHosts.add(host);
                 } else {
                     LOG.info("Host: " + host.getName() + " is NOT accessible.");
                 }
-            }catch(Exception e) {
+            } catch (Exception e) {
                 LOG.info("Exception while checking host: " + host.getName() + " endpoint. " + e.getMessage());
             }
         }
@@ -129,6 +127,27 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         Cluster cluster = host.getCluster();
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, null);
+    }
+
+    private void shutdownAndAwaitTermination(ExecutorService pool) {
+        final int THREAD_POOL_TIMEOUT = 30;
+
+        pool.shutdown(); // Disable new tasks from being submitted
+        
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(THREAD_POOL_TIMEOUT, TimeUnit.SECONDS)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(THREAD_POOL_TIMEOUT, TimeUnit.SECONDS))
+                    LOG.error(String.format("Pool '%s' did not terminate!", pool.toString()));
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
     }
 
 }

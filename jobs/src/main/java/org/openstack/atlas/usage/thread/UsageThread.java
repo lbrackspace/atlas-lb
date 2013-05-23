@@ -11,26 +11,21 @@ import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRep
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 public class UsageThread extends AbstractAtomHopperThread {
-    private LoadBalancerEventRepository loadBalancerEventRepository;
-    private IdentityAuthClient identityAuthClient;
     private UsageEntryFactory usageEntryFactory;
     private UsageRepository usageRepository;
-    private AlertRepository alertRepository;
 
-    public UsageThread(List<Usage> usages, AtomHopperClient client, IdentityAuthClient identityAuthClient,
+    public UsageThread(Collection<Usage> usages, AtomHopperClient client, IdentityAuthClient identityAuthClient,
                        UsageRepository usageRepository,
                        LoadBalancerEventRepository loadBalancerEventRepository,
                        AlertRepository alertRepository) {
         super(new ArrayList<Usage>(usages), client, identityAuthClient, loadBalancerEventRepository, alertRepository);
         this.usageRepository = usageRepository;
         this.usageEntryFactory = new UsageEntryFactoryImpl();
-        this.identityAuthClient = identityAuthClient;
-        this.loadBalancerEventRepository = loadBalancerEventRepository;
-        this.alertRepository = alertRepository;
     }
 
     @Override

@@ -27,6 +27,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     private UsageRepository usageRepository;
     @Autowired
     private LoadBalancerService loadbalancerService;
+    private Map<Integer, Integer> tagsCache = new HashMap<Integer, Integer>();
+    private Map<Integer, Integer> numVipsCache = new HashMap<Integer, Integer>();
 
     @Override
     public Map<LbIdAccountId, List<LoadBalancerMergedHostUsage>> groupUsagesByLbIdAccountId(List<LoadBalancerMergedHostUsage> lbMergedHostUsages) {
@@ -194,8 +196,13 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         int mostRecentTagsBitmask;
 
         try {
-            Usage mostRecentUsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbId);
-            mostRecentTagsBitmask = mostRecentUsageForLoadBalancer.getTags();
+            if(!tagsCache.containsKey(lbId)) {
+                Usage mostRecentUsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbId);
+                mostRecentTagsBitmask = mostRecentUsageForLoadBalancer.getTags();
+                tagsCache.put(lbId, mostRecentTagsBitmask);
+            } else {
+                mostRecentTagsBitmask = tagsCache.get(lbId);
+            }
         } catch (EntityNotFoundException e) {
             // TODO: Put an alert and monitor it!
             LOG.error("Unable to get proper tags for record. Please verify manually!", e);
@@ -203,6 +210,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             bitTags.flipTagOff(BitTag.SSL);
             bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
             mostRecentTagsBitmask = bitTags.getBitTags();
+            tagsCache.put(lbId, mostRecentTagsBitmask);
         }
 
         return mostRecentTagsBitmask;
@@ -213,11 +221,17 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         int numVips = DEFAULT_NUM_VIPS;
 
         try {
-            Usage mostRecentUasageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbId);
-            numVips = mostRecentUasageForLoadBalancer.getNumVips();
+            if(!numVipsCache.containsKey(lbId)) {
+                Usage mostRecentUasageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbId);
+                numVips = mostRecentUasageForLoadBalancer.getNumVips();
+                numVipsCache.put(lbId, numVips);
+            } else {
+                numVips = numVipsCache.get(lbId);
+            }
         } catch (EntityNotFoundException e) {
             // TODO: Put an alert and monitor it!
             LOG.error("Unable to get proper vips for record. Please verify manually!", e);
+            numVipsCache.put(lbId, numVips);
         }
 
         return numVips;

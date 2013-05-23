@@ -22,6 +22,7 @@
                 <ref bean="eventsDeletionJobTrigger"/>
                 <ref bean="alertDeletionJobTrigger"/>
                 <ref bean="hostEndpointPollerJobTrigger"/>
+                <ref bean="atomHopperUsagePusherTrigger"/>
             </list>
         </property>
         <!-- Scheduler context key we use this in delegating job bean -->
@@ -202,6 +203,22 @@
     <bean id="lbDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="lbDeletionJob"/>
         <property name="cronExpression" value="${lb-deletion-job.interval}"/>
+    </bean>
+
+    <!--ATOM HOPPER USAGE PUSHER CONFIG-->
+    <bean id="atomHopperUsagePusherJobBean" class="org.openstack.atlas.usage.jobs.AtomHopperUsagePusher"
+          autowire="byName"/>
+    <bean name="atomHopperUsagePusherJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="job.bean.name" value="atomHopperUsagePusherJobBean"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="atomHopperUsagePusherTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="atomHopperUsagePusherJob"/>
+        <property name="cronExpression" value="${atom-hopper-usage-pusher.interval}"/>
     </bean>
 
 </beans>
