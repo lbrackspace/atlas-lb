@@ -1,12 +1,10 @@
 package org.openstack.atlas.usagerefactor.helpers;
 
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.SslTermination;
-import org.openstack.atlas.service.domain.entities.Usage;
-import org.openstack.atlas.service.domain.entities.VirtualIp;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
@@ -34,6 +32,8 @@ public class UsagePollerHelper {
     private LoadBalancerService loadBalancerService;
     @Autowired
     private VirtualIpRepository virtualIpRepository;
+    @Autowired
+    private LoadBalancerRepository loadBalancerRepository;
 
     public UsagePollerHelper() {} 
 
@@ -310,7 +310,7 @@ public class UsagePollerHelper {
     private Map<Integer, LoadBalancer> getMapOfBuildingLoadBalancers() {
         List<LoadBalancer> buildingLoadBalancerList = null;
         try {
-            buildingLoadBalancerList = loadBalancerService.getLoadBalancersForAudit("BUILD", null);
+            buildingLoadBalancerList = loadBalancerRepository.getLoadBalancersWithStatus(LoadBalancerStatus.BUILD);
         } catch(Exception e) {
             LOG.error("Retrieval error of load balancers in BUILD status. " + e);
         }
