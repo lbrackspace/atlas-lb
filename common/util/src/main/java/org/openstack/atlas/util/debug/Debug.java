@@ -140,12 +140,13 @@ public class Debug {
 
     // Tests to see if the throwable exc was caused by any of the exceptions in causeClasses
     public static Class getThrowableCausedByOrAssignableFrom(Throwable exc, Class... causeClasses) {
-        Throwable t = exc;
+        Throwable t;
         Class causeClass;
         int i;
         int last = causeClasses.length;
         for (i = 0; i < last; i++) {
             causeClass = causeClasses[i];
+            t = exc;
             while (t != null) {
                 if (causeClass.isAssignableFrom(t.getClass())) {
                     return causeClass;

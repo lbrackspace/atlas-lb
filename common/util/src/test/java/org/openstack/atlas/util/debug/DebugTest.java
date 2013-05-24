@@ -67,11 +67,12 @@ public class DebugTest {
 
             assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, IOException.class));
             assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, Exception.class));
-            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex,RuntimeException.class));
+            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, RuntimeException.class));
+            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, IllegalThreadStateException.class, ClassCastException.class, DebugTestBaseException.class));
 
             assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, DebugTestChildException.class));
             assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, DebugTestGrandChildException.class));
-            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex,Throwable.class));
+            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, Throwable.class));
             assertFalse(Debug.isThrowableCausedByOrAssignableFrom(ex, Error.class));
         }
     }

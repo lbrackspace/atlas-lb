@@ -1,5 +1,7 @@
 package org.openstack.atlas.api.integration;
 
+import org.openstack.atlas.util.debug.Debug;
+import java.net.SocketException;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.api.helpers.CacheKeyGen;
 import org.openstack.atlas.api.helpers.DateHelpers;
@@ -26,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -660,7 +663,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     public static boolean isNetworkConnectionException(Exception ex) {
-        return false;
+        return Debug.isThrowableCausedByOrAssignableFrom(ex, SocketException.class,SocketTimeoutException.class);
     }
 
     private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, AxisFault af) throws AxisFault {
