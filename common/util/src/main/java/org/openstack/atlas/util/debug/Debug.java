@@ -27,8 +27,6 @@ public class Debug {
         return System.currentTimeMillis();
     }
 
-
-
     public static String findClassPath(String className, ClassLoader classLoader) throws ClassNotFoundException {
         Class classIn = Class.forName(className, true, classLoader);
         return findClassPath(classIn, classLoader);
@@ -138,6 +136,33 @@ public class Debug {
             sbw.printf("\"%s\" -> \"%s\"\n", className, classPath);
         }
         return sbw.toString();
+    }
+
+    // Tests to see if the throwable exc was caused by any of the exceptions in causeClasses
+    public static Class getThrowableCausedByOrAssignableFrom(Throwable exc, Class... causeClasses) {
+        Throwable t = exc;
+        Class causeClass;
+        int i;
+        int last = causeClasses.length;
+        for (i = 0; i < last; i++) {
+            causeClass = causeClasses[i];
+            while (t != null) {
+                if (causeClass.isAssignableFrom(t.getClass())) {
+                    return causeClass;
+                }
+                t = t.getCause();
+            }
+        }
+        return null;
+    }
+
+    public static boolean isThrowableCausedByOrAssignableFrom(Throwable exc, Class... causeClasses) {
+        Class throwable = getThrowableCausedByOrAssignableFrom(exc, causeClasses);
+        if (throwable == null) {
+            return false;
+        }
+        return true;
+
     }
 
     public static String getExtendedStackTrace(Throwable th) {
