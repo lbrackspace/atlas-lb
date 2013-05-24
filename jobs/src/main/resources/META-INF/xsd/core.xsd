@@ -16,6 +16,11 @@
     targetNamespace="http://docs.rackspace.com/core/event">
 
     <include schemaLocation="_1.0Core.xsd"/>
+    <xsd:import  namespace="http://docs.rackspace.com/event/lbaas/delete"
+            schemaLocation="ProductExtension-LBaaS-delete.xsd"/>
+    <xsd:import  namespace="http://docs.rackspace.com/usage/lbaas"
+            schemaLocation="ProductExtension-LBaaS.xsd"/>
+
 
     <!-- Define the element for XSD 1.0 clients -->
     <element name="event" type="event:V1Element"/>

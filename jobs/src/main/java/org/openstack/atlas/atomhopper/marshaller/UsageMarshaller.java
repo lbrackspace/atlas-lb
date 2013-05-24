@@ -21,7 +21,7 @@ public class UsageMarshaller {
         Marshaller marshaller = jc.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-        marshaller.setProperty("com.sun.xml.bind.xmlDeclaration", Boolean.FALSE);
+        marshaller.setProperty("com.sun.xml.bind.xmlDeclaration", Boolean.TRUE);
         marshaller.setProperty(CharacterEscapeHandler.class.getName(), new CharacterEscapeHandler() {
             @Override
             public void escape(char[] ch, int start, int length, boolean isAttVal, Writer out) throws IOException {

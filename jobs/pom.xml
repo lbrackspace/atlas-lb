@@ -176,6 +176,7 @@
                     <schemaIncludes>
                         <include>entry.xsd</include>
                         <include>ProductExtension-LBaaS.xsd</include>
+                        <include>ProductExtension-LBaaS-delete.xsd</include>
                     </schemaIncludes>
                 </configuration>
                 <executions>
