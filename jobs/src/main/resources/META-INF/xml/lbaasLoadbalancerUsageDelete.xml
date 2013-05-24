@@ -1,0 +1,10 @@
+<productSchema xmlns="http://docs.rackspace.com/core/usage/schema"
+    namespace="http://docs.rackspace.com/event/lbaas/delete"
+               serviceCode="CloudLoadBalancers"
+               version="1"
+               resourceTypes="LOADBALANCER"
+               type="DELETE">
+    <description>
+        Delete event for lbaas loadbalancers.
+    </description>
+</productSchema>

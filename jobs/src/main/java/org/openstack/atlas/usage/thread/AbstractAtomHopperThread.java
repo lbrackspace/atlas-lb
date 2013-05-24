@@ -92,8 +92,11 @@ public abstract class AbstractAtomHopperThread implements Runnable {
                             usageRecord.setNeedsPushed(true);
                             usageRecord.setNumAttempts(numAttempts + 1);
                             failedToPushRecords.add(usageRecord);
-
-                            message = body.split("<message>")[1].split("</message>")[0];
+                            if (body != null) {
+                                message = body.split("<message>")[1].split("</message>")[0];
+                            } else {
+                                message = "Unidentified Error Please view logs and notify developer immediately!";
+                            }
                             generateServiceEventRecord(usageRecord, entrystring, message);
                             generateAtomHopperAlertRecord(usageRecord, "AH-FAILED-ENTRY-"
                                     + usageRecord.getLoadbalancer().getId(), message);
@@ -110,12 +113,16 @@ public abstract class AbstractAtomHopperThread implements Runnable {
                             usageRecord.setNumAttempts(numAttempts + 1);
                             failedToPushRecords.add(usageRecord);
 
-                            message = body.split("<message>")[1].split("</message>")[0];
+                            if (body != null) {
+                                message = body.split("<message>")[1].split("</message>")[0];
+                            } else {
+                                message = "Unidentified Error Please view logs and notify developer immediately!";
+                            }
                             generateAtomHopperAlertRecord(usageRecord, "AH-SERVICE-"
                                     + usageRecord.getLoadbalancer().getId(),
                                     "Atom Hopper service failure: " + message);
                             LOG.error("Failure to process Atom Hopper usage due to Atom Hopper service error: ");
-                            LOG.debug(String.format("body %s\n", body));
+                            LOG.error(String.format("body %s\n", body));
 
                             response.close();
                         }
@@ -129,9 +136,9 @@ public abstract class AbstractAtomHopperThread implements Runnable {
             }
 
 //            try {
-                LOG.info("Batch updating: " + usages.size() + " usage rows in the database...");
-                updatePushedRecords(usages);
-                LOG.info("Successfully batch updated: " + usages.size() + " usage rows in the database...");
+            LOG.info("Batch updating: " + usages.size() + " usage rows in the database...");
+            updatePushedRecords(usages);
+            LOG.info("Successfully batch updated: " + usages.size() + " usage rows in the database...");
 //            } catch (Exception lex) {
 //                LOG.error("There was batch updating usages, number of usages affected: " + usages.size() +
 //                        " Retrying because of deadlock: Exception: " + lex);
