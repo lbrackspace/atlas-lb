@@ -30,7 +30,7 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
     @Override
     public List<Future<SnmpUsage>> collectUsageRecords(ExecutorService executorService,
                                                        UsageEventProcessor usageEventProcessor, List<Host> hosts,
-                                                       LoadBalancer lb, UsageEvent event)
+                                                       LoadBalancer lb)
             throws UsageEventCollectionException {
 
         LOG.debug("Collecting SNMP Usages for load balancer: " + lb.getId());
@@ -67,6 +67,26 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
             }
         }
         usageEventProcessor.processUsageEvent(usages, lb, event, null);
+    }
+
+    @Override
+    public List<SnmpUsage> getUsagesFromFutures(List<Future<SnmpUsage>> futures) throws UsageEventCollectionException{
+        List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
+        if (futures != null) {
+            this.futures = futures;
+        }
+        for (Future<SnmpUsage> f : this.futures) {
+            try {
+                usages.add(f.get());
+            } catch (InterruptedException e) {
+                LOG.error("Error retrieving SNMP futures: " + e);
+                throw new UsageEventCollectionException("Error retrieving SNMP futures: ", e);
+            } catch (ExecutionException e) {
+                LOG.error("Error retrieving SNMP futures: " + e);
+                throw new UsageEventCollectionException("Error retrieving SNMP futures: ", e);
+            }
+        }
+        return usages;
     }
 
     public List<Future<SnmpUsage>> getFutures() {

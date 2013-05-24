@@ -114,7 +114,7 @@ public class UsageEventCollectionTest {
             hosts.add(host);
 
             when(hostRepository.getAllHosts()).thenReturn(hosts);
-            usageEventCollection.collectUsageRecords(executorService, new UsageEventProcessorImpl(), hosts, new LoadBalancer(), UsageEvent.SSL_ONLY_ON);
+            usageEventCollection.collectUsageRecords(executorService, new UsageEventProcessorImpl(), hosts, new LoadBalancer());
 
             Assert.assertNotNull(usageEventCollection.getFutures());
             usageEventCollection.processFutures(null, new UsageEventProcessorImpl(), new LoadBalancer(), UsageEvent.SSL_ONLY_ON);

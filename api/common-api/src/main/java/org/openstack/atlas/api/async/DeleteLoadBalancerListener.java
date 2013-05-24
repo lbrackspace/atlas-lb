@@ -7,8 +7,13 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
+import org.openstack.atlas.usagerefactor.SnmpUsage;
 
 import javax.jms.Message;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -39,6 +44,16 @@ public class DeleteLoadBalancerListener extends BaseListener {
             return;
         }
 
+        List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
+        try {
+            LOG.info(String.format("Collecting DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
+            usages = usageEventCollection.getUsageRecords(null, dbLoadBalancer);
+            LOG.info(String.format("Successfully collected DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
+        } catch (UsageEventCollectionException e) {
+            LOG.error(String.format("Collection of the DELETE_LOADBALANCER usage event failed for " +
+                    "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
+        }
+
         try {
             LOG.debug(String.format("Deleting load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
             reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
@@ -51,13 +66,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
 
-            // Notify usage processor
-            try {
-                usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
-            } catch (UsageEventCollectionException uex) {
-                LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
-                        ":: Exception: %s", dbLoadBalancer.getId(), uex));
-            }
+            //Do not store usage here because the load balancer went into ERROR status and thus is not really deleted.
             return;
         }
 
@@ -68,12 +77,9 @@ public class DeleteLoadBalancerListener extends BaseListener {
         }
 
         // Notify usage processor
-        try {
-            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
-        } catch (UsageEventCollectionException uex) {
-            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
-                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
-        }
+        LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
+        usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+        LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
 
         dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);
         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.DELETED);

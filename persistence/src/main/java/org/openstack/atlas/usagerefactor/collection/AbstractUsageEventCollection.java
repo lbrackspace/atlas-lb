@@ -40,9 +40,11 @@ public abstract class AbstractUsageEventCollection {
         this.usageEventProcessor = usageEventProcessor;
     }
 
-    public abstract List<Future<SnmpUsage>> collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor, List<Host> hosts, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException;
+    public abstract List<Future<SnmpUsage>> collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor, List<Host> hosts, LoadBalancer lb) throws UsageEventCollectionException;
 
     public abstract void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException;
+
+    public abstract List<SnmpUsage> getUsagesFromFutures(List<Future<SnmpUsage>> futures) throws UsageEventCollectionException;
 
     /**
      * Used to process usage events
@@ -59,13 +61,33 @@ public abstract class AbstractUsageEventCollection {
 
         if (this.hosts != null && !this.hosts.isEmpty()) {
             executorService = Executors.newFixedThreadPool(this.hosts.size());
-            collectUsageRecords(executorService, usageEventProcessor, this.hosts, lb, event);
+            collectUsageRecords(executorService, usageEventProcessor, this.hosts, lb);
             processFutures(null, usageEventProcessor, lb, event);
             LOG.debug("Finished Processing Usage Event Record for load balancer: " + lb.getId());
         } else {
             LOG.error("Hosts data invalid, this shouldn't happen... Verify DB for data and notify developer immediately. ");
             throw new UsageEventCollectionException("Hosts data invalid, please contact support.");
         }
+
+    }
+
+    public List<SnmpUsage> getUsageRecords(List<Host> hosts, LoadBalancer lb) throws UsageEventCollectionException {
+        this.hosts = null;
+        LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
+        gatherHostsData(hosts);
+
+        List<SnmpUsage> usages = null;
+        if (this.hosts != null && !this.hosts.isEmpty()) {
+            executorService = Executors.newFixedThreadPool(this.hosts.size());
+            collectUsageRecords(executorService, usageEventProcessor, this.hosts, lb);
+            usages = getUsagesFromFutures(null);
+            LOG.debug("Finished getting snmp usage for: " + lb.getId());
+        } else {
+            LOG.error("Hosts data invalid, this shouldn't happen... Verify DB for data and notify developer immediately. ");
+            throw new UsageEventCollectionException("Hosts data invalid, please contact support.");
+        }
+
+        return usages;
 
     }
 
@@ -106,6 +128,10 @@ public abstract class AbstractUsageEventCollection {
             LOG.error("Hosts data invalid, this shouldn't happen... Verify DB for data and notify developer immediately. ");
             throw new UsageEventCollectionException("Hosts data invalid, please contact support.");
         }
+    }
+
+    public void processUsageEvent(List<SnmpUsage> usages, LoadBalancer lb, UsageEvent event) {
+        usageEventProcessor.processUsageEvent(usages, lb, event, null);
     }
 
     /**
