@@ -1,5 +1,8 @@
 package org.openstack.atlas.adapter.helpers;
 
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.ip.IPUtils;
 
 public class IpHelper {
@@ -25,5 +28,9 @@ public class IpHelper {
         }
         errMsg = String.format("Cannot create string for ip address and port. %s", ipMsg);
         throw new RuntimeException(errMsg);
+    }
+
+    public static boolean isNetworkConnectionException(Exception ex) {
+        return Debug.isThrowableCausedByOrAssignableFrom(ex, SocketException.class, SocketTimeoutException.class);
     }
 }
