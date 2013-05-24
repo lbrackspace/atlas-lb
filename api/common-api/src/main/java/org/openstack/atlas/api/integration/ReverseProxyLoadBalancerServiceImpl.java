@@ -659,20 +659,13 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         this.configuration = configuration;
     }
 
-    private boolean isConnectionExcept(AxisFault af) {
-        String faultString = af.getFaultString();
-        if (faultString == null) {
-            return false;
-        }
-        if (faultString.split(":")[0].equals("java.net.ConnectException")) {
-            return true;
-        }
+    public static boolean isNetworkConnectionException(Exception ex) {
         return false;
     }
 
     private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, AxisFault af) throws AxisFault {
         Host badHost = config.getTrafficManagerHost();
-        if (isConnectionExcept(af)) {
+        if (isNetworkConnectionException(af)) {
             LOG.error(String.format("SOAP endpoint %s went bad marking host[%d] as bad.", badHost.getEndpoint(), badHost.getId()));
             badHost.setSoapEndpointActive(Boolean.FALSE);
             hostService.update(badHost);

@@ -1,7 +1,7 @@
 package org.openstack.atlas.util.debug;
 
-import org.openstack.atlas.util.debug.exceptions.TestBaseException;
-import org.openstack.atlas.util.debug.exceptions.TestSomeOtherException;
+import org.openstack.atlas.util.debug.exceptions.DebugTestBaseException;
+import org.openstack.atlas.util.debug.exceptions.DebugTestSomeOtherException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.NoRouteToHostException;
@@ -12,9 +12,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openstack.atlas.util.debug.exceptions.TestChildException;
-import org.openstack.atlas.util.debug.exceptions.TestGrandChildException;
-import org.openstack.atlas.util.debug.exceptions.TestGreatGrandChildException;
+import org.openstack.atlas.util.debug.exceptions.DebugTestChildException;
+import org.openstack.atlas.util.debug.exceptions.DebugTestGrandChildException;
+import org.openstack.atlas.util.debug.exceptions.DebugTestGreatGrandChildException;
 import static org.junit.Assert.*;
 
 public class DebugTest {
@@ -40,7 +40,7 @@ public class DebugTest {
 
     @Test
     public void testIsThrowableCausedByOrAssignableFrom() {
-        Exception someException = new TestSomeOtherException(new IOException(new TestGrandChildException(new GeneralSecurityException(new IllegalArgumentException(new InstantiationException())))));
+        Exception someException = new DebugTestSomeOtherException(new IOException(new DebugTestGrandChildException(new GeneralSecurityException(new IllegalArgumentException(new InstantiationException())))));
         String excMessage = Debug.getEST(someException);
         try {
             throw someException;
@@ -51,14 +51,14 @@ public class DebugTest {
             assertEquals(null, Debug.getThrowableCausedByOrAssignableFrom(someException, ArrayIndexOutOfBoundsException.class, StringIndexOutOfBoundsException.class));
             assertFalse(Debug.isThrowableCausedByOrAssignableFrom(someException, ArrayIndexOutOfBoundsException.class, StringIndexOutOfBoundsException.class));
 
-            assertEquals(TestGrandChildException.class, Debug.getThrowableCausedByOrAssignableFrom(ex, TestGrandChildException.class, NullPointerException.class));
-            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, TestGrandChildException.class, NullPointerException.class));
+            assertEquals(DebugTestGrandChildException.class, Debug.getThrowableCausedByOrAssignableFrom(ex, DebugTestGrandChildException.class, NullPointerException.class));
+            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, DebugTestGrandChildException.class, NullPointerException.class));
 
-            assertEquals(TestBaseException.class, Debug.getThrowableCausedByOrAssignableFrom(ex, TestBaseException.class, NullPointerException.class));
-            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, TestBaseException.class, NullPointerException.class));
+            assertEquals(DebugTestBaseException.class, Debug.getThrowableCausedByOrAssignableFrom(ex, DebugTestBaseException.class, NullPointerException.class));
+            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, DebugTestBaseException.class, NullPointerException.class));
 
-            assertEquals(null, Debug.getThrowableCausedByOrAssignableFrom(ex, TestGreatGrandChildException.class));
-            assertFalse(Debug.isThrowableCausedByOrAssignableFrom(ex, TestGreatGrandChildException.class));
+            assertEquals(null, Debug.getThrowableCausedByOrAssignableFrom(ex, DebugTestGreatGrandChildException.class));
+            assertFalse(Debug.isThrowableCausedByOrAssignableFrom(ex, DebugTestGreatGrandChildException.class));
 
 
             assertFalse(Debug.isThrowableCausedByOrAssignableFrom(ex, IllegalThreadStateException.class));
@@ -69,8 +69,8 @@ public class DebugTest {
             assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, Exception.class));
             assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex,RuntimeException.class));
 
-            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, TestChildException.class));
-            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, TestGrandChildException.class));
+            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, DebugTestChildException.class));
+            assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex, DebugTestGrandChildException.class));
             assertTrue(Debug.isThrowableCausedByOrAssignableFrom(ex,Throwable.class));
             assertFalse(Debug.isThrowableCausedByOrAssignableFrom(ex, Error.class));
         }
