@@ -8,12 +8,17 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.pojos.Sync;
 import org.openstack.atlas.service.domain.pojos.SyncLocation;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
+import org.openstack.atlas.usagerefactor.SnmpUsage;
 
 import javax.jms.Message;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.*;
 import static org.openstack.atlas.service.domain.entities.NodeStatus.ONLINE;
@@ -46,6 +51,16 @@ public class SyncListener extends BaseListener {
 
             final LoadBalancerStatus loadBalancerStatus = dbLoadBalancer.getStatus();
 
+            List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
+            try {
+                LOG.info(String.format("Collecting DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
+                usages = usageEventCollection.getUsageRecords(null, dbLoadBalancer);
+                LOG.info(String.format("Successfully collected DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
+            } catch (UsageEventCollectionException e) {
+                LOG.error(String.format("Collection of the DELETE_LOADBALANCER usage event failed for " +
+                        "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
+            }
+
             try {
                 reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
             } catch (Exception e) {
@@ -67,7 +82,9 @@ public class SyncListener extends BaseListener {
                     notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
                     // Notify usage processor
-                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+                    LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
+                    usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+                    LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
 
                     //Set status record
                     loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE);
@@ -98,8 +115,13 @@ public class SyncListener extends BaseListener {
                         String atomSummary = createAtomSummary(dbLoadBalancer).toString();
                         notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
 
-                        // Notify usage processor
-                        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
+                        try {
+                            // Notify usage processor
+                            usageEventCollection.processSnmpUsage(null, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+                        } catch (UsageEventCollectionException uex) {
+                            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
+                        }
                     }
                 } catch (Exception e) {
                     String msg = "Error re-creating loadbalancer in SyncListener():";
@@ -129,29 +151,15 @@ public class SyncListener extends BaseListener {
                         loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
                         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
-
-                        if (loadBalancerStatus.equals(BUILD)) {
-                            NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
-                            dbLoadBalancer.setStatus(ACTIVE);
-                            dbLoadBalancer = loadBalancerService.update(dbLoadBalancer);
-                            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
-
-
-                            // Add atom entry
-                            String atomTitle = "Load Balancer Successfully Created";
-                            String atomSummary = createAtomSummary(dbLoadBalancer).toString();
-                            notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
-
-                            // Notify usage processor
-                            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
+                        if (loadBalancerStatus.equals(PENDING_UPDATE) || loadBalancerStatus.equals(ERROR)) {
                             if (dbLoadBalancer.isUsingSsl()) {
                                 if (dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
-                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
+                                    usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
                                 } else {
-                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
+                                    usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
                                 }
                             } else {
-                                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
+                                usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF);
                             }
                         }
                     }
