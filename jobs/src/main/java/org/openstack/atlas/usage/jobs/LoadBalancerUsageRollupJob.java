@@ -98,7 +98,7 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
             LOG.info(String.format("%d loadbalancers were active for hour '%s'.", loadBalancersActiveDuringPeriod.size(), hourToRollup.getTime().toString()));
 
             LOG.info(String.format("Retrieving usage entries to process from polling DB for hour '%s'...", hourToRollup.getTime().toString()));
-            List<LoadBalancerMergedHostUsage> pollingUsages = lbMergedHostUsageRepository.getAllUsageRecordsInOrderBeforeTime(rollupMarker);
+            List<LoadBalancerMergedHostUsage> pollingUsages = lbMergedHostUsageRepository.getAllUsageRecordsInOrderBeforeOrEqualToTime(rollupMarker);
 
             LOG.info(String.format("Processing usage entries for hour '%s'...", hourToRollup.getTime().toString()));
             List<Usage> usagesToInsert = usageRollupProcessor.processRecords(pollingUsages, hourToRollup, loadBalancersActiveDuringPeriod);
