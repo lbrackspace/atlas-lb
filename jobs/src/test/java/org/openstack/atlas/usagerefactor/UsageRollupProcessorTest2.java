@@ -557,4 +557,17 @@ public class UsageRollupProcessorTest2 {
         AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:00:00", "2013-04-10 21:00:00",
                 0, 1, 0, null, 0, true, null, actualUsage);
     }
+
+    @Test
+    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/pollergoesdown/case008.xml")
+    public void pollerGoesDownCase008() throws Exception {
+        LbIdAccountId lbActiveDuringHour = new LbIdAccountId(1234, 1234);
+        lbsActiveDuringHour.add(lbActiveDuringHour);
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToProcess, lbsActiveDuringHour);
+
+        Assert.assertEquals(1, processedUsages.size());
+        Usage actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:00:00", "2013-04-10 21:00:00",
+                0, 1, 0, SUSPENDED_LOADBALANCER.name(), 0, true, null, actualUsage);
+    }
 }

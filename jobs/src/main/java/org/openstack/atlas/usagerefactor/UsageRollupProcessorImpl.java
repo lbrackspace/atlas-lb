@@ -100,8 +100,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         final LoadBalancerMergedHostUsage firstRecordInList = lbMergedHostUsageRecordsForLoadBalancer.get(0);
 
         if (firstRecordInList.getEventType() != null
-            && firstRecordInList.getEventType().equals(CREATE_LOADBALANCER)
-            && firstRecordInList.getPollTime().compareTo(hourToStop) >= 0) {
+                && firstRecordInList.getEventType().equals(CREATE_LOADBALANCER)
+                && firstRecordInList.getPollTime().compareTo(hourToStop) >= 0) {
             return processedRecords;
         }
 
@@ -120,9 +120,15 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                     previousHourRecordExists = true;
                     mostRecentPreviousRecord = lbMergedHostUsage;
 
-                    if(mostRecentPreviousRecord.getEventType() != null
-                       && mostRecentPreviousRecord.getEventType().equals(DELETE_LOADBALANCER)) {
-                        return processedRecords;
+                    if (mostRecentPreviousRecord.getEventType() != null) {
+                        if (mostRecentPreviousRecord.getEventType().equals(DELETE_LOADBALANCER)) {
+                            return processedRecords;
+                        }
+                        if (mostRecentPreviousRecord.getEventType().equals(SUSPEND_LOADBALANCER) || mostRecentPreviousRecord.getEventType().equals(SUSPENDED_LOADBALANCER)) {
+                            newRecordForLb.setEventType(SUSPENDED_LOADBALANCER.name());
+                        } else {
+                            newRecordForLb.setEventType(null);
+                        }
                     }
 
                 }
@@ -196,7 +202,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         int mostRecentTagsBitmask;
 
         try {
-            if(!tagsCache.containsKey(lbId)) {
+            if (!tagsCache.containsKey(lbId)) {
                 Usage mostRecentUsageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbId);
                 mostRecentTagsBitmask = mostRecentUsageForLoadBalancer.getTags();
                 tagsCache.put(lbId, mostRecentTagsBitmask);
@@ -221,7 +227,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         int numVips = DEFAULT_NUM_VIPS;
 
         try {
-            if(!numVipsCache.containsKey(lbId)) {
+            if (!numVipsCache.containsKey(lbId)) {
                 Usage mostRecentUasageForLoadBalancer = usageRepository.getMostRecentUsageForLoadBalancer(lbId);
                 numVips = mostRecentUasageForLoadBalancer.getNumVips();
                 numVipsCache.put(lbId, numVips);
