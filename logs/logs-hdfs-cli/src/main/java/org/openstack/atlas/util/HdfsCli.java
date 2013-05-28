@@ -243,7 +243,7 @@ public class HdfsCli {
                 if (cmd.equals("mkdir") && args.length >= 2) {
                     String fPath = args[1];
                     boolean resp = fs.mkdirs(new Path(fPath));
-                    System.out.printf("rm %s = %s\n", fPath, resp);
+                    System.out.printf("mkdir %s = %s\n", fPath, resp);
                     continue;
                 }
                 if (cmd.equals("rm") && args.length >= 2) {
