@@ -45,16 +45,16 @@ public class LoadBalancerMergedHostUsageRepository {
         return (usageEvents == null) ? new ArrayList<LoadBalancerMergedHostUsage>() : usageEvents;
     }
 
-    public List<LoadBalancerMergedHostUsage> getAllUsageRecordsInOrderBeforeTime(Calendar timestamp) {
+    public List<LoadBalancerMergedHostUsage> getAllUsageRecordsInOrderBeforeOrEqualToTime(Calendar timestamp) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<LoadBalancerMergedHostUsage> criteria = builder.createQuery(LoadBalancerMergedHostUsage.class);
         Root<LoadBalancerMergedHostUsage> lbMergedHostUsageRoot = criteria.from(LoadBalancerMergedHostUsage.class);
 
-        Predicate endTimeBeforeTime = builder.lessThan(lbMergedHostUsageRoot.get(LoadBalancerMergedHostUsage_.pollTime), timestamp);
+        Predicate pollTimeBeforeTime = builder.lessThanOrEqualTo(lbMergedHostUsageRoot.get(LoadBalancerMergedHostUsage_.pollTime), timestamp);
         Order startTimeOrder = builder.asc(lbMergedHostUsageRoot.get(LoadBalancerMergedHostUsage_.pollTime));
 
         criteria.select(lbMergedHostUsageRoot);
-        criteria.where(endTimeBeforeTime);
+        criteria.where(pollTimeBeforeTime);
         criteria.orderBy(startTimeOrder);
 
         List<LoadBalancerMergedHostUsage> usageEvents = entityManager.createQuery(criteria).getResultList();

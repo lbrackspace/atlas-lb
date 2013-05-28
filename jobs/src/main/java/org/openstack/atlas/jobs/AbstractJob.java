@@ -29,28 +29,28 @@ public abstract class AbstractJob implements JobInterface {
 
     @Override
     public void execute() throws JobExecutionException {
-        getLogger().debug(String.format("Executing %s...", getJobName()));
+        JobState masterJob = jobStateService.getByName(JobName.THE_ONE_TO_RULE_THEM_ALL);
+        if (masterJob.getState().equals(JobStateVal.GO)) {
+            getLogger().debug(String.format("Executing %s...", getJobName()));
 
-        Calendar startTime = Calendar.getInstance();
-        getLogger().info(String.format("%s started at %s (Timezone: %s)", getJobName().name(), startTime.getTime(), startTime.getTimeZone().getDisplayName()));
-        jobStateService.updateJobState(getJobName(), JobStateVal.IN_PROGRESS);
+            Calendar startTime = Calendar.getInstance();
+            getLogger().info(String.format("%s started at %s (Timezone: %s)", getJobName().name(), startTime.getTime(), startTime.getTimeZone().getDisplayName()));
+            jobStateService.updateJobState(getJobName(), JobStateVal.IN_PROGRESS);
 
-        try {
-            JobState masterJob = jobStateService.getByName(JobName.THE_ONE_TO_RULE_THEM_ALL);
-            if (masterJob.getState().equals(JobStateVal.GO)) {
+            try {
                 run();
+            } catch (Exception e) {
+                getLogger().error(String.format("%s failed!", getJobName().name()));
+                getLogger().error(e.getCause(), e);
+                jobStateService.updateJobState(getJobName(), JobStateVal.FAILED);
+                return;
             }
-        } catch (Exception e) {
-            getLogger().error(String.format("%s failed!", getJobName().name()));
-            getLogger().error(e.getCause(), e);
-            jobStateService.updateJobState(getJobName(), JobStateVal.FAILED);
-            return;
-        }
 
-        Calendar endTime = Calendar.getInstance();
-        Duration duration = CalendarUtils.calcDuration(startTime, endTime);
-        jobStateService.updateJobState(getJobName(), JobStateVal.FINISHED);
-        getLogger().info(String.format("%s completed at '%s' (Total Time: %s)", getJobName().name(), endTime.getTime(), duration.toString()));
+            Calendar endTime = Calendar.getInstance();
+            Duration duration = CalendarUtils.calcDuration(startTime, endTime);
+            jobStateService.updateJobState(getJobName(), JobStateVal.FINISHED);
+            getLogger().info(String.format("%s completed at '%s' (Total Time: %s)", getJobName().name(), endTime.getTime(), duration.toString()));
+        }
     }
 
     @Override
