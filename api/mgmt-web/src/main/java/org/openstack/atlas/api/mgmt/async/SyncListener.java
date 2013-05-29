@@ -82,6 +82,10 @@ public class SyncListener extends BaseListener {
                     notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
                     // Notify usage processor
+                    //DEPRECATED!! Remove in future version
+                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+                    //END DEPRECATION
+
                     LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
                     usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
                     LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
@@ -114,6 +118,11 @@ public class SyncListener extends BaseListener {
                         String atomTitle = "Load Balancer Successfully Created";
                         String atomSummary = createAtomSummary(dbLoadBalancer).toString();
                         notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
+
+                        // Notify old usage processor
+                        //DEPRECATED!! Remove in future version
+                        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
+                        //END DEPRECATION
 
                         try {
                             // Notify usage processor
@@ -154,11 +163,23 @@ public class SyncListener extends BaseListener {
                         if (loadBalancerStatus.equals(PENDING_UPDATE) || loadBalancerStatus.equals(ERROR)) {
                             if (dbLoadBalancer.isUsingSsl()) {
                                 if (dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
+                                    //DEPRECATED!! Remove in future version
+                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
+                                    //END DEPRECATION
+                                    //Use this.
                                     usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
                                 } else {
+                                    //DEPRECATED!! Remove in future version
+                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
+                                    //END DEPRECATION
+                                    //Use this.
                                     usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
                                 }
                             } else {
+                                //DEPRECATED!! Remove in future version
+                                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
+                                //END DEPRECATION
+                                //Use this.
                                 usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF);
                             }
                         }
