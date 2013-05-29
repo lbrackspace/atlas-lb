@@ -27,7 +27,7 @@ public class TestLzoCompressionMain {
                 append("    Tests if Lzo compression works\n").
                 append("    If compression fails then install the low level gplcompression\n").
                 append("    in a directory somewhere on the path below\n").
-                append("JAVA_LIBRARY_PATH=\"").append(javaLibPath).append("\"");
+                append("JAVA_LIBRARY_PATH=\"").append(javaLibPath).append("\"\n");
 
         return sb.toString();
     }
