@@ -580,6 +580,13 @@ public class UsageRollupProcessorTest2 {
         Usage actualUsage = processedUsages.get(0);
         AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:00:00", "2013-04-10 21:00:00",
                 0, 1, 0, SUSPENDED_LOADBALANCER.name(), 0, true, null, actualUsage);
+
+        getRecordsForNextHour();
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
+        Assert.assertEquals(1, processedUsages.size());
+        actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 21:00:00", "2013-04-10 22:00:00",
+                0, 1, 0, SUSPENDED_LOADBALANCER.name(), 0, true, null, actualUsage);
     }
 
     @Test
@@ -596,5 +603,28 @@ public class UsageRollupProcessorTest2 {
         actualUsage = processedUsages.get(1);
         AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:53:07", "2013-04-10 21:00:00",
                 0, 1, 0, SUSPEND_LOADBALANCER.name(), 0, true, null, actualUsage);
+    }
+
+    @Test
+    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/vips/case001.xml")
+    public void vipsCase001() throws Exception {
+        LbIdAccountId lbActiveDuringHour = new LbIdAccountId(1234, 1234);
+        lbsActiveDuringHour.add(lbActiveDuringHour);
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
+
+        Assert.assertEquals(2, processedUsages.size());
+        Usage actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:55:05", "2013-04-10 20:56:05",
+                2, 1, 0, CREATE_LOADBALANCER.name(), 0, true, null, actualUsage);
+        actualUsage = processedUsages.get(1);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:56:05", "2013-04-10 21:00:00",
+                0, 2, 0, CREATE_VIRTUAL_IP.name(), 0, true, null, actualUsage);
+
+        getRecordsForNextHour();
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
+        Assert.assertEquals(1, processedUsages.size());
+        actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 21:00:00", "2013-04-10 22:00:00",
+                0, 2, 0, null, 0, true, null, actualUsage);
     }
 }

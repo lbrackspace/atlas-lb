@@ -3,6 +3,7 @@ package org.openstack.atlas.usagerefactor;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.LbIdAccountId;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
@@ -27,8 +28,10 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
     private UsageRepository usageRepository;
     @Autowired
     private LoadBalancerService loadbalancerService;
+
     private Map<Integer, Integer> tagsCache = new HashMap<Integer, Integer>();
     private Map<Integer, Integer> numVipsCache = new HashMap<Integer, Integer>();
+    private Set<Integer> suspendedLbsCache = new HashSet<Integer>();
 
     @Override
     public Map<LbIdAccountId, List<LoadBalancerMergedHostUsage>> groupUsagesByLbIdAccountId(List<LoadBalancerMergedHostUsage> lbMergedHostUsages) {
@@ -93,12 +96,18 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
         if (lbMergedHostUsageRecordsForLoadBalancer == null || lbMergedHostUsageRecordsForLoadBalancer.isEmpty()) {
             Usage zeroedOutUsage = initializeRecordForLb(accountId, lbId, hourToProcess, hourToStop);
+            if (zeroedOutUsage.getEventType() == null && suspendedLbsCache.contains(lbId)) {
+                zeroedOutUsage.setEventType(SUSPENDED_LOADBALANCER.name());
+            }
             processedRecords.add(zeroedOutUsage);
             return processedRecords;
         }
 
         final LoadBalancerMergedHostUsage firstRecordInList = lbMergedHostUsageRecordsForLoadBalancer.get(0);
 
+        /*
+                    
+         */
         if (firstRecordInList.getEventType() != null
                 && firstRecordInList.getEventType().equals(CREATE_LOADBALANCER)
                 && firstRecordInList.getPollTime().compareTo(hourToStop) >= 0) {
@@ -110,7 +119,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         for (LoadBalancerMergedHostUsage lbMergedHostUsage : lbMergedHostUsageRecordsForLoadBalancer) {
             Calendar pollTime = lbMergedHostUsage.getPollTime();
             boolean equalToHourToProcess = pollTime.equals(hourToProcess);
-            boolean recordHasEvent = lbMergedHostUsage.getEventType() != null;
+            UsageEvent event = lbMergedHostUsage.getEventType();
+            boolean recordHasEvent = event != null;
             boolean withinHourToProcess = CalendarUtils.isBetween(pollTime, hourToProcess, hourToStop, true);
             boolean withinPreviousHour = CalendarUtils.isBetween(pollTime, previousHour, hourToProcess, false);
             boolean allowedToAddBandwidth = true;
@@ -123,11 +133,20 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                     if (mostRecentPreviousRecord.getEventType() != null) {
                         if (mostRecentPreviousRecord.getEventType().equals(DELETE_LOADBALANCER)) {
                             return processedRecords;
-                        }
-                        if (mostRecentPreviousRecord.getEventType().equals(SUSPEND_LOADBALANCER) || mostRecentPreviousRecord.getEventType().equals(SUSPENDED_LOADBALANCER)) {
+                        } else if (mostRecentPreviousRecord.getEventType().equals(SUSPEND_LOADBALANCER) || mostRecentPreviousRecord.getEventType().equals(SUSPENDED_LOADBALANCER)) {
                             newRecordForLb.setEventType(SUSPENDED_LOADBALANCER.name());
+                            suspendedLbsCache.add(lbId);
                         } else {
                             newRecordForLb.setEventType(null);
+                        }
+
+                        if (mostRecentPreviousRecord.getEventType().equals(UNSUSPEND_LOADBALANCER)) {
+                            suspendedLbsCache.remove(lbId);
+                        }
+
+                        if (mostRecentPreviousRecord.getEventType().equals(CREATE_VIRTUAL_IP) || mostRecentPreviousRecord.getEventType().equals(DELETE_VIRTUAL_IP)) {
+                            newRecordForLb.setNumVips(lbMergedHostUsage.getNumVips());
+                            numVipsCache.put(lbId, lbMergedHostUsage.getNumVips());
                         }
                     }
 
@@ -153,10 +172,16 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                 }
 
                 if (recordHasEvent) {
-                    if (lbMergedHostUsage.getEventType().equals(CREATE_LOADBALANCER) || equalToHourToProcess) {
+                    if (event.equals(SUSPEND_LOADBALANCER) || event.equals(SUSPENDED_LOADBALANCER)) {
+                        suspendedLbsCache.add(lbId);
+                    } else if (event.equals(UNSUSPEND_LOADBALANCER)) {
+                        suspendedLbsCache.remove(lbId);
+                    }
+
+                    if (event.equals(CREATE_LOADBALANCER) || equalToHourToProcess) {
                         newRecordForLb.setStartTime(pollTime);
-                        newRecordForLb.setEventType(lbMergedHostUsage.getEventType().name());
-                    } else if (lbMergedHostUsage.getEventType().equals(SUSPENDED_LOADBALANCER)) {
+                        newRecordForLb.setEventType(event.name());
+                    } else if (event.equals(SUSPENDED_LOADBALANCER)) {
                         if (previousHourRecordExists && mostRecentPreviousRecord.getEventType() != null && (mostRecentPreviousRecord.getEventType().equals(SUSPEND_LOADBALANCER) || mostRecentPreviousRecord.getEventType().equals(SUSPENDED_LOADBALANCER))) {
                             newRecordForLb.setEventType(SUSPENDED_LOADBALANCER.name());
                             newRecordForLb.setEndTime(hourToStop);
@@ -165,13 +190,13 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                     } else {
 
                         if (isFirstRecordOfHourToProcess && !previousHourRecordExists) {
-                            int tags = getTags(lbMergedHostUsage.getLoadbalancerId());
-                            int numVips = getNumVips(lbMergedHostUsage.getLoadbalancerId());
+                            int tags = getTags(lbId);
+                            int numVips = getNumVips(lbId);
                             newRecordForLb.setTags(tags);
                             newRecordForLb.setNumVips(numVips);
                         }
 
-                        if (lbMergedHostUsage.getEventType().equals(UNSUSPEND_LOADBALANCER)) {
+                        if (event.equals(UNSUSPEND_LOADBALANCER)) {
                             newRecordForLb.setNumberOfPolls(0);
                         }
 
@@ -179,10 +204,15 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                         processedRecords.add(newRecordForLb);
 
                         newRecordForLb = initializeRecordForLb(lbMergedHostUsage, pollTime, hourToStop);
-                        newRecordForLb.setEventType(lbMergedHostUsage.getEventType().name());
+                        newRecordForLb.setEventType(event.name());
                     }
 
-                    if (lbMergedHostUsage.getEventType().equals(DELETE_LOADBALANCER)) {
+                    if (event.equals(CREATE_VIRTUAL_IP) || event.equals(DELETE_VIRTUAL_IP)) {
+                        newRecordForLb.setNumVips(lbMergedHostUsage.getNumVips());
+                        numVipsCache.put(lbId, lbMergedHostUsage.getNumVips());
+                    }
+
+                    if (event.equals(DELETE_LOADBALANCER)) {
                         newRecordForLb.setEndTime(pollTime);
                     }
                 }
@@ -192,6 +222,10 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         }
 
         if (newRecordForLb.getStartTime().before(hourToStop)) {
+            if (newRecordForLb.getEventType() == null && suspendedLbsCache.contains(lbId)) {
+                newRecordForLb.setEventType(SUSPENDED_LOADBALANCER.name());
+            }
+
             processedRecords.add(newRecordForLb);
         }
 
