@@ -105,9 +105,6 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
         final LoadBalancerMergedHostUsage firstRecordInList = lbMergedHostUsageRecordsForLoadBalancer.get(0);
 
-        /*
-                    
-         */
         if (firstRecordInList.getEventType() != null
                 && firstRecordInList.getEventType().equals(CREATE_LOADBALANCER)
                 && firstRecordInList.getPollTime().compareTo(hourToStop) >= 0) {
@@ -179,8 +176,19 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                     }
 
                     if (event.equals(CREATE_LOADBALANCER) || equalToHourToProcess) {
+                        processedRecords.clear();
                         newRecordForLb.setStartTime(pollTime);
                         newRecordForLb.setEventType(event.name());
+                        newRecordForLb.setAverageConcurrentConnections(0.0);
+                        newRecordForLb.setAverageConcurrentConnectionsSsl(0.0);
+                        newRecordForLb.setIncomingTransfer(0l);
+                        newRecordForLb.setIncomingTransferSsl(0l);
+                        newRecordForLb.setOutgoingTransfer(0l);
+                        newRecordForLb.setOutgoingTransferSsl(0l);
+
+                        if (!equalToHourToProcess) {
+                            newRecordForLb.setNumberOfPolls(1);
+                        }
                     } else if (event.equals(SUSPENDED_LOADBALANCER)) {
                         if (previousHourRecordExists && mostRecentPreviousRecord.getEventType() != null && (mostRecentPreviousRecord.getEventType().equals(SUSPEND_LOADBALANCER) || mostRecentPreviousRecord.getEventType().equals(SUSPENDED_LOADBALANCER))) {
                             newRecordForLb.setEventType(SUSPENDED_LOADBALANCER.name());

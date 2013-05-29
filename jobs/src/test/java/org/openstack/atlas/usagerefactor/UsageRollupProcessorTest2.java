@@ -182,6 +182,17 @@ public class UsageRollupProcessorTest2 {
     }
 
     @Test
+    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/edgecases/case008.xml")
+    public void edgeCasesCase008() throws Exception {
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
+
+        Assert.assertEquals(1, processedUsages.size());
+        Usage actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 350l, 0l, 700l, 0l, 0.875, 0.0, "2013-04-10 20:23:59", "2013-04-10 21:00:00",
+                8, 1, 0, CREATE_LOADBALANCER.name(), 0, true, null, actualUsage);
+    }
+
+    @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/missingprevioususage/case001.xml")
     public void missingPreviousUsageCase001() throws Exception {
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
@@ -561,6 +572,7 @@ public class UsageRollupProcessorTest2 {
     public void pollerGoesDownCase007() throws Exception {
         LbIdAccountId lbActiveDuringHour = new LbIdAccountId(1234, 1234);
         lbsActiveDuringHour.add(lbActiveDuringHour);
+        allUsageRecordsInOrder.clear(); // For some reason dbunit isn't returning an empty table.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(1, processedUsages.size());
@@ -619,6 +631,35 @@ public class UsageRollupProcessorTest2 {
         actualUsage = processedUsages.get(1);
         AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:56:05", "2013-04-10 21:00:00",
                 0, 2, 0, CREATE_VIRTUAL_IP.name(), 0, true, null, actualUsage);
+
+        getRecordsForNextHour();
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
+        Assert.assertEquals(1, processedUsages.size());
+        actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 21:00:00", "2013-04-10 22:00:00",
+                0, 2, 0, null, 0, true, null, actualUsage);
+    }
+
+    @Test
+    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/vips/case002.xml")
+    public void vipsCase002() throws Exception {
+        LbIdAccountId lbActiveDuringHour = new LbIdAccountId(1234, 1234);
+        lbsActiveDuringHour.add(lbActiveDuringHour);
+        processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
+
+        Assert.assertEquals(4, processedUsages.size());
+        Usage actualUsage = processedUsages.get(0);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:55:05", "2013-04-10 20:56:05",
+                2, 1, 0, CREATE_LOADBALANCER.name(), 0, true, null, actualUsage);
+        actualUsage = processedUsages.get(1);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:56:05", "2013-04-10 20:57:05",
+                1, 2, 0, CREATE_VIRTUAL_IP.name(), 0, true, null, actualUsage);
+        actualUsage = processedUsages.get(2);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:57:05", "2013-04-10 20:58:05",
+                1, 3, 0, CREATE_VIRTUAL_IP.name(), 0, true, null, actualUsage);
+        actualUsage = processedUsages.get(3);
+        AssertUsage.hasValues(null, 1234, 1234, 0l, 0l, 0l, 0l, 0.0, 0.0, "2013-04-10 20:58:05", "2013-04-10 21:00:00",
+                0, 2, 0, DELETE_VIRTUAL_IP.name(), 0, true, null, actualUsage);
 
         getRecordsForNextHour();
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
