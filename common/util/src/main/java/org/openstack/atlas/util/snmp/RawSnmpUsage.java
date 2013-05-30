@@ -7,9 +7,9 @@ import java.io.IOException;
 public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
 
     private String vsName = "";
-    private long bytesIn = 0;
-    private long bytesOut = 0;
-    private long concurrentConnections = 0;
+    private long bytesIn = -1;
+    private long bytesOut = -1;
+    private long concurrentConnections = -1;
 
     public RawSnmpUsage() {
     }
