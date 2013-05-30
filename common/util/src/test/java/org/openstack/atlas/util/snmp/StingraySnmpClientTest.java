@@ -1,5 +1,6 @@
 package org.openstack.atlas.util.snmp;
 
+import java.lang.reflect.Field;
 import org.junit.Assert;
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
@@ -18,6 +19,7 @@ import java.util.Map.Entry;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.openstack.atlas.util.snmp.StingraySnmpClient.getOidFromVirtualServerName;
 import static org.openstack.atlas.util.snmp.StingraySnmpClient.getVirtualServerNameFromOid;
 
@@ -209,5 +211,73 @@ public class StingraySnmpClientTest {
             Thread.currentThread().sleep(1000);
         } catch (InterruptedException ie) {
         }
+    }
+
+    @Test
+    public void testIncRequestIdShouldAlwaysReturnPositive() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        int requestId;
+        Field requestIdField = StingraySnmpClient.class.getDeclaredField("requestId");
+        requestIdField.setAccessible(true);
+        requestId = requestIdField.getInt(null);
+        assertTrue(requestId == StingraySnmpClient.getRequestId());
+
+        requestIdField.setInt(null, Integer.MAX_VALUE - 5);
+        assertFalse(StingraySnmpClient.getRequestId() == 0);
+
+        assertTrue(StingraySnmpClient.getRequestId() == Integer.MAX_VALUE - 5);
+
+        StingraySnmpClient.incRequestId();
+        requestId = StingraySnmpClient.getRequestId();
+        assertTrue(requestId == Integer.MAX_VALUE - 4);
+        assertTrue(requestId >= 0);
+
+        StingraySnmpClient.incRequestId();
+        requestId = StingraySnmpClient.getRequestId();
+        assertTrue(requestId == Integer.MAX_VALUE - 3);
+        assertTrue(requestId >= 0);
+
+        StingraySnmpClient.incRequestId();
+        requestId = StingraySnmpClient.getRequestId();
+        assertTrue(requestId == Integer.MAX_VALUE - 2);
+        assertTrue(requestId >= 0);
+
+        StingraySnmpClient.incRequestId();
+        requestId = StingraySnmpClient.getRequestId();
+        assertTrue(requestId == Integer.MAX_VALUE - 1);
+        assertTrue(requestId >= 0);
+
+        // instead of reaching MAX_VALUE the requestId should have fliped to zero
+
+        StingraySnmpClient.incRequestId();
+        requestId = StingraySnmpClient.getRequestId();
+        assertTrue(requestId == 0);
+        assertTrue(requestId >= 0);
+
+
+        StingraySnmpClient.incRequestId();
+        requestId = StingraySnmpClient.getRequestId();
+        assertTrue(requestId == 1);
+        assertTrue(requestId >= 0);
+
+        StingraySnmpClient.incRequestId();
+        requestId = StingraySnmpClient.getRequestId();
+        assertTrue(requestId == 2);
+        assertTrue(requestId >= 0);
+
+        StingraySnmpClient.incRequestId();
+        requestId = StingraySnmpClient.getRequestId();
+        assertTrue(requestId == 3);
+        assertTrue(requestId >= 0);
+
+        StingraySnmpClient.incRequestId();
+        requestId = StingraySnmpClient.getRequestId();
+        assertTrue(requestId == 4);
+        assertTrue(requestId >= 0);
+
+        StingraySnmpClient.incRequestId();
+        requestId = StingraySnmpClient.getRequestId();
+        assertTrue(requestId == 5);
+        assertTrue(requestId >= 0);
+
     }
 }
