@@ -12,7 +12,12 @@ import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 public class SnmpClientThread extends Thread {
 
-    public static final VerboseLogger vlog = new VerboseLogger(SnmpClientThread.class);
+    private static final VerboseLogger vlog = new VerboseLogger(SnmpClientThread.class);
+
+    public static VerboseLogger getVlog() {
+        return vlog;
+    }
+    private String clientName;
     private StingraySnmpClient client;
     private Map<String, RawSnmpUsage> usage;
     private Exception exception = null;
@@ -53,5 +58,13 @@ public class SnmpClientThread extends Thread {
 
     public void setException(Exception exception) {
         this.exception = exception;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
     }
 }

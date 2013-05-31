@@ -30,7 +30,6 @@ public class StingraySnmpClient {
     private long reportUdpCountEveryNMilliSeconds = 1000;
     private int maxRetrys = 13;
     private int version = SnmpConstants.version2c;
-
     private static final Random rnd = new Random();
     private static final Pattern dotSplitter = Pattern.compile("\\.");
     private static final VerboseLogger vlog = new VerboseLogger(StingraySnmpClient.class);
@@ -159,7 +158,7 @@ public class StingraySnmpClient {
         try {
             transport = new DefaultUdpTransportMapping();
         } catch (IOException ex) {
-            String msg = String.format("Error setting up udp port for SNMP connections for oid value %s for vs %s", baseOid, vsName);
+            String msg = String.format("Error setting up connection to %s/%s for SNMP connections for oid value %s for vs %s", address, port, baseOid, vsName);
             LOG.error(msg, ex);
             throw new StingraySnmpSetupException(msg, ex);
         }
@@ -167,7 +166,7 @@ public class StingraySnmpClient {
         try {
             transport.listen();
         } catch (IOException ex) {
-            String msg = String.format("Error listening on udp port for SNMP connections for oid value %s for vs %s", baseOid, vsName);
+            String msg = String.format("Error listening on udp port %s/%s for SNMP connections for oid value %s for vs %s", address, port, baseOid, vsName);
             LOG.error(msg, ex);
             closeConnection(snmp, null);
             throw new StingraySnmpSetupException(msg, ex);
@@ -178,27 +177,27 @@ public class StingraySnmpClient {
             respEvent = snmp.get(req, target);
         } catch (IOException ex) {
             closeConnection(snmp, transport);
-            String msg = String.format("Error getting OID value %s for vs %s", baseOid, vsName);
+            String msg = String.format("Error getting OID value %s for vs %s at SNMP server %s/%s", baseOid, vsName, address, port);
             LOG.error(msg, ex);
             closeConnection(snmp, transport);
             throw new StingraySnmpGeneralException(msg, ex);
         }
         if (respEvent == null) {
-            String msg = String.format("Error response for OID %s for vs %s was null", baseOid, vsName);
+            String msg = String.format("Error response for OID %s for vs %s was null on SNMP server %s/%s", baseOid, vsName, address, port);
             LOG.error(msg);
             closeConnection(snmp, transport);
         }
         PDU resp;
         resp = respEvent.getResponse();
         if (resp == null) {
-            String msg = String.format("Error response for OID %s for vs %s was null", baseOid, vsName);
+            String msg = String.format("Error responseEvent for OID %s for vs %s was null on SNMP server %s/%s", baseOid, vsName, address, port);
             LOG.error(msg);
             closeConnection(snmp, transport);
             throw new StingraySnmpGeneralException(msg);
         }
         int respSize = resp.size();
         if (respSize < 1) {
-            String msg = String.format("Error response binding size for for OID %s for vs %s was %d", baseOid, vsName, respSize);
+            String msg = String.format("Error response binding size for for OID %s for vs %s was %d on SNMP server", baseOid, vsName, respSize, address, port);
             LOG.error(msg);
             closeConnection(snmp, transport);
             throw new StingraySnmpGeneralException(msg);
@@ -258,7 +257,7 @@ public class StingraySnmpClient {
             try {
                 transport.listen();
             } catch (IOException ex) {
-                String msg = String.format("Error listening on local udp port for snmp connection");
+                String msg = String.format("Error listening on local udp port for snmp connection %s/%s", address, port);
                 LOG.error(msg, ex);
                 closeConnection(snmp, transport);
                 throw new StingraySnmpSetupException(msg, ex);
@@ -268,18 +267,18 @@ public class StingraySnmpClient {
             try {
                 respEvent = snmp.getBulk(req, target);
             } catch (IOException ex) {
-                String msg = String.format("Error getting bulk request from snmp");
+                String msg = String.format("Error getting bulk request from snmp server %s/%s for oid %s", address, port, oid);
                 LOG.error(msg, ex);
                 closeConnection(snmp, transport);
                 throw new StingraySnmpGeneralException(msg, ex);
             }
             PDU respPdu = respEvent.getResponse();
             if (respPdu == null) {
-                String msg = String.format("Error fetching bulk response reducing maxRepetitions from %d to %d for snmpServer %s", (int) currMaxReps, (int) (currMaxReps * 0.75), address);
+                String msg = String.format("Error fetching bulk response reducing maxRepetitions from %d to %d for snmpServer %s/%s on oid %s", (int) currMaxReps, (int) (currMaxReps * 0.75), address, port, oid);
                 currMaxReps *= 0.75;
                 LOG.warn(msg);
                 if (currMaxReps <= 1.0) {
-                    String exMsg = String.format("Error maxRepetitions was strunk to 1");
+                    String exMsg = String.format("Error maxRepetitions was shrunk to 1 to snmp server %s/%s for oid %s", address, port, oid);
                     LOG.error(exMsg);
                     closeConnection(snmp, transport);
                     throw new StingraySnmpRetryExceededException(exMsg);
@@ -313,7 +312,7 @@ public class StingraySnmpClient {
         try {
             snmp.close();
         } catch (Exception ex) {
-            LOG.warn("Warning unable to close snmp connection");
+            LOG.warn("Warning unable to close snmp connection on");
         }
         try {
             transport.close();
@@ -346,19 +345,39 @@ public class StingraySnmpClient {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof StingraySnmpClient)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof StingraySnmpClient)) {
+            return false;
+        }
 
         StingraySnmpClient that = (StingraySnmpClient) o;
 
-        if (maxRepetitions != that.maxRepetitions) return false;
-        if (maxRetrys != that.maxRetrys) return false;
-        if (nonRepeaters != that.nonRepeaters) return false;
-        if (reportUdpCountEveryNMilliSeconds != that.reportUdpCountEveryNMilliSeconds) return false;
-        if (version != that.version) return false;
-        if (address != null ? !address.equals(that.address) : that.address != null) return false;
-        if (community != null ? !community.equals(that.community) : that.community != null) return false;
-        if (port != null ? !port.equals(that.port) : that.port != null) return false;
+        if (maxRepetitions != that.maxRepetitions) {
+            return false;
+        }
+        if (maxRetrys != that.maxRetrys) {
+            return false;
+        }
+        if (nonRepeaters != that.nonRepeaters) {
+            return false;
+        }
+        if (reportUdpCountEveryNMilliSeconds != that.reportUdpCountEveryNMilliSeconds) {
+            return false;
+        }
+        if (version != that.version) {
+            return false;
+        }
+        if (address != null ? !address.equals(that.address) : that.address != null) {
+            return false;
+        }
+        if (community != null ? !community.equals(that.community) : that.community != null) {
+            return false;
+        }
+        if (port != null ? !port.equals(that.port) : that.port != null) {
+            return false;
+        }
 
         return true;
     }
