@@ -31,20 +31,20 @@ public class SnmpVSCollector implements Callable<SnmpUsage> {
 
     @Override
     public SnmpUsage call() throws UsageEventCollectionException {
-        SnmpUsage snmpusage;
+        SnmpUsage snmpusage = null;
         try {
             snmpusage = stingrayUsageClient.getVirtualServerUsage(host, loadbalancer);
         } catch (StingraySnmpObjectNotFoundException ex) {
             //Set host ID so we can still process the usage event for this host...
-            snmpusage = new SnmpUsage();
-            snmpusage.setHostId(host.getId());
+//            snmpusage = new SnmpUsage();
+//            snmpusage.setHostId(host.getId());
             String retString = String.format("Request for host %s usage from SNMP server failed. SnmpUsage Object" +
                     " is Not found for host", host.getName());
             LOG.info(retString);
         } catch (StingraySnmpGeneralException eg) {
             //Set host ID so we can still process the usage event for this host...
-            snmpusage = new SnmpUsage();
-            snmpusage.setHostId(host.getId());
+//            snmpusage = new SnmpUsage();
+//            snmpusage.setHostId(host.getId());
             String retString = String.format("Request for host %s usage from SNMP server failed. SnmpUsage is Null", host.getName());
             LOG.info(retString);
         } catch (Exception e) {

@@ -744,6 +744,56 @@ public class UsageProcessorTest {
             AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 100L, 200L, 300L, 400L, 0, 0, 1, 0, null, pollTimeStr,
                     result.getLbHostUsages().get(3));
         }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case9.xml")
+        public void case9() throws Exception {
+            snmpMap.get(1).get(123).setBytesIn(1000);
+            snmpMap.get(2).get(123).setBytesIn(100);
+            snmpMap.get(1).get(123).setBytesInSsl(2000);
+            snmpMap.get(2).get(123).setBytesInSsl(200);
+            snmpMap.get(1).get(123).setBytesOut(3000);
+            snmpMap.get(2).get(123).setBytesOut(300);
+            snmpMap.get(1).get(123).setBytesOutSsl(4000);
+            snmpMap.get(2).get(123).setBytesOutSsl(400);
+
+            snmpMap.get(1).get(124).setBytesIn(5000);
+            snmpMap.get(2).get(124).setBytesIn(500);
+            snmpMap.get(1).get(124).setBytesInSsl(6000);
+            snmpMap.get(2).get(124).setBytesInSsl(600);
+            snmpMap.get(1).get(124).setBytesOut(7000);
+            snmpMap.get(2).get(124).setBytesOut(700);
+            snmpMap.get(1).get(124).setBytesOutSsl(8000);
+            snmpMap.get(2).get(124).setBytesOutSsl(800);
+
+            UsageProcessorResult result = usageProcessor.mergeRecords(lbHostMap, snmpMap, pollTime);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(6, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:01", result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", result.getMergedUsages().get(2));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", result.getMergedUsages().get(3));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 5500L, 6600L, 7700L, 8800L, 0, 0, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages().get(4));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 1100L, 2200L, 3300L, 4400L, 0, 0, 1, 1,
+                    null, pollTimeStr, result.getMergedUsages().get(5));
+
+            //New lb_host_usage records assertions
+            Assert.assertEquals(4, result.getLbHostUsages().size());
+            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 5000L, 6000L, 7000L, 8000L, 0, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages().get(0));
+            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 500L, 600L, 700L, 800L, 0, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 1000L, 2000L, 3000L, 4000L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages().get(2));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 100L, 200L, 300L, 400L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages().get(3));
+        }
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)

@@ -57,6 +57,10 @@ public class AddVirtualIpListener extends BaseListener {
             return;
         }
 
+        // DEPRECATED
+        // Notify usage processor
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);
+
         // Notify usage processor
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);

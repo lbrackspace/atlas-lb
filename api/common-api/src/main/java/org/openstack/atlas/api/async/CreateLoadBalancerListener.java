@@ -64,6 +64,10 @@ public class CreateLoadBalancerListener extends BaseListener {
             sendErrorToEventResource(queueLb);
             loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
 
+            // Notify usage processor
+            // DEPRECATED
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
+
             try {
                 // Notify usage processor
                 usageEventCollection.processSnmpUsage(null, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
@@ -98,6 +102,10 @@ public class CreateLoadBalancerListener extends BaseListener {
         addAtomEntryForConnectionLogging(queueLb, dbLoadBalancer);
         addAtomEntryForConnectionLimit(queueLb, dbLoadBalancer);
         addAtomEntriesForAccessList(queueLb, dbLoadBalancer);
+
+        // Notify usage processor
+        // DEPRECATED
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
 
         LOG.info(String.format("Created load balancer '%d' successfully.", dbLoadBalancer.getId()));
     }

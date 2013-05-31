@@ -51,21 +51,7 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
 
     @Override
     public void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
-        List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
-        if (futures != null) {
-            this.futures = futures;
-        }
-        for (Future<SnmpUsage> f : this.futures) {
-            try {
-                usages.add(f.get());
-            } catch (InterruptedException e) {
-                LOG.error("Error retrieving SNMP futures: " + e);
-                throw new UsageEventCollectionException("Error retrieving SNMP futures: ", e);
-            } catch (ExecutionException e) {
-                LOG.error("Error retrieving SNMP futures: " + e);
-                throw new UsageEventCollectionException("Error retrieving SNMP futures: ", e);
-            }
-        }
+        List<SnmpUsage> usages = getUsagesFromFutures(futures);
         usageEventProcessor.processUsageEvent(usages, lb, event, null);
     }
 
@@ -77,7 +63,10 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
         }
         for (Future<SnmpUsage> f : this.futures) {
             try {
-                usages.add(f.get());
+                SnmpUsage usage = f.get();
+                if(usage != null) {
+                    usages.add(usage);
+                }
             } catch (InterruptedException e) {
                 LOG.error("Error retrieving SNMP futures: " + e);
                 throw new UsageEventCollectionException("Error retrieving SNMP futures: ", e);

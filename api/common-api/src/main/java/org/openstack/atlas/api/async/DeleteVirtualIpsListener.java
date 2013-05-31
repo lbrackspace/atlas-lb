@@ -72,6 +72,10 @@ public class DeleteVirtualIpsListener extends BaseListener {
             return;
         }
 
+        // DEPRECATED
+        // Notify usage processor
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
+
         // Notify usage processor
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
