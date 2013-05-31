@@ -6,56 +6,41 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.openstack.atlas.service.domain.usage.entities.*;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public class Main {
 
+    private final static int BATCH_SIZE = 1000;
     private static UsageRefactorConfig usageRefactorConfig = new UsageRefactorConfig();
     private static Configuration hibernateConfig = new Configuration();
+    private static MigrationProcessor migrationProcessor = new MigrationProcessor();
 
     public static void main(String[] args) {
-        printConfiguration();
-        loadEntities();
-        getAllUsageRecords();
+        try {
+            loadHibernateConfigs();
+            loadEntities();
+            List<LoadBalancerUsage> loadBalancerUsages = getAllLoadBalancerUsages();
+            List<LoadBalancerUsageEvent> loadBalancerUsageEvents = getAllLoadBalancerUsageEvents();
+            List<LoadBalancerHostUsage> loadBalancerHostUsages = getAllLoadBalancerHostUsages();
+            List<LoadBalancerMergedHostUsage> newUsages = migrationProcessor.process(loadBalancerUsages, loadBalancerUsageEvents, loadBalancerHostUsages);
+
+            LoadBalancerMergedHostUsageBatchAction batchAction = new LoadBalancerMergedHostUsageBatchAction(hibernateConfig);
+            ExecutionUtilities.ExecuteInBatches(newUsages, BATCH_SIZE, batchAction);
+        } catch (Exception e) {
+            System.err.println("FATAL ERROR!");
+            e.printStackTrace();
+        }
     }
 
-    private static void printConfiguration() {
+    private static void loadHibernateConfigs() {
         final Iterator keys = usageRefactorConfig.getKeys();
 
         while (keys.hasNext()) {
             final String key = (String) keys.next();
             final String value = usageRefactorConfig.getString(key);
-            System.out.println(key + "=" + value);
             hibernateConfig.setProperty(key, value);
-        }
-
-        System.out.println(usageRefactorConfig.getString(ConfigKeys.loaadbalancing_usage_jdbc_connection));
-        System.out.println(usageRefactorConfig.getString(ConfigKeys.loadbalancing_usage_username));
-        System.out.println(usageRefactorConfig.getString(ConfigKeys.loadbalancing_usage_password));
-    }
-
-    private static void getAllUsageRecords() {
-        final SessionFactory sessionFactory = hibernateConfig.buildSessionFactory(); // TODO: Better manage sessionFactory
-        final Session session = sessionFactory.openSession();
-        Transaction tx = null;
-
-        try {
-            tx = session.beginTransaction();
-
-            List<LoadBalancerUsage> list = session.createQuery("FROM LoadBalancerUsage").list();
-
-            System.out.println(String.format("Number usages retrieved: %d", list.size()));
-            for (LoadBalancerUsage loadBalancerUsage : list) {
-                System.out.print(loadBalancerUsage);
-            }
-            tx.commit();
-        } catch (Exception e) {
-            System.err.print(e);
-            if (tx != null) tx.rollback();
-        } finally {
-            session.close();
-            sessionFactory.close();
         }
     }
 
@@ -66,5 +51,74 @@ public class Main {
         hibernateConfig.addAnnotatedClass(LoadBalancerMergedHostUsage.class);
         hibernateConfig.addAnnotatedClass(LoadBalancerUsage.class);
         hibernateConfig.addAnnotatedClass(LoadBalancerUsageEvent.class);
+    }
+
+    private static List<LoadBalancerUsage> getAllLoadBalancerUsages() {
+        final SessionFactory sessionFactory = hibernateConfig.buildSessionFactory();
+        final Session session = sessionFactory.openSession();
+        List<LoadBalancerUsage> loadBalancerUsageList = new ArrayList<LoadBalancerUsage>();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            System.out.println(String.format("Retrieving items from lb_usage..."));
+            loadBalancerUsageList = session.createQuery("FROM LoadBalancerUsage").list();
+            System.out.println(String.format("Number of items retrieved from lb_usage: %d", loadBalancerUsageList.size()));
+            tx.commit();
+        } catch (Exception e) {
+            System.err.print(e);
+            if (tx != null) tx.rollback();
+        } finally {
+            session.close();
+            sessionFactory.close();
+        }
+
+        return loadBalancerUsageList;
+    }
+
+    private static List<LoadBalancerUsageEvent> getAllLoadBalancerUsageEvents() {
+        final SessionFactory sessionFactory = hibernateConfig.buildSessionFactory();
+        final Session session = sessionFactory.openSession();
+        List<LoadBalancerUsageEvent> loadBalancerUsageList = new ArrayList<LoadBalancerUsageEvent>();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            System.out.println(String.format("Retrieving items from lb_usage_event..."));
+            loadBalancerUsageList = session.createQuery("FROM LoadBalancerUsageEvent").list();
+            System.out.println(String.format("Number of items retrieved from lb_usage_event: %d", loadBalancerUsageList.size()));
+            tx.commit();
+        } catch (Exception e) {
+            System.err.print(e);
+            if (tx != null) tx.rollback();
+        } finally {
+            session.close();
+            sessionFactory.close();
+        }
+
+        return loadBalancerUsageList;
+    }
+
+    private static List<LoadBalancerHostUsage> getAllLoadBalancerHostUsages() {
+        final SessionFactory sessionFactory = hibernateConfig.buildSessionFactory();
+        final Session session = sessionFactory.openSession();
+        List<LoadBalancerHostUsage> loadBalancerUsageList = new ArrayList<LoadBalancerHostUsage>();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            System.out.println(String.format("Retrieving items from lb_host_usage..."));
+            loadBalancerUsageList = session.createQuery("FROM LoadBalancerHostUsage").list();
+            System.out.println(String.format("Number of items retrieved from lb_host_usage: %d", loadBalancerUsageList.size()));
+            tx.commit();
+        } catch (Exception e) {
+            System.err.print(e);
+            if (tx != null) tx.rollback();
+        } finally {
+            session.close();
+            sessionFactory.close();
+        }
+
+        return loadBalancerUsageList;
     }
 }
