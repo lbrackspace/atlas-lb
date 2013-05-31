@@ -4,12 +4,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import org.apache.log4j.BasicConfigurator;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -25,6 +28,7 @@ import org.openstack.atlas.util.snmp.comparators.ConcurrentConnectionsComparator
 import org.openstack.atlas.util.snmp.comparators.VsNameComparator;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
+import org.openstack.atlas.util.common.SetUtil;
 import org.snmp4j.smi.VariableBinding;
 
 public class SnmpMain {
@@ -37,6 +41,7 @@ public class SnmpMain {
         StingraySnmpClient defaultClient = new StingraySnmpClient();
         List<RawSnmpUsage> rawUsageList = new ArrayList<RawSnmpUsage>();
         List<SnmpUsage> snmpUsageList = new ArrayList<SnmpUsage>();
+        Map<String, List<RawSnmpUsage>> rawUsageMap = new HashMap<String, List<RawSnmpUsage>>();
         Comparator<RawSnmpUsage> orderBy = new ConcurrentConnectionsComparator();
         SnmpUsageComparator usageComparator = new SnmpUsageComparator();
         StingrayUsageClient jobClient = new StingrayUsageClientImpl();
@@ -78,8 +83,10 @@ public class SnmpMain {
                     System.out.printf("    run_default [clientKey]#Get usage from the default host and add it to the current usage list\n");
                     System.out.printf("    clear_usage #Clear the current usageList as well as the jobs usage list\n");
                     System.out.printf("    display_usage #Display the current usage\n");
+                    System.out.printf("    display_usage_diff <common|all|missing|contains>,#Checks to see which host is missing which VS names\n");
                     System.out.printf("    display_snmp_usage_rollup #Display usage rolledup map\n");
                     System.out.printf("    display_snmp_usage_list #Display jobs snmp usage list\n");
+                    System.out.printf("    display_snmp_usage_map #display the usage as a map of Clients\n");
                     System.out.printf("    set_retrys <num> #Sets the maximum retries\n");
                     System.out.printf("    lookup <oid> <vsName> #Lookup the given OID for the specified virtual server on the default zxtm host\n");
                     System.out.printf("    client <clientKey> #Set the clientKey for the default run\n");
@@ -128,6 +135,86 @@ public class SnmpMain {
                         System.out.printf("Un recognized comparator %s\n", compStr);
                     }
 
+
+                } else if (cmd.equals("display_usage_diff") && args.length >= 2) {
+                    System.out.printf("Computing diffs\n");
+                    Set<String> allVsNames = new HashSet<String>();
+                    Map<String, Set<String>> clientVsNames = new HashMap<String, Set<String>>();
+                    System.out.printf("deltas\n");
+                    List<String> clientKeys = new ArrayList<String>(rawUsageMap.keySet());
+                    Collections.sort(clientKeys);
+                    for (String clientKey : clientKeys) {
+                        List<RawSnmpUsage> usageList = rawUsageMap.get(clientKey);
+                        for (RawSnmpUsage usage : usageList) {
+                            allVsNames.add(usage.getVsName());
+                            if (!clientVsNames.containsKey(clientKey)) {
+                                clientVsNames.put(clientKey, new HashSet<String>());
+                            }
+                            clientVsNames.get(clientKey).add(usage.getVsName());
+                        }
+                    }
+
+
+                    if (args[1].equals("common")) {
+                        System.out.printf("Common VsNames:\n");
+                        Set<String> common = new HashSet<String>(allVsNames);
+
+                        for (String clientKey : clientKeys) {
+                            common.retainAll(clientVsNames.get(clientKey));
+                        }
+                        for (String vsName : SetUtil.toSortedList(common)) {
+                            System.out.printf("    %s\n", vsName);
+                        }
+                    } else if (args[1].equals("missing")) {
+                        System.out.printf("missing vsNames:\n");
+                        for (String clientKey : clientKeys) {
+                            Set<String> currSet = clientVsNames.get(clientKey);
+                            Set<String> missing = SetUtil.subtractSet(allVsNames, currSet);
+                            for (String vsName : SetUtil.toSortedList(missing)) {
+                                System.out.printf("    Client[%8s] %s\n", clientKey, vsName);
+                            }
+                            System.out.printf("\n");
+                        }
+                    } else if (args[1].equals("all")) {
+                        System.out.printf("allVs vsNames:\n");
+                        for (String vsName : SetUtil.toSortedList(allVsNames)) {
+                            System.out.printf("   %s\n", vsName);
+                        }
+
+                    } else if (args[1].equals("contains")) {
+                        System.out.printf("contained VsNames:\n");
+                        for (String clientKey : clientKeys) {
+                            for (String vsName : SetUtil.toSortedList(clientVsNames.get(clientKey))) {
+                                System.out.printf("    Client[%8s] %s:\n", clientKey, vsName);
+                            }
+                        }
+                        System.out.printf("\n");
+                    } else {
+                        System.out.printf(" command requires missing or common as second parameter\n");
+                    }
+                } else if (cmd.equals("display_usage_map")) {
+                    System.out.printf("display usage map:\n");
+
+                    // Build the map
+                    Map<String, Map<String, RawSnmpUsage>> vsToHostMap = new HashMap<String, Map<String, RawSnmpUsage>>();
+                    for (String clientKey : SetUtil.toSortedList(rawUsageMap.keySet())) {
+                        List<RawSnmpUsage> usageList = rawUsageMap.get(clientKey);
+                        for (RawSnmpUsage usage : usageList) {
+                            String vsName = usage.getVsName();
+                            if (!vsToHostMap.containsKey(vsName)) {
+                                vsToHostMap.put(vsName, new HashMap<String, RawSnmpUsage>());
+                            }
+                            vsToHostMap.get(vsName).put(clientKey, usage);
+                        }
+                    }
+
+                    // Iterate throw the map
+                    for (String vsName : SetUtil.toSortedList(vsToHostMap.keySet())) {
+                        for (String clientKey : SetUtil.toSortedList(vsToHostMap.get(vsName).keySet())) {
+                            RawSnmpUsage rawUsage = vsToHostMap.get(vsName).get(clientKey);
+                            System.out.printf("client[%8s]=%s\n", clientKey, rawUsage.toString());
+                        }
+                    }
 
                 } else if (cmd.equals("run_jobs")) {
                     List<String> clientKeys = new ArrayList<String>(clients.keySet());
@@ -191,10 +278,12 @@ public class SnmpMain {
                 } else if (cmd.equals("run_threads")) {
                     List<String> clientKeys = new ArrayList<String>(clients.keySet());
                     List<SnmpClientThread> threads = new ArrayList<SnmpClientThread>();
+                    rawUsageMap = new HashMap<String, List<RawSnmpUsage>>();
                     Collections.sort(clientKeys);
                     for (String clientKey : clientKeys) {
                         StingraySnmpClient client = clients.get(clientKey);
                         SnmpClientThread clientThread = new SnmpClientThread();
+                        clientThread.setClientName(clientKey);
                         clientThread.setClient(client);
                         clientThread.setException(null);
                         threads.add(clientThread);
@@ -219,7 +308,9 @@ public class SnmpMain {
                         if (ex != null) {
                             System.out.printf("%s\n", StaticStringUtils.getExtendedStackTrace(ex));
                         } else {
-                            rawUsageList.addAll(thread.getUsage().values());
+                            List<RawSnmpUsage> usageList = new ArrayList<RawSnmpUsage>(thread.getUsage().values());
+                            rawUsageList.addAll(usageList);
+                            rawUsageMap.put(thread.getClientName(), new ArrayList<RawSnmpUsage>(usageList));
                         }
                     }
 
@@ -245,6 +336,7 @@ public class SnmpMain {
                     System.out.printf("Clearing usage\n");
                     rawUsageList = new ArrayList<RawSnmpUsage>();
                     snmpUsageList = new ArrayList<SnmpUsage>();
+                    rawUsageMap = new HashMap<String, List<RawSnmpUsage>>();
                 } else if (cmd.equals("display_usage")) {
                     System.out.printf("Pringint usage\n");
                     Collections.sort(rawUsageList, orderBy);
