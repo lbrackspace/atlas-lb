@@ -228,7 +228,7 @@ public class StingraySnmpClient {
     }
 
     public List<VariableBinding> getBulkOidBindingList(String oid) throws StingraySnmpSetupException, StingraySnmpGeneralException {
-        vlog.printf("in call getBulkOidBindingList(%s)", oid);
+        vlog.printf("in call getBulkOidBindingList(%s) for %s", oid, getConnectionName());
         List<VariableBinding> bindings = new ArrayList<VariableBinding>();
         String startOID = oid;
         String currOID = startOID;
@@ -237,7 +237,7 @@ public class StingraySnmpClient {
         double currMaxReps = maxRepetitions;
         boolean finished = false;
         while (!finished) {
-            vlog.printf("total items = %d matched items= %d", totalItems, matchedItems);
+            vlog.printf("total items = %d matched items= %d from  CONTINUING", totalItems, matchedItems, getConnectionName(oid));
             PDU req = new PDU();
             req.add(new VariableBinding(new OID(currOID)));
             req.setType(PDU.GETBULK);
@@ -260,7 +260,7 @@ public class StingraySnmpClient {
             try {
                 transport = new DefaultUdpTransportMapping();
             } catch (IOException ex) {
-                String msg = String.format("Error setting up snmp connection to %s:%s", address, port);
+                String msg = String.format("Error setting up snmp connection to %s", getConnectionName());
                 LOG.error(msg, ex);
                 throw new StingraySnmpSetupException(msg, ex);
             }
@@ -278,18 +278,18 @@ public class StingraySnmpClient {
             try {
                 respEvent = snmp.getBulk(req, target);
             } catch (IOException ex) {
-                String msg = String.format("Error getting bulk request from snmp server %s/%s for oid %s", address, port, oid);
+                String msg = String.format("Error getting bulk request from snmp server %s", getConnectionName(oid));
                 LOG.error(msg, ex);
                 closeConnection(snmp, transport);
                 throw new StingraySnmpGeneralException(msg, ex);
             }
             PDU respPdu = respEvent.getResponse();
             if (respPdu == null) {
-                String msg = String.format("Error fetching bulk response reducing maxRepetitions from %d to %d for snmpServer %s/%s on oid %s", (int) currMaxReps, (int) (currMaxReps * 0.75), address, port, oid);
+                String msg = String.format("Error fetching bulk response reducing maxRepetitions from %d to %d for %s", (int) currMaxReps, (int) (currMaxReps * 0.75), getConnectionName(oid));
                 currMaxReps *= 0.75;
                 LOG.warn(msg);
                 if (currMaxReps <= 1.0) {
-                    String exMsg = String.format("Error maxRepetitions was shrunk to 1 to snmp server %s/%s for oid %s", address, port, oid);
+                    String exMsg = String.format("Error maxRepetitions was shrunk to 1 to snmp server %s", getConnectionName(oid));
                     LOG.error(exMsg);
                     closeConnection(snmp, transport);
                     throw new StingraySnmpRetryExceededException(exMsg);
@@ -315,20 +315,20 @@ public class StingraySnmpClient {
                 break; // This was the last set of entries.
             }
         }
-        vlog.printf("total items = %d matched items= %d", totalItems, matchedItems);
+        vlog.printf("total items = %d matched items= %d for %s FINISHED", totalItems, matchedItems, getConnectionName(oid));
         return bindings;
     }
 
-    private static void closeConnection(Snmp snmp, TransportMapping transport) {
+    private void closeConnection(Snmp snmp, TransportMapping transport) {
         try {
             snmp.close();
         } catch (Exception ex) {
-            LOG.warn("Warning unable to close snmp connection on");
+            LOG.warn(String.format("Warning unable to close snmp connection on %s", getConnectionName()));
         }
         try {
             transport.close();
         } catch (Exception ex) {
-            LOG.warn("Warning unable to close transport");
+            LOG.warn(String.format("Warning unable to close transport on %s", getConnectionName()));
         }
     }
 
@@ -479,5 +479,18 @@ public class StingraySnmpClient {
 
     public void setMaxRepetitions(int maxRepetitions) {
         this.maxRepetitions = maxRepetitions;
+    }
+
+    private String getConnectionName(String oid) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(address).append("/").append(port);
+        if (oid != null) {
+            sb.append(" for oid ").append(oid);
+        }
+        return sb.toString();
+    }
+
+    private String getConnectionName() {
+        return getConnectionName(null);
     }
 }
