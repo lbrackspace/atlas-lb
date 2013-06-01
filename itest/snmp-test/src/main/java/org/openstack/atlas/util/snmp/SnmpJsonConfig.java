@@ -30,7 +30,20 @@ public class SnmpJsonConfig {
             + "  \"defaultHost\": \"z1\"\n"
             + "}";
     private Map<String, String> zxtmHosts;
+    public static final String exampleJson2 = ""
+            + "{\n"
+            + "  \"max_repetitions\": 350, \n"
+            + "  \"non_repeaters\": 5, \n"
+            + "  \"hosts\": {\n"
+            + "    \"z1\": \"10.12.99.45/1161\", \n"
+            + "    \"z2\": \"10.12.99.46/1161\"\n"
+            + "  }, \n"
+            + "  \"defaultHost\": \"z1\"\n"
+            + "}\n"
+            + "";
     private String defaultHostKey;
+    private Integer nonRepeaters;
+    private Integer maxRepetitions;
 
     public SnmpJsonConfig() {
     }
@@ -38,7 +51,10 @@ public class SnmpJsonConfig {
     @Override
     public String toString() {
         return "SnmpJsonConfig{hosts=" + StaticStringUtils.mapToString(zxtmHosts, ",")
-                + ", defaultHostKey=" + defaultHostKey + "}";
+                + ", defaultHostKey=" + defaultHostKey
+                + ", max_repetitions=" + maxRepetitions
+                + ", non_repeaters=" + nonRepeaters
+                + "}";
     }
 
     public static SnmpJsonConfig readJsonConfig(File file) throws IOException {
@@ -55,6 +71,8 @@ public class SnmpJsonConfig {
             JSONObject json = (JSONObject) jp.parse(jsonStr);
             JSONObject hosts = (JSONObject) json.get("hosts");
             conf.setDefaultHostKey((String) json.get("defaultHost"));
+            conf.setMaxRepetitions((Long) json.get("max_repetitions"));
+            conf.setNonRepeaters((Long) json.get("non_repeaters"));
             for (Object obj : hosts.entrySet()) {
                 Entry<String, String> ent = (Entry<String, String>) obj;
                 String key = ent.getKey();
@@ -79,14 +97,43 @@ public class SnmpJsonConfig {
         this.zxtmHosts = zxtmHosts;
     }
 
-    public static void nop() {
-    }
-
     public String getDefaultHostKey() {
         return defaultHostKey;
     }
 
     public void setDefaultHostKey(String defaultHostKey) {
         this.defaultHostKey = defaultHostKey;
+    }
+
+    public Integer getNonRepeaters() {
+        return nonRepeaters;
+    }
+
+    public void setNonRepeaters(Long nonRepeaters) {
+        if (nonRepeaters == null) {
+            this.nonRepeaters = null;
+            return;
+        }
+        this.nonRepeaters = (int) nonRepeaters.longValue();
+    }
+
+    public void setNonRepeaters(Integer nonRepeaters) {
+        this.nonRepeaters = nonRepeaters;
+    }
+
+    public Integer getMaxRepetitions() {
+        return maxRepetitions;
+    }
+
+    public void setMaxRepetitions(Integer maxRepetitions) {
+        this.maxRepetitions = maxRepetitions;
+    }
+
+    public void setMaxRepetitions(Long maxRepetitions) {
+        if (maxRepetitions == null) {
+            this.maxRepetitions = null;
+            return;
+        }
+        this.maxRepetitions = (int) maxRepetitions.longValue();
     }
 }

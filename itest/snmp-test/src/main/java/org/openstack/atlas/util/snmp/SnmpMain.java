@@ -77,6 +77,8 @@ public class SnmpMain {
                     System.out.printf("    mem #show memory status\n");
                     System.out.printf("    gc  #Run garbage collector\n");
                     System.out.printf("    init_clients #Initialize the snmpClients\n");
+                    System.out.printf("    max_repetitions <num> #Set the max repetitions on the clients\n");
+                    System.out.printf("    non_repeaters <num> #Set the number of non repeaters on the clients\n");
                     System.out.printf("    show_state  #Show the application state and variables\n");
                     System.out.printf("    set_comparator <bi|bo|cc|vs> #Set the comparator for to BandwidthIn BandwidthOut totalConnections or ConcurrentConnections respectivly\n");
                     System.out.printf("    run_bulk <oid> #Get usage from the default host useing the bulk on the given oid\n");
@@ -86,7 +88,7 @@ public class SnmpMain {
                     System.out.printf("    display_usage_diff <common|all|missing|contains>,#Checks to see which host is missing which VS names\n");
                     System.out.printf("    display_snmp_usage_rollup #Display usage rolledup map\n");
                     System.out.printf("    display_snmp_usage_list #Display jobs snmp usage list\n");
-                    System.out.printf("    display_snmp_usage_map #display the usage as a map of Clients\n");
+                    System.out.printf("    display_usage_map [vs_filter]#display the usage as a map of Clients\n");
                     System.out.printf("    set_retrys <num> #Sets the maximum retries\n");
                     System.out.printf("    lookup <oid> <vsName> #Lookup the given OID for the specified virtual server on the default zxtm host\n");
                     System.out.printf("    client <clientKey> #Set the clientKey for the default run\n");
@@ -193,6 +195,7 @@ public class SnmpMain {
                         System.out.printf(" command requires missing or common as second parameter\n");
                     }
                 } else if (cmd.equals("display_usage_map")) {
+                    String vsFilter = (args.length >= 2) ? args[1] : null;
                     System.out.printf("display usage map:\n");
 
                     // Build the map
@@ -208,14 +211,34 @@ public class SnmpMain {
                         }
                     }
 
-                    // Iterate throw the map
-                    for (String vsName : SetUtil.toSortedList(vsToHostMap.keySet())) {
-                        for (String clientKey : SetUtil.toSortedList(vsToHostMap.get(vsName).keySet())) {
-                            RawSnmpUsage rawUsage = vsToHostMap.get(vsName).get(clientKey);
-                            System.out.printf("client[%8s]=%s\n", clientKey, rawUsage.toString());
+                    if (vsFilter != null) {
+                        if (vsToHostMap.containsKey(vsFilter)) {
+                            printVsMap(vsFilter, vsToHostMap);
+                        } else {
+                            System.out.printf("pool %s was not in the usage map\n");
+                        }
+                    } else {
+
+                        // Iterate through the map
+                        for (String vsName : SetUtil.toSortedList(vsToHostMap.keySet())) {
+                            printVsMap(vsName, vsToHostMap);
                         }
                     }
 
+                } else if (cmd.equals("non_repeaters") && args.length >= 2) {
+                    System.out.printf("Setting non repeater to: ");
+                    int nonRepeaters = Integer.parseInt(args[1]);
+                    System.out.printf(" %d\n", nonRepeaters);
+                    for (String clientKey : clients.keySet()) {
+                        clients.get(clientKey).setNonRepeaters(nonRepeaters);
+                    }
+                } else if (cmd.equals("max_repetitions")) {
+                    System.out.printf("Setting max repetitions to: ");
+                    int maxRepetitions = Integer.parseInt(args[1]);
+                    System.out.printf(" %d\n", maxRepetitions);
+                    for (String clientKey : clients.keySet()) {
+                        clients.get(clientKey).setMaxRepetitions(maxRepetitions);
+                    }
                 } else if (cmd.equals("run_jobs")) {
                     List<String> clientKeys = new ArrayList<String>(clients.keySet());
                     List<Host> zxtmHosts = new ArrayList<Host>();
@@ -420,6 +443,14 @@ public class SnmpMain {
                         client.setAddress(host);
                         client.setPort(port);
                         clients.put(clientKey, client);
+                        if (conf.getMaxRepetitions() != null) {
+                            client.setNonRepeaters(conf.getMaxRepetitions());
+
+                        }
+                        if (conf.getNonRepeaters() != null) {
+                            client.setNonRepeaters(conf.getNonRepeaters());
+
+                        }
                         if (clientKey.equals(conf.getDefaultHostKey())) {
                             defaultClient = client;
                         }
@@ -432,5 +463,12 @@ public class SnmpMain {
             }
         }
 
+    }
+
+    public static void printVsMap(String vsName, Map<String, Map<String, RawSnmpUsage>> vsToHostMap) {
+        for (String clientKey : SetUtil.toSortedList(vsToHostMap.get(vsName).keySet())) {
+            RawSnmpUsage rawUsage = vsToHostMap.get(vsName).get(clientKey);
+            System.out.printf("client[%8s]=%s\n", clientKey, rawUsage.toString());
+        }
     }
 }
