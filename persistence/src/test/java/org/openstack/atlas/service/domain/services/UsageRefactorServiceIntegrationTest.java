@@ -45,7 +45,6 @@ public class UsageRefactorServiceIntegrationTest {
         List<LoadBalancerMergedHostUsage> mergedUsageList;
 
         @Autowired
-        @Qualifier("usageRefactorService")
         public UsageRefactorService usageRefactorService;
 
         @Autowired

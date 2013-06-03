@@ -12,13 +12,15 @@ import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.entities.VirtualIpType;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
+import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.BitTag;
+import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +40,6 @@ public class UsageEventProcessorDBTest {
     public static class WhenTestingProcessingUsageRecords {
 
         @Autowired
-        @Qualifier("usageRefactorService")
         public UsageRefactorService usageRefactorService;
 
         @Autowired
@@ -46,6 +47,12 @@ public class UsageEventProcessorDBTest {
 
         @Autowired
         public LoadBalancerRepository loadBalancerRepository;
+
+        @Autowired
+        public LoadBalancerService loadBalancerService;
+
+        @Autowired
+        public VirtualIpRepository virtualIpRepository;
 
         public SnmpUsage snmpUsage;
         public SnmpUsage snmpUsage2;
@@ -55,6 +62,8 @@ public class UsageEventProcessorDBTest {
         @Before
         public void standUp() throws Exception {
             loadBalancerRepository = mock(LoadBalancerRepository.class);
+            loadBalancerService = mock(LoadBalancerService.class);
+            virtualIpRepository = mock(VirtualIpRepository.class);
 
             lb = new LoadBalancer();
             lb.setId(543221);
@@ -71,6 +80,11 @@ public class UsageEventProcessorDBTest {
             snmpUsage.setConcurrentConnections(1);
             snmpUsage.setConcurrentConnectionsSsl(3);
             snmpUsages.add(snmpUsage);
+
+            usageEventProcessor.setLoadBalancerService(loadBalancerService);
+            when(loadBalancerService.getCurrentBitTags(Matchers.anyInt())).thenReturn(new BitTags());
+            usageEventProcessor.setVirtualIpRepository(virtualIpRepository);
+            when(virtualIpRepository.getNumIpv4VipsForLoadBalancer(lb)).thenReturn(1L);
         }
 
         @Test

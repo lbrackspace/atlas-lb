@@ -16,8 +16,8 @@
     <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
     <import resource="db-services.xml"/>
     <import resource="db-usage-services.xml"/>
-    <import resource="db-usage-refactor-services.xml"/>
     <import resource="jms-queues-public.xml"/>
+    <import resource="db-usage-refactor-services.xml"/>
 
     <context:annotation-config/>
 

@@ -167,7 +167,7 @@ public class UpdateSslTerminationListener extends BaseListener {
             LOG.warn("Couldn't retrieve load balancer concurrent connections counter.");
         }
 
-        //First pass
+        //Second pass
         List<SnmpUsage> usages2 = new ArrayList<SnmpUsage>();
         try {
             LOG.info(String.format("Collecting usage before ssl event for load balancer %s...", dbLoadBalancer.getId()));
@@ -178,6 +178,31 @@ public class UpdateSslTerminationListener extends BaseListener {
                     "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
         }
 
+        //Combine first pass and second pass
+        for (SnmpUsage usage : usages) {
+            for (SnmpUsage usage2 : usages2) {
+                if (usage.getHostId() == usage2.getHostId()) {
+                    if (usage.getBytesIn() < usage2.getBytesIn()) {
+                        usage.setBytesIn(usage2.getBytesIn());
+                    }
+                    if (usage.getBytesInSsl() < usage2.getBytesInSsl()) {
+                        usage.setBytesInSsl(usage2.getBytesInSsl());
+                    }
+                    if (usage.getBytesOut() < usage2.getBytesOut()) {
+                        usage.setBytesOut(usage2.getBytesOut());
+                    }
+                    if (usage.getBytesOutSsl() < usage2.getBytesOutSsl()) {
+                        usage.setBytesOutSsl(usage2.getBytesOutSsl());
+                    }
+                    if (usage.getConcurrentConnections() < usage2.getConcurrentConnections()) {
+                        usage.setConcurrentConnections(usage2.getConcurrentConnections());
+                    }
+                    if (usage.getConcurrentConnectionsSsl() < usage2.getConcurrentConnectionsSsl()) {
+                        usage.setConcurrentConnectionsSsl(usage2.getConcurrentConnectionsSsl());
+                    }
+                }
+            }
+        }
         // Notify usage processor
         if (queTermination.getSslTermination().isEnabled()) {
             LOG.debug(String.format("SSL Termination is enabled for load balancer: %s", dbLoadBalancer.getId()));

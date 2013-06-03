@@ -72,15 +72,15 @@ public class StingrayUsageClientImpl implements StingrayUsageClient {
         usage.setHostId(host.getId());
         // Fetch Virtual Server Usage
         String vsName = buildVsName(lb, false);
-        usage.setBytesIn(client.getBytesIn(vsName, false));
-        usage.setBytesOut(client.getBytesOut(vsName, false));
-        usage.setConcurrentConnections((int) client.getConcurrentConnections(vsName, false));
+        usage.setBytesIn(client.getBytesIn(vsName, false, true));
+        usage.setBytesOut(client.getBytesOut(vsName, false, true));
+        usage.setConcurrentConnections((int) client.getConcurrentConnections(vsName, false, true));
 
         // Fetch Shadow Server Usage
         String shadowName = buildVsName(lb, true);
-        usage.setBytesInSsl(client.getBytesIn(shadowName, false));
-        usage.setBytesOutSsl(client.getBytesOut(shadowName, false));
-        usage.setConcurrentConnectionsSsl((int) client.getConcurrentConnections(shadowName, false));
+        usage.setBytesInSsl(client.getBytesIn(shadowName, false, true));
+        usage.setBytesOutSsl(client.getBytesOut(shadowName, false, true));
+        usage.setConcurrentConnectionsSsl((int) client.getConcurrentConnections(shadowName, false, true));
         return usage;
     }
 

@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
@@ -18,6 +19,11 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
     @Override
     public LoadBalancerHostUsage getLastRecordForLbIdAndHostId(int lbId, int hostId) {
         return hostUsageRefactorRepository.getMostRecentUsageRecordForLbIdAndHostId(lbId, hostId);
+    }
+
+    @Override
+    public LoadBalancerMergedHostUsage getLastRecordForLbId(int lbId) throws EntityNotFoundException {
+        return loadBalancerMergedHostUsageRepository.getMostRecentRecordForLoadBalancer(lbId);
     }
 
     @Override
