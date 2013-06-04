@@ -13,7 +13,7 @@ import java.util.List;
 public class Main {
 
     private final static int BATCH_SIZE = 1000;
-    private static UsageRefactorConfig usageRefactorConfig = new UsageRefactorConfig();
+    private static LoadbalancingUsageConfig loadbalancingUsageConfig = new LoadbalancingUsageConfig();
     private static Configuration hibernateConfig = new Configuration();
     private static MigrationProcessor migrationProcessor = new MigrationProcessor();
 
@@ -27,7 +27,7 @@ public class Main {
             List<LoadBalancerMergedHostUsage> newUsages = migrationProcessor.process(loadBalancerUsages, loadBalancerUsageEvents, loadBalancerHostUsages);
 
             LoadBalancerMergedHostUsageBatchAction batchAction = new LoadBalancerMergedHostUsageBatchAction(hibernateConfig);
-            ExecutionUtilities.ExecuteInBatches(newUsages, BATCH_SIZE, batchAction);
+//            ExecutionUtilities.ExecuteInBatches(newUsages, BATCH_SIZE, batchAction);
         } catch (Exception e) {
             System.err.println("FATAL ERROR!");
             e.printStackTrace();
@@ -35,11 +35,11 @@ public class Main {
     }
 
     private static void loadHibernateConfigs() {
-        final Iterator keys = usageRefactorConfig.getKeys();
+        final Iterator keys = loadbalancingUsageConfig.getKeys();
 
         while (keys.hasNext()) {
             final String key = (String) keys.next();
-            final String value = usageRefactorConfig.getString(key);
+            final String value = loadbalancingUsageConfig.getString(key);
             hibernateConfig.setProperty(key, value);
         }
     }

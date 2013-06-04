@@ -97,6 +97,6 @@ public class UsageEventMapper {
             tags.flipTagOn(BitTag.SERVICENET_LB);
         }
 
-        return tags.getBitTags();
+        return tags.toInt();
     }
 }

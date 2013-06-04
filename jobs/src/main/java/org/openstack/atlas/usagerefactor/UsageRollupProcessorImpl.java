@@ -257,7 +257,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             BitTags bitTags = loadbalancerService.getCurrentBitTags(lbId);
             bitTags.flipTagOff(BitTag.SSL);
             bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
-            mostRecentTagsBitmask = bitTags.getBitTags();
+            mostRecentTagsBitmask = bitTags.toInt();
             tagsCache.put(lbId, mostRecentTagsBitmask);
         }
 

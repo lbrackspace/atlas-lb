@@ -14,7 +14,6 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
-import org.openstack.atlas.usagerefactor.UsageProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -151,7 +150,7 @@ public class UsagePollerHelper {
                             //Servicenet tags will remain though.
                             tags.flipTagOff(BitTag.SSL);
                             tags.flipTagOff(BitTag.SSL_MIXED_MODE);
-                            tagsBitmask = tags.getBitTags();
+                            tagsBitmask = tags.toInt();
                             numVips = virtualIpRepository.getNumIpv4VipsForLoadBalancer(loadbalancer).intValue();
                         } catch (EntityNotFoundException lbE) {
                             //What to do now?? Continue?????????
