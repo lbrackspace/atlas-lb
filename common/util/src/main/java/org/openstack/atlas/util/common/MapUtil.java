@@ -5,21 +5,24 @@ import java.util.Map;
 
 public class MapUtil {
 
-    public static <K, V> Map<K, Map<K, V>> swapKeys(Map<K, Map<K, V>> groupedByHosts) {
-        Map<K, Map<K, V>> groupedByLoadBalancers = new HashMap<K, Map<K, V>>();
-        for (K firstKey : groupedByHosts.keySet()) {
-            for (K secondKey : groupedByHosts.get(firstKey).keySet()) {
+    public static <K, V> Map<K, Map<K, V>> swapKeys(Map<K, Map<K, V>> swapFromMap) {
+        if (swapFromMap == null) {
+            return null;
+        }
+        Map<K, Map<K, V>> swapToMap = new HashMap<K, Map<K, V>>();
+        for (K firstKey : swapFromMap.keySet()) {
+            for (K secondKey : swapFromMap.get(firstKey).keySet()) {
                 Map<K, V> hostMap;
-                if (!groupedByLoadBalancers.containsKey(secondKey)) {
+                if (!swapToMap.containsKey(secondKey)) {
                     hostMap = new HashMap<K, V>();
-                    groupedByLoadBalancers.put(secondKey, hostMap);
+                    swapToMap.put(secondKey, hostMap);
                 }
-                hostMap = groupedByLoadBalancers.get(secondKey);
-                hostMap.put(firstKey, groupedByHosts.get(firstKey).get(secondKey));
-                groupedByLoadBalancers.put(secondKey, hostMap);
+                hostMap = swapToMap.get(secondKey);
+                hostMap.put(firstKey, swapFromMap.get(firstKey).get(secondKey));
+                swapToMap.put(secondKey, hostMap);
             }
         }
-        return groupedByLoadBalancers;
+        return swapToMap;
     }
 
 }

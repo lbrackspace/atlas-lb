@@ -141,7 +141,7 @@ public abstract class AbstractUsageEventCollection {
      */
     private void gatherHostsData(List<Host> hosts) {
         if (hosts == null || hosts.isEmpty()) {
-            this.hosts = hostRepository.getAllHosts();
+            this.hosts = hostRepository.getAll();
         } else {
             this.hosts = hosts;
         }

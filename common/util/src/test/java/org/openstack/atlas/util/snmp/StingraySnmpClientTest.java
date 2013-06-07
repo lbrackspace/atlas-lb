@@ -129,15 +129,15 @@ public class StingraySnmpClientTest {
     public void testSingleVsByteCountRequest() throws Exception {
         VariableBinding variableBinding = client.getBulkOidBindingList(OIDConstants.VS_BYTES_OUT).get(0);
         String name = getVirtualServerNameFromOid(baseOid, variableBinding.getOid().toString());
-        Long value = client.getLongValueForVirtualServer(name, OIDConstants.VS_BYTES_OUT, false);
+        Long value = client.getLongValueForVirtualServer(name, OIDConstants.VS_BYTES_OUT, false, false);
         assertTrue(value >= 0);
         variableBinding = client.getBulkOidBindingList(OIDConstants.VS_BYTES_IN).get(0);
         name = getVirtualServerNameFromOid(baseOid, variableBinding.getOid().toString());
-        value = client.getLongValueForVirtualServer(name, OIDConstants.VS_BYTES_IN, false);
+        value = client.getLongValueForVirtualServer(name, OIDConstants.VS_BYTES_IN, false, false);
         assertTrue(value >= 0);
         variableBinding = client.getBulkOidBindingList(OIDConstants.VS_CURRENT_CONNECTIONS).get(0);
         name = getVirtualServerNameFromOid(baseOid, variableBinding.getOid().toString());
-        value = client.getLongValueForVirtualServer(name, OIDConstants.VS_CURRENT_CONNECTIONS, false);
+        value = client.getLongValueForVirtualServer(name, OIDConstants.VS_CURRENT_CONNECTIONS, false, false);
         assertTrue(value >= 0);
     }
 

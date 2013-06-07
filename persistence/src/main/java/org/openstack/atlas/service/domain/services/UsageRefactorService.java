@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services;
 
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 
@@ -12,6 +13,8 @@ public interface UsageRefactorService {
     public void createUsageEvent(LoadBalancerHostUsage loadBalancerHostUsageEvent);
 
     public LoadBalancerHostUsage getLastRecordForLbIdAndHostId(int lbId, int hostId);
+
+    public LoadBalancerMergedHostUsage getLastRecordForLbId(int lbId) throws EntityNotFoundException;
 
     //Keys loadbalancerId, hostId
     public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getAllLoadBalancerHostUsages();

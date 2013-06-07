@@ -190,7 +190,7 @@ public class UsageEventCollectionTest {
             host.setId(7);
             hosts.add(host);
 
-            when(hostRepository.getAllHosts()).thenReturn(hosts);
+            when(hostRepository.getAll()).thenReturn(hosts);
             usageEventCollection.processSnmpUsage(new SnmpUsage(),  lb, UsageEvent.CREATE_LOADBALANCER);
         }
 
@@ -201,7 +201,7 @@ public class UsageEventCollectionTest {
             host.setId(7);
             hosts.add(host);
 
-            when(hostRepository.getAllHosts()).thenReturn(hosts);
+            when(hostRepository.getAll()).thenReturn(hosts);
             usageEventCollection.processSnmpUsage(new SnmpUsage(),  lb, UsageEvent.CREATE_LOADBALANCER);
             Assert.assertEquals(host, usageEventCollection.getHosts().get(0));
         }

@@ -344,7 +344,7 @@ public class SnmpMain {
                 } else if (cmd.equals("lookup") && args.length >= 3) {
                     String oid = args[1];
                     String vsName = args[2];
-                    long val = defaultClient.getLongValueForVirtualServer(vsName, oid, false);
+                    long val = defaultClient.getLongValueForVirtualServer(vsName, oid, false, false);
                     System.out.printf("%s for %s = %d\n", oid, vsName, val);
                 } else if (cmd.equals("set_retrys") && args.length >= 2) {
                     System.out.printf("Setting retries to ");

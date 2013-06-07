@@ -4,6 +4,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
@@ -33,6 +34,8 @@ public class UsagePollerHelper {
     private VirtualIpRepository virtualIpRepository;
     @Autowired
     private LoadBalancerRepository loadBalancerRepository;
+    @Autowired
+    private HostRepository hostRepository;
 
     public UsagePollerHelper() {} 
 
@@ -221,47 +224,99 @@ public class UsagePollerHelper {
     }
     public List<LoadBalancerMergedHostUsage> processExistingEvents(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages) {
         List<LoadBalancerMergedHostUsage> newMergedEventRecords = new ArrayList<LoadBalancerMergedHostUsage>();
-
+        List<Host> hosts = hostRepository.getAll();
         for (Integer loadBalancerId : existingUsages.keySet()) {
             LinkedHashMap<String, LoadBalancerMergedHostUsage> mergedUsagesMap = new LinkedHashMap<String, LoadBalancerMergedHostUsage>();
 
-            for (Integer hostId : existingUsages.get(loadBalancerId).keySet()) {
-                List<LoadBalancerHostUsage> loadBalancerHostUsages = existingUsages.get(loadBalancerId).get(hostId);
+            //Group usage records by time and hostId so that it can be later used to determine if there are
+            //any records that are missing (for example: due to host being unreachable)
+            TreeMap<Calendar, Map<Integer, LoadBalancerHostUsage>> lbHostUsagesMapByTime =
+                    getLBUsageGroupedByTimeAndHost(existingUsages.get(loadBalancerId), hosts);
+            //For times that do not have an entry for a host, insert null
+            insertNullRecordsForHostsWithoutEntries(lbHostUsagesMapByTime, hosts);
+            Map<Integer, LoadBalancerHostUsage> previousRecords = null;
+            boolean isFirstPoll = true;
+            for (Calendar timeKey : lbHostUsagesMapByTime.keySet()) {
 
-                if (loadBalancerHostUsages.size() == 0) {
-                    LOG.info("Received a list of size 0 for a load balancer id and host id combination.  This should not have happened.");
-                    continue;
-                }
+                for (Integer hostId : lbHostUsagesMapByTime.get(timeKey).keySet()) {
 
-                //If first record is the CREATE_LOADBALANCER event then add that event to the records to be merged.
-                if (loadBalancerHostUsages.get(0).getEventType() == UsageEvent.CREATE_LOADBALANCER) {
-                    String timeKey = loadBalancerHostUsages.get(0).getPollTime().getTime().toString();
-                    mergedUsagesMap.put(timeKey, initializeMergedRecord(loadBalancerHostUsages.get(0)));
-                }
+                    LoadBalancerHostUsage currentUsage = lbHostUsagesMapByTime.get(timeKey).get(hostId);
 
-                //If there is only one record. then it is most likely just the previous poll. Check event just in case.
-                if (loadBalancerHostUsages.size() == 1) {
-                    if (loadBalancerHostUsages.get(0).getEventType() != null) {
-                        LOG.info("Non-CREATE_LOADBALANCER Event record encountered that did not have a previous record to compare with.");
+                    if (isFirstPoll) {
+                        //If first record is the CREATE_LOADBALANCER event then add that event to the records to be merged.
+                        if (currentUsage.getEventType() == UsageEvent.CREATE_LOADBALANCER) {
+                            mergedUsagesMap.put(timeKey.getTime().toString(), initializeMergedRecord(currentUsage));
+                        }
+                        //The first record should usually be NULL from the previous poll, if it is not then at this point in the code something went wrong.
+                        else if(currentUsage.getEventType() != null) {
+                            LOG.warn("Non-CREATE_LOADBALANCER Event record encountered that did not have a previous record to compare with.");
+                        }
+                        //set previous record for this host to the current and continue
+                        if (previousRecords == null) {
+                            previousRecords = new HashMap<Integer, LoadBalancerHostUsage>();
+                        }
+                        previousRecords.put(hostId, currentUsage);
+                        continue;
                     }
-                    continue;
-                }
 
-                //If for some reason there are more than 1 record and the last record is a null
-                if (loadBalancerHostUsages.get(loadBalancerHostUsages.size() - 1).getEventType() == null) {
-                    continue;
-                }
+                    LoadBalancerHostUsage previousUsage = previousRecords.get(hostId);
 
-                //This assumes that no events for a load balancer will ever have the same time.
-                for(int i = 1; i < loadBalancerHostUsages.size(); i++) {
-                    String timeKey = loadBalancerHostUsages.get(i).getPollTime().getTime().toString();
-                    if (!mergedUsagesMap.containsKey(timeKey)) {
-                        mergedUsagesMap.put(timeKey, initializeMergedRecord(loadBalancerHostUsages.get(i)));
+                    if (!previousRecords.containsKey(hostId) || currentUsage == null || previousUsage == null) {
+                        previousRecords.put(hostId, currentUsage);
+                        continue;
                     }
-                    LoadBalancerMergedHostUsage newMergedUsage = mergedUsagesMap.get(timeKey);
-                    calculateUsage(loadBalancerHostUsages.get(i), loadBalancerHostUsages.get(i - 1), newMergedUsage);
+
+                    if (!mergedUsagesMap.containsKey(timeKey.getTime().toString())) {
+                        mergedUsagesMap.put(timeKey.getTime().toString(), initializeMergedRecord(currentUsage));
+                    }
+
+                    LoadBalancerMergedHostUsage newMergedUsage = mergedUsagesMap.get(timeKey.getTime().toString());
+                    calculateUsage(currentUsage, previousUsage, newMergedUsage);
+
+                    // set previous record for this host to the current
+                    previousRecords.put(hostId, currentUsage);
                 }
+
+                isFirstPoll = false;
             }
+
+//            for (Integer hostId : existingUsages.get(loadBalancerId).keySet()) {
+//                List<LoadBalancerHostUsage> loadBalancerHostUsages = existingUsages.get(loadBalancerId).get(hostId);
+//
+//                if (loadBalancerHostUsages.size() == 0) {
+//                    LOG.info("Received a list of size 0 for a load balancer id and host id combination.  This should not have happened.");
+//                    continue;
+//                }
+//
+//                //If first record is the CREATE_LOADBALANCER event then add that event to the records to be merged.
+//                if (loadBalancerHostUsages.get(0).getEventType() == UsageEvent.CREATE_LOADBALANCER) {
+//                    String timeKey = loadBalancerHostUsages.get(0).getPollTime().getTime().toString();
+//                    mergedUsagesMap.put(timeKey, initializeMergedRecord(loadBalancerHostUsages.get(0)));
+//                }
+//
+//                //If there is only one record. then it is most likely just the previous poll. Check event just in case.
+//                if (loadBalancerHostUsages.size() == 1) {
+//                    if (loadBalancerHostUsages.get(0).getEventType() != null) {
+//                        LOG.info("Non-CREATE_LOADBALANCER Event record encountered that did not have a previous record to compare with.");
+//                    }
+//                    continue;
+//                }
+//
+//                //If for some reason there are more than 1 record and the last record is a null
+//                if (loadBalancerHostUsages.get(loadBalancerHostUsages.size() - 1).getEventType() == null) {
+//                    continue;
+//                }
+//
+//                //This assumes that no events for a load balancer will ever have the same time.
+//                for(int i = 1; i < loadBalancerHostUsages.size(); i++) {
+//                    String timeKey = loadBalancerHostUsages.get(i).getPollTime().getTime().toString();
+//                    if (!mergedUsagesMap.containsKey(timeKey)) {
+//                        mergedUsagesMap.put(timeKey, initializeMergedRecord(loadBalancerHostUsages.get(i)));
+//                    }
+//                    LoadBalancerMergedHostUsage newMergedUsage = mergedUsagesMap.get(timeKey);
+//                    calculateUsage(loadBalancerHostUsages.get(i), loadBalancerHostUsages.get(i - 1), newMergedUsage);
+//                }
+//            }
 
             //Add all events into list that shall be returned
             for(String timeKey : mergedUsagesMap.keySet()) {
@@ -323,5 +378,34 @@ public class UsagePollerHelper {
         }
 
         return buildingLoadBalancerMap;
+    }
+
+    private TreeMap<Calendar, Map<Integer, LoadBalancerHostUsage>> getLBUsageGroupedByTimeAndHost(Map<Integer, List<LoadBalancerHostUsage>> existingLBUsages,
+                                                                                                      List<Host> hosts) {
+        TreeMap<Calendar, Map<Integer, LoadBalancerHostUsage>> lbHostUsagesMapByTime = new TreeMap<Calendar, Map<Integer, LoadBalancerHostUsage>>();
+
+        for (Integer hostId : existingLBUsages.keySet()) {
+            for (LoadBalancerHostUsage lbHostUsage : existingLBUsages.get(hostId)) {
+                if(!lbHostUsagesMapByTime.containsKey(lbHostUsage.getPollTime())) {
+                    Map<Integer, LoadBalancerHostUsage> lbHostUsagesMapByHostId = new HashMap<Integer, LoadBalancerHostUsage>();
+                    lbHostUsagesMapByTime.put(lbHostUsage.getPollTime(), lbHostUsagesMapByHostId);
+                }
+                Map<Integer, LoadBalancerHostUsage> lbHostUsageMapByHostId = lbHostUsagesMapByTime.get(lbHostUsage.getPollTime());
+                lbHostUsageMapByHostId.put(hostId, lbHostUsage);
+            }
+        }
+
+        return lbHostUsagesMapByTime;
+    }
+
+    private void insertNullRecordsForHostsWithoutEntries(TreeMap<Calendar, Map<Integer, LoadBalancerHostUsage>> lbHostUsagesMapByTime,
+                                                         List<Host> hosts) {
+        for (Calendar timeKey : lbHostUsagesMapByTime.keySet()) {
+            for (Host host : hosts) {
+                if (!lbHostUsagesMapByTime.get(timeKey).containsKey(host.getId())) {
+                    lbHostUsagesMapByTime.get(timeKey).put(host.getId(), null);
+                }
+            }
+        }
     }
 }

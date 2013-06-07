@@ -141,19 +141,19 @@ public class StingraySnmpClient {
         return rawSnmpMap;
     }
 
-    public long getBytesIn(String vsName, boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
-        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_IN, zeroOnNotFound);
+    public long getBytesIn(String vsName, boolean zeroOnNotFound, boolean negativeOneOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_IN, zeroOnNotFound, negativeOneOnNotFoundException);
     }
 
-    public long getBytesOut(String vsName, boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
-        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_OUT, zeroOnNotFound);
+    public long getBytesOut(String vsName, boolean zeroOnNotFound, boolean negativeOneOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_BYTES_OUT, zeroOnNotFound, negativeOneOnNotFoundException);
     }
 
-    public long getConcurrentConnections(String vsName, boolean zeroOnNotFound) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
-        return getLongValueForVirtualServer(vsName, OIDConstants.VS_CURRENT_CONNECTIONS, zeroOnNotFound);
+    public long getConcurrentConnections(String vsName, boolean zeroOnNotFound, boolean negativeOneOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_CURRENT_CONNECTIONS, zeroOnNotFound, negativeOneOnNotFoundException);
     }
 
-    public long getLongValueForVirtualServer(String vsName, String baseOid, boolean zeroOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
+    public long getLongValueForVirtualServer(String vsName, String baseOid, boolean zeroOnNotFoundException, boolean negativeOneOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
 
         String searchOid = getOidFromVirtualServerName(baseOid, vsName);
         PDU req = new PDU();
@@ -220,6 +220,9 @@ public class StingraySnmpClient {
         if (vbClass.equals(Null.class)) {
             if (zeroOnNotFoundException) {
                 return 0L;
+            }
+            if (negativeOneOnNotFoundException) {
+                return -1L;
             }
             throw new StingraySnmpObjectNotFoundException();
         }
