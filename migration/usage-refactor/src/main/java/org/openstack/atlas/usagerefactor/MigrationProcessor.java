@@ -12,10 +12,9 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostU
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.util.*;
 
 public class MigrationProcessor {
 
@@ -103,13 +102,51 @@ public class MigrationProcessor {
 
         loadBalancerUsageEvents = removeDuplicateEvents(loadBalancerUsageEvents, loadBalancerHostUsages);
 
+
+
+        UsageEventProcessor usageEventProcessor = new UsageEventProcessor(loadBalancerUsageEvents, null, null, null);
+        usageEventProcessor.process();
+
+        List<LoadBalancerUsage> usagesToUpdate = usageEventProcessor.getUsagesToUpdate();
+
+        for (LoadBalancerUsage updatedRecord : usagesToUpdate) {
+            for (LoadBalancerUsage recordToUpdate : loadBalancerUsages) {
+                if (recordToUpdate.getId().equals(updatedRecord.getId())) {
+                    System.out.println(String.format("Updating lb_usage record '%d for lb '%d'...", recordToUpdate.getId(), recordToUpdate.getLoadbalancerId()));
+                    updateRecord(recordToUpdate, updatedRecord);
+                    System.out.println(String.format("Updated lb_usage record '%d for lb '%d'.", recordToUpdate.getId(), recordToUpdate.getLoadbalancerId()));
+                    break;
+                }
+            }
+        }
+
+        List<LoadBalancerUsage> usagesToCreate = usageEventProcessor.getUsagesToCreate();
+        loadBalancerUsages.addAll(usagesToCreate);
+
         List<LoadBalancerMergedHostUsage> lbUsageRecords = convertLoadBalancerUsageRecords(loadBalancerUsages);
         loadBalancerMergedHostUsages.addAll(lbUsageRecords);
 
-        List<LoadBalancerMergedHostUsage> eventRecords = convertLoadBalancerUsageEvents(loadBalancerUsageEvents, loadBalancerUsages);
-        loadBalancerMergedHostUsages.addAll(eventRecords);
-
         return loadBalancerMergedHostUsages;
+    }
+
+    // Contains side effects FYI
+    private void updateRecord(LoadBalancerUsage recordToUpdate, LoadBalancerUsage updatedRecord) {
+        recordToUpdate.setCumulativeBandwidthBytesIn(updatedRecord.getCumulativeBandwidthBytesIn());
+        recordToUpdate.setCumulativeBandwidthBytesInSsl(updatedRecord.getCumulativeBandwidthBytesInSsl());
+        recordToUpdate.setCumulativeBandwidthBytesOut(updatedRecord.getCumulativeBandwidthBytesOut());
+        recordToUpdate.setCumulativeBandwidthBytesOutSsl(updatedRecord.getCumulativeBandwidthBytesOutSsl());
+        recordToUpdate.setAverageConcurrentConnections(updatedRecord.getAverageConcurrentConnections());
+        recordToUpdate.setAverageConcurrentConnectionsSsl(updatedRecord.getAverageConcurrentConnectionsSsl());
+        recordToUpdate.setLastBandwidthBytesIn(updatedRecord.getLastBandwidthBytesIn());
+        recordToUpdate.setLastBandwidthBytesInSsl(updatedRecord.getLastBandwidthBytesInSsl());
+        recordToUpdate.setLastBandwidthBytesOut(updatedRecord.getLastBandwidthBytesOut());
+        recordToUpdate.setLastBandwidthBytesOutSsl(updatedRecord.getLastBandwidthBytesOutSsl());
+        recordToUpdate.setStartTime(updatedRecord.getStartTime());
+        recordToUpdate.setEndTime(updatedRecord.getEndTime());
+        recordToUpdate.setEventType(updatedRecord.getEventType());
+        recordToUpdate.setNumberOfPolls(updatedRecord.getNumberOfPolls());
+        recordToUpdate.setTags(updatedRecord.getTags());
+        recordToUpdate.setNumVips(updatedRecord.getNumVips());
     }
 
     private List<LoadBalancerMergedHostUsage> convertLoadBalancerUsageRecords(List<LoadBalancerUsage> loadBalancerUsages) {
@@ -171,130 +208,6 @@ public class MigrationProcessor {
         return loadBalancerMergedHostUsages;
     }
 
-    private List<LoadBalancerMergedHostUsage> convertLoadBalancerUsageEvents(List<LoadBalancerUsageEvent> loadBalancerUsageEvents, List<LoadBalancerUsage> loadBalancerUsages) {
-        List<LoadBalancerMergedHostUsage> loadBalancerMergedHostUsages = new ArrayList<LoadBalancerMergedHostUsage>();
-
-        for (LoadBalancerUsageEvent loadBalancerUsageEvent : loadBalancerUsageEvents) {
-            LoadBalancerUsage mostRecentLbUsage = getMostRecentLbUsage(loadBalancerUsageEvent.getLoadbalancerId(), loadBalancerUsages);
-            LoadBalancerMergedHostUsage loadBalancerMergedHostUsage = convertLoadBalancerUsageEvent(loadBalancerUsageEvent, mostRecentLbUsage);
-            loadBalancerMergedHostUsages.add(loadBalancerMergedHostUsage);
-        }
-
-        return loadBalancerMergedHostUsages;
-    }
-
-    /*
-     * Assumes usage is in order
-     */
-    // TODO: Test
-    protected LoadBalancerUsage getMostRecentLbUsage(Integer loadbalancerId, List<LoadBalancerUsage> loadBalancerUsages) {
-        LoadBalancerUsage mostRecentLbUsage = null;
-
-        for (LoadBalancerUsage loadBalancerUsage : loadBalancerUsages) {
-            if (loadBalancerUsage.getLoadbalancerId().equals(loadbalancerId)) {
-                mostRecentLbUsage = loadBalancerUsage;
-            }
-        }
-
-        if (mostRecentLbUsage == null) {
-            Usage usage = getMostRecentLbUsageFromMainLbUsageTable(loadbalancerId);
-            System.out.println(usage);
-        }
-
-        return mostRecentLbUsage;
-    }
-
-    private Usage getMostRecentLbUsageFromMainLbUsageTable(Integer loadbalancerId) {
-        final SessionFactory sessionFactory = hibernateConfig.buildSessionFactory();
-        final Session session = sessionFactory.openSession();
-        List<Usage> loadBalancerUsageList = new ArrayList<Usage>();
-        Transaction tx = null;
-
-        try {
-            tx = session.beginTransaction();
-            System.out.println(String.format("Retrieving items from lb_usage from 'loadbalancing' db..."));
-            loadBalancerUsageList = session.createQuery("SELECT u FROM Usage u WHERE u.loadbalancer.id = :loadbalancerId ORDER BY u.startTime DESC")
-                    .setParameter("loadbalancerId", loadbalancerId)
-                    .list();
-            System.out.println(String.format("Number of items retrieved from lb_usage from 'loadbalancing' db: %d", loadBalancerUsageList.size()));
-            tx.commit();
-        } catch (Exception e) {
-            System.err.print(e);
-            if (tx != null) tx.rollback();
-        } finally {
-            session.close();
-            sessionFactory.close();
-        }
-
-        if (loadBalancerUsageList.isEmpty()) {
-            return null;
-        }
-
-        return loadBalancerUsageList.get(0);
-    }
-
-    // TODO: Test
-    protected LoadBalancerMergedHostUsage convertLoadBalancerUsageEvent(LoadBalancerUsageEvent loadBalancerUsageEvent, LoadBalancerUsage mostRecentLbUsage) {
-        UsageEvent eventType = UsageEvent.valueOf(loadBalancerUsageEvent.getEventType());
-        LoadBalancerMergedHostUsage loadBalancerMergedHostUsage = new LoadBalancerMergedHostUsage();
-
-        loadBalancerMergedHostUsage.setAccountId(loadBalancerUsageEvent.getAccountId());
-        loadBalancerMergedHostUsage.setLoadbalancerId(loadBalancerUsageEvent.getLoadbalancerId());
-        loadBalancerMergedHostUsage.setNumVips(loadBalancerUsageEvent.getNumVips());
-        loadBalancerMergedHostUsage.setPollTime(loadBalancerUsageEvent.getStartTime());
-        loadBalancerMergedHostUsage.setEventType(eventType);
-
-        if (!eventType.equals(UsageEvent.CREATE_LOADBALANCER) && mostRecentLbUsage == null) {
-            throw new RuntimeException(String.format("Load balancer '%d' does not have any recent usage!", loadBalancerUsageEvent.getLoadbalancerId()));
-        }
-
-        if (!eventType.equals(UsageEvent.CREATE_LOADBALANCER) && loadBalancerUsageEvent.getLastBandwidthBytesIn() != null && loadBalancerUsageEvent.getLastBandwidthBytesIn() > mostRecentLbUsage.getLastBandwidthBytesIn()) {
-            loadBalancerMergedHostUsage.setIncomingTransfer(loadBalancerUsageEvent.getLastBandwidthBytesIn() - mostRecentLbUsage.getLastBandwidthBytesIn());
-        } else {
-            loadBalancerMergedHostUsage.setIncomingTransfer(0);
-        }
-
-        if (!eventType.equals(UsageEvent.CREATE_LOADBALANCER) && loadBalancerUsageEvent.getLastBandwidthBytesInSsl() != null && loadBalancerUsageEvent.getLastBandwidthBytesInSsl() > mostRecentLbUsage.getLastBandwidthBytesInSsl()) {
-            loadBalancerMergedHostUsage.setIncomingTransferSsl(loadBalancerUsageEvent.getLastBandwidthBytesInSsl() - mostRecentLbUsage.getLastBandwidthBytesInSsl());
-        } else {
-            loadBalancerMergedHostUsage.setIncomingTransferSsl(0);
-        }
-
-        if (!eventType.equals(UsageEvent.CREATE_LOADBALANCER) && loadBalancerUsageEvent.getLastBandwidthBytesOut() != null && loadBalancerUsageEvent.getLastBandwidthBytesOut() > mostRecentLbUsage.getLastBandwidthBytesOut()) {
-            loadBalancerMergedHostUsage.setOutgoingTransfer(loadBalancerUsageEvent.getLastBandwidthBytesOut() - mostRecentLbUsage.getLastBandwidthBytesOut());
-        } else {
-            loadBalancerMergedHostUsage.setOutgoingTransfer(0);
-        }
-
-        if (!eventType.equals(UsageEvent.CREATE_LOADBALANCER) && loadBalancerUsageEvent.getLastBandwidthBytesOutSsl() != null && loadBalancerUsageEvent.getLastBandwidthBytesOutSsl() > mostRecentLbUsage.getLastBandwidthBytesOutSsl()) {
-            loadBalancerMergedHostUsage.setOutgoingTransferSsl(loadBalancerUsageEvent.getLastBandwidthBytesOutSsl() - mostRecentLbUsage.getLastBandwidthBytesOutSsl());
-        } else {
-            loadBalancerMergedHostUsage.setOutgoingTransferSsl(0);
-        }
-
-        if (!eventType.equals(UsageEvent.CREATE_LOADBALANCER) && loadBalancerUsageEvent.getLastConcurrentConnections() != null) {
-            loadBalancerMergedHostUsage.setConcurrentConnections(loadBalancerUsageEvent.getLastConcurrentConnections());
-        } else {
-            loadBalancerMergedHostUsage.setConcurrentConnections(0);
-        }
-
-        if (!eventType.equals(UsageEvent.CREATE_LOADBALANCER) && loadBalancerUsageEvent.getLastConcurrentConnectionsSsl() != null) {
-            loadBalancerMergedHostUsage.setConcurrentConnectionsSsl(loadBalancerUsageEvent.getLastConcurrentConnectionsSsl());
-        } else {
-            loadBalancerMergedHostUsage.setConcurrentConnectionsSsl(0);
-        }
-
-        if (eventType.equals(UsageEvent.CREATE_LOADBALANCER)) {
-            // TODO: Figure out how to determine if servicenet or not.
-        } else {
-            BitTags bitTags = new BitTags(mostRecentLbUsage.getTags());
-            bitTags.applyEvent(eventType);
-            loadBalancerMergedHostUsage.setTagsBitmask(bitTags.toInt());
-        }
-
-        return loadBalancerMergedHostUsage;
-    }
-
     // TODO: Test
     protected List<LoadBalancerUsageEvent> removeDuplicateEvents(List<LoadBalancerUsageEvent> loadBalancerUsageEvents, List<LoadBalancerHostUsage> loadBalancerHostUsages) {
         for (LoadBalancerHostUsage loadBalancerHostUsage : loadBalancerHostUsages) {
@@ -311,4 +224,64 @@ public class MigrationProcessor {
 
         return loadBalancerUsageEvents;
     }
+
+    private Usage getMostRecentLbUsageFromMainLbUsageTable(Integer loadbalancerId) {
+        final SessionFactory sessionFactory = hibernateConfig.buildSessionFactory();
+        final Session session = sessionFactory.openSession();
+        List<Object[]> resultList = new ArrayList<Object[]>();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            System.out.println(String.format("Retrieving most recent lb_usage from 'loadbalancing' db for loadbalancer '%d'...", loadbalancerId));
+            resultList = session.createSQLQuery("SELECT u.id, u.loadbalancer_id, u.avg_concurrent_conns, u.bandwidth_in, u.bandwidth_out, u.avg_concurrent_conns_ssl, u.bandwidth_in_ssl, u.bandwidth_out_ssl, u.start_time, u.end_time, u.num_polls, u.num_vips, u.tags_bitmask, u.event_type, u.account_id FROM lb_usage u WHERE u.loadbalancer_id = :loadbalancerId ORDER BY u.start_time DESC LIMIT 1")
+                    .setParameter("loadbalancerId", loadbalancerId)
+                    .list();
+            System.out.println(String.format("Number of items retrieved from lb_usage from 'loadbalancing' db for loadbalancer '%d': %d", loadbalancerId, resultList.size()));
+            tx.commit();
+        } catch (Exception e) {
+            System.err.print(e);
+            if (tx != null) tx.rollback();
+        } finally {
+            session.close();
+            sessionFactory.close();
+        }
+
+        if (resultList.isEmpty()) {
+            return null;
+        }
+
+        Object[] row = resultList.get(0);
+        return rowToUsage(row);
+    }
+
+    private Usage rowToUsage(Object[] row) {
+        Long startTimeMillis = ((Timestamp) row[8]).getTime();
+        Long endTimeMillis = ((Timestamp) row[9]).getTime();
+        Calendar startTimeCal = new GregorianCalendar();
+        Calendar endTimeCal = new GregorianCalendar();
+        startTimeCal.setTimeInMillis(startTimeMillis);
+        endTimeCal.setTimeInMillis(endTimeMillis);
+
+        Usage usageItem = new Usage();
+        usageItem.setId((Integer) row[0]);
+        LoadBalancer lb = new LoadBalancer();
+        lb.setId((Integer) row[1]);
+        usageItem.setLoadbalancer(lb);
+        usageItem.setAverageConcurrentConnections((Double) row[2]);
+        usageItem.setIncomingTransfer(((BigInteger) row[3]).longValue());
+        usageItem.setOutgoingTransfer(((BigInteger) row[4]).longValue());
+        usageItem.setAverageConcurrentConnectionsSsl((Double) row[5]);
+        usageItem.setIncomingTransferSsl(((BigInteger) row[6]).longValue());
+        usageItem.setOutgoingTransferSsl(((BigInteger) row[7]).longValue());
+        usageItem.setStartTime(startTimeCal);
+        usageItem.setEndTime(endTimeCal);
+        usageItem.setNumberOfPolls((Integer) row[10]);
+        usageItem.setNumVips((Integer) row[11]);
+        usageItem.setTags((Integer) row[12]);
+        usageItem.setEventType((String) row[13]);
+        usageItem.setAccountId((Integer) row[14]);
+        return usageItem;
+    }
+
 }

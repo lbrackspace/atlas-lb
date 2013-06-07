@@ -62,7 +62,7 @@ public class Main {
         try {
             tx = session.beginTransaction();
             System.out.println(String.format("Retrieving items from lb_usage..."));
-            loadBalancerUsageList = session.createQuery("FROM LoadBalancerUsage").list();
+            loadBalancerUsageList = session.createQuery("SELECT u FROM LoadBalancerUsage u ORDER BY u.startTime").list();
             System.out.println(String.format("Number of items retrieved from lb_usage: %d", loadBalancerUsageList.size()));
             tx.commit();
         } catch (Exception e) {
@@ -85,7 +85,7 @@ public class Main {
         try {
             tx = session.beginTransaction();
             System.out.println(String.format("Retrieving items from lb_usage_event..."));
-            loadBalancerUsageList = session.createQuery("FROM LoadBalancerUsageEvent").list();
+            loadBalancerUsageList = session.createQuery("SELECT e FROM LoadBalancerUsageEvent e ORDER BY e.startTime").list();
             System.out.println(String.format("Number of items retrieved from lb_usage_event: %d", loadBalancerUsageList.size()));
             tx.commit();
         } catch (Exception e) {
@@ -108,7 +108,7 @@ public class Main {
         try {
             tx = session.beginTransaction();
             System.out.println(String.format("Retrieving items from lb_host_usage..."));
-            loadBalancerUsageList = session.createQuery("FROM LoadBalancerHostUsage").list();
+            loadBalancerUsageList = session.createQuery("SELECT h FROM LoadBalancerHostUsage h ORDER BY h.pollTime").list();
             System.out.println(String.format("Number of items retrieved from lb_host_usage: %d", loadBalancerUsageList.size()));
             tx.commit();
         } catch (Exception e) {
