@@ -1,35 +1,37 @@
 package org.openstack.atlas.usagerefactor;
 
-import org.openstack.atlas.service.domain.entities.Usage;
-import org.openstack.atlas.service.domain.entities.VirtualIp;
-import org.openstack.atlas.service.domain.entities.VirtualIpType;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.Entity;
 import org.openstack.atlas.service.domain.events.UsageEvent;
-import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
-import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
+import org.openstack.atlas.service.domain.usage.entities.*;
 
+import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.util.*;
 
 public class UsageEventProcessor {
-    private LoadBalancerUsageRepository hourlyUsageRepository;
-    private LoadBalancerRepository loadBalancerRepository;
-    private UsageRepository rollupUsageRepository;
+    private static LoadBalancingConfig loadbalancingConfig = new LoadBalancingConfig();
+    private static Configuration loadbalancingHibernateConfig = new Configuration();
+    private static LoadbalancingUsageConfig loadbalancingUsageConfig = new LoadbalancingUsageConfig();
+    private static Configuration loadbalancingUsageHibernateConfig = new Configuration();
 
     private List<LoadBalancerUsage> usagesToCreate;
     private List<LoadBalancerUsage> usagesToUpdate;
     private List<LoadBalancerUsageEvent> inOrderUsageEventEntries;
 
-    public UsageEventProcessor(List<LoadBalancerUsageEvent> inOrderUsageEventEntries, LoadBalancerUsageRepository hourlyUsageRepository, UsageRepository rollupUsageRepository, LoadBalancerRepository loadBalancerRepository) {
+    public UsageEventProcessor(List<LoadBalancerUsageEvent> inOrderUsageEventEntries) {
+        loadLoadbalancingHibernateConfigs();
+        loadLoadbalancingEntities();
+        loadLoadbalancingUsageHibernateConfigs();
+        loadLoadbalancingUsageEntities();
+
         this.inOrderUsageEventEntries = inOrderUsageEventEntries;
-        this.hourlyUsageRepository = hourlyUsageRepository;
-        this.rollupUsageRepository = rollupUsageRepository;
-        this.loadBalancerRepository = loadBalancerRepository;
         this.usagesToCreate = new ArrayList<LoadBalancerUsage>();
         this.usagesToUpdate = new ArrayList<LoadBalancerUsage>();
     }
@@ -40,6 +42,96 @@ public class UsageEventProcessor {
 
     public List<LoadBalancerUsage> getUsagesToUpdate() {
         return this.usagesToUpdate;
+    }
+
+    private static void loadLoadbalancingHibernateConfigs() {
+        final Iterator keys = loadbalancingConfig.getKeys();
+
+        while (keys.hasNext()) {
+            final String key = (String) keys.next();
+            final String value = loadbalancingConfig.getString(key);
+            loadbalancingHibernateConfig.setProperty(key, value);
+        }
+    }
+
+    private static void loadLoadbalancingEntities() {
+        loadbalancingHibernateConfig.addAnnotatedClass(Entity.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(AccessList.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(Account.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(AccountGroup.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(AccountLimit.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(AccountUsage.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(AllowedDomain.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(Backup.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(BlacklistItem.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(Cluster.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(ConnectionLimit.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(Defaults.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(GroupRateLimit.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(HealthMonitor.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(Host.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(JobState.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LimitType.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LoadBalancer.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LoadBalancerAlgorithmObject.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LoadBalancerId.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LoadBalancerJoinVip.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LoadBalancerJoinVip6.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LoadbalancerMeta.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LoadBalancerProtocolObject.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LoadBalancerStatusHistory.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(Node.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(NodeMeta.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(RateLimit.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(SessionPersistenceObject.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(SslTermination.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(Suspension.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(Ticket.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(TrafficScripts.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(Usage.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(UserPages.class);
+//        loadbalancingHibernateConfig.addAnnotatedClass(Version.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(VirtualIp.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(VirtualIpv6.class);
+
+        loadbalancingHibernateConfig.addAnnotatedClass(AccessListType.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(AccountLimitType.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(BlacklistType.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(ClusterStatus.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(DataCenter.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(HealthMonitorType.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(HostStatus.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(IpVersion.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(JobName.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(JobStateVal.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LoadBalancerAlgorithm.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LoadBalancerProtocol.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(LoadBalancerStatus.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(NodeCondition.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(NodeStatus.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(NodeType.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(SessionPersistence.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(VirtualIpType.class);
+        loadbalancingHibernateConfig.addAnnotatedClass(Zone.class);
+    }
+
+    private static void loadLoadbalancingUsageHibernateConfigs() {
+        final Iterator keys = loadbalancingUsageConfig.getKeys();
+
+        while (keys.hasNext()) {
+            final String key = (String) keys.next();
+            final String value = loadbalancingUsageConfig.getString(key);
+            loadbalancingUsageHibernateConfig.setProperty(key, value);
+        }
+    }
+
+    private static void loadLoadbalancingUsageEntities() {
+        loadbalancingUsageHibernateConfig.addAnnotatedClass(org.openstack.atlas.service.domain.usage.entities.Entity.class);
+        loadbalancingUsageHibernateConfig.addAnnotatedClass(HostUsage.class);
+        loadbalancingUsageHibernateConfig.addAnnotatedClass(LoadBalancerHostUsage.class);
+        loadbalancingUsageHibernateConfig.addAnnotatedClass(LoadBalancerMergedHostUsage.class);
+        loadbalancingUsageHibernateConfig.addAnnotatedClass(LoadBalancerUsage.class);
+        loadbalancingUsageHibernateConfig.addAnnotatedClass(LoadBalancerUsageEvent.class);
     }
 
     public UsageEventProcessor process() {
@@ -79,17 +171,14 @@ public class UsageEventProcessor {
                 int updatedTags = calculateTags(recentUsage.getAccountId(), lbId, usageEvent, recentUsage);
                 firstNewUsage.setTags(updatedTags);
             } else {
-                final Usage recentUsage;
-                try {
-                    recentUsage = rollupUsageRepository.getMostRecentUsageForLoadBalancer(lbId);
+                final Usage recentUsage = getMostRecentLbUsageFromMainLbUsageTable(lbId);
+                if (recentUsage != null) {
                     final LoadBalancerUsage firstNewUsage = loadBalancerUsages.get(0);
 
                     // Update the tags to the proper tags.
                     UsageEvent usageEvent = UsageEvent.valueOf(firstNewUsage.getEventType());
                     int updatedTags = calculateTags(recentUsage.getAccountId(), lbId, usageEvent, recentUsage);
                     firstNewUsage.setTags(updatedTags);
-                } catch (EntityNotFoundException e) {
-                    // Ignore
                 }
             }
 
@@ -295,7 +384,7 @@ public class UsageEventProcessor {
         Map<Integer, LoadBalancerUsage> recentUsageMap = new HashMap<Integer, LoadBalancerUsage>();
 
         for (Integer loadBalancerId : loadBalancerIds) {
-            LoadBalancerUsage mostRecentUsageForLoadBalancer = hourlyUsageRepository.getMostRecentUsageForLoadBalancer(loadBalancerId);
+            LoadBalancerUsage mostRecentUsageForLoadBalancer = getMostRecentLbUsageFromHourlyLbUsageTable(loadBalancerId);
             if (mostRecentUsageForLoadBalancer != null)
                 recentUsageMap.put(loadBalancerId, mostRecentUsageForLoadBalancer);
         }
@@ -353,27 +442,193 @@ public class UsageEventProcessor {
             default:
         }
 
-        if (isServiceNetLoadBalancer(accountId, lbId)) {
+        if (isServiceNetLoadBalancer(lbId)) {
             tags.flipTagOn(BitTag.SERVICENET_LB);
         }
 
         return tags.toInt();
     }
 
-    public boolean isServiceNetLoadBalancer(Integer accountId, Integer lbId) {
-        try {
-            final Set<VirtualIp> vipsByAccountIdLoadBalancerId = loadBalancerRepository.getVipsByLbId(lbId);
+    public boolean isServiceNetLoadBalancer(Integer lbId) {
+        final List<VirtualIp> vipsByAccountIdLoadBalancerId = getVipsByLbId(lbId);
 
-            for (VirtualIp virtualIp : vipsByAccountIdLoadBalancerId) {
-                if (virtualIp.getVipType().equals(VirtualIpType.SERVICENET)) return true;
-            }
+        if (vipsByAccountIdLoadBalancerId.isEmpty()) return false;
 
-        } catch (EntityNotFoundException e) {
-            return false;
-        } catch (DeletedStatusException e) {
-            return false;
+        for (VirtualIp virtualIp : vipsByAccountIdLoadBalancerId) {
+            if (virtualIp.getVipType().equals(VirtualIpType.SERVICENET)) return true;
         }
 
         return false;
+    }
+
+    private Usage getMostRecentLbUsageFromMainLbUsageTable(Integer loadbalancerId) {
+        final SessionFactory sessionFactory = loadbalancingHibernateConfig.buildSessionFactory();
+        final Session session = sessionFactory.openSession();
+        List<Object[]> resultList = new ArrayList<Object[]>();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            System.out.println(String.format("Retrieving most recent lb_usage from 'loadbalancing' db for loadbalancer '%d'...", loadbalancerId));
+            resultList = session.createSQLQuery("SELECT u.id, u.loadbalancer_id, u.avg_concurrent_conns, u.bandwidth_in, u.bandwidth_out, u.avg_concurrent_conns_ssl, u.bandwidth_in_ssl, u.bandwidth_out_ssl, u.start_time, u.end_time, u.num_polls, u.num_vips, u.tags_bitmask, u.event_type, u.account_id FROM lb_usage u WHERE u.loadbalancer_id = :loadbalancerId ORDER BY u.start_time DESC LIMIT 1")
+                    .setParameter("loadbalancerId", loadbalancerId)
+                    .list();
+            System.out.println(String.format("Number of items retrieved from lb_usage from 'loadbalancing' db for loadbalancer '%d': %d", loadbalancerId, resultList.size()));
+            tx.commit();
+        } catch (Exception e) {
+            System.err.print(e);
+            if (tx != null) tx.rollback();
+        } finally {
+            session.close();
+            sessionFactory.close();
+        }
+
+        if (resultList.isEmpty()) {
+            return null;
+        }
+
+        Object[] row = resultList.get(0);
+        return rowToUsage(row);
+    }
+
+    private Usage rowToUsage(Object[] row) {
+        Long startTimeMillis = ((Timestamp) row[8]).getTime();
+        Long endTimeMillis = ((Timestamp) row[9]).getTime();
+        Calendar startTimeCal = new GregorianCalendar();
+        Calendar endTimeCal = new GregorianCalendar();
+        startTimeCal.setTimeInMillis(startTimeMillis);
+        endTimeCal.setTimeInMillis(endTimeMillis);
+
+        Usage usageItem = new Usage();
+        usageItem.setId((Integer) row[0]);
+        LoadBalancer lb = new LoadBalancer();
+        lb.setId((Integer) row[1]);
+        usageItem.setLoadbalancer(lb);
+        usageItem.setAverageConcurrentConnections((Double) row[2]);
+        usageItem.setIncomingTransfer(((BigInteger) row[3]).longValue());
+        usageItem.setOutgoingTransfer(((BigInteger) row[4]).longValue());
+        usageItem.setAverageConcurrentConnectionsSsl((Double) row[5]);
+        usageItem.setIncomingTransferSsl(((BigInteger) row[6]).longValue());
+        usageItem.setOutgoingTransferSsl(((BigInteger) row[7]).longValue());
+        usageItem.setStartTime(startTimeCal);
+        usageItem.setEndTime(endTimeCal);
+        usageItem.setNumberOfPolls((Integer) row[10]);
+        usageItem.setNumVips((Integer) row[11]);
+        usageItem.setTags((Integer) row[12]);
+        usageItem.setEventType((String) row[13]);
+        usageItem.setAccountId((Integer) row[14]);
+        return usageItem;
+    }
+
+    private LoadBalancerUsage getMostRecentLbUsageFromHourlyLbUsageTable(Integer loadbalancerId) {
+        final SessionFactory sessionFactory = loadbalancingUsageHibernateConfig.buildSessionFactory();
+        final Session session = sessionFactory.openSession();
+        List<Object[]> resultList = new ArrayList<Object[]>();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            System.out.println(String.format("Retrieving most recent lb_usage from 'loadbalancing_usage' db for loadbalancer '%d'...", loadbalancerId));
+            resultList = session.createSQLQuery("SELECT u.id, u.account_id, u.loadbalancer_id, u.avg_concurrent_conns, u.cum_bandwidth_bytes_in, u.cum_bandwidth_bytes_out, u.last_bandwidth_bytes_in, u.last_bandwidth_bytes_out, u.avg_concurrent_conns_ssl, u.cum_bandwidth_bytes_in_ssl, u.cum_bandwidth_bytes_out_ssl, u.last_bandwidth_bytes_in_ssl, u.last_bandwidth_bytes_out_ssl, u.start_time, u.end_time, u.num_polls, u.num_vips, u.tags_bitmask, u.event_type FROM lb_usage u WHERE u.loadbalancer_id = :loadbalancerId ORDER BY u.start_time DESC LIMIT 1")
+                    .setParameter("loadbalancerId", loadbalancerId)
+                    .list();
+            System.out.println(String.format("Number of items retrieved from lb_usage from 'loadbalancing_usage' db for loadbalancer '%d': %d", loadbalancerId, resultList.size()));
+            tx.commit();
+        } catch (Exception e) {
+            System.err.print(e);
+            if (tx != null) tx.rollback();
+        } finally {
+            session.close();
+            sessionFactory.close();
+        }
+
+        if (resultList.isEmpty()) {
+            return null;
+        }
+
+        Object[] row = resultList.get(0);
+        return rowToLoadBalancerUsage(row);
+    }
+
+    private LoadBalancerUsage rowToLoadBalancerUsage(Object[] row) {
+        Long startTimeMillis = ((Timestamp) row[13]).getTime();
+        Long endTimeMillis = ((Timestamp) row[14]).getTime();
+        Calendar startTimeCal = new GregorianCalendar();
+        Calendar endTimeCal = new GregorianCalendar();
+        startTimeCal.setTimeInMillis(startTimeMillis);
+        endTimeCal.setTimeInMillis(endTimeMillis);
+
+        LoadBalancerUsage usageItem = new LoadBalancerUsage();
+        usageItem.setId((Integer) row[0]);
+        usageItem.setAccountId((Integer) row[1]);
+        usageItem.setLoadbalancerId((Integer) row[2]);
+        usageItem.setAverageConcurrentConnections((Double) row[3]);
+        usageItem.setCumulativeBandwidthBytesIn(((BigInteger) row[4]).longValue());
+        usageItem.setCumulativeBandwidthBytesOut(((BigInteger) row[5]).longValue());
+        usageItem.setLastBandwidthBytesIn(((BigInteger) row[6]).longValue());
+        usageItem.setLastBandwidthBytesOut(((BigInteger) row[7]).longValue());
+        usageItem.setAverageConcurrentConnectionsSsl((Double) row[8]);
+        usageItem.setCumulativeBandwidthBytesInSsl(((BigInteger) row[9]).longValue());
+        usageItem.setCumulativeBandwidthBytesOutSsl(((BigInteger) row[10]).longValue());
+        usageItem.setLastBandwidthBytesInSsl(((BigInteger) row[11]).longValue());
+        usageItem.setLastBandwidthBytesOutSsl(((BigInteger) row[12]).longValue());
+        usageItem.setStartTime(startTimeCal);
+        usageItem.setEndTime(endTimeCal);
+        usageItem.setNumberOfPolls((Integer) row[15]);
+        usageItem.setNumVips((Integer) row[16]);
+        usageItem.setTags((Integer) row[17]);
+        usageItem.setEventType((String) row[18]);
+        return usageItem;
+    }
+
+    private List<VirtualIp> getVipsByLbId(Integer loadbalancerId) {
+        final SessionFactory sessionFactory = loadbalancingHibernateConfig.buildSessionFactory();
+        final Session session = sessionFactory.openSession();
+        List<VirtualIp> virtualIps = new ArrayList<VirtualIp>();
+        List<Object[]> resultList = new ArrayList<Object[]>();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            System.out.println(String.format("Retrieving vips from loadbalancing db..."));
+            resultList = session.createSQLQuery("SELECT v.id, v.ip_address, v.last_allocation, v.last_deallocation, v.type, v.cluster_id, v.is_allocated from loadbalancer_virtualip j JOIN virtual_ip_ipv4 v on j.virtualip_id = v.id WHERE j.loadbalancer_id = :lbId").setParameter("lbId", loadbalancerId).list();
+            System.out.println(String.format("Number of vips retrieved from loadbalancing db: %d", resultList.size()));
+            tx.commit();
+        } catch (Exception e) {
+            System.err.print(e);
+            if (tx != null) tx.rollback();
+        } finally {
+            session.close();
+            sessionFactory.close();
+        }
+
+        for (Object[] object : resultList) {
+            virtualIps.add(rowToVirtualIp(object));
+        }
+
+        return virtualIps;
+    }
+
+    private VirtualIp rowToVirtualIp(Object[] row) {
+        Long lastAllocationMillis = ((Timestamp) row[2]).getTime();
+        Long lastDeallocationMillis = ((Timestamp) row[3]).getTime();
+        Calendar lastAllocationCal = new GregorianCalendar();
+        Calendar lastDeallocationCal = new GregorianCalendar();
+        lastAllocationCal.setTimeInMillis(lastAllocationMillis);
+        lastDeallocationCal.setTimeInMillis(lastDeallocationMillis);
+
+        VirtualIp vip = new VirtualIp();
+
+        vip.setId((Integer) row[0]);
+        vip.setIpAddress((String) row[1]);
+        vip.setLastAllocation(lastAllocationCal);
+        vip.setLastDeallocation(lastDeallocationCal);
+        vip.setVipType(VirtualIpType.valueOf((String) row[4]));
+        Cluster cluster = new Cluster();
+        cluster.setId((Integer) row[5]);
+        vip.setCluster(cluster);
+        vip.setAllocated((Boolean) row[6]);
+
+        return vip;
     }
 }
