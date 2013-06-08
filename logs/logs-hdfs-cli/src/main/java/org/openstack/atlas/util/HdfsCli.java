@@ -118,10 +118,14 @@ public class HdfsCli {
                     System.out.printf("lineIndex <fileName> #Index the line numbers in the file\n");
                     System.out.printf("rebasePath <srcBase> <srcPath> <dstPath> #Show what the rebasePath method in StaticFileUtils would do\n");
                     System.out.printf("joinPath <path1> ...<pathN> #Test the join the paths together skipping double slashes.\n");
+                    System.out.printf("showConfig #Show hadoop configs\n");
                     System.out.printf("\n");
                     continue;
                 }
-                if (cmd.equals("recompressIndex") && args.length >= 3) {
+                if (cmd.equals("showConfig")) {
+                    System.out.printf("HadoopLogsConfig=%s\n",HadoopLogsConfigs.staticToString());
+                    continue;
+                } else if (cmd.equals("recompressIndex") && args.length >= 3) {
                     String srcLzo = StaticFileUtils.expandUser(args[1]);
                     String dstLzo = args[2];
                     String dstIdx = dstLzo + ".index";
