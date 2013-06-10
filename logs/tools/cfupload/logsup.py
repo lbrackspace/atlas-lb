@@ -3,13 +3,12 @@
 import sys, os, time
 import requests
 import base64
-import calendar
 import cfupload
 import datetime
 import ConfigParser
 
 config = ConfigParser.ConfigParser()
-config.read('~/cfupconfig')
+config.read(os.path.expanduser('~/cfupconfig'))
 
 import pyrax
 import pyrax.exceptions as exc
@@ -34,9 +33,17 @@ def processUsersSplat(args):
     print "Args: ", args
 
     #    splats = cfupload.getCfFiles(args)[1]
-    splats=cfupload.getCfFiles(aid=args.get('aid'), date=args.get('date'), date_gte=args.get('date_gte'), date_lte=args.get('date_lte'))[1]
-    print 'Spalt count: ', len(splats)
-    splats = cfupload.testSplat()
+    splats = cfupload.getCfFiles(aid=args.get('aid'), date=args.get('date'), date_gte=args.get('date_gte'),
+        date_lte=args.get('date_lte'))[1]
+    #splats = cfupload.testSplat()
+
+    userenabled = True
+    splat_count = 0
+    for k in splats.keys():
+        for splat in splats[k]:
+            print "%i: %s" % (k, splat)
+            splat_count += 1
+    print 'Spalts count:', splat_count
     if verify(splats):
         for key in splats:
             user = getUser(key)
@@ -46,47 +53,53 @@ def processUsersSplat(args):
 
             try:
                 pyrax.set_credentials(username, userkey)
-            except exc.AuthenticationFailed:
-                print "Authentication failed for user: ", username, key
+            except exc.AuthenticationFailed, e:
+                print 'Authentication failed for user: %s: %s. Exception: %s' % (username, userkey, e)
+                if 'Forbidden - User \'%s\' is disabled..' % username in e:
+                    userenabled = False
 
             for d in splats[key]:
                 fp = d['file_path']
                 lid = d['lid']
                 lname = d['lname']
                 date = d['date']
-                uploadFile(args, username, key, userkey, lid, lname, fp, date)
-    print 'Not attempting to process files, option declined. '
-
-    if 'cleardirs' in args and args['cleardirs'] == 'false':
-        print 'Not clearing directories, option disabled!'
-        return
-    clearDirectories()
+                uploadFile(args, username, key, userkey, userenabled, lid, lname, fp, date)
+    else:
+        print 'Not attempting to process files, option declined. '
 
 
-def uploadFile(args, username, userid, userkey, lid, lname, fp, date):
+def uploadFile(args, username, userid, userkey, userenabled, lid, lname, fp, date):
     if 'upenabled' in args and args['upenabled'] == 'false':
         print "Not uploading files, option disabled!"
-        print format('Files will not be uploaded: %s for userId: $s' % (fp, userid))
+        print format('Files will not be uploaded: %s for userId: %s' % (fp, userid))
         return
 
-    print format('Access CloudFiles for user id %s : user name %s' %
-                 (pyrax.identity.user['id'], pyrax.identity.user['name']))
+    if userenabled:
+        print format('Access CloudFiles for user id %s : user name %s' %
+                     (pyrax.identity.user['id'], pyrax.identity.user['name']))
 
-    cf = pyrax.connect_to_cloudfiles(region=getRegion())
-    try:
-        cf.create_container(genContName(lid, lname, date))
-        chksum = pyrax.utils.get_checksum(fp)
-        filename = genRemoteFileName(lid, lname, date)
-        gencname = genContName(lid, lname, date)
-        print format('Uploading... \n Remote File Name: %s, Container Name: %s' % (filename, gencname))
-        ucont = cf.upload_file(gencname, fp, obj_name=filename, etag=chksum)
-        print "Chksum valid: ", chksum == ucont.etag
-    except exc.UploadFailed:
-        print "Upload faile for: ", lid, lname
-        return
+        cf = pyrax.connect_to_cloudfiles(region=getRegion())
+        try:
+            cf.create_container(genContName(lid, lname, date))
+            chksum = pyrax.utils.get_checksum(fp)
+            filename = genRemoteFileName(lid, lname, date)
+            gencname = genContName(lid, lname, date)
+            print format('Uploading... \n Remote File Name: %s, Container Name: %s' % (filename, gencname))
+            ucont = cf.upload_file(gencname, fp, obj_name=filename, etag=chksum)
+            print "Chksum valid: ", chksum == ucont.etag
+        except exc.UploadFailed, e:
+            print 'Upload failed for %s %s. Exception: %s' % (userid, username, e)
+            return
+    else:
+        if 'cleardisusers' in args and args['cleardisusers'] == 'false':
+            return
 
     print format("Successfully uploaded file for: LBID: %s" % lid)
     removeLocalFile(fp)
+    if 'cleardirs' in args and args['cleardirs'] == 'false':
+        print 'Not clearing directories, option disabled!'
+        return
+    clearDirectories(userid)
     return
 
 
@@ -100,7 +113,7 @@ def removeLocalFile(fp):
         return
 
 
-def clearDirectories():
+def clearDirectories(accoundId):
     print 'Clearing Directories: '
     cdir = config.get('general', 'cache_dir')
 
@@ -109,7 +122,11 @@ def clearDirectories():
         for d in dirs:
             print format('Directory: %s/%s' % (root, d))
             try:
-                os.rmdir(format('%s/%s' % (root, d)))
+                if accoundId != '':
+                    if accoundId in d:
+                        os.rmdir(format('%s/%s' % (root, d)))
+                else:
+                    os.rmdir(format('%s/%s' % (root, d)))
                 print 'Successfully delete directory: ', format('%s/%s' % (root, d))
             except OSError, e:
                 print format('Error occurred removing directory: %s/%s Error: %s' % (root, d, e))
@@ -142,9 +159,9 @@ def getRegion():
 
 
 def parseMonthYear(date):
-    month = calendar.month_name[int(str(date)[4:][:2])]
     year = int(str(date)[:4])
-    return format('%s_%s' % (month, year))
+    fmonth = datetime.datetime(year, int(str(date)[4:][:2]), 1).strftime('%b')
+    return format('%s_%s' % (fmonth, year))
 
 
 def verify(splats):
@@ -174,7 +191,7 @@ def main(args):
             kw[k.strip()] = v.strip()
 
     if 'cleardirs' in kw and kw['cleardirs'] == 'standalone':
-        clearDirectories()
+        clearDirectories('')
     else:
         processUsersSplat(kw)
 
