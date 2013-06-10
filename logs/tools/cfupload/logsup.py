@@ -9,7 +9,7 @@ import datetime
 import ConfigParser
 
 config = ConfigParser.ConfigParser()
-config.read('/Users/philliptoohill/openWorkSpace/python/config')
+config.read('~/cfupconfig')
 
 import pyrax
 import pyrax.exceptions as exc
