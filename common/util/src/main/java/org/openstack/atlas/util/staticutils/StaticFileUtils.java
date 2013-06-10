@@ -1,6 +1,5 @@
 package org.openstack.atlas.util.staticutils;
 
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -113,11 +112,12 @@ public class StaticFileUtils {
                 String p = String.format("%.0f%%", percentVal);
                 if (!p.equals(percentStr)) {
                     double now = Debug.getEpochSeconds();
-                    double rate = (double) bytesRead / (now - startTime);
+                    double timeDelta = now - startTime;
+                    double rate = (double) bytesRead / (timeDelta);
                     System.out.printf("rate=%f\n", rate);
                     System.out.flush();
                     startTime = now;
-                    String fmt = "%d bytes transfered %s done Bytes left=%s: transfer rate is rate %s per second\n";
+                    String fmt = "%.4f(secs) %d bytes transfered %s done Bytes left=%s: transfer rate is rate %s per second\n";
                     String bytesLeft = Debug.humanReadableBytes(isSize - totalBytesRead);
                     String byteRate = "";
                     try {
@@ -125,7 +125,7 @@ public class StaticFileUtils {
                     } catch (NumberFormatException ex) {
                         byteRate = new StringBuilder().append(rate).toString();
                     }
-                    ps.printf(fmt, bytesRead, p, bytesLeft, byteRate);
+                    ps.printf(fmt, timeDelta, bytesRead, p, bytesLeft, byteRate);
                     bytesRead = 0;
                     ps.flush();
                     percentStr = p;
@@ -535,7 +535,6 @@ public class StaticFileUtils {
         }
         return startDate;
     }
-
 
     public static String getMonthYearFromFileDate(String dateString) {
         String monthYear = "";

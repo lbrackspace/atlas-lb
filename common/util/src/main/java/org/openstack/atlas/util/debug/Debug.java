@@ -86,7 +86,7 @@ public class Debug {
             baseName = binBaseNames[base1024];
         }
         double dVal = val.doubleValue() / BigInteger.ONE.shiftLeft(lShift).doubleValue();
-        return String.format("%.2f %s", dVal, baseName);
+        return String.format("%.4f %s", dVal, baseName);
     }
 
     public static String classLoaderInfo(String className) throws ClassNotFoundException {
