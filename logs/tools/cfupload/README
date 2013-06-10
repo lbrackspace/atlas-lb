@@ -17,6 +17,8 @@ Clearing of directories is an optional attribute that will attempt to clear all 
         Supply the standalone config option will only attempt to clear directories and will not process further.
 
 Optionally you can supply the accountId 'aid=406271' this will return and process data only for this accountid.
+Optionally you can supply the exclude-accountID 'eaid=406271' this will ignore this accountId and process otheres.
+Optionally you can supply the exclude-loadbalancerID 'elid=444' this will ignore this lbID and process otheres.
 
 Example usage:
 

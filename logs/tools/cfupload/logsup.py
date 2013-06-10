@@ -3,6 +3,7 @@
 import sys, os, time
 import requests
 import base64
+import time
 import cfupload
 import datetime
 import ConfigParser
@@ -29,13 +30,10 @@ def getUser(acctId):
     return userjson['user']['id'], userjson['user']['key']
 
 
-def processUsersSplat(args):
-    print "Args: ", args
+def processUsersSplat(**kw):
+    print "Args: ", kw
 
-    #    splats = cfupload.getCfFiles(args)[1]
-    splats = cfupload.getCfFiles(aid=args.get('aid'), date=args.get('date'), date_gte=args.get('date_gte'),
-        date_lte=args.get('date_lte'))[1]
-    #splats = cfupload.testSplat()
+    splats = cfupload.getCfFiles(**kw)[1]
 
     splat_count = 0
     for k in splats.keys():
@@ -67,13 +65,15 @@ def processUsersSplat(args):
                 lid = d['lid']
                 lname = d['lname']
                 date = d['date']
-                uploadFile(args, username, aid, userkey, True, lid, lname, fp, date)
+                uploadFile(username, aid, userkey, True, lid, lname, fp, date,**kw)
     else:
         print 'Not attempting to process files, option declined. '
 
 
-def uploadFile(args, username, userid, userkey, userenabled, lid, lname, fp, date):
-    if 'upenabled' in args and args['upenabled'] == 'false':
+def uploadFile(username, userid, userkey, userenabled, lid, lname, fp, date,**kw):
+    upenabled = kw.pop('upenabled','true')
+    cleardirs = kw.pop('cleardirs','true')
+    if upenabled == 'false':
         print "Not uploading files, option disabled!"
         print format('Files will not be uploaded: %s for userId: %s' % (fp, userid))
         return
@@ -81,7 +81,6 @@ def uploadFile(args, username, userid, userkey, userenabled, lid, lname, fp, dat
     if userenabled:
         print format('Access CloudFiles for user id %s : user name %s' %
                      (pyrax.identity.user['id'], pyrax.identity.user['name']))
-
         cf = pyrax.connect_to_cloudfiles(region=getRegion())
         try:
             cf.create_container(genContName(lid, lname, date))
@@ -98,15 +97,9 @@ def uploadFile(args, username, userid, userkey, userenabled, lid, lname, fp, dat
         except exc.UploadFailed, e:
             print 'Upload failed for %s %s. Exception: %s' % (userid, username, e)
             return
-    else:
-        if 'cleardisusers' in args and args['cleardisusers'] == 'false':
-            return
-
-    if 'cleardirs' in args and args['cleardirs'] == 'false':
-        print 'Not clearing directories, option disabled!'
-        return
-    return
-
+        except KeyboardInterrupt:
+            print "Skipping this entry"
+            time.sleep(1.0)
 
 def removeLocalFile(fp):
     try:
@@ -118,7 +111,7 @@ def removeLocalFile(fp):
         return
 
 
-def clearDirectories(accoundId):
+def clearDirectories():
     print 'Clearing Directories: '
     cdir = config.get('general', 'cache_dir')
 
@@ -152,7 +145,7 @@ def genContName(lid, lname, date):
 def genRemoteFileName(lid, lname, date):
     os.environ["TZ"] = "UTC"
     time.tzset()
-    return format('lb_%d_%s_%s.zip' % (lid, lname.replace('/', '_'),
+    return format('lb_%d_%s_%s.zip' % (lid, lname.replace('/', '_').replace(" ","_"),
                                        datetime.datetime(int(str(date)[:4]),
                                            int(str(date)[4:][:2]),
                                            int(str(date)[6:8]),
@@ -170,7 +163,7 @@ def parseMonthYear(date):
 
 
 def verify(splats):
-    # raw_input returns the empty string for "enter"
+    #raw_input returns the empty string for "enter"
     yes = set(['yes', 'y', 'ye', ''])
     no = set(['no', 'n'])
 
@@ -196,9 +189,9 @@ def main(args):
             kw[k.strip()] = v.strip()
 
     if 'cleardirs' in kw and kw['cleardirs'] == 'standalone':
-        clearDirectories('')
+        clearDirectories()
     else:
-        processUsersSplat(kw)
+        processUsersSplat(**kw)
 
 
 if __name__ == '__main__':
