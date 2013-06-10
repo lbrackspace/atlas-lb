@@ -590,9 +590,9 @@ public class UsageEventProcessor {
 
         try {
             tx = session.beginTransaction();
-            System.out.println(String.format("Retrieving vips from loadbalancing db..."));
+            System.out.println(String.format("Retrieving vips from loadbalancing db for lb '%d'...", loadbalancerId));
             resultList = session.createSQLQuery("SELECT v.id, v.ip_address, v.last_allocation, v.last_deallocation, v.type, v.cluster_id, v.is_allocated from loadbalancer_virtualip j JOIN virtual_ip_ipv4 v on j.virtualip_id = v.id WHERE j.loadbalancer_id = :lbId").setParameter("lbId", loadbalancerId).list();
-            System.out.println(String.format("Number of vips retrieved from loadbalancing db: %d", resultList.size()));
+            System.out.println(String.format("Number of vips retrieved from loadbalancing db for lb '%d': %d", loadbalancerId, resultList.size()));
             tx.commit();
         } catch (Exception e) {
             System.err.print(e);

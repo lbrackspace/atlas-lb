@@ -26,8 +26,10 @@ public class Main {
             List<LoadBalancerHostUsage> loadBalancerHostUsages = getAllLoadBalancerHostUsages();
             List<LoadBalancerMergedHostUsage> newUsages = migrationProcessor.process(loadBalancerUsages, loadBalancerUsageEvents, loadBalancerHostUsages);
 
+            System.out.println(String.format("Inserting %d new usages into the 'lb_merged_host_usage' table...", newUsages.size()));
             LoadBalancerMergedHostUsageBatchAction batchAction = new LoadBalancerMergedHostUsageBatchAction(hibernateConfig);
-//            ExecutionUtilities.ExecuteInBatches(newUsages, BATCH_SIZE, batchAction);
+            ExecutionUtilities.ExecuteInBatches(newUsages, BATCH_SIZE, batchAction);
+            System.out.println(String.format("Successfully inserted %d new usages into the 'lb_merged_host_usage' table.", newUsages.size()));
         } catch (Exception e) {
             System.err.println("FATAL ERROR!");
             e.printStackTrace();
