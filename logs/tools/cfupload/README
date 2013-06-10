@@ -16,9 +16,6 @@ Clearing of directories is an optional attribute that will attempt to clear all 
         :: 'cleardirs' Values [false,true,standalone], Default: true, [optional]
         Supply the standalone config option will only attempt to clear directories and will not process further.
 
-Clearing of disabled users is an optional attribute that will attempt to remove files/directories for users that are disabled
-        and cannot be processed in CloudFiles. 'cleardisusers' Values [false:true], Default: true, [optional]
-
 Optionally you can supply the accountId 'aid=406271' this will return and process data only for this accountid.
 
 Example usage:

@@ -37,7 +37,6 @@ def processUsersSplat(args):
         date_lte=args.get('date_lte'))[1]
     #splats = cfupload.testSplat()
 
-    userenabled = True
     splat_count = 0
     for k in splats.keys():
         for splat in splats[k]:
@@ -45,8 +44,9 @@ def processUsersSplat(args):
             splat_count += 1
     print 'Spalts count:', splat_count
     if verify(splats):
-        for key in splats:
-            user = getUser(key)
+        for aid in splats:
+            userenabled = True
+            user = getUser(aid)
             username = user[0]
             userkey = user[1]
             print "Success User data retrieval, begin processing: ", username, userkey
@@ -57,13 +57,17 @@ def processUsersSplat(args):
                 print 'Authentication failed for user: %s: %s. Exception: %s' % (username, userkey, e)
                 if 'Forbidden - User \'%s\' is disabled..' % username in e:
                     userenabled = False
+                    for fn in [d['file_path'] for d in splats[aid]]:
+                        print "DELETING DISABLEDUSER FILE:",fn
+                        removeLocalFile(fn)
+                    continue
 
-            for d in splats[key]:
+            for d in splats[aid]:
                 fp = d['file_path']
                 lid = d['lid']
                 lname = d['lname']
                 date = d['date']
-                uploadFile(args, username, key, userkey, userenabled, lid, lname, fp, date)
+                uploadFile(args, username, aid, userkey, True, lid, lname, fp, date)
     else:
         print 'Not attempting to process files, option declined. '
 
@@ -84,9 +88,13 @@ def uploadFile(args, username, userid, userkey, userenabled, lid, lname, fp, dat
             chksum = pyrax.utils.get_checksum(fp)
             filename = genRemoteFileName(lid, lname, date)
             gencname = genContName(lid, lname, date)
-            print format('Uploading... \n Remote File Name: %s, Container Name: %s' % (filename, gencname))
+            print format('Uploading... \n Remote File Name: %s size(%i)  as %s, Container Name: %s' % (fp,os.stat(fp).st_size,filename, gencname))
             ucont = cf.upload_file(gencname, fp, obj_name=filename, etag=chksum)
             print "Chksum valid: ", chksum == ucont.etag
+            print format("Successfully uploaded file for: LBID: %s" % lid)
+            print "DELETING UPLOADED FILE:",fp
+            removeLocalFile(fp)
+            
         except exc.UploadFailed, e:
             print 'Upload failed for %s %s. Exception: %s' % (userid, username, e)
             return
@@ -94,12 +102,9 @@ def uploadFile(args, username, userid, userkey, userenabled, lid, lname, fp, dat
         if 'cleardisusers' in args and args['cleardisusers'] == 'false':
             return
 
-    print format("Successfully uploaded file for: LBID: %s" % lid)
-    removeLocalFile(fp)
     if 'cleardirs' in args and args['cleardirs'] == 'false':
         print 'Not clearing directories, option disabled!'
         return
-    clearDirectories(userid)
     return
 
 
@@ -123,7 +128,7 @@ def clearDirectories(accoundId):
             print format('Directory: %s/%s' % (root, d))
             try:
                 if accoundId != '':
-                    if accoundId in d:
+                    if str(accoundId) in d:
                         os.rmdir(format('%s/%s' % (root, d)))
                 else:
                     os.rmdir(format('%s/%s' % (root, d)))
