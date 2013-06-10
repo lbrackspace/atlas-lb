@@ -34,7 +34,7 @@ def processUsersSplat(args):
     print "Args: ", args
 
     #    splats = cfupload.getCfFiles(args)[1]
-    splats=cfupload.getCfFiles(date=args.get('date'), date_gte=args.get('date_gte'), date_lte=args.get('date_lte'))[1]
+    splats=cfupload.getCfFiles(aid=args.get('aid'), date=args.get('date'), date_gte=args.get('date_gte'), date_lte=args.get('date_lte'))[1]
     print 'Spalt count: ', len(splats)
     splats = cfupload.testSplat()
     if verify(splats):
