@@ -22,9 +22,9 @@ Optionally you can supply the exclude-loadbalancerID 'elid=444' this will ignore
 
 Example usage:
 
-#./logsup.py aid=406271 date_gte=2013060600 upenabled=false cleardirs=standalone cleardisusers=false
-#./logsup.py aid=406271 upenabled=false cleardirs=false cleardisusers=false
-#./logsup.py aid=406271 date_gte=2013052500 date_lte=2013052523 upenabled=false cleardirs=false cleardisusers=false
+#./logsup.py aid=406271 date_gte=2013060600 upenabled=false cleardirs=standalone
+#./logsup.py aid=406271 upenabled=false cleardirs=standalone
+#./logsup.py aid=406271 date_gte=2013052500 date_lte=2013052523 upenabled=false cleardirs=standalone
 
 
 

@@ -15,7 +15,7 @@ import pyrax
 import pyrax.exceptions as exc
 
 pyrax.set_setting("identity_type", "rackspace")
-pyrax.set_http_debug(False)
+pyrax.set_http_debug(True)
 
 def getUser(acctId):
     username = config.get('general', 'b_user')
@@ -24,10 +24,18 @@ def getUser(acctId):
     base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
 
     headers = {'content-type': 'application/json', 'Authorization': 'Basic ' + base64string}
+    try:
+       r = requests.get(format('%s%s' % (endpoint, acctId)), headers=headers)
+    except Exception, e:
+      print 'Exception retrieving user information', e
+      return
 
-    r = requests.get(format('%s%s' % (endpoint, acctId)), headers=headers)
     userjson = r.json()
-    return userjson['user']['id'], userjson['user']['key']
+    if r.status_code == 200 and  'user' in userjson:
+       return userjson['user']['id'], userjson['user']['key']
+    else:
+       print 'Error gather 1.1 auth user: STATUS CODE: %s REASON %s ::  ' % (r.status_code, userjson)
+       return
 
 
 def processUsersSplat(**kw):
@@ -45,27 +53,32 @@ def processUsersSplat(**kw):
         for aid in splats:
             userenabled = True
             user = getUser(aid)
-            username = user[0]
-            userkey = user[1]
-            print "Success User data retrieval, begin processing: ", username, userkey
+            if user is not None:
+               username = user[0]
+               userkey = user[1]
+               print "Success User data retrieval, begin processing: ", username, userkey
 
-            try:
-                pyrax.set_credentials(username, userkey)
-            except exc.AuthenticationFailed, e:
-                print 'Authentication failed for user: %s: %s. Exception: %s' % (username, userkey, e)
-                if 'Forbidden - User \'%s\' is disabled..' % username in e:
-                    userenabled = False
-                    for fn in [d['file_path'] for d in splats[aid]]:
-                        print "DELETING DISABLEDUSER FILE:",fn
-                        removeLocalFile(fn)
-                    continue
+               try:
+                  pyrax.set_credentials(username, userkey)
+               except exc.AuthenticationFailed, e:
+                  print 'Authentication failed for user: %s: %s. Exception: %s' % (username, userkey, e)
+                  if 'Forbidden - User \'%s\' is disabled..' % username in e:
+                      userenabled = False
+                      for fn in [d['file_path'] for d in splats[aid]]:
+                          splat_count -= 1
+                          print "DELETING DISABLEDUSER FILE:",fn
+                          removeLocalFile(fn)
+                      continue
+                  return
 
-            for d in splats[aid]:
-                fp = d['file_path']
-                lid = d['lid']
-                lname = d['lname']
-                date = d['date']
-                uploadFile(username, aid, userkey, True, lid, lname, fp, date,**kw)
+               for d in splats[aid]:
+                   fp = d['file_path']
+                   lid = d['lid']
+                   lname = d['lname']
+                   date = d['date']
+                   splat_count -= 1
+                   print "FILES left to upload = ", splat_count
+                   uploadFile(username, aid, userkey, True, lid, lname, fp, date,**kw)
     else:
         print 'Not attempting to process files, option declined. '
 
@@ -77,7 +90,6 @@ def uploadFile(username, userid, userkey, userenabled, lid, lname, fp, date,**kw
         print "Not uploading files, option disabled!"
         print format('Files will not be uploaded: %s for userId: %s' % (fp, userid))
         return
-
     if userenabled:
         print format('Access CloudFiles for user id %s : user name %s' %
                      (pyrax.identity.user['id'], pyrax.identity.user['name']))
@@ -120,11 +132,7 @@ def clearDirectories():
         for d in dirs:
             print format('Directory: %s/%s' % (root, d))
             try:
-                if accoundId != '':
-                    if str(accoundId) in d:
-                        os.rmdir(format('%s/%s' % (root, d)))
-                else:
-                    os.rmdir(format('%s/%s' % (root, d)))
+                os.rmdir(format('%s/%s' % (root, d)))
                 print 'Successfully delete directory: ', format('%s/%s' % (root, d))
             except OSError, e:
                 print format('Error occurred removing directory: %s/%s Error: %s' % (root, d, e))
@@ -167,7 +175,7 @@ def verify(splats):
     yes = set(['yes', 'y', 'ye', ''])
     no = set(['no', 'n'])
 
-    print format('You are attempting to upload and process %s files, continue?' % len(splats))
+    print format('You are attempting to upload and process files for %s accounts, continue?' % len(splats))
     choice = raw_input().lower()
     if choice in yes:
         return True
