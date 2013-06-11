@@ -31,6 +31,14 @@ import org.snmp4j.smi.VariableBinding;
 
 public class StingraySnmpClient {
 
+    public static long getTimeout() {
+        return timeout;
+    }
+
+    public static void setTimeout(long aTimeout) {
+        timeout = aTimeout;
+    }
+
     private int nonRepeaters = 0;
     private int maxRepetitions = 1000;
     private String address;
@@ -44,6 +52,7 @@ public class StingraySnmpClient {
     private static final VerboseLogger vlog = new VerboseLogger(StingraySnmpClient.class);
     private static final Log LOG = LogFactory.getLog(StingraySnmpClient.class);
     private static int requestId;
+    private static long timeout = 5000;
 
     static {
         requestId = Math.abs(rnd.nextInt());
@@ -165,6 +174,7 @@ public class StingraySnmpClient {
         target.setCommunity(new OctetString(community));
         target.setVersion(version);
         target.setAddress(udpAddr);
+        target.setTimeout(timeout);
         TransportMapping transport;
         try {
             transport = new DefaultUdpTransportMapping();
@@ -258,6 +268,7 @@ public class StingraySnmpClient {
             CommunityTarget target = new CommunityTarget();
             target.setCommunity(new OctetString(community));
             target.setVersion(version);
+            target.setTimeout(timeout);
             target.setAddress(udpAddr);
             TransportMapping transport;
             try {
