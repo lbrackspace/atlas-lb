@@ -127,8 +127,6 @@ public class UsagePollerHelper {
         List<LoadBalancerMergedHostUsage> mergedUsages = new ArrayList<LoadBalancerMergedHostUsage>();
         List<LoadBalancerHostUsage> newLBHostUsages = new ArrayList<LoadBalancerHostUsage>();
 
-        Map<Integer, List<VirtualIp>> vipMap = null;
-        Map<Integer, SslTermination> sslMap = null;
         for (Integer loadbalancerId : currentUsages.keySet()) {
             if(buildingLoadBalancers.containsKey(loadbalancerId)){
                 //This is to handle an issue when zeus is under heavy load on the create load balancer call and the

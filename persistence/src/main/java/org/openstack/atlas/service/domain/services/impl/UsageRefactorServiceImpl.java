@@ -28,7 +28,7 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
 
     @Override
     public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getAllLoadBalancerHostUsages() {
-        List<LoadBalancerHostUsage> lbHostUsages = hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords();
+        List<LoadBalancerHostUsage> lbHostUsages = hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords(true);
         Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> lbMap = new HashMap<Integer, Map<Integer, List<LoadBalancerHostUsage>>>();
         for (LoadBalancerHostUsage lbHostUsage : lbHostUsages) {
             if (!lbMap.containsKey(lbHostUsage.getLoadbalancerId())){

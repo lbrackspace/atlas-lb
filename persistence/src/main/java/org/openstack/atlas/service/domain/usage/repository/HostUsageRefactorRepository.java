@@ -91,7 +91,7 @@ public class HostUsageRefactorRepository {
     }
 
     public LoadBalancerHostUsage getMostRecentUsageRecordForLbIdAndHostId(int lbId, int hostId) {
-        Query query = entityManager.createQuery("SELECT h FROM LoadBalancerHostUsage h WHERE h.loadbalancerId = :lbId AND h.hostId = :hostId ORDER BY h.id DESC")
+        Query query = entityManager.createQuery("SELECT h FROM LoadBalancerHostUsage h WHERE h.loadbalancerId = :lbId AND h.hostId = :hostId ORDER BY h.pollTime DESC LIMIT 1")
                 .setParameter("lbId", lbId)
                 .setParameter("hostId", hostId);
         List usages = query.getResultList();
@@ -108,8 +108,12 @@ public class HostUsageRefactorRepository {
                 numRowsDeleted, deleteTimeMarker.getTime()));
     }
 
-    public List<LoadBalancerHostUsage> getAllLoadBalancerHostUsageRecords() {
-        String queryStr = "from LoadBalancerHostUsage";
+    public List<LoadBalancerHostUsage> getAllLoadBalancerHostUsageRecords(boolean ascending) {
+        String order = "ASC";
+        if (!ascending) {
+            order = "DESC";
+        }
+        String queryStr = "from LoadBalancerHostUsage h ORDER BY h.pollTime " + order;
         List<LoadBalancerHostUsage> hosts;
         hosts = entityManager.createQuery(queryStr).getResultList();
         return hosts;

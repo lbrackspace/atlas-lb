@@ -132,7 +132,7 @@ public class UsageRefactorServiceImplTest {
 
         @Test
         public void shouldCollectOneLoadBalancerOnOneHost() {
-            when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords()).thenReturn(firstUsageList);
+            when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords(true)).thenReturn(firstUsageList);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> map = usageRefactorService.getAllLoadBalancerHostUsages();
             Map<Integer, List<LoadBalancerHostUsage>> list = map.get(firstLoadBalancerId);
             assertTrue(list.get(firstHostId).size() == 1);
@@ -140,7 +140,7 @@ public class UsageRefactorServiceImplTest {
 
         @Test
         public void shouldCollectForOneLoadBalancerOnMultipleHosts() {
-            when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords()).thenReturn(secondUsageList);
+            when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords(true)).thenReturn(secondUsageList);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> map = usageRefactorService.getAllLoadBalancerHostUsages();
             Map<Integer, List<LoadBalancerHostUsage>> list = map.get(firstLoadBalancerId);
             assertTrue(list.get(firstHostId).size() == 1);
@@ -149,7 +149,7 @@ public class UsageRefactorServiceImplTest {
 
         @Test
         public void shouldCollectMultiplLoadBalancersOnOneHost() {
-            when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords()).thenReturn(thirdUsageList);
+            when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords(true)).thenReturn(thirdUsageList);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> map = usageRefactorService.getAllLoadBalancerHostUsages();
             Map<Integer, List<LoadBalancerHostUsage>> firstList = map.get(firstLoadBalancerId);
             Map<Integer, List<LoadBalancerHostUsage>> secondList = map.get(secondLoadBalancerId);
@@ -159,7 +159,7 @@ public class UsageRefactorServiceImplTest {
 
         @Test
         public void shouldCollectOneLoadBalancerOnOneHostAndOneLoadBalancerOnMultipleHosts() {
-            when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords()).thenReturn(fourthUsageList);
+            when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords(true)).thenReturn(fourthUsageList);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> map = usageRefactorService.getAllLoadBalancerHostUsages();
             Map<Integer, List<LoadBalancerHostUsage>> firstList = map.get(firstLoadBalancerId);
             Map<Integer, List<LoadBalancerHostUsage>> secondList = map.get(secondLoadBalancerId);
@@ -170,7 +170,7 @@ public class UsageRefactorServiceImplTest {
 
         @Test
         public void shouldCollectMultipleLoadBalancersOnMultipleHosts() {
-            when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords()).thenReturn(fifthUsageList);
+            when(hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords(true)).thenReturn(fifthUsageList);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> map = usageRefactorService.getAllLoadBalancerHostUsages();
             Map<Integer, List<LoadBalancerHostUsage>> firstList = map.get(firstLoadBalancerId);
             Map<Integer, List<LoadBalancerHostUsage>> secondList = map.get(secondLoadBalancerId);
