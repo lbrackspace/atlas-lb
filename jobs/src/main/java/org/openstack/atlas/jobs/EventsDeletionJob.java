@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.events.entities.Alert;
-import org.openstack.atlas.service.domain.events.repository.AlertRepository;
 import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository;
 import org.openstack.atlas.service.domain.services.helpers.AlertHelper;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
@@ -48,6 +47,12 @@ public class EventsDeletionJob extends Job {
             LOG.info(String.format("Attempting to remove node events from the database... "));
             loadBalancerEventRepository.removeNodeEventEntries();
             LOG.info("Node events deletion job completed.");
+
+            //NodeServiceEvent
+            LOG.info("Node service events deletion job started...");
+            LOG.info(String.format("Attempting to remove old node service events from the database... "));
+            loadBalancerEventRepository.removeNodeServiceEventEntries();
+            LOG.info("Node service events deletion job completed.");
 
             //VirtualIpEvent
             LOG.info("Virtual ip events deletion job started...");
