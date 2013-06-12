@@ -122,7 +122,6 @@ public class MigrationProcessor {
         return loadBalancerMergedHostUsages;
     }
 
-    // TODO: Test
     protected List<LoadBalancerUsageEvent> removeDuplicateEvents(List<LoadBalancerUsageEvent> loadBalancerUsageEvents, List<LoadBalancerHostUsage> loadBalancerHostUsages) {
         for (LoadBalancerHostUsage loadBalancerHostUsage : loadBalancerHostUsages) {
             for (LoadBalancerUsageEvent loadBalancerUsageEvent : loadBalancerUsageEvents) {
