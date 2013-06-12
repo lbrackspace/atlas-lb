@@ -98,8 +98,25 @@ public class SnmpMain {
                     System.out.printf("    run_job <hostId> <aid> <lid> #get usage for loadbalancer id on host\n");
                     System.out.printf("    add_comparator <lid|hid|cc|ccssl|bi|bo|bissl|bossl> #Add comparator for jobs snmpUsage\n");
                     System.out.printf("    clear_comparators #Clear the comparators for snmpUsage\n");
+                    System.out.printf("    show_threads #Show running thread stack traces\n");
+                    System.out.printf("    show_config #Show current Configuration\n");
                     System.out.printf("    exit #Exits\n");
                     System.out.printf("\n");
+                } else if (cmd.equals("show_threads")) {
+                    System.out.printf("Running Threads\n");
+                    System.out.printf("%s\n", Debug.getThreadStacksString());
+                } else if (cmd.equals("show_config")) {
+                    System.out.printf("Configs\n");
+                    System.out.printf("useing config = %s\n", conf.toString());
+                    List<String> clientKeys = new ArrayList<String>(clients.keySet());
+                    Collections.sort(clientKeys);
+                    for (String clientKey : clientKeys) {
+                        StingraySnmpClient client = clients.get(clientKey);
+                        System.out.printf("Client[%s]=%s\n", clientKey, client.toString());
+                    }
+                    System.out.printf("Mem\n%s\n", Debug.showMem());
+                    System.out.printf("requestId=%d\n", StingraySnmpClient.incRequestId());
+
                 } else if (cmd.equals("run_job") && args.length >= 4) {
                     int hid = Integer.parseInt(args[1]);
                     int aid = Integer.parseInt(args[2]);
@@ -316,6 +333,10 @@ public class SnmpMain {
                     for (SnmpClientThread thread : threads) {
                         thread.start();
                     }
+
+                    Thread.sleep(1000);
+                    System.out.printf("Threads started\n");
+                    Thread.sleep(1000);
 
                     // Join them all
                     for (SnmpClientThread thread : threads) {
