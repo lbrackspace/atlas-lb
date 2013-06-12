@@ -402,6 +402,13 @@ public class LoadBalancerEventRepository {
         entityManager.createQuery("DELETE FROM NodeEvent a where a.created <= :days").setParameter("days", cal).executeUpdate();
     }
 
+    public void removeNodeServiceEventEntries() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -90);
+        entityManager.createQuery("DELETE FROM NodeServiceEvent a WHERE a.created <= :days")
+                .setParameter("days", cal).executeUpdate();
+    }
+
     public void removeVirtualIpEventEntries() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -90);
