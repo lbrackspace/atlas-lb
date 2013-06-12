@@ -37,30 +37,36 @@ public class UsagePollerHelper {
     @Autowired
     private HostRepository hostRepository;
 
+    private class ResetBandwidth {
+        public long incomingTransfer = 0;
+        public long outgoingTransfer = 0;
+    }
+
     public UsagePollerHelper() {} 
 
     public void calculateUsage(SnmpUsage currentUsage, LoadBalancerHostUsage previousRecord,
-                               LoadBalancerMergedHostUsage newMergedUsage) {
+                               LoadBalancerMergedHostUsage newMergedUsage, Calendar currentPollTime) {
         long totIncomingTransfer = newMergedUsage.getIncomingTransfer();
         long totIncomingTransferSsl = newMergedUsage.getIncomingTransferSsl();
         long totOutgoingTransfer = newMergedUsage.getOutgoingTransfer();
         long totOutgoingTransferSsl = newMergedUsage.getOutgoingTransferSsl();
-        //Handle normal virtual server resetting
-        if (!isReset(currentUsage.getBytesIn(), previousRecord.getIncomingTransfer()) &&
-            !isReset(currentUsage.getBytesOut(), previousRecord.getOutgoingTransfer())) {
-            totIncomingTransfer += currentUsage.getBytesIn() - previousRecord.getIncomingTransfer();
-            totOutgoingTransfer += currentUsage.getBytesOut() - previousRecord.getOutgoingTransfer();
-        }
-        //Handle SSL virtual server resetting
-        if (!isReset(currentUsage.getBytesInSsl(), previousRecord.getIncomingTransferSsl()) &&
-            !isReset(currentUsage.getBytesOutSsl(), previousRecord.getOutgoingTransferSsl())) {
-            totIncomingTransferSsl += currentUsage.getBytesInSsl() - previousRecord.getIncomingTransferSsl();
-            totOutgoingTransferSsl += currentUsage.getBytesOutSsl() - previousRecord.getOutgoingTransferSsl();
-        }
+
+        ResetBandwidth normal = getPossibleResetBandwidth(currentUsage.getBytesIn(), previousRecord.getIncomingTransfer(),
+                                                          currentUsage.getBytesOut(), previousRecord.getOutgoingTransfer(),
+                                                         currentPollTime, previousRecord.getPollTime());
+        totIncomingTransfer += normal.incomingTransfer;
+        totOutgoingTransfer += normal.outgoingTransfer;
+        ResetBandwidth ssl = getPossibleResetBandwidth(currentUsage.getBytesInSsl(), previousRecord.getIncomingTransferSsl(),
+                                                       currentUsage.getBytesOutSsl(), previousRecord.getOutgoingTransferSsl(),
+                                                       currentPollTime, previousRecord.getPollTime());
+        totIncomingTransferSsl += ssl.incomingTransfer;
+        totOutgoingTransferSsl += ssl.outgoingTransfer;
+
         newMergedUsage.setIncomingTransfer(totIncomingTransfer);
         newMergedUsage.setIncomingTransferSsl(totIncomingTransferSsl);
         newMergedUsage.setOutgoingTransfer(totOutgoingTransfer);
         newMergedUsage.setOutgoingTransferSsl(totOutgoingTransferSsl);
+
         //Using concurrent connections regardless of reset since this is not a counter, only a snapshot
         long ccs = currentUsage.getConcurrentConnections() + newMergedUsage.getConcurrentConnections();
         long ccsSsl = currentUsage.getConcurrentConnectionsSsl() + newMergedUsage.getConcurrentConnectionsSsl();
@@ -74,22 +80,23 @@ public class UsagePollerHelper {
         long totIncomingTransferSsl = newMergedUsage.getIncomingTransferSsl();
         long totOutgoingTransfer = newMergedUsage.getOutgoingTransfer();
         long totOutgoingTransferSsl = newMergedUsage.getOutgoingTransferSsl();
-        //Handle normal virtual server resetting
-        if (!isReset(currentRecord.getIncomingTransfer(), previousRecord.getIncomingTransfer()) &&
-            !isReset(currentRecord.getOutgoingTransfer(), previousRecord.getOutgoingTransfer())) {
-            totIncomingTransfer += currentRecord.getIncomingTransfer() - previousRecord.getIncomingTransfer();
-            totOutgoingTransfer += currentRecord.getOutgoingTransfer() - previousRecord.getOutgoingTransfer();
-        }
-        //Handle SSL virtual server resetting
-        if (!isReset(currentRecord.getIncomingTransferSsl(), previousRecord.getIncomingTransferSsl()) &&
-            !isReset(currentRecord.getOutgoingTransferSsl(), previousRecord.getOutgoingTransferSsl())) {
-            totIncomingTransferSsl += currentRecord.getIncomingTransferSsl() - previousRecord.getIncomingTransferSsl();
-            totOutgoingTransferSsl += currentRecord.getOutgoingTransferSsl() - previousRecord.getOutgoingTransferSsl();
-        }
+
+        ResetBandwidth normal = getPossibleResetBandwidth(currentRecord.getIncomingTransfer(), previousRecord.getIncomingTransfer(),
+                                                          currentRecord.getOutgoingTransfer(), previousRecord.getOutgoingTransfer(),
+                                                          currentRecord.getPollTime(), previousRecord.getPollTime());
+        totIncomingTransfer += normal.incomingTransfer;
+        totOutgoingTransfer += normal.outgoingTransfer;
+        ResetBandwidth ssl = getPossibleResetBandwidth(currentRecord.getIncomingTransferSsl(), previousRecord.getIncomingTransferSsl(),
+                                                       currentRecord.getOutgoingTransferSsl(), previousRecord.getOutgoingTransferSsl(),
+                                                       currentRecord.getPollTime(), previousRecord.getPollTime());
+        totIncomingTransferSsl += ssl.incomingTransfer;
+        totOutgoingTransferSsl += ssl.outgoingTransfer;
+
         newMergedUsage.setIncomingTransfer(totIncomingTransfer);
         newMergedUsage.setIncomingTransferSsl(totIncomingTransferSsl);
         newMergedUsage.setOutgoingTransfer(totOutgoingTransfer);
         newMergedUsage.setOutgoingTransferSsl(totOutgoingTransferSsl);
+
         //Using concurrent connections regardless of reset since this is not a counter, only a snapshot
         long ccs = currentRecord.getConcurrentConnections() + newMergedUsage.getConcurrentConnections();
         long ccsSsl = currentRecord.getConcurrentConnectionsSsl() + newMergedUsage.getConcurrentConnectionsSsl();
@@ -99,6 +106,17 @@ public class UsagePollerHelper {
 
     public boolean isReset(long currentBandwidth, long previousBandwidth) {
         return currentBandwidth < previousBandwidth;
+    }
+
+    public ResetBandwidth getPossibleResetBandwidth(long currentIncoming, long previousIncoming, long currentOutgoing,
+                                                    long previousOutgoing, Calendar currentPollTime, Calendar previousPollTime) {
+        ResetBandwidth ret = new ResetBandwidth();
+        if ( isReset(currentIncoming, previousIncoming) || isReset(currentOutgoing, previousOutgoing)) {
+            return ret;
+        }
+        ret.incomingTransfer = currentIncoming - previousIncoming;
+        ret.outgoingTransfer = currentOutgoing - previousOutgoing;
+        return ret;
     }
 
     public UsageProcessorResult processCurrentUsage(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages,
@@ -212,7 +230,7 @@ public class UsagePollerHelper {
                     newMergedRecord.setEventType(null);
                 }
 
-                calculateUsage(currentUsage, existingUsage, newMergedRecord);
+                calculateUsage(currentUsage, existingUsage, newMergedRecord, pollTime);
                  newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage.getAccountId(),
                          loadbalancerId, existingUsage.getTagsBitmask(),
                          existingUsage.getNumVips(), hostId, pollTime));

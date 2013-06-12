@@ -1037,7 +1037,7 @@ public class UsagePollerHelperTest {
         public void shouldStoreDifferenceOfIncomingTransferToNewMergedRecord(){
             previousRecord.setIncomingTransfer(1000);
             currentRecord.setBytesIn(1200);
-            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord, currentTime);
             Assert.assertEquals(200, newMergedRecord.getIncomingTransfer());
         }
 
@@ -1045,7 +1045,7 @@ public class UsagePollerHelperTest {
         public void shouldStoreDifferenceOfIncomingTransferSslToNewMergedRecord() {
             previousRecord.setIncomingTransferSsl(1000);
             currentRecord.setBytesInSsl(1200);
-            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord, currentTime);
             Assert.assertEquals(200, newMergedRecord.getIncomingTransferSsl());
         }
 
@@ -1053,7 +1053,7 @@ public class UsagePollerHelperTest {
         public void shouldStoreDifferenceOfOutgoingTransferToNewMergedRecord() {
             previousRecord.setOutgoingTransfer(1000);
             currentRecord.setBytesOut(1200);
-            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord, currentTime);
             Assert.assertEquals(200, newMergedRecord.getOutgoingTransfer());
         }
 
@@ -1061,7 +1061,7 @@ public class UsagePollerHelperTest {
         public void shouldStoreDifferenceOfOutgoingTransferSslToNewMergedRecord() {
             previousRecord.setOutgoingTransferSsl(1000);
             currentRecord.setBytesOutSsl(1200);
-            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord, currentTime);
             Assert.assertEquals(200, newMergedRecord.getOutgoingTransferSsl());
         }
 
@@ -1069,7 +1069,7 @@ public class UsagePollerHelperTest {
         public void shouldStoreCurrentRecordsConcurrentConnectionsToNewMergedRecord() {
             previousRecord.setConcurrentConnections(10);
             currentRecord.setConcurrentConnections(15);
-            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord, currentTime);
             Assert.assertEquals(15, newMergedRecord.getConcurrentConnections());
         }
 
@@ -1077,7 +1077,7 @@ public class UsagePollerHelperTest {
         public void shouldStoreCurrentRecordsConcurrentConnectionsSslToNewMergedRecord() {
             previousRecord.setConcurrentConnectionsSsl(10);
             currentRecord.setConcurrentConnectionsSsl(15);
-            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord, currentTime);
             Assert.assertEquals(15, newMergedRecord.getConcurrentConnectionsSsl());
         }
 
@@ -1087,7 +1087,7 @@ public class UsagePollerHelperTest {
             currentRecord.setBytesIn(999);
             previousRecord.setOutgoingTransfer(1000);
             currentRecord.setBytesOut(1001);
-            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord, currentTime);
             Assert.assertEquals(0, newMergedRecord.getIncomingTransfer());
             Assert.assertEquals(0, newMergedRecord.getOutgoingTransfer());
         }
@@ -1098,7 +1098,7 @@ public class UsagePollerHelperTest {
             currentRecord.setBytesInSsl(999);
             previousRecord.setOutgoingTransferSsl(1000);
             currentRecord.setBytesOutSsl(1001);
-            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord, currentTime);
             Assert.assertEquals(0, newMergedRecord.getIncomingTransferSsl());
             Assert.assertEquals(0, newMergedRecord.getOutgoingTransferSsl());
         }
@@ -1113,7 +1113,7 @@ public class UsagePollerHelperTest {
             currentRecord.setBytesInSsl(999);
             previousRecord.setOutgoingTransferSsl(1000);
             currentRecord.setBytesOutSsl(1001);
-            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord, currentTime);
             Assert.assertEquals(50, newMergedRecord.getIncomingTransfer());
             Assert.assertEquals(100, newMergedRecord.getOutgoingTransfer());
             Assert.assertEquals(0, newMergedRecord.getIncomingTransferSsl());
@@ -1130,7 +1130,7 @@ public class UsagePollerHelperTest {
             currentRecord.setBytesInSsl(1050);
             previousRecord.setOutgoingTransferSsl(1000);
             currentRecord.setBytesOutSsl(1100);
-            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord, currentTime);
             Assert.assertEquals(0, newMergedRecord.getIncomingTransfer());
             Assert.assertEquals(0, newMergedRecord.getOutgoingTransfer());
             Assert.assertEquals(50, newMergedRecord.getIncomingTransferSsl());
