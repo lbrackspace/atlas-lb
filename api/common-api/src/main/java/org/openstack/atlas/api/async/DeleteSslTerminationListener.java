@@ -11,6 +11,8 @@ import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 
 import javax.jms.Message;
 
+import java.util.Calendar;
+
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
@@ -103,12 +105,14 @@ public class DeleteSslTerminationListener extends BaseListener {
 
             // Notify usage processor with a usage event
             // DEPRECATED
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+            Calendar eventTime = Calendar.getInstance();
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
             return;
         }
 
         sslTerminationService.deleteSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
 
+        Calendar eventTime = Calendar.getInstance();
         // Notify usage processor with a usage event
         try {
             usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF);
@@ -127,7 +131,7 @@ public class DeleteSslTerminationListener extends BaseListener {
 
         // Notify usage processor with a usage event
         // DEPRECATED
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
 
         LOG.info(String.format("Load balancer ssl termination '%d' successfully deleted.", dbLoadBalancer.getId()));
     }

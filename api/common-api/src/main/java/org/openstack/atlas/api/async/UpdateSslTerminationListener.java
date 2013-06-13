@@ -16,6 +16,7 @@ import org.openstack.atlas.usagerefactor.SnmpUsage;
 import javax.jms.Message;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
@@ -203,25 +204,27 @@ public class UpdateSslTerminationListener extends BaseListener {
                 }
             }
         }
+
+        Calendar eventTime = Calendar.getInstance();
         // Notify usage processor
         if (queTermination.getSslTermination().isEnabled()) {
             LOG.debug(String.format("SSL Termination is enabled for load balancer: %s", dbLoadBalancer.getId()));
             if (queTermination.getSslTermination().isSecureTrafficOnly()) {
                 // DEPRECATED
-                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
 
                 LOG.debug(String.format("SSL Termination is Secure Traffic Only for load balancer: %s", dbLoadBalancer.getId()));
                 usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
             } else {
                 // DEPRECATED
-                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
 
                 LOG.debug(String.format("SSL Termination is Mixed Traffic for load balancer: %s", dbLoadBalancer.getId()));
                 usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
             }
         } else {
             // DEPRECATED
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
 
             LOG.debug(String.format("SSL Termination is NOT Enabled for load balancer: %s", dbLoadBalancer.getId()));
             usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SSL_OFF);

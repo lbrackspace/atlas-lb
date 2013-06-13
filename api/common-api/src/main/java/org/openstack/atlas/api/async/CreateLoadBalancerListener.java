@@ -13,6 +13,8 @@ import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionExcepti
 
 import javax.jms.Message;
 
+import java.util.Calendar;
+
 import static org.openstack.atlas.api.atom.EntryHelper.*;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ACTIVE;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ERROR;
@@ -66,7 +68,8 @@ public class CreateLoadBalancerListener extends BaseListener {
 
             // Notify usage processor
             // DEPRECATED
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
+            Calendar usageEventTime = Calendar.getInstance();
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0, usageEventTime);
 
             try {
                 // Notify usage processor
@@ -77,6 +80,8 @@ public class CreateLoadBalancerListener extends BaseListener {
             }
             return;
         }
+
+        Calendar usageEventTime = Calendar.getInstance();
 
         try {
             // Notify usage processor
@@ -105,7 +110,7 @@ public class CreateLoadBalancerListener extends BaseListener {
 
         // Notify usage processor
         // DEPRECATED
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0, usageEventTime);
 
         LOG.info(String.format("Created load balancer '%d' successfully.", dbLoadBalancer.getId()));
     }

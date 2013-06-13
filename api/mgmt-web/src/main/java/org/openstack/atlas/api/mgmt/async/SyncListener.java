@@ -18,6 +18,7 @@ import org.openstack.atlas.usagerefactor.SnmpUsage;
 import javax.jms.Message;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.*;
@@ -83,7 +84,8 @@ public class SyncListener extends BaseListener {
 
                     // Notify usage processor
                     //DEPRECATED!! Remove in future version
-                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+                    Calendar eventTime = Calendar.getInstance();
+                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
                     //END DEPRECATION
 
                     LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
@@ -121,7 +123,8 @@ public class SyncListener extends BaseListener {
 
                         // Notify old usage processor
                         //DEPRECATED!! Remove in future version
-                        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
+                        Calendar eventTime = Calendar.getInstance();
+                        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0, eventTime);
                         //END DEPRECATION
 
                         try {
@@ -161,23 +164,25 @@ public class SyncListener extends BaseListener {
                         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
                         if (loadBalancerStatus.equals(PENDING_UPDATE) || loadBalancerStatus.equals(ERROR)) {
+                            Calendar eventTime = Calendar.getInstance();
+
                             if (dbLoadBalancer.isUsingSsl()) {
                                 if (dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
                                     //DEPRECATED!! Remove in future version
-                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
+                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
                                     //END DEPRECATION
                                     //Use this.
                                     usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
                                 } else {
                                     //DEPRECATED!! Remove in future version
-                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
+                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
                                     //END DEPRECATION
                                     //Use this.
                                     usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
                                 }
                             } else {
                                 //DEPRECATED!! Remove in future version
-                                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
+                                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
                                 //END DEPRECATION
                                 //Use this.
                                 usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF);
