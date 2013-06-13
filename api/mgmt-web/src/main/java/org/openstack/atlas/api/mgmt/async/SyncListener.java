@@ -89,7 +89,7 @@ public class SyncListener extends BaseListener {
                     //END DEPRECATION
 
                     LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
-                    usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+                    usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
                     LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
 
                     //Set status record
@@ -129,7 +129,7 @@ public class SyncListener extends BaseListener {
 
                         try {
                             // Notify usage processor
-                            usageEventCollection.processSnmpUsage(null, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER);
+                            usageEventCollection.processSnmpUsage(null, dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, eventTime);
                         } catch (UsageEventCollectionException uex) {
                             LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                                     ":: Exception: %s", dbLoadBalancer.getId(), uex));
@@ -172,20 +172,20 @@ public class SyncListener extends BaseListener {
                                     usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
                                     //END DEPRECATION
                                     //Use this.
-                                    usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
+                                    usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
                                 } else {
                                     //DEPRECATED!! Remove in future version
                                     usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
                                     //END DEPRECATION
                                     //Use this.
-                                    usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
+                                    usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
                                 }
                             } else {
                                 //DEPRECATED!! Remove in future version
                                 usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
                                 //END DEPRECATION
                                 //Use this.
-                                usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF);
+                                usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
                             }
                         }
                     }

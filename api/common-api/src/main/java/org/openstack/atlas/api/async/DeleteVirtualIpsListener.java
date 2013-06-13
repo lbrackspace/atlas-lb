@@ -73,14 +73,15 @@ public class DeleteVirtualIpsListener extends BaseListener {
             return;
         }
 
+        Calendar eventTime = Calendar.getInstance();
         // DEPRECATED
         // Notify usage processor
-        Calendar eventTime = Calendar.getInstance();
         usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP, eventTime);
+        // END DEPRECATED
 
         // Notify usage processor
         try {
-            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
+            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP, eventTime);
         } catch (UsageEventCollectionException uex) {
             LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                     ":: Exception: %s", dbLoadBalancer.getId(), uex));

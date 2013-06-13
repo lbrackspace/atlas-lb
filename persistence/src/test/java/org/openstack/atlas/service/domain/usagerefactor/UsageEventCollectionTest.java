@@ -36,6 +36,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,6 +55,7 @@ public class UsageEventCollectionTest {
         SnmpUsage snmpUsage;
         SnmpUsage snmpUsage1;
         List<SnmpUsage> snmpUsages;
+        Calendar eventTime;
 
         @Mock
         VirtualIpRepository virtualIpRepository;
@@ -100,7 +102,7 @@ public class UsageEventCollectionTest {
 
         @Before
         public void standUp() {
-
+            eventTime = Calendar.getInstance();
         }
 
         @Test
@@ -117,7 +119,7 @@ public class UsageEventCollectionTest {
             usageEventCollection.collectUsageRecords(executorService, new UsageEventProcessorImpl(), hosts, new LoadBalancer());
 
             Assert.assertNotNull(usageEventCollection.getFutures());
-            usageEventCollection.processFutures(null, new UsageEventProcessorImpl(), new LoadBalancer(), UsageEvent.SSL_ONLY_ON);
+            usageEventCollection.processFutures(null, new UsageEventProcessorImpl(), new LoadBalancer(), UsageEvent.SSL_ONLY_ON, eventTime);
         }
     }
 
@@ -128,6 +130,7 @@ public class UsageEventCollectionTest {
         SnmpUsage snmpUsage;
         SnmpUsage snmpUsage1;
         List<SnmpUsage> snmpUsages;
+        Calendar eventTime;
 
         @Mock
         VirtualIpRepository virtualIpRepository;
@@ -174,13 +177,13 @@ public class UsageEventCollectionTest {
 
         @Before
         public void standUp() {
-
+            eventTime = Calendar.getInstance();
         }
 
         @Test(expected = UsageEventCollectionException.class)
         public void shouldFailWhenNoHost() throws EntityNotFoundException, DeletedStatusException, InterruptedException, UsageEventCollectionException {
             when(hostRepository.getAllHosts()).thenReturn(null);
-            usageEventCollection.processSnmpUsage(new SnmpUsage(),  lb, UsageEvent.CREATE_LOADBALANCER);
+            usageEventCollection.processSnmpUsage(new SnmpUsage(),  lb, UsageEvent.CREATE_LOADBALANCER, eventTime);
         }
 
         @Test
@@ -191,7 +194,7 @@ public class UsageEventCollectionTest {
             hosts.add(host);
 
             when(hostRepository.getAll()).thenReturn(hosts);
-            usageEventCollection.processSnmpUsage(new SnmpUsage(),  lb, UsageEvent.CREATE_LOADBALANCER);
+            usageEventCollection.processSnmpUsage(new SnmpUsage(),  lb, UsageEvent.CREATE_LOADBALANCER, eventTime);
         }
 
         @Test
@@ -202,7 +205,7 @@ public class UsageEventCollectionTest {
             hosts.add(host);
 
             when(hostRepository.getAll()).thenReturn(hosts);
-            usageEventCollection.processSnmpUsage(new SnmpUsage(),  lb, UsageEvent.CREATE_LOADBALANCER);
+            usageEventCollection.processSnmpUsage(new SnmpUsage(),  lb, UsageEvent.CREATE_LOADBALANCER, eventTime);
             Assert.assertEquals(host, usageEventCollection.getHosts().get(0));
         }
     }

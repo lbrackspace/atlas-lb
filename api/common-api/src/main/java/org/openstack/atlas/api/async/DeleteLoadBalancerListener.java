@@ -121,7 +121,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
 
         // Notify usage processor
         LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
-        usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+        usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
         LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
 
         dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);

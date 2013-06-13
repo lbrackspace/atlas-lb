@@ -54,9 +54,10 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
             return;
         }
 
+        Calendar eventTime = Calendar.getInstance();
         // Notify usage processor
         try {
-            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER);
+            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER, eventTime);
         } catch (UsageEventCollectionException uex) {
             LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                     ":: Exception: %s", dbLoadBalancer.getId(), uex));
@@ -74,8 +75,8 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
 
         // Notify usage processor
         // DEPRECATED
-        Calendar eventTime = Calendar.getInstance();
         usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER, eventTime);
+        // END DEPRECATED
 
         LOG.info(String.format("Remove suspension operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }

@@ -95,9 +95,10 @@ public class DeleteSslTerminationListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(errorMsgLB);
+            Calendar eventTime = Calendar.getInstance();
             // Notify usage processor
             try {
-                usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF);
+                usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
             } catch (UsageEventCollectionException uex) {
                 LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                         ":: Exception: %s", dbLoadBalancer.getId(), uex));
@@ -105,8 +106,8 @@ public class DeleteSslTerminationListener extends BaseListener {
 
             // Notify usage processor with a usage event
             // DEPRECATED
-            Calendar eventTime = Calendar.getInstance();
             usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
+            // END DEPRECATED
             return;
         }
 
@@ -115,7 +116,7 @@ public class DeleteSslTerminationListener extends BaseListener {
         Calendar eventTime = Calendar.getInstance();
         // Notify usage processor with a usage event
         try {
-            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF);
+            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
         } catch (UsageEventCollectionException uex) {
             LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                     ":: Exception: %s", dbLoadBalancer.getId(), uex));
@@ -132,6 +133,7 @@ public class DeleteSslTerminationListener extends BaseListener {
         // Notify usage processor with a usage event
         // DEPRECATED
         usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
+        // END DEPRECATED
 
         LOG.info(String.format("Load balancer ssl termination '%d' successfully deleted.", dbLoadBalancer.getId()));
     }

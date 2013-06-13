@@ -42,7 +42,7 @@ public abstract class AbstractUsageEventCollection {
 
     public abstract List<Future<SnmpUsage>> collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor, List<Host> hosts, LoadBalancer lb) throws UsageEventCollectionException;
 
-    public abstract void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException;
+    public abstract void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException;
 
     public abstract List<SnmpUsage> getUsagesFromFutures(List<Future<SnmpUsage>> futures) throws UsageEventCollectionException;
 
@@ -54,7 +54,7 @@ public abstract class AbstractUsageEventCollection {
      * @param event
      * @throws UsageEventCollectionException
      */
-    public void processUsageRecord(List<Host> hosts, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
+    public void processUsageRecord(List<Host> hosts, LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
         this.hosts = null;
         LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
         gatherHostsData(hosts);
@@ -62,7 +62,7 @@ public abstract class AbstractUsageEventCollection {
         if (this.hosts != null && !this.hosts.isEmpty()) {
             executorService = Executors.newFixedThreadPool(this.hosts.size());
             collectUsageRecords(executorService, usageEventProcessor, this.hosts, lb);
-            processFutures(null, usageEventProcessor, lb, event);
+            processFutures(null, usageEventProcessor, lb, event, eventTime);
             LOG.debug("Finished Processing Usage Event Record for load balancer: " + lb.getId());
         } else {
             LOG.error("Hosts data invalid, this shouldn't happen... Verify DB for data and notify developer immediately. ");
@@ -99,8 +99,8 @@ public abstract class AbstractUsageEventCollection {
      * @param event
      * @throws UsageEventCollectionException
      */
-    public void processSnmpUsage(SnmpUsage snmpUsage, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
-        processSnmpUsage(null, snmpUsage, lb, event);
+    public void processSnmpUsage(SnmpUsage snmpUsage, LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
+        processSnmpUsage(null, snmpUsage, lb, event, eventTime);
     }
 
     /**
@@ -112,17 +112,19 @@ public abstract class AbstractUsageEventCollection {
      * @param event
      * @throws UsageEventCollectionException
      */
-    public void processSnmpUsage(List<Host> hosts, SnmpUsage snmpUsage, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
+    public void processSnmpUsage(List<Host> hosts, SnmpUsage snmpUsage, LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
         gatherHostsData(hosts);
 
-        Calendar pollTime = Calendar.getInstance();
+        if (eventTime == null) {
+            eventTime = Calendar.getInstance();
+        }
         if (this.hosts != null && !this.hosts.isEmpty()) {
             for (Host h : this.hosts) {
                 List<SnmpUsage> snmpUsages = new ArrayList<SnmpUsage>();
                 snmpUsage = new SnmpUsage();
                 snmpUsage.setHostId(h.getId());
                 snmpUsages.add(snmpUsage);
-                usageEventProcessor.processUsageEvent(snmpUsages, lb, event, pollTime);
+                usageEventProcessor.processUsageEvent(snmpUsages, lb, event, eventTime);
             }
         } else {
             LOG.error("Hosts data invalid, this shouldn't happen... Verify DB for data and notify developer immediately. ");
@@ -130,8 +132,8 @@ public abstract class AbstractUsageEventCollection {
         }
     }
 
-    public void processUsageEvent(List<SnmpUsage> usages, LoadBalancer lb, UsageEvent event) {
-        usageEventProcessor.processUsageEvent(usages, lb, event, null);
+    public void processUsageEvent(List<SnmpUsage> usages, LoadBalancer lb, UsageEvent event, Calendar eventTime) {
+        usageEventProcessor.processUsageEvent(usages, lb, event, eventTime);
     }
 
     /**
@@ -154,7 +156,7 @@ public abstract class AbstractUsageEventCollection {
      * @throws UsageEventCollectionException
      */
     public void processUsageRecord(LoadBalancer lb) throws UsageEventCollectionException {
-        processUsageRecord(null, lb, null);
+        processUsageRecord(null, lb, null, null);
 
     }
 
@@ -165,8 +167,8 @@ public abstract class AbstractUsageEventCollection {
      * @param event
      * @throws UsageEventCollectionException
      */
-    public void processUsageRecord(LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
-        processUsageRecord(null, lb, event);
+    public void processUsageRecord(LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
+        processUsageRecord(null, lb, event, eventTime);
 
     }
 
@@ -177,7 +179,7 @@ public abstract class AbstractUsageEventCollection {
      * @throws UsageEventCollectionException
      */
     public void processUsageRecord(List<Host> hosts) throws UsageEventCollectionException {
-        processUsageRecord(hosts, null, null);
+        processUsageRecord(hosts, null, null, null);
     }
 
 

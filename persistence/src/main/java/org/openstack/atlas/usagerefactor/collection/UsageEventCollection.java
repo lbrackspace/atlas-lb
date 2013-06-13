@@ -10,6 +10,7 @@ import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -50,9 +51,10 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
     }
 
     @Override
-    public void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event) throws UsageEventCollectionException {
+    public void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event,
+                               Calendar eventTime) throws UsageEventCollectionException {
         List<SnmpUsage> usages = getUsagesFromFutures(futures);
-        usageEventProcessor.processUsageEvent(usages, lb, event, null);
+        usageEventProcessor.processUsageEvent(usages, lb, event, eventTime);
     }
 
     @Override
