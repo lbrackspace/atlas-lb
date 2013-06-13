@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Map;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
@@ -26,8 +27,6 @@ public class Debug {
     public static long nowMillis() {
         return System.currentTimeMillis();
     }
-
-
 
     public static String findClassPath(String className, ClassLoader classLoader) throws ClassNotFoundException {
         Class classIn = Class.forName(className, true, classLoader);
@@ -138,6 +137,24 @@ public class Debug {
             sbw.printf("\"%s\" -> \"%s\"\n", className, classPath);
         }
         return sbw.toString();
+    }
+
+    public static String getThreadStacksString() {
+        StringBuilder sb = new StringBuilder();
+        Map<Thread, StackTraceElement[]> stMap = Thread.getAllStackTraces();
+        for (Thread th : stMap.keySet()) {
+            StackTraceElement[] seArray = stMap.get(th);
+            sb.append("Thread: ").append(th.getName()).append("\n");
+            if (seArray == null) {
+                sb.append("    No StackTrace\n");
+                continue;
+            }
+            for (int i = 0; i < seArray.length; i++) {
+                String se = seArray[i].toString();
+                sb.append("    ").append(se).append("\n");
+            }
+        }
+        return sb.toString();
     }
 
     public static String getExtendedStackTrace(Throwable th) {

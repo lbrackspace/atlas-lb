@@ -38,7 +38,6 @@ public class StingraySnmpClient {
     public static void setTimeout(long aTimeout) {
         timeout = aTimeout;
     }
-
     private int nonRepeaters = 0;
     private int maxRepetitions = 1000;
     private String address;
@@ -85,9 +84,10 @@ public class StingraySnmpClient {
                 + ", port=" + port
                 + ", community=" + community
                 + ", maxRetries=" + maxRetrys
-                + ", curRequestId=" + getRequestId()
                 + ", maxRepetitions=" + maxRepetitions
                 + ", nonRepeaters=" + nonRepeaters
+                + ", curRequestId=" + getRequestId()
+                + ", timeOut=" + timeout
                 + "}";
     }
 
