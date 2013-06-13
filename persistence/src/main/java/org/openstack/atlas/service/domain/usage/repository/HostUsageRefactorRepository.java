@@ -14,6 +14,7 @@ import javax.persistence.TemporalType;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -101,7 +102,7 @@ public class HostUsageRefactorRepository {
     }
 
 
-    public void deleteOldHostUsage(Calendar deleteTimeMarker, List<Integer> lbsToExclude) {
+    public void deleteOldHostUsage(Calendar deleteTimeMarker, Collection<Integer> lbsToExclude) {
         Query query;
         if (lbsToExclude == null || lbsToExclude.isEmpty()) {
             query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.pollTime < :deleteTimeMarker");

@@ -71,7 +71,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         LOG.info("Completed processing of current usage");
         LOG.info("Checking if any events were inserted between the beginning of this job and now...");
         Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> newEvents = usageRefactorService.getRecordsAfterTime(pollTime);
-        List<Integer> loadBalancersNotToDelete = removeLoadBalancerRecordsThatHadNewEvents(result, newEvents);
+        Set<Integer> loadBalancersNotToDelete = removeLoadBalancerRecordsThatHadNewEvents(result, newEvents);
         usageRefactorService.batchCreateLoadBalancerMergedHostUsages(result.getMergedUsages());
         LOG.info("Completed insertion of " + result.getMergedUsages().size() + " new records into lb_merged_host_usage table.");
         usageRefactorService.batchCreateLoadBalancerHostUsages(result.getLbHostUsages());
@@ -126,16 +126,16 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         return accessibleHosts;
     }
 
-    private List<Integer> removeLoadBalancerRecordsThatHadNewEvents(UsageProcessorResult recordsToInsert,
+    private Set<Integer> removeLoadBalancerRecordsThatHadNewEvents(UsageProcessorResult recordsToInsert,
                                                            Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> newEvents) {
-        List<Integer> loadBalancersToExcludeFromDelete = new ArrayList<Integer>();
+        Set<Integer> loadBalancersToExcludeFromDelete = new HashSet<Integer>();
         for (Integer loadbalancerId : newEvents.keySet()) {
+            loadBalancersToExcludeFromDelete.add(loadbalancerId);
             Iterator<LoadBalancerMergedHostUsage> lbmhuIter = recordsToInsert.getMergedUsages().iterator();
             while (lbmhuIter.hasNext()) {
                 LoadBalancerMergedHostUsage mergedUsage = lbmhuIter.next();
                 if(mergedUsage.getLoadbalancerId() == loadbalancerId) {
                     LOG.info(String.format("Load balancer %d had event come in during poller run.  Removing records that were to be inserted.", loadbalancerId));
-                    loadBalancersToExcludeFromDelete.add(loadbalancerId);
                     lbmhuIter.remove();
                 }
             }
