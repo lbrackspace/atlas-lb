@@ -111,7 +111,8 @@ public class UsagePollerHelper {
     public ResetBandwidth getPossibleResetBandwidth(long currentIncoming, long previousIncoming, long currentOutgoing,
                                                     long previousOutgoing, Calendar currentPollTime, Calendar previousPollTime) {
         ResetBandwidth ret = new ResetBandwidth();
-        if ( isReset(currentIncoming, previousIncoming) || isReset(currentOutgoing, previousOutgoing)) {
+        if ( isReset(currentIncoming, previousIncoming) ||
+                isReset(currentOutgoing, previousOutgoing)) {
             return ret;
         }
         ret.incomingTransfer = currentIncoming - previousIncoming;
@@ -295,44 +296,6 @@ public class UsagePollerHelper {
 
                 isFirstPoll = false;
             }
-
-//            for (Integer hostId : existingUsages.get(loadBalancerId).keySet()) {
-//                List<LoadBalancerHostUsage> loadBalancerHostUsages = existingUsages.get(loadBalancerId).get(hostId);
-//
-//                if (loadBalancerHostUsages.size() == 0) {
-//                    LOG.info("Received a list of size 0 for a load balancer id and host id combination.  This should not have happened.");
-//                    continue;
-//                }
-//
-//                //If first record is the CREATE_LOADBALANCER event then add that event to the records to be merged.
-//                if (loadBalancerHostUsages.get(0).getEventType() == UsageEvent.CREATE_LOADBALANCER) {
-//                    String timeKey = loadBalancerHostUsages.get(0).getPollTime().getTime().toString();
-//                    mergedUsagesMap.put(timeKey, initializeMergedRecord(loadBalancerHostUsages.get(0)));
-//                }
-//
-//                //If there is only one record. then it is most likely just the previous poll. Check event just in case.
-//                if (loadBalancerHostUsages.size() == 1) {
-//                    if (loadBalancerHostUsages.get(0).getEventType() != null) {
-//                        LOG.info("Non-CREATE_LOADBALANCER Event record encountered that did not have a previous record to compare with.");
-//                    }
-//                    continue;
-//                }
-//
-//                //If for some reason there are more than 1 record and the last record is a null
-//                if (loadBalancerHostUsages.get(loadBalancerHostUsages.size() - 1).getEventType() == null) {
-//                    continue;
-//                }
-//
-//                //This assumes that no events for a load balancer will ever have the same time.
-//                for(int i = 1; i < loadBalancerHostUsages.size(); i++) {
-//                    String timeKey = loadBalancerHostUsages.get(i).getPollTime().getTime().toString();
-//                    if (!mergedUsagesMap.containsKey(timeKey)) {
-//                        mergedUsagesMap.put(timeKey, initializeMergedRecord(loadBalancerHostUsages.get(i)));
-//                    }
-//                    LoadBalancerMergedHostUsage newMergedUsage = mergedUsagesMap.get(timeKey);
-//                    calculateUsage(loadBalancerHostUsages.get(i), loadBalancerHostUsages.get(i - 1), newMergedUsage);
-//                }
-//            }
 
             //Add all events into list that shall be returned
             for(String timeKey : mergedUsagesMap.keySet()) {

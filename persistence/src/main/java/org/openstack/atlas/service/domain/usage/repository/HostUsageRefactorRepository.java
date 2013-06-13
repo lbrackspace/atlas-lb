@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.usage.repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
+import org.openstack.atlas.util.common.StringUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -100,9 +101,16 @@ public class HostUsageRefactorRepository {
     }
 
 
-    public void deleteOldHostUsage(Calendar deleteTimeMarker) {
-        Query query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.pollTime < :deleteTimeMarker")
-                .setParameter("deleteTimeMarker", deleteTimeMarker, TemporalType.TIMESTAMP);
+    public void deleteOldHostUsage(Calendar deleteTimeMarker, List<Integer> lbsToExclude) {
+        Query query;
+        if (lbsToExclude == null || lbsToExclude.isEmpty()) {
+            query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.pollTime < :deleteTimeMarker");
+        } else {
+            String lbIds = StringUtils.joinString(lbsToExclude, ",");
+            query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.pollTime < :deleteTimeMarker AND loadbalancer_id not in (:lbIds)");
+            query.setParameter("lbIds", lbIds);
+        }
+        query.setParameter("deleteTimeMarker", deleteTimeMarker, TemporalType.TIMESTAMP);
         int numRowsDeleted = query.executeUpdate();
         LOG.info(String.format("Deleted %d rows with endTime before %s from 'lb_host_usage' table.",
                 numRowsDeleted, deleteTimeMarker.getTime()));
@@ -116,6 +124,17 @@ public class HostUsageRefactorRepository {
         String queryStr = "from LoadBalancerHostUsage h ORDER BY h.pollTime " + order;
         List<LoadBalancerHostUsage> hosts;
         hosts = entityManager.createQuery(queryStr).getResultList();
+        return hosts;
+    }
+
+    public List<LoadBalancerHostUsage> getRecordsAfterTime(Calendar timeMarker, boolean ascending) {
+        String order = "ASC";
+        if (!ascending) {
+            order = "DESC";
+        }
+        String queryStr = "from LoadBalancerHostUsage h WHERE poll_time > :timeMarker ORDER BY h.pollTime " + order;
+        Query query = entityManager.createQuery(queryStr).setParameter("timeMarker", timeMarker, TemporalType.TIMESTAMP);
+        List<LoadBalancerHostUsage> hosts = query.getResultList();
         return hosts;
     }
 

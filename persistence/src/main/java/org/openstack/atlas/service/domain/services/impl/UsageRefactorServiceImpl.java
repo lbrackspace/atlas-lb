@@ -29,6 +29,37 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
     @Override
     public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getAllLoadBalancerHostUsages() {
         List<LoadBalancerHostUsage> lbHostUsages = hostUsageRefactorRepository.getAllLoadBalancerHostUsageRecords(true);
+        return listToMap(lbHostUsages);
+    }
+
+    @Override
+    public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getRecordsAfterTime(Calendar time) {
+        List<LoadBalancerHostUsage> lbHostUsages = hostUsageRefactorRepository.getRecordsAfterTime(time, true);
+        LOG.info(String.format("Retrieved %d records after time: %s", lbHostUsages.size(), time.getTime().toString()));
+        return listToMap(lbHostUsages);
+    }
+
+    @Override
+    public void batchCreateLoadBalancerHostUsages(List<LoadBalancerHostUsage> usages) {
+        hostUsageRefactorRepository.batchCreate(usages);
+    }
+
+    @Override
+    public void deleteOldLoadBalancerHostUsages(Calendar deleteTimeMarker, List<Integer> lbsToExclude) {
+        hostUsageRefactorRepository.deleteOldHostUsage(deleteTimeMarker, lbsToExclude);
+    }
+
+    @Override
+    public void batchCreateLoadBalancerMergedHostUsages(List<LoadBalancerMergedHostUsage> usages) {
+        loadBalancerMergedHostUsageRepository.batchCreate(usages);
+    }
+
+    @Override
+    public void batchDeleteLoadBalancerMergedHostUsages(Collection<LoadBalancerMergedHostUsage> usages) {
+        loadBalancerMergedHostUsageRepository.batchDelete(usages);
+    }
+
+    private Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> listToMap(List<LoadBalancerHostUsage> lbHostUsages) {
         Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> lbMap = new HashMap<Integer, Map<Integer, List<LoadBalancerHostUsage>>>();
         for (LoadBalancerHostUsage lbHostUsage : lbHostUsages) {
             if (!lbMap.containsKey(lbHostUsage.getLoadbalancerId())){
@@ -40,25 +71,5 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
             lbMap.get(lbHostUsage.getLoadbalancerId()).get(lbHostUsage.getHostId()).add(lbHostUsage);
         }
         return lbMap;
-    }
-
-    @Override
-    public void batchCreateLoadBalancerHostUsages(List<LoadBalancerHostUsage> usages) {
-        hostUsageRefactorRepository.batchCreate(usages);
-    }
-
-    @Override
-    public void deleteOldLoadBalancerHostUsages(Calendar deleteTimeMarker) {
-        hostUsageRefactorRepository.deleteOldHostUsage(deleteTimeMarker);
-    }
-
-    @Override
-    public void batchCreateLoadBalancerMergedHostUsages(List<LoadBalancerMergedHostUsage> usages) {
-        loadBalancerMergedHostUsageRepository.batchCreate(usages);
-    }
-
-    @Override
-    public void batchDeleteLoadBalancerMergedHostUsages(Collection<LoadBalancerMergedHostUsage> usages) {
-        loadBalancerMergedHostUsageRepository.batchDelete(usages);
     }
 }

@@ -163,7 +163,7 @@ public class UsageRefactorServiceIntegrationTest {
             usageRefactorService.batchCreateLoadBalancerHostUsages(usageList);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> addMap = usageRefactorService.getAllLoadBalancerHostUsages();
             assertTrue(addMap.get(loadBalancerId).get(hostId).size() == 2);
-            usageRefactorService.deleteOldLoadBalancerHostUsages(Calendar.getInstance());
+            usageRefactorService.deleteOldLoadBalancerHostUsages(Calendar.getInstance(), null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> deleteMap = usageRefactorService.getAllLoadBalancerHostUsages();
             assertTrue(deleteMap.size() == 0);
         }
