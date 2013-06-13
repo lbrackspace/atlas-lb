@@ -2169,7 +2169,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getPoolBinding().getPoolNames();
             return true;
         } catch (AxisFault af) {
-            if (isConnectionExcept(af)) {
+            if (IpHelper.isNetworkConnectionException(af)) {
                 return false;
             }
             throw af;
@@ -2435,17 +2435,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             hostssubnet.getHostsubnets().add(hostsubnet);
         }
         return hostssubnet;
-    }
-
-    private boolean isConnectionExcept(AxisFault af) {
-        String faultString = af.getFaultString();
-        if (faultString == null) {
-            return false;
-        }
-        if (faultString.split(":")[0].equals("java.net.ConnectException")) {
-            return true;
-        }
-        return false;
     }
 
     public static TrafficIPGroupsSubnetMappingPerHost[] domain2adaptorSubnetMapping(Hostssubnet hostssubnet) {
