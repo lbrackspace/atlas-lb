@@ -13,6 +13,8 @@ import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 
 import javax.jms.Message;
 
+import java.util.Calendar;
+
 import static org.openstack.atlas.api.atom.EntryHelper.CREATE_VIP_TITLE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.CREATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -59,7 +61,8 @@ public class AddVirtualIpListener extends BaseListener {
 
         // DEPRECATED
         // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP);
+        Calendar eventTime = Calendar.getInstance();
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP, eventTime);
 
         // Notify usage processor
         try {

@@ -12,6 +12,7 @@ import org.openstack.atlas.usagerefactor.SnmpUsage;
 import javax.jms.Message;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
@@ -113,7 +114,8 @@ public class MgmtCreateSuspensionListener extends BaseListener {
         notificationService.saveLoadBalancerEvent(requestLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, UPDATE_LOADBALANCER, UPDATE, INFO);
 
         // DEPRECATED
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+        Calendar eventTime = Calendar.getInstance();
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
 
         //New usage process
         usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER);

@@ -11,6 +11,7 @@ import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 
 import javax.jms.Message;
+import java.util.Calendar;
 import java.util.List;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
@@ -74,7 +75,8 @@ public class DeleteVirtualIpsListener extends BaseListener {
 
         // DEPRECATED
         // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
+        Calendar eventTime = Calendar.getInstance();
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP, eventTime);
 
         // Notify usage processor
         try {

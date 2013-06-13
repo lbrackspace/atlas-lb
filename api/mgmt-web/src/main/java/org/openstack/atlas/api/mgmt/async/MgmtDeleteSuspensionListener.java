@@ -11,6 +11,8 @@ import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionExcepti
 
 import javax.jms.Message;
 
+import java.util.Calendar;
+
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
@@ -72,7 +74,8 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
 
         // Notify usage processor
         // DEPRECATED
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER);
+        Calendar eventTime = Calendar.getInstance();
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER, eventTime);
 
         LOG.info(String.format("Remove suspension operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }

@@ -106,7 +106,8 @@ public class DeleteLoadBalancerListener extends BaseListener {
 
             //Do not store usage here because the load balancer went into ERROR status and thus is not really deleted.
             // Notify usage processor
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+            Calendar eventTime = Calendar.getInstance();
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
             return;
         }
 
@@ -115,6 +116,8 @@ public class DeleteLoadBalancerListener extends BaseListener {
             sslTerminationService.deleteSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
             LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in database.", dbLoadBalancer.getId()));
         }
+
+        Calendar eventTime = Calendar.getInstance();
 
         // Notify usage processor
         LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
@@ -131,7 +134,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
 
         // Notify usage processor
         // DEPRECATED
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
 
         LOG.info(String.format("Load balancer '%d' successfully deleted.", dbLoadBalancer.getId()));
     }
