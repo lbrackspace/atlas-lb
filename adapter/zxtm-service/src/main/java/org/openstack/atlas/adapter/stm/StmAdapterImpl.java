@@ -20,6 +20,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -29,8 +30,13 @@ import org.rackspace.stingray.client.pool.PoolNodeWeight;
 import org.rackspace.stingray.client.pool.PoolProperties;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
 import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
@@ -54,6 +60,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
         return client;
     }
+
+    // ** START Temporary for testing purposes
+    public StingrayRestClient getStingrayClient() {
+        return new StingrayRestClient();
+    }
+    // ** END Temporary for testing purposes
 
     @Override public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
@@ -433,23 +445,190 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // This seems inefficient -- should rewrite to do this as one operation. TODO
+        deleteErrorFile(config, loadBalancer);
+        setDefaultErrorFile(config, loadBalancer);
     }
 
-    @Override public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    @Override
+    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, RemoteException {
+        setDefaultErrorFile(config, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (loadBalancer.hasSsl()) {
+            setDefaultErrorFile(config, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        }
+    }
+
+    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, String vsName) throws InsufficientRequestException, RemoteException {
+        // ** START Temporary for testing purposes
+        StingrayRestClient client = null;
+        if (config == null)
+            client = getStingrayClient();
+        else
+            client = getStingrayClient(config);
+        // ** END Temporary for testing purposes
+
+        LOG.debug(String.format("Attempting to set the default error file for %s", vsName));
+        try {
+            // Get server configs
+            VirtualServer vs = client.getVirtualServer(vsName);
+            VirtualServerProperties vsp = vs.getProperties();
+            VirtualServerConnectionError ce = vsp.getConnection_errors();
+
+            // Set error file and propagate upwards
+            ce.setError_file("Default");
+            vsp.setConnection_errors(ce);
+            vs.setProperties(vsp);
+
+            // Update client with new properties
+            client.updateVirtualServer(vsName, vs);
+
+            LOG.info(String.format("Successfully set the default error file for: %s", vsName));
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+        //not sure if this exception means what I thought it did
+            LOG.warn(String.format("Virtual server %s does not exist, ignoring...", vsName));
+        } catch (StingrayRestClientException e) {
+            LOG.error(String.format("There was a unexpected error setting the default error file for %s; Exception: %s", vsName, e.getMessage()));
+        }
     }
 
     @Override public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content) throws RemoteException, InsufficientRequestException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // ** START Temporary for testing purposes
+        StingrayRestClient client = null;
+        if (config == null)
+            client = getStingrayClient();
+        else
+            client = getStingrayClient(config);
+        // ** END Temporary for testing purposes
+
+        LOG.debug("Attempting to upload the default error file...");
+        try {
+            client.createExtraFile(Constants.DEFAULT_ERRORFILE, getFileWithContent(content));
+            LOG.info("Successfully uploaded the default error file...");
+        } catch (IOException e) {
+            LOG.error(String.format("Failed to upload default ErrorFile for %s -- IO exception", config.getEndpointUrl()));
+        }  catch (StingrayRestClientException ce) {
+            LOG.error(String.format("Failed to upload default ErrorFile for %s -- REST Client exception", config.getEndpointUrl()));
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            LOG.error(String.format("Failed to upload default ErrorFile for %s -- Object not found", config.getEndpointUrl()));
+        }
     }
 
     @Override public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws AxisFault, InsufficientRequestException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        deleteErrorFile(config, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (loadBalancer.hasSsl()) {
+            deleteErrorFile(config, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        }
     }
 
-    @Override public void setErrorFile(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, String content) throws RemoteException, InsufficientRequestException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, String vsName) throws AxisFault, InsufficientRequestException {
+        // ** START Temporary for testing purposes
+        StingrayRestClient client = null;
+        if (config == null)
+            client = getStingrayClient();
+        else
+            client = getStingrayClient(config);
+        // ** END Temporary for testing purposes
+
+        String fileToDelete = getErrorFileName(vsName);
+        try {
+            LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", vsName, fileToDelete));
+            // Get server configs
+            VirtualServer vs = client.getVirtualServer(vsName);
+            VirtualServerProperties vsp = vs.getProperties();
+            VirtualServerConnectionError ce = vsp.getConnection_errors();
+
+            // Set error file and propagate upwards
+            ce.setError_file(null);
+            vsp.setConnection_errors(ce);
+            vs.setProperties(vsp);
+
+            // Update client with new properties
+            client.updateVirtualServer(vsName, vs);
+
+            // Delete the old error file
+            client.deleteExtraFile(fileToDelete);
+
+            LOG.info(String.format("Successfully deleted a custom error file for %s (%s)", vsName, fileToDelete));
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            LOG.warn(String.format("Cannot delete custom error page as, %s, it does not exist. Ignoring...", fileToDelete));
+        } catch (Exception ex) {
+            LOG.error(String.format("There was a unexpected error deleting the error file for: %s Exception: %s", vsName, ex.getMessage()));
+        }
+    }
+
+    @Override public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String content) throws RemoteException, InsufficientRequestException {
+        setErrorFile(config, ZxtmNameBuilder.genVSName(loadBalancer), content);
+        if (loadBalancer.hasSsl()) {
+            setErrorFile(config, ZxtmNameBuilder.genSslVSName(loadBalancer), content);
+        }
+    }
+
+    public void setErrorFile(LoadBalancerEndpointConfiguration config, String vsName, String content) throws RemoteException {
+        // ** START Temporary for testing purposes
+        StingrayRestClient client = null;
+        if (config == null)
+            client = getStingrayClient();
+        else
+            client = getStingrayClient(config);
+        // ** END Temporary for testing purposes
+
+        String errorFileName = getErrorFileName(vsName);
+        try {
+            LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
+            client.createExtraFile(errorFileName, getFileWithContent(content));
+            LOG.info(String.format("Successfully uploaded the error file for %s (%s)", vsName, errorFileName));
+        } catch (IOException ioe) {
+            // Failed to create file, use "Default"
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- IO exception", vsName, errorFileName));
+            errorFileName = "Default";
+        } catch (StingrayRestClientException ce) {
+            // Failed to upload file, use "Default"
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- REST Client exception", vsName, errorFileName));
+            errorFileName = "Default";
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            // Failed to create file, use "Default"
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
+            errorFileName = "Default";
+        }
+
+        try {
+            LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
+
+            // Get server configs
+            VirtualServer vs = client.getVirtualServer(vsName);
+            VirtualServerProperties vsp = vs.getProperties();
+            VirtualServerConnectionError ce = vsp.getConnection_errors();
+
+            // Set error file and propagate upwards
+            ce.setError_file(errorFileName);
+            vsp.setConnection_errors(ce);
+            vs.setProperties(vsp);
+
+            // Update client with new properties
+            client.updateVirtualServer(vsName, vs);
+
+            LOG.info(String.format("Successfully set the error file for %s (%s)", vsName, errorFileName));
+        } catch (StingrayRestClientException ce) {
+            // REST failure...
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- REST Client exception", vsName, errorFileName));
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            // The file we uploaded wasn't there? Not good -- leave the object as it was before?
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
+        }
+    }
+
+    private String getErrorFileName(String vsName) {
+        String msg = String.format("%s_error.html", vsName);
+        return msg;
+    }
+
+    private File getFileWithContent(String content) throws IOException {
+        File file = File.createTempFile("StmAdapterImpl_",".err");
+        file.deleteOnExit();
+        BufferedWriter out = new BufferedWriter(new FileWriter(file));
+        out.write(content);
+        out.close();
+        return file;
     }
 
     @Override public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
