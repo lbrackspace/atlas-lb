@@ -25,6 +25,7 @@ import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
+import org.rackspace.stingray.client.pool.PoolNodeWeight;
 import org.rackspace.stingray.client.pool.PoolProperties;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
@@ -131,6 +132,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             pb.setNodes(nodes);
             pp.setBasic(pb);
             p.setProperties(pp);
+            List<PoolNodeWeight> list = new ArrayList<PoolNodeWeight>();
+            PoolNodeWeight pnw = new PoolNodeWeight();
+            pnw.setNode("10.12.4.4");
+            pnw.setWeight(1);
+            list.add(pnw);
+            pp.getLoad_balancing().setNode_weighting(list);
 
             cpool = client.createPool(poolName, p);
         } catch (StingrayRestClientException e) {
@@ -151,6 +158,16 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         //This is set on the POOL object...
 //        serviceStubs.getPoolBinding().setPassiveMonitoring(new String[]{poolName}, new boolean[]{false});
         return cpool;
+    }
+
+    private Pool translatePool(Collection<Node> lbNodes) {
+       Pool pool = new Pool();
+       PoolProperties properties = new PoolProperties();
+       PoolBasic basic = new PoolBasic();
+       List<PoolNodeWeight> weights = new ArrayList<PoolNodeWeight>();
+       PoolWeightingsDefinition pnw = new PoolWeightingsDefinition();
+//       properties.getConnection().
+       return null;
     }
 
     private List<Node> getNodesWithCondition(Collection<Node> nodes, NodeCondition nodeCondition) {
