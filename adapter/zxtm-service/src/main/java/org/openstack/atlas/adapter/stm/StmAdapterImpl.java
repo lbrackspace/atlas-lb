@@ -28,8 +28,13 @@ import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolProperties;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
 import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
@@ -53,6 +58,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
         return client;
     }
+
+    public StingrayRestClient getStingrayClient() {
+        return new StingrayRestClient();
+    }
+
 
     @Override public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
@@ -432,7 +442,78 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override public void setErrorFile(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, String content) throws RemoteException, InsufficientRequestException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        setErrorFile(conf, ZxtmNameBuilder.genVSName(loadBalancer), content);
+        if (loadBalancer.hasSsl()) {
+            setErrorFile(conf, ZxtmNameBuilder.genSslVSName(loadBalancer), content);
+        }
+    }
+
+    public void setErrorFile(LoadBalancerEndpointConfiguration conf, String vsName, String content) throws RemoteException {
+        // ** START Temporary for testing purposes
+        StingrayRestClient client = null;
+        if (conf == null)
+            client = getStingrayClient();
+        else
+            client = getStingrayClient(conf);
+        // ** END Temporary for testing purposes
+
+        String errorFileName = getErrorFileName(vsName);
+        try {
+            LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
+            client.createExtraFile(errorFileName, getFileWithContent(content));
+            LOG.info(String.format("Successfully uploaded the error file for %s (%s)", vsName, errorFileName));
+        } catch (IOException ioe) {
+            // Failed to create file, use "Default"
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- IO exception", vsName, errorFileName));
+            errorFileName = "Default";
+        } catch (StingrayRestClientException ce) {
+            // Failed to upload file, use "Default"
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- REST Client exception", vsName, errorFileName));
+            errorFileName = "Default";
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            // Failed to create file, use "Default"
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
+            errorFileName = "Default";
+        }
+
+        try {
+            LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
+
+            // Get server configs
+            VirtualServer vs = client.getVirtualServer(vsName);
+            VirtualServerProperties vsp = vs.getProperties();
+            VirtualServerConnectionError ce = vsp.getConnection_errors();
+
+            // Set error file and propagate upwards
+            ce.setError_file(errorFileName);
+            vsp.setConnection_errors(ce);
+            vs.setProperties(vsp);
+
+            // Update client with new properties
+            client.updateVirtualServer(vsName, vs);
+
+            LOG.info(String.format("Successfully set the error file for %s (%s)", vsName, errorFileName));
+        } catch (StingrayRestClientException ce) {
+            // REST failure...
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- REST Client exception", vsName, errorFileName));
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            // The file we uploaded wasn't there? Not good -- leave the object as it was before?
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
+        }
+    }
+
+    private String getErrorFileName(String vsName) {
+        String msg = String.format("%s_error.html", vsName);
+        return msg;
+    }
+
+    private File getFileWithContent(String content) throws IOException {
+        File file = File.createTempFile("StmAdapterImpl_",".err");
+        file.deleteOnExit();
+        BufferedWriter out = new BufferedWriter(new FileWriter(file));
+        out.write(content);
+        out.close();
+        return file;
     }
 
     @Override public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
