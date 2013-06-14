@@ -19,6 +19,7 @@
         <module>atomhopper</module>
         <module>objs</module>
         <module>dns</module>
+        <module>stingray-rest-client</module>
     </modules>
 
     <build>

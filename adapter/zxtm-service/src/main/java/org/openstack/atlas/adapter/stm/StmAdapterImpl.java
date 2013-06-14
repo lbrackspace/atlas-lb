@@ -12,6 +12,7 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.helpers.NodeHelper;
+import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
@@ -21,10 +22,16 @@ import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolProperties;
+import org.rackspace.stingray.client.virtualserver.VirtualServer;
+import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -33,55 +40,92 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     //TODO: move to a 'constants' file...
     public static final LoadBalancerAlgorithm DEFAULT_ALGORITHM = LoadBalancerAlgorithm.RANDOM;
+    public static final String XFF = "add_x_forwarded_for_header";
+    public static final String XFP = "add_x_forwarded_proto";
 
+
+    public StingrayRestClient getStingrayClient(LoadBalancerEndpointConfiguration config) {
+        StingrayRestClient client = null;
+        try {
+            client = new StingrayRestClient(new URI(config.getEndpointUrl().toString()));
+        } catch (URISyntaxException e) {
+            LOG.error(String.format("Configuration error, verify soapendpoint is valid! Exception %s", e));
+        }
+        return client;
+    }
 
     @Override public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
-        //TODO: this one will probably be ignore, or possibly changed to grab/setup the client...
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    @Override
+    public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
+        StingrayRestClient client = getStingrayClient(config);
 
-        //JUST for example for the time being......
-        createNodePool(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getNodes(), retrieveAlgorithm(loadBalancer));
+        VirtualServer vs = new VirtualServer();
+        VirtualServerProperties vsp = new VirtualServerProperties();
+        VirtualServerBasic vsb = new VirtualServerBasic();
+
+        try {
+            //JUST for example for the time being......
+            createNodePool(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getNodes(), retrieveAlgorithm(loadBalancer));
+            vsb.setPool(virtualServerName);
+
+            //...
+
+            //Added rules for HTTP LB
+            if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+                TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
+                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
+                List<String> rules = Arrays.asList(XFF, XFP);
+                vsb.setRequest_rules(rules);
+
+//                setDefaultErrorFile(config, lb);
+            }
+
+            //...
+            vsp.setBasic(vsb);
+            vs.setProperties(vsp);
+            //...
+            client.createVirtualServer(virtualServerName, vs);
+        } catch (Exception ex) {
+            //TODO: roll back...
+        }
+        //Finish...
     }
 
     private LoadBalancerAlgorithm retrieveAlgorithm(LoadBalancer loadBalancer) {
         return loadBalancer.getAlgorithm() == null ? DEFAULT_ALGORITHM : loadBalancer.getAlgorithm();
     }
 
-    private void createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> allNodes, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+    private Pool createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> allNodes, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         final String poolName = ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
+        StingrayRestClient client = getStingrayClient(config);
 
         LOG.debug(String.format("Creating pool '%s' and setting nodes...", poolName));
 //        serviceStubs.getPoolBinding().addPool(new String[]{poolName}, NodeHelper.getIpAddressesFromNodes(allNodes));
-        StingrayRestClient client = new StingrayRestClient();
 
-        //TODO: exception should be thrown on signature and caught in rpsi
         Pool cpool = null;
+        Pool p = null;
         try {
             cpool = client.getPool(poolName);
-        } catch (StingrayRestClientException e) {
-            //TODO: COULD be 'not found' write method to verify status, if another error throw ex
 
-            //TODO: OR add in the client to throw OBNE ex that we can trap <--best idea i think
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
 
-        //Should still be null since we are ccreating new pool..
-        Pool p = new Pool();
-        PoolProperties pp = new PoolProperties();
-        PoolBasic pb = new PoolBasic();
-        Set<String> nodes = new HashSet<String>();
-        nodes.add("10.12.4.4");
-        pb.setNodes(nodes);
-        pp.setBasic(pb);
-        p.setProperties(pp);
-        try {
+            //Should still be null since we are ccreating new pool..
+            p = new Pool();
+            PoolProperties pp = new PoolProperties();
+            PoolBasic pb = new PoolBasic();
+            Set<String> nodes = new HashSet<String>();
+            nodes.add("10.12.4.4");
+            pb.setNodes(nodes);
+            pp.setBasic(pb);
+            p.setProperties(pp);
+
             cpool = client.createPool(poolName, p);
         } catch (StingrayRestClientException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (StingrayRestClientObjectNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
@@ -96,6 +140,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 //        setNodeWeights(config, loadBalancerId, accountId, allNodes);
         //This is set on the POOL object...
 //        serviceStubs.getPoolBinding().setPassiveMonitoring(new String[]{poolName}, new boolean[]{false});
+        return cpool;
     }
 
     private List<Node> getNodesWithCondition(Collection<Node> nodes, NodeCondition nodeCondition) {

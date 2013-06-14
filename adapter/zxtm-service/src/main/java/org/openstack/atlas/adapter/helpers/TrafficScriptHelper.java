@@ -1,11 +1,20 @@
 package org.openstack.atlas.adapter.helpers;
 
-import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
-import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.adapter.stm.StmAdapterImpl;
+import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
+import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
+import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.list.Child;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.List;
 
 public class TrafficScriptHelper {
     public static Log LOG = LogFactory.getLog(TrafficScriptHelper.class.getName());
@@ -113,6 +122,38 @@ public class TrafficScriptHelper {
         LOG.debug("X-Forwarded-For rule (traffic script) verification completed.");
     }
 
+    public static void addXForwardedForScriptIfNeeded(StingrayRestClient client) throws IOException, StingrayRestClientException {
+        LOG.debug("Verifying that the X-Forwarded-For rule (traffic script) is properly configured...");
+
+        boolean ruleXForwardedForExists = false;
+//        String[] ruleNames = serviceStubs.getZxtmRuleCatalogService().getRuleNames();
+        List<Child> rules = null;
+        try {
+            rules = client.getTrafficscripts();
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            LOG.debug("There was an error in StingrayRestClient: " + e);
+        }
+
+        for (Child ruleName : rules) {
+            if (ruleName.getName().equals(StmAdapterImpl.XFF)) ruleXForwardedForExists = true;
+        }
+
+        if (!ruleXForwardedForExists) {
+            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should always exist...", StmAdapterImpl.XFF));
+            File crule = null;
+            crule = createRuleFile(StmAdapterImpl.XFF, TrafficScriptHelper.getXForwardedForHeaderScript());
+
+            try {
+                client.createTrafficscript(StmAdapterImpl.XFF, crule);
+            } catch (StingrayRestClientObjectNotFoundException e) {
+                LOG.debug("There was an error in StingrayRestClient: " + e);
+            }
+            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmAdapterImpl.XFF));
+        }
+
+        LOG.debug("X-Forwarded-For rule (traffic script) verification completed.");
+    }
+
     public static void addXForwardedProtoScriptIfNeeded(ZxtmServiceStubs serviceStubs) throws RemoteException {
         LOG.debug("Verifying that the X-Forwarded-Proto rule (traffic script) is properly configured...");
 
@@ -130,5 +171,42 @@ public class TrafficScriptHelper {
         }
 
         LOG.debug("X-Forwarded-Proto rule (traffic script) verification completed.");
+    }
+
+    public static void addXForwardedProtoScriptIfNeeded(StingrayRestClient client) throws IOException, StingrayRestClientException {
+        LOG.debug("Verifying that the X-Forwarded-Proto rule (traffic script) is properly configured...");
+
+        boolean ruleXForwardedProtoExists = false;
+        List<Child> rules = null;
+        try {
+            rules = client.getTrafficscripts();
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            LOG.debug("There was an error in StingrayRestClient: " + e);
+        }
+
+        for (Child ruleName : rules) {
+            if (ruleName.getName().equals(StmAdapterImpl.XFF)) ruleXForwardedProtoExists = true;
+        }
+
+        if (!ruleXForwardedProtoExists) {
+            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should always exist...", StmAdapterImpl.XFP));
+            File crule = null;
+            crule = createRuleFile(StmAdapterImpl.XFP, TrafficScriptHelper.getXForwardedProtoHeaderScript());
+
+            try {
+                client.createTrafficscript(StmAdapterImpl.XFF, crule);
+            } catch (StingrayRestClientObjectNotFoundException e) {
+                LOG.debug("There was an error in StingrayRestClient: " + e);
+            }
+            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmAdapterImpl.XFP));
+        }
+    }
+
+    public static File createRuleFile(String fileName, String fileText) throws IOException {
+        File fixx = new File(fileName);
+        FileWriter fw = new FileWriter(fixx);
+        fw.write(fileText);
+        fw.close();
+        return fixx;
     }
 }

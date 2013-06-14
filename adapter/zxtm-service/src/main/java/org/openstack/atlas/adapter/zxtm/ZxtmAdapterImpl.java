@@ -19,6 +19,7 @@ import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 import org.openstack.atlas.util.converters.StringConverter;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
+import org.rackspace.stingray.client.StingrayRestClient;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -41,6 +42,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedProto = new VirtualServerRule(XFP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleContentCaching = new VirtualServerRule(CONTENT_CACHING, true, VirtualServerRuleRunFlag.run_every);
+
+    @Override public StingrayRestClient getStingrayClient(LoadBalancerEndpointConfiguration config) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 
     @Override
     public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {

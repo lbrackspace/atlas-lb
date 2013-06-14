@@ -1,21 +1,26 @@
 package org.openstack.atlas.adapter.service;
 
+import org.apache.axis.AxisFault;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
-import org.apache.axis.AxisFault;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.rackspace.stingray.client.StingrayRestClient;
 
+import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 public interface ReverseProxyLoadBalancerAdapter {
+
+    public StingrayRestClient getStingrayClient(LoadBalancerEndpointConfiguration config)
+            throws URISyntaxException;
 
     public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config)
             throws AxisFault;
