@@ -64,6 +64,9 @@ public class LogMapper extends Mapper<LongWritable, Text, LogMapperOutputKey, Lo
         } catch (StringParseException ex) {
             ctx.getCounter(LogCounters.BAD_LOG_STRING).increment(1);
             return;
+        } catch (Exception ex) {
+            ctx.getCounter(LogCounters.BAD_LOG_STRING).increment(1);
+            return;
         }
         oKey.setAccountId(oVal.getAccountId());
         oKey.setLoadbalancerId(oVal.getLoadbalancerId());

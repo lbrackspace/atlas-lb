@@ -44,12 +44,17 @@ import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileIterator;
 import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileReaderException;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
+import org.openstack.atlas.util.debug.Debug;
 
 public class HdfsUtils {
 
     private final Log LOG = LogFactory.getLog(HdfsUtils.class);
     private final VerboseLogger vlog = new VerboseLogger(HdfsUtils.class, VerboseLogger.LogLevel.INFO);
     public static final Pattern sequenceFilePattern = Pattern.compile("^(.*)(part-r-[0-9]+)$");
+    public static final Pattern hdfsZipPattern = Pattern.compile("^(.*)access_log_([0-9]+)_([0-9]{10}).zip$");
+    public static final Pattern hdfsLzoPattern = Pattern.compile("^[0-9]-([0-9]{10})-access_log.aggregated.lzo$");
+    public static final Pattern hdfsLzoPatternPre = Pattern.compile("^([0-9]{10})-access_log.aggregated.lzo$");
+    public static final Pattern dateHourPattern = Pattern.compile("[0-9]{10}");
     public static final String HADOOP_USER_NAME = "HADOOP_USER_NAME"; // Silly isn't it.
     protected int bufferSize = 256 * 1024;
     protected Configuration conf;
@@ -181,6 +186,78 @@ public class HdfsUtils {
         CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
         StaticFileUtils.copyStreams(uncompressedInputStream, cos, ps, bufferSize);
         cos.close();
+    }
+
+    public List<FileStatus> listHdfsZipsStatus(String dateHourSearch, String lidSearch,boolean showMissingDirsOnly) {
+        List<FileStatus> statusList = new ArrayList<FileStatus>();
+        List<String> lbSplitDirComponents = new ArrayList<String>();
+        lbSplitDirComponents.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
+        lbSplitDirComponents.add("lb_logs_split");
+        FileStatus[] logDirStatusArray;
+        String logSplitDir = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(lbSplitDirComponents));
+        try {
+            logDirStatusArray = remoteFileSystem.listStatus(new Path(logSplitDir));
+        } catch (IOException ex) {
+            LOG.error(String.format("Unable to read directory %s: %s\n", logSplitDir, Debug.getExtendedStackTrace(ex)), ex);
+            return statusList;
+        }
+        if (logDirStatusArray == null) {
+            LOG.error(String.format("Unable to read directory %s: listStatus returned null", logSplitDir));
+            return statusList;
+        }
+        for (FileStatus logDirStatus : logDirStatusArray) {
+            if (logDirStatus.isDir()) {
+                String foundDateKey = StaticFileUtils.pathTail(logDirStatus.getPath().toUri().getRawPath());
+                if (!isDateHourKey(foundDateKey)) {
+                    continue; // This directory must be something else
+                }
+                if (dateHourSearch != null && !foundDateKey.startsWith(dateHourSearch)) {
+                    continue; // Skip this entry since a search was on the parameters but no match was found
+                }
+                List<String> zipDirComps = new ArrayList<String>(lbSplitDirComponents);
+                zipDirComps.add(foundDateKey);
+                zipDirComps.add("zips");
+                FileStatus[] zipDirStatusArray;
+                String zipDir = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(zipDirComps));
+                try {
+                    zipDirStatusArray = remoteFileSystem.listStatus(new Path(zipDir));
+                } catch (IOException ex) {
+                    LOG.error(String.format("Unable to scan directory %s: %s", zipDir, Debug.getExtendedStackTrace(ex), ex));
+                    continue;
+                }
+                if (zipDirStatusArray == null) {
+                    LOG.error(String.format("Unable to read directory %s: listStatus returned null", zipDir));
+                    if(showMissingDirsOnly){
+                        statusList.add(logDirStatus);
+                    }
+                    continue;
+                }
+                for (FileStatus zipStatus : zipDirStatusArray) {
+                    String zipFileName = StaticFileUtils.pathTail(zipStatus.getPath().toUri().getRawPath());
+                    if (!zipStatus.isDir()) {
+                        Matcher zipMatcher = hdfsZipPattern.matcher(zipFileName);
+                        if (!zipMatcher.find()) {
+                            continue; // This isn't a zip file
+                        }
+
+                        if (lidSearch != null && !lidSearch.equals(zipMatcher.group(2))) {
+                            continue; // This isn't what where looking for.
+                        }
+                        if(showMissingDirsOnly){
+                            continue; // We only care about dates that are missing.
+                        }
+                        statusList.add(zipStatus);
+                    }
+                }
+            }
+
+        }
+        return statusList;
+    }
+
+    public boolean isDateHourKey(String dateKey) {
+        Matcher m = dateHourPattern.matcher(dateKey);
+        return m.matches();
     }
 
     public FileStatus[] listStatuses(String filePath, boolean useLocal) throws IOException {
@@ -413,6 +490,80 @@ public class HdfsUtils {
                 pathFile.delete();
             }
         }
+    }
+
+    public List<FileStatus> listFileStatusRecursively(String mntPathIn, boolean useLocal) {
+        List<FileStatus> statusList = new ArrayList<FileStatus>();
+        String mntPath = StaticFileUtils.expandUser(mntPathIn);
+        FileSystem fs;
+        if (useLocal) {
+            fs = localFileSystem;
+        } else {
+            fs = remoteFileSystem;
+        }
+        FileStatus[] statusArray;
+        try {
+            statusArray = fs.listStatus(new Path(mntPath));
+        } catch (IOException ex) {
+            vlog.printf("Error reading directory %s: %s\n", mntPath);
+            return statusList;
+        }
+        if (statusArray == null) {
+            return statusList;
+        }
+        for (FileStatus fileStatus : statusArray) {
+            String subFilePath = mntPath + File.separatorChar + fileStatus.getPath().getName();
+            statusList.add(fileStatus);
+            if (fileStatus.isDir()) {
+                if (useLocal) {
+                    try {
+                        if (StaticFileUtils.isSymLink(subFilePath)) {
+                            continue; // Don't follow symLinks
+                        }
+                    } catch (IOException ex) {
+                    }
+                }
+                List<FileStatus> subDirectoryStats = listFileStatusRecursively(subFilePath, useLocal);
+                statusList.addAll(subDirectoryStats);
+            }
+        }
+        return statusList;
+    }
+
+    public List<String> listFilesRecursively(String mntPathIn, boolean useLocal) throws IOException {
+        LOG.info(String.format("Scanning %s\n", mntPathIn));
+        String mntPath = StaticFileUtils.expandUser(mntPathIn);
+        List<String> fileNames = new ArrayList<String>();
+        FileSystem fs;
+
+        if (useLocal) {
+            fs = localFileSystem;
+        } else {
+            fs = remoteFileSystem;
+        }
+        FileStatus[] fileStatuses = fs.listStatus(new Path(mntPath));
+        if (fileStatuses == null) {
+            throw new IOException("Error reading directory " + mntPath);
+        }
+        for (FileStatus fileStatus : fileStatuses) {
+            String subFilePath = mntPath + File.separatorChar + fileStatus.getPath().getName();
+
+            if (fileStatus.isDir()) {
+                if (useLocal) { // Make sure where not following a symlink. Cause circuler links are dangours
+                    try {
+                        if (StaticFileUtils.isSymLink(subFilePath)) {
+                            continue; // Refuse to follow SymLinks.
+                        }
+                    } catch (IOException ex) {
+                    }
+                }
+                List<String> subDirectoryList = listFilesRecursively(subFilePath, useLocal);
+                fileNames.addAll(subDirectoryList);
+            } else {
+                fileNames.add(subFilePath);
+            }
+        }
+        return fileNames;
     }
 
     public static Object newUtils(Class utilClass, String user, String... confFiles) throws ReflectionException {
