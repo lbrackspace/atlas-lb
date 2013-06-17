@@ -1,21 +1,23 @@
 package org.openstack.atlas.adapter.helpers;
 
 import com.zxtm.service.client.PoolPriorityValueDefinition;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeCondition;
 import org.openstack.atlas.service.domain.entities.NodeType;
 import org.openstack.atlas.util.converters.StringConverter;
 
+import java.util.*;
+
 public class ZeusNodePriorityContainer {
     private List<PoolPriorityValueDefinition> priorityValues;
+    private Map<String, Integer> priorityValuesMap;
+    private Set<String> priorityValuesSet;
     private boolean constainsSecondary;
     private boolean constainsPrimary;
 
     public ZeusNodePriorityContainer(Collection<Node> nodesIn) {
+        Map<String, Integer> pMap = new HashMap<String, Integer>();
+        priorityValuesSet = new HashSet<String>();
         Node[] nodes = (Node[]) nodesIn.toArray(new Node[1]);
         priorityValues = new ArrayList<PoolPriorityValueDefinition>();
         constainsSecondary = false;
@@ -34,16 +36,29 @@ public class ZeusNodePriorityContainer {
                 zPri = 2;
                 constainsPrimary = true;
             }
+
+            pMap.put(nodeIpStr, zPri);
+
             pVal.setNode(nodeIpStr);
             pVal.setPriority(zPri);
             priorityValues.add(pVal);
+            priorityValuesSet.add(String.format("%s:%d", nodeIpStr, zPri));
         }
+        priorityValuesMap = pMap;
     }
 
     public PoolPriorityValueDefinition[][] getPriorityValues() {
         PoolPriorityValueDefinition[][] out = new PoolPriorityValueDefinition[1][];
         out[0] = priorityValues.toArray(new PoolPriorityValueDefinition[1]);
         return out;
+    }
+
+    public Map<String, Integer> getPriorityValuesMap() {
+       return priorityValuesMap;
+    }
+
+    public Set<String> getPriorityValuesSet() {
+       return priorityValuesSet;
     }
 
     public boolean hasSecondary() {

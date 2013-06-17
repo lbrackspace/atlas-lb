@@ -10,6 +10,7 @@ import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -148,6 +149,8 @@ public class TrafficScriptHelper {
             } catch (StingrayRestClientObjectNotFoundException e) {
                 LOG.debug("There was an error in StingrayRestClient: " + e);
             }
+
+            crule.delete();
             LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmAdapterImpl.XFF));
         }
 
@@ -198,15 +201,17 @@ public class TrafficScriptHelper {
             } catch (StingrayRestClientObjectNotFoundException e) {
                 LOG.debug("There was an error in StingrayRestClient: " + e);
             }
+
+            crule.delete();
             LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmAdapterImpl.XFP));
         }
     }
 
     public static File createRuleFile(String fileName, String fileText) throws IOException {
-        File fixx = new File(fileName);
-        FileWriter fw = new FileWriter(fixx);
-        fw.write(fileText);
-        fw.close();
+        File fixx = File.createTempFile(fileName,".err");
+        BufferedWriter out = new BufferedWriter(new FileWriter(fixx));
+        out.write(fileText);
+        out.close();
         return fixx;
     }
 }

@@ -1,17 +1,16 @@
 package org.openstack.atlas.adapter.stm;
 
-import com.zxtm.service.client.InvalidInput;
 import com.zxtm.service.client.ObjectDoesNotExist;
-import com.zxtm.service.client.PoolLoadBalancingAlgorithm;
 import com.zxtm.service.client.PoolWeightingsDefinition;
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
-import org.openstack.atlas.adapter.helpers.NodeHelper;
+import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
@@ -25,11 +24,7 @@ import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolBasic;
-import org.rackspace.stingray.client.pool.PoolNodeWeight;
-import org.rackspace.stingray.client.pool.PoolProperties;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
-import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
 import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
@@ -40,7 +35,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
@@ -67,146 +65,90 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
     // ** END Temporary for testing purposes
 
-    @Override public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    @Deprecated
+    @Override
+    public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
+        return null;
     }
 
     @Override
-    public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void createLoadBalancer(LoadBalancerEndpointConfiguration config,
+                                   LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+
         final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
         StingrayRestClient client = getStingrayClient(config);
 
-        VirtualServer vs = new VirtualServer();
-        VirtualServerProperties vsp = new VirtualServerProperties();
-        VirtualServerBasic vsb = new VirtualServerBasic();
+        ResourceTranslator translator = new ResourceTranslator();
+
 
         try {
-            //JUST for example for the time being......
-            createNodePool(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getNodes(), retrieveAlgorithm(loadBalancer));
-            vsb.setPool(virtualServerName);
 
-            //...
-
-            //Added rules for HTTP LB
             if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
                 TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
                 TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
-                List<String> rules = Arrays.asList(XFF, XFP);
-                vsb.setRequest_rules(rules);
 
 //                setDefaultErrorFile(config, lb);
             }
+            translator.translateLoadBalancerResource(loadBalancer);
+            createNodePool(config, client, virtualServerName, translator.getcPool());
 
-            //...
-            vsp.setBasic(vsb);
-            vs.setProperties(vsp);
-            //...
-            client.createVirtualServer(virtualServerName, vs);
+//            createVirtualServer(config, client, virtualServerName, translator.getcVServer);
         } catch (Exception ex) {
             //TODO: roll back...
         }
         //Finish...
     }
 
-    private LoadBalancerAlgorithm retrieveAlgorithm(LoadBalancer loadBalancer) {
-        return loadBalancer.getAlgorithm() == null ? DEFAULT_ALGORITHM : loadBalancer.getAlgorithm();
-    }
 
-    private Pool createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> allNodes, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        final String poolName = ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
-        StingrayRestClient client = getStingrayClient(config);
+    private void createNodePool(LoadBalancerEndpointConfiguration config,
+                                StingrayRestClient client, String poolName, Pool pool)
+            throws StmRollBackException {
 
         LOG.debug(String.format("Creating pool '%s' and setting nodes...", poolName));
-//        serviceStubs.getPoolBinding().addPool(new String[]{poolName}, NodeHelper.getIpAddressesFromNodes(allNodes));
 
-        Pool cpool = null;
-        Pool p = null;
+        Pool curPool = null;
+
         try {
-            cpool = client.getPool(poolName);
-
-
-            //Should still be null since we are ccreating new pool..
-            p = new Pool();
-            PoolProperties pp = new PoolProperties();
-            PoolBasic pb = new PoolBasic();
-            Set<String> nodes = new HashSet<String>();
-            nodes.add("10.12.4.4");
-            pb.setNodes(nodes);
-            pp.setBasic(pb);
-            p.setProperties(pp);
-            List<PoolNodeWeight> list = new ArrayList<PoolNodeWeight>();
-            PoolNodeWeight pnw = new PoolNodeWeight();
-            pnw.setNode("10.12.4.4");
-            pnw.setWeight(1);
-            list.add(pnw);
-            pp.getLoad_balancing().setNode_weighting(list);
-
-            cpool = client.createPool(poolName, p);
-        } catch (StingrayRestClientException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            curPool = client.getPool(poolName);
         } catch (StingrayRestClientObjectNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LOG.warn(String.format("Object not found when creating pool: %s, this is expected...", poolName));
+        } catch (StingrayRestClientException e) {
+            LOG.error(String.format("Error when retrieving pool: %s: ignoring...", poolName));
         }
 
-        LOG.debug("CREATED POOL! ::" + p);
-        LOG.debug("CREATED POOL! stringed ::" + p.toString());
+        try {
+            client.createPool(poolName, pool);
+        } catch (Exception ex) {
+            LOG.error(String.format("Error creating pool: %s Rolling back! \n Exception: %s Trace: %s"
+                    , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
 
-        //SET algo on pool object..
-//        setLoadBalancingAlgorithm(config, loadBalancerId, accountId, algorithm);
-
-//        setDisabledNodes(config, poolName, getNodesWithCondition(allNodes, NodeCondition.DISABLED));
-//        setDrainingNodes(config, poolName, getNodesWithCondition(allNodes, NodeCondition.DRAINING));
-//        setNodeWeights(config, loadBalancerId, accountId, allNodes);
-        //This is set on the POOL object...
-//        serviceStubs.getPoolBinding().setPassiveMonitoring(new String[]{poolName}, new boolean[]{false});
-        return cpool;
+           rollbackPool(client, poolName, curPool, pool);
+        }
     }
 
-    private Pool translatePool(Collection<Node> lbNodes) {
-       Pool pool = new Pool();
-       PoolProperties properties = new PoolProperties();
-       PoolBasic basic = new PoolBasic();
-       List<PoolNodeWeight> weights = new ArrayList<PoolNodeWeight>();
-       PoolWeightingsDefinition pnw = new PoolWeightingsDefinition();
-//       properties.getConnection().
-       return null;
-    }
-
-    private List<Node> getNodesWithCondition(Collection<Node> nodes, NodeCondition nodeCondition) {
-        List<Node> nodesWithCondition = new ArrayList<Node>();
-        for (Node node : nodes) {
-            if (node.getCondition().equals(nodeCondition)) {
-                nodesWithCondition.add(node);
+    private void rollbackPool(StingrayRestClient client, String poolName, Pool curPool, Pool pool) throws StmRollBackException {
+        try {
+            if (curPool != null) {
+                LOG.debug(String.format("Updating pool for rollback '%s'", poolName));
+                client.updatePool(poolName, curPool);
+            } else {
+                LOG.debug(String.format("Deleting pool for rollback '%s' ", poolName));
+                client.deletePool(poolName);
             }
+        } catch (StingrayRestClientException ex) {
+            LOG.error(String.format("Error creating pool: %s Rolling back! \n Exception: %s Trace: %s"
+                    , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
+            throw new StmRollBackException(String.format("Error creating pool: %s Rolling back! \n Exception: %s Trace: %s"
+                    , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())), ex);
+        } catch (StingrayRestClientObjectNotFoundException ex) {
+            LOG.warn(String.format("Object not found when creating pool: %s, this is expected...", poolName));
         }
-        return nodesWithCondition;
+        LOG.debug(String.format("Successfully rolled back pool '%s' ", poolName));
     }
 
-    private void setDisabledNodes(LoadBalancerEndpointConfiguration config, String poolName, List<Node> nodesToDisable) throws RemoteException {
-        if (nodesToDisable == null || nodesToDisable.isEmpty()) {
-            return;
-        }
-
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-
-        LOG.debug(String.format("Setting disabled nodes for pool '%s'", poolName));
-        serviceStubs.getPoolBinding().setDisabledNodes(new String[]{poolName}, NodeHelper.getIpAddressesFromNodes(nodesToDisable));
-        LOG.debug(String.format("Successfully set disabled nodes for pool '%s'", poolName));
-    }
-
-    private void setDrainingNodes(LoadBalancerEndpointConfiguration config, String poolName, List<Node> nodesToDrain) throws RemoteException {
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        String[][] currentDrainingNodes = serviceStubs.getPoolBinding().getDrainingNodes(new String[]{poolName});
-
-        if (nodesToDrain != null && !nodesToDrain.isEmpty()) {
-            LOG.debug(String.format("Setting draining nodes for pool '%s'", poolName));
-            serviceStubs.getPoolBinding().setDrainingNodes(new String[]{poolName}, NodeHelper.getIpAddressesFromNodes(nodesToDrain));
-            LOG.debug(String.format("Successfully set draining nodes for pool '%s'", poolName));
-        } else if (currentDrainingNodes[0].length > 0) {
-            LOG.debug(String.format("Removing draining nodes for pool '%s'", poolName));
-            serviceStubs.getPoolBinding().removeDrainingNodes(new String[]{poolName}, currentDrainingNodes);
-            LOG.debug(String.format("Successfully removed draining nodes for pool '%s'", poolName));
-        }
+    private LoadBalancerAlgorithm retrieveAlgorithm(LoadBalancer loadBalancer) {
+        return loadBalancer.getAlgorithm() == null ? DEFAULT_ALGORITHM : loadBalancer.getAlgorithm();
     }
 
     @Override public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
@@ -275,27 +217,29 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> nodes) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String poolName = ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
-        final String rollBackMessage = "Update node weights request canceled.";
-
-        try {
-            final PoolLoadBalancingAlgorithm[] loadBalancingAlgorithm = serviceStubs.getPoolBinding().getLoadBalancingAlgorithm(new String[]{poolName});
-            if (loadBalancingAlgorithm[0].equals(PoolLoadBalancingAlgorithm.wroundrobin) || loadBalancingAlgorithm[0].equals(PoolLoadBalancingAlgorithm.wconnections)) {
-                LOG.debug(String.format("Setting node weights for pool '%s'...", poolName));
-                serviceStubs.getPoolBinding().setNodesWeightings(new String[]{poolName}, buildPoolWeightingsDefinition(nodes));
-                LOG.info(String.format("Node weights successfully set for pool '%s'.", poolName));
-            }
-        } catch (Exception e) {
-            if (e instanceof ObjectDoesNotExist) {
-                LOG.error(String.format("Node pool '%s' does not exist. Cannot update node weights", poolName), e);
-            }
-            if (e instanceof InvalidInput) {
-                LOG.error(String.format("Node weights are out of range for node pool '%s'. Cannot update node weights", poolName), e);
-            }
-            throw new ZxtmRollBackException(rollBackMessage, e);
-        }
+    @Override
+    public void setNodeWeights(LoadBalancerEndpointConfiguration config,
+                               Integer loadBalancerId, Integer accountId, Collection<Node> nodes)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+//        final String poolName = ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
+//        final String rollBackMessage = "Update node weights request canceled.";
+//
+//        try {
+//            final PoolLoadBalancingAlgorithm[] loadBalancingAlgorithm = serviceStubs.getPoolBinding().getLoadBalancingAlgorithm(new String[]{poolName});
+//            if (loadBalancingAlgorithm[0].equals(PoolLoadBalancingAlgorithm.wroundrobin) || loadBalancingAlgorithm[0].equals(PoolLoadBalancingAlgorithm.wconnections)) {
+//                LOG.debug(String.format("Setting node weights for pool '%s'...", poolName));
+//                serviceStubs.getPoolBinding().setNodesWeightings(new String[]{poolName}, buildPoolWeightingsDefinition(nodes));
+//                LOG.info(String.format("Node weights successfully set for pool '%s'.", poolName));
+//            }
+//        } catch (Exception e) {
+//            if (e instanceof ObjectDoesNotExist) {
+//                LOG.error(String.format("Node pool '%s' does not exist. Cannot update node weights", poolName), e);
+//            }
+//            if (e instanceof InvalidInput) {
+//                LOG.error(String.format("Node weights are out of range for node pool '%s'. Cannot update node weights", poolName), e);
+//            }
+//            throw new ZxtmRollBackException(rollBackMessage, e);
+//        }
     }
 
     private PoolWeightingsDefinition[][] buildPoolWeightingsDefinition(Collection<Node> nodes) {
@@ -484,7 +428,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
             LOG.info(String.format("Successfully set the default error file for: %s", vsName));
         } catch (StingrayRestClientObjectNotFoundException onf) {
-        //not sure if this exception means what I thought it did
+            //not sure if this exception means what I thought it did
             LOG.warn(String.format("Virtual server %s does not exist, ignoring...", vsName));
         } catch (StingrayRestClientException e) {
             LOG.error(String.format("There was a unexpected error setting the default error file for %s; Exception: %s", vsName, e.getMessage()));
@@ -506,7 +450,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.info("Successfully uploaded the default error file...");
         } catch (IOException e) {
             LOG.error(String.format("Failed to upload default ErrorFile for %s -- IO exception", config.getEndpointUrl()));
-        }  catch (StingrayRestClientException ce) {
+        } catch (StingrayRestClientException ce) {
             LOG.error(String.format("Failed to upload default ErrorFile for %s -- REST Client exception", config.getEndpointUrl()));
         } catch (StingrayRestClientObjectNotFoundException onf) {
             LOG.error(String.format("Failed to upload default ErrorFile for %s -- Object not found", config.getEndpointUrl()));
@@ -623,7 +567,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     private File getFileWithContent(String content) throws IOException {
-        File file = File.createTempFile("StmAdapterImpl_",".err");
+        File file = File.createTempFile("StmAdapterImpl_", ".err");
         file.deleteOnExit();
         BufferedWriter out = new BufferedWriter(new FileWriter(file));
         out.write(content);
