@@ -55,6 +55,43 @@ public class LoadBalancerRepository {
         return lb;
     }
 
+    public List<LoadBalancerIdAndName> getActiveLoadbalancerIdsAndNames() {
+        List<LoadBalancerIdAndName> lbs = new ArrayList<LoadBalancerIdAndName>();
+        String queryString = "select l.id,l.accountId,l.name from LoadBalancer l where l.status = 'ACTIVE'";
+
+
+        Query q = entityManager.createQuery(queryString);
+
+
+        List<Object> rows = q.getResultList();
+        for (Object uncastedRowArrayObj : rows) {
+            // Each element of rows is actually an Object[] whith each element representing a column
+            Object[] row = (Object[]) uncastedRowArrayObj;
+            LoadBalancerIdAndName lb = new LoadBalancerIdAndName();
+            lb.setLoadbalancerId((Integer) row[0]);
+            lb.setAccountId((Integer) row[1]);
+            lb.setName((String) row[2]);
+            lbs.add(lb);
+        }
+
+        return lbs;
+    }
+
+    public String getLoadBalancerNameById(Integer lbid, Integer aid) throws EntityNotFoundException {
+        String lbName;
+        String qStr = "SELECT l.name from LoadBalancer l where l.id = :lbid and l.accountId = :aid ";
+        Query q = entityManager.createQuery(qStr);
+        q.setParameter("lbid", lbid);
+        q.setParameter("aid", aid);
+        lbName = (String) q.getSingleResult();
+        if (lbName == null) {
+            String message = Constants.LoadBalancerNotFound;
+            LOG.warn(message);
+            throw new EntityNotFoundException(message);
+        }
+        return lbName;
+    }
+
     public LoadBalancer getByIdAndAccountId(Integer id, Integer accountId) throws EntityNotFoundException {
         LoadBalancer lb;
         lb = getById(id);
@@ -152,7 +189,7 @@ public class LoadBalancerRepository {
     }
 
     public ConnectionLimit getConnectionLimitsbyAccountIdLoadBalancerId(Integer accountId,
-                                                                        Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
+            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -176,7 +213,7 @@ public class LoadBalancerRepository {
     }
 
     public SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId,
-                                                                             Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
+            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -188,7 +225,7 @@ public class LoadBalancerRepository {
     }
 
     public LoadBalancer enableSessionPersistenceByIdAndAccountId(Integer id,
-                                                                 Integer accountId) throws EntityNotFoundException, BadRequestException {
+            Integer accountId) throws EntityNotFoundException, BadRequestException {
         LoadBalancer lb;
         lb = getById(id);
         if (!lb.getAccountId().equals(accountId)) {
@@ -365,8 +402,8 @@ public class LoadBalancerRepository {
     }
 
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
-                                                      String status, LbQueryStatus queryStatus, Calendar changedSince,
-                                                      Integer offset, Integer limit, Integer marker) throws BadRequestException {
+            String status, LbQueryStatus queryStatus, Calendar changedSince,
+            Integer offset, Integer limit, Integer marker) throws BadRequestException {
         List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
         LoadBalancerStatus lbStatus;
         String selectClause;
@@ -484,7 +521,6 @@ public class LoadBalancerRepository {
         return loadbalancers;
     }
 
-
     // For Jira https://jira.mosso.com/browse/SITESLB-220
     public List<AccountLoadBalancer> getAccountLoadBalancers(int accountId) { // Jira: https://jira.mosso.com/browse/SITESLB-220
         List<AccountLoadBalancer> accountLoadBalancers = new ArrayList<AccountLoadBalancer>();
@@ -571,20 +607,20 @@ public class LoadBalancerRepository {
             }
             Set<LoadBalancerJoinVip6> v6Set;
             if (v6 == null || v6.getLoadBalancer().getLoadBalancerJoinVip6Set().isEmpty() || v6.getLoadBalancer().getLoadBalancerJoinVip6Set() == null) {
-                v6Set = new  HashSet<LoadBalancerJoinVip6>();
+                v6Set = new HashSet<LoadBalancerJoinVip6>();
             } else {
                 v6Set = v6.getLoadBalancer().getLoadBalancerJoinVip6Set();
             }
 
-            extendedAccountLoadBalancer.setVirtualIpDozerWrapper(new VirtualIpDozerWrapper(v4Set,v6Set));
+            extendedAccountLoadBalancer.setVirtualIpDozerWrapper(new VirtualIpDozerWrapper(v4Set, v6Set));
             extendedAccountLoadBalancers.add(extendedAccountLoadBalancer);
         }
         return new ArrayList<ExtendedAccountLoadBalancer>(extendedAccountLoadBalancers);
     }
 
     private VirtualIpDozerWrapper getVipWrapperByLbId(int lbId) {
-         return new VirtualIpDozerWrapper(new HashSet<LoadBalancerJoinVip>(getVipsByLoadBalancerId(lbId)),
-                 new HashSet<LoadBalancerJoinVip6>(getVips6ByLoadBalancerId(lbId)));
+        return new VirtualIpDozerWrapper(new HashSet<LoadBalancerJoinVip>(getVipsByLoadBalancerId(lbId)),
+                new HashSet<LoadBalancerJoinVip6>(getVips6ByLoadBalancerId(lbId)));
     }
 
     // For Jira https://jira.mosso.com/browse/SITESLB-220
@@ -620,7 +656,7 @@ public class LoadBalancerRepository {
     }
 
     public List<AccessList> getAccessListByAccountIdLoadBalancerId(int accountId, int loadbalancerId,
-                                                                   Integer... p) throws EntityNotFoundException, DeletedStatusException {
+            Integer... p) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId,
                 accountId); // Puke if the LoadBalancer is not found presumebly Account LoadBalancer mismatch
         List<AccessList> accessList = new ArrayList<AccessList>();
@@ -679,7 +715,7 @@ public class LoadBalancerRepository {
     }
 
     public HealthMonitor getHealthMonitor(Integer accountId,
-                                          Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
+            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -1118,7 +1154,7 @@ public class LoadBalancerRepository {
     }
 
     private AccountBilling getNewOrExistingAccountBilling(Map<Integer, AccountBilling> accountBillings,
-                                                          Integer accountId) {
+            Integer accountId) {
         AccountBilling accountBilling;
         if (accountBillings.containsKey(accountId)) {
             accountBilling = accountBillings.get(accountId);
@@ -1247,7 +1283,7 @@ public class LoadBalancerRepository {
     }
 
     public HostUsageRecord getHostUsage(Integer hostId, Calendar startTime,
-                                        Calendar endTime) throws EntityNotFoundException {
+            Calendar endTime) throws EntityNotFoundException {
 
         Query query;
         List<Object> hostUsageResults;
@@ -1510,8 +1546,9 @@ public class LoadBalancerRepository {
                     if (!checkLBProtocol(loadBalancer)) {
                         isValidPort = false;
                     } else {
-                        if (!verifyProtoGroups(entryWithPortToCheckAgainst.getLoadBalancer(), loadBalancer))
+                        if (!verifyProtoGroups(entryWithPortToCheckAgainst.getLoadBalancer(), loadBalancer)) {
                             isValidPort = false;
+                        }
                     }
                 }
             }
@@ -1529,8 +1566,9 @@ public class LoadBalancerRepository {
                     if (!checkLBProtocol(loadBalancer)) {
                         isValidPort = false;
                     } else {
-                        if (!verifyProtoGroups(entryWithPortToCheckAgainst6.getLoadBalancer(), loadBalancer))
+                        if (!verifyProtoGroups(entryWithPortToCheckAgainst6.getLoadBalancer(), loadBalancer)) {
                             isValidPort = false;
+                        }
                     }
                 }
             }
@@ -1769,7 +1807,6 @@ public class LoadBalancerRepository {
         return sslTermination;
     }
 
-
     //TODO: put this somewhre else
     private boolean checkLBProtocol(LoadBalancer loadBalancer) {
         return loadBalancer.getProtocol() == LoadBalancerProtocol.TCP || loadBalancer.getProtocol() == LoadBalancerProtocol.DNS_TCP
@@ -1798,7 +1835,6 @@ public class LoadBalancerRepository {
 //        }
 //        return invalidProtos < 1;
 //    }
-
     public boolean verifyProtoGroups(LoadBalancer lbToCheck, LoadBalancer lbBeingShared) {
         if ((lbBeingShared.getProtocol() == DNS_TCP && lbToCheck.getProtocol() == DNS_UDP)
                 || (lbBeingShared.getProtocol() == DNS_UDP && lbToCheck.getProtocol() == DNS_TCP)) {

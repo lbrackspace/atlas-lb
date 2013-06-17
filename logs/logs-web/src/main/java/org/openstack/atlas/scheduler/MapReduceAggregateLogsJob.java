@@ -3,7 +3,7 @@ package org.openstack.atlas.scheduler;
 import org.openstack.atlas.scheduler.execution.MapReduceAggregateLogsJobExecution;
 import org.openstack.atlas.scheduler.execution.QuartzExecutable;
 import org.openstack.atlas.exception.ExecutionException;
-import org.openstack.atlas.tools.HadoopRunner;
+import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.JobExecutionContext;
@@ -23,11 +23,11 @@ public class MapReduceAggregateLogsJob extends BaseMapreduceJob {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        HadoopRunner runner = getRunner(context);
-        LOG.info("running " + getClass() + " on " + runner.getRunTime() + " for logFileDate: " + runner.getRawlogsFileTime());
+        QuartzSchedulerConfigs schedulerConfigs = getSchedulerConfigs(context);
+        LOG.info("running " + getClass() + " on " + schedulerConfigs.getRunTime() + " for logFileDate: " + schedulerConfigs.getRawlogsFileTime());
 
         try {
-            execution.execute(createSchedulerInstance(context), runner);
+            execution.execute(createSchedulerInstance(context), schedulerConfigs);
         } catch (ExecutionException e) {
             throw new JobExecutionException(e);
         }

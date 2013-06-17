@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.17.30-SNAPSHOT</version>
+        <version>1.18.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-logs</artifactId>
@@ -16,6 +16,10 @@
     <modules>
         <module>logs-hadoop</module>
         <module>logs-web</module>
+        <module>logs-hdfs-cli</module>
+        <module>logs-hibernate-toy</module>
+        <module>logs-lzo-faker</module>
+        <module>logs-test-compress</module>
     </modules>
 
     <build>

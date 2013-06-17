@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
 
 import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
 
 public class StubFactoryTest {
 
@@ -152,5 +153,19 @@ public class StubFactoryTest {
    public void testSessionPersistence() {
         Object obj = StubFactory.rndSessionPersistance();
         assertTrue("Expected SessionPersistence",obj instanceof SessionPersistence);
+    }
+
+    @Test
+    public void testNullIntegerStringFormatterShouldentThrowException(){
+        Integer val = null;
+        // Null val should not break a String formatter.
+
+        String test;
+        test = String.format("%d",val);
+        Assert.assertEquals("null",test);
+        val = 500;
+        test = String.format("%d",val);
+        Assert.assertEquals("500", test);
+        Assert.assertFalse(test.equals("300"));
     }
 }

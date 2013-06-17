@@ -49,7 +49,7 @@ public class HostEndpointPollerJob extends AbstractJob {
     public void run() throws Exception {
         try {
             boolean endpointWorks;
-            List<Host> hosts = hostRepository.getAllHosts();
+            List<Host> hosts = hostRepository.getAll();
             for (Host host : hosts) {
                 endpointWorks = reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host));
                 if (endpointWorks) {

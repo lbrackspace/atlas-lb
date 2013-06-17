@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.17.30-SNAPSHOT</version>
+        <version>1.18.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-jobs</artifactId>
@@ -135,6 +135,17 @@
 
     <build>
         <plugins>
+                <plugin>
+                    <inherited>true</inherited>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.6</source>
+                        <target>1.6</target>
+                        <optimize>false</optimize>
+                        <debug>true</debug>
+                    </configuration>
+                </plugin>
             <plugin>
                 <inherited>true</inherited>
                 <groupId>org.apache.maven.plugins</groupId>

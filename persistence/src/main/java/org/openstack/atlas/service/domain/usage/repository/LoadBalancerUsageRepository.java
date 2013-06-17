@@ -28,7 +28,7 @@ public class LoadBalancerUsageRepository {
     final Log LOG = LogFactory.getLog(LoadBalancerUsageRepository.class);
     @PersistenceContext(unitName = "loadbalancingUsage")
     private EntityManager entityManager;
-    private final Integer NUM_DAYS_RETENTION = 120;
+    private final Integer NUM_DAYS_RETENTION = 90;
 
     public LoadBalancerUsage getById(Integer id) throws EntityNotFoundException {
         LoadBalancerUsage usageRecord = entityManager.find(LoadBalancerUsage.class, id);

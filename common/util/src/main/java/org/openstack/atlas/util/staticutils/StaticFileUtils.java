@@ -3,7 +3,6 @@ package org.openstack.atlas.util.staticutils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -37,12 +36,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.zip.CRC32;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.util.common.exceptions.FileUtilsException;
-
-import org.openstack.atlas.util.debug.Debug;
-import java.util.zip.CRC32;
 
 public class StaticFileUtils {
 
@@ -120,11 +114,12 @@ public class StaticFileUtils {
                 String p = String.format("%.0f%%", percentVal);
                 if (!p.equals(percentStr)) {
                     double now = Debug.getEpochSeconds();
-                    double rate = (double) bytesRead / (now - startTime);
+                    double timeDelta = now - startTime;
+                    double rate = (double) bytesRead / (timeDelta);
                     System.out.printf("rate=%f\n", rate);
                     System.out.flush();
                     startTime = now;
-                    String fmt = "%d bytes transfered %s done Bytes left=%s: transfer rate is rate %s per second\n";
+                    String fmt = "%.4f(secs) %d bytes transfered %s done Bytes left=%s: transfer rate is rate %s per second\n";
                     String bytesLeft = Debug.humanReadableBytes(isSize - totalBytesRead);
                     String byteRate = "";
                     try {
@@ -132,7 +127,7 @@ public class StaticFileUtils {
                     } catch (NumberFormatException ex) {
                         byteRate = new StringBuilder().append(rate).toString();
                     }
-                    ps.printf(fmt, bytesRead, p, bytesLeft, byteRate);
+                    ps.printf(fmt, timeDelta, bytesRead, p, bytesLeft, byteRate);
                     bytesRead = 0;
                     ps.flush();
                     percentStr = p;
@@ -328,6 +323,17 @@ public class StaticFileUtils {
             newPath[i] = splitPath[nTimes + i];
         }
         return newPath;
+    }
+
+    public static String pathTail(String path) {
+        if (path == null) {
+            return null;
+        }
+        String[] pathComps = splitPath(path);
+        if(pathComps == null || pathComps.length<=0){
+            return null;
+        }
+        return pathComps[pathComps.length - 1];
     }
 
     public static String[] stripEndPath(String[] splitPath, int nTimes) {
@@ -573,6 +579,11 @@ public class StaticFileUtils {
 
     public static Random getRnd() {
         return rnd;
+    }
+
+    public static boolean isSymLink(String filePath) throws IOException {
+        File file = new File(expandUser(filePath));
+        return org.apache.commons.io.FileUtils.isSymlink(file);
     }
 
     public static void close(Closeable is) {

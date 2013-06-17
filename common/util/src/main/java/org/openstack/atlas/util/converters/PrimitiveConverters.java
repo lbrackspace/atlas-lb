@@ -1,6 +1,6 @@
 package org.openstack.atlas.util.converters;
 
-import org.openstack.atlas.util.converters.exceptions.ConverterException;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
 import java.util.ArrayList;
 import java.util.List;
 

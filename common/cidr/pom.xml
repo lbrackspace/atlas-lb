@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-common</artifactId>
-        <version>1.17.30-SNAPSHOT</version>
+        <version>1.18.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openstack.atlas</groupId>
@@ -31,6 +31,7 @@
                         <source>1.6</source>
                         <target>1.6</target>
                         <debug>true</debug>
+                        <optimize>false</optimize>
                     </configuration>
                 </plugin>
                 <plugin>

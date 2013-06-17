@@ -994,7 +994,7 @@ public class CaFrame extends javax.swing.JFrame {
         long flen;
         int i;
         String mysteryFileName;
-        mysteryFileName = mysteryFN.getText();
+        mysteryFileName = expandUser(mysteryFN.getText());
         Object obj;
         RsaPair rsaPair;
         try {
@@ -1077,8 +1077,8 @@ public class CaFrame extends javax.swing.JFrame {
         String tmpStr;
         String fmt;
         String msg;
-        String keyFile = keyFN2.getText();
-        String csrFile = csrFN1.getText();
+        String keyFile = expandUser(keyFN2.getText());
+        String csrFile = expandUser(csrFN1.getText());
         String subjStr;
         KeyPair jKeyPair;
         RsaPair rsaPair;
@@ -1243,7 +1243,7 @@ public class CaFrame extends javax.swing.JFrame {
         }
         logDbg("New Key generated\n%s\n", new String(pem));
         try {
-            PemUtils.writeFileFromByteArray(keyFN1.getText(), pem);
+            PemUtils.writeFileFromByteArray(expandUser(keyFN1.getText()), pem);
         } catch (IOException ex) {
             fmt = "Error writing to \"%s\"\n%s\n";
             msg = String.format(fmt, keyFN1.getText(), getEST(ex));
@@ -1259,10 +1259,10 @@ public class CaFrame extends javax.swing.JFrame {
     private void signCSRButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_signCSRButtonActionPerformed
         String fmt;
         String msg;
-        String caKeyFile = caKeyFN.getText();
-        String caCrtFile = caCertFN.getText();
-        String csrFile = csrFN2.getText();
-        String crtOutFile = certOutFN.getText();
+        String caKeyFile = expandUser(caKeyFN.getText());
+        String caCrtFile = expandUser(caCertFN.getText());
+        String csrFile = expandUser(csrFN2.getText());
+        String crtOutFile = expandUser(certOutFN.getText());
         X509Certificate crt;
         X509CertificateObject caCrt;
         BigInteger serial;
@@ -1402,7 +1402,7 @@ public class CaFrame extends javax.swing.JFrame {
 
     private void MultiParseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MultiParseFileButtonActionPerformed
         List<PemBlock> pemBlocks;
-        String fileName = mysteryFN.getText();
+        String fileName = expandUser(mysteryFN.getText());
         String fmt;
         String msg;
         byte[] fileData;
@@ -1440,8 +1440,8 @@ public class CaFrame extends javax.swing.JFrame {
         byte[] keyPem;
         byte[] certPem;
         List<String> errors;
-        keyFile = vkcKeyFN.getText();
-        certFile = vkcCertFN.getText();
+        keyFile = expandUser(vkcKeyFN.getText());
+        certFile = expandUser(vkcCertFN.getText());
         try {
             keyPem = PemUtils.readFileToByteArray(keyFile);
         } catch (IOException ex) {
@@ -1484,8 +1484,8 @@ public class CaFrame extends javax.swing.JFrame {
         byte[] issuerCertPem;
         byte[] subjectCertPem;
 
-        issuerFile = issuerCertFN.getText();
-        subjectFile = subjectCertFN.getText();
+        issuerFile = expandUser(issuerCertFN.getText());
+        subjectFile = expandUser(subjectCertFN.getText());
         try {
             issuerCertPem = PemUtils.readFileToByteArray(issuerFile);
         } catch (IOException ex) {
@@ -1787,5 +1787,9 @@ public class CaFrame extends javax.swing.JFrame {
         msg = String.format("\tload or save RSA set to %s\n", val);
         sb.append(msg);
         return sb.toString();
+    }
+
+    public static String expandUser(String pathIn) {
+        return pathIn.replace("~", System.getProperty("user.home"));
     }
 }

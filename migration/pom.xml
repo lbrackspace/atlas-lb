@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.17.30-SNAPSHOT</version>
+        <version>1.18.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-schema-migration</artifactId>
@@ -31,7 +31,7 @@
                                     <goal>jdeb</goal>
                                 </goals>
                                 <configuration>
-                                    <deb>target/${artifactId}_${version}_all.deb</deb>
+                                    <deb>migration/target/${artifactId}_${version}_all.deb</deb>
                                     <dataSet>
                                         <data>
                                             <src>${basedir}/schema/loadbalancing</src>&gt;

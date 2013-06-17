@@ -4,7 +4,7 @@ import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mapper.UsageMapper;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
-import org.openstack.atlas.util.converters.exceptions.ConverterException;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

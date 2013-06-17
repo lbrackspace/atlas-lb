@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.17.21-SNAPSHOT</version>
+        <version>1.18.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-logs-common</artifactId>
@@ -50,18 +50,15 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
-            <!--<classifier>core</classifier>-->
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-test</artifactId>
-            <!--<classifier>test</classifier>-->
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-tools</artifactId>
-            <!--<classifier>tools</classifier>-->
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
@@ -116,6 +113,8 @@
                     <configuration>
                         <source>1.6</source>
                         <target>1.6</target>
+                        <optimize>false</optimize>
+                        <debug>true</debug>
                     </configuration>
                 </plugin>
             </plugins>

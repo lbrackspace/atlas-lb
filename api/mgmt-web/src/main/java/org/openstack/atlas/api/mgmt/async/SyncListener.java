@@ -43,7 +43,7 @@ public class SyncListener extends BaseListener {
         try {
             dbLoadBalancer = loadBalancerService.get(queueSyncObject.getLoadBalancerId());
         } catch (EntityNotFoundException enfe) {
-            LOG.error("EntityNotFoundException thrown.");
+            LOG.error(String.format("EntityNotFoundException thrown while attempting to sync Loadbalancer #%d: ",queueSyncObject.getLoadBalancerId()));
             return;
         }
 
@@ -65,7 +65,7 @@ public class SyncListener extends BaseListener {
             try {
                 reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
             } catch (Exception e) {
-                String msg = "Error deleting loadbalancer in SyncListener(): ";
+                String msg = String.format("Error deleting loadbalancer #%d in SyncListener(): ",queueSyncObject.getLoadBalancerId());
                 loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                 notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                 LOG.error(msg, e);
@@ -136,7 +136,7 @@ public class SyncListener extends BaseListener {
                         }
                     }
                 } catch (Exception e) {
-                    String msg = "Error re-creating loadbalancer in SyncListener():";
+                    String msg = String.format("Error re-creating loadbalancer #%d in SyncListener():", queueSyncObject.getLoadBalancerId());
                     loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                     notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                     LOG.error(msg, e);
@@ -190,16 +190,16 @@ public class SyncListener extends BaseListener {
                         }
                     }
                 } catch (Exception e) {
-                    String msg = "Error re-creating ssl terminated loadbalancer in SyncListener():";
+                    String msg = String.format("Error re-creating ssl terminated loadbalancer #%d in SyncListener():",queueSyncObject.getLoadBalancerId());
                     loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                     LOG.error(msg, e);
                 }
             }
         } else if (queueSyncObject.getLocationToSyncFrom().equals(SyncLocation.ZEUS)) {
-            LOG.warn(String.format("Load balancers can only be synchronized with the database at this time."));
+            LOG.warn(String.format("Load balancers can only be synchronized with the database at this time. Warning Loadbalancer #%d wasn't actually synced",queueSyncObject.getLoadBalancerId()));
         }
 
-        LOG.info("Sync operation complete.");
+        LOG.info(String.format("Sync operation complete for loadbalancer #%d ",queueSyncObject.getLoadBalancerId()));
     }
 
     private StringBuilder createAtomSummary(LoadBalancer lb) {
