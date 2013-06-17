@@ -323,6 +323,17 @@ public class StaticFileUtils {
         return newPath;
     }
 
+    public static String pathTail(String path) {
+        if (path == null) {
+            return null;
+        }
+        String[] pathComps = splitPath(path);
+        if(pathComps == null || pathComps.length<=0){
+            return null;
+        }
+        return pathComps[pathComps.length - 1];
+    }
+
     public static String[] stripEndPath(String[] splitPath, int nTimes) {
         if (splitPath.length <= nTimes) {
             return new String[0];
@@ -562,6 +573,11 @@ public class StaticFileUtils {
 
     public static Random getRnd() {
         return rnd;
+    }
+
+    public static boolean isSymLink(String filePath) throws IOException {
+        File file = new File(expandUser(filePath));
+        return org.apache.commons.io.FileUtils.isSymlink(file);
     }
 
     public static void close(Closeable is) {

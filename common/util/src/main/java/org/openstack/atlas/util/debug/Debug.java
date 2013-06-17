@@ -19,8 +19,10 @@ public class Debug {
     private static final int PAGESIZE = 4096;
 
     public static double getEpochSeconds() {
-        double millis = (double) System.currentTimeMillis();
-        return millis * 0.001;
+        long millisLong = System.currentTimeMillis();
+        double millisDouble = (double) millisLong;
+        double seconds = millisDouble * 0.001;
+        return seconds;
     }
 
     public static long nowMillis() {

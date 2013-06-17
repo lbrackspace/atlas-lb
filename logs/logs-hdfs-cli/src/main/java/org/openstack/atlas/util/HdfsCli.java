@@ -1,5 +1,6 @@
 package org.openstack.atlas.util;
 
+import java.util.Arrays;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
@@ -29,12 +30,19 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import org.apache.commons.math.linear.Array2DRowFieldMatrix;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
+import org.openstack.atlas.config.LbLogsConfiguration;
 import org.openstack.atlas.logs.hadoop.jobs.HadoopJob;
+import org.openstack.atlas.logs.hadoop.jobs.HadoopLogSplitterJob;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 import org.openstack.atlas.util.debug.Debug;
+import sun.net.www.http.Hurryable;
 
 public class HdfsCli {
 
@@ -49,10 +57,16 @@ public class HdfsCli {
 
     public static void main(String[] argv) throws IOException, InterruptedException {
         System.out.printf("JAVA_LIBRARY_PATH=%s\n", System.getProperty("java.library.path"));
+        String cmdLine;
+        String[] args;
+        if (argv.length >= 1) {
+            System.out.printf("Useing confFile %s\n", argv[0]);
+            HadoopLogsConfigs.resetConfigs(argv[0]);
+        } else {
+            System.out.printf("useing confFile %s\n", LbLogsConfiguration.defaultConfigurationLocation);
+        }
         HdfsUtils hdfsUtils = HadoopLogsConfigs.getHdfsUtils();
         String user = HadoopLogsConfigs.getHdfsUserName();
-        String cmdLine;
-        String args[];
         Configuration conf = HadoopLogsConfigs.getHadoopConfiguration();
 
         URI defaultHdfsUri = FileSystem.getDefaultUri(conf);
@@ -80,50 +94,210 @@ public class HdfsCli {
                     System.out.printf("\n");
                     System.out.printf("Usage is\n");
                     System.out.printf("help\n");
-                    System.out.printf("chuser <userName>\n");
-                    System.out.printf("whoami\n");
-                    System.out.printf("mem\n");
-                    System.out.printf("gc\n");
-                    System.out.printf("exit\n");
-                    System.out.printf("ls [path]\n");
                     System.out.printf("cat <path>\n");
-                    System.out.printf("runMain <class> args0..N");
-                    System.out.printf("runJob <jobDriverClass>");
+                    System.out.printf("cd <path>  #Change remote directory\n");
+                    System.out.printf("cdin [dateKey] #Change to the input directory\n");
+                    System.out.printf("cdout[dateKey] #Change to the output directory\n");
                     System.out.printf("chmod <octPerms> <path>\n");
                     System.out.printf("chown <user> <group> <path>\n");
-                    System.out.printf("mkdir <path>\n");
-                    System.out.printf("rm <path>\n");
-                    System.out.printf("rmdir <path>\n");
-                    System.out.printf("homedir\n");
-                    System.out.printf("cd <path>  #Change remote directory\n");
-                    System.out.printf("pwd   #print remote current directory\n");
-                    System.out.printf("cpfl <srcPath 1local> <dstPath remote> [reps] [blocksize]#copy from local\n");
-                    System.out.printf("cptl <srcPath remote> <dstPath local> #Copy to Local\n");
-                    System.out.printf("cpld <srcDir> <dstDir>  args [reps] [blocksize]\n");
-                    System.out.printf("findCp <className> #find class path via reflection\n");
-                    System.out.printf("showCl <className> #Show class loader info via reflection\n");
-                    System.out.printf("setJobJar <jobJar> #set Jar file to classLoader\n");
-                    System.out.printf("cpLocal <localSrc> <localDst> [buffsize] #None hadoop file copy\n");
-                    System.out.printf("countLines <zeusFile> <nTicks> [buffSize]\n");
-                    System.out.printf("indexLzo <FileName>\n");
-                    System.out.printf("recompressIndex <srcFile> <hdfsDstFile> #Recompress and index lzo file and upload to hdfs\n");
-                    System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
-                    System.out.printf("showCrc <fileName> #Show crc value that would be reported by Zip\n");
-                    System.out.printf("printReducers <hdfsDir> #Display the contents of the reducer output\n");
-                    System.out.printf("du #Get number of free space on HDFS\n");
-                    System.out.printf("setReplCount <FilePath> <nReps> #Set the replication count for this file\n");
+                    System.out.printf("chuser <userName>\n");
                     System.out.printf("compressLzo <srcPath> <dstFile> [buffSize]#Compress lzo file\n");
-                    System.out.printf("dumpConfig <outFile.xml> <confIn.xml..> #Dump config to outfile\n");
+                    System.out.printf("countLines <zeusFile> <nTicks> [buffSize]\n");
+                    System.out.printf("cpfl <srcPath 1local> <dstPath remote> [reps] [blocksize]#copy from local\n");
+                    System.out.printf("cpld <srcDir> <dstDir>  args [reps] [blocksize]\n");
+                    System.out.printf("cpLocal <localSrc> <localDst> [buffsize] #None hadoop file copy\n");
+                    System.out.printf("cptl <srcPath remote> <dstPath local> #Copy to Local\n");
                     System.out.printf("diffConfig <confA.xml> <confB.xml># Compare the differences between the configs\n");
-                    System.out.printf("lineIndex <fileName> #Index the line numbers in the file\n");
-                    System.out.printf("rebasePath <srcBase> <srcPath> <dstPath> #Show what the rebasePath method in StaticFileUtils would do\n");
+                    System.out.printf("du #Get number of free space on HDFS\n");
+                    System.out.printf("dumpConfig <outFile.xml> <confIn.xml..> #Dump config to outfile\n");
+                    System.out.printf("exit\n");
+                    System.out.printf("findCp <className> #find class path via reflection\n");
+                    System.out.printf("gc\n");
+                    System.out.printf("getlzo <dateHour> #Download the Lzo for the given hour\n");
+                    System.out.printf("getzip <dateHour> <lid> #Download the zip file from Hdfs for the specifie day and loadbalancer\n");
+                    System.out.printf("homedir\n");
+                    System.out.printf("indexLzo <FileName>\n");
                     System.out.printf("joinPath <path1> ...<pathN> #Test the join the paths together skipping double slashes.\n");
+                    System.out.printf("lineIndex <fileName> #Index the line numbers in the file\n");
+                    System.out.printf("lslzo [hourKey] [m=missing]#List the lzos in the input directory\n");
+                    System.out.printf("ls [path] #List hdfs files\n");
+                    System.out.printf("lsr [path] #List hdfs files recursivly\n");
+                    System.out.printf("lszips [l=lid] [h=hour] [m=missing]#List all zip files in the HDFS ourput directory for hourh or and the given lid\n");
+                    System.out.printf("mem\n");
+                    System.out.printf("mkdir <path>\n");
+                    System.out.printf("printReducers <hdfsDir> #Display the contents of the reducer output\n");
+                    System.out.printf("pwd   #print remote current directory\n");
+                    System.out.printf("rebasePath <srcBase> <srcPath> <dstPath> #Show what the rebasePath method in StaticFileUtils would do\n");
+                    System.out.printf("recompressIndex <srcFile> <hdfsDstFile> #Recompress and index lzo file and upload to hdfs\n");
+                    System.out.printf("rmdir <path>\n");
+                    System.out.printf("rmin <hourkey> #Delete the input paths for the specified hour\n");
+                    System.out.printf("rmout <hourKey> #Delete the output paths for the specified hour\n");
+                    System.out.printf("rm <path>\n");
+                    System.out.printf("runJob <jobDriverClass>");
+                    System.out.printf("runSplit <lzoFile> #Run the HadoopSplitterJob for the specified hourkey");
+                    System.out.printf("runMain <class> args0..N");
+                    System.out.printf("uploadLzo <lzoFile> #Upload the the lzo file\n");
+                    System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
+                    System.out.printf("setJobJar <jobJar> #set Jar file to classLoader\n");
+                    System.out.printf("setReplCount <FilePath> <nReps> #Set the replication count for this file\n");
+                    System.out.printf("showCl <className> #Show class loader info via reflection\n");
                     System.out.printf("showConfig #Show hadoop configs\n");
-                    System.out.printf("\n");
+                    System.out.printf("showCrc <fileName> #Show crc value that would be reported by Zip\n");
+                    System.out.printf("whoami\n");
+                    continue;
+                }
+                if (cmd.equals("runSplit") && args.length >= 2) {
+                    HadoopLogsConfigs.copyJobsJar();
+                    String localLzoFilePath = args[1];
+                    String localLzoFile = StaticFileUtils.pathTail(localLzoFilePath);
+                    Matcher m = HdfsUtils.hdfsLzoPatternPre.matcher(localLzoFile);
+                    if (!m.find()) {
+                        System.out.printf("%s doesn't look like a properly name lzo file", localLzoFilePath);
+                        continue;
+                    }
+                    String hourKey = m.group(1);
+
+                    // upload the lzo file
+                    List<String> hdfsLzoPathComps = new ArrayList<String>();
+                    hdfsLzoPathComps.add(HadoopLogsConfigs.getMapreduceInputPrefix());
+                    hdfsLzoPathComps.add(hourKey);
+                    hdfsLzoPathComps.add("0-" + hourKey + "-access_log.aggregated.lzo");
+                    String hdfsLzoPath = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(hdfsLzoPathComps));
+                    String hdfsLzoIdxPath = hdfsLzoPath + ".idx";
+                    System.out.printf("Uploading lzo %s to %s\n", localLzoFile, hdfsLzoPath);
+                    InputStream lzoIs = StaticFileUtils.openInputFile(localLzoFilePath, SANE_BUFFER_SIZE);
+                    OutputStream lzoOs = hdfsUtils.openHdfsOutputFile(hdfsLzoPath, false, false);
+                    OutputStream lzoIdx = hdfsUtils.openHdfsOutputFile(hdfsLzoIdxPath, false, false);
+                    hdfsUtils.recompressAndIndexLzoStream(lzoIs, lzoOs, lzoIdx, System.out);
+                    lzoIs.close();
+                    lzoOs.close();
+                    lzoIdx.close();
+
+
+                    // Setup outputdir
+                    List<String> outDirComps = new ArrayList<String>();
+                    outDirComps.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
+                    outDirComps.add("lb_logs_split");
+                    outDirComps.add(hourKey);
+                    String outDir = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(outDirComps));
+
+                    List<String> logSplitArgs = new ArrayList<String>();
+                    logSplitArgs.add(HadoopLogsConfigs.getHdfsJobsJarPath());
+                    logSplitArgs.add(outDir);
+                    logSplitArgs.add("");
+                    logSplitArgs.add(hourKey);
+                    logSplitArgs.add(HadoopLogsConfigs.getNumReducers());
+                    logSplitArgs.add(HadoopLogsConfigs.getHdfsUserName());
+                    logSplitArgs.add(hdfsLzoPath);
+                    HadoopJob hadoopClient = new HadoopLogSplitterJob();
+                    hadoopClient.setConfiguration(HadoopLogsConfigs.getHadoopConfiguration());
+                    int errorCode = hadoopClient.run(logSplitArgs);  // Actually runs the Hadoop Job
+                    System.out.printf("Hadoop tun response code was %d\n", errorCode);
+                    continue;
+                }
+                if (cmd.equals("rmin") && args.length >= 2) {
+                    String dateHour = args[1];
+                    String inputPath = HadoopLogsConfigs.getMapreduceInputPrefix();
+                    if (dateHour.length() < 6) {
+                        System.out.printf("Will not remove anything greater then one month of data per call\n");
+                        continue;
+                    }
+                    List<String> targetPathComps = new ArrayList<String>();
+                    targetPathComps.add(inputPath);
+                    targetPathComps.add(dateHour);
+                    String targetPath = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(targetPathComps));
+                    System.out.printf("Searching for directories that begin with %s\n", targetPath);
+                    FileStatus[] fileStats = fs.listStatus(new Path(inputPath));
+                    List<Path> doomedPaths = new ArrayList<Path>();
+                    System.out.printf("Files targeted for deletion are:\n");
+                    for (FileStatus fileStat : fileStats) {
+                        String hdfsPath = fileStat.getPath().toUri().getRawPath();
+                        if (hdfsPath.startsWith(targetPath)) {
+                            doomedPaths.add(new Path(hdfsPath));
+                            System.out.printf("%s\n", hdfsPath);
+                        }
+                    }
+
+                    System.out.printf("Are you sure you want to delete the above %d files (Y/N)\n", doomedPaths.size());
+                    String[] resp = stripBlankArgs(stdin.readLine());
+                    if (resp.length >= 1 && resp[0].equalsIgnoreCase("Y")) {
+                        for (Path doomedPath : doomedPaths) {
+                            if (fs.delete(doomedPath, true)) {
+                                System.out.printf("Deleted %s\n", doomedPath.toUri().getRawPath());
+                            } else {
+                                System.out.printf("Could not Delete %s\n", doomedPath.toUri().getRawPath());
+                            }
+                        }
+                    } else {
+                        System.out.printf("Not deleting files\n");
+                    }
+
+                    continue;
+                }
+
+
+                if (cmd.equals("rmout") && args.length >= 2) {
+                    String dateHour = args[1];
+                    String outputPath = HadoopLogsConfigs.getMapreduceOutputPrefix();
+                    if (dateHour.length() < 6) {
+                        System.out.printf("Will not remove anything greater then one month of data per call\n");
+                        continue;
+                    }
+                    List<String> targetPathComps = new ArrayList<String>();
+                    targetPathComps.add(outputPath);
+                    targetPathComps.add("lb_logs_split");
+                    List<String> lbLogSplitPathComps = new ArrayList<String>(targetPathComps);
+                    String lbLogsSplitPath = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(lbLogSplitPathComps));
+
+                    targetPathComps.add(dateHour);
+                    String targetPath = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(targetPathComps));
+                    System.out.printf("Searching for directories that begin with %s\n", targetPath);
+                    FileStatus[] fileStats = fs.listStatus(new Path(lbLogsSplitPath));
+                    List<Path> doomedPaths = new ArrayList<Path>();
+                    System.out.printf("Files targeted for deletion are:\n");
+                    for (FileStatus fileStat : fileStats) {
+                        String hdfsPath = fileStat.getPath().toUri().getRawPath();
+                        if (hdfsPath.startsWith(targetPath)) {
+                            doomedPaths.add(new Path(hdfsPath));
+                            System.out.printf("%s\n", hdfsPath);
+                        }
+                    }
+
+                    System.out.printf("Are you sure you want to delete the above %d files (Y/N)\n", doomedPaths.size());
+                    String[] resp = stripBlankArgs(stdin.readLine());
+                    if (resp.length >= 1 && resp[0].equalsIgnoreCase("Y")) {
+                        for (Path doomedPath : doomedPaths) {
+                            if (fs.delete(doomedPath, true)) {
+                                System.out.printf("Deleted %s\n", doomedPath.toUri().getRawPath());
+                            } else {
+                                System.out.printf("Could not Delete %s\n", doomedPath.toUri().getRawPath());
+                            }
+                        }
+                    } else {
+                        System.out.printf("Not deleting files\n");
+                    }
+
+                    continue;
+                }
+                if (cmd.equals("rmout") && args.length >= 2) {
+                    String dateHour = args[1];
+
+                    continue;
+                }
+
+                if (cmd.equals("getzip") && args.length >= 3) {
+                    String dateHour = args[1];
+                    String lid = args[2];
+                    System.out.printf("Fetching zip file for hour  %s lid[%s]\n", dateHour, lid);
+                    continue;
+                }
+                if (cmd.equals("getlzo") && args.length >= 2) {
+                    String dateHour = args[1];
+                    System.out.printf("fetching %s\n", dateHour);
                     continue;
                 }
                 if (cmd.equals("showConfig")) {
-                    System.out.printf("HadoopLogsConfig=%s\n",HadoopLogsConfigs.staticToString());
+                    System.out.printf("HadoopLogsConfig=%s\n", HadoopLogsConfigs.staticToString());
                     continue;
                 } else if (cmd.equals("recompressIndex") && args.length >= 3) {
                     String srcLzo = StaticFileUtils.expandUser(args[1]);
@@ -197,15 +371,60 @@ public class HdfsCli {
                     Debug.gc();
                     continue;
                 }
+                if (cmd.equals("lszips")) {
+                    Map<String, String> kw = argMapper(args);
+                    String dateHour = (kw.containsKey("h")) ? kw.get("h") : null;
+                    String lid = (kw.containsKey("l")) ? kw.get("l") : null;
+                    System.out.printf("Scanning for zips on hour[%s] lid[%s]\n", dateHour, lid);
+                    boolean onlyMissing = (kw.containsKey("m")) ? true : false;
+
+                    List<FileStatus> zipStatusList = hdfsUtils.listHdfsZipsStatus(dateHour, lid, onlyMissing);
+                    for (FileStatus zipStatus : zipStatusList) {
+                        System.out.printf("%s\n", HdfsCliHelpers.displayFileStatus(zipStatus));
+                    }
+                    continue;
+                }
+                if (cmd.equals("lslzo")) {
+                    String hourKey = (args.length >= 2) ? args[1] : null;
+                    System.out.printf("Scanning lzos for hour[%s]\n", hourKey);
+                    continue;
+                }
+
                 if (cmd.equals("ls")) {
+                    long total_file_size = 0;
+                    long total_repl_size = 0;
                     Path path = (args.length >= 2) ? new Path(args[1]) : fs.getWorkingDirectory();
-                    FileStatus[] files = fs.listStatus(path);
-                    if (files == null) {
+                    FileStatus[] fileStatusList = fs.listStatus(path);
+                    if (fileStatusList == null) {
                         System.out.printf("Error got null when trying to retrieve file statuses\n");
                     }
-                    for (int i = 0; i < files.length; i++) {
-                        System.out.printf("%s\n", HdfsCliHelpers.displayFileStatus(files[i]));
+                    for (FileStatus fileStatus : fileStatusList) {
+                        total_file_size += fileStatus.getLen();
+                        total_repl_size += fileStatus.getLen() * fileStatus.getReplication();
+                        System.out.printf("%s\n", HdfsCliHelpers.displayFileStatus(fileStatus));
                     }
+                    System.out.printf("Total file bytes: %s\n", Debug.humanReadableBytes(total_file_size));
+                    System.out.printf("Total file bytes including replication: %s\n", Debug.humanReadableBytes(total_repl_size));
+                    System.out.printf("Total file count: %d\n", fileStatusList.length);
+                    continue;
+                }
+                if (cmd.equals("lsr")) {
+                    long total_file_size = 0;
+                    long total_repl_size = 0;
+                    String mntPath = (args.length >= 2) ? args[1] : fs.getWorkingDirectory().toUri().getRawPath();
+                    double startTime = Debug.getEpochSeconds();
+                    List<FileStatus> fileStatusList = hdfsUtils.listFileStatusRecursively(mntPath, false);
+                    for (FileStatus fileStatus : fileStatusList) {
+                        total_file_size += fileStatus.getLen();
+                        total_repl_size += fileStatus.getLen() * fileStatus.getReplication();
+                        System.out.printf("%s\n", HdfsCliHelpers.displayFileStatus(fileStatus));
+                    }
+                    System.out.printf("Total file bytes: %s\n", Debug.humanReadableBytes(total_file_size));
+                    System.out.printf("Total file bytes including replication: %s\n", Debug.humanReadableBytes(total_repl_size));
+                    System.out.printf("Total file count: %d\n", fileStatusList.size());
+                    double endTime = Debug.getEpochSeconds();
+                    double delay = endTime - startTime;
+                    System.out.printf("Took %f Seconds to scan\n", delay);
                     continue;
                 }
                 if (cmd.equals("exit")) {
@@ -214,6 +433,29 @@ public class HdfsCli {
                 if (cmd.equals("cd") && args.length >= 2) {
                     Path path = new Path(args[1]);
                     fs.setWorkingDirectory(path);
+                    continue;
+                }
+                if (cmd.equals("cdin")) {
+                    List<String> pathComps = new ArrayList<String>();
+                    pathComps.add(HadoopLogsConfigs.getMapreduceInputPrefix());
+                    if (args.length >= 2) {
+                        pathComps.add(args[1]);
+                    }
+                    String pathStr = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathComps));
+                    System.out.printf("Changing directory to %s\n", pathStr);
+                    fs.setWorkingDirectory(new Path(pathStr));
+                    continue;
+                }
+                if (cmd.equals("cdout")) {
+                    List<String> pathComps = new ArrayList<String>();
+                    pathComps.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
+                    pathComps.add("lb_logs_split");
+                    if (args.length >= 2) {
+                        pathComps.add(args[1]);
+                    }
+                    String pathStr = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathComps));
+                    System.out.printf("Changing directory to %s\n", pathStr);
+                    fs.setWorkingDirectory(new Path(pathStr));
                     continue;
                 }
                 if (cmd.equals("pwd")) {
@@ -554,5 +796,16 @@ public class HdfsCli {
             }
         }
         return argsOut;
+    }
+
+    private static Map<String, String> argMapper(String[] args) {
+        Map<String, String> argMap = new HashMap<String, String>();
+        for (String arg : args) {
+            String[] kwArg = arg.split("=");
+            if (kwArg.length == 2) {
+                argMap.put(kwArg[0], kwArg[1]);
+            }
+        }
+        return argMap;
     }
 }
