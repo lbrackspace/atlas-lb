@@ -1,33 +1,9 @@
 use `loadbalancing_usage`;
 
 --
--- Table structure for table `usage_event_type`
---
-DROP TABLE IF EXISTS `usage_event_type`;
-CREATE TABLE `usage_event_type` (
-  `name` varchar(32) NOT NULL,
-  `description` varchar(128) NOT NULL,
-  PRIMARY KEY  (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-INSERT INTO usage_event_type values('SSL_OFF', 'Indicates SSL Termination Has Been Disabled Event');
-INSERT INTO usage_event_type values('SSL_ON', 'Is Deprecated');
-INSERT INTO usage_event_type values('SSL_ONLY_ON', 'Indicates SSL Termination Only Has Been Enabled Event');
-INSERT INTO usage_event_type values('SSL_MIXED_ON', 'Indicates SSL Termination Mixed Has Been Enabled Event');
-INSERT INTO usage_event_type values('CREATE_LOADBALANCER', 'Indicates A Create Load Balancer Event ');
-INSERT INTO usage_event_type values('DELETE_LOADBALANCER', 'Indicates A Delete Load Balancer Event ');
-INSERT INTO usage_event_type values('CREATE_VIRTUAL_IP', 'Indicates A Create Virtual Ip Event ');
-INSERT INTO usage_event_type values('DELETE_VIRTUAL_IP', 'Indicates A Delete Virtual Ip Event ');
-INSERT INTO usage_event_type values('SUSPEND_LOADBALANCER', 'Indicates A Suspend Load Balancer Event ');
-INSERT INTO usage_event_type values('SUSPENDED_LOADBALANCER', 'Indicates A Suspended Load Balancer Event ');
-INSERT INTO usage_event_type values('UNSUSPEND_LOADBALANCER', 'Indicates A UnSuspended Load Balancer Event ');
-
---  --  --
 -- Table structure for table `lb_host_usage`
 --
-
 DROP TABLE IF EXISTS `lb_host_usage`;
-
 CREATE TABLE `lb_host_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` int(11) NOT NULL,
@@ -52,8 +28,10 @@ CREATE TABLE `lb_host_usage` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+--
+-- Table structure for table `lb_merged_host_usage`
+--
 DROP TABLE IF EXISTS `lb_merged_host_usage`;
-
 CREATE TABLE `lb_merged_host_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` int(11) NOT NULL,
@@ -76,4 +54,4 @@ CREATE TABLE `lb_merged_host_usage` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-update `meta` set `meta_value` = 'THENEXTVERSION' where `meta_key`='version';
+update `meta` set `meta_value` = '57' where `meta_key`='version';
