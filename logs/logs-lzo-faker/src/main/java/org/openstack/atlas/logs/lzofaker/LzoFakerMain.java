@@ -122,9 +122,9 @@ public class LzoFakerMain {
         String lzoPath = StaticFileUtils.joinPath(outPath, lzoFileName);
         boolean useCustomLbs = false;
         Set<Integer> customLbIds = new HashSet<Integer>();
-        if (args.length > 4) {
+        if (args.length >= 5) {
             useCustomLbs = true;
-            for (int i = 3; i < args.length; i++) {
+            for (int i = 4; i < args.length; i++) {
                 customLbIds.add(Integer.parseInt(args[i]));
             }
         }

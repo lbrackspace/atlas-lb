@@ -59,6 +59,7 @@ public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue
         String zipFileName = getZipFileName(loadbalancerId, fileHour);
         String zipContentsName = getZipContentsName(loadbalancerId, fileHour);
         CRC32 crc = new CRC32();
+        String partitionZipPath =  StaticFileUtils.joinPath(hdfsZipDir, zipFileName);
         String fullZipPath = getTempWorkZipPath(workDir, "zips", zipFileName); // This one will replace fullZipPath
         FSDataOutputStream os = fs.create(new Path(fullZipPath), true, BUFFER_SIZE, REPL_COUNT, HDFS_BLOCK_SIZE);
         ZipOutputStream zos = new ZipOutputStream(os);
@@ -83,7 +84,7 @@ public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue
         zos.close();      // Closes the zipFile
         os.close();       // Just inbytescase the Hdfs file is still open this closes it too.
         oVal.setnLines(nLines);
-        oVal.setLogFile(fullZipPath);
+        oVal.setLogFile(partitionZipPath);
         oVal.setCrc(crc.getValue());
         oVal.setFileSize(fileSize);
         ctx.getCounter(LogCounters.REDUCER_WRITES).increment(1);
