@@ -391,18 +391,18 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
         // This seems inefficient -- should rewrite to do this as one operation. TODO
         deleteErrorFile(config, loadBalancer);
-        setDefaultErrorFile(config, loadBalancer);
+        //setDefaultErrorFile(config, loadBalancer); //This isn't necessary anymore, since deleteErrorFile already ran an update
     }
 
     @Override
     public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, RemoteException {
-        setDefaultErrorFile(config, ZxtmNameBuilder.genVSName(loadBalancer));
+        setDefaultErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
         if (loadBalancer.hasSsl()) {
-            setDefaultErrorFile(config, ZxtmNameBuilder.genSslVSName(loadBalancer));
+            setDefaultErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
     }
 
-    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, String vsName) throws InsufficientRequestException, RemoteException {
+    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws InsufficientRequestException, RemoteException {
         // ** START Temporary for testing purposes
         StingrayRestClient client = null;
         if (config == null)
@@ -411,18 +411,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             client = getStingrayClient(config);
         // ** END Temporary for testing purposes
 
+        ResourceTranslator rt = new ResourceTranslator();
+        rt.translateLoadBalancerResource(loadBalancer);
+        VirtualServer vs = rt.getcVServer();
         LOG.debug(String.format("Attempting to set the default error file for %s", vsName));
         try {
-            // Get server configs
-            VirtualServer vs = client.getVirtualServer(vsName);
-            VirtualServerProperties vsp = vs.getProperties();
-            VirtualServerConnectionError ce = vsp.getConnection_errors();
-
-            // Set error file and propagate upwards
-            ce.setError_file("Default");
-            vsp.setConnection_errors(ce);
-            vs.setProperties(vsp);
-
             // Update client with new properties
             client.updateVirtualServer(vsName, vs);
 
@@ -458,13 +451,13 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws AxisFault, InsufficientRequestException {
-        deleteErrorFile(config, ZxtmNameBuilder.genVSName(loadBalancer));
+        deleteErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
         if (loadBalancer.hasSsl()) {
-            deleteErrorFile(config, ZxtmNameBuilder.genSslVSName(loadBalancer));
+            deleteErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
     }
 
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, String vsName) throws AxisFault, InsufficientRequestException {
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws AxisFault, InsufficientRequestException {
         // ** START Temporary for testing purposes
         StingrayRestClient client = null;
         if (config == null)
@@ -473,18 +466,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             client = getStingrayClient(config);
         // ** END Temporary for testing purposes
 
+        ResourceTranslator rt = new ResourceTranslator();
+        rt.translateLoadBalancerResource(loadBalancer);
+        VirtualServer vs = rt.getcVServer();
         String fileToDelete = getErrorFileName(vsName);
         try {
             LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", vsName, fileToDelete));
-            // Get server configs
-            VirtualServer vs = client.getVirtualServer(vsName);
-            VirtualServerProperties vsp = vs.getProperties();
-            VirtualServerConnectionError ce = vsp.getConnection_errors();
-
-            // Set error file and propagate upwards
-            ce.setError_file(null);
-            vsp.setConnection_errors(ce);
-            vs.setProperties(vsp);
 
             // Update client with new properties
             client.updateVirtualServer(vsName, vs);
@@ -501,13 +488,13 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String content) throws RemoteException, InsufficientRequestException {
-        setErrorFile(config, ZxtmNameBuilder.genVSName(loadBalancer), content);
+        setErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer), content);
         if (loadBalancer.hasSsl()) {
-            setErrorFile(config, ZxtmNameBuilder.genSslVSName(loadBalancer), content);
+            setErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer), content);
         }
     }
 
-    public void setErrorFile(LoadBalancerEndpointConfiguration config, String vsName, String content) throws RemoteException {
+    public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName, String content) throws RemoteException, InsufficientRequestException {
         // ** START Temporary for testing purposes
         StingrayRestClient client = null;
         if (config == null)
@@ -516,6 +503,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             client = getStingrayClient(config);
         // ** END Temporary for testing purposes
 
+        ResourceTranslator rt = new ResourceTranslator();
+        rt.translateLoadBalancerResource(loadBalancer);
+        VirtualServer vs = rt.getcVServer();
         String errorFileName = getErrorFileName(vsName);
         try {
             LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
@@ -537,17 +527,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
-
-            // Get server configs
-            VirtualServer vs = client.getVirtualServer(vsName);
-            VirtualServerProperties vsp = vs.getProperties();
-            VirtualServerConnectionError ce = vsp.getConnection_errors();
-
-            // Set error file and propagate upwards
-            ce.setError_file(errorFileName);
-            vsp.setConnection_errors(ce);
-            vs.setProperties(vsp);
-
             // Update client with new properties
             client.updateVirtualServer(vsName, vs);
 

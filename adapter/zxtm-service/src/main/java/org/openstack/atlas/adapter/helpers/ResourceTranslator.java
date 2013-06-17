@@ -16,6 +16,7 @@ import org.rackspace.stingray.client.protection.ProtectionBasic;
 import org.rackspace.stingray.client.protection.ProtectionProperties;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
 import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
 import java.util.*;
@@ -34,6 +35,7 @@ public class ResourceTranslator {
         VirtualServer virtualServer = new VirtualServer();
         VirtualServerBasic basic = new VirtualServerBasic();
         VirtualServerProperties properties = new VirtualServerProperties();
+        VirtualServerConnectionError ce = new VirtualServerConnectionError();
 
         translatePoolResource(loadBalancer);
         basic.setPool(virtualServerName);
@@ -41,12 +43,14 @@ public class ResourceTranslator {
         translateProtectionResource(loadBalancer);
         basic.setProtection_class(virtualServerName);
 
-        properties.setBasic(basic);
-        virtualServer.setProperties(properties);
+        ce.setError_file(loadBalancer.getUserPages().getErrorpage());
+        properties.setConnection_errors(ce);
 
         List<String> rules = Arrays.asList(StmAdapterImpl.XFF, StmAdapterImpl.XFP);
         basic.setRequest_rules(rules);
 
+        properties.setBasic(basic);
+        virtualServer.setProperties(properties);
 
         cVServer = virtualServer;
         return null;

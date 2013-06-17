@@ -87,6 +87,6 @@ public class FullConfigIntegrationTest {
     @Test
     public void setErrorFileTest() throws RemoteException {
         StmAdapterImpl adapter = new StmAdapterImpl();
-        adapter.setErrorFile(null,"386085_324", "hrodjger");
+        //adapter.setErrorFile(null,"386085_324", "hrodjger");
     }
 }
