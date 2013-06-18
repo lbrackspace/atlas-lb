@@ -3,7 +3,6 @@ package org.openstack.atlas.api.async;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.util.converters.StringConverter;
@@ -19,6 +18,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.I
 import static org.openstack.atlas.service.domain.events.entities.EventType.UPDATE_LOADBALANCER;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
+
 
 // TODO: Refactor this class so that we call one adapter method. Also have adapter deal with rollbacks
 public class UpdateLoadBalancerListener extends BaseListener {
@@ -47,10 +47,9 @@ public class UpdateLoadBalancerListener extends BaseListener {
             return;
         }
 
-        if (queueLb.getAlgorithm() != null) {
-            try {
+        try {
                 LOG.debug(String.format("Updating algorithm for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name()));
-                reverseProxyLoadBalancerService.updateAlgorithm(dbLoadBalancer);
+                reverseProxyLoadBalancerService.updateLoadBalancer(dbLoadBalancer);
                 LOG.debug(String.format("Successfully updated algorithm for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name()));
                 atomSummary.append("algorithm: '").append(dbLoadBalancer.getAlgorithm().name()).append("', ");
             } catch (Exception e) {
@@ -63,92 +62,108 @@ public class UpdateLoadBalancerListener extends BaseListener {
                 return;
             }
 
-            if (queueLb.getAlgorithm().equals(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN) || queueLb.getAlgorithm().equals(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS)) {
-                try {
-                    LOG.debug(String.format("Updating node weights for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerService.setNodeWeights(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getNodes());
-                    LOG.debug(String.format("Successfully updated node weights for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-                } catch (Exception e) {
-                    loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-
-                    String alertDescription = String.format("Error updating node weights for load balancer '%d' in Zeus...", dbLoadBalancer.getId());
-                    LOG.error(alertDescription, e);
-                    notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-                    sendErrorToEventResource(queueLb);
-                    return;
-                }
-            }
-        }
-
-        if (queueLb.getProtocol() != null) {
-            try {
-                LOG.debug(String.format("Updating protocol for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name()));
-                reverseProxyLoadBalancerService.updateProtocol(dbLoadBalancer);
-                LOG.debug(String.format("Successfully updated protocol for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name()));
-                atomSummary.append("protocol: '").append(dbLoadBalancer.getProtocol().name()).append("', ");
-            } catch (Exception e) {
-                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-
-                String alertDescription = String.format("Error updating protocol for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name());
-                LOG.error(alertDescription, e);
-                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-                sendErrorToEventResource(queueLb);
-                return;
-            }
-        }
-
-        if (queueLb.getPort() != null) {
-            LOG.debug("Updating loadbalancer port to " + dbLoadBalancer.getPort() + " in zeus...");
-            try {
-                LOG.debug(String.format("Updating port for load balancer '%d' to '%d' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getPort()));
-                reverseProxyLoadBalancerService.updatePort(dbLoadBalancer);
-                LOG.debug(String.format("Successfully updated port for load balancer '%d' to '%d' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getPort()));
-                atomSummary.append("port: '").append(dbLoadBalancer.getPort()).append("', ");
-            } catch (Exception e) {
-                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-
-                String alertDescription = String.format("Error updating port for load balancer '%d' to '%d' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getPort());
-                LOG.error(alertDescription, e);
-                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-                sendErrorToEventResource(queueLb);
-                return;
-            }
-        }
-
-        if (queueLb.getTimeout() != null) {
-            LOG.debug("Updating loadbalancer timeout to " + dbLoadBalancer.getTimeout() + " in zeus...");
-            try {
-                LOG.debug(String.format("Updating timeout for load balancer '%d' to '%d' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getTimeout()));
-                reverseProxyLoadBalancerService.updateTimeout(dbLoadBalancer);
-                LOG.debug(String.format("Successfully updated timeout for load balancer '%d' to '%d' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getTimeout()));
-                atomSummary.append("timeout: '").append(dbLoadBalancer.getTimeout()).append("', ");
-            } catch (Exception e) {
-                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-
-                String alertDescription = String.format("Error updating timeout for load balancer '%d' to '%d' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getTimeout());
-                LOG.error(alertDescription, e);
-                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-                sendErrorToEventResource(queueLb);
-                return;
-            }
-        }
-
-        if (queueLb.isHalfClosed() != null) {
-            LOG.debug("Updating loadbalancer half close support to " + dbLoadBalancer.isHalfClosed() + " in zeus...");
-            try {
-                LOG.debug(String.format("Updating timeout for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.isHalfClosed()));
-                reverseProxyLoadBalancerService.updateHalfClosed(dbLoadBalancer);
-                LOG.debug(String.format("Successfully updated half close support for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.isHalfClosed()));
-                atomSummary.append("half-close: '").append(dbLoadBalancer.isHalfClosed()).append("', ");
-            } catch (Exception e) {
-                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-                String alertDescription = String.format("Error updating half close support for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.isHalfClosed());
-                LOG.error(alertDescription, e);
-                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-                sendErrorToEventResource(queueLb);
-                return;
-            }
-        }
+//        if (queueLb.getAlgorithm() != null) {
+//            try {
+//                LOG.debug(String.format("Updating algorithm for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name()));
+//                reverseProxyLoadBalancerService.updateAlgorithm(dbLoadBalancer);
+//                LOG.debug(String.format("Successfully updated algorithm for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name()));
+//                atomSummary.append("algorithm: '").append(dbLoadBalancer.getAlgorithm().name()).append("', ");
+//            } catch (Exception e) {
+//                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+//
+//                String alertDescription = String.format("Error updating algorithm for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name());
+//                LOG.error(alertDescription, e);
+//                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+//                sendErrorToEventResource(queueLb);
+//                return;
+//            }
+//
+//            if (queueLb.getAlgorithm().equals(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN) || queueLb.getAlgorithm().equals(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS)) {
+//                try {
+//                    LOG.debug(String.format("Updating node weights for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+//                    reverseProxyLoadBalancerService.setNodeWeights(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getNodes());
+//                    LOG.debug(String.format("Successfully updated node weights for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+//                } catch (Exception e) {
+//                    loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+//
+//                    String alertDescription = String.format("Error updating node weights for load balancer '%d' in Zeus...", dbLoadBalancer.getId());
+//                    LOG.error(alertDescription, e);
+//                    notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+//                    sendErrorToEventResource(queueLb);
+//                    return;
+//                }
+//            }
+//        }
+//
+//        if (queueLb.getProtocol() != null) {
+//            try {
+//                LOG.debug(String.format("Updating protocol for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name()));
+//                reverseProxyLoadBalancerService.updateProtocol(dbLoadBalancer);
+//                LOG.debug(String.format("Successfully updated protocol for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name()));
+//                atomSummary.append("protocol: '").append(dbLoadBalancer.getProtocol().name()).append("', ");
+//            } catch (Exception e) {
+//                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+//
+//                String alertDescription = String.format("Error updating protocol for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name());
+//                LOG.error(alertDescription, e);
+//                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+//                sendErrorToEventResource(queueLb);
+//                return;
+//            }
+//        }
+//
+//        if (queueLb.getPort() != null) {
+//            LOG.debug("Updating loadbalancer port to " + dbLoadBalancer.getPort() + " in zeus...");
+//            try {
+//                LOG.debug(String.format("Updating port for load balancer '%d' to '%d' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getPort()));
+//                reverseProxyLoadBalancerService.updatePort(dbLoadBalancer);
+//                LOG.debug(String.format("Successfully updated port for load balancer '%d' to '%d' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getPort()));
+//                atomSummary.append("port: '").append(dbLoadBalancer.getPort()).append("', ");
+//            } catch (Exception e) {
+//                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+//
+//                String alertDescription = String.format("Error updating port for load balancer '%d' to '%d' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getPort());
+//                LOG.error(alertDescription, e);
+//                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+//                sendErrorToEventResource(queueLb);
+//                return;
+//            }
+//        }
+//
+//        if (queueLb.getTimeout() != null) {
+//            LOG.debug("Updating loadbalancer timeout to " + dbLoadBalancer.getTimeout() + " in zeus...");
+//            try {
+//                LOG.debug(String.format("Updating timeout for load balancer '%d' to '%d' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getTimeout()));
+//                reverseProxyLoadBalancerService.updateTimeout(dbLoadBalancer);
+//                LOG.debug(String.format("Successfully updated timeout for load balancer '%d' to '%d' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getTimeout()));
+//                atomSummary.append("timeout: '").append(dbLoadBalancer.getTimeout()).append("', ");
+//            } catch (Exception e) {
+//                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+//
+//                String alertDescription = String.format("Error updating timeout for load balancer '%d' to '%d' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getTimeout());
+//                LOG.error(alertDescription, e);
+//                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+//                sendErrorToEventResource(queueLb);
+//                return;
+//            }
+//        }
+//
+//        if (queueLb.isHalfClosed() != null) {
+//            LOG.debug("Updating loadbalancer half close support to " + dbLoadBalancer.isHalfClosed() + " in zeus...");
+//            try {
+//                LOG.debug(String.format("Updating timeout for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.isHalfClosed()));
+//                reverseProxyLoadBalancerService.updateHalfClosed(dbLoadBalancer);
+//                LOG.debug(String.format("Successfully updated half close support for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.isHalfClosed()));
+//                atomSummary.append("half-close: '").append(dbLoadBalancer.isHalfClosed()).append("', ");
+//            } catch (Exception e) {
+//                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+//                String alertDescription = String.format("Error updating half close support for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.isHalfClosed());
+//                LOG.error(alertDescription, e);
+//                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+//                sendErrorToEventResource(queueLb);
+//                return;
+//            }
+//        }
 
         if (queueLb.getName() != null) {
             LOG.debug("Updating loadbalancer name to " + queueLb.getName());

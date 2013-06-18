@@ -111,6 +111,49 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         //Finish...
     }
 
+    @Override
+    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, StmRollBackException {
+
+        final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
+        StingrayRestClient client = loadSTMRestClient(config);
+
+        ResourceTranslator translator = new ResourceTranslator();
+
+        try {
+
+            if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+                TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
+                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
+//                setDefaultErrorFile(config, lb);
+            }
+
+            translator.translateLoadBalancerResource(config, virtualServerName, loadBalancer);
+
+            if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
+                updateHealthMonitor(config, client, virtualServerName, translator.getcMonitor());
+            }
+
+//            if (loadBalancer.getSessionPersistence() != null
+//                    && !loadBalancer.getSessionPersistence().equals(SessionPersistence.NONE)
+//                    && !loadBalancer.hasSsl()) //setSessionPersistence(config, loadBalancer);
+//
+//            if (loadBalancer.getConnectionLimit() != null) //updateConnectionThrottle(config, loadBalancer);
+//
+//
+//            if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) //updateContentCaching(config, loadBalancer);
+//
+//            if (loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) //updateAccessList(config, loadBalancer);
+
+            updateNodePool(config, client, virtualServerName, translator.getcPool());
+
+//            createVirtualServer(config, client, virtualServerName, translator.getcVServer);
+        } catch (Exception ex) {
+            //TODO: roll back or handle as needed.. ...
+        }
+        //Finish...
+    }
+
 
     private void updateNodePool(LoadBalancerEndpointConfiguration config,
                                 StingrayRestClient client, String poolName, Pool pool)

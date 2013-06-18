@@ -72,6 +72,18 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         }
     }
 
+    @Override public void updateLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        try {
+            reverseProxyLoadBalancerAdapter.updateLoadBalancer(config, lb);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        } catch (StmRollBackException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
     @Override
     public void deleteLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
@@ -352,7 +364,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void createHostBackup(Host host,
-            String backupName) throws RemoteException, MalformedURLException, DecryptException {
+                                 String backupName) throws RemoteException, MalformedURLException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
         try {
             reverseProxyLoadBalancerAdapter.createHostBackup(config, backupName);
