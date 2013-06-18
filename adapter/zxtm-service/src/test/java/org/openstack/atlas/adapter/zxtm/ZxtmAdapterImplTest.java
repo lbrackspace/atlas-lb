@@ -1,13 +1,9 @@
 package org.openstack.atlas.adapter.zxtm;
 
-import org.openstack.atlas.util.ca.primitives.RsaConst;
-import org.openstack.atlas.util.ca.zeus.ZeusUtil;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import com.zxtm.service.client.*;
 import org.apache.axis.types.UnsignedInt;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -15,11 +11,15 @@ import org.mockito.InOrder;
 import org.mockito.Matchers;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.util.ca.StringUtils;
+import org.openstack.atlas.util.ca.primitives.RsaConst;
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
@@ -35,7 +35,6 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.DISABLED;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.DRAINING;
-import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
 
 @RunWith(Enclosed.class)
@@ -224,7 +223,7 @@ public class ZxtmAdapterImplTest {
         }
 
         @Test
-        public void shouldRunInOrderWhenCreatingASimpleLoadBalancer() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        public void shouldRunInOrderWhenCreatingASimpleLoadBalancer() throws ZxtmRollBackException, InsufficientRequestException, RemoteException, StmRollBackException {
             InOrder inOrder = inOrder(poolStub, vsStub, trafficIpGroupStub, ruleStub, rateStub);
             adapterSpy.createLoadBalancer(dummyConfig, lb);
             inOrder.verify(poolStub).addPool(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
@@ -240,7 +239,7 @@ public class ZxtmAdapterImplTest {
         }
 
         @Test
-        public void shouldRunInOrderWhenCreatingAFullyConfiguredLoadBalancer() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        public void shouldRunInOrderWhenCreatingAFullyConfiguredLoadBalancer() throws ZxtmRollBackException, InsufficientRequestException, RemoteException, StmRollBackException {
             lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
             lb.setSessionPersistence(HTTP_COOKIE);
 
