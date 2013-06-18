@@ -50,7 +50,7 @@ public class HdfsCli {
     private static final int PAGESIZE = 4096;
     private static final int HDFSBUFFSIZE = 1024 * 64;
     private static final int ONEMEG = 1024 * 1024;
-    private static final int SANE_BUFFER_SIZE = 1024 * 128;
+    private static final int BUFFER_SIZE = 1024 * 128;
     private static List<String> jarFiles = new ArrayList<String>();
     private static URLClassLoader jobClassLoader = null;
     private static String jobJarName = "";
@@ -113,16 +113,16 @@ public class HdfsCli {
                     System.out.printf("exit\n");
                     System.out.printf("findCp <className> #find class path via reflection\n");
                     System.out.printf("gc\n");
-                    System.out.printf("getlzo <dateHour> #Download the Lzo for the given hour\n");
-                    System.out.printf("getzip <dateHour> <lid> #Download the zip file from Hdfs for the specifie day and loadbalancer\n");
+                    System.out.printf("getlzo <DownloadDir> <dateHour> #Download the Lzo for the given hour\n");
+                    System.out.printf("getzip <DownloadDir> <h=hourKey> <l=LoadbalancerId> #Download the zip file from Hdfs for the specifie day and loadbalancer\n");
                     System.out.printf("homedir\n");
                     System.out.printf("indexLzo <FileName>\n");
                     System.out.printf("joinPath <path1> ...<pathN> #Test the join the paths together skipping double slashes.\n");
                     System.out.printf("lineIndex <fileName> #Index the line numbers in the file\n");
-                    System.out.printf("lslzo [hourKey] [m=missing]#List the lzos in the input directory\n");
+                    System.out.printf("lslzo [hourKey] #List the lzos in the input directory\n");
                     System.out.printf("ls [path] #List hdfs files\n");
                     System.out.printf("lsr [path] #List hdfs files recursivly\n");
-                    System.out.printf("lszips [l=lid] [h=hour] [m=missing]#List all zip files in the HDFS ourput directory for hourh or and the given lid\n");
+                    System.out.printf("lszip [l=lid] [h=hour] [m=missing]#List all zip files in the HDFS ourput directory for hourh or and the given lid\n");
                     System.out.printf("mem\n");
                     System.out.printf("mkdir <path>\n");
                     System.out.printf("printReducers <hdfsDir> #Display the contents of the reducer output\n");
@@ -165,7 +165,7 @@ public class HdfsCli {
                     String hdfsLzoPath = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(hdfsLzoPathComps));
                     String hdfsLzoIdxPath = hdfsLzoPath + ".idx";
                     System.out.printf("Uploading lzo %s to %s\n", localLzoFile, hdfsLzoPath);
-                    InputStream lzoIs = StaticFileUtils.openInputFile(localLzoFilePath, SANE_BUFFER_SIZE);
+                    InputStream lzoIs = StaticFileUtils.openInputFile(localLzoFilePath, BUFFER_SIZE);
                     OutputStream lzoOs = hdfsUtils.openHdfsOutputFile(hdfsLzoPath, false, false);
                     OutputStream lzoIdx = hdfsUtils.openHdfsOutputFile(hdfsLzoIdxPath, false, false);
                     hdfsUtils.recompressAndIndexLzoStream(lzoIs, lzoOs, lzoIdx, System.out);
@@ -219,8 +219,7 @@ public class HdfsCli {
                     }
 
                     System.out.printf("Are you sure you want to delete the above %d files (Y/N)\n", doomedPaths.size());
-                    String[] resp = stripBlankArgs(stdin.readLine());
-                    if (resp.length >= 1 && resp[0].equalsIgnoreCase("Y")) {
+                    if (stdinMatches(stdin, "Y")) {
                         for (Path doomedPath : doomedPaths) {
                             if (fs.delete(doomedPath, true)) {
                                 System.out.printf("Deleted %s\n", doomedPath.toUri().getRawPath());
@@ -279,21 +278,60 @@ public class HdfsCli {
 
                     continue;
                 }
-                if (cmd.equals("rmout") && args.length >= 2) {
-                    String dateHour = args[1];
 
+                if (cmd.equals("getzip") && args.length > 1) {
+                    Map<String, String> kw = argMapper(args);
+                    String lid = (kw.containsKey("l")) ? kw.get("l") : null;
+                    String hourKey = (kw.containsKey("h")) ? kw.get("h") : null;
+                    String downloadDir = args[1];
+                    List<FileStatus> zipStatusList = hdfsUtils.listHdfsZipsStatus(hourKey, lid, false);
+                    System.out.printf("Attempting to fetch zipfiles\n");
+                    for (FileStatus zipFileStatus : zipStatusList) {
+                        System.out.printf("%s\n", HdfsCliHelpers.displayFileStatus(zipFileStatus));
+                    }
+                    System.out.printf("Are you sure you want to download the above files (Y/N)?");
+                    if (stdinMatches(stdin, "Y")) {
+                        for (FileStatus zipFileStatus : zipStatusList) {
+                            String hdfsZipFileStr = zipFileStatus.getPath().toUri().getRawPath();
+                            String dstZipFileStr = StaticFileUtils.joinPath(downloadDir, StaticFileUtils.pathTail(hdfsZipFileStr));
+                            System.out.printf("Downloading %s to %s\n", zipFileStatus.getPath().toUri().toString(), dstZipFileStr);
+                            InputStream is = hdfsUtils.openHdfsInputFile(zipFileStatus.getPath(), false);
+                            OutputStream os = StaticFileUtils.openOutputFile(dstZipFileStr, BUFFER_SIZE);
+                            StaticFileUtils.copyStreams(is, os, System.out, BUFFER_SIZE);
+                            is.close();
+                            os.close();
+                        }
+                    }
                     continue;
                 }
-
-                if (cmd.equals("getzip") && args.length >= 3) {
-                    String dateHour = args[1];
-                    String lid = args[2];
-                    System.out.printf("Fetching zip file for hour  %s lid[%s]\n", dateHour, lid);
-                    continue;
-                }
-                if (cmd.equals("getlzo") && args.length >= 2) {
-                    String dateHour = args[1];
-                    System.out.printf("fetching %s\n", dateHour);
+                if (cmd.equals("getlzo") && args.length > 2) {
+                    String downloadDir = args[1];
+                    String dateHour = args[2];
+                    System.out.printf("Searching for lzo files matching %s\n", dateHour);
+                    List<FileStatus> lzoFileStatusList = hdfsUtils.listHdfsLzoStatus(dateHour);
+                    System.out.printf("Attempting to download lzos\n");
+                    for (FileStatus lzoFileStatus : lzoFileStatusList) {
+                        System.out.printf("%s\n", HdfsCliHelpers.displayFileStatus(lzoFileStatus));
+                    }
+                    System.out.printf("Are you sure you want to download the lzo files above?(Y/N)?");
+                    if (stdinMatches(stdin, "Y")) {
+                        for (FileStatus lzoFileStatus : lzoFileStatusList) {
+                            String srcLzoFileStr = StaticFileUtils.pathTail(lzoFileStatus.getPath().toUri().getRawPath());
+                            Matcher m = HdfsUtils.hdfsLzoPattern.matcher(srcLzoFileStr);
+                            if (!m.find()) {
+                                System.out.printf("Error srcFile %s didn't match expected LZO file name");
+                                continue;
+                            }
+                            String dstFileName = m.group(1) + "-access_log.aggregated.lzo";
+                            String dstFilePath = StaticFileUtils.joinPath(downloadDir, dstFileName);
+                            System.out.printf("Downloading %s to %s\n", lzoFileStatus.getPath().toUri().toString(), dstFilePath);
+                            InputStream is = hdfsUtils.openHdfsInputFile(lzoFileStatus.getPath(), false);
+                            OutputStream os = StaticFileUtils.openOutputFile(dstFilePath, BUFFER_SIZE);
+                            StaticFileUtils.copyStreams(is, os, System.out, BUFFER_SIZE);
+                            is.close();
+                            os.close();
+                        }
+                    }
                     continue;
                 }
                 if (cmd.equals("showConfig")) {
@@ -371,7 +409,7 @@ public class HdfsCli {
                     Debug.gc();
                     continue;
                 }
-                if (cmd.equals("lszips")) {
+                if (cmd.equals("lszip")) {
                     Map<String, String> kw = argMapper(args);
                     String dateHour = (kw.containsKey("h")) ? kw.get("h") : null;
                     String lid = (kw.containsKey("l")) ? kw.get("l") : null;
@@ -387,6 +425,10 @@ public class HdfsCli {
                 if (cmd.equals("lslzo")) {
                     String hourKey = (args.length >= 2) ? args[1] : null;
                     System.out.printf("Scanning lzos for hour[%s]\n", hourKey);
+                    List<FileStatus> lzoFiles = hdfsUtils.listHdfsLzoStatus(hourKey);
+                    for (FileStatus lzoFileStatus : lzoFiles) {
+                        System.out.printf("%s\n", HdfsCliHelpers.displayFileStatus(lzoFileStatus));
+                    }
                     continue;
                 }
 
@@ -702,7 +744,7 @@ public class HdfsCli {
                 }
                 if (cmd.equals("showCrc") && args.length >= 2) {
                     String fileName = StaticFileUtils.expandUser(args[1]);
-                    BufferedInputStream is = new BufferedInputStream(new FileInputStream(fileName), SANE_BUFFER_SIZE);
+                    BufferedInputStream is = new BufferedInputStream(new FileInputStream(fileName), BUFFER_SIZE);
                     long crc = StaticFileUtils.computeCrc(is);
                     System.out.printf("crc(%s)=%d\n", fileName, crc);
                     is.close();
@@ -807,5 +849,10 @@ public class HdfsCli {
             }
         }
         return argMap;
+    }
+
+    private static boolean stdinMatches(BufferedReader stdin, String val) throws IOException {
+        String[] resp = stripBlankArgs(stdin.readLine());
+        return (resp.length > 0 && resp[0].equalsIgnoreCase(val));
     }
 }
