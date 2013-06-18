@@ -139,6 +139,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.info(String.format("Load balancer '%s' successfully created.", virtualServerName));
     }
 
+    @Override public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, StmRollBackException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     private void createSecureVirtualServer(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         final String rollBackMessage = "Create load balancer request canceled.";
