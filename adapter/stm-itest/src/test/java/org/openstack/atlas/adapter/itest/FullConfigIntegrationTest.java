@@ -6,6 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
+import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.ReverseResourceTranslator;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
 import org.openstack.atlas.service.domain.entities.*;
@@ -92,10 +93,11 @@ public class FullConfigIntegrationTest {
         LoadBalancer lb = null;
         UserPages up = new UserPages();
         try {
-            lb = ReverseResourceTranslator.getLoadBalancer(324,386085);
-            up.setErrorpage(lb.getName());
-            lb.setUserPages(up);
-            adapter.setErrorFile(null, lb, "some error text");
+            ResourceTranslator rt = new ResourceTranslator();
+            lb = ReverseResourceTranslator.getLoadBalancer(362,406271);
+            //up.setErrorpage(lb.getName());
+            //lb.setUserPages(up);
+            //adapter.setErrorFile(null, lb, "some error text");
         } catch (Exception e) {
             e.printStackTrace();
         }
