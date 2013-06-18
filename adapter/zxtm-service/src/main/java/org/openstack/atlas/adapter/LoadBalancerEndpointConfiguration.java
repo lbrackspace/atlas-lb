@@ -5,6 +5,8 @@ import org.openstack.atlas.service.domain.entities.Host;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * The LoadBalancerEndpointConfiguration class is used to pass the endpoint and
@@ -13,6 +15,7 @@ import java.util.List;
  */
 public class LoadBalancerEndpointConfiguration {
 
+    public static Log LOG = LogFactory.getLog(LoadBalancerEndpointConfiguration.class);
     private URL endpointUrl;
     private String username;
     private String password;
@@ -35,6 +38,7 @@ public class LoadBalancerEndpointConfiguration {
         this.trafficManagerHost = trafficManagerHost;
         this.trafficManagerName = trafficManagerHost.getTrafficManagerName();
         this.failoverTrafficManagerNames = failoverTrafficManagerNames;
+        LOG.info(String.format("Selecting %s as SoapEndping", this.endpointUrl));
     }
 
     public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames, String logFileLocation) {
@@ -51,6 +55,7 @@ public class LoadBalancerEndpointConfiguration {
         this.trafficManagerName = trafficManagerHost.getTrafficManagerName();
         this.failoverTrafficManagerNames = failoverTrafficManagerNames;
         this.logFileLocation = logFileLocation;
+        LOG.info(String.format("Selecting %s as SoapEndping", this.endpointUrl));
     }
 
     public Host getTrafficManagerHost() {
