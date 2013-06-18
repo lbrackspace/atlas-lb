@@ -102,7 +102,7 @@ public class UsageEventProcessorDBTest {
             Calendar starttime = Calendar.getInstance();
             starttime.roll(Calendar.MONTH, false);
 
-            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ON, null);
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_MIXED_ON, null);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
             Assert.assertNotNull(oUsages);
             Assert.assertEquals(1, oUsages.size());
@@ -120,7 +120,7 @@ public class UsageEventProcessorDBTest {
             Assert.assertEquals(986, lbusages.get(0).getOutgoingTransferSsl());
             Assert.assertEquals(1, lbusages.get(0).getConcurrentConnections());
             Assert.assertEquals(3, lbusages.get(0).getConcurrentConnectionsSsl());
-            Assert.assertEquals(0, lbusages.get(0).getTagsBitmask());
+            Assert.assertEquals(5, lbusages.get(0).getTagsBitmask());
         }
 
         @Test
