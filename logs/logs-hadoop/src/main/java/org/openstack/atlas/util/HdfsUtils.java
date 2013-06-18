@@ -188,7 +188,52 @@ public class HdfsUtils {
         cos.close();
     }
 
-    public List<FileStatus> listHdfsZipsStatus(String dateHourSearch, String lidSearch,boolean showMissingDirsOnly) {
+    public List<FileStatus> listHdfsLzoStatus(String dateHourSearch) {
+        List<FileStatus> lzoStatusList = new ArrayList<FileStatus>();
+        String hdfsInputPrefix = HadoopLogsConfigs.getMapreduceInputPrefix();
+        FileStatus[] inDateDirArray;
+        try {
+            inDateDirArray = remoteFileSystem.listStatus(new Path(hdfsInputPrefix));
+        } catch (IOException ex) {
+            LOG.error(String.format("Unable to read directory %s:%s", hdfsInputPrefix, Debug.getExtendedStackTrace(ex)));
+            return lzoStatusList;
+        }
+        if (inDateDirArray == null) {
+            LOG.error(String.format("Unable to read directory %s: listStatus returned null", hdfsInputPrefix));
+            return lzoStatusList;
+        }
+        for (FileStatus dateDirFileStatus : inDateDirArray) {
+            String dateHourDir = StaticFileUtils.pathTail(dateDirFileStatus.getPath().toUri().getRawPath());
+            Matcher dateHourMatcher = dateHourPattern.matcher(dateHourDir);
+            if (!dateDirFileStatus.isDir() || !dateHourMatcher.find()) {
+                continue; // This isn't a date Directory
+            }
+            if (dateHourSearch != null && !dateHourDir.startsWith(dateHourSearch)) {
+                continue;
+            }
+            String lzoDir = StaticFileUtils.joinPath(hdfsInputPrefix, dateHourDir);
+            FileStatus[] lzoDirStatusArray;
+            try {
+                lzoDirStatusArray = remoteFileSystem.listStatus(new Path(lzoDir));
+            } catch (IOException ex) {
+                LOG.error(String.format("Error reading directory %s: %s SKIPPING", lzoDir, Debug.getExtendedStackTrace(ex)));
+                continue;
+            }
+            if (lzoDirStatusArray == null) {
+                LOG.error(String.format("Error reading directory %s listStatus returned null skipping", lzoDir));
+            }
+            for (FileStatus lzoFileStatus : lzoDirStatusArray) {
+                String lzoFileName = StaticFileUtils.pathTail(lzoFileStatus.getPath().toUri().getRawPath());
+                Matcher m = hdfsLzoPattern.matcher(lzoFileName);
+                if (!lzoFileStatus.isDir() && m.find()) {
+                    lzoStatusList.add(lzoFileStatus);
+                }
+            }
+        }
+        return lzoStatusList;
+    }
+
+    public List<FileStatus> listHdfsZipsStatus(String dateHourSearch, String lidSearch, boolean showMissingDirsOnly) {
         List<FileStatus> statusList = new ArrayList<FileStatus>();
         List<String> lbSplitDirComponents = new ArrayList<String>();
         lbSplitDirComponents.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
@@ -198,7 +243,7 @@ public class HdfsUtils {
         try {
             logDirStatusArray = remoteFileSystem.listStatus(new Path(logSplitDir));
         } catch (IOException ex) {
-            LOG.error(String.format("Unable to read directory %s: %s\n", logSplitDir, Debug.getExtendedStackTrace(ex)), ex);
+            LOG.error(String.format("Unable to read directory %s: %s", logSplitDir, Debug.getExtendedStackTrace(ex)), ex);
             return statusList;
         }
         if (logDirStatusArray == null) {
@@ -227,7 +272,7 @@ public class HdfsUtils {
                 }
                 if (zipDirStatusArray == null) {
                     LOG.error(String.format("Unable to read directory %s: listStatus returned null", zipDir));
-                    if(showMissingDirsOnly){
+                    if (showMissingDirsOnly) {
                         statusList.add(logDirStatus);
                     }
                     continue;
@@ -243,7 +288,7 @@ public class HdfsUtils {
                         if (lidSearch != null && !lidSearch.equals(zipMatcher.group(2))) {
                             continue; // This isn't what where looking for.
                         }
-                        if(showMissingDirsOnly){
+                        if (showMissingDirsOnly) {
                             continue; // We only care about dates that are missing.
                         }
                         statusList.add(zipStatus);
@@ -300,7 +345,7 @@ public class HdfsUtils {
             fs = remoteFileSystem;
         }
         if (stats == null) {
-            throw new IOException(String.format("could not list status for Directory %s\n", inPath));
+            throw new IOException(String.format("could not list status for Directory %s", inPath));
         }
         for (FileStatus stat : stats) {
             if (stat.isDir()) {
@@ -505,7 +550,7 @@ public class HdfsUtils {
         try {
             statusArray = fs.listStatus(new Path(mntPath));
         } catch (IOException ex) {
-            vlog.printf("Error reading directory %s: %s\n", mntPath);
+            vlog.printf("Error reading directory %s: %s", mntPath);
             return statusList;
         }
         if (statusArray == null) {

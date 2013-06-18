@@ -187,7 +187,7 @@ public class StaticFileUtils {
         return new BufferedInputStream(new FileInputStream(new File(expandUser(fileName))), buffsize);
     }
 
-    public static String workingDirectory() {
+    public static String getWorkingDirectory() {
         try {
             return new File(".").getCanonicalPath();
         } catch (IOException ex) {
