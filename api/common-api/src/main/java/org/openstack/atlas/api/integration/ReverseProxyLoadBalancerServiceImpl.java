@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.integration;
 
+import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.api.helpers.CacheKeyGen;
 import org.openstack.atlas.api.helpers.DateHelpers;
@@ -66,6 +67,8 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
+        } catch (StmRollBackException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -326,10 +329,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void updateHealthMonitor(Integer lbId, Integer accountId, HealthMonitor monitor) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void updateHealthMonitor(LoadBalancer loadBalancer) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            reverseProxyLoadBalancerAdapter.updateHealthMonitor(config, lbId, accountId, monitor);
+            reverseProxyLoadBalancerAdapter.updateHealthMonitor(config, loadBalancer);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -504,6 +507,8 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
+        } catch (StmRollBackException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -576,6 +581,8 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
+        } catch (StmRollBackException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -588,6 +595,8 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
+        } catch (StmRollBackException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -599,6 +608,8 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
+        } catch (StmRollBackException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -611,6 +622,8 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
+        } catch (StmRollBackException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 

@@ -6,9 +6,7 @@ import org.apache.axis.types.UnsignedInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
-import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.VirtualServerListeningOnAllAddressesException;
-import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
+import org.openstack.atlas.adapter.exceptions.*;
 import org.openstack.atlas.adapter.helpers.*;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
@@ -43,7 +41,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final VirtualServerRule ruleXForwardedProto = new VirtualServerRule(XFP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleContentCaching = new VirtualServerRule(CONTENT_CACHING, true, VirtualServerRuleRunFlag.run_every);
 
-    @Override public StingrayRestClient getStingrayClient(LoadBalancerEndpointConfiguration config) {
+    @Override
+    public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config) throws StmRollBackException {
+
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -1752,9 +1752,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         loadBalancer.setConnectionLimit(throttle);
     }
 
-    // TODO: Rollback properly
     @Override
-    public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, HealthMonitor healthMonitor)
+    public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) {
+
+    }
+
+    @Deprecated
+    @Override
+    public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, int lbId, int accountId, HealthMonitor healthMonitor)
             throws RemoteException, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameBuilder.genVSName(lbId, accountId);
@@ -1781,7 +1786,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 serviceStubs.getMonitorBinding().setUseSSL(new String[]{monitorName}, new boolean[]{true});
             }
         } else {
-            throw new InsufficientRequestException(String.format("Unsupported monitor type: %s", healthMonitor));
+            throw new InsufficientRequestException(String.format("Unsupported monitor type: %s", healthMonitor.getType().name()));
         }
 
         // Assign monitor to the node pool

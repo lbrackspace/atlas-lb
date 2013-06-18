@@ -149,7 +149,7 @@
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
 
-    <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
+    <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.stm.StmAdapterImpl"/>
 
     <bean id="reverseProxyLoadBalancerService" class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl">
         <property name="notificationService" ref="notificationService"/>

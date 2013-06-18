@@ -57,7 +57,7 @@ public interface ReverseProxyLoadBalancerService {
 
     void removeSessionPersistence(Integer id, Integer accountId) throws Exception;
 
-    void updateHealthMonitor(Integer lbId, Integer accountId, HealthMonitor monitor) throws Exception;
+    void updateHealthMonitor(LoadBalancer loadBalancer) throws Exception;
 
     void removeHealthMonitor(LoadBalancer loadBalancer) throws Exception;
 

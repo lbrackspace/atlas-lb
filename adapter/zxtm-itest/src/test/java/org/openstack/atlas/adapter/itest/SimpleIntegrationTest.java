@@ -689,7 +689,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         monitor.setDelay(60);
         monitor.setTimeout(90);
 
-        zxtmAdapter.updateHealthMonitor(config, lb.getId(), lb.getAccountId(), monitor);
+        zxtmAdapter.updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
 
         String monitorName = monitorName();
 
