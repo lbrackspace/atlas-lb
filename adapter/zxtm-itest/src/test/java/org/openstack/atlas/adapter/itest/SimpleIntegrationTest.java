@@ -4,7 +4,7 @@ import com.zxtm.service.client.*;
 import org.apache.axis.types.UnsignedInt;
 import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
+import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
@@ -532,7 +532,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         Assert.assertTrue(doesPersistenceClassExist);
     }
 
-    private void shouldDisableSessionPersistenceWhenUpdatingToNonHttpProtocol() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+    private void shouldDisableSessionPersistenceWhenUpdatingToNonHttpProtocol() throws RollBackException, InsufficientRequestException, RemoteException {
         ZeusTestBase.setupIvars();
         zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), HTTP_COOKIE);
         String[] persistenceCatalogList = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
@@ -546,7 +546,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         Assert.assertEquals("", persistenceCatalogList[0]);
     }
 
-    private void shouldDisableSessionPersistenceWhenUpdatingToHttpProtocol() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+    private void shouldDisableSessionPersistenceWhenUpdatingToHttpProtocol() throws RollBackException, InsufficientRequestException, RemoteException {
         ZeusTestBase.setupIvars();
         zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), SOURCE_IP);
         String[] persistenceCatalogList = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});

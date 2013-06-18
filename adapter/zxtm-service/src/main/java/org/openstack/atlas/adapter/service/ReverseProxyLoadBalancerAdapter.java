@@ -3,8 +3,8 @@ package org.openstack.atlas.adapter.service;
 import org.apache.axis.AxisFault;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
@@ -20,80 +20,86 @@ import java.util.Map;
 public interface ReverseProxyLoadBalancerAdapter {
 
     public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config)
-            throws StmRollBackException;
+            throws RollBackException;
 
     public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config)
             throws AxisFault;
 
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException, StmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException, StmRollBackException;
 
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updateHalfClosed(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updatePort(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Integer port)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updateTimeout(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void setLoadBalancingAlgorithm(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, LoadBalancerAlgorithm algorithm)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void deleteVirtualIp(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Integer vipId)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipId)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void removeNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes)
-            throws AxisFault, InsufficientRequestException, ZxtmRollBackException;
+            throws AxisFault, InsufficientRequestException, RollBackException;
 
     public void removeNode(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String ipAddress, Integer port)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> nodes)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
-    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, SessionPersistence mode)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, SessionPersistence mode)
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
-    public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+    public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId)
+            throws RemoteException, InsufficientRequestException, RollBackException;
+
+    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, RollBackException;
+
+    public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException, StmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException, StmRollBackException;
 
     public void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, StmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     @Deprecated
     public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, int lbId, int accountId, HealthMonitor healthMonitor)
-            throws RemoteException, InsufficientRequestException, StmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void removeHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException;
@@ -168,34 +174,34 @@ public interface ReverseProxyLoadBalancerAdapter {
             throws RemoteException, InsufficientRequestException;
 
     public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, StmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, StmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content)
-            throws RemoteException, InsufficientRequestException, StmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws AxisFault, InsufficientRequestException, StmRollBackException;
+            throws AxisFault, InsufficientRequestException, RollBackException;
 
     public void setErrorFile(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, String content)
-            throws RemoteException, InsufficientRequestException, StmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void enableDisableSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, boolean isSslTermination)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void setNodesPriorities(LoadBalancerEndpointConfiguration config, String poolName, LoadBalancer lb) throws RemoteException;
 }

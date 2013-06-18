@@ -1,6 +1,6 @@
 package org.openstack.atlas.adapter.exceptions;
 
-public class ZxtmRollBackException extends Exception {
+public class ZxtmRollBackException extends RollBackException {
     private static final long serialVersionUID = -1197590882399930192L;
 
     public ZxtmRollBackException(String s, Throwable throwable) {

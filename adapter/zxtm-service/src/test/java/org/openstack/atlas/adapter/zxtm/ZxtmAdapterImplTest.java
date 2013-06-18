@@ -11,8 +11,7 @@ import org.mockito.InOrder;
 import org.mockito.Matchers;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
+import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.*;
@@ -223,7 +222,7 @@ public class ZxtmAdapterImplTest {
         }
 
         @Test
-        public void shouldRunInOrderWhenCreatingASimpleLoadBalancer() throws ZxtmRollBackException, InsufficientRequestException, RemoteException, StmRollBackException {
+        public void shouldRunInOrderWhenCreatingASimpleLoadBalancer() throws InsufficientRequestException, RemoteException, RollBackException {
             InOrder inOrder = inOrder(poolStub, vsStub, trafficIpGroupStub, ruleStub, rateStub);
             adapterSpy.createLoadBalancer(dummyConfig, lb);
             inOrder.verify(poolStub).addPool(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
@@ -239,7 +238,7 @@ public class ZxtmAdapterImplTest {
         }
 
         @Test
-        public void shouldRunInOrderWhenCreatingAFullyConfiguredLoadBalancer() throws ZxtmRollBackException, InsufficientRequestException, RemoteException, StmRollBackException {
+        public void shouldRunInOrderWhenCreatingAFullyConfiguredLoadBalancer() throws InsufficientRequestException, RemoteException, RollBackException {
             lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
             lb.setSessionPersistence(HTTP_COOKIE);
 
@@ -290,7 +289,7 @@ public class ZxtmAdapterImplTest {
         }
 
         @Test
-        public void shouldRunInOrderWhenDeletingALoadBalancer() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        public void shouldRunInOrderWhenDeletingALoadBalancer() throws InsufficientRequestException, RemoteException, RollBackException {
             InOrder inOrder = inOrder(poolStub, vsStub, monitorStub, protectionStub, trafficIpGroupStub);
             adapterSpy.deleteLoadBalancer(dummyConfig, lb);
             inOrder.verify(vsStub).deleteVirtualServer(Matchers.<String[]>anyObject());
@@ -480,7 +479,7 @@ public class ZxtmAdapterImplTest {
         }
 
         @Test
-        public void WhenAddingSslTermination() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        public void WhenAddingSslTermination() throws RollBackException, InsufficientRequestException, RemoteException {
             lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
             lb.setSessionPersistence(HTTP_COOKIE);
 
@@ -542,7 +541,7 @@ public class ZxtmAdapterImplTest {
         }
 
         @Test
-        public void WhenDeletingSslTermination() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        public void WhenDeletingSslTermination() throws RollBackException, InsufficientRequestException, RemoteException {
             SslTermination sslTermination = new SslTermination();
             sslTermination.setIntermediateCertificate("iCert");
             sslTermination.setCertificate("cert");

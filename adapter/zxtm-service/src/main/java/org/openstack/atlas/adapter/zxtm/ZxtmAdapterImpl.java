@@ -1417,6 +1417,19 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
+
+     public void setSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException
+     {
+
+     }
+
+    public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException
+    {
+
+    }
+
     @Override
     public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, SessionPersistence mode)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
@@ -2508,4 +2521,5 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
         return false;
     }
+
 }

@@ -21,7 +21,7 @@ public enum SessionPersistence implements Serializable {
         return myType;
     }
 
-    public org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence getSesionPersistence() {
+    public org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence getSessionPersistence() {
         org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence persistence = new org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence();
         persistence.setPersistenceType(getDataType());
         return persistence;

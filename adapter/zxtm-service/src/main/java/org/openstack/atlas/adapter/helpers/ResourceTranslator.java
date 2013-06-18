@@ -29,6 +29,7 @@ public class ResourceTranslator {
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
+        translatePersistenceResource(vsName, loadBalancer);
         translateMonitorResource(loadBalancer);
         translatePoolResource(vsName, loadBalancer);
         translateVirtualServerResource(config, vsName, loadBalancer);
@@ -115,9 +116,18 @@ public class ResourceTranslator {
 
         connection.setMax_reply_time(loadBalancer.getTimeout());
 
+
         if (loadBalancer.getHealthMonitor() != null) {
             basic.setMonitors(new HashSet<String>(Arrays.asList(vsName)));
         }
+
+
+        if(loadBalancer.getSessionPersistence() != null)
+            basic.setPersistence_class(cPersistence.getProperties().getBasic().getType());
+
+
+
+
 
         properties.setBasic(basic);
         properties.setLoad_balancing(poollb);
@@ -184,14 +194,16 @@ public class ResourceTranslator {
 
     public Persistence translatePersistenceResource(String vsName, LoadBalancer loadBalancer) {
         Persistence persistence = new Persistence();
-        PersistenceBasic basic = new PersistenceBasic();
         PersistenceProperties properties = new PersistenceProperties();
+        PersistenceBasic basic = new PersistenceBasic();
 
+        //TODO WHAT IN GODS NAME
+        basic.setType(loadBalancer.getSessionPersistence().getSessionPersistence().getPersistenceType().name());
         properties.setBasic(basic);
         persistence.setProperties(properties);
-
         cPersistence = persistence;
-        return null;
+        return persistence;
+
     }
 
     private Set<String> getNodesWithCondition(Collection<Node> nodes, NodeCondition nodeCondition) {

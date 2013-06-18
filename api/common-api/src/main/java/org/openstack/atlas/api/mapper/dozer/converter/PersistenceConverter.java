@@ -12,7 +12,7 @@ public class PersistenceConverter implements CustomConverter {
         }
 
         if (sourceFieldValue instanceof SessionPersistence) {
-            org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence sesionPersistence = ((SessionPersistence) sourceFieldValue).getSesionPersistence();
+            org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence sesionPersistence = ((SessionPersistence) sourceFieldValue).getSessionPersistence();
             return sesionPersistence.getPersistenceType() == null ? null : sesionPersistence;
         }
 

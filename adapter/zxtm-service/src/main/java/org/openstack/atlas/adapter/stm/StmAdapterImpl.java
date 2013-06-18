@@ -21,7 +21,10 @@ import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.monitor.Monitor;
+import org.rackspace.stingray.client.persistence.Persistence;
+
 import org.rackspace.stingray.client.pool.Pool;
+import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 
 import java.io.BufferedWriter;
@@ -43,6 +46,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final LoadBalancerAlgorithm DEFAULT_ALGORITHM = LoadBalancerAlgorithm.RANDOM;
     public static final String XFF = "add_x_forwarded_for_header";
     public static final String XFP = "add_x_forwarded_proto";
+    public static final String SOURCE_IP = "ip";
+    public static final String HTTP_COOKIE = "cookie";
 
 
     public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config) throws StmRollBackException {
@@ -120,6 +125,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         Pool curPool = null;
 
+
         try {
             curPool = client.getPool(poolName);
         } catch (StingrayRestClientObjectNotFoundException e) {
@@ -135,6 +141,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
 
             rollbackPool(client, poolName, curPool);
+
         }
     }
 
@@ -225,56 +232,69 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug(String.format("Successfully rolled back monitor '%s' ", monitorName));
     }
 
-    @Override public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void updateHalfClosed(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void updateHalfClosed(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void updatePort(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Integer port) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void updatePort(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Integer port) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void updateTimeout(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void updateTimeout(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void setLoadBalancingAlgorithm(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void setLoadBalancingAlgorithm(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //TODO: still in example phase...
 //
     }
 
-    @Override public void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void deleteVirtualIp(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Integer vipId) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void deleteVirtualIp(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Integer vipId) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipId) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipId) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void removeNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes) throws AxisFault, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void removeNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes) throws AxisFault, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void removeNode(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String ipAddress, Integer port) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void removeNode(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String ipAddress, Integer port) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -284,34 +304,146 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
     }
 
-    @Override public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, SessionPersistence mode) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+
+    private boolean persistenceIsSupported(LoadBalancer loadBalancer) {
+        boolean supported = false;
+        String type = loadBalancer.getSessionPersistence().getSessionPersistence().getPersistenceType().value();
+        if (type.equals(HTTP_COOKIE) || type.equals(SOURCE_IP)) {
+            supported = true;
+        }
+        return supported;
+
     }
 
-    @Override public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    //Because le interface is annoying
+    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, SessionPersistence mode)
+            throws RemoteException, InsufficientRequestException, StmRollBackException
+    {}
+
+    public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId)
+            throws RemoteException, InsufficientRequestException, StmRollBackException
+    {}
+
+
+    @Override
+    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
+
+
+        StingrayRestClient client = loadSTMRestClient(config);
+        ResourceTranslator translator = new ResourceTranslator();
+        String vsName;
+        if (!lb.hasSsl() && lb.getSessionPersistence() != null && persistenceIsSupported(lb)) {
+            vsName = ZxtmNameBuilder.genVSName(lb);
+            translator.translateLoadBalancerResource(config, vsName, lb);
+            Persistence persistence = translator.getcPersistence();
+            String persistenceType = persistence.getProperties().getBasic().getType();
+            try {
+                client.createPersistence(persistenceType, persistence);
+            } catch (StingrayRestClientObjectNotFoundException onf) {
+
+            } catch (StingrayRestClientException ex) {
+                LOG.error(String.format("Error creating session persistence: %s, Rolling back! \n Exception: %s Trace: %s"
+                        , persistenceType, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
+            }
+        }
+    }
+
+
+    @Override
+    public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+
+        StingrayRestClient client = loadSTMRestClient(config);
+        ResourceTranslator translator = new ResourceTranslator();
+        String vsName;
+
+        if (!loadBalancer.hasSsl() && loadBalancer.getSessionPersistence() != null && persistenceIsSupported(loadBalancer)) {
+            vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+
+            Persistence persistence = translator.translatePersistenceResource(vsName, loadBalancer);
+            String persistenceType = persistence.getProperties().getBasic().getType();
+            try {
+                client.deletePersistence(persistenceType);
+                LOG.info("Successfully deleted session persistence " + persistenceType);
+            } catch (StingrayRestClientObjectNotFoundException onf) {
+                LOG.warn(String.format("Cannot delete persistence as client does not exist", persistenceType));
+            } catch (StingrayRestClientException ex) {
+                LOG.error("Unexpected client error when deleting session persistence.");
+            }
+        }
     }
 
     @Override
     public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, StmRollBackException {
-        final String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         ResourceTranslator translator = new ResourceTranslator();
         StingrayRestClient client = loadSTMRestClient(config);
         translator.translateLoadBalancerResource(config, vsName, loadBalancer);
 
-        updateConnectionLogging(config, client,vsName, translator.getcVServer());
+        updateConnectionLogging(config, client, vsName, translator.getcVServer());
+
     }
 
-    @Override public void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    @Override
+    public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+       if(loadBalancer.getConnectionLimit() != null)
+       {
+        ResourceTranslator translator = new ResourceTranslator();
+        StingrayRestClient client = loadSTMRestClient(config);
+
+        Protection protection;
+        String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
+        try {
+
+            if (loadBalancer.hasSsl()) {
+                protectionName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+                translator.translateProtectionResource(protectionName, loadBalancer);
+                protection = translator.getcProtection();
+                client.createProtection(protectionName, protection);
+
+            } else {
+                translator.translateProtectionResource(protectionName, loadBalancer);
+                protection = translator.getcProtection();
+                client.createProtection(protectionName, protection);
+            }
+            LOG.info("Successfully created protection " + protectionName);
+
+        } catch (StingrayRestClientException e) {
+            LOG.error("Unexpected client error when creating connection throttle: " + protectionName);
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            LOG.error("Cannot create protection, Object not found: " + protectionName);
+        }
+       }
+
     }
 
-    @Override public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    @Override
+    public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        if(loadBalancer.getConnectionLimit() != null)
+        {
+        StingrayRestClient client = loadSTMRestClient(config);
+        String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
+        try {
+
+            if (loadBalancer.hasSsl()) {
+                protectionName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+                client.deleteProtection(protectionName);
+            } else {
+                protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
+                client.deleteProtection(protectionName);
+            }
+            LOG.info("Successfully deleted protection " + protectionName);
+        } catch (StingrayRestClientException e) {
+            LOG.error("Unexpected client error when deleting connection throttle: " + protectionName);
+
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            LOG.error("Cannot delete protection as client does not exist");
+        }
+        }
     }
 
     @Override
@@ -326,117 +458,144 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         updateNodePool(config, client, vsName, translator.getcPool());
     }
 
-    @Override public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, int lbId, int accountId, HealthMonitor healthMonitor) throws RemoteException, InsufficientRequestException, StmRollBackException {
+    @Override
+    public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, int lbId, int accountId, HealthMonitor healthMonitor) throws RemoteException, InsufficientRequestException, StmRollBackException {
+    }
+
+    @Override
+    public void removeHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void removeHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
+    @Override
+    public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
+    @Override
+    public void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId) throws RemoteException, InsufficientRequestException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId) throws RemoteException, InsufficientRequestException {
+    @Override
+    public void suspendLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void suspendLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException {
+    @Override
+    public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException {
+    @Override
+    public void createHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void createHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
+    @Override
+    public void deleteHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void deleteHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
+    @Override
+    public void restoreHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void restoreHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
+    @Override
+    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws RemoteException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws RemoteException {
+    @Override
+    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws RemoteException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws RemoteException {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws RemoteException {
+    @Override
+    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws RemoteException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public List<String> getStatsSystemLoadBalancerNames(LoadBalancerEndpointConfiguration config) throws RemoteException {
+    @Override
+    public List<String> getStatsSystemLoadBalancerNames(LoadBalancerEndpointConfiguration config) throws RemoteException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public Map<String, Integer> getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, List<String> names) throws RemoteException {
+    @Override
+    public Map<String, Integer> getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, List<String> names) throws RemoteException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public Integer getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
+    @Override
+    public Integer getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config) throws RemoteException {
+    @Override
+    public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config) throws RemoteException {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws RemoteException, InsufficientRequestException {
+    @Override
+    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws RemoteException, InsufficientRequestException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public Map<String, Long> getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, List<String> names) throws RemoteException {
+    @Override
+    public Map<String, Long> getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, List<String> names) throws RemoteException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public Long getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
+    @Override
+    public Long getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public Map<String, Long> getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, List<String> names) throws RemoteException {
+    @Override
+    public Map<String, Long> getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, List<String> names) throws RemoteException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public Long getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
+    @Override
+    public Long getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public Long getHostBytesIn(LoadBalancerEndpointConfiguration config) throws RemoteException {
+    @Override
+    public Long getHostBytesIn(LoadBalancerEndpointConfiguration config) throws RemoteException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public Long getHostBytesOut(LoadBalancerEndpointConfiguration config) throws RemoteException {
+    @Override
+    public Long getHostBytesOut(LoadBalancerEndpointConfiguration config) throws RemoteException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config) throws RemoteException {
+    @Override
+    public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config) throws RemoteException {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void deleteRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
+    @Override
+    public void deleteRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
+
         // This seems inefficient -- should rewrite to do this as one operation. TODO
         deleteErrorFile(config, loadBalancer);
         //setDefaultErrorFile(config, loadBalancer); //This isn't necessary anymore, since deleteErrorFile already ran an update
@@ -481,6 +640,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
+
         // ** START Temporary for testing purposes
         StingrayRestClient client = null;
         if (config == null)
@@ -505,6 +665,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException {
+
         deleteErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
         if (loadBalancer.hasSsl()) {
             deleteErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
@@ -549,6 +710,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String content) throws RemoteException, InsufficientRequestException, StmRollBackException {
+
         setErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer), content);
         if (loadBalancer.hasSsl()) {
             setErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer), content);
@@ -615,19 +777,23 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         return file;
     }
 
-    @Override public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void enableDisableSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, boolean isSslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    @Override
+    public void enableDisableSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, boolean isSslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override public void setNodesPriorities(LoadBalancerEndpointConfiguration config, String poolName, LoadBalancer lb) throws RemoteException {
+    @Override
+    public void setNodesPriorities(LoadBalancerEndpointConfiguration config, String poolName, LoadBalancer lb) throws RemoteException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 }

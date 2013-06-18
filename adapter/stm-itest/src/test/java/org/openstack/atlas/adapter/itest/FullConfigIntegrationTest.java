@@ -4,7 +4,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
@@ -87,6 +86,7 @@ public class FullConfigIntegrationTest {
     @Test
     public void setErrorFileTest() throws RemoteException {
         StmAdapterImpl adapter = new StmAdapterImpl();
+
         //adapter.setErrorFile(null,"386085_324", "hrodjger");
     }
 }

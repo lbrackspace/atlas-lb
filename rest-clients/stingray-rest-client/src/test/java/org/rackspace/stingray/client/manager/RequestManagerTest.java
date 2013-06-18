@@ -46,6 +46,7 @@ public class RequestManagerTest {
         private Pool pool;
         private MediaType mockedType;
 
+
         @Before
         public void standUp() throws URISyntaxException, IOException {
             requestManager = new RequestManagerImpl();
@@ -54,6 +55,7 @@ public class RequestManagerTest {
             pool = createPool();
 
             mockClientHandler = new MockClientHandler();
+
         }
 
         private Pool createPool() {
