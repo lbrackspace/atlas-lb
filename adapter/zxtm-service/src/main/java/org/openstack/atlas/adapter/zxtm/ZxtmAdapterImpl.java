@@ -139,6 +139,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.info(String.format("Load balancer '%s' successfully created.", virtualServerName));
     }
 
+    @Override public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, StmRollBackException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     private void createSecureVirtualServer(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         final String rollBackMessage = "Create load balancer request canceled.";
@@ -2192,7 +2196,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getPoolBinding().getPoolNames();
             return true;
         } catch (AxisFault af) {
-            if (isConnectionExcept(af)) {
+            if (IpHelper.isNetworkConnectionException(af)) {
                 return false;
             }
             throw af;
@@ -2458,17 +2462,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             hostssubnet.getHostsubnets().add(hostsubnet);
         }
         return hostssubnet;
-    }
-
-    private boolean isConnectionExcept(AxisFault af) {
-        String faultString = af.getFaultString();
-        if (faultString == null) {
-            return false;
-        }
-        if (faultString.split(":")[0].equals("java.net.ConnectException")) {
-            return true;
-        }
-        return false;
     }
 
     public static TrafficIPGroupsSubnetMappingPerHost[] domain2adaptorSubnetMapping(Hostssubnet hostssubnet) {

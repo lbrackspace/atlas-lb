@@ -17,23 +17,38 @@ import org.openstack.atlas.util.staticutils.StaticFileUtils;
 public class HadoopLogsConfigs {
 
     private static final Log LOG = LogFactory.getLog(HadoopLogsConfigs.class);
-    protected static final String cacheDir;
-    protected static final String backupDir;
-    protected static final String fileSystemRootDir;
-    protected static final String localJobsJarPath;
-    protected static final String hadoopXmlFile;
-    protected static final String mapreduceInputPrefix;
-    protected static final String mapreduceOutputPrefix;
-    protected static final String fileRegion;
-    protected static final String hdfsUserName;
-    private static final String numReducers;
+    protected static int resetCount = 0;
+    protected static String cacheDir;
+    protected static String backupDir;
+    protected static String fileSystemRootDir;
+    protected static String localJobsJarPath;
+    protected static String hadoopXmlFile;
+    protected static String mapreduceInputPrefix;
+    protected static String mapreduceOutputPrefix;
+    protected static String fileRegion;
+    protected static String hdfsUserName;
+    private static String numReducers;
     protected static String hdfsJobsJarPath;
     protected static Configuration hadoopConfiguration = null;
     protected static HdfsUtils hdfsUtils = null;
     protected static boolean jarCopyed = false;
 
     static {
-        LbLogsConfiguration lbLogsConf = new LbLogsConfiguration();
+        resetConfigs(null);
+    }
+
+    public static void resetConfigs(String filePath) {
+        resetCount++;
+        hadoopConfiguration = null;
+        hdfsUtils = null;
+        jarCopyed = false;
+        LbLogsConfiguration lbLogsConf;
+        if (filePath == null) {
+            lbLogsConf = new LbLogsConfiguration();
+        } else {
+            lbLogsConf = new LbLogsConfiguration(StaticFileUtils.expandUser(filePath));
+        }
+        jarCopyed = false;
         cacheDir = lbLogsConf.getString(LbLogsConfigurationKeys.rawlogs_cache_dir);
         backupDir = lbLogsConf.getString(LbLogsConfigurationKeys.rawlogs_backup_dir);
         fileSystemRootDir = lbLogsConf.getString(LbLogsConfigurationKeys.filesystem_root_dir);
@@ -45,6 +60,7 @@ public class HadoopLogsConfigs {
         hdfsUserName = lbLogsConf.getString(LbLogsConfigurationKeys.hdfs_user_name);
         hdfsJobsJarPath = lbLogsConf.getString(LbLogsConfigurationKeys.hdfs_job_jar_path);
         numReducers = lbLogsConf.getString(LbLogsConfigurationKeys.num_reducers);
+
     }
 
     public static HadoopJob getHadoopJob(Class<? extends HadoopJob> jobClass) {
@@ -66,16 +82,18 @@ public class HadoopLogsConfigs {
 
     public static String staticToString() {
         StringBuilder sb = new StringBuilder();
-        sb = sb.append("{cacheDir=").append(cacheDir).
-                append(", backupdir=").append(backupDir).
-                append(", fileSystemRootDir=").append(fileSystemRootDir).
-                append(", hadoopXmlFile=").append(hadoopXmlFile).
-                append(", mapreduceInputPrefix=").append(mapreduceInputPrefix).
-                append(", mapreduceOutputPrefix=").append(mapreduceOutputPrefix).
-                append(", fileRegion=").append(fileRegion).
-                append(", hdfsUserName=").append(hdfsUserName).
-                append(", jarCopyed=").append(jarCopyed).
-                append("}");
+        sb = sb.append("{\n").
+                append("    cacheDir = ").append(cacheDir).append("\n").
+                append("    backupdir = ").append(backupDir).append("\n").
+                append("    fileSystemRootDir = ").append(fileSystemRootDir).append("\n").
+                append("    hadoopXmlFile =").append(hadoopXmlFile).append("\n").
+                append("    mapreduceInputPrefix = ").append(mapreduceInputPrefix).append("\n").
+                append("    mapreduceOutputPrefix = ").append(mapreduceOutputPrefix).append("\n").
+                append("    fileRegion = ").append(fileRegion).append("\n").
+                append("    hdfsUserName = ").append(hdfsUserName).append("\n").
+                append("    jarCopyed = ").append(jarCopyed).append("\n").
+                append("    resetCount = ").append(resetCount).append("\n").
+                append("}\n");
         return sb.toString();
     }
 
@@ -151,7 +169,7 @@ public class HadoopLogsConfigs {
 
     public static void copyJobsJar() throws FileNotFoundException, IOException {
         if (!jarCopyed) { // If this is the first run since the app was deployed then copy the jobs jar
-            LOG.info(String.format("Copying jobsJar %s -> %s", localJobsJarPath, hdfsJobsJarPath));
+            LOG.info(String.format("First hadoop run: Copying jobsJar %s -> %s", localJobsJarPath, hdfsJobsJarPath));
             InputStream is = StaticFileUtils.openInputFile(localJobsJarPath);
             FSDataOutputStream os = hdfsUtils.openHdfsOutputFile(hdfsJobsJarPath, false, true);
             StaticFileUtils.copyStreams(is, os, null, hdfsUtils.getBufferSize());

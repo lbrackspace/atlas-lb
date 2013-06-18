@@ -45,20 +45,32 @@ public class StaticFileUtilsTest {
         boolean equals = true;
         boolean notequals = false;
         assertSplitPathMatches("/some/root/level/dir", equals, "", "some", "root", "level", "dir");
-        assertSplitPathMatches("some/non/root/level/dir", equals, "some", "non","root", "level", "dir");
+        assertSplitPathMatches("some/non/root/level/dir", equals, "some", "non", "root", "level", "dir");
         assertSplitPathMatches("x/some/root/level/dir", notequals, "", "some", "root", "level", "dir");
     }
 
-    public void testSplitPathToString(){
-        assertSplitPathToString("/some/root/level/dir", true, "","some","root","level","dir");
-        assertSplitPathToString("some/non/root/level/dir", true,"some","non","root","level","dir");
+    @Test
+    public void testPathTail() {
+        assertEquals("test.txt", StaticFileUtils.pathTail("test.txt"));
+        assertEquals(null, StaticFileUtils.pathTail(null));
+        assertEquals("test.txt",StaticFileUtils.pathTail("/home/someUser/test.txt"));
+        assertEquals("test.txt",StaticFileUtils.pathTail("/tmp/test.txt"));
+        assertEquals("test.txt",StaticFileUtils.pathTail("tmp/test.txt"));
+        assertEquals("test.txt",StaticFileUtils.pathTail("/home/someUser/test.txt"));
+        assertEquals("test.txt",StaticFileUtils.pathTail("home/someUser/test.txt"));
+        assertEquals("test.txt",StaticFileUtils.pathTail("////wtf/test.txt"));
+    }
+
+    public void testSplitPathToString() {
+        assertSplitPathToString("/some/root/level/dir", true, "", "some", "root", "level", "dir");
+        assertSplitPathToString("some/non/root/level/dir", true, "some", "non", "root", "level", "dir");
 
     }
 
     @Test
-    public void testRebasePath() throws FileUtilsException{
-        assertTrue(StaticFileUtils.rebaseSplitPath("/users/hdfs/output/l","/users/hdfs/output/l/logs/test/test.zip","/nfs/mnt").equals("/nfs/mnt/logs/test/test.zip"));
-        assertTrue(StaticFileUtils.rebaseSplitPath("/users/hdfs/output/l","/users/hdfs/output/l/logs/test/someOtherDirectory/test.zip","/user/local/mnt").equals("/user/local/mnt/logs/test/someOtherDirectory/test.zip"));
+    public void testRebasePath() throws FileUtilsException {
+        assertTrue(StaticFileUtils.rebaseSplitPath("/users/hdfs/output/l", "/users/hdfs/output/l/logs/test/test.zip", "/nfs/mnt").equals("/nfs/mnt/logs/test/test.zip"));
+        assertTrue(StaticFileUtils.rebaseSplitPath("/users/hdfs/output/l", "/users/hdfs/output/l/logs/test/someOtherDirectory/test.zip", "/user/local/mnt").equals("/user/local/mnt/logs/test/someOtherDirectory/test.zip"));
     }
 
     private void assertSplitPathToString(String path, boolean shouldMatch, String... expComponents) {
@@ -104,14 +116,12 @@ public class StaticFileUtilsTest {
 
     }
 
-
     @Test
     public void testGetLogFileTime() throws Exception {
         String absoluteFileName = "/var/log/zxtm/hadoop/cache/2012021005/1/access_log_10_2012021005.zip";
         String logFileTime = StaticFileUtils.getLogFileTime(absoluteFileName);
         Assert.assertEquals(logFileTime, "2012021005");
     }
-
 
     @Test
     public void testGetDateStringFromFileName() throws Exception {
@@ -126,7 +136,7 @@ public class StaticFileUtilsTest {
         boolean expectedException = false;
         try {
             StaticFileUtils.getDateStringFromFileName(absoluteFileName);
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             expectedException = true;
         }
         Assert.assertEquals(true, expectedException);
@@ -160,5 +170,4 @@ public class StaticFileUtilsTest {
         String monthYear = StaticFileUtils.getMonthYearFromFileDate(dateString);
         Assert.assertEquals(monthYear, "Feb_2011");
     }
-
 }

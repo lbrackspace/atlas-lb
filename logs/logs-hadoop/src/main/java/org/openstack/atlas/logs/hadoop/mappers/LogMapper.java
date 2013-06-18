@@ -39,7 +39,7 @@ public class LogMapper extends Mapper<LongWritable, Text, LogMapperOutputKey, Lo
     private String getDebugInfo(Context ctx) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append("host: ").append(Debug.hostName()).append("\n").
-                append("Directory: ").append(StaticFileUtils.workingDirectory()).append("\n").
+                append("Directory: ").append(StaticFileUtils.getWorkingDirectory()).append("\n").
                 append("CacheFiles: \n");
         URI[] cacheFiles = DistributedCache.getCacheFiles(ctx.getConfiguration());
         if (cacheFiles == null) {
@@ -62,6 +62,9 @@ public class LogMapper extends Mapper<LongWritable, Text, LogMapperOutputKey, Lo
             ctx.getCounter(LogCounters.BAD_LOG_DATE).increment(1);
             return;
         } catch (StringParseException ex) {
+            ctx.getCounter(LogCounters.BAD_LOG_STRING).increment(1);
+            return;
+        } catch (Exception ex) {
             ctx.getCounter(LogCounters.BAD_LOG_STRING).increment(1);
             return;
         }

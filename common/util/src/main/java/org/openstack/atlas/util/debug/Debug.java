@@ -19,15 +19,15 @@ public class Debug {
     private static final int PAGESIZE = 4096;
 
     public static double getEpochSeconds() {
-        double millis = (double) System.currentTimeMillis();
-        return millis * 0.001;
+        long millisLong = System.currentTimeMillis();
+        double millisDouble = (double) millisLong;
+        double seconds = millisDouble * 0.001;
+        return seconds;
     }
 
     public static long nowMillis() {
         return System.currentTimeMillis();
     }
-
-
 
     public static String findClassPath(String className, ClassLoader classLoader) throws ClassNotFoundException {
         Class classIn = Class.forName(className, true, classLoader);
@@ -86,7 +86,7 @@ public class Debug {
             baseName = binBaseNames[base1024];
         }
         double dVal = val.doubleValue() / BigInteger.ONE.shiftLeft(lShift).doubleValue();
-        return String.format("%.2f %s", dVal, baseName);
+        return String.format("%.4f %s", dVal, baseName);
     }
 
     public static String classLoaderInfo(String className) throws ClassNotFoundException {
@@ -138,6 +138,34 @@ public class Debug {
             sbw.printf("\"%s\" -> \"%s\"\n", className, classPath);
         }
         return sbw.toString();
+    }
+
+    // Tests to see if the throwable exc was caused by any of the exceptions in causeClasses
+    public static Class getThrowableCausedByOrAssignableFrom(Throwable exc, Class... causeClasses) {
+        Throwable t;
+        Class causeClass;
+        int i;
+        int last = causeClasses.length;
+        for (i = 0; i < last; i++) {
+            causeClass = causeClasses[i];
+            t = exc;
+            while (t != null) {
+                if (causeClass.isAssignableFrom(t.getClass())) {
+                    return causeClass;
+                }
+                t = t.getCause();
+            }
+        }
+        return null;
+    }
+
+    public static boolean isThrowableCausedByOrAssignableFrom(Throwable exc, Class... causeClasses) {
+        Class throwable = getThrowableCausedByOrAssignableFrom(exc, causeClasses);
+        if (throwable == null) {
+            return false;
+        }
+        return true;
+
     }
 
     public static String getExtendedStackTrace(Throwable th) {

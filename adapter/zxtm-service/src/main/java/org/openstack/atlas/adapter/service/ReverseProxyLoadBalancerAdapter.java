@@ -26,7 +26,10 @@ public interface ReverseProxyLoadBalancerAdapter {
             throws AxisFault;
 
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, RollBackException, StmRollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
+
+    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException;
