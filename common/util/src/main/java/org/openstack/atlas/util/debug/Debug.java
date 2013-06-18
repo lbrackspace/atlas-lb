@@ -182,7 +182,7 @@ public class Debug {
                 for (StackTraceElement se : currThrowable.getStackTrace()) {
                     sb.append(String.format("%s\n", se.toString()));
                 }
-                sb.append("\n");
+                sb.append("\nCausing Exception: ");
                 t = t.getCause();
             }
         }

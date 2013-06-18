@@ -11,14 +11,15 @@ import java.util.List;
  * authentication details to the target adapter to establish connectivity to the
  * native load balancer.
  */
-
 public class LoadBalancerEndpointConfiguration {
+
     private URL endpointUrl;
     private String username;
     private String password;
     private String trafficManagerName;
     private List<String> failoverTrafficManagerNames;
     private Host trafficManagerHost;
+    private Host endpointUrlHost;
     private String logFileLocation;
 
     public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames) {
@@ -28,6 +29,7 @@ public class LoadBalancerEndpointConfiguration {
             e.printStackTrace();
             throw new RuntimeException("Invalid endpoint...", e);
         }
+        this.endpointUrlHost = soapEndpoint;
         this.username = username;
         this.password = password;
         this.trafficManagerHost = trafficManagerHost;
@@ -42,6 +44,7 @@ public class LoadBalancerEndpointConfiguration {
             e.printStackTrace();
             throw new RuntimeException("Invalid endpoint...", e);
         }
+        this.endpointUrlHost = soapEndpoint;
         this.username = username;
         this.password = password;
         this.trafficManagerHost = trafficManagerHost;
@@ -80,5 +83,13 @@ public class LoadBalancerEndpointConfiguration {
 
     public void setLogFileLocation(String logFileLocation) {
         this.logFileLocation = logFileLocation;
+    }
+
+    public Host getEndpointUrlHost() {
+        return endpointUrlHost;
+    }
+
+    public void setEndpointUrlHost(Host endpointUrlHost) {
+        this.endpointUrlHost = endpointUrlHost;
     }
 }

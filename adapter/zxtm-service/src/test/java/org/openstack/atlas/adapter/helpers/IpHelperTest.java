@@ -64,6 +64,7 @@ public class IpHelperTest {
         IpHelper.createZeusIpString(null, null);
     }
 
+    @Test
     public void testIsConnectionException() {
         List<Exception> exceptionsThatShouldMarkEndpointAsBad = new ArrayList<Exception>();
         exceptionsThatShouldMarkEndpointAsBad.add(new NoRouteToHostException());
