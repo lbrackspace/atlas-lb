@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
+import org.openstack.atlas.adapter.helpers.ReverseResourceTranslator;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
 import org.openstack.atlas.service.domain.entities.*;
 
@@ -88,5 +89,15 @@ public class FullConfigIntegrationTest {
     public void setErrorFileTest() throws RemoteException {
         StmAdapterImpl adapter = new StmAdapterImpl();
         //adapter.setErrorFile(null,"386085_324", "hrodjger");
+        LoadBalancer lb = null;
+        UserPages up = new UserPages();
+        try {
+            lb = ReverseResourceTranslator.getLoadBalancer(324,386085);
+            up.setErrorpage(lb.getName());
+            lb.setUserPages(up);
+            adapter.setErrorFile(null, lb, "some error text");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -4,6 +4,7 @@ import com.zxtm.service.client.PoolLoadBalancingAlgorithm;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Errorpage;
 import org.openstack.atlas.service.domain.entities.*;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.monitor.MonitorBasic;
@@ -65,8 +66,12 @@ public class ResourceTranslator {
             properties.setLog(log);
         }
 
-        //TODO: how does this act when null? exception? null mapped or not? found a bug and need to test others...
-        ce.setError_file(loadBalancer.getUserPages().getErrorpage());
+        UserPages userPages = loadBalancer.getUserPages();
+        String ep = null;
+        if (userPages != null) { // if userPages is null, just leave the ce object alone and it should use the default page
+            ep = userPages.getErrorpage();
+            ce.setError_file(ep);
+        }
         properties.setConnection_errors(ce);
 
         List<String> rules = Arrays.asList(StmAdapterImpl.XFF, StmAdapterImpl.XFP);

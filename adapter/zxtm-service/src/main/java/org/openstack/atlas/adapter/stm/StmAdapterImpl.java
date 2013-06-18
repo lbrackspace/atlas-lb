@@ -608,7 +608,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         // ** END Temporary for testing purposes
 
         ResourceTranslator rt = new ResourceTranslator();
-        rt.translateLoadBalancerResource(config, vsName, loadBalancer);
+        rt.translateVirtualServerResource(config, vsName, loadBalancer);
         VirtualServer vs = rt.getcVServer();
         String errorFileName = getErrorFileName(vsName);
         try {
