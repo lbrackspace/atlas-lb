@@ -1,0 +1,9 @@
+{
+  "cache_dir": "/var/log/zxtm/hadoop/cache", 
+  "mysql": {
+    "passwd": "yourpasswd", 
+    "host": "yourdb", 
+    "db": "loadbalancing", 
+    "user": "lbaas"
+  }
+}

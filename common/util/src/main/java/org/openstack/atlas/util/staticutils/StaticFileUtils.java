@@ -1,6 +1,5 @@
 package org.openstack.atlas.util.staticutils;
 
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -113,11 +112,12 @@ public class StaticFileUtils {
                 String p = String.format("%.0f%%", percentVal);
                 if (!p.equals(percentStr)) {
                     double now = Debug.getEpochSeconds();
-                    double rate = (double) bytesRead / (now - startTime);
+                    double timeDelta = now - startTime;
+                    double rate = (double) bytesRead / (timeDelta);
                     System.out.printf("rate=%f\n", rate);
                     System.out.flush();
                     startTime = now;
-                    String fmt = "%d bytes transfered %s done Bytes left=%s: transfer rate is rate %s per second\n";
+                    String fmt = "%.4f(secs) %d bytes transfered %s done Bytes left=%s: transfer rate is rate %s per second\n";
                     String bytesLeft = Debug.humanReadableBytes(isSize - totalBytesRead);
                     String byteRate = "";
                     try {
@@ -125,7 +125,7 @@ public class StaticFileUtils {
                     } catch (NumberFormatException ex) {
                         byteRate = new StringBuilder().append(rate).toString();
                     }
-                    ps.printf(fmt, bytesRead, p, bytesLeft, byteRate);
+                    ps.printf(fmt, timeDelta, bytesRead, p, bytesLeft, byteRate);
                     bytesRead = 0;
                     ps.flush();
                     percentStr = p;
@@ -185,7 +185,7 @@ public class StaticFileUtils {
         return new BufferedInputStream(new FileInputStream(new File(expandUser(fileName))), buffsize);
     }
 
-    public static String workingDirectory() {
+    public static String getWorkingDirectory() {
         try {
             return new File(".").getCanonicalPath();
         } catch (IOException ex) {
@@ -321,6 +321,17 @@ public class StaticFileUtils {
             newPath[i] = splitPath[nTimes + i];
         }
         return newPath;
+    }
+
+    public static String pathTail(String path) {
+        if (path == null) {
+            return null;
+        }
+        String[] pathComps = splitPath(path);
+        if(pathComps == null || pathComps.length<=0){
+            return null;
+        }
+        return pathComps[pathComps.length - 1];
     }
 
     public static String[] stripEndPath(String[] splitPath, int nTimes) {
@@ -536,7 +547,6 @@ public class StaticFileUtils {
         return startDate;
     }
 
-
     public static String getMonthYearFromFileDate(String dateString) {
         String monthYear = "";
         try {
@@ -563,6 +573,11 @@ public class StaticFileUtils {
 
     public static Random getRnd() {
         return rnd;
+    }
+
+    public static boolean isSymLink(String filePath) throws IOException {
+        File file = new File(expandUser(filePath));
+        return org.apache.commons.io.FileUtils.isSymlink(file);
     }
 
     public static void close(Closeable is) {
