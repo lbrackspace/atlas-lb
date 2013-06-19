@@ -48,19 +48,19 @@ public class UpdateLoadBalancerListener extends BaseListener {
         }
 
         try {
-                LOG.debug(String.format("Updating algorithm for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name()));
-                reverseProxyLoadBalancerService.updateLoadBalancer(dbLoadBalancer);
-                LOG.debug(String.format("Successfully updated algorithm for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name()));
-                atomSummary.append("algorithm: '").append(dbLoadBalancer.getAlgorithm().name()).append("', ");
-            } catch (Exception e) {
-                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+            LOG.debug(String.format("Updating algorithm for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name()));
+            reverseProxyLoadBalancerService.updateLoadBalancer(dbLoadBalancer);
+            LOG.debug(String.format("Successfully updated algorithm for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name()));
+            atomSummary.append("algorithm: '").append(dbLoadBalancer.getAlgorithm().name()).append("', ");
+        } catch (Exception e) {
+            loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
 
-                String alertDescription = String.format("Error updating algorithm for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name());
-                LOG.error(alertDescription, e);
-                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-                sendErrorToEventResource(queueLb);
-                return;
-            }
+            String alertDescription = String.format("Error updating algorithm for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getAlgorithm().name());
+            LOG.error(alertDescription, e);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            sendErrorToEventResource(queueLb);
+            return;
+        }
 
 //        if (queueLb.getAlgorithm() != null) {
 //            try {
@@ -95,22 +95,22 @@ public class UpdateLoadBalancerListener extends BaseListener {
 //            }
 //        }
 //
-//        if (queueLb.getProtocol() != null) {
-//            try {
-//                LOG.debug(String.format("Updating protocol for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name()));
-//                reverseProxyLoadBalancerService.updateProtocol(dbLoadBalancer);
-//                LOG.debug(String.format("Successfully updated protocol for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name()));
-//                atomSummary.append("protocol: '").append(dbLoadBalancer.getProtocol().name()).append("', ");
-//            } catch (Exception e) {
-//                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-//
-//                String alertDescription = String.format("Error updating protocol for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name());
-//                LOG.error(alertDescription, e);
-//                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-//                sendErrorToEventResource(queueLb);
-//                return;
-//            }
-//        }
+////        if (queueLb.getProtocol() != null) {
+////            try {
+////                LOG.debug(String.format("Updating protocol for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name()));
+////                reverseProxyLoadBalancerService.updateProtocol(dbLoadBalancer);
+////                LOG.debug(String.format("Successfully updated protocol for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name()));
+////                atomSummary.append("protocol: '").append(dbLoadBalancer.getProtocol().name()).append("', ");
+////            } catch (Exception e) {
+////                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+////
+////                String alertDescription = String.format("Error updating protocol for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name());
+////                LOG.error(alertDescription, e);
+////                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+////                sendErrorToEventResource(queueLb);
+////                return;
+////            }
+////        }
 //
 //        if (queueLb.getPort() != null) {
 //            LOG.debug("Updating loadbalancer port to " + dbLoadBalancer.getPort() + " in zeus...");
@@ -168,7 +168,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
         if (queueLb.getName() != null) {
             LOG.debug("Updating loadbalancer name to " + queueLb.getName());
             LOG.debug(String.format("Successfully updated name for load balancer '%d' to '%s'.", queueLb.getId(), queueLb.getName()));
-            updateStrList.add(String.format("%s: '%s'","name",queueLb.getName()));
+            updateStrList.add(String.format("%s: '%s'", "name", queueLb.getName()));
         }
 
         // Update load balancer status in DB

@@ -478,8 +478,20 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     //DELETE connection logging...
 
     @Override
-    public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
+//        String vsName = ZxtmNameBuilder.genVSName(lb);
+//        String vsNameSsl = ZxtmNameBuilder.genSslVSName(lb);
+//        boolean connectionLogging;
+//        if (lb.isConnectionLogging() == null) {
+//            connectionLogging = false;
+//        } else {
+//            connectionLogging = lb.isConnectionLogging();
+//        }
+//        lb.setConnectionLogging(Boolean.FALSE);
+//
+//        if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+//
+//        }
     }
 
     @Override
