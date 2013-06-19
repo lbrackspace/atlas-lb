@@ -4,7 +4,6 @@ import com.zxtm.service.client.PoolLoadBalancingAlgorithm;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Errorpage;
 import org.openstack.atlas.service.domain.entities.*;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.monitor.MonitorBasic;
@@ -15,6 +14,9 @@ import org.rackspace.stingray.client.persistence.PersistenceBasic;
 import org.rackspace.stingray.client.persistence.PersistenceProperties;
 import org.rackspace.stingray.client.pool.*;
 import org.rackspace.stingray.client.protection.*;
+import org.rackspace.stingray.client.traffic.ip.TrafficIp;
+import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
+import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.*;
 
@@ -23,6 +25,7 @@ import java.util.*;
 public class ResourceTranslator {
     public Pool cPool;
     public Monitor cMonitor;
+    public TrafficIp cTrafficIpGroup;
     public VirtualServer cVServer;
     public Protection cProtection;
     public Persistence cPersistence;
@@ -45,6 +48,8 @@ public class ResourceTranslator {
         VirtualServerTcp tcp = new VirtualServerTcp();
         VirtualServerLog log = null;
 
+        basic.setProtocol(loadBalancer.getProtocol().name());
+        basic.setPort(loadBalancer.getPort());
         basic.setPool(vsName);
 
         if (loadBalancer.getAccessLists() != null || loadBalancer.getConnectionLimit() != null) {
@@ -87,6 +92,19 @@ public class ResourceTranslator {
         return null;
     }
 
+    public TrafficIp translateTrafficIpResource(LoadBalancerEndpointConfiguration config,
+                                                String tigName, LoadBalancer loadBalancer) {
+        TrafficIp tig = new TrafficIp();
+        TrafficIpProperties properties = new TrafficIpProperties();
+        TrafficIpBasic basic = new TrafficIpBasic();
+
+        basic.setEnabled(true);
+//        basic.set
+
+
+        return null;
+    }
+
     public Pool translatePoolResource(String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
         Set<Node> nodes = loadBalancer.getNodes();
 
@@ -122,23 +140,16 @@ public class ResourceTranslator {
         connection.setMax_reply_time(loadBalancer.getTimeout());
 
 
-        if (loadBalancer.getHealthMonitor() != null) {
+        if (loadBalancer.getHealthMonitor() != null)
             basic.setMonitors(new HashSet<String>(Arrays.asList(vsName)));
-        }
 
-
-        if(loadBalancer.getSessionPersistence() != null)
+        if (loadBalancer.getSessionPersistence() != null)
             basic.setPersistence_class(cPersistence.getProperties().getBasic().getType());
-
-
-
-
 
         properties.setBasic(basic);
         properties.setLoad_balancing(poollb);
         properties.setConnection(connection);
         pool.setProperties(properties);
-
 
         cPool = pool;
         return pool;
