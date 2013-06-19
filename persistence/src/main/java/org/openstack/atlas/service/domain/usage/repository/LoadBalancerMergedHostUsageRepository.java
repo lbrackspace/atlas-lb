@@ -118,7 +118,9 @@ public class LoadBalancerMergedHostUsageRepository {
 
     public void batchCreate(List<LoadBalancerMergedHostUsage> usages) {
         LOG.info(String.format("batchCreate() called with %d records", usages.size()));
-
+        if(usages.isEmpty()) {
+            return;
+        }
         String query = generateBatchInsertQuery(usages);
         entityManager.createNativeQuery(query).executeUpdate();
     }

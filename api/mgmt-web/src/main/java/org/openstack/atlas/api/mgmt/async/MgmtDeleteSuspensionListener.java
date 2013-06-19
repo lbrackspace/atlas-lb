@@ -57,7 +57,7 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
         Calendar eventTime = Calendar.getInstance();
         // Notify usage processor
         try {
-            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER, eventTime);
+            usageEventCollection.processZeroUsageEvent(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER, eventTime);
         } catch (UsageEventCollectionException uex) {
             LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                     ":: Exception: %s", dbLoadBalancer.getId(), uex));

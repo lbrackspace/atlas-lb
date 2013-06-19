@@ -15,6 +15,8 @@ public class UsageEventMapper {
     private SnmpUsage snmpUsage;
     private UsageEvent usageEvent;
     private Calendar pollTime;
+    private Integer tagsBitmask;
+    private Integer numVips;
 
     public UsageEventMapper(LoadBalancer loadBalancer,
                             boolean isServiceNetLb, SnmpUsage snmpUsage, UsageEvent usageEvent, Calendar polltime) {
@@ -23,6 +25,16 @@ public class UsageEventMapper {
         this.snmpUsage = snmpUsage;
         this.usageEvent = usageEvent;
         this.pollTime = polltime;
+    }
+
+    public UsageEventMapper(LoadBalancer loadBalancer, SnmpUsage usage, UsageEvent usageEvent, Calendar pollTime,
+                            Integer tagsBitmask, Integer numVips) {
+        this.loadBalancer = loadBalancer;
+        this.snmpUsage = usage;
+        this.usageEvent = usageEvent;
+        this.pollTime = pollTime;
+        this.tagsBitmask = tagsBitmask;
+        this.numVips = numVips;
     }
 
     public LoadBalancerHostUsage mapSnmpUsageToUsageEvent() {
@@ -39,10 +51,15 @@ public class UsageEventMapper {
         newUsageEvent.setIncomingTransferSsl(snmpUsage.getBytesInSsl());
         newUsageEvent.setConcurrentConnections(snmpUsage.getConcurrentConnections());
         newUsageEvent.setConcurrentConnectionsSsl(snmpUsage.getConcurrentConnectionsSsl());
-        newUsageEvent.setNumVips(loadBalancer.getLoadBalancerJoinVipSet().size());
+        if (numVips == null) {
+            numVips = loadBalancer.getLoadBalancerJoinVipSet().size();
+        }
+        newUsageEvent.setNumVips(numVips);
 
-        int tags = calculateTags();
-        newUsageEvent.setTagsBitmask(tags);
+        if (tagsBitmask == null) {
+            tagsBitmask = calculateTags();
+        }
+        newUsageEvent.setTagsBitmask(tagsBitmask);
         return newUsageEvent;
     }
 

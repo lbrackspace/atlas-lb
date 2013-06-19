@@ -81,7 +81,7 @@ public class DeleteVirtualIpsListener extends BaseListener {
 
         // Notify usage processor
         try {
-            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP, eventTime);
+            usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP, eventTime);
         } catch (UsageEventCollectionException uex) {
             LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                     ":: Exception: %s", dbLoadBalancer.getId(), uex));

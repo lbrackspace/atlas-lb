@@ -15,9 +15,7 @@ import org.openstack.atlas.usagerefactor.SnmpUsage;
 
 import javax.jms.Message;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -104,12 +102,16 @@ public class UpdateSslTerminationListener extends BaseListener {
 
         //First pass
         List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
+        Map<Integer, SnmpUsage> usagesMap = new HashMap<Integer, SnmpUsage>();
         try {
-            LOG.info(String.format("Collecting usage before ssl event for load balancer %s...", dbLoadBalancer.getId()));
-            usages = usageEventCollection.getUsageRecords(null, dbLoadBalancer);
-            LOG.info(String.format("Successfully collected usage before ssl event for load balancer %s", dbLoadBalancer.getId()));
+            LOG.info(String.format("Collecting usage BEFORE ssl event for load balancer %s...", dbLoadBalancer.getId()));
+            usages = usageEventCollection.getUsage(dbLoadBalancer);
+            for (SnmpUsage usage : usages) {
+                usagesMap.put(usage.getHostId(), usage);
+            }
+            LOG.info(String.format("Successfully collected usage BEFORE ssl event for load balancer %s", dbLoadBalancer.getId()));
         } catch (UsageEventCollectionException e) {
-            LOG.error(String.format("Collection of the DELETE_LOADBALANCER usage event failed for " +
+            LOG.error(String.format("Collection of the ssl usage event failed for " +
                     "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
         }
 
@@ -170,39 +172,48 @@ public class UpdateSslTerminationListener extends BaseListener {
 
         //Second pass
         List<SnmpUsage> usages2 = new ArrayList<SnmpUsage>();
+        Map<Integer, SnmpUsage> usagesMap2 = new HashMap<Integer, SnmpUsage>();
         try {
-            LOG.info(String.format("Collecting usage before ssl event for load balancer %s...", dbLoadBalancer.getId()));
-            usages2 = usageEventCollection.getUsageRecords(null, dbLoadBalancer);
-            LOG.info(String.format("Successfully collected usage before ssl event for load balancer %s", dbLoadBalancer.getId()));
+            LOG.info(String.format("Collecting usage AFTER ssl event for load balancer %s...", dbLoadBalancer.getId()));
+            usages2 = usageEventCollection.getUsage(dbLoadBalancer);
+            for (SnmpUsage usage : usages2) {
+                usagesMap2.put(usage.getHostId(), usage);
+            }
+            LOG.info(String.format("Successfully collected usage AFTER ssl event for load balancer %s", dbLoadBalancer.getId()));
         } catch (UsageEventCollectionException e) {
-            LOG.error(String.format("Collection of the DELETE_LOADBALANCER usage event failed for " +
+            LOG.error(String.format("Collection of the ssl usage event failed for " +
                     "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
         }
 
-        //Combine first pass and second pass
-        for (SnmpUsage usage : usages) {
-            for (SnmpUsage usage2 : usages2) {
-                if (usage.getHostId() == usage2.getHostId()) {
-                    if (usage.getBytesIn() < usage2.getBytesIn()) {
-                        usage.setBytesIn(usage2.getBytesIn());
-                    }
-                    if (usage.getBytesInSsl() < usage2.getBytesInSsl()) {
-                        usage.setBytesInSsl(usage2.getBytesInSsl());
-                    }
-                    if (usage.getBytesOut() < usage2.getBytesOut()) {
-                        usage.setBytesOut(usage2.getBytesOut());
-                    }
-                    if (usage.getBytesOutSsl() < usage2.getBytesOutSsl()) {
-                        usage.setBytesOutSsl(usage2.getBytesOutSsl());
-                    }
-                    if (usage.getConcurrentConnections() < usage2.getConcurrentConnections()) {
-                        usage.setConcurrentConnections(usage2.getConcurrentConnections());
-                    }
-                    if (usage.getConcurrentConnectionsSsl() < usage2.getConcurrentConnectionsSsl()) {
-                        usage.setConcurrentConnectionsSsl(usage2.getConcurrentConnectionsSsl());
-                    }
-                }
+        //In case the first pass missed a host
+        for (Integer hostId : usagesMap2.keySet()) {
+            if (!usagesMap.containsKey(hostId)) {
+                usagesMap.put(hostId, usagesMap2.get(hostId));
             }
+        }
+
+        //Combine first pass and second pass
+        for (Integer hostId : usagesMap.keySet()) {
+            SnmpUsage usage1 = usagesMap.get(hostId);
+            SnmpUsage usage2 = usagesMap2.get(hostId);
+                if (usage1.getBytesIn() < usage2.getBytesIn()) {
+                    usage1.setBytesIn(usage2.getBytesIn());
+                }
+                if (usage1.getBytesInSsl() < usage2.getBytesInSsl()) {
+                    usage1.setBytesInSsl(usage2.getBytesInSsl());
+                }
+                if (usage1.getBytesOut() < usage2.getBytesOut()) {
+                    usage1.setBytesOut(usage2.getBytesOut());
+                }
+                if (usage1.getBytesOutSsl() < usage2.getBytesOutSsl()) {
+                    usage1.setBytesOutSsl(usage2.getBytesOutSsl());
+                }
+                if (usage1.getConcurrentConnections() < usage2.getConcurrentConnections()) {
+                    usage1.setConcurrentConnections(usage2.getConcurrentConnections());
+                }
+                if (usage1.getConcurrentConnectionsSsl() < usage2.getConcurrentConnectionsSsl()) {
+                    usage1.setConcurrentConnectionsSsl(usage2.getConcurrentConnectionsSsl());
+                }
         }
 
         Calendar eventTime = Calendar.getInstance();

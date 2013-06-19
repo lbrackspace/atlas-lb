@@ -98,7 +98,7 @@ public class DeleteSslTerminationListener extends BaseListener {
             Calendar eventTime = Calendar.getInstance();
             // Notify usage processor
             try {
-                usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
+                usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
             } catch (UsageEventCollectionException uex) {
                 LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                         ":: Exception: %s", dbLoadBalancer.getId(), uex));
@@ -116,7 +116,7 @@ public class DeleteSslTerminationListener extends BaseListener {
         Calendar eventTime = Calendar.getInstance();
         // Notify usage processor with a usage event
         try {
-            usageEventCollection.processUsageRecord(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
+            usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
         } catch (UsageEventCollectionException uex) {
             LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                     ":: Exception: %s", dbLoadBalancer.getId(), uex));

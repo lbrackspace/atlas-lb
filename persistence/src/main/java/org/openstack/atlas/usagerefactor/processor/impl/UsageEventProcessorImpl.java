@@ -13,7 +13,9 @@ import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
+import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
+import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.service.domain.usage.BitTag;
 import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
@@ -40,6 +42,12 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
     protected AccountUsageRepository accountUsageRepository;
     protected UsageRepository usageRepository;
     protected LoadBalancerService loadBalancerService;
+    protected NotificationService notificationService;
+
+    private class TagsBitMaskAndNumVips {
+        public int tagsBitmask = 1;
+        public int numVips = 1;
+    }
 
     @Autowired
     public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
@@ -71,114 +79,46 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         this.loadBalancerService = loadBalancerService;
     }
 
+    @Autowired
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+
     @Override
     public void processUsageEvent(List<SnmpUsage> usages, LoadBalancer loadBalancer, UsageEvent usageEvent, Calendar pollTime) {
         LOG.info(String.format("Processing '%s' usage event for load balancer '%d'...", usageEvent.name(),
                 loadBalancer.getId()));
-        if(pollTime == null) {
-            pollTime = Calendar.getInstance();
-        }
+
+        int tagsBitmask = loadBalancerService.getCurrentBitTags(loadBalancer.getId()).toInt();
+        int numVips = virtualIpRepository.getNumIpv4VipsForLoadBalancer(loadBalancer).intValue();
 
         List<LoadBalancerHostUsage> usageRecordsToCreate = new ArrayList<LoadBalancerHostUsage>();
+        if (usages.isEmpty()) {
+            notificationService.saveAlert(loadBalancer.getAccountId(), loadBalancer.getId(), new EntityNotFoundException(),
+                    AlertType.USAGE_FAILURE.name(), String.format("Usage processing for %s event failed because no hosts returned " +
+                    "usage for this load balancer.", usageEvent.name()));
+        }
         for (SnmpUsage usage : usages) {
             LoadBalancerHostUsage usageRecordToProcess;
-            LoadBalancerHostUsage prevUsageRecord = null;
-            boolean isServicenetLb = loadBalancerRepository.isServicenetLoadBalancer(loadBalancer.getId());
 
             //This usage record failed to collect from SNMP, handle accordingly...
             //If this is unsuspend event then we can assume counters start at 0
-            if (usage.getBytesOut() == -1 && usage.getBytesOutSsl() == -1 && usageEvent != UsageEvent.UNSUSPEND_LOADBALANCER && usageEvent != UsageEvent.DELETE_LOADBALANCER){
+            if (isInvalidUsage(usage, usageEvent)){
                 LOG.info(String.format("Snmp usage failed to collect for load balancer %d on host %d. Normal bw_out %d, Normal bw_in %d, " +
                         "Normal ccs %d, SSL bw_out %d, SSL bw_in %d, SSL ccs %d. This record will not be inserted.", usage.getLoadbalancerId(), usage.getHostId(),
                         usage.getBytesOut(), usage.getBytesIn(), usage.getConcurrentConnections(), usage.getBytesOutSsl(),
                         usage.getBytesInSsl(), usage.getConcurrentConnectionsSsl()));
                 continue;
             }
-            if(usage.getBytesOut() == -1){
-                usage.setBytesOut(0L);
-            }
-            if(usage.getBytesOutSsl() == -1){
-                usage.setBytesOutSsl(0L);
-            }
-            if(usage.getBytesIn() == -1){
-                usage.setBytesIn(0L);
-            }
-            if(usage.getBytesInSsl() == -1){
-                usage.setBytesInSsl(0L);
-            }
-            if(usage.getConcurrentConnections() == -1){
-                usage.setConcurrentConnections(0);
-            }
-            if(usage.getConcurrentConnectionsSsl() == -1){
-                usage.setConcurrentConnectionsSsl(0);
-            }
-            if (usage.getHostId() != 0 && usage.getLoadbalancerId() == 0) {
-                LoadBalancerHostUsage recentRecord;
-                recentRecord = usageRefactorService.getLastRecordForLbIdAndHostId(loadBalancer.getId(), usage.getHostId());
-                if (recentRecord != null) {
-                    //Prep for new record...
-                    prevUsageRecord = new UsageEventMapper(loadBalancer, isServicenetLb, null, usageEvent, pollTime)
-                            .mapPreviousUsageEvent(recentRecord);
-                }
-            }
+
+            setNegativeUsageToZero(usage);
 
             LOG.info(String.format("Creating usage event for load balancer '%d'...", loadBalancer.getId()));
-            if (prevUsageRecord != null) {
-                usageRecordToProcess = prevUsageRecord;
-            } else {
-                usageRecordToProcess = new UsageEventMapper(loadBalancer,isServicenetLb, usage, usageEvent, pollTime)
+            usageRecordToProcess = new UsageEventMapper(loadBalancer, usage, usageEvent, pollTime, tagsBitmask, numVips)
                         .mapSnmpUsageToUsageEvent();
-            }
+
             if(usageEvent == UsageEvent.DELETE_LOADBALANCER) {
                 usageRecordToProcess.setNumVips(0);
-            }
-
-            int mostRecentTags;
-            int mostRecentNumVips;
-            LOG.info("Retrieving most recent record from lb_host_usage table for load balancer " + loadBalancer.getId());
-            LoadBalancerHostUsage recentRecord = usageRefactorService.getLastRecordForLbIdAndHostId(loadBalancer.getId(), usage.getHostId());
-            if (recentRecord != null) {
-                mostRecentTags = recentRecord.getTagsBitmask();
-                mostRecentNumVips = recentRecord.getNumVips();
-            } else {
-                LOG.info("lb_host_usage did not have a record for load balancer " + loadBalancer.getId() +
-                        ". Attempting to pull from lb_merged_host_usage...");
-                try {
-                    LoadBalancerMergedHostUsage recentMergedRecord = usageRefactorService.getLastRecordForLbId(loadBalancer.getId());
-                    mostRecentTags = recentMergedRecord.getTagsBitmask();
-                    mostRecentNumVips = recentMergedRecord.getNumVips();
-                } catch (EntityNotFoundException e) {
-                    try {
-                        LOG.info("lb_merged_host_usage did not have a record for load balancer " + loadBalancer.getId() +
-                                 ". Attempting to pull from loadbalancing.lb_usage...");
-                        Usage recentUsageRecord = usageRepository.getMostRecentUsageForLoadBalancer(loadBalancer.getId());
-                        mostRecentTags = recentUsageRecord.getTags();
-                        mostRecentNumVips = recentUsageRecord.getNumVips();
-                    } catch (EntityNotFoundException e1) {
-                        LOG.info("loadbalancing.lb_usage did not have a record for load balancer " + loadBalancer.getId() +
-                                 ". Attempting to pull straight from load balancer tables.");
-                        BitTags tags = loadBalancerService.getCurrentBitTags(loadBalancer.getId());
-                        //We want to default to nonssl to ensure no overcharges.
-                        //Servicenet tags will remain though.
-                        tags.flipTagOff(BitTag.SSL);
-                        tags.flipTagOff(BitTag.SSL_MIXED_MODE);
-                        mostRecentTags = tags.toInt();
-                        mostRecentNumVips = virtualIpRepository.getNumIpv4VipsForLoadBalancer(loadBalancer).intValue();
-                    }
-                }
-            }
-
-
-            //Handles setting of correct tags if it is not an SSL event and DELETE_LB event and CREATE_LB
-            if (usageEvent != UsageEvent.SSL_OFF  && usageEvent != UsageEvent.SSL_ONLY_ON &&
-                    usageEvent != UsageEvent.SSL_MIXED_ON && usageEvent != UsageEvent.DELETE_LOADBALANCER &&
-                    usageEvent != UsageEvent.CREATE_LOADBALANCER) {
-                    usageRecordToProcess.setTagsBitmask(mostRecentTags);
-            }
-            //Handles setting of correct numVips if it is not an SSL event and DELETE_LB event and CREATE_LB
-            if (usageEvent != UsageEvent.CREATE_VIRTUAL_IP && usageEvent != UsageEvent.DELETE_VIRTUAL_IP &&
-                    usageEvent != UsageEvent.DELETE_LOADBALANCER && usageEvent != UsageEvent.CREATE_LOADBALANCER) {
-                    usageRecordToProcess.setNumVips(mostRecentNumVips);
             }
 
             usageRecordsToCreate.add(usageRecordToProcess);
@@ -188,6 +128,9 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
 
         if(!usageRecordsToCreate.isEmpty()){
             usageRefactorService.batchCreateLoadBalancerHostUsages(usageRecordsToCreate);
+        } else {
+            LOG.warn(String.format("There were no usage records created for load balancer %d for event %s. " +
+                    "This is probably a problem.", loadBalancer.getId(), usageEvent.toString()));
         }
 
         LOG.info(String.format("Successfully inserted '%d' usage records into lb_host_usage table.", usageRecordsToCreate.size()));
@@ -217,5 +160,31 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         usage.setNumServicenetVips(virtualIpRepository.getNumUniqueVipsForAccount(accountId, VirtualIpType.SERVICENET));
         accountUsageRepository.save(usage);
         return usage;
+    }
+
+    private boolean isInvalidUsage(SnmpUsage usage, UsageEvent usageEvent) {
+        return usage.getBytesOut() == -1 && usage.getBytesOutSsl() == -1 && usage.getBytesIn() == -1 &&
+                usage.getBytesInSsl() == -1 && usageEvent != UsageEvent.DELETE_LOADBALANCER;
+    }
+
+    private void setNegativeUsageToZero(SnmpUsage usage) {
+        if(usage.getBytesOut() < 0L){
+            usage.setBytesOut(0L);
+        }
+        if(usage.getBytesOutSsl() < 0L){
+            usage.setBytesOutSsl(0L);
+        }
+        if(usage.getBytesIn() < 0L){
+            usage.setBytesIn(0L);
+        }
+        if(usage.getBytesInSsl() < 0L){
+            usage.setBytesInSsl(0L);
+        }
+        if(usage.getConcurrentConnections() < 0){
+            usage.setConcurrentConnections(0);
+        }
+        if(usage.getConcurrentConnectionsSsl() < 0){
+            usage.setConcurrentConnectionsSsl(0);
+        }
     }
 }

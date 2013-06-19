@@ -82,7 +82,7 @@ public class MgmtCreateSuspensionListener extends BaseListener {
         List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
         try {
             LOG.info(String.format("Collecting SUSPEND_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
-            usages = usageEventCollection.getUsageRecords(null, dbLoadBalancer);
+            usages = usageEventCollection.getUsage(dbLoadBalancer);
             LOG.info(String.format("Successfully collected SUSPEND_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
         } catch (UsageEventCollectionException e) {
             LOG.error(String.format("Collection of the SUSPEND_LOADBALANCER usage event failed for " +

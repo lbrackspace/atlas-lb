@@ -19,13 +19,8 @@ import java.util.concurrent.Future;
 
 public class UsageEventCollection extends AbstractUsageEventCollection {
     private final Log LOG = LogFactory.getLog(UsageEventCollection.class);
-    private List<Future<SnmpUsage>> futures;
 
     public UsageEventCollection() throws UsageEventCollectionException {
-    }
-
-    public UsageEventCollection(List<Future<SnmpUsage>> futures) throws UsageEventCollectionException  {
-        this.futures = futures;
     }
 
     @Override
@@ -36,38 +31,33 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
 
         LOG.debug("Collecting SNMP Usages for load balancer: " + lb.getId());
 
+        List<Future<SnmpUsage>> futures;
         List<Callable<SnmpUsage>> callables = new ArrayList<Callable<SnmpUsage>>();
+
         for (Host h : hosts) {
             callables.add(new SnmpVSCollector(h, lb));
         }
         try {
             LOG.debug("Executing SNMP collection tasks for loadbalancer: " + lb.getId());
-            this.futures = executorService.invokeAll(callables);
+            futures = executorService.invokeAll(callables);
         } catch (InterruptedException e) {
             LOG.error("Error Executing SNMP: " + e);
             throw new UsageEventCollectionException("Error executing SNMP collection: ", e);
         }
-        return this.futures;
-    }
-
-    @Override
-    public void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event,
-                               Calendar eventTime) throws UsageEventCollectionException {
-        List<SnmpUsage> usages = getUsagesFromFutures(futures);
-        usageEventProcessor.processUsageEvent(usages, lb, event, eventTime);
+        return futures;
     }
 
     @Override
     public List<SnmpUsage> getUsagesFromFutures(List<Future<SnmpUsage>> futures) throws UsageEventCollectionException{
         List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
-        if (futures != null) {
-            this.futures = futures;
-        }
-        for (Future<SnmpUsage> f : this.futures) {
+
+        for (Future<SnmpUsage> f : futures) {
             try {
                 SnmpUsage usage = f.get();
                 if(usage != null) {
                     usages.add(usage);
+                } else {
+                    LOG.info("A null snmp usage was encountered by will not be used for processing.");
                 }
             } catch (InterruptedException e) {
                 LOG.error("Error retrieving SNMP futures: " + e);
@@ -78,9 +68,5 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
             }
         }
         return usages;
-    }
-
-    public List<Future<SnmpUsage>> getFutures() {
-        return this.futures;
     }
 }

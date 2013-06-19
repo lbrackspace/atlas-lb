@@ -22,7 +22,6 @@ import java.util.concurrent.Future;
 @Component
 public abstract class AbstractUsageEventCollection {
     private final Log LOG = LogFactory.getLog(AbstractUsageEventCollection.class);
-    private List<Host> hosts;
     private ExecutorService executorService;
     private UsageEventProcessor usageEventProcessor;
     private HostRepository hostRepository;
@@ -42,45 +41,31 @@ public abstract class AbstractUsageEventCollection {
 
     public abstract List<Future<SnmpUsage>> collectUsageRecords(ExecutorService executorService, UsageEventProcessor usageEventProcessor, List<Host> hosts, LoadBalancer lb) throws UsageEventCollectionException;
 
-    public abstract void processFutures(List<Future<SnmpUsage>> futures, UsageEventProcessor usageEventProcessor, LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException;
-
     public abstract List<SnmpUsage> getUsagesFromFutures(List<Future<SnmpUsage>> futures) throws UsageEventCollectionException;
 
     /**
      * Used to process usage events
      *
-     * @param hosts
      * @param lb
      * @param event
+     * @param eventTime
      * @throws UsageEventCollectionException
      */
-    public void processUsageRecord(List<Host> hosts, LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
-        this.hosts = null;
+    public void collectUsageAndProcessUsageRecords(LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
         LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
-        gatherHostsData(hosts);
-
-        if (this.hosts != null && !this.hosts.isEmpty()) {
-            executorService = Executors.newFixedThreadPool(this.hosts.size());
-            collectUsageRecords(executorService, usageEventProcessor, this.hosts, lb);
-            processFutures(null, usageEventProcessor, lb, event, eventTime);
-            LOG.debug("Finished Processing Usage Event Record for load balancer: " + lb.getId());
-        } else {
-            LOG.error("Hosts data invalid, this shouldn't happen... Verify DB for data and notify developer immediately. ");
-            throw new UsageEventCollectionException("Hosts data invalid, please contact support.");
-        }
-
+        List<SnmpUsage> usages = getUsage(lb);
+        usageEventProcessor.processUsageEvent(usages, lb, event, eventTime);
     }
 
-    public List<SnmpUsage> getUsageRecords(List<Host> hosts, LoadBalancer lb) throws UsageEventCollectionException {
-        this.hosts = null;
+    public List<SnmpUsage> getUsage(LoadBalancer lb) throws UsageEventCollectionException {
         LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
-        gatherHostsData(hosts);
+        List<Host> hosts = gatherHostsData();
 
-        List<SnmpUsage> usages = null;
-        if (this.hosts != null && !this.hosts.isEmpty()) {
-            executorService = Executors.newFixedThreadPool(this.hosts.size());
-            collectUsageRecords(executorService, usageEventProcessor, this.hosts, lb);
-            usages = getUsagesFromFutures(null);
+        List<SnmpUsage> usages;
+        if (hosts != null && !hosts.isEmpty()) {
+            executorService = Executors.newFixedThreadPool(hosts.size());
+            List<Future<SnmpUsage>> futures = collectUsageRecords(executorService, usageEventProcessor, hosts, lb);
+            usages = getUsagesFromFutures(futures);
             LOG.debug("Finished getting snmp usage for: " + lb.getId());
         } else {
             LOG.error("Hosts data invalid, this shouldn't happen... Verify DB for data and notify developer immediately. ");
@@ -88,44 +73,27 @@ public abstract class AbstractUsageEventCollection {
         }
 
         return usages;
-
-    }
-
-    /**
-     * Used to process usage event without specified hosts
-     *
-     * @param snmpUsage
-     * @param lb
-     * @param event
-     * @throws UsageEventCollectionException
-     */
-    public void processSnmpUsage(SnmpUsage snmpUsage, LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
-        processSnmpUsage(null, snmpUsage, lb, event, eventTime);
     }
 
     /**
      * Used to process events that will not have usage, such as Create event with specified hosts.
      *
-     * @param hosts
-     * @param snmpUsage
      * @param lb
      * @param event
+     * @param eventTime
      * @throws UsageEventCollectionException
      */
-    public void processSnmpUsage(List<Host> hosts, SnmpUsage snmpUsage, LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
-        gatherHostsData(hosts);
+    public void processZeroUsageEvent(LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
+        List<Host> hosts = gatherHostsData();
 
-        if (eventTime == null) {
-            eventTime = Calendar.getInstance();
-        }
-        if (this.hosts != null && !this.hosts.isEmpty()) {
-            for (Host h : this.hosts) {
-                List<SnmpUsage> snmpUsages = new ArrayList<SnmpUsage>();
-                snmpUsage = new SnmpUsage();
+        if (hosts != null && !hosts.isEmpty()) {
+            List<SnmpUsage> snmpUsages = new ArrayList<SnmpUsage>();
+            for (Host h : hosts) {
+                SnmpUsage snmpUsage = new SnmpUsage();
                 snmpUsage.setHostId(h.getId());
                 snmpUsages.add(snmpUsage);
-                usageEventProcessor.processUsageEvent(snmpUsages, lb, event, eventTime);
             }
+            usageEventProcessor.processUsageEvent(snmpUsages, lb, event, eventTime);
         } else {
             LOG.error("Hosts data invalid, this shouldn't happen... Verify DB for data and notify developer immediately. ");
             throw new UsageEventCollectionException("Hosts data invalid, please contact support.");
@@ -136,75 +104,8 @@ public abstract class AbstractUsageEventCollection {
         usageEventProcessor.processUsageEvent(usages, lb, event, eventTime);
     }
 
-    /**
-     * Used to gather hosts data.
-     *
-     * @param hosts
-     */
-    private void gatherHostsData(List<Host> hosts) {
-        if (hosts == null || hosts.isEmpty()) {
-            this.hosts = hostRepository.getAll();
-        } else {
-            this.hosts = hosts;
-        }
-    }
-
-    /**
-     * Used to process usage events with only load balancer specified.
-     *
-     * @param lb
-     * @throws UsageEventCollectionException
-     */
-    public void processUsageRecord(LoadBalancer lb) throws UsageEventCollectionException {
-        processUsageRecord(null, lb, null, null);
-
-    }
-
-    /**
-     * Used to process usage event without hosts specified.
-     *
-     * @param lb
-     * @param event
-     * @throws UsageEventCollectionException
-     */
-    public void processUsageRecord(LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
-        processUsageRecord(null, lb, event, eventTime);
-
-    }
-
-    /**
-     * Used to process usage event with only hosts data specified.
-     *
-     * @param hosts
-     * @throws UsageEventCollectionException
-     */
-    public void processUsageRecord(List<Host> hosts) throws UsageEventCollectionException {
-        processUsageRecord(hosts, null, null, null);
-    }
-
-
-    /**
-     * Used for test purposes.
-     *
-     */
-    public void processUsageRecord() {
-        System.out.print("TEST PPROCESS");
-    }
-
-    /**
-     * @return hosts
-     *
-     */
-    public List<Host> getHosts() {
-        return this.hosts;
-    }
-
-    /**
-     * @return executor service
-     *
-     */
-    public ExecutorService getExecutorService() {
-        return this.executorService;
+    private List<Host> gatherHostsData() {
+        return hostRepository.getAll();
     }
 
 }

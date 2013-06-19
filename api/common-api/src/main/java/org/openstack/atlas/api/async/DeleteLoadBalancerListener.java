@@ -85,7 +85,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
         List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
         try {
             LOG.info(String.format("Collecting DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
-            usages = usageEventCollection.getUsageRecords(null, dbLoadBalancer);
+            usages = usageEventCollection.getUsage(dbLoadBalancer);
             LOG.info(String.format("Successfully collected DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
         } catch (UsageEventCollectionException e) {
             LOG.error(String.format("Collection of the DELETE_LOADBALANCER usage event failed for " +

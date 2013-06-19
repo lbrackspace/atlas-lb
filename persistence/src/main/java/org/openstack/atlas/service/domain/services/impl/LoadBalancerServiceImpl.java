@@ -1125,11 +1125,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
             if (sslTerm.isEnabled()) {
                 bitTags.flipTagOn(BitTag.SSL);
+                if (!sslTerm.isSecureTrafficOnly()) {
+                    bitTags.flipTagOn(BitTag.SSL_MIXED_MODE);
+                }
             }
 
-            if (!sslTerm.isSecureTrafficOnly()) {
-                bitTags.flipTagOn(BitTag.SSL_MIXED_MODE);
-            }
         } catch (EntityNotFoundException e1) {
             bitTags.flipTagOff(BitTag.SSL);
             bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
