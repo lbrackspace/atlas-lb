@@ -174,7 +174,7 @@ public interface ReverseProxyLoadBalancerAdapter {
             throws RemoteException;
 
     public void deleteRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException;
+            throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit)
             throws RemoteException, InsufficientRequestException, RollBackException;

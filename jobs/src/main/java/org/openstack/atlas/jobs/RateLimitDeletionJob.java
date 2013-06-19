@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.repository.HostRepository;
@@ -13,7 +14,6 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
@@ -72,6 +72,8 @@ public class RateLimitDeletionJob extends Job {
                     e.printStackTrace();
                 } catch (InsufficientRequestException e) {
                     e.printStackTrace();
+                } catch (RollBackException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
             }
         }
