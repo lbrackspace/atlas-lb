@@ -5,6 +5,9 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
 import org.openstack.atlas.service.domain.entities.*;
+import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
+import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.monitor.MonitorBasic;
 import org.rackspace.stingray.client.monitor.MonitorHttp;
@@ -29,6 +32,7 @@ public class ResourceTranslator {
     public VirtualServer cVServer;
     public Protection cProtection;
     public Persistence cPersistence;
+    public Bandwidth cBandwidth;
 
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
@@ -37,6 +41,7 @@ public class ResourceTranslator {
         translateMonitorResource(loadBalancer);
         translatePoolResource(vsName, loadBalancer);
         translateVirtualServerResource(config, vsName, loadBalancer);
+        translateBandwidthResource(loadBalancer);
     }
 
     public VirtualServer translateVirtualServerResource(LoadBalancerEndpointConfiguration config,
@@ -89,7 +94,22 @@ public class ResourceTranslator {
         virtualServer.setProperties(properties);
 
         cVServer = virtualServer;
-        return null;
+        return cVServer;
+    }
+
+    public Bandwidth translateBandwidthResource(LoadBalancer loadBalancer) throws InsufficientRequestException {
+        Bandwidth bandwidth = new Bandwidth();
+        BandwidthProperties properties = new BandwidthProperties();
+        BandwidthBasic basic = new BandwidthBasic();
+
+        loadBalancer.getConnectionLimit();
+        basic.setMaximum(loadBalancer.getRateLimit().getMaxRequestsPerSecond());
+
+        properties.setBasic(basic);
+        bandwidth.setProperties(properties);
+
+        cBandwidth = bandwidth;
+        return cBandwidth;
     }
 
     public TrafficIp translateTrafficIpResource(LoadBalancerEndpointConfiguration config,
@@ -155,7 +175,7 @@ public class ResourceTranslator {
         pool.setProperties(properties);
 
         cPool = pool;
-        return pool;
+        return cPool;
     }
 
     public Monitor translateMonitorResource(LoadBalancer loadBalancer) {
@@ -189,7 +209,7 @@ public class ResourceTranslator {
         monitor.setProperties(properties);
 
         cMonitor = monitor;
-        return null;
+        return cMonitor;
     }
 
     public Protection translateProtectionResource(String vsName, LoadBalancer loadBalancer) {
@@ -208,7 +228,7 @@ public class ResourceTranslator {
         protection.setProperties(properties);
 
         cProtection = protection;
-        return null;
+        return protection;
     }
 
     public Persistence translatePersistenceResource(String vsName, LoadBalancer loadBalancer) {
@@ -220,7 +240,7 @@ public class ResourceTranslator {
         properties.setBasic(basic);
         persistence.setProperties(properties);
         cPersistence = persistence;
-        return persistence;
+        return cPersistence;
 
     }
 
@@ -272,5 +292,13 @@ public class ResourceTranslator {
 
     public void setcPersistence(Persistence cPersistence) {
         this.cPersistence = cPersistence;
+    }
+
+    public Bandwidth getcBandwidth() {
+        return cBandwidth;
+    }
+
+    public void setcBandwidth(Bandwidth cBandwidth) {
+        this.cBandwidth = cBandwidth;
     }
 }

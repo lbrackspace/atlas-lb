@@ -19,6 +19,9 @@ import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.converters.StringConverter;
 import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
+import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.monitor.Monitor;
@@ -28,6 +31,8 @@ import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
+import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -797,25 +802,99 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void deleteRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void deleteRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        deleteRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (loadBalancer.hasSsl()) {
+            deleteRateLimit(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        }
+    }
+
+    private void deleteRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws StmRollBackException {
+        StingrayRestClient client = loadSTMRestClient(config);
+
+
     }
 
     @Override
-    public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        setRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (loadBalancer.hasSsl()) {
+            setRateLimit(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        }
+    }
+
+    public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        StingrayRestClient client = loadSTMRestClient(config);
+
+        try {
+            LOG.debug(String.format("Adding a rate limit to load balancer...'%s'...", vsName));
+
+            // I assume this is how we'd set a rate limit
+            ResourceTranslator rt = new ResourceTranslator();
+            rt.translateLoadBalancerResource(config, vsName, loadBalancer);
+            Bandwidth bandwidth = rt.getcBandwidth();
+            VirtualServer virtualServer = rt.getcVServer();
+            VirtualServerProperties properties = virtualServer.getProperties();
+            VirtualServerBasic basic = properties.getBasic();
+            basic.setBandwidth_class(vsName); // Do I need to check if this already exists and delete the old one?
+
+            client.createBandwidth(vsName, bandwidth);
+
+            LOG.info("Successfully added a rate limit to the rate limit pool.");
+
+            //TODO: Not sure how to replace these calls, since I'm not sure what they do (yet)
+            //TrafficScriptHelper.addRateLimitScriptsIfNeeded(serviceStubs);
+            //attachRateLimitRulesToVirtualServers(serviceStubs, new String[]{vsName});
+
+        } catch (Exception e) {
+            if (e instanceof StingrayRestClientObjectNotFoundException) {
+                LOG.error(String.format("Cannot add rate limit for virtual server '%s' as it does not exist.", vsName));
+            }
+            throw new StmRollBackException("Add rate limit request canceled.", e);
+        }
     }
 
     @Override
-    public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        updateRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (loadBalancer.hasSsl()) {
+            updateRateLimit(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        }
+    }
+
+    public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws InsufficientRequestException, StmRollBackException {
+        StingrayRestClient client = loadSTMRestClient(config);
+
+        try {
+            LOG.debug(String.format("Updating the rate limit for load balancer...'%s'...", vsName));
+
+            ResourceTranslator rt = new ResourceTranslator();
+            rt.translateLoadBalancerResource(config, vsName, loadBalancer);
+            Bandwidth bandwidth = rt.getcBandwidth();
+            VirtualServer virtualServer = rt.getcVServer();
+
+            String bwc = virtualServer.getProperties().getBasic().getBandwidth_class();
+
+            client.updateBandwidth(bwc,bandwidth);
+
+            LOG.info(String.format("Successfully updated the rate limit for load balancer...'%s'...", vsName));
+
+            //TODO: Not sure how to replace these calls, since I'm not sure what they do (yet)
+            //TrafficScriptHelper.addRateLimitScriptsIfNeeded(serviceStubs);
+            //attachRateLimitRulesToVirtualServers(serviceStubs, new String[]{vsName});
+
+        } catch (Exception e) {
+            if (e instanceof StingrayRestClientObjectNotFoundException) {
+                LOG.error(String.format("Cannot add rate limit for virtual server '%s' as it does not exist.", vsName));
+            }
+            throw new StmRollBackException("Add rate limit request canceled.", e);
+        }
+
     }
 
     @Override
     public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
-
-        // This seems inefficient -- should rewrite to do this as one operation. TODO
         deleteErrorFile(config, loadBalancer);
         //setDefaultErrorFile(config, loadBalancer); //This isn't necessary anymore, since deleteErrorFile already ran an update
     }
@@ -840,7 +919,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         // ** END Temporary for testing purposes
 
         ResourceTranslator rt = new ResourceTranslator();
-        rt.translateLoadBalancerResource(config, vsName, loadBalancer);
+        rt.translateVirtualServerResource(config, vsName, loadBalancer);
         VirtualServer vs = rt.getcVServer();
         LOG.debug(String.format("Attempting to set the default error file for %s", vsName));
         try {
@@ -907,7 +986,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         // ** END Temporary for testing purposes
 
         ResourceTranslator rt = new ResourceTranslator();
-        rt.translateLoadBalancerResource(config, vsName, loadBalancer);
+        rt.translateVirtualServerResource(config, vsName, loadBalancer);
         VirtualServer vs = rt.getcVServer();
         String fileToDelete = getErrorFileName(vsName);
         try {
