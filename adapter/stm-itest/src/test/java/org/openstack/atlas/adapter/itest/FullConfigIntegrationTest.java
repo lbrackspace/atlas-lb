@@ -102,4 +102,5 @@ public class FullConfigIntegrationTest {
             e.printStackTrace();
         }
     }
+
 }

@@ -97,8 +97,11 @@ public class ResourceTranslator {
         TrafficIp tig = new TrafficIp();
         TrafficIpProperties properties = new TrafficIpProperties();
         TrafficIpBasic basic = new TrafficIpBasic();
+        loadBalancer.getIpv4Servicenet();
+        loadBalancer.getIpv4Public();
 
         basic.setEnabled(true);
+//        basic.setIpaddresses();
 //        basic.set
 
 
@@ -213,8 +216,7 @@ public class ResourceTranslator {
         PersistenceProperties properties = new PersistenceProperties();
         PersistenceBasic basic = new PersistenceBasic();
 
-        //TODO WHAT IN GODS NAME
-        basic.setType(loadBalancer.getSessionPersistence().getSessionPersistence().getPersistenceType().name());
+        basic.setType(loadBalancer.getSessionPersistence().getSessionPersistence().getPersistenceType().value());
         properties.setBasic(basic);
         persistence.setProperties(properties);
         cPersistence = persistence;

@@ -17,12 +17,14 @@ import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.openstack.atlas.util.converters.StringConverter;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.pool.Pool;
+import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
@@ -34,10 +36,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
@@ -193,7 +192,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
      */
     @Override
     public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException, StmRollBackException {
+            throws RemoteException, InsufficientRequestException, StmRollBackException {
 
         final String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
         ResourceTranslator translator = new ResourceTranslator();
@@ -234,14 +233,65 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     //Delelete
 
     @Override
-    public void removeNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes) throws AxisFault, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void removeNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes) throws AxisFault, InsufficientRequestException, StmRollBackException {
+        String rollBackMessage = "Remove node request canceled.";
+
+        StingrayRestClient client = loadSTMRestClient(config);
+        String vsName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        try {
+            Pool pool = client.getPool(vsName);
+            PoolBasic basic = pool.getProperties().getBasic();
+            Set<String> existingNodes = basic.getNodes();
+
+            String[] passedNodes = new String[nodes.size()];
+            int counter = 0;
+            for (Node node : nodes) {
+                //this is the node as defined by the api for basic.getNodes()
+                //the line converts the passed in nodes to that same format
+                passedNodes[counter] = node.getIpAddress() + ":" + node.getPort();
+                counter++;
+            }
+
+            for (String node : passedNodes) {
+                if (existingNodes.contains(node)) {
+                    existingNodes.remove(node);
+                }
+            }
+            basic.setNodes(existingNodes);
+            client.updatePool(vsName, pool);
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            LOG.warn(String.format("Node pool '%s' for nodes %s does not exist.", onf));
+            LOG.warn(StringConverter.getExtendedStackTrace(onf));
+        } catch (StingrayRestClientException e) {
+            throw new StmRollBackException(rollBackMessage, e);
+        }
     }
 
     //Take in a Node?
+    //You can build the node from the given info
     @Override
-    public void removeNode(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String ipAddress, Integer port) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void removeNode(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String ipAddress, Integer port) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        StingrayRestClient client = loadSTMRestClient(config);
+        String nodeToRemove = ipAddress + ":" + Integer.toString(port);
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
+        String rollBackMessage = "Remove node request canceled.";
+        try {
+            Pool pool = client.getPool(vsName);
+            PoolBasic basic = pool.getProperties().getBasic();
+            Set<String> existingNodes = basic.getNodes();
+            if (existingNodes.contains(nodeToRemove)) {
+                existingNodes.remove(nodeToRemove);
+
+            } else {
+                //TODO we should probs tell them that node doesn't even exist...
+            }
+            //TODO call a method
+            client.updatePool(vsName, pool);
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            LOG.warn(String.format("Node pool '%s' for node '%s:%d' does not exist.", vsName, ipAddress, port));
+        } catch (StingrayRestClientException e) {
+            throw new StmRollBackException(rollBackMessage, e);
+        }
     }
 
     private void rollbackPool(StingrayRestClient client, String poolName, Pool curPool) throws StmRollBackException {
@@ -272,24 +322,31 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
 
     @Override
-    public void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        StingrayRestClient client = loadSTMRestClient(config);
+        ResourceTranslator translator = new ResourceTranslator();
+        String vsName;
+        TrafficIp trafficIp;
+        if (loadBalancer.hasSsl()) {
+            vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+
+        } else {
+            vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        }
+
+
     }
 
     @Override
-    public void deleteVirtualIp(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Integer vipId) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void deleteVirtualIp(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Integer vipId) throws RemoteException, InsufficientRequestException, StmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipId) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipId) throws RemoteException, InsufficientRequestException, StmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void addVirtualIps(LoadBalancerEndpointConfiguration config,
-                              StingrayRestClient client, String vsName, TrafficIp trafficIpGroup)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-
-    }
 
     /*
         Monitor Resources
@@ -368,9 +425,22 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug(String.format("Successfully rolled back monitor '%s' ", monitorName));
     }
 
+     private void rollbackProtection(StingrayRestClient client, String protectionName, Protection curProtection)
+    {
+
+    }
+
+    private void rollbackPersistence(StingrayRestClient client, String persistenceName, Persistence curPersistence)
+    {
+
+    }
+
     /*
         Connection Logging Resources
      */
+
+
+
 
     @Override
     public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, StmRollBackException {
@@ -413,13 +483,57 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void updatePort(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Integer port) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void updatePort(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Integer port) throws RemoteException, InsufficientRequestException, StmRollBackException {
+
+
+        //TODO do we want to pass a loadbalancer in?
+        StingrayRestClient client = loadSTMRestClient(config);
+        String vsName = Integer.toString(accountId) + "_" + Integer.toString(loadBalancerId);
+        try {
+            LOG.debug(String.format("Updating ort to '%d' for virtual server '%s'..", port, vsName));
+        VirtualServer virtualServer = client.getVirtualServer(vsName);
+        virtualServer.getProperties().getBasic().setPort(port);
+        client.updateVirtualServer(vsName, virtualServer);
+            LOG.info(String.format("Successfully updated port for "));
+
+        }catch (StingrayRestClientObjectNotFoundException onf)
+        {
+           LOG.error(String.format("Cannot update port for virtual server '%s' as it does not exist.", vsName), onf);
+        }
+        catch (StingrayRestClientException e)
+        {
+              throw new StmRollBackException("Update port request canceled as there was an unexpected client error...", e);
+        }
     }
 
     @Override
-    public void updateTimeout(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void updateTimeout(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        StingrayRestClient client = loadSTMRestClient(config);
+        ResourceTranslator translator = new ResourceTranslator();
+        String vsName;
+        if(loadBalancer.hasSsl())
+        {
+            vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+        }
+        else
+        {
+            vsName= ZxtmNameBuilder.genVSName(loadBalancer);
+        }
+
+        translator.translateLoadBalancerResource(config, vsName, loadBalancer);
+        Pool pool = translator.getcPool();
+
+        try{
+            client.updatePool(vsName, pool);
+        }catch(StingrayRestClientObjectNotFoundException onf)
+        {
+             LOG.error(String.format("Unable to update timeout as '%s' was not found", onf));
+        }
+        catch (StingrayRestClientException e)
+        {
+            LOG.error(String.format("Unable to update timeout due to unexpected client error '%s'", e));
+        }
+
     }
 
     @Override
@@ -458,6 +572,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
+
     }
 
 
