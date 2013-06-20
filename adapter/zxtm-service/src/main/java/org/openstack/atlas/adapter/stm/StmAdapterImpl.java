@@ -30,6 +30,7 @@ import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
 import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
 import java.io.BufferedWriter;
@@ -977,12 +978,15 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         rt.translateVirtualServerResource(config, vsName, loadBalancer);
         VirtualServer vs = rt.getcVServer();
         LOG.debug(String.format("Attempting to set the default error file for %s", vsName));
-
-        // Update client with new properties
-        updateVirtualServer(config, client, vsName, vs);
-
-        //LOG.info(String.format("Successfully set the default error file for: %s", vsName));
-        LOG.info(String.format("Maybe successfully set the default error file for: %s?? Not sure.", vsName));
+        try {
+            // Update client with new properties
+            updateVirtualServer(config, client, vsName, vs);
+    
+            LOG.info(String.format("Successfully set the default error file for: %s", vsName));
+        } catch (StmRollBackException re) {
+            LOG.error(String.format("Failed to set the default error file for: %s", vsName));
+            throw re;
+        }
     }
 
     @Override
@@ -1020,6 +1024,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         // TODO: from our 'DB', or entity loadBalancer object after we have verified it has been removed from the backend (STM).
         //ToDO: set NULL on the loadbalancer object before translation.
 
+        //TODO is this better?
+
         StingrayRestClient client = loadSTMRestClient(config);
 
         ResourceTranslator rt = new ResourceTranslator();
@@ -1030,6 +1036,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", vsName, fileToDelete));
 
             // Update client with new properties
+            VirtualServerProperties properties = vs.getProperties();
+            properties.setConnection_errors(new VirtualServerConnectionError()); // this will set the default error page
             updateVirtualServer(config, client, vsName, vs);
 
             // Delete the old error file
@@ -1038,8 +1046,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.info(String.format("Successfully deleted a custom error file for %s (%s)", vsName, fileToDelete));
         } catch (StingrayRestClientObjectNotFoundException onf) {
             LOG.warn(String.format("Cannot delete custom error page as, %s, it does not exist. Ignoring...", fileToDelete));
-        } catch (Exception ex) {
-            LOG.error(String.format("There was a unexpected error deleting the error file for: %s Exception: %s", vsName, ex.getMessage()));
+        } catch (StmRollBackException re) {
+            LOG.error(String.format("Failed deleting the error file for: %s Exception: %s", vsName, re.getMessage()));
+            throw re;
+        } catch (StingrayRestClientException e) {
+            LOG.error(String.format("There was a unexpected error deleting the error file for: %s Exception: %s", vsName, e.getMessage()));
+            throw new StmRollBackException("Deleting error file cancelled.", e);
         }
     }
 
@@ -1083,12 +1095,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             updateVirtualServer(config, client, vsName, vs);
 
             LOG.info(String.format("Successfully set the error file for %s (%s)", vsName, errorFileName));
-        } catch (StingrayRestClientException ce) {
+        } catch (StmRollBackException re) {
             // REST failure...
-            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- REST Client exception", vsName, errorFileName));
-        } catch (StingrayRestClientObjectNotFoundException onf) {
-            // The file we uploaded wasn't there? Not good -- leave the object as it was before?
-            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Rolling back.", vsName, errorFileName));
+            throw re;
         }
     }
 

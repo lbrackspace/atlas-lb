@@ -125,7 +125,6 @@ public class ResourceTranslator {
         BandwidthProperties properties = new BandwidthProperties();
         BandwidthBasic basic = new BandwidthBasic();
 
-        loadBalancer.getConnectionLimit();
         basic.setMaximum(loadBalancer.getRateLimit().getMaxRequestsPerSecond());
 
         properties.setBasic(basic);
