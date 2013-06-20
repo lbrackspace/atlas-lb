@@ -44,7 +44,7 @@ public class HostRepository {
 
     public List<Host> getAll(Integer... p) {
         List<Host> hosts = new ArrayList<Host>();
-        Query query = entityManager.createQuery("SELECT h FROM Host h");
+        Query query = entityManager.createQuery("SELECT h FROM Host h order by h.id");
         if (p.length >= 2) {
             Integer offset = p[0];
             Integer limit = p[1];
@@ -97,7 +97,7 @@ public class HostRepository {
             }
             query = query.setFirstResult(offset).setMaxResults(limit);
         }
-        
+
         return query.getResultList();
     }
 
@@ -122,10 +122,7 @@ public class HostRepository {
         List<Object> loadBalancerTuples;
         List<LoadBalancer> loadBalancers = new ArrayList<LoadBalancer>();
 
-        loadBalancerTuples = entityManager.createNativeQuery("SELECT lb.id, lb.account_id FROM loadbalancer lb where lb.host_id = :hostId and lb.status = :status")
-                .setParameter("hostId", hostId)
-                .setParameter("status", status.name())
-                .getResultList();
+        loadBalancerTuples = entityManager.createNativeQuery("SELECT lb.id, lb.account_id FROM loadbalancer lb where lb.host_id = :hostId and lb.status = :status").setParameter("hostId", hostId).setParameter("status", status.name()).getResultList();
 
         for (Object loadBalancerTuple : loadBalancerTuples) {
             Object[] row = (Object[]) loadBalancerTuple;
@@ -143,10 +140,7 @@ public class HostRepository {
         List<Object> loadBalancerTuples;
         List<LoadBalancer> loadBalancers = new ArrayList<LoadBalancer>();
 
-        loadBalancerTuples = entityManager.createNativeQuery("SELECT lb.id, lb.account_id FROM loadbalancer lb, lb_ssl s where lb.host_id = :hostId and lb.id = s.loadbalancer_id and lb.status = :status")
-                .setParameter("hostId", hostId)
-                .setParameter("status", status.name())
-                .getResultList();
+        loadBalancerTuples = entityManager.createNativeQuery("SELECT lb.id, lb.account_id FROM loadbalancer lb, lb_ssl s where lb.host_id = :hostId and lb.id = s.loadbalancer_id and lb.status = :status").setParameter("hostId", hostId).setParameter("status", status.name()).getResultList();
 
         for (Object loadBalancerTuple : loadBalancerTuples) {
             Object[] row = (Object[]) loadBalancerTuple;
@@ -183,22 +177,22 @@ public class HostRepository {
         Query q = entityManager.createQuery(hqlStr).setParameter("clusterId", clusterId).setMaxResults(1);
         List<Host> results = q.getResultList();
         if (results.size() < 1) {
-            LOG.error(String.format("Error no more SOAP endpoints left for ClusterId %d.",clusterId));
+            LOG.error(String.format("Error no more SOAP endpoints left for ClusterId %d.", clusterId));
             return null;
         }
         return results.get(0);
     }
 
-    public List<String> getFailoverHostNames (Integer clusterId){
+    public List<String> getFailoverHostNames(Integer clusterId) {
         String hql = "select h.trafficManagerName from Host h where h.hostStatus = 'FAILOVER' and h.cluster.id = :clusterId";
-        Query q = entityManager.createQuery(hql).setParameter("clusterId",clusterId);
+        Query q = entityManager.createQuery(hql).setParameter("clusterId", clusterId);
         List<String> results = q.getResultList();
         return results;
     }
 
     public String getEndPoint(Integer clusterId) {
         Host host = getEndPointHost(clusterId);
-        if(host==null) {
+        if (host == null) {
             return null;
         }
         return host.getEndpoint();
@@ -208,8 +202,7 @@ public class HostRepository {
         LoadBalancer lb = entityManager.find(LoadBalancer.class, loadBalancerId);
         if (lb != null) {
             return lb.getHost();
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -223,8 +216,8 @@ public class HostRepository {
         return backups.get(0);
     }
 
-    public Cluster getClusterById(Integer clusterId){
-        Cluster cluster = entityManager.find(Cluster.class,clusterId);
+    public Cluster getClusterById(Integer clusterId) {
+        Cluster cluster = entityManager.find(Cluster.class, clusterId);
         return cluster;
     }
 
@@ -296,7 +289,7 @@ public class HostRepository {
             String lname = (String) row[2];
             Integer nid = (Integer) row[3];
             String nip = (String) row[4];
-            LoadBalancerStatus status =(LoadBalancerStatus) row[5];
+            LoadBalancerStatus status = (LoadBalancerStatus) row[5];
 
             if (currAid != aid) {
                 customer = new Customer();
@@ -318,17 +311,17 @@ public class HostRepository {
                 currLid = lid;
             }
 
-             //SITESLB-918 removed nodes
+            //SITESLB-918 removed nodes
             /*
             if (nid != null) {
-                Node node = new Node();
-                node.setId(nid);
-                node.setIpAddress(nip);
-                node.setWeight(null);
-                if (loadBalancer.getNodes() == null) {
-                    loadBalancer.setNodes(new HashSet<Node>());
-                }
-                loadBalancer.addNode(node);
+            Node node = new Node();
+            node.setId(nid);
+            node.setIpAddress(nip);
+            node.setWeight(null);
+            if (loadBalancer.getNodes() == null) {
+            loadBalancer.setNodes(new HashSet<Node>());
+            }
+            loadBalancer.addNode(node);
             } */
 
         }
@@ -367,9 +360,9 @@ public class HostRepository {
     public Host getDefaultActiveHost(Integer clusterId) throws EntityNotFoundException {
         //get a host based on the following algorithm
         //status = ACTIVE_TARGET, fewest concurrent connections and fewest number of assigned loadbalanders.
-        String sql = "SELECT h from Host h where h.cluster.id = :clusterId AND h.hostStatus= :hostStatus " +
-                "AND h.maxConcurrentConnections = (select min(i.maxConcurrentConnections) " +
-                "from Host i where i.cluster.id = :clusterId AND i.hostStatus = :hostStatus)";
+        String sql = "SELECT h from Host h where h.cluster.id = :clusterId AND h.hostStatus= :hostStatus "
+                + "AND h.maxConcurrentConnections = (select min(i.maxConcurrentConnections) "
+                + "from Host i where i.cluster.id = :clusterId AND i.hostStatus = :hostStatus)";
 
 //        String sql = "SELECT h from Host h where h.cluster.id = :clusterId"
 //                + " AND h.hostStatus = '"

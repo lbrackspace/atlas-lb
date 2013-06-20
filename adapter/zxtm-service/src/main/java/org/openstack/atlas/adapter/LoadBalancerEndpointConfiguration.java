@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 /**
  * The LoadBalancerEndpointConfiguration class is used to pass the endpoint and
@@ -38,7 +39,7 @@ public class LoadBalancerEndpointConfiguration {
         this.trafficManagerHost = trafficManagerHost;
         this.trafficManagerName = trafficManagerHost.getTrafficManagerName();
         this.failoverTrafficManagerNames = failoverTrafficManagerNames;
-        LOG.info(String.format("Selecting %s as SoapEndping", this.endpointUrl));
+        LOG.info(String.format("Selecting %s as SoapEndpoint", this.endpointUrl));
     }
 
     public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames, String logFileLocation) {
@@ -56,6 +57,18 @@ public class LoadBalancerEndpointConfiguration {
         this.failoverTrafficManagerNames = failoverTrafficManagerNames;
         this.logFileLocation = logFileLocation;
         LOG.info(String.format("Selecting %s as SoapEndping", this.endpointUrl));
+    }
+
+    @Override
+    public String toString() {
+        return "{"
+                + " endpointUrlHost: " + endpointUrlHost
+                + ", userName: " + username
+                + ", passwd: " + "Censored"
+                + ", trafficManagerHost: {" + ((trafficManagerHost == null) ? "null" : trafficManagerHost.toString()) + "}"
+                + ", failoverTrafficManagerNames: " + StaticStringUtils.collectionToString(failoverTrafficManagerNames, ",")
+                + "}";
+
     }
 
     public Host getTrafficManagerHost() {

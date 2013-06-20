@@ -36,7 +36,6 @@ public class HostServiceImpl extends BaseService implements HostService {
         return hostRepository.getAllActive();
     }
 
-
     @Override
     public Host getDefaultActiveHostAndActiveCluster() throws ClusterStatusException, EntityNotFoundException {
         return hostRepository.getDefaultActiveHost(clusterRepository.getActiveCluster().getId());
@@ -49,7 +48,6 @@ public class HostServiceImpl extends BaseService implements HostService {
         dbLb.setSticky(true);
         loadBalancerRepository.update(dbLb);
     }
-
 
     @Override
     @Transactional
@@ -133,7 +131,6 @@ public class HostServiceImpl extends BaseService implements HostService {
         hostRepository.update(dbHost);
 
     }
-
 
     @Override
     @Transactional
@@ -266,12 +263,10 @@ public class HostServiceImpl extends BaseService implements HostService {
         return hostRepository.getNumberOfUniqueAccountsForHost(id);
     }
 
-
     @Override
     public long getActiveLoadBalancerForHost(Integer id) {
         return hostRepository.getActiveLoadBalancerForHost(id);
     }
-
 
     @Override
     @Transactional
@@ -315,14 +310,18 @@ public class HostServiceImpl extends BaseService implements HostService {
 
     @Override
     public boolean isActiveHost(Host host) throws EntityNotFoundException {
-        if (host.getHostStatus() == null) host = hostRepository.getById(host.getId());
+        if (host.getHostStatus() == null) {
+            host = hostRepository.getById(host.getId());
+        }
         return !(host.getHostStatus().equals(HostStatus.BURN_IN) || host.getHostStatus().equals(HostStatus.OFFLINE));
 
     }
 
     public static boolean detectDuplicateHosts(List<Host> allHosts, Host queueHost) {
         for (Host h : allHosts) {
-            if (h.getTrafficManagerName().equals(queueHost.getTrafficManagerName())) return true;
+            if (h.getTrafficManagerName().equals(queueHost.getTrafficManagerName())) {
+                return true;
+            }
         }
         return false;
     }

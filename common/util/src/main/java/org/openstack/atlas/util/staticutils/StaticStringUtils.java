@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 public class StaticStringUtils {
+
     public static String lpadLong(long val, String pad, int npad) {
         return lpad(Long.toString(val), pad, npad);
     }
@@ -19,27 +20,6 @@ public class StaticStringUtils {
             sb.append(pad);
         }
         sb.append(val);
-        return sb.toString();
-    }
-
-    public static String getExtendedStackTrace(Throwable th) {
-        Throwable t;
-        StringBuilder sb = new StringBuilder();
-        Exception currEx;
-        String msg;
-
-        t = th;
-        while (t != null) {
-            if (t instanceof Exception) {
-                currEx = (Exception) t;
-                sb.append(String.format("\"%s\":\"%s\"\n", currEx.getClass().getName(), currEx.getMessage()));
-                for (StackTraceElement se : currEx.getStackTrace()) {
-                    sb.append(String.format("%s\n", se.toString()));
-                }
-                sb.append("\n");
-                t = t.getCause();
-            }
-        }
         return sb.toString();
     }
 

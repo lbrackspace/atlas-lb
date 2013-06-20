@@ -809,7 +809,7 @@ public class HdfsCli {
                 System.out.printf("Unrecognized command\n");
                 continue;
             } catch (Exception ex) {
-                System.out.printf("Exception: %s\n", StaticStringUtils.getExtendedStackTrace(ex));
+                System.out.printf("Exception: %s\n", Debug.getExtendedStackTrace(ex));
             }
         }
         System.out.printf("Exiting\n");
