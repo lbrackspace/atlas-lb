@@ -89,6 +89,13 @@ public class ResourceTranslator {
             properties.setLog(log);
         }
 
+        //webcache settings
+        if (loadBalancer.isContentCaching()) {
+            VirtualServerWebcache cache = new VirtualServerWebcache();
+            cache.setEnabled(true);
+            properties.setWeb_cache(cache);
+        }
+
         //error file settings
         UserPages userPages = loadBalancer.getUserPages();
         String ep = null;
@@ -122,7 +129,6 @@ public class ResourceTranslator {
         BandwidthProperties properties = new BandwidthProperties();
         BandwidthBasic basic = new BandwidthBasic();
 
-        loadBalancer.getConnectionLimit();
         basic.setMaximum(loadBalancer.getRateLimit().getMaxRequestsPerSecond());
 
         properties.setBasic(basic);

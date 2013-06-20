@@ -6,7 +6,6 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
@@ -37,6 +36,7 @@ import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
 import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
 import java.io.BufferedWriter;
@@ -118,11 +118,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     updateHealthMonitor(config, client, vsName, translator.getcMonitor());
                 }
 
-        //            if (loadBalancer.getSessionPersistence() != null
-        //                    && !loadBalancer.getSessionPersistence().equals(SessionPersistence.NONE)
-        //                    && !loadBalancer.hasSsl()) //setSessionPersistence(config, loadBalancer);
-        //
-        //            if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) //updateContentCaching(config, loadBalancer);
+//            if (loadBalancer.getSessionPersistence() != null
+//                    && !loadBalancer.getSessionPersistence().equals(SessionPersistence.NONE)
+//                    && !loadBalancer.hasSsl()) //setSessionPersistence(config, loadBalancer);
+//
+            //Contentcaching is on the VirtualServer object already, so it will be updated without this anyway
+//            if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) updateContentCaching(config, loadBalancer);
 
                 if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())
                         || loadBalancer.getConnectionLimit() != null) {
@@ -140,7 +141,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -499,7 +500,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
 
     @Override
-    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, StmRollBackException {
+    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException, StmRollBackException {
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         ResourceTranslator translator = new ResourceTranslator();
         StingrayRestClient client = loadSTMRestClient(config);
@@ -546,7 +547,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void updateHalfClosed(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void updateHalfClosed(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -600,13 +601,13 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void setLoadBalancingAlgorithm(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void setLoadBalancingAlgorithm(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, StmRollBackException {
         //TODO: still in example phase...
 //
     }
 
     @Override
-    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws RemoteException, InsufficientRequestException, StmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -614,7 +615,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void setNodeWeights(LoadBalancerEndpointConfiguration config,
                                Integer loadBalancerId, Integer accountId, Collection<Node> nodes)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+            throws RemoteException, InsufficientRequestException, StmRollBackException {
     }
 
 
@@ -688,8 +689,20 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
 
     @Override
-    public void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        StingrayRestClient client = loadSTMRestClient(config);
+        ResourceTranslator rt = new ResourceTranslator();
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        rt.translateLoadBalancerResource(config, vsName, loadBalancer);
+        VirtualServer virtualServer = rt.getcVServer();
+
+        LOG.info(String.format("Attempting to update content cacheing for %s", vsName));
+        try {
+        updateVirtualServer(config, client, vsName, virtualServer);
+        } catch (StmRollBackException re) {
+            LOG.error(String.format("Failed to update content cacheing for %s", vsName));
+            throw re;
+        }
     }
 
     @Override
@@ -1035,14 +1048,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug(String.format("Attempting to set the default error file for %s", vsName));
         try {
             // Update client with new properties
-            client.updateVirtualServer(vsName, vs);
+            updateVirtualServer(config, client, vsName, vs);
 
             LOG.info(String.format("Successfully set the default error file for: %s", vsName));
-        } catch (StingrayRestClientObjectNotFoundException onf) {
-            //not sure if this exception means what I thought it did
-            LOG.warn(String.format("Virtual server %s does not exist, ignoring...", vsName));
-        } catch (StingrayRestClientException e) {
-            LOG.error(String.format("There was a unexpected error setting the default error file for %s; Exception: %s", vsName, e.getMessage()));
+        } catch (StmRollBackException re) {
+            LOG.error(String.format("Failed to set the default error file for: %s", vsName));
+            throw re;
         }
     }
 
@@ -1081,6 +1092,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         // TODO: from our 'DB', or entity loadBalancer object after we have verified it has been removed from the backend (STM).
         //ToDO: set NULL on the loadbalancer object before translation.
 
+        //TODO is this better?
+
         StingrayRestClient client = loadSTMRestClient(config);
 
         ResourceTranslator rt = new ResourceTranslator();
@@ -1091,7 +1104,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", vsName, fileToDelete));
 
             // Update client with new properties
-            client.updateVirtualServer(vsName, vs);
+            VirtualServerProperties properties = vs.getProperties();
+            properties.setConnection_errors(new VirtualServerConnectionError()); // this will set the default error page
+            updateVirtualServer(config, client, vsName, vs);
 
             // Delete the old error file
             client.deleteExtraFile(fileToDelete);
@@ -1099,8 +1114,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.info(String.format("Successfully deleted a custom error file for %s (%s)", vsName, fileToDelete));
         } catch (StingrayRestClientObjectNotFoundException onf) {
             LOG.warn(String.format("Cannot delete custom error page as, %s, it does not exist. Ignoring...", fileToDelete));
-        } catch (Exception ex) {
-            LOG.error(String.format("There was a unexpected error deleting the error file for: %s Exception: %s", vsName, ex.getMessage()));
+        } catch (StmRollBackException re) {
+            LOG.error(String.format("Failed deleting the error file for: %s Exception: %s", vsName, re.getMessage()));
+            throw re;
+        } catch (StingrayRestClientException e) {
+            LOG.error(String.format("There was a unexpected error deleting the error file for: %s Exception: %s", vsName, e.getMessage()));
+            throw new StmRollBackException("Deleting error file cancelled.", e);
         }
     }
 
@@ -1141,15 +1160,13 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         try {
             LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
             // Update client with new properties
-            client.updateVirtualServer(vsName, vs);
+            updateVirtualServer(config, client, vsName, vs);
 
             LOG.info(String.format("Successfully set the error file for %s (%s)", vsName, errorFileName));
-        } catch (StingrayRestClientException ce) {
+        } catch (StmRollBackException re) {
             // REST failure...
-            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- REST Client exception", vsName, errorFileName));
-        } catch (StingrayRestClientObjectNotFoundException onf) {
-            // The file we uploaded wasn't there? Not good -- leave the object as it was before?
-            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Rolling back.", vsName, errorFileName));
+            throw re;
         }
     }
 
@@ -1168,17 +1185,17 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, StmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void enableDisableSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, boolean isSslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void enableDisableSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, boolean isSslTermination) throws RemoteException, InsufficientRequestException, StmRollBackException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

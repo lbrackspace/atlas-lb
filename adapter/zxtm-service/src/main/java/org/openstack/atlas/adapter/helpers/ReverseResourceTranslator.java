@@ -106,7 +106,10 @@ public class ReverseResourceTranslator {
                         for (String address : ipAddresses) {
                             LoadBalancerJoinVip6 joinVip = new LoadBalancerJoinVip6();
                             VirtualIpv6 vip6 = new VirtualIpv6();
+                            Cluster cluster = new Cluster();
+                            cluster.setClusterIpv6Cidr(address);
                             // WTF I DON'T EVEN -- vip6.setLoadBalancerJoinVip6Set() is a thing?! someone is trolling me
+                            vip6.setCluster(cluster);
                             joinVip.setPort(basic.getPort());
                             joinVip.setVirtualIp(vip6);
                             joinVips.add(joinVip);
