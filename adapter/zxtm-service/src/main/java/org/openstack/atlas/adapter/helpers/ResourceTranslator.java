@@ -89,6 +89,9 @@ public class ResourceTranslator {
             properties.setLog(log);
         }
 
+        //set a webcache
+        if (loadBalancer.isContentCaching()) properties.setWeb_cache(new VirtualServerWebcache());
+
         //error file settings
         UserPages userPages = loadBalancer.getUserPages();
         String ep = null;

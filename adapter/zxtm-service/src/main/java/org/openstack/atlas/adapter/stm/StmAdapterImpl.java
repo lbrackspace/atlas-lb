@@ -105,8 +105,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 //
 //            if (loadBalancer.getConnectionLimit() != null) //updateConnectionThrottle(config, loadBalancer);
 //
-//
-//            if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) //updateContentCaching(config, loadBalancer);
+            if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) updateContentCaching(config, loadBalancer);
 //
 //            if (loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) //updateAccessList(config, loadBalancer);
 
@@ -669,7 +668,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        //absolutely nothing needs to happen here.
     }
 
     @Override
@@ -978,17 +977,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         rt.translateVirtualServerResource(config, vsName, loadBalancer);
         VirtualServer vs = rt.getcVServer();
         LOG.debug(String.format("Attempting to set the default error file for %s", vsName));
-        try {
-            // Update client with new properties
-            client.updateVirtualServer(vsName, vs);
 
-            LOG.info(String.format("Successfully set the default error file for: %s", vsName));
-        } catch (StingrayRestClientObjectNotFoundException onf) {
-            //not sure if this exception means what I thought it did
-            LOG.warn(String.format("Virtual server %s does not exist, ignoring...", vsName));
-        } catch (StingrayRestClientException e) {
-            LOG.error(String.format("There was a unexpected error setting the default error file for %s; Exception: %s", vsName, e.getMessage()));
-        }
+        // Update client with new properties
+        updateVirtualServer(config, client, vsName, vs);
+
+        //LOG.info(String.format("Successfully set the default error file for: %s", vsName));
+        LOG.info(String.format("Maybe successfully set the default error file for: %s?? Not sure.", vsName));
     }
 
     @Override
@@ -1036,7 +1030,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", vsName, fileToDelete));
 
             // Update client with new properties
-            client.updateVirtualServer(vsName, vs);
+            updateVirtualServer(config, client, vsName, vs);
 
             // Delete the old error file
             client.deleteExtraFile(fileToDelete);
@@ -1086,7 +1080,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         try {
             LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
             // Update client with new properties
-            client.updateVirtualServer(vsName, vs);
+            updateVirtualServer(config, client, vsName, vs);
 
             LOG.info(String.format("Successfully set the error file for %s (%s)", vsName, errorFileName));
         } catch (StingrayRestClientException ce) {
