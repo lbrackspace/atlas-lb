@@ -105,7 +105,7 @@ public class HdfsUtils {
             sequencePaths = listSequenceFiles(reducerOutputDirectory, false);
         } catch (IOException ex) {
             String msg = "Error fetching list of sequence files";
-            String excMsg = String.format("%s: %s", msg, StaticStringUtils.getExtendedStackTrace(ex));
+            String excMsg = String.format("%s: %s", msg, Debug.getExtendedStackTrace(ex));
             LOG.error(excMsg, ex);
             throw new SequenceFileReaderException(msg, ex);
         }
@@ -115,7 +115,7 @@ public class HdfsUtils {
                 vlog.printf("Scanning reduceroutput directory %s", sequenceFileName);
                 zipIterator = new SequenceFileIterator<LogReducerOutputKey, LogReducerOutputValue>(sequencePath, remoteFileSystem);
             } catch (SequenceFileReaderException ex) {
-                String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+                String excMsg = Debug.getExtendedStackTrace(ex);
                 LOG.error(excMsg, ex);
                 throw ex;
             }
@@ -126,7 +126,7 @@ public class HdfsUtils {
                     LogReducerOutputValue val = zipFileEntry.getValue();
                     zipFileInfoList.add(val);
                 } catch (SequenceFileReaderException ex) {
-                    String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+                    String excMsg = Debug.getExtendedStackTrace(ex);
                     LOG.error(excMsg, ex);
                     zipIterator.close();
                     throw ex;

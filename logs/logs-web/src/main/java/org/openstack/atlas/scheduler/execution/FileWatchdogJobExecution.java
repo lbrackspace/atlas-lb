@@ -27,6 +27,7 @@ import org.openstack.atlas.util.HdfsUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.common.VerboseLogger;
+import org.openstack.atlas.util.debug.Debug;
 
 public class FileWatchdogJobExecution extends LoggableJobExecution implements QuartzExecutable {
 
@@ -91,7 +92,7 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
         try {
             HadoopLogsConfigs.copyJobsJar();
         } catch (IOException ex) {
-            String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+            String excMsg = Debug.getExtendedStackTrace(ex);
             LOG.error(String.format("Unable to copy JobsJar: %s", excMsg), ex);
         }
         finishJob(state);

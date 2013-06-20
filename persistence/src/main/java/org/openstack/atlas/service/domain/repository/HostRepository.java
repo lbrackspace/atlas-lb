@@ -44,7 +44,7 @@ public class HostRepository {
 
     public List<Host> getAll(Integer... p) {
         List<Host> hosts = new ArrayList<Host>();
-        Query query = entityManager.createQuery("SELECT h FROM Host h");
+        Query query = entityManager.createQuery("SELECT h FROM Host h order by h.id");
         if (p.length >= 2) {
             Integer offset = p[0];
             Integer limit = p[1];

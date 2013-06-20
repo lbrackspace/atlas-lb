@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
@@ -52,7 +53,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
         try {
             zipFileInfoList = hdfsUtils.getZipFileInfoList(hdfsReducerOutputDirectory);
         } catch (SequenceFileReaderException ex) {
-            String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+            String excMsg = Debug.getExtendedStackTrace(ex);
             LOG.error(String.format("Could not list sequenceFiles for directory %s: %s", hdfsReducerOutputDirectory, excMsg));
             failJob(state);
             throw new ExecutionException(ex);
@@ -84,7 +85,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
                 zipFileInputStream = hdfsUtils.openHdfsInputFile(hdfsZipFilePath, false);
             } catch (IOException ex) {
                 String msg = String.format("Error opening hdfsZip file %s for reading. Skipping this entry", hdfsZipFilePath);
-                String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+                String excMsg = Debug.getExtendedStackTrace(ex);
                 LOG.error(String.format("%s:%s", msg, excMsg), ex);
                 continue;
             }
@@ -92,7 +93,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
                 zipfileCacheOutputStream = hdfsUtils.openHdfsOutputFile(fullCacheZipPath, true, true);
             } catch (IOException ex) {
                 String msg = String.format("Error opening cacheZipFile %s for writing. Skipping this entry", fullCacheZipPath);
-                String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+                String excMsg = Debug.getExtendedStackTrace(ex);
                 LOG.error(String.format("%s:%s", msg, excMsg), ex);
                 StaticFileUtils.close(zipFileInputStream);
                 continue;
@@ -101,7 +102,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
                 StaticFileUtils.copyStreams(zipFileInputStream, zipfileCacheOutputStream, null, hdfsUtils.getBufferSize());
             } catch (IOException ex) {
                 String msg = String.format("Error opening writing data from  %s -> %s", hdfsZipFilePath, fullCacheZipPath);
-                String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+                String excMsg = Debug.getExtendedStackTrace(ex);
                 LOG.error(String.format("%s:%s", msg, excMsg), ex);
                 StaticFileUtils.close(zipFileInputStream);
                 StaticFileUtils.close(zipfileCacheOutputStream);
@@ -128,7 +129,7 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
             scheduleArchiveLoadBalancerLogsJob(scheduler, schedulerConfigs);
         } catch (SchedulingException ex) {
             String msg = "Error attempting to schedule Archive Job. This job shall be marked as a failure";
-            String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+            String excMsg = Debug.getExtendedStackTrace(ex);
             LOG.error(String.format("%s:%s", msg, excMsg), ex);
             failJob(state);
             throw new ExecutionException(msg, ex);
