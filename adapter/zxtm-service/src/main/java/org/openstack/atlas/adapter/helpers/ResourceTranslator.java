@@ -37,11 +37,12 @@ public class ResourceTranslator {
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
+
         translatePersistenceResource(vsName, loadBalancer);
         translateMonitorResource(loadBalancer);
+        translateBandwidthResource(loadBalancer);
         translatePoolResource(vsName, loadBalancer);
         translateVirtualServerResource(config, vsName, loadBalancer);
-        translateBandwidthResource(loadBalancer);
     }
 
     public VirtualServer translateVirtualServerResource(LoadBalancerEndpointConfiguration config,
@@ -53,14 +54,17 @@ public class ResourceTranslator {
         VirtualServerTcp tcp = new VirtualServerTcp();
         VirtualServerLog log = null;
 
+        //basic virtual server settings
         basic.setProtocol(loadBalancer.getProtocol().name());
         basic.setPort(loadBalancer.getPort());
         basic.setPool(vsName);
 
+        //protection class settings
         if (loadBalancer.getAccessLists() != null || loadBalancer.getConnectionLimit() != null) {
             basic.setProtection_class(vsName);
         }
 
+        //connection log settings
         if (loadBalancer.isConnectionLogging() != null && loadBalancer.isConnectionLogging()) {
             log = new VirtualServerLog();
             final String nonHttpLogFormat = "%v %t %h %A:%p %n %B %b %T";
@@ -77,6 +81,7 @@ public class ResourceTranslator {
             properties.setLog(log);
         }
 
+        //error file settings
         UserPages userPages = loadBalancer.getUserPages();
         String ep = null;
         if (userPages != null) { // if userPages is null, just leave the ce object alone and it should use the default page
@@ -85,10 +90,17 @@ public class ResourceTranslator {
         }
         properties.setConnection_errors(ce);
 
+        //trafficscript or rule settings
         List<String> rules = Arrays.asList(StmAdapterImpl.XFF, StmAdapterImpl.XFP);
         basic.setRequest_rules(rules);
 
+        //Half closed proxy settings
         tcp.setProxy_close(loadBalancer.isHalfClosed());
+        properties.setTcp(tcp);
+
+        //trafficIpGroup settings
+        basic.setListen_on_any(false);
+//        basic.setListen_on_traffic_ips();
 
         properties.setBasic(basic);
         virtualServer.setProperties(properties);
@@ -117,8 +129,6 @@ public class ResourceTranslator {
         TrafficIp tig = new TrafficIp();
         TrafficIpProperties properties = new TrafficIpProperties();
         TrafficIpBasic basic = new TrafficIpBasic();
-        loadBalancer.getIpv4Servicenet();
-        loadBalancer.getIpv4Public();
 
         basic.setEnabled(true);
 //        basic.setIpaddresses();
@@ -138,6 +148,9 @@ public class ResourceTranslator {
         PoolLoadbalancing poollb = new PoolLoadbalancing();
         PoolConnection connection = new PoolConnection();
 
+        basic.setDraining(getNodesWithCondition(nodes, NodeCondition.DRAINING));
+        basic.setDisabled(getNodesWithCondition(nodes, NodeCondition.DISABLED));
+        basic.setPassive_monitoring(false);
 
         if (loadBalancer.getAlgorithm().name().equals(PoolLoadBalancingAlgorithm.wroundrobin.getValue())
                 || loadBalancer.getAlgorithm().name().equals(PoolLoadBalancingAlgorithm.wconnections.getValue())) {
@@ -156,18 +169,15 @@ public class ResourceTranslator {
         poollb.setPriority_values(znpc.getPriorityValuesSet());
         poollb.setAlgorithm(loadBalancer.getAlgorithm().name());
 
-        basic.setDraining(getNodesWithCondition(nodes, NodeCondition.DRAINING));
-        basic.setDisabled(getNodesWithCondition(nodes, NodeCondition.DISABLED));
-        basic.setPassive_monitoring(false);
-
         connection.setMax_reply_time(loadBalancer.getTimeout());
-
 
         if (loadBalancer.getHealthMonitor() != null)
             basic.setMonitors(new HashSet<String>(Arrays.asList(vsName)));
 
+
         if (loadBalancer.getSessionPersistence() != null)
-            basic.setPersistence_class(cPersistence.getProperties().getBasic().getType());
+            basic.setPersistence_class(loadBalancer.getSessionPersistence()
+                    .getSessionPersistence().getPersistenceType().name());
 
         properties.setBasic(basic);
         properties.setLoad_balancing(poollb);

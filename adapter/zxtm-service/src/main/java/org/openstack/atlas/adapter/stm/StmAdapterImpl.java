@@ -20,8 +20,6 @@ import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.converters.StringConverter;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
-import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
-import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.monitor.Monitor;
@@ -237,6 +235,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     //Delelete
 
+    //Can take in LB to be more consistent and simplify the interface.
+    //This will also reduce the 'complex' logic in the listener (deleteNodesListener) allowing these methods to easily handle same behaviour.
     @Override
     public void removeNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes) throws AxisFault, InsufficientRequestException, StmRollBackException {
         String rollBackMessage = "Remove node request canceled.";
@@ -274,6 +274,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     //Take in a Node?
     //You can build the node from the given info
+    //Indeed we can, but do we want to be more consistent and simplify the interface?
+    //Also, the priorities need to be adjusted any time adding/removing nodes,
+    // taking in a node and moving the uneccesary logic in the listener(deleteNodeListener) to these methods
+    //will reduce complexity in listener and allow for a cleaner interface.  *this case is a bit different then Nodes
     @Override
     public void removeNode(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String ipAddress, Integer port) throws RemoteException, InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
@@ -499,6 +503,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+
+    //TODO:
+    // We can honestly get rid of alot of these one-offs by using the proper update'Resource'. example here, updateVirtualServer can handle this
+    //But that means we have to update listeners and other code also..
     @Override
     public void updatePort(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Integer port) throws RemoteException, InsufficientRequestException, StmRollBackException {
 
