@@ -12,7 +12,14 @@ import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.HealthMonitor;
+import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
+import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.RateLimit;
+import org.openstack.atlas.service.domain.entities.SessionPersistence;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -39,7 +46,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
@@ -80,41 +92,49 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
 
-        final String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+//        final String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         StingrayRestClient client = loadSTMRestClient(config);
 
         ResourceTranslator translator = new ResourceTranslator();
 
-        try {
+        List<String> vsNames = new ArrayList<String>();
+        if (loadBalancer.isUsingSsl()) {
+            vsNames.add(ZxtmNameBuilder.genSslVSName(loadBalancer));
+        }
+        vsNames.add(ZxtmNameBuilder.genVSName(loadBalancer));
+        /* I am update body */
+        for (String vsName : vsNames) {
+            try {
 
-            if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
-                TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
-                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
-//                setDefaultErrorFile(config, lb);
+                if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+                    TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
+                    TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
+        //                setDefaultErrorFile(config, lb);
+                }
+
+                translator.translateLoadBalancerResource(config, vsName, loadBalancer);
+
+                if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
+                    updateHealthMonitor(config, client, vsName, translator.getcMonitor());
+                }
+
+        //            if (loadBalancer.getSessionPersistence() != null
+        //                    && !loadBalancer.getSessionPersistence().equals(SessionPersistence.NONE)
+        //                    && !loadBalancer.hasSsl()) //setSessionPersistence(config, loadBalancer);
+        //
+        //            if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) //updateContentCaching(config, loadBalancer);
+
+                if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())
+                        || loadBalancer.getConnectionLimit() != null) {
+                    updateProtection(config, client, vsName, translator.getcProtection());
+                }
+
+                updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
+                updateNodePool(config, client, vsName, translator.getcPool());
+                updateVirtualServer(config, client, vsName, translator.getcVServer());
+            } catch (Exception ex) {
+                //TODO: roll back or handle as needed.. ...
             }
-
-            translator.translateLoadBalancerResource(config, vsName, loadBalancer);
-
-            if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
-                updateHealthMonitor(config, client, vsName, translator.getcMonitor());
-            }
-
-//            if (loadBalancer.getSessionPersistence() != null
-//                    && !loadBalancer.getSessionPersistence().equals(SessionPersistence.NONE)
-//                    && !loadBalancer.hasSsl()) //setSessionPersistence(config, loadBalancer);
-//
-//            if (loadBalancer.getConnectionLimit() != null) //updateConnectionThrottle(config, loadBalancer);
-//
-//
-//            if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) //updateContentCaching(config, loadBalancer);
-//
-//            if (loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) //updateAccessList(config, loadBalancer);
-
-            updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
-            updateNodePool(config, client, vsName, translator.getcPool());
-            updateVirtualServer(config, client, vsName, translator.getcVServer());
-        } catch (Exception ex) {
-            //TODO: roll back or handle as needed.. ...
         }
         //Finish...
     }
@@ -510,19 +530,19 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
-//        String vsName = ZxtmNameBuilder.genVSName(lb);
-//        String vsNameSsl = ZxtmNameBuilder.genSslVSName(lb);
-//        boolean connectionLogging;
-//        if (lb.isConnectionLogging() == null) {
-//            connectionLogging = false;
-//        } else {
-//            connectionLogging = lb.isConnectionLogging();
-//        }
-//        lb.setConnectionLogging(Boolean.FALSE);
-//
-//        if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
-//
-//        }
+        String vsName = ZxtmNameBuilder.genVSName(lb);
+        String vsNameSsl = ZxtmNameBuilder.genSslVSName(lb);
+        boolean connectionLogging;
+        if (lb.isConnectionLogging() == null) {
+            connectionLogging = false;
+        } else {
+            connectionLogging = lb.isConnectionLogging();
+        }
+        lb.setConnectionLogging(Boolean.FALSE);
+
+        if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+
+        }
     }
 
     @Override
@@ -730,8 +750,43 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
 
     @Override
-    public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        if (loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) {
+            ResourceTranslator translator = new ResourceTranslator();
+            StingrayRestClient client = loadSTMRestClient(config);
+            List<String> vsNames = new ArrayList<String>();
+            vsNames.add(ZxtmNameBuilder.genVSName(loadBalancer));
+            if (loadBalancer.isUsingSsl()) {
+                vsNames.add(ZxtmNameBuilder.genSslVSName(loadBalancer));
+            }
+            //Todo: How to handle initial roll-back so there is no update for one VS and not the other. (Assuming SSL enabled)
+            for (String vsName : vsNames) {
+                LOG.info(String.format("Updating Access List on '%s'...", vsName));
+                updateProtection(config, client, vsName, translator.translateProtectionResource(vsName, loadBalancer));
+                LOG.info(String.format("Successfully updated Access List on '%s'...", vsName));
+            }
+        }
+    }
+
+    public void updateProtection(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String vsName, Protection protection) throws StmRollBackException {
+        LOG.debug(String.format("Updating protection class on '%s'...", vsName));
+
+        Protection curProtection = null;
+        try {
+            curProtection = client.getProtection(vsName);
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            LOG.warn(String.format("Object not found when updating virtual server: %s, this is expected...", vsName));
+        } catch (StingrayRestClientException e) {
+            LOG.error(String.format("Error when retrieving pool: %s: ignoring...", vsName));
+        }
+
+        try {
+            client.updateProtection(vsName, protection);
+        } catch (Exception ex) {
+            LOG.error(String.format("Error updating virtual server: %s Rolling back! \n Exception: %s Trace: %s",
+                    vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
+            rollbackProtection(client, vsName, curProtection);
+        }
     }
 
     @Override

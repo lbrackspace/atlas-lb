@@ -108,7 +108,7 @@ public interface ReverseProxyLoadBalancerAdapter {
             throws RemoteException, InsufficientRequestException;
 
     public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException;
+            throws RemoteException, InsufficientRequestException, StmRollBackException;
 
     public void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
             throws RemoteException, InsufficientRequestException;

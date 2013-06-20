@@ -268,22 +268,45 @@ public class ResourceTranslator {
     }
 
     public Protection translateProtectionResource(String vsName, LoadBalancer loadBalancer) {
-        Protection protection = new Protection();
+        cProtection = new Protection();
         ProtectionBasic basic = new ProtectionBasic();
         ProtectionProperties properties = new ProtectionProperties();
 
         ConnectionLimit limits = loadBalancer.getConnectionLimit();
         Set<AccessList> accessList = loadBalancer.getAccessLists();
 
-        ProtectionAccessRestiction pac = new ProtectionAccessRestiction();
-//        pac.setAllowed("allowedaddys");
-        ProtectionConnectionLimiting limiting = new ProtectionConnectionLimiting();
+        ProtectionAccessRestriction pac;
+        if (accessList.isEmpty()) {
+            pac = new ProtectionAccessRestriction();
+            Set<String> allowed = new HashSet<String>();
+            Set<String> banned = new HashSet<String>();
+            for (AccessList item : accessList) {
+                if (item.getType().equals(AccessListType.ALLOW)) {
+                    allowed.add(item.getIpAddress());
+                } else {
+                    banned.add(item.getIpAddress());
+                }
+            }
+            pac.setAllowed(allowed);
+            pac.setBanned(banned);
+            properties.setAccess_restriction(pac);
+        }
+
+        ProtectionConnectionLimiting limiting;
+        if (limits != null) {
+            limiting = new ProtectionConnectionLimiting();
+            limiting.setMax_10_connections(0);
+            limiting.setMax_1_connections(limits.getMaxConnections());
+            limiting.setMax_connection_rate(limits.getRateInterval());
+            limiting.setMin_connections(limits.getMinConnections());
+            limiting.setRate_timer(limits.getRateInterval());
+            properties.setConnection_limiting(limiting);
+        }
 
         properties.setBasic(basic);
-        protection.setProperties(properties);
+        cProtection.setProperties(properties);
 
-        cProtection = protection;
-        return protection;
+        return cProtection;
     }
 
     public Persistence translatePersistenceResource(String vsName, LoadBalancer loadBalancer) {
