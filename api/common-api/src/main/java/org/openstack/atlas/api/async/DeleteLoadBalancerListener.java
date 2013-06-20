@@ -113,5 +113,4 @@ public class DeleteLoadBalancerListener extends BaseListener {
         String desc = "Could not delete the load balancer at this time.";
         notificationService.saveLoadBalancerEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, DELETE_LOADBALANCER, DELETE, CRITICAL);
     }
-
 }
