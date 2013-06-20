@@ -5,6 +5,7 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
 import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
@@ -28,7 +29,7 @@ import java.util.*;
 public class ResourceTranslator {
     public Pool cPool;
     public Monitor cMonitor;
-    public TrafficIp cTrafficIpGroup;
+    public Map<String, TrafficIp> cTrafficIpGroups;
     public VirtualServer cVServer;
     public Protection cProtection;
     public Persistence cPersistence;
@@ -38,10 +39,17 @@ public class ResourceTranslator {
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
 
+        //Order matters when translating the entire entity.
         translatePersistenceResource(vsName, loadBalancer);
         translateMonitorResource(loadBalancer);
         translateBandwidthResource(loadBalancer);
         translatePoolResource(vsName, loadBalancer);
+        try {
+            translateTrafficIpGroupsResource(config, loadBalancer);
+        } catch (IPStringConversionException e) {
+            //Handle this, means ipv6 is broken..
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
         translateVirtualServerResource(config, vsName, loadBalancer);
     }
 
@@ -100,7 +108,7 @@ public class ResourceTranslator {
 
         //trafficIpGroup settings
         basic.setListen_on_any(false);
-//        basic.setListen_on_traffic_ips();
+        basic.setListen_on_traffic_ips(genGroupNameSet(loadBalancer));
 
         properties.setBasic(basic);
         virtualServer.setProperties(properties);
@@ -124,18 +132,55 @@ public class ResourceTranslator {
         return cBandwidth;
     }
 
-    public TrafficIp translateTrafficIpResource(LoadBalancerEndpointConfiguration config,
-                                                String tigName, LoadBalancer loadBalancer) {
+    public Map<String, TrafficIp> translateTrafficIpGroupsResource(LoadBalancerEndpointConfiguration config,
+                                                                   LoadBalancer loadBalancer) throws InsufficientRequestException, IPStringConversionException {
+        Map<String, TrafficIp> nameandgroup = new HashMap<String, TrafficIp>();
+
+        // Add new traffic ip groups for IPv4 vips
+        for (LoadBalancerJoinVip loadBalancerJoinVipToAdd : loadBalancer.getLoadBalancerJoinVipSet()) {
+            nameandgroup.put(ZxtmNameBuilder.generateTrafficIpGroupName(loadBalancer, loadBalancerJoinVipToAdd.getVirtualIp()),
+                    translateTrafficIpGroupResource(config, loadBalancerJoinVipToAdd.getVirtualIp().getIpAddress()));
+        }
+
+        // Add new traffic ip groups for IPv6 vips
+        for (LoadBalancerJoinVip6 loadBalancerJoinVip6ToAdd : loadBalancer.getLoadBalancerJoinVip6Set()) {
+            nameandgroup.put(ZxtmNameBuilder.generateTrafficIpGroupName(loadBalancer, loadBalancerJoinVip6ToAdd.getVirtualIp()),
+                    translateTrafficIpGroupResource(config, loadBalancerJoinVip6ToAdd.getVirtualIp().getDerivedIpString()));
+        }
+
+        cTrafficIpGroups = nameandgroup;
+        return nameandgroup;
+    }
+
+    private TrafficIp translateTrafficIpGroupResource(LoadBalancerEndpointConfiguration config, String ipaddress) {
         TrafficIp tig = new TrafficIp();
         TrafficIpProperties properties = new TrafficIpProperties();
         TrafficIpBasic basic = new TrafficIpBasic();
 
         basic.setEnabled(true);
-//        basic.setIpaddresses();
-//        basic.set
+        basic.setIpaddresses(new HashSet<String>(Arrays.asList(ipaddress)));
+        basic.setMachines(new HashSet<String>(config.getFailoverTrafficManagerNames()));
+        basic.setSlaves(new HashSet<String>(config.getFailoverTrafficManagerNames()));
+
+        properties.setBasic(basic);
+        tig.setProperties(properties);
+        return tig;
+    }
+
+    private Set<String> genGroupNameSet(LoadBalancer loadBalancer) throws InsufficientRequestException {
+        Set<String> groupSet = new HashSet<String>();
+
+        int acctId = loadBalancer.getAccountId();
+        for (LoadBalancerJoinVip loadBalancerJoinVipToAdd : loadBalancer.getLoadBalancerJoinVipSet()) {
+            groupSet.add(ZxtmNameBuilder.generateTrafficIpGroupName(acctId, loadBalancerJoinVipToAdd.getVirtualIp().getId().toString()));
+        }
+
+        for (LoadBalancerJoinVip6 loadBalancerJoinVip6ToAdd : loadBalancer.getLoadBalancerJoinVip6Set()) {
+            groupSet.add(ZxtmNameBuilder.generateTrafficIpGroupName(acctId, loadBalancerJoinVip6ToAdd.getVirtualIp().getId().toString()));
+        }
+        return groupSet;
 
 
-        return null;
     }
 
     public Pool translatePoolResource(String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
@@ -278,6 +323,14 @@ public class ResourceTranslator {
 
     public void setcMonitor(Monitor cMonitor) {
         this.cMonitor = cMonitor;
+    }
+
+    public Map<String, TrafficIp> getcTrafficIpGroups() {
+        return cTrafficIpGroups;
+    }
+
+    public void setcTrafficIpGroups(Map<String, TrafficIp> cTrafficIpGroups) {
+        this.cTrafficIpGroups = cTrafficIpGroups;
     }
 
     public VirtualServer getcVServer() {
