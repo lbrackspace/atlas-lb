@@ -43,7 +43,7 @@ public class Debug {
             String classPath = loc.getPath();
             return classPath;
         } catch (Exception ex) {
-            String st = StaticStringUtils.getExtendedStackTrace(ex);
+            String st = getExtendedStackTrace(ex);
             return st;
         }
     }
@@ -199,8 +199,10 @@ public class Debug {
                 for (StackTraceElement se : currThrowable.getStackTrace()) {
                     sb.append(String.format("%s\n", se.toString()));
                 }
-                sb.append("\n");
+                sb.append("\nCausing Exception: ");
                 t = t.getCause();
+            } else {
+                break;
             }
         }
         return sb.toString();
@@ -314,5 +316,8 @@ public class Debug {
             prog = "prog";
         }
         return prog;
+    }
+
+    public static void nop() {
     }
 }

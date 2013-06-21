@@ -1,6 +1,5 @@
-USE `loadbalancing`;
+use `loadbalancing`;
 
-UPDATE `state` SET `inputpath` = NULL WHERE `jobname` = 'LB_USAGE_ROLLUP';
-DELETE FROM `state` WHERE `jobname` = 'THE_ONE_TO_RULE_THEM_ALL';
+DELETE FROM `lb_data_center` WHERE `name` = 'IAD';
 
-update `meta` set `meta_value` = '56' where `meta_key`='version';
+UPDATE `meta` SET `meta_value` = '56' WHERE `meta_key`='version';

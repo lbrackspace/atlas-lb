@@ -663,16 +663,14 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         this.configuration = configuration;
     }
 
-
-
     private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, AxisFault af) throws AxisFault {
-        Host configuredHost = config.getTrafficManagerHost();
+        Host configuredHost = config.getEndpointUrlHost();
         if (IpHelper.isNetworkConnectionException(af)) {
-            LOG.error(String.format("SOAP endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(),Debug.getExtendedStackTrace(af)));
+            LOG.error(String.format("SOAP endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
             configuredHost.setSoapEndpointActive(Boolean.FALSE);
             hostService.update(configuredHost);
         }
-        LOG.warn(String.format("SOAP endpoint %s on host[%d] throw an AxisFault but not marking as bad as it was not a network connection error: Exception was %s",configuredHost.getEndpoint(),configuredHost.getId(),Debug.getExtendedStackTrace(af)));
+        LOG.warn(String.format("SOAP endpoint %s on host[%d] throw an AxisFault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
     }
 
     @Override

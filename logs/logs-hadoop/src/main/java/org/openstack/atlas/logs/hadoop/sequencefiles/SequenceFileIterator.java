@@ -12,6 +12,7 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 // Simulare to an Enumerator but allows Exceptions to be thrown
@@ -33,7 +34,7 @@ public class SequenceFileIterator<K extends Writable, V extends Writable> {
         try {
             reader = new SequenceFile.Reader(fs, new Path(path.toUri().getPath()), conf);
         } catch (IOException ex) {
-            String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+            String excMsg = Debug.getExtendedStackTrace(ex);
             String msg = String.format("IOException opening Sequence file %s for reading", path.toString());
             LOG.error(String.format("%s: %s", msg, excMsg), ex);
             throw new SequenceFileReaderException(msg, ex);
@@ -49,7 +50,7 @@ public class SequenceFileIterator<K extends Writable, V extends Writable> {
         try {
             hasNext = reader.next(key, value);
         } catch (IOException ex) {
-            String excMsg = StaticStringUtils.getExtendedStackTrace(ex);
+            String excMsg = Debug.getExtendedStackTrace(ex);
             String msg = String.format("IOException while attempting to read sequence file %s", path.toString());
             LOG.error(String.format("%s: %s", msg, excMsg), ex);
             throw new SequenceFileReaderException(msg, ex);

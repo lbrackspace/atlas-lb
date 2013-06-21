@@ -9,7 +9,7 @@
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-logs-hibernate-toy</artifactId>
     <name>Openstack :: Atlas :: Logs :: Hibernate Toy </name>
-    <version>1.19.2-SNAPSHOT</version>
+        <version>1.19.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>

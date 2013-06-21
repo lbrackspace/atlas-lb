@@ -1,5 +1,5 @@
-USE `loadbalancing`;
+use `loadbalancing`;
 
-INSERT INTO `state`(`state`, `jobname`) VALUES('STOP', 'THE_ONE_TO_RULE_THEM_ALL');
+INSERT INTO lb_data_center values('IAD','Washington');
 
-update `meta` set `meta_value` = '57' where `meta_key`='version';
+UPDATE `meta` SET `meta_value` = '57' WHERE `meta_key`='version';

@@ -227,6 +227,8 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
             return Region.LON;
         } else if (configRegion.equals("SYD")) {
             return Region.SYD;
+        } else if (configRegion.equals("IAD")) {
+            return Region.IAD;
         } else {
             LOG.error("Region could not be mapped from config, using default");
             return Region.GLOBAL;
