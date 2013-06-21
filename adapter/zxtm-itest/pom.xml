@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-adapter</artifactId>
-        <version>1.18.8-SNAPSHOT</version>
+        <version>1.18.9-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-zxtm-itest</artifactId>
