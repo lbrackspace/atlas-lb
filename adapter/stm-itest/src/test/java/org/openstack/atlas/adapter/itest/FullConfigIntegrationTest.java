@@ -4,6 +4,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
@@ -18,6 +19,7 @@ import java.util.Set;
 import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
 import static org.openstack.atlas.service.domain.entities.AccessListType.DENY;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
+import static org.mockito.Mockito.*;
 
 public class FullConfigIntegrationTest {
     //TODO: this is not proper... quick tests...
@@ -90,14 +92,16 @@ public class FullConfigIntegrationTest {
         StmAdapterImpl adapter = new StmAdapterImpl();
 
         //adapter.setErrorFile(null,"386085_324", "hrodjger");
-        LoadBalancer lb = null;
-        UserPages up = new UserPages();
+        LoadBalancer lb = Mockito.mock(LoadBalancer.class);
+        when(lb.getAccountId()).thenReturn(406271);
+        when(lb.getId()).thenReturn(362);
+        UserPages up = Mockito.mock(UserPages.class);
+        when(up.getErrorpage()).thenReturn("406271_362_error.html");
+        when(lb.getUserPages()).thenReturn(up);
+
         try {
-            ResourceTranslator rt = new ResourceTranslator();
-            lb = ReverseResourceTranslator.getLoadBalancer(362,406271);
-            //up.setErrorpage(lb.getName());
-            //lb.setUserPages(up);
-            //adapter.setErrorFile(null, lb, "some error text");
+            adapter.setErrorFile(null, lb, "some error text");
+            verify(lb).getUserPages();
         } catch (Exception e) {
             e.printStackTrace();
         }
