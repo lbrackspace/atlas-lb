@@ -714,7 +714,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             Protection protection;
             String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
             try {
-
                 if (loadBalancer.hasSsl()) {
                     protectionName = ZxtmNameBuilder.genSslVSName(loadBalancer);
                     translator.translateProtectionResource(protectionName, loadBalancer);
@@ -738,6 +737,47 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
+    public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        if (loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) {
+            ResourceTranslator translator = new ResourceTranslator();
+            StingrayRestClient client = loadSTMRestClient(config);
+            List<String> vsNames = new ArrayList<String>();
+            vsNames.add(ZxtmNameBuilder.genVSName(loadBalancer));
+            if (loadBalancer.isUsingSsl()) {
+                vsNames.add(ZxtmNameBuilder.genSslVSName(loadBalancer));
+            }
+            //Todo: How to handle initial roll-back so there is no update for one VS and not the other. (Assuming SSL enabled)
+            for (String vsName : vsNames) {
+                LOG.info(String.format("Updating Access List on '%s'...", vsName));
+                updateProtection(config, client, vsName, translator.translateProtectionResource(vsName, loadBalancer));
+                LOG.info(String.format("Successfully updated Access List on '%s'...", vsName));
+            }
+        }
+    }
+
+
+    public void updateProtection(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String vsName, Protection protection) throws StmRollBackException {
+        LOG.debug(String.format("Updating protection class on '%s'...", vsName));
+
+        Protection curProtection = null;
+        try {
+            curProtection = client.getProtection(vsName);
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            LOG.warn(String.format("Object not found when updating virtual server: %s, this is expected...", vsName));
+        } catch (StingrayRestClientException e) {
+            LOG.error(String.format("Error when retrieving pool: %s: ignoring...", vsName));
+        }
+
+        try {
+            client.updateProtection(vsName, protection);
+        } catch (Exception ex) {
+            LOG.error(String.format("Error updating virtual server: %s Rolling back! \n Exception: %s Trace: %s",
+                    vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
+            rollbackProtection(client, vsName, curProtection);
+        }
+    }
+
+    @Override
     public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
         if (loadBalancer.getConnectionLimit() != null) {
             StingrayRestClient client = loadSTMRestClient(config);
@@ -758,47 +798,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             } catch (StingrayRestClientObjectNotFoundException onf) {
                 LOG.error("Cannot delete protection as client does not exist");
             }
-        }
-    }
-
-
-    @Override
-    public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        if (loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) {
-            ResourceTranslator translator = new ResourceTranslator();
-            StingrayRestClient client = loadSTMRestClient(config);
-            List<String> vsNames = new ArrayList<String>();
-            vsNames.add(ZxtmNameBuilder.genVSName(loadBalancer));
-            if (loadBalancer.isUsingSsl()) {
-                vsNames.add(ZxtmNameBuilder.genSslVSName(loadBalancer));
-            }
-            //Todo: How to handle initial roll-back so there is no update for one VS and not the other. (Assuming SSL enabled)
-            for (String vsName : vsNames) {
-                LOG.info(String.format("Updating Access List on '%s'...", vsName));
-                updateProtection(config, client, vsName, translator.translateProtectionResource(vsName, loadBalancer));
-                LOG.info(String.format("Successfully updated Access List on '%s'...", vsName));
-            }
-        }
-    }
-
-    public void updateProtection(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String vsName, Protection protection) throws StmRollBackException {
-        LOG.debug(String.format("Updating protection class on '%s'...", vsName));
-
-        Protection curProtection = null;
-        try {
-            curProtection = client.getProtection(vsName);
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            LOG.warn(String.format("Object not found when updating virtual server: %s, this is expected...", vsName));
-        } catch (StingrayRestClientException e) {
-            LOG.error(String.format("Error when retrieving pool: %s: ignoring...", vsName));
-        }
-
-        try {
-            client.updateProtection(vsName, protection);
-        } catch (Exception ex) {
-            LOG.error(String.format("Error updating virtual server: %s Rolling back! \n Exception: %s Trace: %s",
-                    vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
-            rollbackProtection(client, vsName, curProtection);
         }
     }
 
