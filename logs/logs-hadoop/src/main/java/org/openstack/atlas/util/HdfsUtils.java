@@ -97,6 +97,20 @@ public class HdfsUtils {
         return getConfigurationMap(conf);
     }
 
+    public List<LogReducerOutputValue> filterZipFileInfoList(List<LogReducerOutputValue> valueListIn, Integer accountId, Integer loadbalancerId) {
+        List<LogReducerOutputValue> valueListOut = new ArrayList<LogReducerOutputValue>();
+        for (LogReducerOutputValue val : valueListIn) {
+            if (accountId != null && accountId != val.getAccountId()) {
+                continue;
+            }
+            if (loadbalancerId != null && loadbalancerId != val.getLoadbalancerId()) {
+                continue;
+            }
+            valueListOut.add(val);
+        }
+        return valueListOut;
+    }
+
     public List<LogReducerOutputValue> getZipFileInfoList(String reducerOutputDirectory) throws SequenceFileReaderException {
         List<LogReducerOutputValue> zipFileInfoList = new ArrayList<LogReducerOutputValue>();
         List<Path> sequencePaths;

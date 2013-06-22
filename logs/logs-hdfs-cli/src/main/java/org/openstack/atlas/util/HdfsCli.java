@@ -30,6 +30,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Integer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -121,8 +123,12 @@ public class HdfsCli {
                     System.out.printf("lineIndex <fileName> #Index the line numbers in the file\n");
                     System.out.printf("lslzo [hourKey] #List the lzos in the input directory\n");
                     System.out.printf("ls [path] #List hdfs files\n");
+                    System.out.printf("lsin [hourKey]#List the hourkeys in the input directory usefull because ls prints long form\n");
+                    System.out.printf("lsout #List the hourKeys in the output directory usefull because ls prints long form\n");
                     System.out.printf("lsr [path] #List hdfs files recursivly\n");
                     System.out.printf("lszip [l=lid] [h=hour] [m=missing]#List all zip files in the HDFS ourput directory for hourh or and the given lid\n");
+                    System.out.printf("dlzips <hourKey> [l=lid] [a=accoundId] #List all zip files in local cache directory for the given keys\n");
+                    System.out.printf("ullzo <file> #Upload the lzo file to hdfs\n");
                     System.out.printf("mem\n");
                     System.out.printf("mkdir <path>\n");
                     System.out.printf("printReducers <hdfsDir> #Display the contents of the reducer output\n");
@@ -134,7 +140,7 @@ public class HdfsCli {
                     System.out.printf("rmout <hourKey> #Delete the output paths for the specified hour\n");
                     System.out.printf("rm <path>\n");
                     System.out.printf("runJob <jobDriverClass>");
-                    System.out.printf("runSplit <lzoFile> #Run the HadoopSplitterJob for the specified hourkey");
+                    System.out.printf("runSplit <hourKey> #Run the HadoopSplitterJob for the specified hourkey");
                     System.out.printf("runMain <class> args0..N");
                     System.out.printf("uploadLzo <lzoFile> #Upload the the lzo file\n");
                     System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
@@ -146,8 +152,24 @@ public class HdfsCli {
                     System.out.printf("whoami\n");
                     continue;
                 }
-                if (cmd.equals("runSplit") && args.length >= 2) {
-                    HadoopLogsConfigs.copyJobsJar();
+                if (cmd.equals("lsin")) {
+                    String inputDir = HadoopLogsConfigs.getMapreduceInputPrefix();
+                    String hourKey = (args.length >= 2) ? args[1] : null;
+                    String fileDisplay = listHourKeyFiles(hdfsUtils, inputDir, hourKey);
+                    System.out.printf("%s\n", fileDisplay);
+                    continue;
+                }
+                if (cmd.equals("lsout")) {
+                    List<String> pathComps = new ArrayList<String>();
+                    pathComps.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
+                    pathComps.add("lb_logs_split");
+                    String outputDir = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathComps));
+                    String hourKey = (args.length >= 2) ? args[1] : null;
+                    String fileDisplay = listHourKeyFiles(hdfsUtils, outputDir, hourKey);
+                    System.out.printf("%s\n", fileDisplay);
+                    continue;
+                }
+                if (cmd.equals("ullzo") && args.length >= 2) {
                     String localLzoFilePath = args[1];
                     String localLzoFile = StaticFileUtils.pathTail(localLzoFilePath);
                     Matcher m = HdfsUtils.hdfsLzoPatternPre.matcher(localLzoFile);
@@ -164,6 +186,17 @@ public class HdfsCli {
                     hdfsLzoPathComps.add("0-" + hourKey + "-access_log.aggregated.lzo");
                     String hdfsLzoPath = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(hdfsLzoPathComps));
                     String hdfsLzoIdxPath = hdfsLzoPath + ".idx";
+
+                    // Verify the user wants to upload this file
+                    System.out.printf("Are you sure you want to upload %s to %s (Y/N)\n", localLzoFilePath, hdfsLzoPath);
+                    if (stdinMatches(stdin, "Y")) {
+                        System.out.printf("Uploading lzo\n");
+                    } else {
+                        System.out.printf("Not uploading lzo\n");
+                        continue;
+                    }
+
+
                     System.out.printf("Uploading lzo %s to %s\n", localLzoFile, hdfsLzoPath);
                     InputStream lzoIs = StaticFileUtils.openInputFile(localLzoFilePath, BUFFER_SIZE);
                     OutputStream lzoOs = hdfsUtils.openHdfsOutputFile(hdfsLzoPath, false, false);
@@ -172,7 +205,18 @@ public class HdfsCli {
                     lzoIs.close();
                     lzoOs.close();
                     lzoIdx.close();
+                    continue;
+                }
+                if (cmd.equals("runSplit") && args.length >= 2) {
+                    HadoopLogsConfigs.copyJobsJar();
+                    String hourKey = args[1];
 
+                    // Setup Inputfile based on hourKey
+                    List<String> hdfsLzoPathComps = new ArrayList<String>();
+                    hdfsLzoPathComps.add(HadoopLogsConfigs.getMapreduceInputPrefix());
+                    hdfsLzoPathComps.add(hourKey);
+                    hdfsLzoPathComps.add("0-" + hourKey + "-access_log.aggregated.lzo");
+                    String hdfsLzoPath = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(hdfsLzoPathComps));
 
                     // Setup outputdir
                     List<String> outDirComps = new ArrayList<String>();
@@ -336,6 +380,8 @@ public class HdfsCli {
                 }
                 if (cmd.equals("showConfig")) {
                     System.out.printf("HadoopLogsConfig=%s\n", HadoopLogsConfigs.staticToString());
+                    System.out.printf("Hdfs workingDir = %s\n", fs.getWorkingDirectory().toUri().getRawPath().toString());
+                    System.out.printf("Local workingDir = %s\n", lfs.getWorkingDirectory());
                     continue;
                 } else if (cmd.equals("recompressIndex") && args.length >= 3) {
                     String srcLzo = StaticFileUtils.expandUser(args[1]);
@@ -450,6 +496,43 @@ public class HdfsCli {
                     System.out.printf("Total file count: %d\n", fileStatusList.length);
                     continue;
                 }
+
+                if (cmd.equals("dlzip") && args.length >= 2) {
+                    String hourKey = args[1];
+                    Map<String, String> kw = argMapper(args);
+                    Integer lid = (kw.containsKey("l")) ? Integer.valueOf(kw.get("l")) : null;
+                    Integer aid = (kw.containsKey("a")) ? Integer.valueOf(kw.get("a")) : null;
+                    List<String> pathComps = new ArrayList<String>();
+                    pathComps.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
+                    pathComps.add("lb_logs_split");
+                    pathComps.add(hourKey);
+                    String reducerOutputDir = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathComps));
+                    List<LogReducerOutputValue> reducerOutputList = hdfsUtils.getZipFileInfoList(reducerOutputDir);
+                    List<LogReducerOutputValue> filteredZipFileInfo = hdfsUtils.filterZipFileInfoList(reducerOutputList, aid, lid);
+                    List<ZipSrcDstFile> transferFiles = new ArrayList<ZipSrcDstFile>();
+                    for (LogReducerOutputValue val : filteredZipFileInfo) {
+                        ZipSrcDstFile transferFile = new ZipSrcDstFile();
+                        transferFile.setSrcFile(val.getLogFile());
+                        transferFile.setDstFile(zipFilePath(hourKey, val.getAccountId(), val.getLoadbalancerId()));
+                        System.out.printf("%s AccountId=%d LoadbalancerId=%d %s\n", transferFile.toString(), val.getAccountId(), val.getLoadbalancerId());
+                        transferFiles.add(transferFile);
+                    }
+                    System.out.printf("Are you sure you want to download the above zip files (Y/N)\n");
+                    if (stdinMatches(stdin, "Y")) {
+                        for (ZipSrcDstFile transferFile : transferFiles) {
+                            String srcFile = transferFile.getSrcFile();
+                            String dstFile = transferFile.getDstFile();
+                            System.out.printf("Transfering %s -> %s\n", srcFile, dstFile);
+                            InputStream is = hdfsUtils.openHdfsInputFile(srcFile, false);
+                            OutputStream os = hdfsUtils.openHdfsOutputFile(dstFile, true, true);
+                            StaticFileUtils.copyStreams(is, os, System.out, BUFFER_SIZE);
+                            is.close();
+                            os.close();
+                        }
+                    }
+                    continue;
+                }
+
                 if (cmd.equals("lsr")) {
                     long total_file_size = 0;
                     long total_repl_size = 0;
@@ -854,5 +937,29 @@ public class HdfsCli {
     private static boolean stdinMatches(BufferedReader stdin, String val) throws IOException {
         String[] resp = stripBlankArgs(stdin.readLine());
         return (resp.length > 0 && resp[0].equalsIgnoreCase(val));
+    }
+
+    private static String zipFilePath(String dateHour, int accountId, int loadbalancerId) {
+        List<String> pathComps = new ArrayList<String>();
+        pathComps.add(HadoopLogsConfigs.getCacheDir());
+        pathComps.add(dateHour);
+        pathComps.add(Integer.toString(accountId));
+        pathComps.add("access_log_" + Integer.toString(loadbalancerId) + "_" + dateHour + ".zip");
+        return StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathComps));
+    }
+
+    private static String listHourKeyFiles(HdfsUtils hdfsUtils, String remoteDir, String hourKeyPrefix) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        FileStatus[] fileStatusArray = hdfsUtils.listStatuses(remoteDir, false);
+        List<FileStatus> fileStatusList = new ArrayList<FileStatus>(Arrays.asList(fileStatusArray));
+        Collections.sort(fileStatusList, new FileStatusDateComparator());
+        for (FileStatus fileStatus : fileStatusList) {
+            String tail = StaticFileUtils.pathTail(fileStatus.getPath().toUri().getRawPath().toString());
+            if (hourKeyPrefix != null && !tail.startsWith(hourKeyPrefix)) {
+                continue;
+            }
+            sb.append(tail).append(HdfsCliHelpers.displayFileStatus(fileStatus)).append("\n");
+        }
+        return sb.toString();
     }
 }
