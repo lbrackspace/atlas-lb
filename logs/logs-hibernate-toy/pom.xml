@@ -4,12 +4,12 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.19.2-SNAPSHOT</version>
+        <version>1.19.2</version>
     </parent>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-logs-hibernate-toy</artifactId>
     <name>Openstack :: Atlas :: Logs :: Hibernate Toy </name>
-        <version>1.19.2-SNAPSHOT</version>
+        <version>1.19.2</version>
     <packaging>jar</packaging>
 
     <dependencies>
