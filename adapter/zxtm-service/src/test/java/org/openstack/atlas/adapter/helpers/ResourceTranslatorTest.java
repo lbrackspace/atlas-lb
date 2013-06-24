@@ -19,26 +19,22 @@ import java.util.List;
 import java.util.Set;
 
 @RunWith(Enclosed.class)
-public class ResourceTranslatorTest extends STMTestBase{
-
-
+public class ResourceTranslatorTest extends STMTestBase {
 
 
     public static class WhenTranslatingAVirtualServer {
 
 
-        String vsName;
-        Boolean isHalfClosed;
-        Boolean isConnectionLogging;
-        Boolean isContentCaching;
-        String logFormat;
-        VirtualServerTcp expectedTcp;
-        VirtualServerConnectionError expectedError;
-        List<String> rules;
-        ResourceTranslator translator;
-        String errorFile;
-
-
+        private String vsName;
+        private Boolean isHalfClosed;
+        private Boolean isConnectionLogging;
+        private Boolean isContentCaching;
+        private String logFormat;
+        private VirtualServerTcp expectedTcp;
+        private VirtualServerConnectionError expectedError;
+        private List<String> rules;
+        private ResourceTranslator translator;
+        private String errorFile;
 
 
         public void initializeVars(String logFormat, LoadBalancerProtocol protocol) {
@@ -70,18 +66,17 @@ public class ResourceTranslatorTest extends STMTestBase{
             lb.setAccessLists(accessListSet);
         }
 
-         public void initializeVars(String logFormat, LoadBalancerProtocol protocol, String errorFile)
-         {
+        public void initializeVars(String logFormat, LoadBalancerProtocol protocol, String errorFile) {
 
-             initializeVars(logFormat, protocol);
-             this.errorFile = errorFile;
-             UserPages userPages = new UserPages();
-             userPages.setErrorpage(this.errorFile);
-             lb.setUserPages(userPages);
-             expectedError.setError_file(this.errorFile);
+            initializeVars(logFormat, protocol);
+            this.errorFile = errorFile;
+            UserPages userPages = new UserPages();
+            userPages.setErrorpage(this.errorFile);
+            lb.setUserPages(userPages);
+            expectedError.setError_file(this.errorFile);
 
 
-         }
+        }
 
 
         @Test
@@ -109,8 +104,7 @@ public class ResourceTranslatorTest extends STMTestBase{
         }
 
         @Test
-        public void checkAlternateValidPaths() throws InsufficientRequestException
-        {
+        public void checkAlternateValidPaths() throws InsufficientRequestException {
             initializeVars("%v %t %h %A:%p %n %B %b %T", LoadBalancerProtocol.FTP, "HI");
             VirtualServer createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             VirtualServerProperties createdProperties = createdServer.getProperties();
@@ -118,8 +112,6 @@ public class ResourceTranslatorTest extends STMTestBase{
             VirtualServerLog log = createdProperties.getLog();
             Assert.assertEquals(logFormat, log.getFormat());
             Assert.assertEquals(expectedError, createdProperties.getConnection_errors());
-
-
 
 
         }
