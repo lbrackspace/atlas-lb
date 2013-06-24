@@ -1927,6 +1927,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         deleteAccessList(config, secureProtectionClassName);
     }
 
+    @Override
+    public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
+    }
+
     private void deleteAccessList(LoadBalancerEndpointConfiguration config, String protectionClassName)
             throws RemoteException, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
