@@ -3,24 +3,22 @@ package org.openstack.atlas.adapter.helpers;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.stm.STMTestBase;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
-import org.openstack.atlas.adapter.stm.util.STMConfiguration;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.ConnectionLimit;
 import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entities.UserPages;
 import org.rackspace.stingray.client.virtualserver.*;
 
-import javax.jws.soap.SOAPBinding;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
+@RunWith(Enclosed.class)
 public class ResourceTranslatorTest extends STMTestBase{
 
 
@@ -41,7 +39,9 @@ public class ResourceTranslatorTest extends STMTestBase{
         String errorFile;
 
 
-        public void standUp(String logFormat, LoadBalancerProtocol protocol) {
+
+
+        public void initializeVars(String logFormat, LoadBalancerProtocol protocol) {
             setupIvars();
             createSimpleLoadBalancer();
             vsName = "test_name";
@@ -70,10 +70,10 @@ public class ResourceTranslatorTest extends STMTestBase{
             lb.setAccessLists(accessListSet);
         }
 
-         public void standUp(String logFormat, LoadBalancerProtocol protocol, String errorFile)
+         public void initializeVars(String logFormat, LoadBalancerProtocol protocol, String errorFile)
          {
 
-             standUp(logFormat, protocol);
+             initializeVars(logFormat, protocol);
              this.errorFile = errorFile;
              UserPages userPages = new UserPages();
              userPages.setErrorpage(this.errorFile);
@@ -86,7 +86,7 @@ public class ResourceTranslatorTest extends STMTestBase{
 
         @Test
         public void shouldCreateValidVirtualServer() throws InsufficientRequestException {
-            standUp("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
             VirtualServer createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             VirtualServerProperties createdProperties = createdServer.getProperties();
             VirtualServerBasic createdBasic = createdServer.getProperties().getBasic();
@@ -111,7 +111,7 @@ public class ResourceTranslatorTest extends STMTestBase{
         @Test
         public void checkAlternateValidPaths() throws InsufficientRequestException
         {
-            standUp("%v %t %h %A:%p %n %B %b %T", LoadBalancerProtocol.FTP, "HI");
+            initializeVars("%v %t %h %A:%p %n %B %b %T", LoadBalancerProtocol.FTP, "HI");
             VirtualServer createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             VirtualServerProperties createdProperties = createdServer.getProperties();
             VirtualServerBasic createdBasic = createdServer.getProperties().getBasic();

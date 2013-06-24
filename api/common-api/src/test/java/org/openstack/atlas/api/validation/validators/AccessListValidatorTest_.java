@@ -53,7 +53,7 @@ public class AccessListValidatorTest_ {
         }
 
         @Before
-        public void standUp() {
+        public void initializeVars() {
             noTypeorIP = new NetworkItem();
             noTypeOrIpInaccesslist = new AccessList();
             noTypeOrIpInaccesslist.getNetworkItems().add(noTypeorIP);
