@@ -4,9 +4,10 @@ import org.openstack.atlas.cfg.ConfigurationKey;
 
 
 public enum ConfigurationKeys implements ConfigurationKey {
-    zxtm_username,
-    zxtm_password,
-    zxtm_endpoint_uri,
+    stingray_rest_endpoint,
+    stingray_base_uri,
+    stingray_admin_user,
+    stingray_admin_key,
     target_host,
     failover_host_1,
     failover_host_2,

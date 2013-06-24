@@ -1,12 +1,10 @@
 package org.openstack.atlas.adapter.helpers;
 
-import com.zxtm.service.client.PoolPriorityValueDefinition;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.NodeCondition;
 import org.openstack.atlas.util.converters.StringConverter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+
+import java.util.*;
 
 public class NodeHelper {
 
@@ -24,6 +22,24 @@ public class NodeHelper {
             i++;
         }
         return ipAddressArray;
+    }
+
+    public static Set<String> getNodeIpSet(Collection<Node> nodes) {
+        Set<String> nodeIps = new HashSet<String>();
+        for (Node node : nodes) {
+            nodeIps.add(node.getIpAddress());
+        }
+        return nodeIps;
+    }
+
+    public static List<Node> getNodesWithCondition(Collection<Node> nodes, NodeCondition nodeCondition) {
+          List<Node> nodesWithCondition = new ArrayList<Node>();
+        for (Node node : nodes) {
+            if (node.getCondition().equals(nodeCondition)) {
+                nodesWithCondition.add(node);
+            }
+        }
+        return nodesWithCondition;
     }
 
     public static List<Integer> getNodeIds(Collection<Node> nodes) {

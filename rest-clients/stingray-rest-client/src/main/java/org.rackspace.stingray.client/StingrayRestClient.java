@@ -57,6 +57,10 @@ public class StingrayRestClient extends StingrayRestClientManager {
         super(null, null, null, isDebugging, null, null);
     }
 
+    public StingrayRestClient(Configuration configuration) {
+        super(configuration, null, null, false, null, null);
+    }
+
     public StingrayRestClient() {
         super(null, null, null, false, null, null);
     }

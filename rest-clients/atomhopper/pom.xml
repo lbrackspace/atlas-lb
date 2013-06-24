@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>atlas-atomhopper-client</artifactId>
-    <name>Openstack :: Atlas :: Rest Clients :: AtomHopper :: Client</name>
+    <name>Openstack :: Atlas :: Rest Clients :: AtomHopper</name>
 
     <packaging>jar</packaging>
 

@@ -92,6 +92,14 @@ public class StingrayRestClientManager {
 
     /**
      * Creates the client configured for authentication and security.
+     * @param configuration is supplied for a custom configuration.
+     */
+    public StingrayRestClientManager(Configuration configuration) {
+        this(configuration, null, null, false, null, null);
+    }
+
+    /**
+     * Creates the client configured for authentication and security.
      *
      */
     public StingrayRestClientManager() {
@@ -141,6 +149,7 @@ public class StingrayRestClientManager {
 
         this.client.addFilter(new HTTPBasicAuthFilter(this.adminUser, this.adminKey));
     }
+
     /**
      * Retrieves and interprets the response entity.
      *

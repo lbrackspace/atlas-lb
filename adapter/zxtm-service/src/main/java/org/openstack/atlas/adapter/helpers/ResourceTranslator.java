@@ -1,6 +1,5 @@
 package org.openstack.atlas.adapter.helpers;
 
-import com.zxtm.service.client.PoolLoadBalancingAlgorithm;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
@@ -40,9 +39,9 @@ public class ResourceTranslator {
                                               String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
 
         //Order matters when translating the entire entity.
-        translatePersistenceResource(vsName, loadBalancer);
-        translateMonitorResource(loadBalancer);
-        translateBandwidthResource(loadBalancer);
+        if (loadBalancer.getSessionPersistence() != null) translatePersistenceResource(vsName, loadBalancer);
+        if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
+        if (loadBalancer.getRateLimit() != null)  translateBandwidthResource(loadBalancer);
         translatePoolResource(vsName, loadBalancer);
         try {
             translateTrafficIpGroupsResource(config, loadBalancer);
@@ -66,9 +65,10 @@ public class ResourceTranslator {
         basic.setProtocol(loadBalancer.getProtocol().name());
         basic.setPort(loadBalancer.getPort());
         basic.setPool(vsName);
+        basic.setEnabled(true);
 
         //protection class settings
-        if (loadBalancer.getAccessLists() != null || loadBalancer.getConnectionLimit() != null) {
+        if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
             basic.setProtection_class(vsName);
         }
 
@@ -90,7 +90,7 @@ public class ResourceTranslator {
         }
 
         //webcache settings
-        if (loadBalancer.isContentCaching()) {
+        if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) {
             VirtualServerWebcache cache = new VirtualServerWebcache();
             cache.setEnabled(true);
             properties.setWeb_cache(cache);
@@ -102,6 +102,8 @@ public class ResourceTranslator {
         if (userPages != null) { // if userPages is null, just leave the ce object alone and it should use the default page
             ep = userPages.getErrorpage();
             ce.setError_file(ep);
+        } else {
+            ce.setError_file("Default");
         }
         properties.setConnection_errors(ce);
 
@@ -165,7 +167,11 @@ public class ResourceTranslator {
 
         basic.setEnabled(true);
         basic.setIpaddresses(new HashSet<String>(Arrays.asList(ipaddress)));
-        basic.setMachines(new HashSet<String>(config.getFailoverTrafficManagerNames()));
+
+        Set<String> machines = new HashSet<String>();
+        machines.add(config.getTrafficManagerName());
+        machines.addAll(config.getFailoverTrafficManagerNames());
+        basic.setMachines(machines);
         basic.setSlaves(new HashSet<String>(config.getFailoverTrafficManagerNames()));
 
         properties.setBasic(basic);
@@ -173,7 +179,7 @@ public class ResourceTranslator {
         return tig;
     }
 
-    private Set<String> genGroupNameSet(LoadBalancer loadBalancer) throws InsufficientRequestException {
+    public Set<String> genGroupNameSet(LoadBalancer loadBalancer) throws InsufficientRequestException {
         Set<String> groupSet = new HashSet<String>();
 
         int acctId = loadBalancer.getAccountId();
@@ -190,8 +196,6 @@ public class ResourceTranslator {
     }
 
     public Pool translatePoolResource(String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
-        Set<Node> nodes = loadBalancer.getNodes();
-
         Pool pool = new Pool();
         PoolProperties properties = new PoolProperties();
         PoolBasic basic = new PoolBasic();
@@ -199,12 +203,16 @@ public class ResourceTranslator {
         PoolLoadbalancing poollb = new PoolLoadbalancing();
         PoolConnection connection = new PoolConnection();
 
-        basic.setDraining(getNodesWithCondition(nodes, NodeCondition.DRAINING));
-        basic.setDisabled(getNodesWithCondition(nodes, NodeCondition.DISABLED));
+        Set<Node> nodes = loadBalancer.getNodes();
+        basic.setNodes(NodeHelper.getNodeIpSet(NodeHelper.getNodesWithCondition(nodes, NodeCondition.ENABLED)));
+        basic.setDraining(NodeHelper.getNodeIpSet(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING)));
+        basic.setDisabled(NodeHelper.getNodeIpSet(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DISABLED)));
         basic.setPassive_monitoring(false);
 
-        if (loadBalancer.getAlgorithm().name().equals(PoolLoadBalancingAlgorithm.wroundrobin.getValue())
-                || loadBalancer.getAlgorithm().name().equals(PoolLoadBalancingAlgorithm.wconnections.getValue())) {
+
+        String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
+        if (lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.name())
+                || lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_LEAST_CONNECTIONS.name())) {
             PoolNodeWeight nw;
             for (Node n : nodes) {
                 nw = new PoolNodeWeight();
@@ -218,7 +226,7 @@ public class ResourceTranslator {
         ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(loadBalancer.getNodes());
         poollb.setPriority_enabled(znpc.hasSecondary());
         poollb.setPriority_values(znpc.getPriorityValuesSet());
-        poollb.setAlgorithm(loadBalancer.getAlgorithm().name());
+        poollb.setAlgorithm(lbAlgo);
 
         connection.setMax_reply_time(loadBalancer.getTimeout());
 
@@ -328,15 +336,7 @@ public class ResourceTranslator {
 
     }
 
-    private Set<String> getNodesWithCondition(Collection<Node> nodes, NodeCondition nodeCondition) {
-        Set<String> nodesWithCondition = new HashSet<String>();
-        for (Node node : nodes) {
-            if (node.getCondition().equals(nodeCondition)) {
-                nodesWithCondition.add(String.format("%s:%d", node.getIpAddress(), node.getPort()));
-            }
-        }
-        return nodesWithCondition;
-    }
+
 
     public Pool getcPool() {
         return cPool;

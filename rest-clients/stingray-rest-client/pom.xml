@@ -13,7 +13,7 @@
     <artifactId>stingray-rest-client</artifactId>
     <version>1.18.10-SNAPSHOT</version>
 
-    <name>Openstack :: Atlas :: Rest Clients :: Stingray :: Client</name>
+    <name>Openstack :: Atlas :: Rest Clients :: Stingray</name>
     <description>
         Stingray RESTful API Client
     </description>

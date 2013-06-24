@@ -65,6 +65,7 @@ public class ClientConstants {
     public static final String REQUEST_ERROR = "The Stingray Rest Client encountered a problem processing the request: ";
 
     public static final String CLIENT_ERROR = "There was an error communicating with the auth service...";
+    public static final String STM_CLIENT_ERROR = "There was an error communicating with the Stingray Rest Service...";
 
 
     /** Default error responses **/
