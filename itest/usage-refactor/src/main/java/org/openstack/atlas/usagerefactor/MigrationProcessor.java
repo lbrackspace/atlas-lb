@@ -125,7 +125,7 @@ public class MigrationProcessor {
     protected List<LoadBalancerUsageEvent> removeDuplicateEvents(List<LoadBalancerUsageEvent> loadBalancerUsageEvents, List<LoadBalancerHostUsage> loadBalancerHostUsages) {
         for (LoadBalancerHostUsage loadBalancerHostUsage : loadBalancerHostUsages) {
             for (LoadBalancerUsageEvent loadBalancerUsageEvent : loadBalancerUsageEvents) {
-                if (loadBalancerHostUsage.getLoadbalancerId() == loadBalancerUsageEvent.getAccountId()
+                if (loadBalancerHostUsage.getLoadbalancerId() == loadBalancerUsageEvent.getLoadbalancerId()
                         && loadBalancerHostUsage.getPollTime().equals(loadBalancerUsageEvent.getStartTime())
                         && loadBalancerHostUsage.getEventType().name().equals(loadBalancerUsageEvent.getEventType())) {
                     System.out.println(String.format("Removing duplicate usage event for loadbalancer %d...", loadBalancerUsageEvent.getLoadbalancerId()));
