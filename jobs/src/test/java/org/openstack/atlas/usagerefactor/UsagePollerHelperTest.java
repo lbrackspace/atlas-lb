@@ -1353,6 +1353,20 @@ public class UsagePollerHelperTest {
             AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 40L, 110L, 40L, 230L, 0, 0, 1, 3,
                     UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(2));
         }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithcreatelbevent/case5.xml")
+        public void case5() throws Exception {
+
+            List<LoadBalancerMergedHostUsage> mergedRecords = usagePollerHelper.processExistingEvents(lbHostMap);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(2, mergedRecords.size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.CREATE_LOADBALANCER, "2013-06-24 12:30:54", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.DELETE_LOADBALANCER, "2013-06-24 12:31:00", mergedRecords.get(1));
+        }
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
@@ -1532,6 +1546,112 @@ public class UsagePollerHelperTest {
                     UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(3));
         }
 
+    }
+
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(locations = {"classpath:dbunit-context.xml"})
+    @TestExecutionListeners({
+            DependencyInjectionTestExecutionListener.class,
+            DbUnitTestExecutionListener.class})
+    @DbUnitConfiguration(dataSetLoader = FlatXmlLoader.class)
+    public static class WhenTestingProcessExistingEventsWithUnsuspendEvent {
+        @Autowired
+        private UsageRefactorService usageRefactorService;
+
+        private Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> lbHostMap;
+        private Calendar pollTime;
+        String pollTimeStr;
+        @Mock
+        private HostRepository hostRepository;
+        @InjectMocks
+        private UsagePollerHelper usagePollerHelper = new UsagePollerHelper();
+        private List<Host> hosts = new ArrayList<Host>();
+
+        @Before
+        public void standUp() throws Exception {
+            initMocks(this);
+            Host h1 = new Host();
+            Host h2 = new Host();
+            h1.setId(1);
+            h2.setId(2);
+            hosts.add(h1);
+            hosts.add(h2);
+            when(hostRepository.getAll()).thenReturn(hosts);
+            lbHostMap = usageRefactorService.getAllLoadBalancerHostUsages();
+            pollTime = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            pollTimeStr = sdf.format(pollTime.getTime());
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithunsuspendevent/case1.xml")
+        public void case1() throws Exception {
+
+            List<LoadBalancerMergedHostUsage> mergedRecords = usagePollerHelper.processExistingEvents(lbHostMap);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(1, mergedRecords.size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithunsuspendevent/case2.xml")
+        public void case2() throws Exception {
+
+            List<LoadBalancerMergedHostUsage> mergedRecords = usagePollerHelper.processExistingEvents(lbHostMap);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(1, mergedRecords.size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithunsuspendevent/case3.xml")
+        public void case3() throws Exception {
+
+            List<LoadBalancerMergedHostUsage> mergedRecords = usagePollerHelper.processExistingEvents(lbHostMap);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(3, mergedRecords.size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(2));
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithunsuspendevent/case4.xml")
+        public void case4() throws Exception {
+
+            List<LoadBalancerMergedHostUsage> mergedRecords = usagePollerHelper.processExistingEvents(lbHostMap);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(3, mergedRecords.size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 30L, 0L, 150L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 40L, 110L, 40L, 230L, 0, 0, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(2));
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithunsuspendevent/case5.xml")
+        public void case5() throws Exception {
+
+            List<LoadBalancerMergedHostUsage> mergedRecords = usagePollerHelper.processExistingEvents(lbHostMap);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(2, mergedRecords.size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-06-24 12:30:54", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.DELETE_LOADBALANCER, "2013-06-24 12:31:00", mergedRecords.get(1));
+        }
     }
 
 }

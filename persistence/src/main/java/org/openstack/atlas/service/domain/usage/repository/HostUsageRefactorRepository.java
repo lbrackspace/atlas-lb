@@ -133,7 +133,7 @@ public class HostUsageRefactorRepository {
         if (!ascending) {
             order = "DESC";
         }
-        String queryStr = "from LoadBalancerHostUsage h WHERE poll_time > :timeMarker ORDER BY h.pollTime " + order;
+        String queryStr = "from LoadBalancerHostUsage h WHERE poll_time >= :timeMarker ORDER BY h.pollTime " + order;
         Query query = entityManager.createQuery(queryStr).setParameter("timeMarker", timeMarker, TemporalType.TIMESTAMP);
         List<LoadBalancerHostUsage> hosts = query.getResultList();
         return hosts;

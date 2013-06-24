@@ -261,7 +261,7 @@ public class UsagePollerHelper {
 
                     if (isFirstPoll) {
                         //If first record is the CREATE_LOADBALANCER event then add that event to the records to be merged.
-                        if (currentUsage.getEventType() == UsageEvent.CREATE_LOADBALANCER) {
+                        if (currentUsage.getEventType() == UsageEvent.CREATE_LOADBALANCER || currentUsage.getEventType() == UsageEvent.UNSUSPEND_LOADBALANCER) {
                             mergedUsagesMap.put(timeKey.getTime().toString(), initializeMergedRecord(currentUsage));
                         }
                         //The first record should usually be NULL from the previous poll, if it is not then at this point in the code something went wrong.
