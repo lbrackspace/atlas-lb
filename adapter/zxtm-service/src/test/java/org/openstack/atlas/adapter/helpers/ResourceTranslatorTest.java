@@ -10,6 +10,10 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.stm.STMTestBase;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
+import org.rackspace.stingray.client.monitor.Monitor;
+import org.rackspace.stingray.client.monitor.MonitorBasic;
+import org.rackspace.stingray.client.monitor.MonitorHttp;
+import org.rackspace.stingray.client.monitor.MonitorProperties;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolNodeWeight;
@@ -126,14 +130,14 @@ public class ResourceTranslatorTest extends STMTestBase {
 
     public static class whenTranslatingATrafficIpGroup {
 
-       private String expectedGroupName6;
-       private String expectedGroupName4;
-       private String failoverHost;
-       private String ipAddress4;
-       private String ipAddress6;
-       private String expectedVip6Ip;
+        private String expectedGroupName6;
+        private String expectedGroupName4;
+        private String failoverHost;
+        private String ipAddress4;
+        private String ipAddress6;
+        private String expectedVip6Ip;
 
-      private ResourceTranslator translator;
+        private ResourceTranslator translator;
 
         @Before
         public void standUp() throws IPStringConversionException {
@@ -206,7 +210,6 @@ public class ResourceTranslatorTest extends STMTestBase {
 
 
     }
-
 
     public static class whenTranslatingAPool {
 
@@ -286,8 +289,6 @@ public class ResourceTranslatorTest extends STMTestBase {
             container = new ZeusNodePriorityContainer(lb.getNodes());
 
 
-
-
         }
 
         @Test
@@ -304,7 +305,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertTrue(createdBasic.getNodes().contains(nodeEnabledAddress));
             Assert.assertTrue(createdBasic.getDraining().contains(nodeDrainingAddress));
             Assert.assertTrue(createdBasic.getDisabled().contains(nodeDisabledAddress));
-            Assert.assertEquals(expectedTimeout, (int)createdProperties.getConnection().getMax_reply_time());
+            Assert.assertEquals(expectedTimeout, (int) createdProperties.getConnection().getMax_reply_time());
             Assert.assertEquals(container.getPriorityValuesSet(), createdProperties.getLoad_balancing().getPriority_values());
             Assert.assertEquals(container.hasSecondary(), createdProperties.getLoad_balancing().getPriority_enabled());
             Assert.assertEquals(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN.toString().toLowerCase(), createdProperties.getLoad_balancing().getAlgorithm());
@@ -315,10 +316,69 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertTrue(weights.contains(poolNodeDisabledWeight));
 
 
-
-
         }
 
+
+    }
+
+    public static class whenTranslatingAHealthMonitor {
+
+        private HealthMonitor healthMonitor;
+        private HealthMonitorType monitorType;
+        private Integer numAttemptsCheck;
+        private Integer delay;
+        private Integer timeout;
+        private String hostHeader;
+        private String path;
+        private String bodyRegex;
+        private String statusRegex;
+        private Boolean useSsl;
+        private ResourceTranslator translator;
+
+        @Before
+        public void standUp() {
+            setupIvars();
+            monitorType = HealthMonitorType.HTTPS;
+            numAttemptsCheck = 90;
+            delay = 30;
+            timeout = 20;
+            hostHeader = "host123";
+            path = "path123";
+            bodyRegex = "br123";
+            statusRegex = "sr123";
+            useSsl = true;
+            healthMonitor = new HealthMonitor();
+            healthMonitor.setType(monitorType);
+            healthMonitor.setAttemptsBeforeDeactivation(numAttemptsCheck);
+            healthMonitor.setDelay(delay);
+            healthMonitor.setTimeout(timeout);
+            healthMonitor.setHostHeader(hostHeader);
+            healthMonitor.setPath("path123");
+            healthMonitor.setBodyRegex("br123");
+            healthMonitor.setStatusRegex("sr123");
+
+            lb.setHealthMonitor(healthMonitor);
+        }
+
+        @Test
+        public void shouldCreateAValidHealthMonitor() throws InsufficientRequestException {
+            translator = new ResourceTranslator();
+            Monitor createdMonitor = translator.translateMonitorResource(lb);
+            MonitorProperties createdProperties = createdMonitor.getProperties();
+            MonitorBasic createdBasic = createdProperties.getBasic();
+            MonitorHttp createdHttp = createdProperties.getHttp();
+
+            Assert.assertNotNull(createdMonitor);
+            Assert.assertNotNull(createdProperties);
+            Assert.assertNotNull(createdBasic);
+            Assert.assertNotNull(createdHttp);
+            Assert.assertEquals(createdBasic.getType(), HealthMonitorType.HTTP.toString()); //The REST API does not use HTTPS as a type
+            Assert.assertEquals(createdBasic.getFailures(), numAttemptsCheck);
+            Assert.assertEquals(createdBasic.getDelay(), delay);
+            Assert.assertEquals(createdBasic.getTimeout(), timeout);
+            Assert.assertEquals(createdHttp.getHost_header(), hostHeader);
+            Assert.assertEquals(createdBasic.getUse_ssl(), useSsl);
+        }
 
     }
 }
