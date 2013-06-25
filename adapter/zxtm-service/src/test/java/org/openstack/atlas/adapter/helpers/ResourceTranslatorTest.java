@@ -8,14 +8,15 @@ import org.junit.runner.RunWith;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.stm.STMTestBase;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
-import org.openstack.atlas.service.domain.entities.AccessList;
-import org.openstack.atlas.service.domain.entities.ConnectionLimit;
-import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
-import org.openstack.atlas.service.domain.entities.UserPages;
+import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
+import org.rackspace.stingray.client.traffic.ip.TrafficIp;
+import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
 import org.rackspace.stingray.client.virtualserver.*;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RunWith(Enclosed.class)
@@ -113,6 +114,87 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertEquals(logFormat, log.getFormat());
             Assert.assertEquals(expectedError, createdProperties.getConnection_errors());
 
+
+        }
+
+
+    }
+
+    public static class whenTranslatingATrafficIpGroup {
+
+        String expectedGroupName6;
+        String expectedGroupName4;
+        String failoverHost;
+        String ipAddress4;
+        String ipAddress6;
+        String expectedVip6Ip;
+
+        public void standUp() throws IPStringConversionException {
+
+            setupIvars();
+            createSimpleLoadBalancer();
+            int acctId = 1234567890;
+            int ipv4Id = 1111;
+            int ipv6Id = 2222;
+            int ipv6Octet = 1;
+            ipAddress4 = "000.000.000.000";
+            ipAddress6 = "fe80::a00:27ff:fe05:d0d5/64";
+
+            Set<LoadBalancerJoinVip> vip4s = new HashSet<LoadBalancerJoinVip>();
+            LoadBalancerJoinVip vip4 = new LoadBalancerJoinVip();
+            VirtualIp ip4 = new VirtualIp();
+            ip4.setId(ipv4Id);
+            ip4.setIpAddress(ipAddress4);
+            vip4.setVirtualIp(ip4);
+            vip4s.add(vip4);
+            lb.setLoadBalancerJoinVipSet(vip4s);
+
+            Set<LoadBalancerJoinVip6> vip6s = new HashSet<LoadBalancerJoinVip6>();
+            LoadBalancerJoinVip6 vip6 = new LoadBalancerJoinVip6();
+            VirtualIpv6 ip6 = new VirtualIpv6();
+            ip6.setAccountId(acctId);
+            ip6.setId(ipv6Id);
+            ip6.setVipOctets(ipv6Octet);
+            vip6.setVirtualIp(ip6);
+            Cluster cluster = new Cluster();
+            cluster.setClusterIpv6Cidr(ipAddress6);
+            ip6.setCluster(cluster);
+            vip6s.add(vip6);
+            expectedVip6Ip =  ip6.getDerivedIpString();
+            lb.setLoadBalancerJoinVip6Set(vip6s);
+
+
+            //found in /etc/openstack/atlas/
+            failoverHost = "development.lbaas.rackspace.net";
+
+            //traffic group name Lb ID _ VIP ID
+            expectedGroupName6 = Integer.toString(TEST_ACCOUNT_ID) + "_" + Integer.toString(ip6.getId());
+            expectedGroupName4 = Integer.toString(TEST_ACCOUNT_ID) + "_" + Integer.toString(ip4.getId());
+
+        }
+
+        @Test
+        public void shouldCreateValidTrafficIpGroup() throws IPStringConversionException, InsufficientRequestException {
+            standUp();
+            ResourceTranslator translator = new ResourceTranslator();
+            Map<String, TrafficIp> mappedGroups = translator.translateTrafficIpGroupsResource(config, lb);
+
+            Assert.assertTrue(mappedGroups.containsKey(expectedGroupName4));
+            Assert.assertTrue(mappedGroups.containsKey(expectedGroupName6));
+
+            TrafficIp retrievedTrafficIp4 = mappedGroups.get(expectedGroupName4);
+            TrafficIp retrievedTrafficIp6 = mappedGroups.get(expectedGroupName6);
+
+            TrafficIpBasic basic4 = retrievedTrafficIp4.getProperties().getBasic();
+            TrafficIpBasic basic6 = retrievedTrafficIp6.getProperties().getBasic();
+
+            Assert.assertTrue(basic4.getIpaddresses().contains(ipAddress4));
+            Assert.assertTrue(basic4.getMachines().contains(failoverHost));
+            Assert.assertTrue(basic4.getEnabled());
+
+            Assert.assertTrue(basic6.getMachines().contains(failoverHost));
+            Assert.assertTrue(basic6.getIpaddresses().contains(expectedVip6Ip));
+            Assert.assertTrue(basic6.getEnabled());
 
         }
 
