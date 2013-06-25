@@ -92,7 +92,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
 
-//        final String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         StingrayRestClient client = loadSTMRestClient(config);
 
         ResourceTranslator translator = new ResourceTranslator();
@@ -102,7 +101,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             vsNames.add(ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
         vsNames.add(ZxtmNameBuilder.genVSName(loadBalancer));
-        /* I am update body */
+
         for (String vsName : vsNames) {
             try {
 
@@ -113,8 +112,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 //                    && !loadBalancer.getSessionPersistence().equals(SessionPersistence.NONE)
 //                    && !loadBalancer.hasSsl()) //setSessionPersistence(config, loadBalancer);
 //
-                //Contentcaching is on the VirtualServer object already, so it will be updated without this anyway
-//            if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) updateContentCaching(config, loadBalancer);
                 if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
                     updateHealthMonitor(config, client, vsName, translator.getcMonitor());
                 }
@@ -152,7 +149,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         deleteVirtualServer(config, client, vsName);
         LOG.debug(String.format("Successfully removed loadbalancer: %s from the STM serverice...", vsName));
     }
-
 
     /*
        Virtual Server Resources
@@ -255,28 +251,24 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug(String.format("Creating pool '%s' and setting nodes...", poolName));
 
         Pool curPool = null;
-
-
         try {
             curPool = client.getPool(poolName);
         } catch (StingrayRestClientObjectNotFoundException e) {
-            LOG.warn(String.format("Object not found when creating pool: %s, this is expected...", poolName));
+            LOG.warn(String.format("Object not found when retrieving pool: %s, this is expected...", poolName));
         } catch (StingrayRestClientException e) {
             LOG.error(String.format("Error when retrieving pool: %s: ignoring...", poolName));
         }
 
         try {
-            client.createPool(poolName, pool);
+            client.updatePool(poolName, pool);
         } catch (Exception ex) {
-            LOG.error(String.format("Error creating pool: %s Rolling back! \n Exception: %s Trace: %s"
+            LOG.error(String.format("Error updating pool: %s Rolling back! \n Exception: %s Trace: %s"
                     , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
 
-            rollbackPool(client, poolName, curPool);
+            rollbackPool(config, client, poolName, curPool);
 
         }
     }
-
-    //Delelete
 
     @Override
     public void removeNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes) throws AxisFault, InsufficientRequestException, StmRollBackException {
@@ -316,46 +308,46 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void removeNode(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String ipAddress, Integer port) throws RemoteException, InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
-        String nodeToRemove = ipAddress + ":" + Integer.toString(port);
         String vsName = ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
-        String rollBackMessage = "Remove node request canceled.";
+
+        Pool pool = null;
+
+        String nodeToRemove = ipAddress + ":" + Integer.toString(port);
         try {
-            Pool pool = client.getPool(vsName);
+            pool = client.getPool(vsName);
             PoolBasic basic = pool.getProperties().getBasic();
             Set<String> existingNodes = basic.getNodes();
             if (existingNodes.contains(nodeToRemove)) {
                 existingNodes.remove(nodeToRemove);
-
+                updateNodePool(config, client, vsName, pool);
             } else {
-                //TODO we should probs tell them that node doesn't even exist...
+                LOG.warn(String.format("Node '%s:%d' for pool: %s does not exist. Ignoring..", ipAddress, port, vsName));
             }
-            //TODO call a method
-            client.updatePool(vsName, pool);
         } catch (StingrayRestClientObjectNotFoundException onf) {
             LOG.warn(String.format("Node pool '%s' for node '%s:%d' does not exist.", vsName, ipAddress, port));
         } catch (StingrayRestClientException e) {
-            throw new StmRollBackException(rollBackMessage, e);
+            throw new StmRollBackException("Remove node request canceled.", e);
         }
+
     }
 
-    private void rollbackPool(StingrayRestClient client, String poolName, Pool curPool) throws StmRollBackException {
+    private void rollbackPool(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String poolName, Pool curPool) throws StmRollBackException {
         try {
             if (curPool != null) {
                 LOG.debug(String.format("Updating pool for rollback '%s'", poolName));
-                //TODO: should call method for reuse and logging
-                client.updatePool(poolName, curPool);
+                updateNodePool(config, client, poolName, curPool);
             } else {
                 LOG.debug(String.format("Deleting pool for rollback '%s' ", poolName));
                 //TODO: should call method
                 client.deletePool(poolName);
             }
         } catch (StingrayRestClientException ex) {
-            LOG.error(String.format("Error creating pool: %s Rolling back! \n Exception: %s Trace: %s"
+            LOG.error(String.format("Error updating pool: %s Rolling back! \n Exception: %s Trace: %s"
                     , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
-            throw new StmRollBackException(String.format("Error creating pool: %s Rolling back! \n Exception: %s Trace: %s"
+            throw new StmRollBackException(String.format("Error updating pool: %s Rolling back! \n Exception: %s Trace: %s"
                     , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())), ex);
         } catch (StingrayRestClientObjectNotFoundException ex) {
-            LOG.warn(String.format("Object not found when creating pool: %s, this is expected...", poolName));
+            LOG.warn(String.format("Object not found when updating pool: %s, this is expected...", poolName));
         }
         LOG.debug(String.format("Successfully rolled back pool '%s' ", poolName));
     }
@@ -532,12 +524,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
             LOG.debug(String.format("Updating protection for rollback '%s'", protectionName));
             client.updateProtection(protectionName, curProtection);
-        } catch(StingrayRestClientException ex) {
+        } catch (StingrayRestClientException ex) {
             LOG.error(String.format("Error updating monitor: %s Rolling back! \n Exception: %s Trace: %s"
                     , protectionName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
             throw new StmRollBackException(String.format("Error updating protection: %s Rolling back! \n Exception: %s Trace: %s"
                     , protectionName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())), ex);
-        } catch(StingrayRestClientObjectNotFoundException ex) {
+        } catch (StingrayRestClientObjectNotFoundException ex) {
             LOG.warn(String.format("Object not found when creating protection: %s, this is expected...", protectionName));
         }
 
@@ -822,10 +814,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     client.deleteProtection(protectionSslName);
                 }
                 client.deleteProtection(protectionName);
-            } catch(StingrayRestClientException e) {
+            } catch (StingrayRestClientException e) {
                 LOG.error("Unexpected client error when deleting protection: " + protectionName);
                 rollbackProtection(client, loadBalancer, curProtection);
-            } catch(StingrayRestClientObjectNotFoundException onf) {
+            } catch (StingrayRestClientObjectNotFoundException onf) {
                 LOG.error("Cannot delete protection as client does not exist.");
                 rollbackProtection(client, loadBalancer, curProtection);
             }
@@ -1109,12 +1101,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName)
             throws InsufficientRequestException, StmRollBackException {
-
-        //TODO: a DELETE operation is a bit different then (CRU):D, in that we remove the 'item' or in this case 'errorpage'
-        // TODO: from our 'DB', or entity loadBalancer object after we have verified it has been removed from the backend (STM).
-        //ToDO: set NULL on the loadbalancer object before translation.
-
-        //TODO is this better?
 
         StingrayRestClient client = loadSTMRestClient(config);
 

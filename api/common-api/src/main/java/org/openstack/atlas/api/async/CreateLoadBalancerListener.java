@@ -49,15 +49,15 @@ public class CreateLoadBalancerListener extends BaseListener {
 
         try {
 
-            LOG.debug("Creating load balancer in Zeus...");
+            LOG.debug("Creating load balancer in STM...");
             reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
-            LOG.debug("Successfully created a load balancer in Zeus.");
+            LOG.debug("Successfully created a load balancer in STM.");
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);
             NodesHelper.setNodesToStatus(dbLoadBalancer, OFFLINE);
 
             loadBalancerService.update(dbLoadBalancer);
-            String alertDescription = String.format("An error occurred while creating loadbalancer '%d' in Zeus.", dbLoadBalancer.getId());
+            String alertDescription = String.format("An error occurred while creating loadbalancer '%d' in STM.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);

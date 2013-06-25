@@ -103,6 +103,7 @@ public class ResourceTranslator {
             ep = userPages.getErrorpage();
             ce.setError_file(ep);
         } else {
+            //Doesnt look like thats the case for some reason :( may be bug in STM
             ce.setError_file("Default");
         }
         properties.setConnection_errors(ce);
