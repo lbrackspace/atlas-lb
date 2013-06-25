@@ -2,7 +2,6 @@ package org.openstack.atlas.adapter.helpers;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.adapter.stm.StmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.rackspace.stingray.client.StingrayRestClient;
@@ -136,22 +135,22 @@ public class TrafficScriptHelper {
         }
 
         for (Child ruleName : rules) {
-            if (ruleName.getName().equals(StmAdapterImpl.XFF)) ruleXForwardedForExists = true;
+            if (ruleName.getName().equals(StmConstants.XFF)) ruleXForwardedForExists = true;
         }
 
         if (!ruleXForwardedForExists) {
-            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should always exist...", StmAdapterImpl.XFF));
+            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should always exist...", StmConstants.XFF));
             File crule = null;
-            crule = createRuleFile(StmAdapterImpl.XFF, TrafficScriptHelper.getXForwardedForHeaderScript());
+            crule = createRuleFile(StmConstants.XFF, TrafficScriptHelper.getXForwardedForHeaderScript());
 
             try {
-                client.createTrafficscript(StmAdapterImpl.XFF, crule);
+                client.createTrafficscript(StmConstants.XFF, crule);
             } catch (StingrayRestClientObjectNotFoundException e) {
                 LOG.debug("There was an error in StingrayRestClient: " + e);
             }
 
             crule.delete();
-            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmAdapterImpl.XFF));
+            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmConstants.XFF));
         }
 
         LOG.debug("X-Forwarded-For rule (traffic script) verification completed.");
@@ -188,22 +187,22 @@ public class TrafficScriptHelper {
         }
 
         for (Child ruleName : rules) {
-            if (ruleName.getName().equals(StmAdapterImpl.XFF)) ruleXForwardedProtoExists = true;
+            if (ruleName.getName().equals(StmConstants.XFF)) ruleXForwardedProtoExists = true;
         }
 
         if (!ruleXForwardedProtoExists) {
-            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should always exist...", StmAdapterImpl.XFP));
+            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should always exist...", StmConstants.XFP));
             File crule = null;
-            crule = createRuleFile(StmAdapterImpl.XFP, TrafficScriptHelper.getXForwardedProtoHeaderScript());
+            crule = createRuleFile(StmConstants.XFP, TrafficScriptHelper.getXForwardedProtoHeaderScript());
 
             try {
-                client.createTrafficscript(StmAdapterImpl.XFF, crule);
+                client.createTrafficscript(StmConstants.XFF, crule);
             } catch (StingrayRestClientObjectNotFoundException e) {
                 LOG.debug("There was an error in StingrayRestClient: " + e);
             }
 
             crule.delete();
-            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmAdapterImpl.XFP));
+            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmConstants.XFP));
         }
     }
 
