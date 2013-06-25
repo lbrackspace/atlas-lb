@@ -8,8 +8,19 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.stm.STMTestBase;
+import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
+import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
+import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
+import org.rackspace.stingray.client.monitor.Monitor;
+import org.rackspace.stingray.client.monitor.MonitorBasic;
+import org.rackspace.stingray.client.monitor.MonitorHttp;
+import org.rackspace.stingray.client.monitor.MonitorProperties;
+import org.rackspace.stingray.client.persistence.Persistence;
+import org.rackspace.stingray.client.persistence.PersistenceBasic;
+import org.rackspace.stingray.client.persistence.PersistenceProperties;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolNodeWeight;
@@ -129,14 +140,14 @@ public class ResourceTranslatorTest extends STMTestBase {
 
     public static class whenTranslatingATrafficIpGroup {
 
-       private String expectedGroupName6;
-       private String expectedGroupName4;
-       private String failoverHost;
-       private String ipAddress4;
-       private String ipAddress6;
-       private String expectedVip6Ip;
+        private String expectedGroupName6;
+        private String expectedGroupName4;
+        private String failoverHost;
+        private String ipAddress4;
+        private String ipAddress6;
+        private String expectedVip6Ip;
 
-      private ResourceTranslator translator;
+        private ResourceTranslator translator;
 
         @Before
         public void standUp() throws IPStringConversionException {
@@ -209,7 +220,6 @@ public class ResourceTranslatorTest extends STMTestBase {
 
 
     }
-
 
     public static class whenTranslatingAPool {
 
@@ -289,8 +299,6 @@ public class ResourceTranslatorTest extends STMTestBase {
             container = new ZeusNodePriorityContainer(lb.getNodes());
 
 
-
-
         }
 
         @Test
@@ -307,7 +315,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertTrue(createdBasic.getNodes().contains(nodeEnabledAddress));
             Assert.assertTrue(createdBasic.getDraining().contains(nodeDrainingAddress));
             Assert.assertTrue(createdBasic.getDisabled().contains(nodeDisabledAddress));
-            Assert.assertEquals(expectedTimeout, (int)createdProperties.getConnection().getMax_reply_time());
+            Assert.assertEquals(expectedTimeout, (int) createdProperties.getConnection().getMax_reply_time());
             Assert.assertEquals(container.getPriorityValuesSet(), createdProperties.getLoad_balancing().getPriority_values());
             Assert.assertEquals(container.hasSecondary(), createdProperties.getLoad_balancing().getPriority_enabled());
             Assert.assertEquals(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN.toString().toLowerCase(), createdProperties.getLoad_balancing().getAlgorithm());
@@ -318,13 +326,109 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertTrue(weights.contains(poolNodeDisabledWeight));
 
 
-
-
         }
 
 
+    }
+
+    public static class whenTranslatingAHealthMonitor {
+
+        private HealthMonitor healthMonitor;
+        private HealthMonitorType monitorType;
+        private Integer numAttemptsCheck;
+        private Integer delay;
+        private Integer timeout;
+        private String hostHeader;
+        private String path;
+        private String bodyRegex;
+        private String statusRegex;
+        private Boolean useSsl;
+        private ResourceTranslator translator;
+
+        @Before
+        public void standUp() {
+            setupIvars();
+            monitorType = HealthMonitorType.HTTPS;
+            numAttemptsCheck = 90;
+            delay = 30;
+            timeout = 20;
+            hostHeader = "host123";
+            path = "path123";
+            bodyRegex = "br123";
+            statusRegex = "sr123";
+            useSsl = true; //This is set automatically on the LoadBalancer object when type is HTTPS
+            healthMonitor = new HealthMonitor();
+            healthMonitor.setType(monitorType);
+            healthMonitor.setAttemptsBeforeDeactivation(numAttemptsCheck);
+            healthMonitor.setDelay(delay);
+            healthMonitor.setTimeout(timeout);
+            healthMonitor.setHostHeader(hostHeader);
+            healthMonitor.setPath(path);
+            healthMonitor.setBodyRegex(bodyRegex);
+            healthMonitor.setStatusRegex(statusRegex);
+
+            lb.setHealthMonitor(healthMonitor);
+        }
+
+        @Test
+        public void shouldCreateAValidHealthMonitor() throws InsufficientRequestException {
+            translator = new ResourceTranslator();
+            Monitor createdMonitor = translator.translateMonitorResource(lb);
+            MonitorProperties createdProperties = createdMonitor.getProperties();
+            MonitorBasic createdBasic = createdProperties.getBasic();
+            MonitorHttp createdHttp = createdProperties.getHttp();
+
+            Assert.assertNotNull(createdMonitor);
+            Assert.assertNotNull(createdProperties);
+            Assert.assertNotNull(createdBasic);
+            Assert.assertNotNull(createdHttp);
+            Assert.assertEquals(createdBasic.getType(), HealthMonitorType.HTTP.toString()); //The REST API does not use HTTPS as a type
+            Assert.assertEquals(createdBasic.getFailures(), numAttemptsCheck);
+            Assert.assertEquals(createdBasic.getDelay(), delay);
+            Assert.assertEquals(createdBasic.getTimeout(), timeout);
+            Assert.assertEquals(createdHttp.getHost_header(), hostHeader);
+            Assert.assertEquals(createdBasic.getUse_ssl(), useSsl);
+        }
 
     }
+
+    public static class whenTranslatingABandwidthResource {
+
+        private RateLimit rateLimit;
+        public Integer maxRequestsPerSecond;
+        private String comment;
+        private ResourceTranslator translator;
+
+        @Before
+        public void standUp() {
+            setupIvars();
+            comment = "This is a comment.";
+            Ticket ticket = new Ticket();
+            ticket.setComment(comment);
+            rateLimit = new RateLimit();
+            rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
+            rateLimit.setTicket(ticket);
+
+            lb.setRateLimit(rateLimit);
+        }
+
+        @Test
+        public void shouldCreateAValidBandwidth() throws InsufficientRequestException {
+            translator = new ResourceTranslator();
+            Bandwidth createdBandwidth = translator.translateBandwidthResource(lb);
+            BandwidthProperties createdProperties = createdBandwidth.getProperties();
+            BandwidthBasic createdBasic = createdProperties.getBasic();
+
+             Assert.assertNotNull(createdBandwidth);
+            Assert.assertNotNull(createdProperties);
+            Assert.assertNotNull(createdBasic);
+            Assert.assertEquals(createdBasic.getMaximum(), maxRequestsPerSecond);
+            Assert.assertEquals(createdBasic.getNote(), comment);
+        }
+    }
+
+
+
 
 
     public static class whenTranslatingAProtection {
@@ -341,9 +445,13 @@ public class ResourceTranslatorTest extends STMTestBase {
         AccessList accessListBanned;
 
 
+
+
+
         @Before
         public void standUp() {
             setupIvars();
+
 
             vsName = "HI";
 
@@ -392,6 +500,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertTrue(createdRestriction.getAllowed().contains(accessListAllowed.getIpAddress()));
             Assert.assertTrue(createdRestriction.getBanned().contains(accessListBanned.getIpAddress()));
         }
+    }
 
 
 
@@ -403,6 +512,53 @@ public class ResourceTranslatorTest extends STMTestBase {
 
 
 
+        public static class whenGenGroupNameSet {
 
+               private ResourceTranslator translator;
+
+
+
+
+        @Test
+        public void shouldGenGroupNameSet() throws InsufficientRequestException {
+            translator = new ResourceTranslator();
+            Set<String> groupNameSet = translator.genGroupNameSet(lb);
+
+            Assert.assertFalse(groupNameSet.isEmpty());
+        }
+    }
+
+    public static class whenTranslatingAPersistenceResource {
+
+        private String vsName;
+        private PersistenceType persistenceType;
+        private ResourceTranslator translator;
+
+        @Before
+        public void standUp() {
+            setupIvars();
+            vsName = "asdfgh";
+            persistenceType = PersistenceType.HTTP_COOKIE;
+            org.openstack.atlas.service.domain.entities.SessionPersistence
+                    persistence = SessionPersistence.fromDataType(persistenceType);
+
+//            org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence
+//                    subPersistence = persistence.getSessionPersistence();
+
+            lb.setSessionPersistence(persistence);
+        }
+
+        @Test
+        public void shouldCreateAValidPersistence() throws InsufficientRequestException {
+            translator = new ResourceTranslator();
+            Persistence createdPersistence = translator.translatePersistenceResource(vsName, lb);
+            PersistenceProperties createdProperties = createdPersistence.getProperties();
+            PersistenceBasic createdBasic = createdProperties.getBasic();
+
+            Assert.assertNotNull(createdPersistence);
+            Assert.assertNotNull(createdProperties);
+            Assert.assertNotNull(createdBasic);
+            Assert.assertEquals(createdBasic.getType(), persistenceType.toString());
+        }
     }
 }
