@@ -7,6 +7,7 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
+import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
@@ -55,14 +56,6 @@ import java.util.Set;
 
 public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
-
-    //TODO: move to a 'constants' file...
-    public static final LoadBalancerAlgorithm DEFAULT_ALGORITHM = LoadBalancerAlgorithm.RANDOM;
-    public static final String XFF = "add_x_forwarded_for_header";
-    public static final String XFP = "add_x_forwarded_proto";
-    public static final String SOURCE_IP = "ip";
-    public static final String HTTP_COOKIE = "cookie";
-
 
     public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config) throws StmRollBackException {
         StingrayRestClient client = null;
@@ -649,7 +642,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     private boolean persistenceIsSupported(LoadBalancer loadBalancer) {
         boolean supported = false;
         String type = loadBalancer.getSessionPersistence().getSessionPersistence().getPersistenceType().value();
-        if (type.equals(HTTP_COOKIE) || type.equals(SOURCE_IP)) {
+        if (type.equals(StmConstants.HTTP_COOKIE) || type.equals(StmConstants.SOURCE_IP)) {
             supported = true;
         }
         return supported;
