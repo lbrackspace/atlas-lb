@@ -2,10 +2,7 @@ package org.openstack.atlas.usage.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
-import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.jobs.AbstractJob;
-import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.services.HostService;
@@ -17,14 +14,11 @@ import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.UsageProcessor;
 import org.openstack.atlas.usagerefactor.helpers.HostIdUsageMap;
 import org.openstack.atlas.usagerefactor.helpers.UsageProcessorResult;
-import org.openstack.atlas.util.crypto.CryptoUtil;
-import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -55,10 +49,10 @@ public class LoadBalancerUsagePoller extends AbstractJob {
 
     @Override
     public void run() {
-        Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages = usageRefactorService.getAllLoadBalancerHostUsages();
-        LOG.info("Retrieved records for " + existingUsages.size() + " load balancers from lb_host_usage table.");
         Calendar pollTime = Calendar.getInstance();
         LOG.info("Set poll time to " + pollTime.getTime().toString() + "...");
+        Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages = usageRefactorService.getAllLoadBalancerHostUsages();
+        LOG.info("Retrieved records for " + existingUsages.size() + " load balancers from lb_host_usage table.");
         Map<Integer, Map<Integer, SnmpUsage>> currentUsages;
         try {
             currentUsages = getCurrentData();
@@ -70,7 +64,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         UsageProcessorResult result = usageProcessor.mergeRecords(existingUsages, currentUsages, pollTime);
         LOG.info("Completed processing of current usage");
         LOG.info("Checking if any events were inserted between the beginning of this job and now...");
-        Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> newEvents = usageRefactorService.getRecordsAfterTime(pollTime);
+        Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> newEvents = usageRefactorService.getRecordsAfterTimeInclusive(pollTime);
         Set<Integer> loadBalancersNotToDelete = removeLoadBalancerRecordsThatHadNewEvents(result, newEvents);
         usageRefactorService.batchCreateLoadBalancerMergedHostUsages(result.getMergedUsages());
         LOG.info("Completed insertion of " + result.getMergedUsages().size() + " new records into lb_merged_host_usage table.");

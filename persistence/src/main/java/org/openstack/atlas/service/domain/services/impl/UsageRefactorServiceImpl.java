@@ -33,9 +33,16 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
     }
 
     @Override
-    public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getRecordsAfterTime(Calendar time) {
-        List<LoadBalancerHostUsage> lbHostUsages = hostUsageRefactorRepository.getRecordsAfterTime(time, true);
+    public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getRecordsAfterTimeInclusive(Calendar time) {
+        List<LoadBalancerHostUsage> lbHostUsages = hostUsageRefactorRepository.getRecordsAfterTimeInclusive(time, true);
         LOG.info(String.format("Retrieved %d records greater than or equal to time: %s", lbHostUsages.size(), time.getTime().toString()));
+        return listToMap(lbHostUsages);
+    }
+
+    @Override
+    public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getRecordsBeforeTimeInclusive(Calendar time) {
+        List<LoadBalancerHostUsage> lbHostUsages = hostUsageRefactorRepository.getRecordsBeforeTimeInclusive(time, true);
+        LOG.info(String.format("Retrieved %d records less than or equal to time: %s", lbHostUsages.size(), time.getTime().toString()));
         return listToMap(lbHostUsages);
     }
 

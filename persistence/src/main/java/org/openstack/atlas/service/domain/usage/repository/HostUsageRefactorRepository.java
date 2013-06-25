@@ -128,12 +128,23 @@ public class HostUsageRefactorRepository {
         return hosts;
     }
 
-    public List<LoadBalancerHostUsage> getRecordsAfterTime(Calendar timeMarker, boolean ascending) {
+    public List<LoadBalancerHostUsage> getRecordsAfterTimeInclusive(Calendar timeMarker, boolean ascending) {
         String order = "ASC";
         if (!ascending) {
             order = "DESC";
         }
         String queryStr = "from LoadBalancerHostUsage h WHERE poll_time >= :timeMarker ORDER BY h.pollTime " + order;
+        Query query = entityManager.createQuery(queryStr).setParameter("timeMarker", timeMarker, TemporalType.TIMESTAMP);
+        List<LoadBalancerHostUsage> hosts = query.getResultList();
+        return hosts;
+    }
+
+    public List<LoadBalancerHostUsage> getRecordsBeforeTimeInclusive(Calendar timeMarker, boolean ascending) {
+        String order = "ASC";
+        if (!ascending) {
+            order = "DESC";
+        }
+        String queryStr = "from LoadBalancerHostUsage h WHERE poll_time <= :timeMarker ORDER BY h.pollTime " + order;
         Query query = entityManager.createQuery(queryStr).setParameter("timeMarker", timeMarker, TemporalType.TIMESTAMP);
         List<LoadBalancerHostUsage> hosts = query.getResultList();
         return hosts;

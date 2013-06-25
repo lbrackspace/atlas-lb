@@ -20,7 +20,9 @@ public interface UsageRefactorService {
     public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getAllLoadBalancerHostUsages();
 
     //Keys loadbalancerId, hostId
-    public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getRecordsAfterTime(Calendar time);
+    public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getRecordsAfterTimeInclusive(Calendar time);
+
+    public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getRecordsBeforeTimeInclusive(Calendar time);
 
     public void batchCreateLoadBalancerHostUsages(List<LoadBalancerHostUsage> usages);
 
