@@ -2,7 +2,6 @@ package org.openstack.atlas.adapter.helpers;
 
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.stm.StmAdapterImpl;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
@@ -212,8 +211,8 @@ public class ResourceTranslator {
 
 
         String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
-        if (lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.name())
-                || lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_LEAST_CONNECTIONS.name())) {
+        if (lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.toString())
+                || lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_LEAST_CONNECTIONS.toString())) {
             PoolNodeWeight nw;
             for (Node n : nodes) {
                 nw = new PoolNodeWeight();

@@ -44,7 +44,7 @@ public class ResourceTranslatorTest extends STMTestBase {
 
         public void initializeVars(String logFormat, LoadBalancerProtocol protocol) {
             setupIvars();
-            createSimpleLoadBalancer();
+//            createSimpleLoadBalancer();
             vsName = "test_name";
             this.isConnectionLogging = true;
             isHalfClosed = true;
@@ -139,7 +139,7 @@ public class ResourceTranslatorTest extends STMTestBase {
         public void standUp() throws IPStringConversionException {
 
             setupIvars();
-            createSimpleLoadBalancer();
+//            createSimpleLoadBalancer();
             int acctId = 1234567890;
             int ipv4Id = 1111;
             int ipv6Id = 2222;
@@ -232,7 +232,7 @@ public class ResourceTranslatorTest extends STMTestBase {
         @Before
         public void standUp() {
             setupIvars();
-            createSimpleLoadBalancer();
+//            createSimpleLoadBalancer();
             vsName = "qwertyuiop";
             numAttemptsCheck = 90;
             expectedTimeout = 132;
