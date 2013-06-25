@@ -3,17 +3,25 @@ package org.openstack.atlas.adapter.helpers;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.stm.STMTestBase;
+import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
+import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
+import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.monitor.MonitorBasic;
 import org.rackspace.stingray.client.monitor.MonitorHttp;
 import org.rackspace.stingray.client.monitor.MonitorProperties;
+import org.rackspace.stingray.client.persistence.Persistence;
+import org.rackspace.stingray.client.persistence.PersistenceBasic;
+import org.rackspace.stingray.client.persistence.PersistenceProperties;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolNodeWeight;
@@ -380,5 +388,84 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertEquals(createdBasic.getUse_ssl(), useSsl);
         }
 
+    }
+
+    public static class whenTranslatingABandwidthResource {
+
+        private RateLimit rateLimit;
+        public Integer maxRequestsPerSecond;
+        private String comment;
+        private ResourceTranslator translator;
+
+        @Before
+        public void standUp() {
+            setupIvars();
+            comment = "This is a comment.";
+            Ticket ticket = new Ticket();
+            ticket.setComment(comment);
+            rateLimit = new RateLimit();
+            rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
+            rateLimit.setTicket(ticket);
+
+            lb.setRateLimit(rateLimit);
+        }
+
+        @Test
+        public void shouldCreateAValidBandwidth() throws InsufficientRequestException {
+            translator = new ResourceTranslator();
+            Bandwidth createdBandwidth = translator.translateBandwidthResource(lb);
+            BandwidthProperties createdProperties = createdBandwidth.getProperties();
+            BandwidthBasic createdBasic = createdProperties.getBasic();
+
+            Assert.assertNotNull(createdBandwidth);
+            Assert.assertNotNull(createdProperties);
+            Assert.assertNotNull(createdBasic);
+            Assert.assertEquals(createdBasic.getMaximum(), maxRequestsPerSecond);
+            Assert.assertEquals(createdBasic.getNote(), comment);
+        }
+    }
+
+    public static class whenGenGroupNameSet {
+
+        private ResourceTranslator translator;
+
+        @Before
+        public void standUp() {
+            setupIvars();
+        }
+
+        @Test
+        public void shouldGenGroupNameSet() throws InsufficientRequestException {
+            translator = new ResourceTranslator();
+            Set<String> groupNameSet = translator.genGroupNameSet(lb);
+
+            Assert.assertFalse(groupNameSet.isEmpty());
+        }
+    }
+
+    public static class whenTranslatingAPersistenceResource {
+
+        private String vsName;
+        private ResourceTranslator translator;
+
+        @Before
+        public void standUp() {
+            setupIvars();
+            vsName = "asdfgh";
+            SessionPersistence persistence = SessionPersistence.fromDataType(PersistenceType.HTTP_COOKIE);
+
+            lb.setSessionPersistence(persistence);
+        }
+
+        @Ignore
+        @Test
+        public void shouldCreateAValidPersistence() throws InsufficientRequestException {
+            translator = new ResourceTranslator();
+            Persistence createdPersistence = translator.translatePersistenceResource(vsName, lb);
+            PersistenceProperties createdProperties = createdPersistence.getProperties();
+            PersistenceBasic createdBasic = createdProperties.getBasic();
+
+            createdBasic.getType();
+        }
     }
 }
