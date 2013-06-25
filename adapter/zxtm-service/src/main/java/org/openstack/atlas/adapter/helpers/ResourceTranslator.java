@@ -109,7 +109,7 @@ public class ResourceTranslator {
         properties.setConnection_errors(ce);
 
         //trafficscript or rule settings
-        List<String> rules = Arrays.asList(StmAdapterImpl.XFF, StmAdapterImpl.XFP);
+        List<String> rules = Arrays.asList(StmConstants.XFF, StmConstants.XFP);
         basic.setRequest_rules(rules);
 
         //Half closed proxy settings

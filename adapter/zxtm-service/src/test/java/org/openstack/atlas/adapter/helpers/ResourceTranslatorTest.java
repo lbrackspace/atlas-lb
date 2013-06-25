@@ -7,12 +7,24 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.stm.STMTestBase;
-import org.openstack.atlas.adapter.stm.StmAdapterImpl;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.AccessList;
+import org.openstack.atlas.service.domain.entities.Cluster;
+import org.openstack.atlas.service.domain.entities.ConnectionLimit;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
+import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
+import org.openstack.atlas.service.domain.entities.UserPages;
+import org.openstack.atlas.service.domain.entities.VirtualIp;
+import org.openstack.atlas.service.domain.entities.VirtualIpv6;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
-import org.rackspace.stingray.client.virtualserver.*;
+import org.rackspace.stingray.client.virtualserver.VirtualServer;
+import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
+import org.rackspace.stingray.client.virtualserver.VirtualServerLog;
+import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
+import org.rackspace.stingray.client.virtualserver.VirtualServerTcp;
 
 import java.util.HashSet;
 import java.util.List;
@@ -50,7 +62,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             errorFile = "Default";
             expectedError.setError_file(errorFile);
 
-            rules = java.util.Arrays.asList(StmAdapterImpl.XFF, StmAdapterImpl.XFP);
+            rules = java.util.Arrays.asList(StmConstants.XFF, StmConstants.XFP);
             translator = new ResourceTranslator();
 
             ConnectionLimit connectionLimit = new ConnectionLimit();
