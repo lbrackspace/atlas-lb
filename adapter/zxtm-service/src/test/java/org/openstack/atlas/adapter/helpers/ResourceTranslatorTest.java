@@ -2,6 +2,8 @@ package org.openstack.atlas.adapter.helpers;
 
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -10,6 +12,10 @@ import org.openstack.atlas.adapter.stm.STMTestBase;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
+import org.rackspace.stingray.client.pool.Pool;
+import org.rackspace.stingray.client.pool.PoolBasic;
+import org.rackspace.stingray.client.pool.PoolNodeWeight;
+import org.rackspace.stingray.client.pool.PoolProperties;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
 import org.rackspace.stingray.client.virtualserver.*;
@@ -122,13 +128,16 @@ public class ResourceTranslatorTest extends STMTestBase {
 
     public static class whenTranslatingATrafficIpGroup {
 
-        String expectedGroupName6;
-        String expectedGroupName4;
-        String failoverHost;
-        String ipAddress4;
-        String ipAddress6;
-        String expectedVip6Ip;
+       private String expectedGroupName6;
+       private String expectedGroupName4;
+       private String failoverHost;
+       private String ipAddress4;
+       private String ipAddress6;
+       private String expectedVip6Ip;
 
+      private ResourceTranslator translator;
+
+        @Before
         public void standUp() throws IPStringConversionException {
 
             setupIvars();
@@ -160,7 +169,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             cluster.setClusterIpv6Cidr(ipAddress6);
             ip6.setCluster(cluster);
             vip6s.add(vip6);
-            expectedVip6Ip =  ip6.getDerivedIpString();
+            expectedVip6Ip = ip6.getDerivedIpString();
             lb.setLoadBalancerJoinVip6Set(vip6s);
 
 
@@ -175,8 +184,7 @@ public class ResourceTranslatorTest extends STMTestBase {
 
         @Test
         public void shouldCreateValidTrafficIpGroup() throws IPStringConversionException, InsufficientRequestException {
-            standUp();
-            ResourceTranslator translator = new ResourceTranslator();
+            translator = new ResourceTranslator();
             Map<String, TrafficIp> mappedGroups = translator.translateTrafficIpGroupsResource(config, lb);
 
             Assert.assertTrue(mappedGroups.containsKey(expectedGroupName4));
@@ -195,6 +203,122 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertTrue(basic6.getMachines().contains(failoverHost));
             Assert.assertTrue(basic6.getIpaddresses().contains(expectedVip6Ip));
             Assert.assertTrue(basic6.getEnabled());
+
+        }
+
+
+    }
+
+
+    public static class whenTranslatingAPool {
+
+        HealthMonitor healthMonitor;
+        int numAttemptsCheck;
+        String vsName;
+        int expectedTimeout;
+        Node nodeEnabled;
+        Node nodeDraining;
+        Node nodeDisabled;
+        String nodeEnabledAddress;
+        String nodeDrainingAddress;
+        String nodeDisabledAddress;
+        int nodePort;
+        int nodeEnabledWeight;
+        int nodeDrainingWeight;
+        int nodeDisabledWeight;
+        PoolNodeWeight poolNodeEnabledWeight;
+        PoolNodeWeight poolNodeDrainingWeight;
+        PoolNodeWeight poolNodeDisabledWeight;
+        ZeusNodePriorityContainer container;
+
+        @Before
+        public void standUp() {
+            setupIvars();
+            createSimpleLoadBalancer();
+            vsName = "qwertyuiop";
+            numAttemptsCheck = 90;
+            expectedTimeout = 132;
+            nodeEnabledAddress = "10.1.1.1";
+            nodeDrainingAddress = "10.1.1.2";
+            nodeDisabledAddress = "10.1.1.3";
+            nodeEnabledWeight = 1;
+            nodeDrainingWeight = 2;
+            nodeDisabledWeight = 3;
+            nodePort = 1107;
+            healthMonitor = new HealthMonitor();
+            healthMonitor.setAttemptsBeforeDeactivation(numAttemptsCheck);
+            lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
+            lb.setHealthMonitor(healthMonitor);
+            lb.setSessionPersistence(SessionPersistence.HTTP_COOKIE);
+            lb.setTimeout(expectedTimeout);
+            Set<Node> nodes = new HashSet<Node>();
+            nodeEnabled = new Node();
+            nodeDraining = new Node();
+            nodeDisabled = new Node();
+            nodeEnabled.setCondition(NodeCondition.ENABLED);
+            nodeDraining.setCondition(NodeCondition.DRAINING);
+            nodeDisabled.setCondition(NodeCondition.DISABLED);
+            nodeEnabled.setIpAddress(nodeEnabledAddress);
+            nodeDraining.setIpAddress(nodeDrainingAddress);
+            nodeDisabled.setIpAddress(nodeDisabledAddress);
+            nodeEnabled.setWeight(nodeEnabledWeight);
+            nodeDraining.setWeight(nodeDrainingWeight);
+            nodeDisabled.setWeight(nodeDisabledWeight);
+            nodeEnabled.setPort(nodePort);
+            nodeDraining.setPort(nodePort);
+            nodeDisabled.setPort(nodePort);
+            nodes.add(nodeEnabled);
+            nodes.add(nodeDraining);
+            nodes.add(nodeDisabled);
+
+            poolNodeEnabledWeight = new PoolNodeWeight();
+            poolNodeDrainingWeight = new PoolNodeWeight();
+            poolNodeDisabledWeight = new PoolNodeWeight();
+
+            poolNodeEnabledWeight.setNode(nodeEnabledAddress);
+            poolNodeDrainingWeight.setNode(nodeDrainingAddress);
+            poolNodeDisabledWeight.setNode(nodeDisabledAddress);
+
+            poolNodeEnabledWeight.setWeight(nodeEnabledWeight);
+            poolNodeDrainingWeight.setWeight(nodeDrainingWeight);
+            poolNodeDisabledWeight.setWeight(nodeDisabledWeight);
+
+
+            lb.setNodes(nodes);
+            container = new ZeusNodePriorityContainer(lb.getNodes());
+
+
+
+
+        }
+
+        @Ignore
+        @Test
+        public void shouldCreateAValidPool() throws InsufficientRequestException {
+            ResourceTranslator translator = new ResourceTranslator();
+            Pool createdPool = translator.translatePoolResource(vsName, lb);
+            Assert.assertNotNull(createdPool);
+            PoolProperties createdProperties = createdPool.getProperties();
+            Assert.assertNotNull(createdProperties);
+            PoolBasic createdBasic = createdPool.getProperties().getBasic();
+            Assert.assertTrue(createdBasic.getMonitors().contains(vsName));
+            Assert.assertFalse(createdBasic.getPassive_monitoring());
+            Assert.assertEquals(SessionPersistence.HTTP_COOKIE.toString(), createdBasic.getPersistence_class());
+            Assert.assertTrue(createdBasic.getNodes().contains(nodeEnabledAddress));
+            Assert.assertTrue(createdBasic.getDraining().contains(nodeDrainingAddress));
+            Assert.assertTrue(createdBasic.getDisabled().contains(nodeDisabledAddress));
+            Assert.assertEquals(expectedTimeout, (int)createdProperties.getConnection().getMax_reply_time());
+            Assert.assertEquals(container.getPriorityValuesSet(), createdProperties.getLoad_balancing().getPriority_values());
+            Assert.assertEquals(container.hasSecondary(), createdProperties.getLoad_balancing().getPriority_enabled());
+            Assert.assertEquals(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN.toString().toLowerCase(), createdProperties.getLoad_balancing().getAlgorithm());
+            List<PoolNodeWeight> weights = createdProperties.getLoad_balancing().getNode_weighting();
+            Assert.assertNotNull(weights);
+            Assert.assertTrue(weights.contains(poolNodeEnabledWeight));
+            Assert.assertTrue(weights.contains(poolNodeDrainingWeight));
+            Assert.assertTrue(weights.contains(poolNodeDisabledWeight));
+
+
+
 
         }
 
