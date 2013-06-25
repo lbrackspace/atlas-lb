@@ -63,6 +63,7 @@ public class HdfsUtils {
     protected FileSystem localFileSystem;
     protected short repCount = 3;
     protected long blockSize = 64 * 1024 * 1024;
+    protected static int recompressBufferSize = 8 * 1024 * 1024;
 
     public HdfsUtils() {
     }
@@ -186,7 +187,7 @@ public class HdfsUtils {
         codec.setConf(codecConf);
         CompressionInputStream cis = codec.createInputStream(lzoInputStream);
         CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
-        StaticFileUtils.copyStreams(cis, cos, ps, bufferSize);
+        StaticFileUtils.copyStreams(cis, cos, ps, recompressBufferSize);
         cis.close();
         cos.close();
     }

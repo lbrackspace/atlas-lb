@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import org.apache.commons.math.linear.Array2DRowFieldMatrix;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.io.compress.CompressionInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
 import org.openstack.atlas.config.LbLogsConfiguration;
 import org.openstack.atlas.logs.hadoop.jobs.HadoopJob;
@@ -49,10 +50,11 @@ import sun.net.www.http.Hurryable;
 public class HdfsCli {
 
     private static final String HDUNAME = "HADOOP_USER_NAME";
+    private static final int LARGEBUFFERSIZE = 8 * 1024 * 1024;
     private static final int PAGESIZE = 4096;
-    private static final int HDFSBUFFSIZE = 1024 * 64;
+    private static final int HDFSBUFFSIZE = 512 * 1024;
     private static final int ONEMEG = 1024 * 1024;
-    private static final int BUFFER_SIZE = 1024 * 128;
+    private static final int BUFFER_SIZE = 256 * 1024;
     private static List<String> jarFiles = new ArrayList<String>();
     private static URLClassLoader jobClassLoader = null;
     private static String jobJarName = "";
@@ -140,9 +142,9 @@ public class HdfsCli {
                     System.out.printf("rmin <hourkey> #Delete the input paths for the specified hour\n");
                     System.out.printf("rmout <hourKey> #Delete the output paths for the specified hour\n");
                     System.out.printf("rm <path>\n");
-                    System.out.printf("runJob <jobDriverClass>");
-                    System.out.printf("runSplit <hourKey> #Run the HadoopSplitterJob for the specified hourkey");
-                    System.out.printf("runMain <class> args0..N");
+                    System.out.printf("runJob <jobDriverClass>\n");
+                    System.out.printf("runSplit <hourKey> #Run the HadoopSplitterJob for the specified hourkey\n");
+                    System.out.printf("runMain <class> args0..N\n");
                     System.out.printf("uploadLzo <lzoFile> #Upload the the lzo file\n");
                     System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
                     System.out.printf("setJobJar <jobJar> #set Jar file to classLoader\n");
@@ -153,11 +155,11 @@ public class HdfsCli {
                     System.out.printf("whoami\n");
                     continue;
                 }
-                if(cmd.equals("classInfo") && args.length>=2){
+                if (cmd.equals("classInfo") && args.length >= 2) {
                     String className = args[1];
-                    System.out.printf("Looking up classinfo for %s\n",className);
+                    System.out.printf("Looking up classinfo for %s\n", className);
                     String classInfo = Debug.classLoaderInfo(className);
-                    System.out.printf("Class Info:\n%s\n",classInfo);
+                    System.out.printf("Class Info:\n%s\n", classInfo);
                     continue;
                 }
                 if (cmd.equals("lsin")) {
@@ -178,7 +180,7 @@ public class HdfsCli {
                     continue;
                 }
                 if (cmd.equals("ullzo") && args.length >= 2) {
-                    String localLzoFilePath = args[1];
+                    String localLzoFilePath = StaticFileUtils.expandUser(args[1]);
                     String localLzoFile = StaticFileUtils.pathTail(localLzoFilePath);
                     Matcher m = HdfsUtils.hdfsLzoPatternPre.matcher(localLzoFile);
                     if (!m.find()) {
@@ -193,10 +195,10 @@ public class HdfsCli {
                     hdfsLzoPathComps.add(hourKey);
                     hdfsLzoPathComps.add("0-" + hourKey + "-access_log.aggregated.lzo");
                     String hdfsLzoPath = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(hdfsLzoPathComps));
-                    String hdfsLzoIdxPath = hdfsLzoPath + ".idx";
+                    String hdfsLzoIdxPath = hdfsLzoPath + ".index";
 
                     // Verify the user wants to upload this file
-                    System.out.printf("Are you sure you want to upload %s to %s (Y/N)\n", localLzoFilePath, hdfsLzoPath);
+                    System.out.printf("Are you sure you want to upload %s to %s with index %s(Y/N)\n", localLzoFilePath, hdfsLzoPath, hdfsLzoIdxPath);
                     if (stdinMatches(stdin, "Y")) {
                         System.out.printf("Uploading lzo\n");
                     } else {
@@ -204,15 +206,25 @@ public class HdfsCli {
                         continue;
                     }
 
-
-                    System.out.printf("Uploading lzo %s to %s\n", localLzoFile, hdfsLzoPath);
+                    Configuration codecConf = new Configuration();
+                    codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
+                    codecConf.set("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
+                    LzopCodec codec = new LzopCodec();
+                    codec.setConf(codecConf);
+                    System.out.printf("Uploading lzo %s to %s with idx file %s\n", localLzoFile, hdfsLzoPath, hdfsLzoIdxPath);
                     InputStream lzoIs = StaticFileUtils.openInputFile(localLzoFilePath, BUFFER_SIZE);
                     OutputStream lzoOs = hdfsUtils.openHdfsOutputFile(hdfsLzoPath, false, false);
-                    OutputStream lzoIdx = hdfsUtils.openHdfsOutputFile(hdfsLzoIdxPath, false, false);
-                    hdfsUtils.recompressAndIndexLzoStream(lzoIs, lzoOs, lzoIdx, System.out);
-                    lzoIs.close();
-                    lzoOs.close();
-                    lzoIdx.close();
+                    FSDataOutputStream lzoIdx = hdfsUtils.openHdfsOutputFile(hdfsLzoIdxPath, false, false);
+                    CompressionInputStream cis = codec.createInputStream(lzoIs);
+                    CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOs, lzoIdx);
+                    StaticFileUtils.copyStreams(cis, cos, null, BUFFER_SIZE);
+                    cos.flush();
+                    cos.finish();
+                    StaticFileUtils.close(cis);
+                    StaticFileUtils.close(cos);
+                    StaticFileUtils.close(lzoIs);
+                    StaticFileUtils.close(lzoOs);
+                    StaticFileUtils.close(lzoIdx);
                     continue;
                 }
                 if (cmd.equals("runSplit") && args.length >= 2) {
@@ -242,6 +254,10 @@ public class HdfsCli {
                     logSplitArgs.add(HadoopLogsConfigs.getHdfsUserName());
                     logSplitArgs.add(hdfsLzoPath);
                     HadoopJob hadoopClient = new HadoopLogSplitterJob();
+                    System.out.printf("Calling HadoopLogSplitterJob with args:\n");
+                    for (int i = 0; i < logSplitArgs.size(); i++) {
+                        System.out.printf("   arg[%d] = \"%s\"\n", i, logSplitArgs.get(i));
+                    }
                     hadoopClient.setConfiguration(HadoopLogsConfigs.getHadoopConfiguration());
                     int errorCode = hadoopClient.run(logSplitArgs);  // Actually runs the Hadoop Job
                     System.out.printf("Hadoop tun response code was %d\n", errorCode);
