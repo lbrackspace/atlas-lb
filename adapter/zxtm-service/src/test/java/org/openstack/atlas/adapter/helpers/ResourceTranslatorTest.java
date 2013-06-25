@@ -3,7 +3,6 @@ package org.openstack.atlas.adapter.helpers;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -446,18 +445,23 @@ public class ResourceTranslatorTest extends STMTestBase {
     public static class whenTranslatingAPersistenceResource {
 
         private String vsName;
+        private PersistenceType persistenceType;
         private ResourceTranslator translator;
 
         @Before
         public void standUp() {
             setupIvars();
             vsName = "asdfgh";
-            SessionPersistence persistence = SessionPersistence.fromDataType(PersistenceType.HTTP_COOKIE);
+            persistenceType = PersistenceType.HTTP_COOKIE;
+            org.openstack.atlas.service.domain.entities.SessionPersistence
+                    persistence = SessionPersistence.fromDataType(persistenceType);
+
+//            org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence
+//                    subPersistence = persistence.getSessionPersistence();
 
             lb.setSessionPersistence(persistence);
         }
 
-        @Ignore
         @Test
         public void shouldCreateAValidPersistence() throws InsufficientRequestException {
             translator = new ResourceTranslator();
@@ -465,7 +469,10 @@ public class ResourceTranslatorTest extends STMTestBase {
             PersistenceProperties createdProperties = createdPersistence.getProperties();
             PersistenceBasic createdBasic = createdProperties.getBasic();
 
-            createdBasic.getType();
+            Assert.assertNotNull(createdPersistence);
+            Assert.assertNotNull(createdProperties);
+            Assert.assertNotNull(createdBasic);
+            Assert.assertEquals(createdBasic.getType(), persistenceType.toString());
         }
     }
 }
