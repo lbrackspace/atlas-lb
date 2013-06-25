@@ -14,6 +14,9 @@ import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolNodeWeight;
 import org.rackspace.stingray.client.pool.PoolProperties;
+import org.rackspace.stingray.client.protection.Protection;
+import org.rackspace.stingray.client.protection.ProtectionAccessRestriction;
+import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
 import org.rackspace.stingray.client.virtualserver.*;
@@ -210,24 +213,24 @@ public class ResourceTranslatorTest extends STMTestBase {
 
     public static class whenTranslatingAPool {
 
-        HealthMonitor healthMonitor;
-        int numAttemptsCheck;
-        String vsName;
-        int expectedTimeout;
-        Node nodeEnabled;
-        Node nodeDraining;
-        Node nodeDisabled;
-        String nodeEnabledAddress;
-        String nodeDrainingAddress;
-        String nodeDisabledAddress;
-        int nodePort;
-        int nodeEnabledWeight;
-        int nodeDrainingWeight;
-        int nodeDisabledWeight;
-        PoolNodeWeight poolNodeEnabledWeight;
-        PoolNodeWeight poolNodeDrainingWeight;
-        PoolNodeWeight poolNodeDisabledWeight;
-        ZeusNodePriorityContainer container;
+        private HealthMonitor healthMonitor;
+        private int numAttemptsCheck;
+        private String vsName;
+        private int expectedTimeout;
+        private Node nodeEnabled;
+        private Node nodeDraining;
+        private Node nodeDisabled;
+        private String nodeEnabledAddress;
+        private String nodeDrainingAddress;
+        private String nodeDisabledAddress;
+        private int nodePort;
+        private int nodeEnabledWeight;
+        private int nodeDrainingWeight;
+        private int nodeDisabledWeight;
+        private PoolNodeWeight poolNodeEnabledWeight;
+        private PoolNodeWeight poolNodeDrainingWeight;
+        private PoolNodeWeight poolNodeDisabledWeight;
+        private ZeusNodePriorityContainer container;
 
         @Before
         public void standUp() {
@@ -318,6 +321,87 @@ public class ResourceTranslatorTest extends STMTestBase {
 
 
         }
+
+
+
+    }
+
+
+    public static class whenTranslatingAProtection {
+
+        String vsName;
+        int maxConnections;
+        int maxRateInterval;
+        int minConnections;
+        int rateTiming;
+        String ipAddressAllowed;
+        String ipAddressBanned;
+        ConnectionLimit connectionLimit;
+        AccessList accessListAllowed;
+        AccessList accessListBanned;
+
+
+        @Before
+        public void standUp() {
+            setupIvars();
+
+            vsName = "HI";
+
+            maxConnections = 90;
+            minConnections = 35;
+            rateTiming = 78;
+
+            ipAddressAllowed = "10.1.1.4";
+            ipAddressBanned = "10.1.1.5";
+
+            connectionLimit = new ConnectionLimit();
+            connectionLimit.setMaxConnections(maxConnections);
+            connectionLimit.setMinConnections(minConnections);
+            connectionLimit.setRateInterval(rateTiming);
+
+            accessListAllowed = new AccessList();
+            accessListAllowed.setIpAddress(ipAddressAllowed);
+            accessListAllowed.setType(AccessListType.ALLOW);
+
+            accessListBanned = new AccessList();
+            accessListBanned.setIpAddress(ipAddressBanned);
+            accessListBanned.setType(AccessListType.DENY);
+
+            Set<AccessList> accessListSet = new HashSet<AccessList>();
+            accessListSet.add(accessListAllowed);
+            accessListSet.add(accessListBanned);
+
+            lb.setConnectionLimit(connectionLimit);
+            lb.setAccessLists(accessListSet);
+
+
+        }
+
+        @Test
+        public void shouldCreateAValidProtection() {
+            ResourceTranslator translator = new ResourceTranslator();
+            Protection createdProtection = translator.translateProtectionResource(vsName, lb);
+            ProtectionConnectionLimiting createdLimiting = createdProtection.getProperties().getConnection_limiting();
+            Assert.assertNotNull(createdLimiting);
+            Assert.assertEquals(maxConnections, (int) createdLimiting.getMax_1_connections());
+            Assert.assertEquals(rateTiming, (int) createdLimiting.getMax_connection_rate());
+            Assert.assertEquals(minConnections, (int) createdLimiting.getMin_connections());
+            Assert.assertEquals(rateTiming, (int) createdLimiting.getRate_timer());
+            ProtectionAccessRestriction createdRestriction = createdProtection.getProperties().getAccess_restriction();
+            Assert.assertNotNull(createdRestriction);
+            Assert.assertTrue(createdRestriction.getAllowed().contains(accessListAllowed.getIpAddress()));
+            Assert.assertTrue(createdRestriction.getBanned().contains(accessListBanned.getIpAddress()));
+        }
+
+
+
+
+
+
+
+
+
+
 
 
     }

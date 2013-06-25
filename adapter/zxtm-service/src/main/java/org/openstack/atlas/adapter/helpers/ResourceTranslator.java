@@ -210,6 +210,7 @@ public class ResourceTranslator {
         basic.setPassive_monitoring(false);
 
 
+
         String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
         if (lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.toString())
                 || lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_LEAST_CONNECTIONS.toString())) {
@@ -290,7 +291,7 @@ public class ResourceTranslator {
         Set<AccessList> accessList = loadBalancer.getAccessLists();
 
         ProtectionAccessRestriction pac;
-        if (accessList.isEmpty()) {
+        if (!accessList.isEmpty()) {
             pac = new ProtectionAccessRestriction();
             Set<String> allowed = new HashSet<String>();
             Set<String> banned = new HashSet<String>();
@@ -309,7 +310,8 @@ public class ResourceTranslator {
         ProtectionConnectionLimiting limiting;
         if (limits != null) {
             limiting = new ProtectionConnectionLimiting();
-            limiting.setMax_10_connections(0);
+            limiting.setMax_10_connections(0); //TODO no magic numbers
+            //TODO should connection rate and rate timer be the same?
             limiting.setMax_1_connections(limits.getMaxConnections());
             limiting.setMax_connection_rate(limits.getRateInterval());
             limiting.setMin_connections(limits.getMinConnections());
