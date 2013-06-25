@@ -346,16 +346,16 @@ public class ResourceTranslatorTest extends STMTestBase {
             path = "path123";
             bodyRegex = "br123";
             statusRegex = "sr123";
-            useSsl = true;
+            useSsl = true; //This is set automatically on the LoadBalancer object when type is HTTPS
             healthMonitor = new HealthMonitor();
             healthMonitor.setType(monitorType);
             healthMonitor.setAttemptsBeforeDeactivation(numAttemptsCheck);
             healthMonitor.setDelay(delay);
             healthMonitor.setTimeout(timeout);
             healthMonitor.setHostHeader(hostHeader);
-            healthMonitor.setPath("path123");
-            healthMonitor.setBodyRegex("br123");
-            healthMonitor.setStatusRegex("sr123");
+            healthMonitor.setPath(path);
+            healthMonitor.setBodyRegex(bodyRegex);
+            healthMonitor.setStatusRegex(statusRegex);
 
             lb.setHealthMonitor(healthMonitor);
         }
