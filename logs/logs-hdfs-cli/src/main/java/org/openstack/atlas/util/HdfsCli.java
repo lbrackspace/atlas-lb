@@ -97,6 +97,7 @@ public class HdfsCli {
                     System.out.printf("Usage is\n");
                     System.out.printf("help\n");
                     System.out.printf("cat <path>\n");
+                    System.out.printf("classInfo <classPath>\n");
                     System.out.printf("cd <path>  #Change remote directory\n");
                     System.out.printf("cdin [dateKey] #Change to the input directory\n");
                     System.out.printf("cdout[dateKey] #Change to the output directory\n");
@@ -150,6 +151,13 @@ public class HdfsCli {
                     System.out.printf("showConfig #Show hadoop configs\n");
                     System.out.printf("showCrc <fileName> #Show crc value that would be reported by Zip\n");
                     System.out.printf("whoami\n");
+                    continue;
+                }
+                if(cmd.equals("classInfo") && args.length>=2){
+                    String className = args[1];
+                    System.out.printf("Looking up classinfo for %s\n",className);
+                    String classInfo = Debug.classLoaderInfo(className);
+                    System.out.printf("Class Info:\n%s\n",classInfo);
                     continue;
                 }
                 if (cmd.equals("lsin")) {
