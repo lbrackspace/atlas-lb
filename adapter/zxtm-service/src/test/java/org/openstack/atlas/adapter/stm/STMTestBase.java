@@ -8,7 +8,7 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
+import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.adapter.stm.util.ConfigurationKeys;
 import org.openstack.atlas.adapter.stm.util.STMConfiguration;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
@@ -46,7 +46,7 @@ public class STMTestBase {
     public static final Integer ADDITIONAL_VIP_ID = 88887;
     public static final Integer ADDITIONAL_IPV6_VIP_ID = 88885;
 
-    protected static ReverseProxyLoadBalancerAdapter stmAdapter;
+    protected static ReverseProxyLoadBalancerStmAdapter stmAdapter;
     protected static StingrayRestClient stmClient;
     protected static LoadBalancerEndpointConfiguration config;
     protected static LoadBalancer lb;

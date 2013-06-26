@@ -5,7 +5,6 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
@@ -19,9 +18,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface ReverseProxyLoadBalancerAdapter {
-    public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config)
-            throws AxisFault;
+public interface ReverseProxyLoadBalancerStmAdapter {
+
+    public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config)
+            throws RollBackException;
 
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException;
@@ -30,6 +30,15 @@ public interface ReverseProxyLoadBalancerAdapter {
             throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, RollBackException;
+
+    public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
+            throws RemoteException, InsufficientRequestException, RollBackException;
+
+    public void removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
+            throws AxisFault, InsufficientRequestException, RollBackException;
+
+    public void removeNode(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String ipAddress, Integer port)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
@@ -57,15 +66,6 @@ public interface ReverseProxyLoadBalancerAdapter {
             throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost)
-            throws RemoteException, InsufficientRequestException, RollBackException;
-
-    public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws RemoteException, InsufficientRequestException, RollBackException;
-
-    public void removeNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes)
-            throws AxisFault, InsufficientRequestException, RollBackException;
-
-    public void removeNode(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String ipAddress, Integer port)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> nodes)
@@ -96,10 +96,6 @@ public interface ReverseProxyLoadBalancerAdapter {
             throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, RollBackException;
-
-    @Deprecated
-    public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, int lbId, int accountId, HealthMonitor healthMonitor)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void removeHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)

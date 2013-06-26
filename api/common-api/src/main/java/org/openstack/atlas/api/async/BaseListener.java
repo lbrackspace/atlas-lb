@@ -3,6 +3,7 @@ package org.openstack.atlas.api.async;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -37,6 +38,7 @@ public abstract class BaseListener implements MessageListener {
     protected SslTerminationService sslTerminationService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+    protected ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     protected UsageEventHelper usageEventHelper;
 
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
@@ -89,6 +91,10 @@ public abstract class BaseListener implements MessageListener {
 
     public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
         this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
+    }
+
+    public void setReverseProxyLoadBalancerStmService(ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService) {
+        this.reverseProxyLoadBalancerStmService = reverseProxyLoadBalancerStmService;
     }
 
     public void setSslTerminationService(SslTerminationService sslTerminationService) {

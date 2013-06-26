@@ -13,15 +13,33 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public interface ReverseProxyLoadBalancerService {
+public interface ReverseProxyLoadBalancerStmService {
 
     void createLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
 
+
+    void updateLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
+
     void deleteLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
+
+    void setNodes(LoadBalancer lb) throws Exception;
+
+    void removeNode(Integer id, Integer accountId, Node node) throws Exception;
+
+    void removeNodes(LoadBalancer lb) throws Exception;
+
+    void setNodeWeights(Integer id, Integer accountId, Set<Node> nodes) throws Exception;
+
+    void addVirtualIps(Integer id, Integer accountId, LoadBalancer loadBalancer) throws Exception;
+
+    void deleteAccessList(Integer id, Integer accountId) throws Exception;
+
+    void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
+
+    void updateAccessList(LoadBalancer loadBalancer) throws Exception;
 
     void updateAlgorithm(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
 
@@ -38,16 +56,6 @@ public interface ReverseProxyLoadBalancerService {
     void updateConnectionLogging(LoadBalancer lb) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
 
     void updateContentCaching(LoadBalancer lb) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
-
-    void setNodes(LoadBalancer lb) throws Exception;
-
-    void removeNode(Integer id, Integer accountId, Node node) throws Exception;
-
-    void removeNodes(Integer lbId, Integer accountId,Collection<Node> nodes) throws Exception;
-
-    void setNodeWeights(Integer id, Integer accountId, Set<Node> nodes) throws Exception;
-
-    void updateAccessList(LoadBalancer loadBalancer) throws Exception;
 
     void updateConnectionThrottle(LoadBalancer loadbalancer) throws Exception;
 
@@ -70,14 +78,6 @@ public interface ReverseProxyLoadBalancerService {
     void suspendLoadBalancer(LoadBalancer lb) throws Exception;
 
     void removeSuspension(LoadBalancer lb) throws Exception;
-
-    void addVirtualIps(Integer id, Integer accountId, LoadBalancer loadBalancer) throws Exception;
-
-    void deleteAccessList(Integer id, Integer accountId) throws Exception;
-
-    void deleteVirtualIp(LoadBalancer lb, Integer id) throws Exception;
-
-    void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
 
     void setErrorFile(LoadBalancer loadBalancer, String content) throws Exception,DecryptException, MalformedURLException;
 

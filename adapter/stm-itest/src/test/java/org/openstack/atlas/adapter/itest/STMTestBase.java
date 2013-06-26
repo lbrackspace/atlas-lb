@@ -9,17 +9,11 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
+import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.cfg.Configuration;
-import org.openstack.atlas.service.domain.entities.Cluster;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.VirtualIp;
-import org.openstack.atlas.service.domain.entities.VirtualIpv6;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.pool.Pool;
@@ -27,11 +21,7 @@ import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.ROUND_ROBIN;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
@@ -56,7 +46,7 @@ public class STMTestBase {
     public static final Integer ADDITIONAL_VIP_ID = 88887;
     public static final Integer ADDITIONAL_IPV6_VIP_ID = 88885;
 
-    protected static ReverseProxyLoadBalancerAdapter stmAdapter;
+    protected static ReverseProxyLoadBalancerStmAdapter stmAdapter;
     protected static StingrayRestClient stmClient;
     protected static LoadBalancerEndpointConfiguration config;
     protected static LoadBalancer lb;

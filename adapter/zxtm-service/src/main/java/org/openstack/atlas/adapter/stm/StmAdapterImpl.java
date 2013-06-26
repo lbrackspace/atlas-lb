@@ -10,21 +10,12 @@ import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
-import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
-import org.openstack.atlas.service.domain.entities.HealthMonitor;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
-import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.RateLimit;
-import org.openstack.atlas.service.domain.entities.SessionPersistence;
+import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
-import org.openstack.atlas.util.converters.StringConverter;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -47,14 +38,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
+public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
 
     public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config) throws StmRollBackException {
@@ -68,17 +54,14 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         return client;
     }
 
-    @Deprecated
-    @Override
-    public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
-        return null;
-    }
-
     @Override
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
-        //Forward it for now, can update interface and remove this...
-        updateLoadBalancer(config, loadBalancer);
+        try {
+            updateLoadBalancer(config, loadBalancer);
+        } catch (Exception e) {
+            throw new StmRollBackException(String.format("Failed to create load balancer %s", loadBalancer.getId()), e);
+        }
     }
 
     @Override
@@ -133,7 +116,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+    public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
@@ -155,76 +139,69 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         VirtualServer curVs = null;
         try {
             curVs = client.getVirtualServer(vsName);
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            LOG.warn(String.format("Object not found when updating virtual server: %s, this is expected...", virtualServer));
-        } catch (StingrayRestClientException e) {
-            LOG.error(String.format("Error when retrieving virtual server: %s: ignoring...", virtualServer));
+        } catch (Exception e) {
+            LOG.warn(String.format("Error updating virtual server: %s, attempting to recreate... ", virtualServer));
         }
 
         try {
             client.updateVirtualServer(vsName, virtualServer);
         } catch (Exception ex) {
-            LOG.error(String.format("Error updating virtual server: %s Rolling back! \n Exception: %s Trace: %s"
-                    , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
+            String em = String.format("Error updating virtual server: %s Attempting to RollBack... \n Exception: %s Trace: %s"
+                    , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
 
-            rollbackVirtualServer(client, vsName, curVs);
+            LOG.error(em);
+            if (curVs != null) {
+                LOG.debug(String.format("Updating virtual server to previous configuration for rollback '%s'", vsName));
+                try {
+                    client.updateVirtualServer(vsName, virtualServer);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating virtual server while attempting to previous configuration" +
+                            ": %s RollBack aborted \n Exception: %s Trace: %s"
+                            , vsName, ex2.getCause().getMessage(), Arrays.toString(ex2.getCause().getStackTrace()));
+                    LOG.error(em2);
+                }
+            } else {
+                LOG.warn(String.format("Virtual server was not rolled back as no previous configuration was available. '%s' ", vsName));
+            }
+            throw new StmRollBackException(em, ex);
         }
+        LOG.debug(String.format("Successfully updated virtual server '%s'...", vsName));
+
     }
 
     private void deleteVirtualServer(LoadBalancerEndpointConfiguration config,
                                      StingrayRestClient client, String vsName)
             throws StmRollBackException {
 
-        LOG.debug(String.format("Removing  virtual server '%s'...", vsName));
+        LOG.info(String.format("Removing  virtual server '%s'...", vsName));
 
         VirtualServer curVs = null;
         try {
             curVs = client.getVirtualServer(vsName);
-
-            //TODO: simplify/reduce duplication for all exception handling
-        } catch (StingrayRestClientObjectNotFoundException ex) {
-            LOG.error(String.format("Object not found when removing virtual server: %s, Cannot Remove Rolling back! ...", vsName));
-            rollbackVirtualServer(client, vsName, curVs);
-        } catch (StingrayRestClientException e) {
-            LOG.error(String.format("Error when removing virtual Server: %s: Rolling Back!...", vsName));
-            rollbackVirtualServer(client, vsName, curVs);
-        }
-
-        try {
             client.deleteVirtualServer(vsName);
-        } catch (Exception ex) {
-            LOG.error(String.format("Error updating virtual server: %s Rolling back! \n Exception: %s Trace: %s"
-                    , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
-            rollbackVirtualServer(client, vsName, curVs);
-        }
-    }
-
-    private void rollbackVirtualServer(StingrayRestClient client, String vsName, VirtualServer curVs) throws StmRollBackException {
-        try {
-            if (curVs != null) {
-                LOG.debug(String.format("Updating virtual server for rollback '%s'", vsName));
-                //TODO: should call method for reuse and logging
-                client.updateVirtualServer(vsName, curVs);
-            } else {
-                LOG.debug(String.format("Deleting virtual server for rollback '%s' ", vsName));
-                //TODO: should call method
-                client.deleteVirtualServer(vsName);
-            }
-        } catch (StingrayRestClientException ex) {
-            LOG.error(String.format("Error update virtual server: %s Rolling back! \n Exception: %s Trace: %s"
-                    , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
-            throw new StmRollBackException(String.format("Error creating pool: %s Rolling back! \n Exception: %s Trace: %s"
-                    , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())), ex);
         } catch (StingrayRestClientObjectNotFoundException ex) {
-            LOG.warn(String.format("Object not found when update virtual server VS: %s, this is expected...", vsName));
+            LOG.error(String.format("Object not found when removing virtual server: %s, continue...", vsName));
+        } catch (StingrayRestClientException ex) {
+            String em = String.format("Error removing virtual server: %s Attempting to RollBack... \n Exception: %s Trace: %s"
+                    , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
+            LOG.error(em);
+            if (curVs != null) {
+                LOG.debug(String.format("Updating virtual server to set previous configuration for rollback '%s'", vsName));
+                updateVirtualServer(config, client, vsName, curVs);
+            } else {
+                LOG.warn(String.format("Virtual server was not rolled back as no previous configuration was available. '%s' ", vsName));
+            }
+            throw new StmRollBackException(em, ex);
         }
-        LOG.debug(String.format("Successfully rolled back pool '%s' ", vsName));
+        LOG.info(String.format("Successfully removed virtual server '%s'...", vsName));
     }
 
 
     /*
-        Pool Resources
-     */
+       Pool Resources
+    */
+
+
     @Override
     public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
@@ -241,61 +218,48 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                                 StingrayRestClient client, String poolName, Pool pool)
             throws StmRollBackException {
 
-        LOG.debug(String.format("Creating pool '%s' and setting nodes...", poolName));
+        LOG.debug(String.format("Updating pool '%s' and setting nodes...", poolName));
 
         Pool curPool = null;
         try {
             curPool = client.getPool(poolName);
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            LOG.warn(String.format("Object not found when retrieving pool: %s, this is expected...", poolName));
-        } catch (StingrayRestClientException e) {
-            LOG.error(String.format("Error when retrieving pool: %s: ignoring...", poolName));
+        } catch (Exception e) {
+            LOG.warn(String.format("Could not load pool: %s, attempting to recreate...", poolName));
         }
 
         try {
             client.updatePool(poolName, pool);
         } catch (Exception ex) {
-            LOG.error(String.format("Error updating pool: %s Rolling back! \n Exception: %s Trace: %s"
-                    , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
+            String em = String.format("Error updating node pool: %s Attempting to RollBack... \n Exception: %s Trace: %s"
+                    , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
 
-            rollbackPool(config, client, poolName, curPool);
-
+            LOG.error(em);
+            if (curPool != null) {
+                LOG.debug(String.format("Updating pool to previous configuration for rollback '%s'", poolName));
+                try {
+                    client.updatePool(poolName, curPool);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating node pool while attempting to previous configuration" +
+                            ": %s RollBack aborted \n Exception: %s Trace: %s"
+                            , poolName, ex2.getCause().getMessage(), Arrays.toString(ex2.getCause().getStackTrace()));
+                    LOG.error(em2);
+                }
+            } else {
+                LOG.warn(String.format("Node Pool was not rolled back as no previous configuration was available. '%s' ", poolName));
+            }
+            throw new StmRollBackException(em, ex);
         }
     }
 
     @Override
-    public void removeNodes(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes) throws AxisFault, InsufficientRequestException, StmRollBackException {
-        String rollBackMessage = "Remove node request canceled.";
-
+    public void removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws AxisFault, InsufficientRequestException, StmRollBackException {
+        final String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
+        ResourceTranslator translator = new ResourceTranslator();
         StingrayRestClient client = loadSTMRestClient(config);
-        String vsName = ZxtmNameBuilder.genVSName(lbId, accountId);
-        try {
-            Pool pool = client.getPool(vsName);
-            PoolBasic basic = pool.getProperties().getBasic();
-            Set<String> existingNodes = basic.getNodes();
-
-            String[] passedNodes = new String[nodes.size()];
-            int counter = 0;
-            for (Node node : nodes) {
-                //this is the node as defined by the api for basic.getNodes()
-                //the line converts the passed in nodes to that same format
-                passedNodes[counter] = node.getIpAddress() + ":" + node.getPort();
-                counter++;
-            }
-
-            for (String node : passedNodes) {
-                if (existingNodes.contains(node)) {
-                    existingNodes.remove(node);
-                }
-            }
-            basic.setNodes(existingNodes);
-            client.updatePool(vsName, pool);
-        } catch (StingrayRestClientObjectNotFoundException onf) {
-            LOG.warn(String.format("Node pool '%s' for nodes does not exist.", vsName));
-            LOG.warn(StringConverter.getExtendedStackTrace(onf));
-        } catch (StingrayRestClientException e) {
-            throw new StmRollBackException(rollBackMessage, e);
-        }
+        translator.translateLoadBalancerResource(config, poolName, loadBalancer);
+        LOG.info(String.format("Removing nodes from pool '%s'", poolName));
+        updateNodePool(config, client, poolName, translator.getcPool());
+        LOG.info(String.format("Successfully removed nodes from pool '%s'", poolName));
     }
 
     @Override
@@ -306,50 +270,30 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         Pool pool = null;
 
         String nodeToRemove = ipAddress + ":" + Integer.toString(port);
+
         try {
             pool = client.getPool(vsName);
-            PoolBasic basic = pool.getProperties().getBasic();
-            Set<String> existingNodes = basic.getNodes();
-            if (existingNodes.contains(nodeToRemove)) {
-                LOG.info(String.format("Removing node %s from pool...", nodeToRemove));
-                existingNodes.remove(nodeToRemove);
-                updateNodePool(config, client, vsName, pool);
-                LOG.info(String.format("Successfully removed node %s from pool!", nodeToRemove));
-            } else {
-                LOG.warn(String.format("Node '%s:%d' for pool: %s does not exist. Ignoring..", ipAddress, port, vsName));
-            }
-        } catch (StingrayRestClientObjectNotFoundException onf) {
-            LOG.warn(String.format("Node pool '%s' for node '%s:%d' does not exist.", vsName, ipAddress, port));
-        } catch (StingrayRestClientException e) {
+        } catch (Exception e) {
+            LOG.error(String.format("Loading pool %s configuration failed, node %s:%d not removed...", vsName, ipAddress, port));
             throw new StmRollBackException("Remove node request canceled.", e);
         }
 
+        PoolBasic basic = pool.getProperties().getBasic();
+        Set<String> existingNodes = basic.getNodes();
+        if (existingNodes.contains(nodeToRemove)) {
+            LOG.info(String.format("Removing node %s from pool...", nodeToRemove));
+            existingNodes.remove(nodeToRemove);
+            updateNodePool(config, client, vsName, pool);
+            LOG.info(String.format("Successfully removed node %s from pool!", nodeToRemove));
+        } else {
+            LOG.warn(String.format("Node '%s:%d' for pool: %s does not exist. Ignoring..", ipAddress, port, vsName));
+        }
     }
 
-    private void rollbackPool(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String poolName, Pool curPool) throws StmRollBackException {
-        try {
-            if (curPool != null) {
-                LOG.debug(String.format("Updating pool for rollback '%s'", poolName));
-                updateNodePool(config, client, poolName, curPool);
-            } else {
-                LOG.debug(String.format("Deleting pool for rollback '%s' ", poolName));
-                //TODO: should call method
-                client.deletePool(poolName);
-            }
-        } catch (StingrayRestClientException ex) {
-            LOG.error(String.format("Error updating pool: %s Rolling back! \n Exception: %s Trace: %s"
-                    , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
-            throw new StmRollBackException(String.format("Error updating pool: %s Rolling back! \n Exception: %s Trace: %s"
-                    , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())), ex);
-        } catch (StingrayRestClientObjectNotFoundException ex) {
-            LOG.warn(String.format("Object not found when updating pool: %s, this is expected...", poolName));
-        }
-        LOG.debug(String.format("Successfully rolled back pool '%s' ", poolName));
-    }
 
     /*
-        VirtualIP Resources
-     */
+       VirtualIP Resources
+    */
 
     private void updateVirtualIps(LoadBalancerEndpointConfiguration config,
                                   StingrayRestClient client, String vsName, Map<String, TrafficIp> tigmap)
@@ -362,20 +306,34 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         for (Map.Entry<String, TrafficIp> tm : tigmap.entrySet()) {
             try {
                 curTig = client.getTrafficIp(tm.getKey());
-            } catch (StingrayRestClientObjectNotFoundException e) {
-                LOG.warn(String.format("Object not found when retrieving virtual ips for: %s, this is expected...", vsName));
-            } catch (StingrayRestClientException e) {
-                LOG.error(String.format("Error when retrieving virtual ips for: %s: ignoring...", vsName));
+            } catch (Exception e) {
+                LOG.warn(String.format("Could not load virtual ips for: %s, attemmpting to recreate...", vsName));
             }
 
             try {
                 client.updateTrafficIp(tm.getKey(), tm.getValue());
             } catch (Exception ex) {
-                LOG.error(String.format("Error creating pool: %s Rolling back! \n Exception: %s Trace: %s",
-                        vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
+                String em = String.format("Error updating virtual ips: %s Attempting to RollBack... \n Exception: %s Trace: %s"
+                        , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
 
-                rollbackTig(client, vsName, curTig);
+                LOG.error(em);
+                if (curTig != null) {
+                    LOG.debug(String.format("Updating virtual ips to previous configuration for rollback '%s'", vsName));
+                    try {
+                        client.updateTrafficIp(vsName, curTig);
+                    } catch (Exception ex2) {
+                        String em2 = String.format("Error updating virtual ips while attempting to set previous configuration" +
+                                ": %s RollBack aborted \n Exception: %s Trace: %s"
+                                , vsName, ex2.getCause().getMessage(), Arrays.toString(ex2.getCause().getStackTrace()));
+                        LOG.error(em2);
+                    }
+                } else {
+                    LOG.warn(String.format("Virtual ips was not rolled back as no previous configuration was available. '%s' ", vsName));
+                }
+                throw new StmRollBackException(em, ex);
             }
+            LOG.debug(String.format("Successfully virtual ips for '%s'...", vsName));
+
         }
     }
 
@@ -402,29 +360,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     }
 
-    private void rollbackTig(StingrayRestClient client, String vsName, TrafficIp curTig) throws StmRollBackException {
-        try {
-            if (curTig != null) {
-                LOG.debug(String.format("Updating traffic ip group for rollback '%s'", vsName));
-                //TODO: should call method for reuse and logging
-                client.updateTrafficIp(vsName, curTig);
-            } else {
-                LOG.debug(String.format("Deleting pool for rollback '%s' ", vsName));
-                //TODO: should call method
-                client.deleteTrafficIp(vsName);
-            }
-        } catch (StingrayRestClientException ex) {
-            LOG.error(String.format("Error creating traffic ip: %s Rolling back! \n Exception: %s Trace: %s"
-                    , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
-            throw new StmRollBackException(String.format("Error creating traffic ip: %s Rolling back! \n Exception: %s Trace: %s"
-                    , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())), ex);
-        } catch (StingrayRestClientObjectNotFoundException ex) {
-            LOG.warn(String.format("Object not found when creating traffic ip: %s, this is expected...", vsName));
-        }
-        LOG.debug(String.format("Successfully rolled back traffic ip '%s' ", vsName));
-    }
-
-
     /*
         Monitor Resources
      */
@@ -439,17 +374,16 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         translator.translateLoadBalancerResource(config, vsName, loadBalancer);
         updateHealthMonitor(config, client, vsName, translator.getcMonitor());
-        //Monitor is a Pool object, update it...
         updateNodePool(config, client, vsName, translator.getcPool());
     }
 
     @Override
-    public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, int lbId, int accountId, HealthMonitor healthMonitor) throws RemoteException, InsufficientRequestException, StmRollBackException {
-    }
-
-    @Override
-    public void removeHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
-
+    public void removeHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        final String monitorName = ZxtmNameBuilder.genVSName(loadBalancer);
+        ResourceTranslator translator = new ResourceTranslator();
+        StingrayRestClient client = loadSTMRestClient(config);
+        translator.translateLoadBalancerResource(config, monitorName, loadBalancer);
+        deleteHealthMonitor(config, client, monitorName);
     }
 
     private void updateHealthMonitor(LoadBalancerEndpointConfiguration config,
@@ -459,45 +393,63 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug(String.format("Update Monitor '%s' ...", monitor));
 
         Monitor curMon = null;
-
         try {
             curMon = client.getMonitor(monitorName);
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            LOG.warn(String.format("Object not found when creating pool: %s, this is expected...", monitorName));
-        } catch (StingrayRestClientException e) {
-            LOG.error(String.format("Error when retrieving pool: %s: ignoring...", monitorName));
+        } catch (Exception e) {
+            LOG.warn(String.format("Could not locate: %s, attempting to recreate...", monitorName));
         }
 
         try {
             client.updateMonitor(monitorName, monitor);
         } catch (Exception ex) {
-            LOG.error(String.format("Error updating monitor: %s Rolling back! \n Exception: %s Trace: %s"
-                    , monitorName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
+            String em = String.format("Error updating virtual server: %s Attempting to RollBack... \n Exception: %s Trace: %s"
+                    , monitorName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
 
-            rollbackMonitor(client, monitorName, curMon);
+            LOG.error(em);
+            if (curMon != null) {
+                LOG.debug(String.format("Updating monitor to previous configuration for rollback '%s'", monitorName));
+                try {
+                    client.updateMonitor(monitorName, curMon);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating monitor while attempting to set previous configuration" +
+                            ": %s RollBack aborted \n Exception: %s Trace: %s"
+                            , monitorName, ex2.getCause().getMessage(), Arrays.toString(ex2.getCause().getStackTrace()));
+                    LOG.error(em2);
+                }
+            } else {
+                LOG.warn(String.format("Monitor was not rolled back as no previous configuration was available. '%s' ", monitorName));
+            }
+            throw new StmRollBackException(em, ex);
         }
+        LOG.debug(String.format("Successfully updated Monitor '%s' ...", monitor));
+
     }
 
-    private void rollbackMonitor(StingrayRestClient client, String monitorName, Monitor curMonitor) throws StmRollBackException {
+    private void deleteHealthMonitor(LoadBalancerEndpointConfiguration config,
+                                     StingrayRestClient client, String monitorName)
+            throws StmRollBackException {
+
+        LOG.info(String.format("Removing  monitor '%s'...", monitorName));
+
+        Monitor curMon = null;
         try {
-            if (curMonitor != null) {
-                LOG.debug(String.format("Updating monitor for rollback '%s'", monitorName));
-                //TODO: should call method for reuse and logging
-                client.updateMonitor(monitorName, curMonitor);
-            } else {
-                LOG.debug(String.format("Deleting monitor for rollback '%s' ", monitorName));
-                //TODO: should call method
-                client.deleteMonitor(monitorName);
-            }
-        } catch (StingrayRestClientException ex) {
-            LOG.error(String.format("Error updating monitor: %s Rolling back! \n Exception: %s Trace: %s"
-                    , monitorName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
-            throw new StmRollBackException(String.format("Error updating monitor: %s Rolling back! \n Exception: %s Trace: %s"
-                    , monitorName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())), ex);
+            curMon = client.getMonitor(monitorName);
+            client.deleteMonitor(monitorName);
         } catch (StingrayRestClientObjectNotFoundException ex) {
-            LOG.warn(String.format("Object not found when creating pool: %s, this is expected...", monitorName));
+            LOG.error(String.format("Cloud not locate monitor: %s, continue...", monitorName));
+        } catch (StingrayRestClientException ex) {
+            String em = String.format("Error removing monitor: %s Attempting to RollBack... \n Exception: %s Trace: %s"
+                    , monitorName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
+            LOG.error(em);
+            if (curMon != null) {
+                LOG.debug(String.format("Updating virtual server to set previous configuration for rollback '%s'", monitorName));
+                updateHealthMonitor(config, client, monitorName, curMon);
+            } else {
+                LOG.warn(String.format("Monitor was not rolled back as no previous configuration was available. '%s' ", monitorName));
+            }
+            throw new StmRollBackException(em, ex);
         }
-        LOG.debug(String.format("Successfully rolled back monitor '%s' ", monitorName));
+        LOG.info(String.format("Successfully removed monitor '%s'...", monitorName));
     }
 
     private void rollbackProtection(StingrayRestClient client, LoadBalancer loadBalancer, Protection curProtection) throws InsufficientRequestException, StmRollBackException {
@@ -749,10 +701,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         Protection curProtection = null;
         try {
             curProtection = client.getProtection(protectionName);
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            LOG.warn(String.format("Object not found when updating virtual server: %s, this is expected...", protectionName));
-        } catch (StingrayRestClientException e) {
-            LOG.error(String.format("Error when retrieving pool: %s: ignoring...", protectionName));
+        } catch (Exception e) {
+            LOG.warn(String.format("Could not load protection class: %s, attempting to recreating...", protectionName));
         }
 
         try {
@@ -763,9 +713,24 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Updating protection for %s...", protectionName));
             client.updateProtection(protectionName, protection);
         } catch (Exception ex) {
-            LOG.error(String.format("Error updating virtual server: %s Rolling back! \n Exception: %s Trace: %s",
-                    protectionName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
-            rollbackProtection(client, loadBalancer, curProtection);
+            String em = String.format("Error updating protection: %s Attempting to RollBack... \n Exception: %s Trace: %s"
+                    , protectionName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
+
+            LOG.error(em);
+            if (curProtection != null) {
+                LOG.debug(String.format("Updating monitor to previous configuration for rollback '%s'", protectionName));
+                try {
+                    client.updateProtection(protectionName, curProtection);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating protection while attempting to set previous configuration" +
+                            ": %s RollBack aborted \n Exception: %s Trace: %s"
+                            , protectionName, ex2.getCause().getMessage(), Arrays.toString(ex2.getCause().getStackTrace()));
+                    LOG.error(em2);
+                }
+            } else {
+                LOG.warn(String.format("Protection was not rolled back as no previous configuration was available. '%s' ", protectionName));
+            }
+            throw new StmRollBackException(em, ex);
         }
         if (loadBalancer.hasSsl()) {
             LOG.debug(String.format("Successfully updated protection for %s!", protectionSslName));

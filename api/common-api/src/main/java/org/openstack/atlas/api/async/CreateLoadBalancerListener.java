@@ -50,7 +50,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         try {
 
             LOG.debug("Creating load balancer in STM...");
-            reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
+            reverseProxyLoadBalancerStmService.createLoadBalancer(dbLoadBalancer);
             LOG.debug("Successfully created a load balancer in STM.");
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);
