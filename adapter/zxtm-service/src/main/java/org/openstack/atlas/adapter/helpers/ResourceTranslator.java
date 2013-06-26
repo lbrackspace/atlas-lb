@@ -131,7 +131,15 @@ public class ResourceTranslator {
         BandwidthProperties properties = new BandwidthProperties();
         BandwidthBasic basic = new BandwidthBasic();
 
-        basic.setMaximum(loadBalancer.getRateLimit().getMaxRequestsPerSecond());
+        RateLimit rateLimit = loadBalancer.getRateLimit();
+
+        if (rateLimit != null) {
+            Ticket ticket = rateLimit.getTicket();
+            basic.setMaximum(rateLimit.getMaxRequestsPerSecond());
+
+            if (ticket != null)
+                basic.setNote(ticket.getComment());
+        }
 
         properties.setBasic(basic);
         bandwidth.setProperties(properties);
@@ -208,6 +216,7 @@ public class ResourceTranslator {
         basic.setDraining(NodeHelper.getNodeIpSet(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING)));
         basic.setDisabled(NodeHelper.getNodeIpSet(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DISABLED)));
         basic.setPassive_monitoring(false);
+
 
 
         String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
@@ -290,7 +299,7 @@ public class ResourceTranslator {
         Set<AccessList> accessList = loadBalancer.getAccessLists();
 
         ProtectionAccessRestriction pac;
-        if (accessList.isEmpty()) {
+        if (!accessList.isEmpty()) {
             pac = new ProtectionAccessRestriction();
             Set<String> allowed = new HashSet<String>();
             Set<String> banned = new HashSet<String>();
@@ -309,7 +318,8 @@ public class ResourceTranslator {
         ProtectionConnectionLimiting limiting;
         if (limits != null) {
             limiting = new ProtectionConnectionLimiting();
-            limiting.setMax_10_connections(0);
+            limiting.setMax_10_connections(0); //TODO no magic numbers
+            //TODO should connection rate and rate timer be the same?
             limiting.setMax_1_connections(limits.getMaxConnections());
             limiting.setMax_connection_rate(limits.getRateInterval());
             limiting.setMin_connections(limits.getMinConnections());
