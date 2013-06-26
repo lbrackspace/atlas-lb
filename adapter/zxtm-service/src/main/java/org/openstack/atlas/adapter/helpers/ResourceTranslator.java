@@ -279,6 +279,8 @@ public class ResourceTranslator {
             http.setHost_header(hm.getHostHeader());
             if (hm.getType().equals(HealthMonitorType.HTTPS)) {
                 basic.setUse_ssl(true);
+            } else {
+                basic.setUse_ssl(false);
             }
             properties.setHttp(http);
         }
