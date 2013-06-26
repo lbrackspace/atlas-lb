@@ -3,6 +3,7 @@ package org.openstack.atlas.adapter.itest;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class UpdateProtocolITest extends STMTestBase{
@@ -21,10 +22,11 @@ public class UpdateProtocolITest extends STMTestBase{
 
     }
 
+    @Ignore
     @Test
     public void updateProtocolToHTTP() {
         try{
-            stmAdapter.updateProtocol();
+
 
 
 
