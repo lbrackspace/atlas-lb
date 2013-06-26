@@ -307,7 +307,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             try {
                 curTig = client.getTrafficIp(tm.getKey());
             } catch (Exception e) {
-                LOG.warn(String.format("Could not load virtual ips for: %s, attemmpting to recreate...", vsName));
+                LOG.warn(String.format("Could not load virtual ips for: %s, attempting to recreate...", vsName));
             }
 
             try {
@@ -332,7 +332,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 }
                 throw new StmRollBackException(em, ex);
             }
-            LOG.debug(String.format("Successfully virtual ips for '%s'...", vsName));
+            LOG.debug(String.format("Successfully updated virtual ips for '%s'...", vsName));
 
         }
     }
@@ -621,8 +621,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             } catch (StingrayRestClientObjectNotFoundException onf) {
                 LOG.info(String.format("Did not find session persistence %s.  This is expected...", vsName));
             } catch (StingrayRestClientException ex) {
-                LOG.error(String.format("Error creating session persistence: %s, Rolling back! \n Exception: %s Trace: %s"
-                        , persistenceType, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
+                LOG.error(String.format("Error creating session persistence: %s, Rolling back! \n Exception: %s Trace: %s",
+                        persistenceType, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
             }
         }
     }
