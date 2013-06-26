@@ -54,6 +54,9 @@ public class ResourceTranslatorTest extends STMTestBase {
         private List<String> rules;
         private ResourceTranslator translator;
         private String errorFile;
+        private AccessList accessListAllowed;
+        private String ipAddressAllowed;
+        private Set<AccessList> lists;
 
 
         public void initializeVars(String logFormat, LoadBalancerProtocol protocol) {
@@ -93,6 +96,16 @@ public class ResourceTranslatorTest extends STMTestBase {
             userPages.setErrorpage(this.errorFile);
             lb.setUserPages(userPages);
             expectedError.setError_file(this.errorFile);
+            lb.setConnectionLimit(null);
+
+            ipAddressAllowed = "10.1.1.1";
+            accessListAllowed = new AccessList();
+            accessListAllowed.setIpAddress(ipAddressAllowed);
+            accessListAllowed.setType(AccessListType.ALLOW);
+
+            lists = new HashSet<AccessList>();
+            lists.add(accessListAllowed);
+            lb.setAccessLists(lists);
 
 
         }
@@ -131,6 +144,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             VirtualServerLog log = createdProperties.getLog();
             Assert.assertEquals(logFormat, log.getFormat());
             Assert.assertEquals(expectedError, createdProperties.getConnection_errors());
+            Assert.assertEquals(vsName, createdBasic.getProtection_class());
 
 
         }
@@ -242,8 +256,8 @@ public class ResourceTranslatorTest extends STMTestBase {
         private PoolNodeWeight poolNodeDisabledWeight;
         private ZeusNodePriorityContainer container;
 
-        @Before
-        public void standUp() {
+
+        public void standUp(LoadBalancerAlgorithm algorithm) {
             setupIvars();
 //            createSimpleLoadBalancer();
             vsName = "qwertyuiop";
@@ -258,7 +272,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             nodePort = 1107;
             healthMonitor = new HealthMonitor();
             healthMonitor.setAttemptsBeforeDeactivation(numAttemptsCheck);
-            lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
+            lb.setAlgorithm(algorithm);
             lb.setHealthMonitor(healthMonitor);
             lb.setSessionPersistence(SessionPersistence.HTTP_COOKIE);
             lb.setTimeout(expectedTimeout);
@@ -301,9 +315,11 @@ public class ResourceTranslatorTest extends STMTestBase {
 
         }
 
+
         @Test
         public void shouldCreateAValidPool() throws InsufficientRequestException {
             ResourceTranslator translator = new ResourceTranslator();
+            standUp(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
             Pool createdPool = translator.translatePoolResource(vsName, lb);
             Assert.assertNotNull(createdPool);
             PoolProperties createdProperties = createdPool.getProperties();
@@ -325,6 +341,24 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertTrue(weights.contains(poolNodeDrainingWeight));
             Assert.assertTrue(weights.contains(poolNodeDisabledWeight));
 
+        }
+
+        @Test
+        public void testAlternatePaths() throws InsufficientRequestException {
+            ResourceTranslator translator = new ResourceTranslator();
+            standUp(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS);
+            Pool createdPool = translator.translatePoolResource(vsName, lb);
+            PoolProperties createdProperties = createdPool.getProperties();
+            Assert.assertNotNull(createdProperties);
+            Assert.assertEquals(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS.toString().toLowerCase(), createdProperties.getLoad_balancing().getAlgorithm());
+            List<PoolNodeWeight> weights = createdProperties.getLoad_balancing().getNode_weighting();
+            Assert.assertNotNull(weights);
+            Assert.assertTrue(weights.contains(poolNodeEnabledWeight));
+            Assert.assertTrue(weights.contains(poolNodeDrainingWeight));
+            Assert.assertTrue(weights.contains(poolNodeDisabledWeight));
+            standUp(LoadBalancerAlgorithm.RANDOM);
+            createdPool = translator.translatePoolResource(vsName, lb);
+            Assert.assertTrue(createdPool.getProperties().getLoad_balancing().getNode_weighting().size() == 0);
 
         }
 
@@ -419,16 +453,13 @@ public class ResourceTranslatorTest extends STMTestBase {
             BandwidthProperties createdProperties = createdBandwidth.getProperties();
             BandwidthBasic createdBasic = createdProperties.getBasic();
 
-             Assert.assertNotNull(createdBandwidth);
+            Assert.assertNotNull(createdBandwidth);
             Assert.assertNotNull(createdProperties);
             Assert.assertNotNull(createdBasic);
             Assert.assertEquals(createdBasic.getMaximum(), maxRequestsPerSecond);
             Assert.assertEquals(createdBasic.getNote(), comment);
         }
     }
-
-
-
 
 
     public static class whenTranslatingAProtection {
@@ -443,9 +474,6 @@ public class ResourceTranslatorTest extends STMTestBase {
         ConnectionLimit connectionLimit;
         AccessList accessListAllowed;
         AccessList accessListBanned;
-
-
-
 
 
         @Before
@@ -503,20 +531,9 @@ public class ResourceTranslatorTest extends STMTestBase {
     }
 
 
+    public static class whenGenGroupNameSet {
 
-
-
-
-
-
-
-
-
-        public static class whenGenGroupNameSet {
-
-               private ResourceTranslator translator;
-
-
+        private ResourceTranslator translator;
 
 
         @Test
