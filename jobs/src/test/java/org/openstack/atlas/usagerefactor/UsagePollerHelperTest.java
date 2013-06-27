@@ -10,13 +10,25 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.openstack.atlas.dbunit.FlatXmlLoader;
 import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.HostRepository;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.UsageRepository;
+import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
+import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
+import org.openstack.atlas.service.domain.services.impl.UsageRefactorServiceImpl;
+import org.openstack.atlas.service.domain.usage.BitTag;
+import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
+import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
 import org.openstack.atlas.usagerefactor.generator.UsagePollerGenerator;
 import org.openstack.atlas.usagerefactor.helpers.UsagePollerHelper;
 import org.openstack.atlas.usagerefactor.helpers.UsageProcessorResult;
@@ -32,6 +44,9 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -1376,6 +1391,7 @@ public class UsagePollerHelperTest {
             DbUnitTestExecutionListener.class})
     @DbUnitConfiguration(dataSetLoader = FlatXmlLoader.class)
     public static class ProcessingCurrentUsageWhenHostsAreDown {
+
         @Autowired
         private UsageRefactorService usageRefactorService;
 
@@ -1385,11 +1401,44 @@ public class UsagePollerHelperTest {
         private Calendar pollTime;
         String pollTimeStr;
         private int numLBs;
-        @Autowired
-        private UsagePollerHelper usagePollerHelper;
+        private LoadBalancer loadBalancer = new LoadBalancer();
+        private LoadBalancerMergedHostUsage loadBalancerMergedHostUsage = new LoadBalancerMergedHostUsage();
+        private Usage usage = new Usage();
+
+        @Mock
+        private LoadBalancerMergedHostUsageRepository mergedHostUsageRepository;
+        @Mock
+        private UsageRepository usageRepository;
+        @Mock
+        private LoadBalancerService loadBalancerService;
+        @Mock
+        private VirtualIpRepository virtualIpRepository;
+        @Mock
+        private LoadBalancerRepository loadBalancerRepository;
+        @Mock
+        private HostRepository hostRepository;
+
+        @InjectMocks
+        private UsagePollerHelper usagePollerHelper = new UsagePollerHelper();
+
 
         @Before
         public void standUp() throws Exception {
+            initMocks(this);
+            loadBalancerMergedHostUsage.setTagsBitmask(0);
+            loadBalancerMergedHostUsage.setNumVips(1);
+            loadBalancerMergedHostUsage.setAccountId(1234);
+            when(mergedHostUsageRepository.getMostRecentRecordForLoadBalancer(anyInt())).thenReturn(loadBalancerMergedHostUsage);
+            usage.setTags(0);
+            usage.setNumVips(1);
+            usage.setAccountId(1234);
+            when(usageRepository.getMostRecentUsageForLoadBalancer(anyInt())).thenReturn(usage);
+            loadBalancer.setAccountId(1234);
+            loadBalancer.setId(123);
+            when(loadBalancerService.get(anyInt())).thenReturn(loadBalancer);
+            when(loadBalancerService.getCurrentBitTags(anyInt())).thenReturn(new BitTags());
+            when(virtualIpRepository.getNumIpv4VipsForLoadBalancer(loadBalancer)).thenReturn(1L);
+
             numHosts = 2;
             numLBs = 2;
             snmpMap = UsagePollerGenerator.generateSnmpMap(numHosts, numLBs);
@@ -1473,6 +1522,27 @@ public class UsagePollerHelperTest {
             AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
                     result.getLbHostUsages().get(3));
         }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/whenhostsaredown/case4.xml")
+        public void case4() throws Exception {
+            snmpMap = MapUtil.swapKeys(snmpMap);
+            snmpMap.remove(124);
+
+            UsageProcessorResult result =  usagePollerHelper.processCurrentUsage(lbHostMap, snmpMap, pollTime);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(1, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(0));
+
+            //New lb_host_usage records assertions
+            Assert.assertEquals(2, result.getLbHostUsages().size());
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(0));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(1));
+        }
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
@@ -1544,6 +1614,34 @@ public class UsagePollerHelperTest {
                     UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(2));
             AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 300L, 0L, 0, 0, 1, 1,
                     UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(3));
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/whenhostsaredown/onevents/case3.xml")
+        public void case3() throws Exception {
+
+            List<LoadBalancerMergedHostUsage> mergedRecords = usagePollerHelper.processExistingEvents(lbHostMap);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(2, mergedRecords.size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(1));
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/whenhostsaredown/onevents/case4.xml")
+        public void case4() throws Exception {
+
+            List<LoadBalancerMergedHostUsage> mergedRecords = usagePollerHelper.processExistingEvents(lbHostMap);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(2, mergedRecords.size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 200L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 250L, 0L, 0, 0, 1, 1,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(1));
         }
 
     }

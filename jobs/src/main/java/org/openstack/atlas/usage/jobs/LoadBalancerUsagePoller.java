@@ -51,7 +51,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
     public void run() {
         Calendar pollTime = Calendar.getInstance();
         LOG.info("Set poll time to " + pollTime.getTime().toString() + "...");
-        Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages = usageRefactorService.getAllLoadBalancerHostUsages();
+        Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages = usageRefactorService.getRecordsBeforeTimeInclusive(pollTime);
         LOG.info("Retrieved records for " + existingUsages.size() + " load balancers from lb_host_usage table.");
         Map<Integer, Map<Integer, SnmpUsage>> currentUsages;
         try {
@@ -103,7 +103,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
 
     private List<Host> getAccessibleHosts() {
         LOG.info("Discovering accessible hosts...");
-        List<Host> hostList = hostService.getAllHosts();
+        List<Host> hostList = hostService.getAll();
         List<Host> accessibleHosts = new ArrayList<Host>();
         for (Host host : hostList) {
             try {

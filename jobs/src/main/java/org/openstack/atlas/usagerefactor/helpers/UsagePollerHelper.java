@@ -260,6 +260,13 @@ public class UsagePollerHelper {
                     LoadBalancerHostUsage currentUsage = lbHostUsagesMapByTime.get(timeKey).get(hostId);
 
                     if (isFirstPoll) {
+                        if (currentUsage == null) {
+                            if (previousRecords == null) {
+                                previousRecords = new HashMap<Integer, LoadBalancerHostUsage>();
+                            }
+                            previousRecords.put(hostId, currentUsage);
+                            continue;
+                        }
                         //If first record is the CREATE_LOADBALANCER event then add that event to the records to be merged.
                         if (currentUsage.getEventType() == UsageEvent.CREATE_LOADBALANCER || currentUsage.getEventType() == UsageEvent.UNSUSPEND_LOADBALANCER) {
                             mergedUsagesMap.put(timeKey.getTime().toString(), initializeMergedRecord(currentUsage));
