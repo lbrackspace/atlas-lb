@@ -16,6 +16,7 @@ import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -60,6 +61,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         try {
             updateLoadBalancer(config, loadBalancer);
         } catch (Exception e) {
+            LOG.error(String.format("Failed to create load balancer %s, rolling back...", loadBalancer.getId()));
+            deleteLoadBalancer(config, loadBalancer);
             throw new StmRollBackException(String.format("Failed to create load balancer %s", loadBalancer.getId()), e);
         }
     }
@@ -123,6 +126,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         LOG.debug(String.format("Removing loadbalancer: %s ...", vsName));
         //others...
+        deleteHealthMonitor(config, client, vsName);
+//        deleteProtection(config, client, vsName);
+        deleteVirtualIps(config, loadBalancer);
         deleteVirtualServer(config, client, vsName);
         LOG.debug(String.format("Successfully removed loadbalancer: %s from the STM serverice...", vsName));
     }
@@ -342,23 +348,92 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
         ResourceTranslator translator = new ResourceTranslator();
-        String vsName;
-//        TrafficIp trafficIp;
-        vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         translator.translateLoadBalancerResource(config, vsName, loadBalancer);
+        LOG.debug(String.format("Updating virtual ips for virtual server %s", vsName));
         updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
+        LOG.debug(String.format("Updating virtual server %s for virtual ip configuration update", vsName));
         updateVirtualServer(config, client, vsName, translator.getcVServer());
+        LOG.info(String.format("Successfully updated virtual ips for virtual server %s", vsName));
     }
 
     @Override
     public void deleteVirtualIp(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Integer vipId) throws RemoteException, InsufficientRequestException, StmRollBackException {
-
+        //Think is was only used in old tests, do we still need it?
+        List<Integer> vipIds = new ArrayList<Integer>();
+        vipIds.add(vipId);
+        deleteVirtualIps(config, loadBalancer, vipIds);
     }
 
     @Override
-    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipId) throws RemoteException, InsufficientRequestException, StmRollBackException {
+    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipIds) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        StingrayRestClient client = loadSTMRestClient(config);
+        ResourceTranslator translator = new ResourceTranslator();
+        String vsName;
+        vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
+        translator.translateLoadBalancerResource(config, vsName, loadBalancer);
+        Map<String, TrafficIp> curTigMap = translator.getcTrafficIpGroups();
+
+        //Remove vips to remove from lb and translate...
+        for (int id : vipIds) {
+            for (LoadBalancerJoinVip jvip : loadBalancer.getLoadBalancerJoinVipSet()) {
+                if (jvip.getVirtualIp().getId() == id) {
+                    loadBalancer.getLoadBalancerJoinVipSet().remove(jvip);
+                }
+            }
+
+            for (LoadBalancerJoinVip6 jvip : loadBalancer.getLoadBalancerJoinVip6Set()) {
+                if (jvip.getVirtualIp().getId() == id) {
+                    loadBalancer.getLoadBalancerJoinVip6Set().remove(jvip);
+                }
+            }
+        }
+
+        String vipsToRemove = StringUtilities.DelimitString(vipIds, ",");
+        translator.translateLoadBalancerResource(config, vsName, loadBalancer);
+        Map<String, TrafficIp> removeTigMap = translator.getcTrafficIpGroups();
+
+        String tname = null;
+        try {
+            LOG.debug(String.format("Attempting to update traffic ip configuration and remove vips %s for virtual server %s", vipsToRemove, vsName));
+            tname = null;
+            for (String tigname : removeTigMap.keySet()) {
+                tname = tigname;
+                client.deleteTrafficIp(tigname);
+            }
+            LOG.debug(String.format("Updating virtual server %s for updated virtual ip configuration..", vsName));
+            updateVirtualServer(config, client, vsName, translator.getcVServer());
+            LOG.info(String.format("Successfully to updated traffic ip configuration and removed vips %s for virtual server %s", vipsToRemove, vsName));
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            LOG.error(String.format("Object not found when removing virtual ip: %s for virtual server %s, continue...", tname, vsName));
+        } catch (Exception ex) {
+            String em = String.format("Error removing virtual ips for vs: %s ... \n Exception: %s Trace: %s",
+                    vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
+            LOG.error(em);
+            if (!curTigMap.isEmpty()) {
+                LOG.debug(String.format("Attempting to roll back to previous virtual ips: %s for virtual server %s", vipsToRemove, vsName));
+                updateVirtualIps(config, client, vsName, curTigMap);
+                LOG.info(String.format("Successfully rolled back to previous virtual ips: %s for virtual server %s", vipsToRemove, vsName));
+            }
+            throw new StmRollBackException(em, ex);
+        }
+    }
+
+    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        List<Integer> vipIds = new ArrayList<Integer>();
+        Set<LoadBalancerJoinVip> jvipset = loadBalancer.getLoadBalancerJoinVipSet();
+        Set<LoadBalancerJoinVip6> jvip6set = loadBalancer.getLoadBalancerJoinVip6Set();
+
+        for (LoadBalancerJoinVip jv : jvipset) {
+            vipIds.add(jv.getVirtualIp().getId());
+        }
+
+        for (LoadBalancerJoinVip6 jv : jvip6set) {
+            vipIds.add(jv.getVirtualIp().getId());
+        }
+
+        deleteVirtualIps(config, loadBalancer, vipIds);
     }
 
     /*
