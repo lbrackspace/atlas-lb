@@ -404,7 +404,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             }
             LOG.debug(String.format("Updating virtual server %s for updated virtual ip configuration..", vsName));
             updateVirtualServer(config, client, vsName, translator.getcVServer());
-            LOG.info(String.format("Successfully to updated traffic ip configuration and removed vips %s for virtual server %s", vipsToRemove, vsName));
+            LOG.info(String.format("Successfully updated traffic ip configuration and removed vips %s for virtual server %s", vipsToRemove, vsName));
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.error(String.format("Object not found when removing virtual ip: %s for virtual server %s, continue...", tname, vsName));
         } catch (Exception ex) {
