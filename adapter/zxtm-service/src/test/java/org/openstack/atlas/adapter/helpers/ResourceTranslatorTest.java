@@ -61,8 +61,6 @@ public class ResourceTranslatorTest extends STMTestBase {
 
         public void initializeVars(String logFormat, LoadBalancerProtocol protocol) {
             setupIvars();
-//            createSimpleLoadBalancer();
-            vsName = "test_name";
             this.isConnectionLogging = true;
             isHalfClosed = true;
             isContentCaching = true;
@@ -110,6 +108,34 @@ public class ResourceTranslatorTest extends STMTestBase {
 
         }
 
+        public void pathOne() {
+            lists = new HashSet<AccessList>();
+            lb.setAccessLists(lists);
+            lb.setConnectionLimit(null);
+            isConnectionLogging = false;
+            lb.setConnectionLogging(isConnectionLogging);
+
+
+        }
+
+        public void pathTwo() {
+            lists.add(accessListAllowed);
+            lb.setConnectionLimit(null);
+
+        }
+
+        public void pathThree() {
+            lists.add(accessListAllowed);
+            ConnectionLimit connectionLimit = new ConnectionLimit();
+            lb.setConnectionLimit(connectionLimit);
+
+
+        }
+
+        public void pathFour() {
+            lb.setAccessLists(null);
+        }
+
 
         @Test
         public void shouldCreateValidVirtualServer() throws InsufficientRequestException {
@@ -145,6 +171,19 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertEquals(logFormat, log.getFormat());
             Assert.assertEquals(expectedError, createdProperties.getConnection_errors());
             Assert.assertEquals(vsName, createdBasic.getProtection_class());
+            pathOne();
+            createdServer = translator.translateVirtualServerResource(config, vsName, lb);
+            Assert.assertNull(createdServer.getProperties().getBasic().getProtection_class());
+            Assert.assertNull(createdServer.getProperties().getLog());
+            pathTwo();
+            createdServer = translator.translateVirtualServerResource(config, vsName, lb);
+            Assert.assertEquals(vsName, createdServer.getProperties().getBasic().getProtection_class());
+            pathThree();
+            createdServer = translator.translateVirtualServerResource(config, vsName, lb);
+            Assert.assertEquals(vsName, createdServer.getProperties().getBasic().getProtection_class());
+            pathFour();
+            createdServer = translator.translateVirtualServerResource(config, vsName, lb);
+            Assert.assertNull(createdServer.getProperties().getBasic().getProtection_class());
 
 
         }
@@ -167,7 +206,6 @@ public class ResourceTranslatorTest extends STMTestBase {
         public void standUp() throws IPStringConversionException {
 
             setupIvars();
-//            createSimpleLoadBalancer();
             int acctId = 1234567890;
             int ipv4Id = 1111;
             int ipv6Id = 2222;
@@ -255,11 +293,13 @@ public class ResourceTranslatorTest extends STMTestBase {
         private PoolNodeWeight poolNodeDrainingWeight;
         private PoolNodeWeight poolNodeDisabledWeight;
         private ZeusNodePriorityContainer container;
+        private String nodeEnabledName;
+        private String nodeDisabledName;
+        private String nodeDrainingName;
 
 
         public void standUp(LoadBalancerAlgorithm algorithm) {
             setupIvars();
-//            createSimpleLoadBalancer();
             vsName = "qwertyuiop";
             numAttemptsCheck = 90;
             expectedTimeout = 132;
@@ -300,18 +340,30 @@ public class ResourceTranslatorTest extends STMTestBase {
             poolNodeDrainingWeight = new PoolNodeWeight();
             poolNodeDisabledWeight = new PoolNodeWeight();
 
-            poolNodeEnabledWeight.setNode(nodeEnabledAddress);
-            poolNodeDrainingWeight.setNode(nodeDrainingAddress);
-            poolNodeDisabledWeight.setNode(nodeDisabledAddress);
 
             poolNodeEnabledWeight.setWeight(nodeEnabledWeight);
             poolNodeDrainingWeight.setWeight(nodeDrainingWeight);
             poolNodeDisabledWeight.setWeight(nodeDisabledWeight);
 
+            nodeEnabledName = nodeEnabledAddress + ":" + nodePort;
+            nodeDisabledName = nodeDisabledAddress + ":" + nodePort;
+            nodeDrainingName = nodeDrainingAddress + ":" + nodePort;
+
+            poolNodeEnabledWeight.setNode(nodeEnabledName);
+            poolNodeDrainingWeight.setNode(nodeDrainingName);
+            poolNodeDisabledWeight.setNode(nodeDisabledName);
+
 
             lb.setNodes(nodes);
             container = new ZeusNodePriorityContainer(lb.getNodes());
 
+
+        }
+
+        public void tearDown() {
+            lb.setHealthMonitor(null);
+            lb.setSessionPersistence(null);
+            lb.setAlgorithm(LoadBalancerAlgorithm.LEAST_CONNECTIONS);
 
         }
 
@@ -328,9 +380,9 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertTrue(createdBasic.getMonitors().contains(vsName));
             Assert.assertFalse(createdBasic.getPassive_monitoring());
             Assert.assertEquals(SessionPersistence.HTTP_COOKIE.toString(), createdBasic.getPersistence_class());
-            Assert.assertTrue(createdBasic.getNodes().contains(nodeEnabledAddress));
-            Assert.assertTrue(createdBasic.getDraining().contains(nodeDrainingAddress));
-            Assert.assertTrue(createdBasic.getDisabled().contains(nodeDisabledAddress));
+            Assert.assertTrue(createdBasic.getNodes().contains(nodeEnabledName));
+            Assert.assertTrue(createdBasic.getDraining().contains(nodeDrainingName));
+            Assert.assertTrue(createdBasic.getDisabled().contains(nodeDisabledName));
             Assert.assertEquals(expectedTimeout, (int) createdProperties.getConnection().getMax_reply_time());
             Assert.assertEquals(container.getPriorityValuesSet(), createdProperties.getLoad_balancing().getPriority_values());
             Assert.assertEquals(container.hasSecondary(), createdProperties.getLoad_balancing().getPriority_enabled());
@@ -359,6 +411,12 @@ public class ResourceTranslatorTest extends STMTestBase {
             standUp(LoadBalancerAlgorithm.RANDOM);
             createdPool = translator.translatePoolResource(vsName, lb);
             Assert.assertTrue(createdPool.getProperties().getLoad_balancing().getNode_weighting().size() == 0);
+            tearDown();
+            createdPool = translator.translatePoolResource(vsName, lb);
+            createdProperties = createdPool.getProperties();
+            PoolBasic createdBasic = createdProperties.getBasic();
+            Assert.assertNull(createdBasic.getPersistence_class());
+            Assert.assertTrue(createdBasic.getMonitors().size() == 0);
 
         }
 
@@ -842,10 +900,6 @@ public class ResourceTranslatorTest extends STMTestBase {
             persistenceType = PersistenceType.HTTP_COOKIE;
             org.openstack.atlas.service.domain.entities.SessionPersistence
                     persistence = SessionPersistence.fromDataType(persistenceType);
-
-//            org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence
-//                    subPersistence = persistence.getSessionPersistence();
-
             lb.setSessionPersistence(persistence);
         }
 

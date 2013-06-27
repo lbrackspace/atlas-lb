@@ -32,8 +32,17 @@ public class NodeHelper {
         return nodeIps;
     }
 
+    public static Set<String> getNodeStrValue(Collection<Node> nodes) {
+
+        Set<String> nodeVals = new HashSet<String>();
+        for (Node node : nodes) {
+            nodeVals.add(node.getIpAddress() + ":" + Integer.toString(node.getPort()));
+        }
+        return nodeVals;
+    }
+
     public static List<Node> getNodesWithCondition(Collection<Node> nodes, NodeCondition nodeCondition) {
-          List<Node> nodesWithCondition = new ArrayList<Node>();
+        List<Node> nodesWithCondition = new ArrayList<Node>();
         for (Node node : nodes) {
             if (node.getCondition().equals(nodeCondition)) {
                 nodesWithCondition.add(node);
