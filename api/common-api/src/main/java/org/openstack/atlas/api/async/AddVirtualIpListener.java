@@ -44,7 +44,7 @@ public class AddVirtualIpListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Adding Virtual ip to load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.addVirtualIps(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer);
+            reverseProxyLoadBalancerStmService.addVirtualIps(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer);
             LOG.debug("Successfully added virtual ip in Zeus.");
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

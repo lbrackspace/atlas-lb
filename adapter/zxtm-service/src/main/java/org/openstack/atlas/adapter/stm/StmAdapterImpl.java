@@ -269,31 +269,34 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void removeNode(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String ipAddress, Integer port) throws RemoteException, InsufficientRequestException, StmRollBackException {
+    public void removeNode(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Node nodeToDelete) throws RemoteException, InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
-        String vsName = ZxtmNameBuilder.genVSName(loadBalancerId, accountId);
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
         Pool pool = null;
 
-        String nodeToRemove = ipAddress + ":" + Integer.toString(port);
 
-        //TODO: need to worry about node priorities... can pull in lb and notodelete, remove node from list and translate, problem solved...
         try {
             pool = client.getPool(vsName);
         } catch (Exception e) {
-            LOG.error(String.format("Loading pool %s configuration failed, node %s:%d not removed...", vsName, ipAddress, port));
+            LOG.error(String.format("Loading pool %s configuration failed, node %s:%d not removed...", vsName, nodeToDelete.getIpAddress(), nodeToDelete.getPort()));
             throw new StmRollBackException("Remove node request canceled.", e);
         }
 
+        ResourceTranslator translator = new ResourceTranslator();
+        loadBalancer.getNodes().remove(nodeToDelete);
+        translator.translateLoadBalancerResource(config, vsName, loadBalancer);
+
+        String nodeToRemove = nodeToDelete.getIpAddress() + ":" + Integer.toString(nodeToDelete.getPort());
         PoolBasic basic = pool.getProperties().getBasic();
         Set<String> existingNodes = basic.getNodes();
         if (existingNodes.contains(nodeToRemove)) {
             LOG.info(String.format("Removing node %s from pool...", nodeToRemove));
             existingNodes.remove(nodeToRemove);
-            updateNodePool(config, client, vsName, pool);
+            updateNodePool(config, client, vsName, translator.getcPool());
             LOG.info(String.format("Successfully removed node %s from pool!", nodeToRemove));
         } else {
-            LOG.warn(String.format("Node '%s:%d' for pool: %s does not exist. Ignoring..", ipAddress, port, vsName));
+            LOG.warn(String.format("Node '%s:%d' for pool: %s does not exist. Ignoring..", nodeToDelete.getIpAddress(), nodeToDelete.getPort(), vsName));
         }
     }
 
@@ -498,7 +501,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             throw new StmRollBackException(em, ex);
         }
         LOG.debug(String.format("Successfully updated Monitor '%s' ...", monitor));
-
     }
 
     private void deleteHealthMonitor(LoadBalancerEndpointConfiguration config,
@@ -527,6 +529,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
         LOG.info(String.format("Successfully removed monitor '%s'...", monitorName));
     }
+
+    /*
+        Protection Resources
+     */
 
     private void rollbackProtection(StingrayRestClient client, LoadBalancer loadBalancer, Protection curProtection) throws InsufficientRequestException, StmRollBackException {
         String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);

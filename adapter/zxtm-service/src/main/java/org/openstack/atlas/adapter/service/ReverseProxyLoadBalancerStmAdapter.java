@@ -38,7 +38,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws AxisFault, InsufficientRequestException, RollBackException;
 
-    public void removeNode(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, String ipAddress, Integer port)
+    public void removeNode(LoadBalancerEndpointConfiguration config, LoadBalancer lb, Node nodeToDelete)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer lb)

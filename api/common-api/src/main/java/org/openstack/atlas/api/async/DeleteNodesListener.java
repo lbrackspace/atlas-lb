@@ -43,6 +43,8 @@ public class DeleteNodesListener extends BaseListener {
         List<Node> doomedNodes = nodeService.getNodesByIds(doomedNodeIds);
         String doomedIdsStr = StringConverter.integersAsString(doomedNodeIds);
 
+
+        //TODO: not sure why we are updating DB first, but this is affecting logic in the adapter, should would change this? was it done for a reason??? ATM, the adapter is assuming the DB LB is the truth and handling it as such(diff from other deletes..)
         try {
             LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in Zeus...", doomedIdsStr, msg.getLoadBalancerId()));
             dbLoadBalancer = nodeService.delNodes(dbLoadBalancer, doomedNodes);

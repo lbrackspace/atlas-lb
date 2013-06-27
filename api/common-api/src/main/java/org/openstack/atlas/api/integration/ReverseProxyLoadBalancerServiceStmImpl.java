@@ -243,10 +243,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void removeNode(Integer lbId, Integer accountId, Node node) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void removeNode(LoadBalancer lb, Node node) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.removeNode(config, lbId, accountId, node.getIpAddress(), node.getPort());
+            reverseProxyLoadBalancerStmAdapter.removeNode(config, lb, node);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
