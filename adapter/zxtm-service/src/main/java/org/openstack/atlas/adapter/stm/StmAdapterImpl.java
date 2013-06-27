@@ -126,7 +126,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         LOG.debug(String.format("Removing loadbalancer: %s ...", vsName));
         //others...
-        deleteHealthMonitor(config, client, vsName);
+//        deleteHealthMonitor(config, client, vsName);
 //        deleteProtection(config, client, vsName);
         deleteVirtualIps(config, loadBalancer);
         deleteVirtualServer(config, client, vsName);

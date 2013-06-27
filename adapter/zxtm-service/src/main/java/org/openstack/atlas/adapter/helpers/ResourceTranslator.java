@@ -40,7 +40,7 @@ public class ResourceTranslator {
         //Order matters when translating the entire entity.
         if (loadBalancer.getSessionPersistence() != null) translatePersistenceResource(vsName, loadBalancer);
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
-        if (loadBalancer.getRateLimit() != null)  translateBandwidthResource(loadBalancer);
+        if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
         translatePoolResource(vsName, loadBalancer);
         try {
             translateTrafficIpGroupsResource(config, loadBalancer);
@@ -48,6 +48,7 @@ public class ResourceTranslator {
             //Handle this, means ipv6 is broken..
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+        translatePoolResource(vsName, loadBalancer);
         translateVirtualServerResource(config, vsName, loadBalancer);
     }
 
@@ -211,12 +212,17 @@ public class ResourceTranslator {
         PoolLoadbalancing poollb = new PoolLoadbalancing();
         PoolConnection connection = new PoolConnection();
 
-        Set<Node> nodes = loadBalancer.getNodes();
-        basic.setNodes(NodeHelper.getNodeIpSet(NodeHelper.getNodesWithCondition(nodes, NodeCondition.ENABLED)));
-        basic.setDraining(NodeHelper.getNodeIpSet(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING)));
-        basic.setDisabled(NodeHelper.getNodeIpSet(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DISABLED)));
-        basic.setPassive_monitoring(false);
 
+        Set<Node> nodes = loadBalancer.getNodes();
+        Set<Node> enabledNodes = new HashSet<Node>();
+
+        enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.ENABLED));
+        enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING));
+
+        basic.setNodes(NodeHelper.getNodeStrValue(enabledNodes));
+        basic.setDraining(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING)));
+        basic.setDisabled(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DISABLED)));
+        basic.setPassive_monitoring(false);
 
 
         String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
@@ -225,7 +231,7 @@ public class ResourceTranslator {
             PoolNodeWeight nw;
             for (Node n : nodes) {
                 nw = new PoolNodeWeight();
-                nw.setNode(n.getIpAddress());
+                nw.setNode(n.getIpAddress() + ":" + Integer.toString(n.getPort()));
                 nw.setWeight(n.getWeight());
                 weights.add(nw);
             }
@@ -301,7 +307,7 @@ public class ResourceTranslator {
         Set<AccessList> accessList = loadBalancer.getAccessLists();
 
         ProtectionAccessRestriction pac;
-        if (!accessList.isEmpty()) {
+        if (accessList != null && !accessList.isEmpty()) {
             pac = new ProtectionAccessRestriction();
             Set<String> allowed = new HashSet<String>();
             Set<String> banned = new HashSet<String>();
@@ -347,7 +353,6 @@ public class ResourceTranslator {
         return cPersistence;
 
     }
-
 
 
     public Pool getcPool() {
