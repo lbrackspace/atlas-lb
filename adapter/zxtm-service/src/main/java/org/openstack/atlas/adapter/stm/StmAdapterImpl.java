@@ -271,6 +271,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         String nodeToRemove = ipAddress + ":" + Integer.toString(port);
 
+        //TODO: need to worry about node priorities... can pull in lb and notodelete, remove node from list and translate, problem solved...
         try {
             pool = client.getPool(vsName);
         } catch (Exception e) {
@@ -479,10 +480,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         } catch (StingrayRestClientObjectNotFoundException ex) {
             LOG.warn(String.format("Object not found when creating protection: %s, this is expected...", protectionName));
         }
-
-    }
-
-    private void rollbackPersistence(StingrayRestClient client, String persistenceName, Persistence curPersistence) {
 
     }
 
