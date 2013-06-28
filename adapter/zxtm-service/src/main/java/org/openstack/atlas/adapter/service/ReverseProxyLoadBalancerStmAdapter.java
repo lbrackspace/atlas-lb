@@ -93,7 +93,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
             throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, RollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
 
     public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException;

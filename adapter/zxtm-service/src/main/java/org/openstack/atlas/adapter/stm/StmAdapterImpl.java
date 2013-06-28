@@ -11,7 +11,15 @@ import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
+import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.RateLimit;
+import org.openstack.atlas.service.domain.entities.SessionPersistence;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -39,7 +47,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
@@ -561,7 +574,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         } catch (StingrayRestClientObjectNotFoundException ex) {
             LOG.warn(String.format("Object not found when creating protection: %s, this is expected...", protectionName));
         }
-
     }
 
     /*
@@ -827,28 +839,43 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             StingrayRestClient client = loadSTMRestClient(config);
             String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
             String protectionSslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-            Protection curProtection = client.getProtection(protectionName);
+            Protection curProtection = null;
+            try {
+                curProtection = client.getProtection(protectionName);
+            } catch (Exception e) {
+                LOG.warn(String.format("Could not load protection class: %s.  This is intended by the request.", protectionName));
+            }
             try {
                 if (loadBalancer.hasSsl()) {
                     client.deleteProtection(protectionSslName);
                 }
                 client.deleteProtection(protectionName);
             } catch (StingrayRestClientException e) {
-                LOG.error("Unexpected client error when deleting protection: " + protectionName);
-                rollbackProtection(client, loadBalancer, curProtection);
+                String em = String.format("Error deleting protection: %s Attempting to RollBack... \n Exception: %s Trace: %s"
+                        , protectionName, e.getCause().getMessage(), Arrays.toString(e.getCause().getStackTrace()));
+                if (curProtection != null) {
+                    LOG.error(String.format("Unexpected client error when deleting protection %s: attempting to roll-back...", protectionName));
+                    if (loadBalancer.hasSsl()) {
+                        client.updateProtection(protectionSslName, curProtection);
+                    }
+                    client.updateProtection(protectionName, curProtection);
+                    LOG.error(String.format("Successfully rolled back to previous configuration."));
+                } else {
+                    LOG.error(String.format("Protection %s not rolled back for lack of previous configuration.", protectionName));
+                }
+                throw new StmRollBackException(em, e);
             } catch (StingrayRestClientObjectNotFoundException onf) {
-                LOG.error("Cannot delete protection as client does not exist.");
-                rollbackProtection(client, loadBalancer, curProtection);
+                LOG.info(String.format("No protection with name %s found...", protectionName));
             }
             if (loadBalancer.hasSsl()) {
-                LOG.info("Successfully deleted protection " + protectionSslName);
+                LOG.info(String.format("Successfully deleted protection %s!", protectionSslName));
             }
-            LOG.info("Successfully deleted protection " + protectionName);
+            LOG.info(String.format("Successfully deleted protection %s!", protectionName));
         }
     }
 
     @Override
-    public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+    public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         if (loadBalancer.getConnectionLimit() != null) {
             StingrayRestClient client = loadSTMRestClient(config);
             String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
@@ -856,21 +883,35 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             Protection curProtection = null;
             try {
                 curProtection = client.getProtection(protectionName);
+            } catch (Exception e) {
+                LOG.warn(String.format("Could not load protection class: %s.  This is intended by the request.", protectionName));
+            }
+            try {
                 if (loadBalancer.hasSsl()) {
                     client.deleteProtection(protectionSslName);
                 }
                 client.deleteProtection(protectionName);
             } catch (StingrayRestClientException e) {
-                LOG.error("Unexpected client error when deleting connection throttle: " + protectionName);
-                rollbackProtection(client, loadBalancer, curProtection);
+                String em = String.format("Error deleting protection: %s Attempting to RollBack... \n Exception: %s Trace: %s"
+                        , protectionName, e.getCause().getMessage(), Arrays.toString(e.getCause().getStackTrace()));
+                if (curProtection != null) {
+                    LOG.error(String.format("Unexpected client error when deleting protection %s: attempting to roll-back...", protectionName));
+                    if (loadBalancer.hasSsl()) {
+                        client.updateProtection(protectionSslName, curProtection);
+                    }
+                    client.updateProtection(protectionName, curProtection);
+                    LOG.error(String.format("Successfully rolled back to previous configuration."));
+                } else {
+                    LOG.error(String.format("Protection %s not rolled back for lack of previous configuration.", protectionName));
+                }
+                throw new StmRollBackException(em, e);
             } catch (StingrayRestClientObjectNotFoundException onf) {
-                LOG.error("Cannot delete protection as client does not exist");
-                rollbackProtection(client, loadBalancer, curProtection);
+                LOG.error(String.format("No protection with name %s was found...", protectionName));
             }
             if (loadBalancer.hasSsl()) {
-                LOG.info("Successfully deleted protection " + protectionSslName);
+                LOG.info(String.format("Successfully deleted protection %s!", protectionSslName));
             }
-            LOG.info("Successfully deleted protection " + protectionName);
+            LOG.info(String.format("Successfully deleted protection %s!", protectionName));
         }
     }
 
