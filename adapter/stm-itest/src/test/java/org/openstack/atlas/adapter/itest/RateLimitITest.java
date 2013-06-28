@@ -17,7 +17,7 @@ public class RateLimitITest extends STMTestBase {
     @AfterClass
     public static void tearDownClass()
     {
-        //TODO add remove load balancer method
+
     }
 
     @Test
