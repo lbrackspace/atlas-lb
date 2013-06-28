@@ -1,6 +1,9 @@
 package org.openstack.atlas.util;
 
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileReaderException;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
@@ -33,8 +36,11 @@ import java.io.OutputStream;
 import java.lang.Integer;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.math.linear.Array2DRowFieldMatrix;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.compress.CompressionInputStream;
@@ -45,10 +51,12 @@ import org.openstack.atlas.logs.hadoop.jobs.HadoopLogSplitterJob;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 import org.openstack.atlas.util.debug.Debug;
-import sun.net.www.http.Hurryable;
+import org.joda.time.DateTime;
 
 public class HdfsCli {
 
+    private static final Pattern zipPattern = Pattern.compile(".*\\.zip$");
+    private static final long MILLIS_COEF = 10000000L;
     private static final String HDUNAME = "HADOOP_USER_NAME";
     private static final int LARGEBUFFERSIZE = 8 * 1024 * 1024;
     private static final int PAGESIZE = 4096;
@@ -80,6 +88,8 @@ public class HdfsCli {
 
         BufferedReader stdin = HdfsCliHelpers.inputStreamToBufferedReader(System.in);
         System.out.printf("\n");
+
+        List<WastedBytesBlock> wastedBlocks = new ArrayList<WastedBytesBlock>();
 
         while (true) {
             try {
@@ -130,7 +140,7 @@ public class HdfsCli {
                     System.out.printf("lsout #List the hourKeys in the output directory usefull because ls prints long form\n");
                     System.out.printf("lsr [path] #List hdfs files recursivly\n");
                     System.out.printf("lszip [l=lid] [h=hour] [m=missing]#List all zip files in the HDFS ourput directory for hourh or and the given lid\n");
-                    System.out.printf("dlzips <hourKey> [l=lid] [a=accoundId] #List all zip files in local cache directory for the given keys\n");
+                    System.out.printf("dlzip <hourKey> [l=lid] [a=accoundId] #Download all zip files in local cache directory for the given keys\n");
                     System.out.printf("ullzo <file> #Upload the lzo file to hdfs\n");
                     System.out.printf("mem\n");
                     System.out.printf("mkdir <path>\n");
@@ -147,12 +157,39 @@ public class HdfsCli {
                     System.out.printf("runMain <class> args0..N\n");
                     System.out.printf("uploadLzo <lzoFile> #Upload the the lzo file\n");
                     System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
+                    System.out.printf("scanhdfszips <yyyymmddhh> <yyyymmddhh> [scanparts=<true|false>]#Scan the hadoop output directories and count how many zips where found between the 2 days\n");
                     System.out.printf("setJobJar <jobJar> #set Jar file to classLoader\n");
                     System.out.printf("setReplCount <FilePath> <nReps> #Set the replication count for this file\n");
                     System.out.printf("showCl <className> #Show class loader info via reflection\n");
                     System.out.printf("showConfig #Show hadoop configs\n");
                     System.out.printf("showCrc <fileName> #Show crc value that would be reported by Zip\n");
+                    System.out.printf("wb <size> #Wast nbytes to experiment with the Garbage colector\n");
+                    System.out.printf("fb #Free all bytes wasted so far");
+                    System.out.printf("wbs #List the number of bytes in the wasted byte Cuffer\n");
                     System.out.printf("whoami\n");
+                    continue;
+                }
+                if (cmd.equals("wbs")) {
+                    long totalWastedBytes = 0L;
+                    for (WastedBytesBlock wastedBlock : wastedBlocks) {
+                        totalWastedBytes += wastedBlock.size();
+                    }
+                    System.out.printf("Total wasted bytes: %d\n", totalWastedBytes);
+                    continue;
+                }
+                if (cmd.equals("wb") && args.length >= 2) {
+                    int size = Integer.parseInt(args[1]);
+                    double startTime = Debug.getEpochSeconds();
+                    wastedBlocks.add(new WastedBytesBlock(size));
+                    double stopTime = Debug.getEpochSeconds();
+                    double delta = stopTime - startTime;
+                    double rate = (double) size / delta;
+                    String fmt = "Took %f seconds to wast %d bytes at a rate of %s bytes persecond\n";
+                    System.out.printf(fmt, delta, size, Debug.humanReadableBytes(rate));
+                    continue;
+                }
+                if (cmd.equals("fb")) {
+                    wastedBlocks = new ArrayList<WastedBytesBlock>();
                     continue;
                 }
                 if (cmd.equals("classInfo") && args.length >= 2) {
@@ -177,6 +214,87 @@ public class HdfsCli {
                     String hourKey = (args.length >= 2) ? args[1] : null;
                     String fileDisplay = listHourKeyFiles(hdfsUtils, outputDir, hourKey);
                     System.out.printf("%s\n", fileDisplay);
+                    continue;
+                }
+                if (cmd.equals("scanhdfszips")) {
+                    Map<String, String> kw = argMapper(args);
+                    args = stripKwArgs(args);
+                    List<Long> hourKeysListL = new ArrayList<Long>();
+                    String lbLogSplitDir = mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), "lb_logs_split");
+                    FileStatus[] dateDirsStats = hdfsUtils.getFileSystem().listStatus(new Path(lbLogSplitDir));
+                    for (FileStatus fileStatus : dateDirsStats) {
+                        Long hourLong;
+                        String pathStr;
+                        try {
+                            pathStr = pathTailString(fileStatus);
+                            hourLong = Long.parseLong(pathStr);
+                        } catch (Exception ex) {
+                            continue;
+                        }
+                        hourKeysListL.add(hourLong);
+
+                    }
+
+                    Collections.sort(hourKeysListL);
+                    DateTime startDt;
+                    if (args.length > 2) {
+                        startDt = hourKeyToDateTime(args[1], false);
+                    } else {
+                        startDt = hourKeyToDateTime(hourKeysListL.get(0), false);
+                    }
+                    DateTime endDt;
+                    if (args.length > 3) {
+                        endDt = hourKeyToDateTime(args[2], false);
+                    } else {
+                        endDt = hourKeyToDateTime(hourKeysListL.get(hourKeysListL.size() - 1), false);
+                    }
+                    DateTime curDt = new DateTime(startDt);
+                    String fmt = "Scanning for zips in date range (%d,%d)\n";
+                    System.out.printf(fmt, dateTimeToHourLong(startDt), dateTimeToHourLong(endDt));
+                    System.out.printf("Press Enter to continue\n");
+                    stdin.readLine();
+                    hourKeysListL = new ArrayList<Long>();
+                    Map<String, HdfsZipDirScan> zipDirMap = new HashMap<String, HdfsZipDirScan>();
+                    boolean scanParts = false;
+                    if (kw.containsKey("scanparts") && kw.get("scanparts").equalsIgnoreCase("true")) {
+                        scanParts = true;
+                    }
+
+                    while (true) {
+                        if (curDt.isAfter(endDt)) {
+                            break;
+                        }
+                        Long hourKeyL = dateTimeToHourLong(curDt);
+                        hourKeysListL.add(hourKeyL);
+                        curDt = curDt.plusHours(1);
+                    }
+                    Collections.sort(hourKeysListL);
+                    System.out.printf("scanning directorys:\n");
+                    System.out.flush();
+                    for (Long hourKeyL : hourKeysListL) {
+                        System.out.printf(" %d", hourKeyL);
+                        System.out.flush();
+                        String key = hourKeyL.toString();
+                        HdfsZipDirScan val = scanHdfsZipDirs(hdfsUtils, key, scanParts);
+                        zipDirMap.put(key, val);
+                    }
+                    System.out.printf("\n");
+                    for (Long hourKey : hourKeysListL) {
+                        String key = hourKey.toString();
+                        HdfsZipDirScan val = zipDirMap.get(key);
+                        System.out.printf("%s ", val.displayString());
+                        if (scanParts) {
+                            Set<String> missingSet = new HashSet<String>(val.getZipsFound());
+                            missingSet.removeAll(val.getZipsFound());
+                            System.out.printf("found %s files in partitions but missing %d files", val.getZipsFound().size(), missingSet.size());
+                        }
+                        if (!val.isDateDirFound() || !val.isZipDirFound()) {
+                            System.out.printf(" ******************\n");
+                        } else {
+                            System.out.printf("\n");
+                        }
+                    }
+
                     continue;
                 }
                 if (cmd.equals("ullzo") && args.length >= 2) {
@@ -538,7 +656,7 @@ public class HdfsCli {
                         ZipSrcDstFile transferFile = new ZipSrcDstFile();
                         transferFile.setSrcFile(val.getLogFile());
                         transferFile.setDstFile(zipFilePath(hourKey, val.getAccountId(), val.getLoadbalancerId()));
-                        System.out.printf("%s AccountId=%d LoadbalancerId=%d %s\n", transferFile.toString(), val.getAccountId(), val.getLoadbalancerId());
+                        System.out.printf("%s AccountId=%d LoadbalancerId=%d\n", transferFile.toString(), val.getAccountId(), val.getLoadbalancerId());
                         transferFiles.add(transferFile);
                     }
                     System.out.printf("Are you sure you want to download the above zip files (Y/N)\n");
@@ -922,11 +1040,11 @@ public class HdfsCli {
         System.out.printf("Exiting\n");
     }
 
-    private static String chop(String line) {
+    public static String chop(String line) {
         return line.replace("\r", "").replace("\n", "");
     }
 
-    private static String[] stripBlankArgs(String line) {
+    public static String[] stripBlankArgs(String line) {
         int nargs = 0;
         int i;
         int j;
@@ -947,7 +1065,21 @@ public class HdfsCli {
         return argsOut;
     }
 
-    private static Map<String, String> argMapper(String[] args) {
+    public static String[] stripKwArgs(String[] args) {
+        String[] argsOut;
+        List<String> filteredArgs = new ArrayList<String>();
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.split("=").length >= 2) {
+                continue;
+            }
+            filteredArgs.add(arg);
+        }
+        argsOut = filteredArgs.toArray(new String[filteredArgs.size()]);
+        return argsOut;
+    }
+
+    public static Map<String, String> argMapper(String[] args) {
         Map<String, String> argMap = new HashMap<String, String>();
         for (String arg : args) {
             String[] kwArg = arg.split("=");
@@ -958,12 +1090,12 @@ public class HdfsCli {
         return argMap;
     }
 
-    private static boolean stdinMatches(BufferedReader stdin, String val) throws IOException {
+    public static boolean stdinMatches(BufferedReader stdin, String val) throws IOException {
         String[] resp = stripBlankArgs(stdin.readLine());
         return (resp.length > 0 && resp[0].equalsIgnoreCase(val));
     }
 
-    private static String zipFilePath(String dateHour, int accountId, int loadbalancerId) {
+    public static String zipFilePath(String dateHour, int accountId, int loadbalancerId) {
         List<String> pathComps = new ArrayList<String>();
         pathComps.add(HadoopLogsConfigs.getCacheDir());
         pathComps.add(dateHour);
@@ -972,7 +1104,7 @@ public class HdfsCli {
         return StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathComps));
     }
 
-    private static String listHourKeyFiles(HdfsUtils hdfsUtils, String remoteDir, String hourKeyPrefix) throws IOException {
+    public static String listHourKeyFiles(HdfsUtils hdfsUtils, String remoteDir, String hourKeyPrefix) throws IOException {
         StringBuilder sb = new StringBuilder();
         FileStatus[] fileStatusArray = hdfsUtils.listStatuses(remoteDir, false);
         List<FileStatus> fileStatusList = new ArrayList<FileStatus>(Arrays.asList(fileStatusArray));
@@ -985,5 +1117,79 @@ public class HdfsCli {
             sb.append(tail).append(HdfsCliHelpers.displayFileStatus(fileStatus)).append("\n");
         }
         return sb.toString();
+    }
+
+    public static DateTime hourKeyToDateTime(String dateHour, boolean useUTC) {
+        return hourKeyToDateTime(Long.parseLong(dateHour), useUTC);
+    }
+
+    public static DateTime hourKeyToDateTime(long ord, boolean useUTC) {
+        return StaticDateTimeUtils.OrdinalMillisToDateTime(ord * MILLIS_COEF, useUTC);
+    }
+
+    public static long dateTimeToHourLong(DateTime dt) {
+        return StaticDateTimeUtils.dateTimeToOrdinalMillis(dt) / MILLIS_COEF;
+    }
+
+    public static HdfsZipDirScan scanHdfsZipDirs(HdfsUtils hdfsUtils, String hourKey, boolean scanParts) {
+        Matcher zipMatch = zipPattern.matcher("");
+        HdfsZipDirScan scan = new HdfsZipDirScan();
+        scan.setHourKey(hourKey);
+        List<String> comps = new ArrayList<String>();
+        comps.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
+        comps.add("lb_logs_split");
+        comps.add(hourKey);
+        String partsDir = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(comps));
+        comps.add("zips");
+        String zipDir = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(comps));
+        List<LogReducerOutputValue> zipInfoList;
+        if (scanParts) {
+            try {
+                zipInfoList = hdfsUtils.getZipFileInfoList(partsDir);
+                scan.setPartionFilesFound(true);
+            } catch (SequenceFileReaderException ex) {
+                zipInfoList = null;
+            }
+            if (zipInfoList != null) {
+                for (LogReducerOutputValue zipInfo : zipInfoList) {
+                    scan.getPartZipsFound().add(StaticFileUtils.pathTail(zipInfo.getLogFile()));
+                    scan.incPartZipCount(1);
+                }
+            }
+
+        }
+        FileStatus[] fileStatuses;
+        try {
+            fileStatuses = hdfsUtils.getFileSystem().listStatus(new Path(zipDir));
+            if (fileStatuses != null) {
+                scan.setDateDirFound(true);
+                scan.setZipDirFound(true);
+                for (FileStatus fileStatus : fileStatuses) {
+                    String zipFileName = StaticFileUtils.pathTail(HdfsUtils.rawPath(fileStatus));
+                    zipMatch.reset(zipFileName);
+                    if (zipMatch.find()) {
+                        scan.incZipCount(1);
+                        scan.getZipsFound().add(zipFileName);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            fileStatuses = null;
+        }
+        return scan;
+    }
+
+    public static String pathTailString(Path path) {
+        return StaticFileUtils.pathTail(path.toUri().getRawPath());
+    }
+
+    public static String pathTailString(FileStatus fileStatus) {
+        return pathTailString(fileStatus.getPath());
+    }
+
+    public static String mergePathString(String... pathArray) {
+        List<String> pathList = new ArrayList<String>();
+        pathList.addAll(Arrays.asList(pathArray));
+        return StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathList));
     }
 }

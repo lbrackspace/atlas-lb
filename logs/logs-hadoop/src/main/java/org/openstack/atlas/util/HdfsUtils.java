@@ -626,6 +626,10 @@ public class HdfsUtils {
         return fileNames;
     }
 
+    public static String rawPath(FileStatus fileStatus){
+        return fileStatus.getPath().toUri().getRawPath();
+    }
+
     public static Object newUtils(Class utilClass, String user, String... confFiles) throws ReflectionException {
         Configuration conf = new Configuration();
         for (String confFile : confFiles) {
