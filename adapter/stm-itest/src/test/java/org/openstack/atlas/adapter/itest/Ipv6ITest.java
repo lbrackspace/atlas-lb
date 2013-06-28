@@ -27,7 +27,7 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.H
 import static org.openstack.atlas.service.domain.entities.NodeCondition.DISABLED;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 
-public class Ipv6IntegrationTest extends STMTestBase {
+public class Ipv6ITest extends STMTestBase {
     protected static VirtualIpv6 vip1;
 
     @BeforeClass
@@ -90,7 +90,7 @@ public class Ipv6IntegrationTest extends STMTestBase {
         lb.setNodes(nodeList);
         lb.setLoadBalancerJoinVip6Set(ipv6VipList);
 
-        Ipv6IntegrationTest.lb = lb;
+        Ipv6ITest.lb = lb;
     }
 
     //TODO nothing changed from the normal load balancer... is this right?
