@@ -45,21 +45,24 @@ public class RateLimitITest extends STMTestBase {
             client = new StingrayRestClient();
 
             rateLimit = new RateLimit();
-            rateLimit.setMaxRequestsPerSecond(25);
+            rateLimit.setMaxRequestsPerSecond(5);
             setRateLimit(client, vsName, rateLimit);
             bandwidth = getRateLimit(client, vsName);
             Assert.assertNotNull(bandwidth);
             Assert.assertEquals(bandwidth.getProperties().getBasic().getMaximum(), rateLimit.getMaxRequestsPerSecond());
 
             rateLimit = new RateLimit();
-            rateLimit.setMaxRequestsPerSecond(45);
+            rateLimit.setMaxRequestsPerSecond(10);
             updateRateLimit(client, vsName, rateLimit);
             bandwidth = getRateLimit(client, vsName);
             Assert.assertNotNull(bandwidth);
             Assert.assertEquals(bandwidth.getProperties().getBasic().getMaximum(), rateLimit.getMaxRequestsPerSecond());
 
             deleteRateLimit(client, vsName);
-            bandwidth = getRateLimit(client, vsName);
+            bandwidth = null;
+            try {
+                bandwidth = getRateLimit(client, vsName);
+            } catch (Exception e) { }
             Assert.assertNull(bandwidth);
 
         } catch (Exception e) {

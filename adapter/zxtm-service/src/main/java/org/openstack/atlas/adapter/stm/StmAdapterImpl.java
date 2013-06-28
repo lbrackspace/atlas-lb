@@ -1003,9 +1003,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             VirtualServerBasic basic = properties.getBasic();
 
             basic.setBandwidth_class(null);
-
-            client.deleteRate(vsName);
-            client.updateVirtualServer(vsName, virtualServer);
+            client.deleteBandwidth(vsName);
+            updateVirtualServer(config, client, vsName, virtualServer);
 
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.warn(String.format("Failed to delete rate limit for virtual server '%s' -- Object not found", vsName));
@@ -1041,7 +1040,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             basic.setBandwidth_class(vsName); // Do I need to check if this already exists and delete the old one?
 
             client.createBandwidth(vsName, bandwidth);
-            client.updateVirtualServer(vsName, virtualServer);
+            updateVirtualServer(config, client, vsName, virtualServer);
 
             LOG.info("Successfully added a rate limit to the rate limit pool.");
 
