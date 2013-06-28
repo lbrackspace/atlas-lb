@@ -1001,11 +1001,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             VirtualServer virtualServer = rt.getcVServer();
             VirtualServerProperties properties = virtualServer.getProperties();
             VirtualServerBasic basic = properties.getBasic();
-            String bwc = basic.getBandwidth_class();
 
             basic.setBandwidth_class(null);
 
-            client.deleteRate(bwc);
+            client.deleteRate(vsName);
             client.updateVirtualServer(vsName, virtualServer);
 
         } catch (StingrayRestClientObjectNotFoundException e) {
@@ -1078,9 +1077,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             Bandwidth bandwidth = rt.getcBandwidth();
             VirtualServer virtualServer = rt.getcVServer();
 
-            String bwc = virtualServer.getProperties().getBasic().getBandwidth_class();
-
-            client.updateBandwidth(bwc, bandwidth);
+            client.updateBandwidth(vsName, bandwidth);
 
             LOG.info(String.format("Successfully updated the rate limit for load balancer...'%s'...", vsName));
 
