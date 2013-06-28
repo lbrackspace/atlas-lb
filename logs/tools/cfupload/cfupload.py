@@ -60,8 +60,23 @@ def scandir_filter(scandir_list,*args,**kw):
     sdgte = kw.get("date_gte",None)
     sdlte = kw.get("date_lte",None)
     sdate = kw.get("date",None)
+
+    if kw.has_key("eaids"):
+        eaids = splitIntSet(kw.get("eaids"))
+    else:
+        eaids = set([])
+
+    if kw.has_key("elids"):
+        elids = splitIntSet(kw.get("elids"))
+    else:
+        elids = set([])
+    
     for file_entry in scandir_list:
         (date,aid,lid,full_path) = file_entry
+        if len(eaids) > 0 and aid in eaids:
+            continue
+        if len(elids) > 0 and lid in elids:
+            continue 
         if said != None and said != aid:
             continue
         if slid != None and slid != lid:
@@ -74,6 +89,21 @@ def scandir_filter(scandir_list,*args,**kw):
             continue
         out.append(file_entry)
     return out  
+
+def splitIntSet(val):
+    intSet = set()
+    try:
+        n = int(val)
+    except (ValueError):
+        strList = val.split(",")
+        for strVal in strList:
+            try:
+                n = int(strVal)
+                intSet.add(n)
+            except ValueError:
+                continue
+            
+    return intSet
 
 def getLbid2name(lbRows):
     out = {}

@@ -13,6 +13,7 @@ config.read(os.path.expanduser('~/cfupconfig'))
 
 import pyrax
 import pyrax.exceptions as exc
+import traceback
 
 pyrax.set_setting("identity_type", "rackspace")
 pyrax.set_http_debug(True)
@@ -111,6 +112,9 @@ def uploadFile(username, userid, userkey, userenabled, lid, lname, fp, date,**kw
             return
         except KeyboardInterrupt:
             print "Skipping this entry"
+            time.sleep(1.0)
+        except:
+            print "Unknown Exception caught:", traceback.format_exc()
             time.sleep(1.0)
 
 def removeLocalFile(fp):
