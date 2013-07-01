@@ -36,7 +36,6 @@ public class ResourceTranslator {
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
-
         //Order matters when translating the entire entity.
         if (loadBalancer.getSessionPersistence() != null) translatePersistenceResource(vsName, loadBalancer);
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
@@ -199,9 +198,8 @@ public class ResourceTranslator {
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6ToAdd : loadBalancer.getLoadBalancerJoinVip6Set()) {
             groupSet.add(ZxtmNameBuilder.generateTrafficIpGroupName(acctId, loadBalancerJoinVip6ToAdd.getVirtualIp().getId().toString()));
         }
+
         return groupSet;
-
-
     }
 
     public Pool translatePoolResource(String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
@@ -327,9 +325,8 @@ public class ResourceTranslator {
         if (limits != null) {
             limiting = new ProtectionConnectionLimiting();
             limiting.setMax_10_connections(0); //TODO no magic numbers
-            //TODO should connection rate and rate timer be the same?
             limiting.setMax_1_connections(limits.getMaxConnections());
-            limiting.setMax_connection_rate(limits.getRateInterval());
+            limiting.setMax_connection_rate(limits.getMaxConnectionRate());
             limiting.setMin_connections(limits.getMinConnections());
             limiting.setRate_timer(limits.getRateInterval());
             properties.setConnection_limiting(limiting);
@@ -351,7 +348,6 @@ public class ResourceTranslator {
         persistence.setProperties(properties);
         cPersistence = persistence;
         return cPersistence;
-
     }
 
 

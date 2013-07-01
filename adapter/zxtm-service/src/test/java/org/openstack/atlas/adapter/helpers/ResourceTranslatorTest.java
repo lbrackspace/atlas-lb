@@ -43,7 +43,6 @@ public class ResourceTranslatorTest extends STMTestBase {
 
     public static class WhenTranslatingAVirtualServer {
 
-
         private String vsName;
         private Boolean isHalfClosed;
         private Boolean isConnectionLogging;
@@ -434,7 +433,6 @@ public class ResourceTranslatorTest extends STMTestBase {
         private String path;
         private String bodyRegex;
         private String statusRegex;
-        private Boolean useSsl;
         private ResourceTranslator translator;
 
         @Before
@@ -828,6 +826,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             maxConnections = 90;
             minConnections = 35;
             rateTiming = 78;
+            maxRateInterval = 50;
 
             ipAddressAllowed = "10.1.1.4";
             ipAddressBanned = "10.1.1.5";
@@ -836,6 +835,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             connectionLimit.setMaxConnections(maxConnections);
             connectionLimit.setMinConnections(minConnections);
             connectionLimit.setRateInterval(rateTiming);
+            connectionLimit.setMaxConnectionRate(maxRateInterval);
 
             accessListAllowed = new AccessList();
             accessListAllowed.setIpAddress(ipAddressAllowed);
@@ -862,7 +862,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             ProtectionConnectionLimiting createdLimiting = createdProtection.getProperties().getConnection_limiting();
             Assert.assertNotNull(createdLimiting);
             Assert.assertEquals(maxConnections, (int) createdLimiting.getMax_1_connections());
-            Assert.assertEquals(rateTiming, (int) createdLimiting.getMax_connection_rate());
+            Assert.assertEquals(maxRateInterval, (int) createdLimiting.getMax_connection_rate());
             Assert.assertEquals(minConnections, (int) createdLimiting.getMin_connections());
             Assert.assertEquals(rateTiming, (int) createdLimiting.getRate_timer());
             ProtectionAccessRestriction createdRestriction = createdProtection.getProperties().getAccess_restriction();
