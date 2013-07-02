@@ -1,17 +1,22 @@
 package org.openstack.atlas.adapter.itest;
 
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.virtualserver.VirtualServer;
+import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 
+import java.io.File;
 import java.rmi.RemoteException;
 
-public class SslTerminationITest extends STMTestBase{
+public class SslTerminationITest extends STMTestBase {
 
 
     final String testCert = "-----BEGIN CERTIFICATE-----\n" +
@@ -92,25 +97,188 @@ public class SslTerminationITest extends STMTestBase{
     @Ignore
     @Test
     public void testSslTerminationOperations() {
-            SslTermination sslTermination = new SslTermination();
-            sslTermination.setSecureTrafficOnly(false);
-            sslTermination.setEnabled(true);
-            sslTermination.setSecurePort(443);
-            sslTermination.setCertificate(testCert);
-            sslTermination.setPrivatekey(testKey);
 
+
+    }
+
+    @Test
+    public void testSslTerminationOperationsWhenUpdatingLBAttributes() throws Exception {
+
+
+    }
+
+    @Test
+    public void testWhenAddingRateLimitWithSslTermination() throws Exception {
+
+    }
+
+    @Test
+    public void testWhenAddingAccessListWith() throws Exception {
+
+    }
+
+    @Test
+    public void testErrorPageWhenCreatingSslTermination() throws Exception {
+
+    }
+
+    @Test
+    public void testConnectionThrottleWhenCreatingSslTermination() throws Exception {
+
+    }
+
+    @Test
+    public void shouldPassifCertificateIsRemovedWithSecureVSStillThere() throws Exception {
+
+    }
+
+    @Test
+    public void verifyHostHeaderRewriteIsNever() throws Exception {
+
+    }
+
+    private void setSslTermination(int port, boolean isSslTermEnabled, boolean allowSecureTrafficOnly) {
+        String secureVs = null;
+        String normalVs = null;
+        boolean isVsEnabled = true;
+        try {
+            secureVs = ZxtmNameBuilder.genSslVSName(lb);
+            normalVs = ZxtmNameBuilder.genVSName(lb);
+        } catch (InsufficientRequestException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        SslTermination sslTermination = new SslTermination();
+        sslTermination.setSecureTrafficOnly(allowSecureTrafficOnly);
+        sslTermination.setEnabled(isSslTermEnabled);
+        sslTermination.setSecurePort(port);
+        sslTermination.setCertificate(testCert);
+        sslTermination.setPrivatekey(testKey);
+
+        ZeusCertFile zeusCertFile = new ZeusCertFile();
+        zeusCertFile.setPublic_cert(testCert);
+        zeusCertFile.setPrivate_key(testKey);
+
+        ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
+        zeusSslTermination.setCertIntermediateCert(testCert);
+        zeusSslTermination.setSslTermination(sslTermination);
+
+        lb.setSslTermination(zeusSslTermination.getSslTermination());
+        VirtualServer createdSecureVs = null;
+        VirtualServer createdNormalVs = null;
+        try {
+            stmAdapter.updateSslTermination(config, lb, zeusSslTermination);
+            createdSecureVs = stmClient.getVirtualServer(secureVs);
+            createdNormalVs = stmClient.getVirtualServer(normalVs);
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        Assert.assertNotNull(createdSecureVs);
+        Assert.assertNotNull(createdNormalVs);
+        VirtualServerBasic createdBasic = createdSecureVs.getProperties().getBasic();
+        Assert.assertEquals(port, (int) createdSecureVs.getProperties().getBasic().getPort());
+        Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(createdBasic.getProtocol().toString()));
+        Assert.assertEquals(isVsEnabled, createdBasic.getEnabled());
+        Assert.assertEquals(secureVs, createdBasic.getPool().toString());
+        Assert.assertEquals(isSslTermEnabled, createdBasic.getSsl_decrypt());
+        Assert.assertEquals(testCert, createdSecureVs.getProperties().getSsl().getServer_cert_default());
+
+
+    }
+
+    private void setSslTermination() {
+        int port = 443;
+        boolean isSslTermEnabled = true;
+        boolean allowSecureTrafficOnly = false;
+        setSslTermination(port, isSslTermEnabled, allowSecureTrafficOnly);
+    }
+
+    private void updateSslTermination() {
+        int port = 500;
+        boolean isSslTermEnabled = false;
+        boolean allowSecureTrafficOnly = true;
+        setSslTermination(port, isSslTermEnabled, allowSecureTrafficOnly);
+    }
+
+    private void deleteSslTermination() {
+        String secureVs = null;
+        String normalVs = null;
+        try {
+            secureVs = ZxtmNameBuilder.genSslVSName(lb);
+            normalVs = ZxtmNameBuilder.genVSName(lb);
+            VirtualServer createdSecureVs = stmClient.getVirtualServer(secureVs);
+            VirtualServer createdNormalVs = stmClient.getVirtualServer(normalVs);
+            stmAdapter.removeSslTermination(config, lb);
+            Assert.assertFalse(stmClient.getVirtualServers().contains(createdSecureVs));
+            Assert.assertTrue(stmClient.getVirtualServers().contains(normalVs));
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+
+    }
+
+    private void updateLoadBalancerAttributes() throws Exception {
+
+        int securePort = 8080;
+        int normalPort = 443;
+        boolean isConnectionLogging = true;
+        String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
+        String normalVsName = ZxtmNameBuilder.genVSName(lb);
+        stmAdapter.updatePort(config, lb.getId(), lb.getAccountId(), securePort);
+        VirtualServer createdSecureVs = stmClient.getVirtualServer(secureVsName);
+        Assert.assertEquals(securePort, (int) createdSecureVs.getProperties().getBasic().getPort());
+        VirtualServer createdNormalVs = stmClient.getVirtualServer(normalVsName);
+        Assert.assertEquals(normalPort, (int) createdNormalVs.getProperties().getBasic().getPort());
+
+        lb.setConnectionLogging(isConnectionLogging);
+        stmAdapter.updateConnectionLogging(config, lb);
+        createdSecureVs = stmClient.getVirtualServer(secureVsName);
+        createdNormalVs = stmClient.getVirtualServer(normalVsName);
+        Assert.assertEquals(isConnectionLogging, createdSecureVs.getProperties().getLog().getEnabled());
+        Assert.assertEquals(isConnectionLogging, createdNormalVs.getProperties().getLog().getEnabled());
+
+        isConnectionLogging = false;
+
+        Assert.assertEquals(isConnectionLogging, createdSecureVs.getProperties().getLog().getEnabled());
+        Assert.assertEquals(isConnectionLogging, createdNormalVs.getProperties().getLog().getEnabled());
 
 
     }
 
 
+    private void verifyHostHeaderRewrite() {
+        int port = 443;
+        boolean allowSecureTrafficOnly = false;
+        boolean isSslTermEnabled = true;
+        setSslTermination(port, isSslTermEnabled, allowSecureTrafficOnly);
+        VirtualServer createdVs = null;
+        try {
+            createdVs = stmClient.getVirtualServer(ZxtmNameBuilder.genSslVSName(lb));
+        } catch (StingrayRestClientException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (InsufficientRequestException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        //TODO that val should be in an enum somewhere...
+        Assert.assertEquals("never", createdVs.getProperties().getHttp().getLocation_rewrite());
 
 
+    }
+
+    private void verifyErrorPage() throws Exception {
+        String errorContent = "<html><body>ErrorFileContents</body></html>";
+        String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
+        String errorFileName = stmClient.getVirtualServer(secureVsName).getProperties().getConnection_errors().getError_file();
+        stmAdapter.setErrorFile(config, lb, errorContent);
+        File file = stmClient.getExtraFile(errorFileName);
+//        Assert.assertEquals(loadBalancerName() + "_error.html", );
 
 
-
-
-
+    }
 
 
 }
