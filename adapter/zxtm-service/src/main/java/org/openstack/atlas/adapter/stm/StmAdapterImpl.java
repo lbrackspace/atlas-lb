@@ -915,9 +915,58 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
     }
 
+    // TODO:  In progress.  Ignore for a while.
     @Override
     public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        /*
 
+        Create Virtual Server
+        Add Virtual Ips
+        Follow HTTP header validation
+            Check for Session Persistence
+            Check for Health Monitoring
+            Check for Connection Limits
+            Check for Connection Logging
+            Check for Content Caching
+            Check for Access Lists
+            Check for Half Closed
+         */
+
+        StingrayRestClient client = loadSTMRestClient(config);
+
+        ResourceTranslator translator = new ResourceTranslator();
+        String vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+
+        try {
+            translator.translateLoadBalancerResource(config, vsName, loadBalancer);
+
+//            if (loadBalancer.getSessionPersistence() != null
+//                    && !loadBalancer.getSessionPersistence().equals(SessionPersistence.NONE)
+//                    && !loadBalancer.hasSsl()) //setSessionPersistence(config, loadBalancer);
+//
+            if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
+                updateHealthMonitor(config, client, vsName, translator.getcMonitor());
+            }
+
+            if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())
+                    || loadBalancer.getConnectionLimit() != null) {
+                updateProtection(config, client, loadBalancer, translator.getcProtection());
+            }
+
+
+            if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+                TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
+                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
+            }
+
+            updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
+            updateNodePool(config, client, vsName, translator.getcPool());
+            updateVirtualServer(config, client, vsName, translator.getcVServer());
+        } catch (Exception ex) {
+            LOG.error(ex);
+            //TODO: roll back or handle as needed.. ...
+            throw new StmRollBackException("Failed to update loadbalancer, rolling back...", ex);
+        }
     }
 
     @Override
