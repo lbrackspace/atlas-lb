@@ -20,21 +20,23 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.RateLimit;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
-import org.openstack.atlas.service.domain.pojos.Hostssubnet;
-import org.openstack.atlas.service.domain.pojos.Stats;
-import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.protection.Protection;
+import org.rackspace.stingray.client.tm.TrafficManager;
+import org.rackspace.stingray.client.tm.TrafficManagerTrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
+import org.rackspace.stingray.client.traffic.ip.TrafficIpIpMapping;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
@@ -47,12 +49,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
@@ -1013,7 +1010,39 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws RemoteException {
-
+        StingrayRestClient client = null;
+        try {
+            client = loadSTMRestClient(config);
+            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
+            for (Iterator<Hostsubnet> hostsubnetIterator = subnetList.iterator(); hostsubnetIterator.hasNext();) {
+                Hostsubnet hs = hostsubnetIterator.next();
+                String hsName = hs.getName();
+                TrafficManager tm = client.getTrafficManager(hsName);
+                List<TrafficManagerTrafficIp> tips = new ArrayList<TrafficManagerTrafficIp>();
+                List<NetInterface> interfaceList = hs.getNetInterfaces();
+                for (Iterator<NetInterface> netInterfaceIterator = interfaceList.iterator(); netInterfaceIterator.hasNext();) {
+                    NetInterface netInterface = netInterfaceIterator.next();
+                    List<Cidr> cidrs = netInterface.getCidrs();
+                    TrafficManagerTrafficIp tip = new TrafficManagerTrafficIp();
+                    Set<String> networkList = new HashSet<String>();
+                    for (Iterator<Cidr> cidrIterator = cidrs.iterator(); cidrIterator.hasNext();) {
+                        Cidr cidr = cidrIterator.next();
+                        networkList.add(cidr.getBlock());
+                    }
+                    tip.setName(netInterface.getName());
+                    tip.setNetworks(networkList);
+                    tips.add(tip);
+                }
+                tm.getProperties().getBasic().setTrafficip(tips);
+                client.updateTrafficManager(hsName, tm);
+            }
+        } catch (StmRollBackException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (StingrayRestClientException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 
     @Override
@@ -1023,7 +1052,41 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws RemoteException {
-        return null;
+        StingrayRestClient client = null;
+        Hostssubnet ret = new Hostssubnet();
+        try {
+            client = loadSTMRestClient(config);
+            TrafficManager tm = client.getTrafficManager(host);
+            List<TrafficManagerTrafficIp> tips = tm.getProperties().getBasic().getTrafficip();
+            List<Hostsubnet> subnetList = new ArrayList<Hostsubnet>();
+            Hostsubnet hs = new Hostsubnet();
+            hs.setName(host);
+            for (Iterator<TrafficManagerTrafficIp> i = tips.iterator(); i.hasNext();) {
+                TrafficManagerTrafficIp tip = i.next();
+                String iface = tip.getName();
+                Set<String> masks = tip.getNetworks();
+                NetInterface netInterface = new NetInterface();
+                List<Cidr> cidrs = new ArrayList<Cidr>();
+                for (Iterator<String> i2 = masks.iterator(); i2.hasNext();) {
+                    String mask = i2.next();
+                    Cidr cidr = new Cidr();
+                    cidr.setBlock(mask);
+                    cidrs.add(cidr);
+                }
+                netInterface.setName(iface);
+                netInterface.setCidrs(cidrs);
+                hs.getNetInterfaces().add(netInterface);
+            }
+            subnetList.add(hs);
+            ret.setHostsubnets(subnetList);
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (StmRollBackException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (StingrayRestClientException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return ret;
     }
 
 
