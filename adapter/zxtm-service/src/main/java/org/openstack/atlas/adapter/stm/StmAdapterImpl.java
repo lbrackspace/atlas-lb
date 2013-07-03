@@ -1010,30 +1010,35 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws RemoteException {
-        StingrayRestClient client = null;
+        StingrayRestClient client;
         try {
             client = loadSTMRestClient(config);
             List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
-            for (Iterator<Hostsubnet> hostsubnetIterator = subnetList.iterator(); hostsubnetIterator.hasNext();) {
-                Hostsubnet hs = hostsubnetIterator.next();
-                String hsName = hs.getName();
-                TrafficManager tm = client.getTrafficManager(hsName);
-                List<TrafficManagerTrafficIp> tips = new ArrayList<TrafficManagerTrafficIp>();
-                List<NetInterface> interfaceList = hs.getNetInterfaces();
-                for (Iterator<NetInterface> netInterfaceIterator = interfaceList.iterator(); netInterfaceIterator.hasNext();) {
-                    NetInterface netInterface = netInterfaceIterator.next();
-                    List<Cidr> cidrs = netInterface.getCidrs();
-                    TrafficManagerTrafficIp tip = new TrafficManagerTrafficIp();
+
+            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
+            for (Hostsubnet hostsubnet : subnetList) {
+                String hsName = hostsubnet.getName();
+                TrafficManager trafficManager = client.getTrafficManager(hsName);
+                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = new ArrayList<TrafficManagerTrafficIp>();
+                List<NetInterface> interfaceList = hostsubnet.getNetInterfaces();
+
+                //Loop over interfaces (eth0, eth1, etc)
+                for (NetInterface netInterface : interfaceList) {
+                    List<Cidr> cidrList = netInterface.getCidrs();
+                    TrafficManagerTrafficIp trafficManagerTrafficIp = new TrafficManagerTrafficIp();
                     Set<String> networkList = new HashSet<String>();
-                    for (Iterator<Cidr> cidrIterator = cidrs.iterator(); cidrIterator.hasNext();) {
-                        networkList.add(cidrIterator.next().getBlock());
+
+                    // Loop over Cidr list which contains one subnet per Cidr
+                    for (Cidr cidr : cidrList) {
+                        networkList.add(cidr.getBlock());
                     }
-                    tip.setName(netInterface.getName());
-                    tip.setNetworks(networkList);
-                    tips.add(tip);
+
+                    trafficManagerTrafficIp.setName(netInterface.getName());
+                    trafficManagerTrafficIp.setNetworks(networkList);
+                    trafficManagerTrafficIpList.add(trafficManagerTrafficIp);
                 }
-                tm.getProperties().getBasic().setTrafficip(tips);
-                client.updateTrafficManager(hsName, tm);
+                trafficManager.getProperties().getBasic().setTrafficip(trafficManagerTrafficIpList);
+                client.updateTrafficManager(hsName, trafficManager);
             }
         } catch (StmRollBackException e) {
             e.printStackTrace();
@@ -1046,43 +1051,41 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws RemoteException {
-        StingrayRestClient client = null;
+        StingrayRestClient client;
         try {
             client = loadSTMRestClient(config);
             List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
 
             //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
-            for (Iterator<Hostsubnet> hostsubnetIterator = subnetList.iterator(); hostsubnetIterator.hasNext();) {
-                Hostsubnet hs = hostsubnetIterator.next();
-                String hsName = hs.getName();       // This name is of the form "dev1.lbaas.mysite.com"
-                TrafficManager tm = client.getTrafficManager(hsName);
-                List<NetInterface> interfaceList = hs.getNetInterfaces();
-
-                List<TrafficManagerTrafficIp> tips = tm.getProperties().getBasic().getTrafficip(); //This is the current list of TrafficIPs for the host
+            for (Hostsubnet hostsubnet : subnetList) {
+                String hsName = hostsubnet.getName();       // This name is of the form "dev1.lbaas.mysite.com"
+                TrafficManager trafficManager = client.getTrafficManager(hsName);
+                List<NetInterface> netInterfaceList = hostsubnet.getNetInterfaces();
+                //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
+                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
                 Map<String, TrafficManagerTrafficIp> tipsMap = new HashMap<String, TrafficManagerTrafficIp>();
+
                 //Loop over tips to compile an indexed list by name
-                for (Iterator<TrafficManagerTrafficIp> trafficManagerTrafficIpIterator = tips.iterator(); trafficManagerTrafficIpIterator.hasNext();) {
-                    TrafficManagerTrafficIp tip = trafficManagerTrafficIpIterator.next();
-                    tipsMap.put(tip.getName(), tip);
+                for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
+                    tipsMap.put(trafficManagerTrafficIp.getName(), trafficManagerTrafficIp);
                 }
 
                 //Loop over interfaces (eth0, eth1, etc)
-                for (Iterator<NetInterface> netInterfaceIterator = interfaceList.iterator(); netInterfaceIterator.hasNext();) {
-                    NetInterface netInterface = netInterfaceIterator.next();
-                    String interfaceName = netInterface.getName(); //This name is of the form "eth0"
+                for (NetInterface netInterface : netInterfaceList) {
+                    String netInterfaceName = netInterface.getName(); //This name is of the form "eth0"
 
-                    if (tipsMap.containsKey(interfaceName)) {
-                        TrafficManagerTrafficIp tip = tipsMap.get(interfaceName);
+                    if (tipsMap.containsKey(netInterfaceName)) {
+                        TrafficManagerTrafficIp tip = tipsMap.get(netInterfaceName);
                         Set<String> networkSet = tip.getNetworks();
-                        List<Cidr> cidrs = netInterface.getCidrs(); //This is the list of objects containing subnet strings
+                        List<Cidr> cidrList = netInterface.getCidrs(); //This is the list of objects containing subnet strings
 
                         // Loop over Cidr list which contains one subnet per Cidr
-                        for (Iterator<Cidr> cidrIterator = cidrs.iterator(); cidrIterator.hasNext();) {
-                            networkSet.remove(cidrIterator.next().getBlock()); //Remove the subnet if it exists
+                        for (Cidr cidr : cidrList) {
+                            networkSet.remove(cidr.getBlock()); //Remove the subnet if it exists
                         }
                     }
                 }
-                client.updateTrafficManager(hsName, tm);
+                client.updateTrafficManager(hsName, trafficManager);
             }
         } catch (StmRollBackException e) {
             e.printStackTrace();
@@ -1095,30 +1098,35 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws RemoteException {
-        StingrayRestClient client = null;
+        StingrayRestClient client;
         Hostssubnet ret = new Hostssubnet();
         try {
             client = loadSTMRestClient(config);
-            TrafficManager tm = client.getTrafficManager(host);
-            List<TrafficManagerTrafficIp> tips = tm.getProperties().getBasic().getTrafficip();
+            TrafficManager trafficManager = client.getTrafficManager(host);
+            //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
+            List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
             List<Hostsubnet> subnetList = new ArrayList<Hostsubnet>();
-            Hostsubnet hs = new Hostsubnet();
-            hs.setName(host);
-            for (Iterator<TrafficManagerTrafficIp> trafficManagerTrafficIpIterator = tips.iterator(); trafficManagerTrafficIpIterator.hasNext();) {
-                TrafficManagerTrafficIp tip = trafficManagerTrafficIpIterator.next();
-                Set<String> masks = tip.getNetworks();
+            Hostsubnet hostsubnet = new Hostsubnet();
+            hostsubnet.setName(host);
+
+            //Loop over trafficIPs (== interfaces) (eth0, eth1, etc)
+            for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
+                Set<String> networkSet = trafficManagerTrafficIp.getNetworks();
                 NetInterface netInterface = new NetInterface();
                 List<Cidr> cidrs = new ArrayList<Cidr>();
-                for (Iterator<String> maskIterator = masks.iterator(); maskIterator.hasNext();) {
+
+                //Loop over networks (== cidr blocks)
+                for (String block : networkSet) {
                     Cidr cidr = new Cidr();
-                    cidr.setBlock(maskIterator.next());
+                    cidr.setBlock(block);
                     cidrs.add(cidr);
                 }
-                netInterface.setName(tip.getName());
+
+                netInterface.setName(trafficManagerTrafficIp.getName());
                 netInterface.setCidrs(cidrs);
-                hs.getNetInterfaces().add(netInterface);
+                hostsubnet.getNetInterfaces().add(netInterface);
             }
-            subnetList.add(hs);
+            subnetList.add(hostsubnet);
             ret.setHostsubnets(subnetList);
         } catch (StingrayRestClientObjectNotFoundException e) {
             e.printStackTrace();
