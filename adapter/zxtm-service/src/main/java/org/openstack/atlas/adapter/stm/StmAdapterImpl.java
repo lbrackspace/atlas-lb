@@ -1191,14 +1191,14 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         try {
             LOG.debug(String.format("Adding a rate limit to load balancer...'%s'...", vsName));
 
-            // I assume this is how we'd set a rate limit
+
             ResourceTranslator rt = new ResourceTranslator();
             rt.translateLoadBalancerResource(config, vsName, loadBalancer);
             Bandwidth bandwidth = rt.getcBandwidth();
             VirtualServer virtualServer = rt.getcVServer();
             VirtualServerProperties properties = virtualServer.getProperties();
             VirtualServerBasic basic = properties.getBasic();
-            basic.setBandwidth_class(vsName); // Do I need to check if this already exists and delete the old one?
+            basic.setBandwidth_class(vsName);
 
             client.createBandwidth(vsName, bandwidth);
             updateVirtualServer(config, client, vsName, virtualServer);
@@ -1206,6 +1206,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             LOG.info("Successfully added a rate limit to the rate limit pool.");
 
             //TODO: Not sure how to replace these calls, since I'm not sure what they do (yet)
+            //TODO clean up needed as well
             //TrafficScriptHelper.addRateLimitScriptsIfNeeded(serviceStubs);
             //attachRateLimitRulesToVirtualServers(serviceStubs, new String[]{vsName});
 

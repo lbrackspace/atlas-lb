@@ -5,18 +5,31 @@ import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.protection.Protection;
+import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.rmi.RemoteException;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
+import static org.openstack.atlas.service.domain.entities.AccessListType.DENY;
 
 public class SslTerminationITest extends STMTestBase {
+
+    private String normalName;
+    private String secureName;
 
 
     final String testCert = "-----BEGIN CERTIFICATE-----\n" +
@@ -75,10 +88,12 @@ public class SslTerminationITest extends STMTestBase {
             "-----END RSA PRIVATE KEY-----";
 
     @Before
-    public void setupClass() throws InterruptedException {
+    public void setupClass() throws Exception {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
         createSimpleLoadBalancer();
+        normalName = ZxtmNameBuilder.genVSName(lb);
+        secureName = ZxtmNameBuilder.genSslVSName(lb);
     }
 
     @After
@@ -270,12 +285,232 @@ public class SslTerminationITest extends STMTestBase {
     }
 
     private void verifyErrorPage() throws Exception {
-        String errorContent = "<html><body>ErrorFileContents</body></html>";
-        String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
-        String errorFileName = stmClient.getVirtualServer(secureVsName).getProperties().getConnection_errors().getError_file();
+        String errorContent = "HI";
         stmAdapter.setErrorFile(config, lb, errorContent);
-        File file = stmClient.getExtraFile(errorFileName);
-//        Assert.assertEquals(loadBalancerName() + "_error.html", );
+        errorPageHelper(errorContent);
+        stmAdapter.removeAndSetDefaultErrorFile(config, lb);
+        errorPageHelper("Default");
+        stmAdapter.setErrorFile(config, lb, errorContent);
+        errorPageHelper(errorContent);
+
+    }
+
+    private void verifyDeleteErrorPage() {
+        String errorContent = "HI";
+        try {
+            stmAdapter.deleteErrorFile(config, lb);
+            errorPageHelper("");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            stmAdapter.removeAndSetDefaultErrorFile(config, lb);
+            errorPageHelper("Default");
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+
+    }
+
+    private void errorPageHelper(String expectedContent) throws Exception {
+        String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
+        String normalVsName = ZxtmNameBuilder.genVSName(lb);
+        String secureErrorFileName = stmClient.getVirtualServer(secureVsName).getProperties().getConnection_errors().getError_file();
+        String normalErrorFileName = stmClient.getVirtualServer(normalVsName).getProperties().getConnection_errors().getError_file();
+        Assert.assertEquals(secureVsName + "_error.html", secureErrorFileName);
+        Assert.assertEquals(normalVsName + "_error.html", normalErrorFileName);
+
+        File secureFile = stmClient.getExtraFile(secureErrorFileName);
+        File normalFile = stmClient.getExtraFile(normalErrorFileName);
+        BufferedReader secureReader = new BufferedReader(new FileReader(secureFile));
+        BufferedReader normalReader = new BufferedReader(new FileReader(normalFile));
+        Assert.assertEquals(secureReader.readLine(), expectedContent);
+        Assert.assertEquals(normalReader.readLine(), expectedContent);
+
+        secureReader.close();
+        normalReader.close();
+    }
+
+    private void verifyConnectionThrottle() throws InsufficientRequestException {
+        String normalName = ZxtmNameBuilder.genVSName(lb);
+        String secureName = ZxtmNameBuilder.genSslVSName(lb);
+        ConnectionLimit throttle = new ConnectionLimit();
+        int maxConnectionRate = 10;
+        int maxConnections = 20;
+        int minConnections = 40;
+        int rateInterval = 44;
+        int expectedMax10 = 0;
+
+        throttle.setMaxConnectionRate(maxConnectionRate);
+        throttle.setMaxConnections(maxConnections);
+        throttle.setMinConnections(minConnections);
+        throttle.setRateInterval(rateInterval);
+
+        lb.setConnectionLimit(throttle);
+
+
+        setSslTermination();
+        connectionThrottleHelper(secureName, maxConnectionRate, maxConnections, minConnections, rateInterval, expectedMax10);
+        connectionThrottleHelper(normalName, maxConnectionRate, maxConnections, minConnections, rateInterval, expectedMax10);
+
+        try {
+            stmAdapter.deleteConnectionThrottle(config, lb);
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        int deletedRate = 0;
+        connectionThrottleHelper(normalName, deletedRate, deletedRate, deletedRate, deletedRate, deletedRate);
+        connectionThrottleHelper(secureName, deletedRate, deletedRate, deletedRate, deletedRate, deletedRate);
+
+    }
+
+    private void connectionThrottleHelper(String vsName, int maxConnectionRate, int maxConnections,
+                                          int minConnections, int rateInterval, int expectedMax10) {
+        try {
+            stmAdapter.updateConnectionThrottle(config, lb);
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        Protection protection = null;
+        try {
+            protection = stmClient.getProtection(vsName);
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        Assert.assertNotNull(protection);
+        ProtectionConnectionLimiting createdThrottle = protection.getProperties().getConnection_limiting();
+        Assert.assertEquals(maxConnectionRate, (int) createdThrottle.getMax_connection_rate());
+        Assert.assertEquals(expectedMax10, (int) createdThrottle.getMax_10_connections());
+        Assert.assertEquals(maxConnections, (int) createdThrottle.getMax_1_connections());
+        Assert.assertEquals(rateInterval, (int) createdThrottle.getRate_timer());
+        Assert.assertEquals(minConnections, (int) createdThrottle.getMin_connections());
+    }
+
+    private void setRateLimit() throws RollBackException, InsufficientRequestException, RemoteException {
+        int maxRequestsPerSecond = 1000;
+        String ticketComment = "HI";
+        String normalName = ZxtmNameBuilder.genVSName(lb);
+        String secureName = ZxtmNameBuilder.genSslVSName(lb);
+        RateLimit rateLimit = new RateLimit();
+        rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
+        Ticket ticket = new Ticket();
+        ticket.setComment(ticketComment);
+        stmAdapter.setRateLimit(config, lb, rateLimit);
+        //I don't even...
+        try {
+            Bandwidth createdNormalBandwidth = stmClient.getBandwidth(normalName);
+            Assert.assertNotNull(createdNormalBandwidth);
+            Assert.assertEquals(maxRequestsPerSecond, (int) createdNormalBandwidth.getProperties().getBasic().getMaximum());
+            Assert.assertEquals(ticketComment, createdNormalBandwidth.getProperties().getBasic().getNote());
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        try {
+            Bandwidth createdSecureBandwidth = stmClient.getBandwidth(secureName);
+            Assert.assertNotNull(createdSecureBandwidth);
+            Assert.assertEquals(maxRequestsPerSecond, (int) createdSecureBandwidth.getProperties().getBasic().getMaximum());
+            Assert.assertEquals(ticketComment, createdSecureBandwidth.getProperties().getBasic().getNote());
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        //TODO the Zxtm test has a rule check, but we don't set the rules afaik
+    }
+
+    private void verifyAccessListWithSsl() throws Exception {
+
+        Set<AccessList> networkItems = new HashSet<AccessList>();
+        AccessList item1 = new AccessList();
+        AccessList item2 = new AccessList();
+        String ipAddressOne = "0.0.0.0/0";
+        String ipAddressTwo = "127.0.0.1";
+        item1.setIpAddress(ipAddressOne);
+        item2.setIpAddress(ipAddressTwo);
+        item1.setType(DENY);
+        item2.setType(ALLOW);
+        networkItems.add(item1);
+        networkItems.add(item2);
+
+        lb.setAccessLists(networkItems);
+        stmAdapter.updateAccessList(config, lb);
+
+        Protection normalProtection = stmClient.getProtection(normalName);
+        Protection secureProtection = stmClient.getProtection(secureName);
+
+        Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getBanned().contains(ipAddressOne));
+        Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getAllowed().contains(ipAddressTwo));
+
+
+        Assert.assertTrue(secureProtection.getProperties().getAccess_restriction().getBanned().contains(ipAddressOne));
+        Assert.assertTrue(secureProtection.getProperties().getAccess_restriction().getAllowed().contains(ipAddressTwo));
+
+    }
+
+
+    private void verifyDeleteAccessList() throws Exception {
+        verifyAccessListWithSsl();
+        stmAdapter.deleteAccessList(config, lb);
+        Protection normalProtection = stmClient.getProtection(normalName);
+        Protection secureProtection = stmClient.getProtection(secureName);
+        Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getAllowed().isEmpty());
+        Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getBanned().isEmpty());
+
+        Assert.assertTrue(secureProtection.getProperties().getAccess_restriction().getBanned().isEmpty());
+        Assert.assertTrue(secureProtection.getProperties().getAccess_restriction().getAllowed().isEmpty());
+    }
+
+
+    private void verifyAccessListWithoutSsl() throws Exception {
+         Set<AccessList> networkItems = new HashSet<AccessList>();
+        AccessList item1 = new AccessList();
+        AccessList item2 = new AccessList();
+        String ipAddressOne = "0.0.0.0/0";
+        String ipAddressTwo = "127.0.0.1";
+        item1.setIpAddress(ipAddressOne);
+        item2.setIpAddress(ipAddressTwo);
+        item1.setType(DENY);
+        item2.setType(ALLOW);
+        networkItems.add(item1);
+        networkItems.add(item2);
+
+        lb.setAccessLists(networkItems);
+        stmAdapter.updateAccessList(config, lb);
+        Protection normalProtection = stmClient.getProtection(normalName);
+        Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getBanned().contains(ipAddressOne));
+        Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getAllowed().contains(ipAddressTwo));
+    }
+
+    private void setRateLimistVeforeSsl() throws Exception {
+
+        int maxRequestsPerSecond = 1000;
+        String ticketComment = "HI";
+        RateLimit rateLimit = new RateLimit();
+        rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
+        Ticket ticket = new Ticket();
+        ticket.setComment(ticketComment);
+        stmAdapter.setRateLimit(config, lb, rateLimit);
+
+        try {
+            Bandwidth createdNormalBandwidth = stmClient.getBandwidth(normalName);
+            Assert.assertNotNull(createdNormalBandwidth);
+            Assert.assertEquals(maxRequestsPerSecond, (int) createdNormalBandwidth.getProperties().getBasic().getMaximum());
+            Assert.assertEquals(ticketComment, createdNormalBandwidth.getProperties().getBasic().getNote());
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        //TODO same thing about the rules
+
+    }
+
+
+
+    private void deleteRateLimit() throws Exception {
+        stmAdapter.deleteRateLimit(config, lb);
+        //wip
 
 
     }
