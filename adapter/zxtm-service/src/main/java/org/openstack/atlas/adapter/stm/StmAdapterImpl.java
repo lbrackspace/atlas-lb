@@ -1026,8 +1026,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     TrafficManagerTrafficIp tip = new TrafficManagerTrafficIp();
                     Set<String> networkList = new HashSet<String>();
                     for (Iterator<Cidr> cidrIterator = cidrs.iterator(); cidrIterator.hasNext();) {
-                        Cidr cidr = cidrIterator.next();
-                        networkList.add(cidr.getBlock());
+                        networkList.add(cidrIterator.next().getBlock());
                     }
                     tip.setName(netInterface.getName());
                     tip.setNetworks(networkList);
@@ -1037,11 +1036,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 client.updateTrafficManager(hsName, tm);
             }
         } catch (StmRollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (StingrayRestClientObjectNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (StingrayRestClientException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -1062,8 +1061,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 List<TrafficManagerTrafficIp> tips = tm.getProperties().getBasic().getTrafficip(); //This is the current list of TrafficIPs for the host
                 Map<String, TrafficManagerTrafficIp> tipsMap = new HashMap<String, TrafficManagerTrafficIp>();
                 //Loop over tips to compile an indexed list by name
-                for (Iterator<TrafficManagerTrafficIp> i = tips.iterator(); i.hasNext();) {
-                    TrafficManagerTrafficIp tip = i.next();
+                for (Iterator<TrafficManagerTrafficIp> trafficManagerTrafficIpIterator = tips.iterator(); trafficManagerTrafficIpIterator.hasNext();) {
+                    TrafficManagerTrafficIp tip = trafficManagerTrafficIpIterator.next();
                     tipsMap.put(tip.getName(), tip);
                 }
 
@@ -1079,20 +1078,18 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
                         // Loop over Cidr list which contains one subnet per Cidr
                         for (Iterator<Cidr> cidrIterator = cidrs.iterator(); cidrIterator.hasNext();) {
-                            Cidr cidr = cidrIterator.next();
-                            networkSet.remove(cidr.getBlock()); //Remove the subnet if it exists
+                            networkSet.remove(cidrIterator.next().getBlock()); //Remove the subnet if it exists
                         }
                     }
                 }
-                //tm.getProperties().getBasic().setTrafficip(tips); //don't think this is necessary due to Java's reference handling
                 client.updateTrafficManager(hsName, tm);
             }
         } catch (StmRollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (StingrayRestClientObjectNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (StingrayRestClientException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -1107,30 +1104,28 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             List<Hostsubnet> subnetList = new ArrayList<Hostsubnet>();
             Hostsubnet hs = new Hostsubnet();
             hs.setName(host);
-            for (Iterator<TrafficManagerTrafficIp> i = tips.iterator(); i.hasNext();) {
-                TrafficManagerTrafficIp tip = i.next();
-                String iface = tip.getName();
+            for (Iterator<TrafficManagerTrafficIp> trafficManagerTrafficIpIterator = tips.iterator(); trafficManagerTrafficIpIterator.hasNext();) {
+                TrafficManagerTrafficIp tip = trafficManagerTrafficIpIterator.next();
                 Set<String> masks = tip.getNetworks();
                 NetInterface netInterface = new NetInterface();
                 List<Cidr> cidrs = new ArrayList<Cidr>();
-                for (Iterator<String> i2 = masks.iterator(); i2.hasNext();) {
-                    String mask = i2.next();
+                for (Iterator<String> maskIterator = masks.iterator(); maskIterator.hasNext();) {
                     Cidr cidr = new Cidr();
-                    cidr.setBlock(mask);
+                    cidr.setBlock(maskIterator.next());
                     cidrs.add(cidr);
                 }
-                netInterface.setName(iface);
+                netInterface.setName(tip.getName());
                 netInterface.setCidrs(cidrs);
                 hs.getNetInterfaces().add(netInterface);
             }
             subnetList.add(hs);
             ret.setHostsubnets(subnetList);
         } catch (StingrayRestClientObjectNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (StmRollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (StingrayRestClientException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
         return ret;
     }
