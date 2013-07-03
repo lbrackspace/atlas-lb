@@ -123,18 +123,21 @@ public class MigrationProcessor {
     }
 
     protected List<LoadBalancerUsageEvent> removeDuplicateEvents(List<LoadBalancerUsageEvent> loadBalancerUsageEvents, List<LoadBalancerHostUsage> loadBalancerHostUsages) {
+        int numRemovedEvents =0;
         for (LoadBalancerHostUsage loadBalancerHostUsage : loadBalancerHostUsages) {
             for (LoadBalancerUsageEvent loadBalancerUsageEvent : loadBalancerUsageEvents) {
                 if (loadBalancerHostUsage.getLoadbalancerId() == loadBalancerUsageEvent.getLoadbalancerId()
                         && loadBalancerHostUsage.getPollTime().equals(loadBalancerUsageEvent.getStartTime())
                         && loadBalancerHostUsage.getEventType().name().equals(loadBalancerUsageEvent.getEventType())) {
-                    System.out.println(String.format("Removing duplicate usage event for loadbalancer %d...", loadBalancerUsageEvent.getLoadbalancerId()));
+                    System.out.println(String.format("Removing duplicate usage event for loadbalancer %d with time '%s'...", loadBalancerUsageEvent.getLoadbalancerId(), loadBalancerUsageEvent.getStartTime().getTime().toString()));
                     loadBalancerUsageEvents.remove(loadBalancerUsageEvent);
+                    numRemovedEvents++;
                     break;
                 }
             }
         }
 
+        System.out.println(String.format("Removed '%d' duplicate usage events.", numRemovedEvents));
         return loadBalancerUsageEvents;
     }
 
