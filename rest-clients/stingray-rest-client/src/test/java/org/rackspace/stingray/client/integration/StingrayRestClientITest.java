@@ -8,7 +8,6 @@ import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolLoadbalancing;
 import org.rackspace.stingray.client.pool.PoolProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
 
 import javax.xml.bind.JAXBException;
 import java.util.HashSet;
@@ -19,10 +18,10 @@ public class StingrayRestClientITest {
 
     @Test
     public void verifyStingrayPoolManagerGet() throws Exception {
-        StingrayRestClient client = new StingrayRestClient();
-
-        VirtualServer pool = client.getVirtualServer("528830_770");
-        Assert.assertNotNull(pool);
+//        StingrayRestClient client = new StingrayRestClient();
+//
+//        VirtualServer pool = client.getVirtualServer("528830_770");
+//        Assert.assertNotNull(pool);
     }
 
     @Test

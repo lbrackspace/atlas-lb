@@ -417,20 +417,26 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         translator.translateLoadBalancerResource(config, vsName, loadBalancer);
         Map<String, TrafficIp> curTigMap = translator.getcTrafficIpGroups();
 
+        Set<LoadBalancerJoinVip> jvipsToRemove = new HashSet<LoadBalancerJoinVip>();
+        Set<LoadBalancerJoinVip6> jvips6ToRemove = new HashSet<LoadBalancerJoinVip6>();
+
         //Remove vips to remove from lb and translate...
         for (int id : vipIds) {
             for (LoadBalancerJoinVip jvip : loadBalancer.getLoadBalancerJoinVipSet()) {
                 if (jvip.getVirtualIp().getId() == id) {
-                    loadBalancer.getLoadBalancerJoinVipSet().remove(jvip);
+                    jvipsToRemove.add(jvip);
                 }
             }
 
             for (LoadBalancerJoinVip6 jvip : loadBalancer.getLoadBalancerJoinVip6Set()) {
                 if (jvip.getVirtualIp().getId() == id) {
-                    loadBalancer.getLoadBalancerJoinVip6Set().remove(jvip);
+                    jvips6ToRemove.add(jvip);
                 }
             }
         }
+
+        if (!jvipsToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVipSet().removeAll(jvipsToRemove);
+        if (!jvips6ToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVip6Set().removeAll(jvips6ToRemove);
 
         String vipsToRemove = StringUtilities.DelimitString(vipIds, ",");
         translator.translateLoadBalancerResource(config, vsName, loadBalancer);
