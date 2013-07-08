@@ -4,11 +4,11 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.19.7</version>
+        <version>1.19.8-SNAPSHOT</version>
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
-    <version>1.19.7</version>
+    <version>1.19.8-SNAPSHOT</version>
     <artifactId>atlas-exp-logs-test-compress</artifactId>
     <name>Toy :: HDFS :: Compress LZO tester</name>
     <packaging>jar</packaging>
