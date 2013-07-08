@@ -19,8 +19,8 @@ import java.util.regex.Pattern;
 
 public class StingrayUsageClientImpl implements StingrayUsageClient {
 
-    public static final Pattern vsPattern = Pattern.compile("[0-9]+_([0-9]+)");
-    public static final Pattern shadowPattern = Pattern.compile("[0-9]+_([0-9]+)_S");
+    public static final Pattern vsPattern = Pattern.compile("^[0-9]+_([0-9]+)$");
+    public static final Pattern shadowPattern = Pattern.compile("^[0-9]+_([0-9]+)_S$");
 
     @Override
     public Map<Integer, SnmpUsage> getHostUsage(Host host) throws StingraySnmpRetryExceededException, StingraySnmpSetupException, StingraySnmpGeneralException {
@@ -48,7 +48,7 @@ public class StingrayUsageClientImpl implements StingrayUsageClient {
             m = shadowPattern.matcher(vsName);
             if (m.find()) {
                 Integer loadbalancerId = Integer.valueOf(m.group(1));
-                if (!usage.containsKey(m.group(1))) {
+                if (!usage.containsKey(loadbalancerId)) {
                     SnmpUsage newUsage = new SnmpUsage();
                     newUsage.setLoadbalancerId(loadbalancerId);
                     newUsage.setHostId(host.getId());
