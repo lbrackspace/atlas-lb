@@ -11,15 +11,7 @@ import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
-import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.RateLimit;
-import org.openstack.atlas.service.domain.entities.SessionPersistence;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
@@ -27,7 +19,6 @@ import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.pool.Pool;
@@ -36,7 +27,6 @@ import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.tm.TrafficManager;
 import org.rackspace.stingray.client.tm.TrafficManagerTrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
-import org.rackspace.stingray.client.traffic.ip.TrafficIpIpMapping;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
@@ -94,13 +84,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         for (String vsName : vsNames) {
             try {
 
-
                 translator.translateLoadBalancerResource(config, vsName, loadBalancer);
 
-//            if (loadBalancer.getSessionPersistence() != null
-//                    && !loadBalancer.getSessionPersistence().equals(SessionPersistence.NONE)
-//                    && !loadBalancer.hasSsl()) //setSessionPersistence(config, loadBalancer);
-//
                 if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
                     updateHealthMonitor(config, client, vsName, translator.getcMonitor());
                 }
@@ -109,7 +94,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                         || loadBalancer.getConnectionLimit() != null) {
                     updateProtection(config, client, loadBalancer, translator.getcProtection());
                 }
-
 
                 if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
                     TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
@@ -136,11 +120,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         LOG.debug(String.format("Removing loadbalancer: %s ...", vsName));
         //others...
-//        deleteHealthMonitor(config, client, vsName);
+        deleteHealthMonitor(config, client, vsName);
 //        deleteProtection(config, client, vsName);
         deleteVirtualIps(config, loadBalancer);
+        deleteNodePool(config, client, vsName);
         deleteVirtualServer(config, client, vsName);
-        LOG.debug(String.format("Successfully removed loadbalancer: %s from the STM serverice...", vsName));
+        LOG.debug(String.format("Successfully removed loadbalancer: %s from the STM service...", vsName));
     }
 
     /*
@@ -245,6 +230,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         try {
             client.updatePool(poolName, pool);
+            LOG.debug(String.format("Successfully updated pool '%s'...", poolName));
+
         } catch (Exception ex) {
             String em = String.format("Error updating node pool: %s Attempting to RollBack... \n Exception: %s Trace: %s"
                     , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
@@ -265,6 +252,48 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             }
             throw new StmRollBackException(em, ex);
         }
+    }
+
+    private void deleteNodePool(LoadBalancerEndpointConfiguration config,
+                                StingrayRestClient client, String poolName)
+            throws StmRollBackException {
+
+        LOG.debug(String.format("Attempting to remove pool '%s'...", poolName));
+
+        Pool curPool = null;
+        try {
+            curPool = client.getPool(poolName);
+        } catch (Exception e) {
+            LOG.warn(String.format("Could not load current pool: %s, continuing...", poolName));
+
+        }
+
+        try {
+            client.deletePool(poolName);
+        } catch (StingrayRestClientObjectNotFoundException one) {
+            LOG.warn(String.format("Pool object not found: %s, continue...", poolName));
+
+        } catch (Exception ex) {
+            String em = String.format("Error removing node pool: %s Attempting to RollBack... \n Exception: %s Trace: %s"
+                    , poolName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
+
+            LOG.error(em);
+            if (curPool != null) {
+                LOG.debug(String.format("Updating pool to previous configuration for rollback '%s'", poolName));
+                try {
+                    client.updatePool(poolName, curPool);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating node pool while attempting to previous configuration" +
+                            ": %s RollBack aborted \n Exception: %s Trace: %s"
+                            , poolName, ex2.getCause().getMessage(), Arrays.toString(ex2.getCause().getStackTrace()));
+                    LOG.error(em2);
+                }
+            } else {
+                LOG.warn(String.format("Node Pool was not rolled back as no previous configuration was available. '%s' ", poolName));
+            }
+            throw new StmRollBackException(em, ex);
+        }
+        LOG.info(String.format("Successfully removed pool '%s'...", poolName));
     }
 
     @Override
@@ -407,13 +436,24 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         translator.translateLoadBalancerResource(config, vsName, loadBalancer);
         Map<String, TrafficIp> removeTigMap = translator.getcTrafficIpGroups();
 
+        Set<String> tigsToRemove = new HashSet<String>(curTigMap.keySet());
+        boolean values2 = tigsToRemove.removeAll(removeTigMap.keySet());
+
+        if (tigsToRemove.isEmpty()) {
+            LOG.debug(String.format("Could not remove vip(s) %s for loadbalancer %s assuming vip is already deleted...", vipsToRemove, loadBalancer.getId()));
+            return;
+        }
+
         String tname = null;
         try {
             LOG.debug(String.format("Attempting to update traffic ip configuration and remove vips %s for virtual server %s", vipsToRemove, vsName));
             tname = null;
-            for (String tigname : removeTigMap.keySet()) {
+            for (String tigname : tigsToRemove) {
                 tname = tigname;
+                LOG.debug(String.format("Removing virtual ip %s...", tigname));
                 client.deleteTrafficIp(tigname);
+                LOG.info(String.format("Successfully removed virtual ip %s...", tigname));
+
             }
             LOG.debug(String.format("Updating virtual server %s for updated virtual ip configuration..", vsName));
             updateVirtualServer(config, client, vsName, translator.getcVServer());
@@ -993,151 +1033,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     }
 
-    @Override
-    public void createHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
-
-    }
-
-    @Override
-    public void deleteHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
-
-    }
-
-    @Override
-    public void restoreHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
-
-    }
-
-    @Override
-    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws RemoteException {
-        StingrayRestClient client;
-        try {
-            client = loadSTMRestClient(config);
-            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
-
-            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
-            for (Hostsubnet hostsubnet : subnetList) {
-                String hsName = hostsubnet.getName();
-                TrafficManager trafficManager = client.getTrafficManager(hsName);
-                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = new ArrayList<TrafficManagerTrafficIp>();
-                List<NetInterface> interfaceList = hostsubnet.getNetInterfaces();
-
-                //Loop over interfaces (eth0, eth1, etc)
-                for (NetInterface netInterface : interfaceList) {
-                    List<Cidr> cidrList = netInterface.getCidrs();
-                    TrafficManagerTrafficIp trafficManagerTrafficIp = new TrafficManagerTrafficIp();
-                    Set<String> networkList = new HashSet<String>();
-
-                    // Loop over Cidr list which contains one subnet per Cidr
-                    for (Cidr cidr : cidrList) {
-                        networkList.add(cidr.getBlock());
-                    }
-
-                    trafficManagerTrafficIp.setName(netInterface.getName());
-                    trafficManagerTrafficIp.setNetworks(networkList);
-                    trafficManagerTrafficIpList.add(trafficManagerTrafficIp);
-                }
-                trafficManager.getProperties().getBasic().setTrafficip(trafficManagerTrafficIpList);
-                client.updateTrafficManager(hsName, trafficManager);
-            }
-        } catch (StmRollBackException e) {
-            e.printStackTrace();
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            e.printStackTrace();
-        } catch (StingrayRestClientException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws RemoteException {
-        StingrayRestClient client;
-        try {
-            client = loadSTMRestClient(config);
-            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
-
-            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
-            for (Hostsubnet hostsubnet : subnetList) {
-                String hsName = hostsubnet.getName();       // This name is of the form "dev1.lbaas.mysite.com"
-                TrafficManager trafficManager = client.getTrafficManager(hsName);
-                List<NetInterface> netInterfaceList = hostsubnet.getNetInterfaces();
-                //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
-                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
-                Map<String, TrafficManagerTrafficIp> tipsMap = new HashMap<String, TrafficManagerTrafficIp>();
-
-                //Loop over tips to compile an indexed list by name
-                for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
-                    tipsMap.put(trafficManagerTrafficIp.getName(), trafficManagerTrafficIp);
-                }
-
-                //Loop over interfaces (eth0, eth1, etc)
-                for (NetInterface netInterface : netInterfaceList) {
-                    String netInterfaceName = netInterface.getName(); //This name is of the form "eth0"
-
-                    if (tipsMap.containsKey(netInterfaceName)) {
-                        TrafficManagerTrafficIp tip = tipsMap.get(netInterfaceName);
-                        Set<String> networkSet = tip.getNetworks();
-                        List<Cidr> cidrList = netInterface.getCidrs(); //This is the list of objects containing subnet strings
-
-                        // Loop over Cidr list which contains one subnet per Cidr
-                        for (Cidr cidr : cidrList) {
-                            networkSet.remove(cidr.getBlock()); //Remove the subnet if it exists
-                        }
-                    }
-                }
-                client.updateTrafficManager(hsName, trafficManager);
-            }
-        } catch (StmRollBackException e) {
-            e.printStackTrace();
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            e.printStackTrace();
-        } catch (StingrayRestClientException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws RemoteException {
-        StingrayRestClient client;
-        Hostssubnet ret = new Hostssubnet();
-        try {
-            client = loadSTMRestClient(config);
-            TrafficManager trafficManager = client.getTrafficManager(host);
-            //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
-            List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
-            List<Hostsubnet> subnetList = new ArrayList<Hostsubnet>();
-            Hostsubnet hostsubnet = new Hostsubnet();
-            hostsubnet.setName(host);
-
-            //Loop over trafficIPs (== interfaces) (eth0, eth1, etc)
-            for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
-                Set<String> networkSet = trafficManagerTrafficIp.getNetworks();
-                NetInterface netInterface = new NetInterface();
-                List<Cidr> cidrs = new ArrayList<Cidr>();
-
-                //Loop over networks (== cidr blocks)
-                for (String block : networkSet) {
-                    Cidr cidr = new Cidr();
-                    cidr.setBlock(block);
-                    cidrs.add(cidr);
-                }
-
-                netInterface.setName(trafficManagerTrafficIp.getName());
-                netInterface.setCidrs(cidrs);
-                hostsubnet.getNetInterfaces().add(netInterface);
-            }
-            subnetList.add(hostsubnet);
-            ret.setHostsubnets(subnetList);
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            e.printStackTrace();
-        } catch (StmRollBackException e) {
-            e.printStackTrace();
-        } catch (StingrayRestClientException e) {
-            e.printStackTrace();
-        }
-        return ret;
-    }
-
 
     @Override
     public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config) throws RemoteException {
@@ -1412,7 +1307,145 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
 
-    //TODO: for the unsupported methods in rest we will probably have to still use soap :(
+    /**
+     * Deprecating these(SubnetMapping calls) as per ops. Unused call that is difficult to test, may support in future if needed... *
+     */
+
+    @Override
+    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws RemoteException {
+        StingrayRestClient client;
+        try {
+            client = loadSTMRestClient(config);
+            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
+
+            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
+            for (Hostsubnet hostsubnet : subnetList) {
+                String hsName = hostsubnet.getName();
+                TrafficManager trafficManager = client.getTrafficManager(hsName);
+                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = new ArrayList<TrafficManagerTrafficIp>();
+                List<NetInterface> interfaceList = hostsubnet.getNetInterfaces();
+
+                //Loop over interfaces (eth0, eth1, etc)
+                for (NetInterface netInterface : interfaceList) {
+                    List<Cidr> cidrList = netInterface.getCidrs();
+                    TrafficManagerTrafficIp trafficManagerTrafficIp = new TrafficManagerTrafficIp();
+                    Set<String> networkList = new HashSet<String>();
+
+                    // Loop over Cidr list which contains one subnet per Cidr
+                    for (Cidr cidr : cidrList) {
+                        networkList.add(cidr.getBlock());
+                    }
+
+                    trafficManagerTrafficIp.setName(netInterface.getName());
+                    trafficManagerTrafficIp.setNetworks(networkList);
+                    trafficManagerTrafficIpList.add(trafficManagerTrafficIp);
+                }
+                trafficManager.getProperties().getBasic().setTrafficip(trafficManagerTrafficIpList);
+                client.updateTrafficManager(hsName, trafficManager);
+            }
+        } catch (StmRollBackException e) {
+            e.printStackTrace();
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            e.printStackTrace();
+        } catch (StingrayRestClientException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws RemoteException {
+        StingrayRestClient client;
+        try {
+            client = loadSTMRestClient(config);
+            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
+
+            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
+            for (Hostsubnet hostsubnet : subnetList) {
+                String hsName = hostsubnet.getName();       // This name is of the form "dev1.lbaas.mysite.com"
+                TrafficManager trafficManager = client.getTrafficManager(hsName);
+                List<NetInterface> netInterfaceList = hostsubnet.getNetInterfaces();
+                //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
+                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
+                Map<String, TrafficManagerTrafficIp> tipsMap = new HashMap<String, TrafficManagerTrafficIp>();
+
+                //Loop over tips to compile an indexed list by name
+                for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
+                    tipsMap.put(trafficManagerTrafficIp.getName(), trafficManagerTrafficIp);
+                }
+
+                //Loop over interfaces (eth0, eth1, etc)
+                for (NetInterface netInterface : netInterfaceList) {
+                    String netInterfaceName = netInterface.getName(); //This name is of the form "eth0"
+
+                    if (tipsMap.containsKey(netInterfaceName)) {
+                        TrafficManagerTrafficIp tip = tipsMap.get(netInterfaceName);
+                        Set<String> networkSet = tip.getNetworks();
+                        List<Cidr> cidrList = netInterface.getCidrs(); //This is the list of objects containing subnet strings
+
+                        // Loop over Cidr list which contains one subnet per Cidr
+                        for (Cidr cidr : cidrList) {
+                            networkSet.remove(cidr.getBlock()); //Remove the subnet if it exists
+                        }
+                    }
+                }
+                client.updateTrafficManager(hsName, trafficManager);
+            }
+        } catch (StmRollBackException e) {
+            e.printStackTrace();
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            e.printStackTrace();
+        } catch (StingrayRestClientException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws RemoteException {
+        StingrayRestClient client;
+        Hostssubnet ret = new Hostssubnet();
+        try {
+            client = loadSTMRestClient(config);
+            TrafficManager trafficManager = client.getTrafficManager(host);
+            //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
+            List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
+            List<Hostsubnet> subnetList = new ArrayList<Hostsubnet>();
+            Hostsubnet hostsubnet = new Hostsubnet();
+            hostsubnet.setName(host);
+
+            //Loop over trafficIPs (== interfaces) (eth0, eth1, etc)
+            for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
+                Set<String> networkSet = trafficManagerTrafficIp.getNetworks();
+                NetInterface netInterface = new NetInterface();
+                List<Cidr> cidrs = new ArrayList<Cidr>();
+
+                //Loop over networks (== cidr blocks)
+                for (String block : networkSet) {
+                    Cidr cidr = new Cidr();
+                    cidr.setBlock(block);
+                    cidrs.add(cidr);
+                }
+
+                netInterface.setName(trafficManagerTrafficIp.getName());
+                netInterface.setCidrs(cidrs);
+                hostsubnet.getNetInterfaces().add(netInterface);
+            }
+            subnetList.add(hostsubnet);
+            ret.setHostsubnets(subnetList);
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            e.printStackTrace();
+        } catch (StmRollBackException e) {
+            e.printStackTrace();
+        } catch (StingrayRestClientException e) {
+            e.printStackTrace();
+        }
+        return ret;
+    }
+
+    /**
+     * TODO: for the unsupported methods in rest we will probably have to still use soap :(
+     */
+
+
     //Unsupported in STM Rest
     @Override
     public List<String> getStatsSystemLoadBalancerNames(LoadBalancerEndpointConfiguration config) throws RemoteException {
@@ -1477,5 +1510,23 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     @Override
     public Long getHostBytesOut(LoadBalancerEndpointConfiguration config) throws RemoteException {
         return null;
+    }
+
+    //Unsupported in STM Rest
+    @Override
+    public void createHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
+
+    }
+
+    //Unsupported in STM Rest
+    @Override
+    public void deleteHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
+
+    }
+
+    //Unsupported in STM Rest
+    @Override
+    public void restoreHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
+
     }
 }
