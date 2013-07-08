@@ -65,9 +65,31 @@ public class STMRestAdapterITest extends STMTestBase {
         Assert.assertEquals(2, stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().size());
 //        Assert.assertTrue(stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().contains("10.69.0.61"));
 
-        lb.getLoadBalancerJoinVipSet().remove(loadBalancerJoinVip);
+//        lb.getLoadBalancerJoinVipSet().remove(loadBalancerJoinVip);
         stmAdapter.deleteVirtualIp(config, lb, vip.getId());
         Assert.assertEquals(1, stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().size());
+//        Assert.assertFalse(stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().contains("10.69.0.61"));
+
+    }
+
+    @Test
+    public void shouldNotDeleteVipsWithBadIDs() throws RollBackException, InsufficientRequestException, RemoteException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+
+        VirtualIp vip = new VirtualIp();
+        vip.setId(1000042);
+        vip.setIpAddress("10.69.0.61");
+        LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
+        loadBalancerJoinVip.setVirtualIp(vip);
+
+        Assert.assertEquals(1, stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().size());
+        lb.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);
+        stmAdapter.addVirtualIps(config, lb);
+        Assert.assertEquals(2, stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().size());
+//        Assert.assertTrue(stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().contains("10.69.0.61"));
+
+//        lb.getLoadBalancerJoinVipSet().remove(loadBalancerJoinVip);
+        stmAdapter.deleteVirtualIp(config, lb, 34);
+        Assert.assertEquals(2, stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().size());
 //        Assert.assertFalse(stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().contains("10.69.0.61"));
 
     }

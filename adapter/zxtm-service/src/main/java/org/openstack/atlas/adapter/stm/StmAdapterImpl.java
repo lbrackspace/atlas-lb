@@ -436,13 +436,24 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         translator.translateLoadBalancerResource(config, vsName, loadBalancer);
         Map<String, TrafficIp> removeTigMap = translator.getcTrafficIpGroups();
 
+        Set<String> tigsToRemove = new HashSet<String>(curTigMap.keySet());
+        boolean values2 = tigsToRemove.removeAll(removeTigMap.keySet());
+
+        if (tigsToRemove.isEmpty()) {
+            LOG.debug(String.format("Could not remove vip(s) %s for loadbalancer %s assuming vip is already deleted...", vipsToRemove, loadBalancer.getId()));
+            return;
+        }
+
         String tname = null;
         try {
             LOG.debug(String.format("Attempting to update traffic ip configuration and remove vips %s for virtual server %s", vipsToRemove, vsName));
             tname = null;
-            for (String tigname : removeTigMap.keySet()) {
+            for (String tigname : tigsToRemove) {
                 tname = tigname;
+                LOG.debug(String.format("Removing virtual ip %s...", tigname));
                 client.deleteTrafficIp(tigname);
+                LOG.info(String.format("Successfully removed virtual ip %s...", tigname));
+
             }
             LOG.debug(String.format("Updating virtual server %s for updated virtual ip configuration..", vsName));
             updateVirtualServer(config, client, vsName, translator.getcVServer());
