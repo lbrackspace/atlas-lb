@@ -7,13 +7,12 @@ import org.apache.commons.logging.LogFactory;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.manager.RequestManager;
+import org.rackspace.stingray.client.manager.util.RequestManagerUtil;
 import org.rackspace.stingray.client.util.ClientConstants;
 
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
 
-import static org.rackspace.stingray.client.manager.util.RequestManagerUtil.buildFaultMessage;
-import static org.rackspace.stingray.client.manager.util.RequestManagerUtil.isResponseValid;
 
 public class RequestManagerImpl implements RequestManager {
     private static final Log LOG = LogFactory.getLog(RequestManagerImpl.class);
@@ -29,6 +28,7 @@ public class RequestManagerImpl implements RequestManager {
     @Override
     public ClientResponse getList(URI endpoint, Client client, String path)  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         ClientResponse response = null;
+        RequestManagerUtil rmu = new RequestManagerUtil();
         try {
             response = client.resource(URI.create(endpoint + path))
                     .accept(MediaType.APPLICATION_JSON)
@@ -37,8 +37,8 @@ public class RequestManagerImpl implements RequestManager {
             throw new StingrayRestClientException(ClientConstants.REQUEST_ERROR, e);
         }
 
-        if (!isResponseValid(response)) {
-            buildFaultMessage(response);
+        if (!rmu.isResponseValid(response)) {
+            rmu.buildFaultMessage(response);
         }
         return response;
     }
@@ -55,6 +55,8 @@ public class RequestManagerImpl implements RequestManager {
     @Override
     public ClientResponse getItem(URI endpoint, Client client, String path, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         ClientResponse response = null;
+        RequestManagerUtil rmu = new RequestManagerUtil();
+
         try {
             response = client.resource(endpoint + path)
                     .accept(cType)
@@ -63,8 +65,8 @@ public class RequestManagerImpl implements RequestManager {
             throw new StingrayRestClientException(ClientConstants.REQUEST_ERROR, e);
         }
 
-        if (!isResponseValid(response)) {
-            buildFaultMessage(response);
+        if (!rmu.isResponseValid(response)) {
+            rmu.buildFaultMessage(response);
         }
         return response;
     }
@@ -99,6 +101,8 @@ public class RequestManagerImpl implements RequestManager {
     @Override
     public ClientResponse updateItem(URI endpoint, Client client, String path, Object object, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         ClientResponse response = null;
+        RequestManagerUtil rmu = new RequestManagerUtil();
+
         try {
             response = client.resource(endpoint + path)
                     .accept(cType)
@@ -109,8 +113,8 @@ public class RequestManagerImpl implements RequestManager {
             throw new StingrayRestClientException(ClientConstants.REQUEST_ERROR, e);
         }
 
-        if (!isResponseValid(response)) {
-            buildFaultMessage(response);
+        if (!rmu.isResponseValid(response)) {
+            rmu.buildFaultMessage(response);
         }
 
         return response;
@@ -127,7 +131,9 @@ public class RequestManagerImpl implements RequestManager {
      */
     @Override
     public boolean deleteItem(URI endpoint, Client client, String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        com.sun.jersey.api.client.ClientResponse response = null;
+        ClientResponse response = null;
+        RequestManagerUtil rmu = new RequestManagerUtil();
+
         try {
             response = client.resource(endpoint + path)
                     .accept(MediaType.APPLICATION_JSON)
@@ -137,8 +143,8 @@ public class RequestManagerImpl implements RequestManager {
             throw new StingrayRestClientException(ClientConstants.REQUEST_ERROR, e);
         }
 
-        if (!isResponseValid(response)) {
-            buildFaultMessage(response);
+        if (!rmu.isResponseValid(response)) {
+            rmu.buildFaultMessage(response);
         }
         return true;
     }

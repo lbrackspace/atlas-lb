@@ -17,7 +17,7 @@ public class RequestManagerUtil {
      * @param response Holds all the details from the response of the Stingray REST api
      * @return Boolean result for the validity check
      */
-    public static boolean isResponseValid(ClientResponse response) {
+    public  boolean isResponseValid(ClientResponse response) {
         return (response != null && (response.getStatus() == ClientConstants.ACCEPTED
                 || response.getStatus() == ClientConstants.NON_AUTHORATIVE
                 || response.getStatus() == ClientConstants.OK
@@ -30,8 +30,9 @@ public class RequestManagerUtil {
      *
      * @param response Holds all the details from the response of the Stingray REST api
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException
      */
-    public static void buildFaultMessage(ClientResponse response)
+    public void buildFaultMessage(ClientResponse response)
             throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
 
         String objectNotFound = "Invalid resource URI";

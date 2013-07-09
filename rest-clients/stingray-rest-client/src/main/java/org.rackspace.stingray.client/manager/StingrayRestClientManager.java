@@ -9,12 +9,11 @@ import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client.config.StingrayRestClientConfiguration;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.manager.util.RequestManagerUtil;
 import org.rackspace.stingray.client.util.ClientConstants;
 import org.rackspace.stingray.client.util.StingrayRestClientUtil;
 
 import java.net.URI;
-
-import static org.rackspace.stingray.client.manager.util.RequestManagerUtil.isResponseValid;
 
 public class StingrayRestClientManager {
     private static final Log LOG = LogFactory.getLog(StingrayRestClientManager.class);
@@ -160,11 +159,12 @@ public class StingrayRestClientManager {
      */
     public synchronized <T> T interpretResponse(ClientResponse response, Class<T> clazz)  throws StingrayRestClientException {
         T t;
+        RequestManagerUtil rmu = new RequestManagerUtil();
         try {
             t = response.getEntity(clazz);
         } catch (Exception ex) {
             LOG.error("Could not retrieve object of type: " + clazz + " Exception: " + ex);
-            if (!isResponseValid(response)) {
+            if (!rmu.isResponseValid(response)) {
                 throw new StingrayRestClientException(ClientConstants.REQUEST_ERROR, ex);
             }
             //The script calls dont return on POST/PUT...
