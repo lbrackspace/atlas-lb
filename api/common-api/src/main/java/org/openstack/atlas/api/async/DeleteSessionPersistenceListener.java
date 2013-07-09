@@ -39,7 +39,7 @@ public class DeleteSessionPersistenceListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Removing session persistence for load balancer '%d' in Zeus...", requestLb.getId()));
-            reverseProxyLoadBalancerService.removeSessionPersistence(requestLb.getId(), requestLb.getAccountId());
+            reverseProxyLoadBalancerStmService.removeSessionPersistence(dbLoadBalancer);
             LOG.debug(String.format("Successfully removed session persistence for load balancer '%d' in Zeus.", requestLb.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
