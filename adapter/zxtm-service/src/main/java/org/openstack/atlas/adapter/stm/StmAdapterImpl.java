@@ -1011,10 +1011,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         }
 
-
-
-
-
         try {
             if(sslTermination.getCertIntermediateCert() != null)
             {
