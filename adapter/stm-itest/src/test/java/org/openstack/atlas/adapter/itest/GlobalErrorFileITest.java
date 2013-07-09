@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.rmi.RemoteException;
 
 public class GlobalErrorFileITest extends STMTestBase {
+    String pageContent = "ERROR PAGE CONTENT";
     String vsName;
 
     @BeforeClass
@@ -32,35 +33,31 @@ public class GlobalErrorFileITest extends STMTestBase {
         stmAdapter.deleteLoadBalancer(config, lb);
     }
 
-    @Test(expected = StingrayRestClientException.class)
+    @Test
     public void testSimpleErrorFileOperations() throws Exception {
         setCustomErrorFile();
-        deleteErrorFile();
+    }
 
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testSimpleDeleteErrorFileOperations() throws Exception {
+        setCustomErrorFile();
+        deleteErrorFile();
     }
 
     private void setCustomErrorFile() throws Exception {
-        String pageContent = "ERROR PAGE CONTENT";
         vsName = ZxtmNameBuilder.genVSName(lb);
 
         stmAdapter.setErrorFile(config, lb, pageContent);
-        File file = stmClient.getExtraFile(vsName);
+        File file = stmClient.getExtraFile(errorFileName());
         Assert.assertNotNull(file);
 
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String content = reader.readLine();
         Assert.assertEquals(pageContent, content);
-
-
-
-
     }
 
     private void deleteErrorFile() throws RollBackException, AxisFault, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         stmAdapter.deleteErrorFile(config, lb);
-        stmClient.getExtraFile(vsName);
-
+        stmClient.getExtraFile(errorFileName());
     }
-
-
 }
