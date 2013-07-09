@@ -184,14 +184,17 @@ public class RequestManagerTest {
         }
 
 
+        //TODO: need to update this in the mockedHandler...
         @Ignore
         @Test(expected = StingrayRestClientException.class)
         public void shouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+
             mockClientHandler.when("pool", "PUT").thenReturn(Response.Status.BAD_REQUEST, pool);
 
             setupMocks();
 
             requestManager.getItem(getPoolPath(), client, vsName, MediaType.APPLICATION_JSON_TYPE);
+
         }
     }
 

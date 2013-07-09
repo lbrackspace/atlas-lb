@@ -9,6 +9,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.mockito.Mockito;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
@@ -55,8 +56,7 @@ public final class MockClientHandler implements ClientHandler {
             this.request = request;
         }
 
-        @SuppressWarnings("unchecked")
-        public void thenReturn(final Response.Status status, final Object response) {
+        public void thenReturn(final Response.Status status, final Object response) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
             // TODO we might try to use the real response here
             // InBoundHeaders headers = new InBoundHeaders();
             // MessageBodyWorkers workers = Mockito.mock(MessageBodyWorkers.class);
@@ -66,6 +66,18 @@ public final class MockClientHandler implements ClientHandler {
             Mockito.when(clientResponse.getStatus()).thenReturn(status.getStatusCode());
             Mockito.when(clientResponse.getClientResponseStatus()).thenReturn(Status.fromStatusCode(status.getStatusCode()));
             Mockito.when(clientResponse.getEntity(Mockito.<Class>any())).thenReturn(response);
+
+            //Failed attempts to update for bad requests...
+//            if (status != Response.Status.ACCEPTED && status != Response.Status.OK) {
+//                Mockito.when(clientResponse.getStatus()).thenReturn(status.getStatusCode());
+//                clientResponse.setStatus(status.getStatusCode());
+//                RequestManagerUtil rmu = Mockito.mock(RequestManagerUtil.class);
+//                Mockito.doThrow(new StingrayRestClientException(String.format("Caused By: %s: Reason: %s: Additional: %s",
+//                        status, "something", "something ... darkside"))).when(rmu).buildFaultMessage(Matchers.<ClientResponse>any());
+//
+//                mocked.put(request, new MockResponse(null, new StingrayRestClientException(String.format("Caused By: %s: Reason: %s: Additional: %s",
+//                        status, "something", "something ... darkside"))));
+//            }
 
             MockResponse mockResponse = new MockResponse(clientResponse, null);
             mocked.put(request, mockResponse);
