@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import dbutils
 import utils
@@ -94,6 +94,7 @@ def splitIntSet(val):
     intSet = set()
     try:
         n = int(val)
+        intSet.add(n)
     except (ValueError):
         strList = val.split(",")
         for strVal in strList:
