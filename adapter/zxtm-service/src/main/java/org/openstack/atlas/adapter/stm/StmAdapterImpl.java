@@ -732,17 +732,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     }
 
-    //Because le interface is annoying
-    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, SessionPersistence mode)
-            throws RemoteException, InsufficientRequestException, StmRollBackException {
-    }
-
-    public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId)
-            throws RemoteException, InsufficientRequestException, StmRollBackException {
-
-    }
-
-
     @Override
     public void setSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
@@ -875,10 +864,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         LOG.debug(String.format("Successfully updated protection for %s!", protectionName));
     }
 
-    // Also added to the ZxtmAdapter... double check this behavior
-    @Override
-    public void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId) throws RemoteException, InsufficientRequestException {
-    }
+
 
     @Override
     public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
@@ -1055,7 +1041,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
-
+        //TODO need to implement
     }
 
     @Override

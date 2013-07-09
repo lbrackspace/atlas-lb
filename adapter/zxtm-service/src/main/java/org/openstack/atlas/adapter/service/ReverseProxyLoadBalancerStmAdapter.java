@@ -71,12 +71,6 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> nodes)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
-    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, SessionPersistence mode)
-            throws RemoteException, InsufficientRequestException, RollBackException;
-
-    public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId)
-            throws RemoteException, InsufficientRequestException, RollBackException;
-
     public void setSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
@@ -103,9 +97,6 @@ public interface ReverseProxyLoadBalancerStmAdapter {
 
     public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException;
-
-    public void deleteAccessList(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId)
-            throws RemoteException, InsufficientRequestException;
 
     public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;

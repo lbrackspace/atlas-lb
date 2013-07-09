@@ -39,7 +39,7 @@ public class DeleteConnectionThrottleListener extends BaseListener {
 
         try {
             LOG.debug("Deleting connection throttle in Zeus...");
-            reverseProxyLoadBalancerService.deleteConnectionThrottle(dbLoadBalancer);
+            reverseProxyLoadBalancerStmService.deleteConnectionThrottle(dbLoadBalancer);
             LOG.debug("Successfully deleted connection throttle in Zeus.");
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

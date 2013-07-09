@@ -53,7 +53,7 @@ public class DeleteSslTerminationListener extends BaseListener {
         try {
             bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
             bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
-            concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
+            concurrentConns = reverseProxyLoadBalancerStmService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
         } catch (Exception e) {
             LOG.warn("Couldn't retrieve load balancer usage stats. Setting them to null.");
             bytesOut = null;
@@ -75,7 +75,7 @@ public class DeleteSslTerminationListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Deleting load balancer '%d' ssl termination in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.removeSslTermination(dbLoadBalancer);
+            reverseProxyLoadBalancerStmService.removeSslTermination(dbLoadBalancer);
             LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

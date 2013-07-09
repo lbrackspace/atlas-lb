@@ -289,10 +289,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteAccessList(Integer lbId, Integer accountId) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void deleteAccessList(LoadBalancer lb) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.deleteAccessList(config, lbId, accountId);
+            reverseProxyLoadBalancerStmAdapter.deleteAccessList(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -322,10 +322,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateSessionPersistence(Integer lbId, Integer accountId, SessionPersistence persistenceMode) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void updateSessionPersistence(LoadBalancer lb) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.setSessionPersistence(config, lbId, accountId, persistenceMode);
+            reverseProxyLoadBalancerStmAdapter.setSessionPersistence(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -333,10 +333,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void removeSessionPersistence(Integer lbId, Integer accountId) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+    public void removeSessionPersistence(LoadBalancer lb) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.removeSessionPersistence(config, lbId, accountId);
+            reverseProxyLoadBalancerStmAdapter.removeSessionPersistence(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;

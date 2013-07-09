@@ -40,7 +40,7 @@ public class UpdateHealthMonitorListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Updating health monitor for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.updateHealthMonitor(dbLoadBalancer);
+            reverseProxyLoadBalancerStmService.updateHealthMonitor(dbLoadBalancer);
             LOG.debug(String.format("Successfully updated health monitor for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

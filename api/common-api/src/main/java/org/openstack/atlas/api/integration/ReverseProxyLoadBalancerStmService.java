@@ -20,7 +20,6 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void createLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
 
-
     void updateLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
 
     void deleteLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
@@ -35,7 +34,7 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void addVirtualIps(Integer id, Integer accountId, LoadBalancer loadBalancer) throws Exception;
 
-    void deleteAccessList(Integer id, Integer accountId) throws Exception;
+    void deleteAccessList(LoadBalancer lb) throws Exception;
 
     void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
 
@@ -61,9 +60,9 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void deleteConnectionThrottle(LoadBalancer loadBalancer) throws Exception;
 
-    void updateSessionPersistence(Integer id, Integer accountId, SessionPersistence persistenceMode) throws Exception;
+    void updateSessionPersistence(LoadBalancer lb) throws Exception;
 
-    void removeSessionPersistence(Integer id, Integer accountId) throws Exception;
+    void removeSessionPersistence(LoadBalancer lb) throws Exception;
 
     void updateHealthMonitor(LoadBalancer loadBalancer) throws Exception;
 
