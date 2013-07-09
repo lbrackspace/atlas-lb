@@ -42,7 +42,7 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateGlb()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateGlb() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         GlobalLoadBalancing createdGlb = client.createGlb(vsName, glb);
         Assert.assertNotNull(createdGlb);
         Assert.assertEquals(createdGlb, client.getGlb(vsName));
@@ -55,7 +55,7 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateGlb()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdateGlb() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         int testInt = 1;
         glb.getProperties().getBasic().setGeo_effect(testInt);
         GlobalLoadBalancing updatedGlb = client.updateGlb(vsName, glb);
@@ -72,7 +72,7 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfGlbs()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfGlbs() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getGlbs();
         Assert.assertTrue(children.size() > 0);
     }
@@ -84,7 +84,7 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetSpecificGlb()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetGlb() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         GlobalLoadBalancing retrievedGlb = client.getGlb(vsName);
         Assert.assertNotNull(retrievedGlb);
     }
@@ -95,13 +95,12 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    @Test
-    public void testDeleteGlb()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-//        int expectedLength = 0;
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testDeleteGlb() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteGlb(vsName);
         Assert.assertTrue(wasDeleted);
-//       Children children = client.getGlbs();
-//        Assert.assertEquals(expectedLength, children.getChildren().size());
+        client.getGlb(vsName);
+
     }
 
 }

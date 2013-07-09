@@ -53,7 +53,7 @@ public class SslCacrlITest extends StingrayTestBase {
      *
      */
     @Test
-    public void getListOfCacrls()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void getListOfCacrls() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getCacrls();
         Assert.assertTrue(children.size() > 0);
     }
@@ -65,7 +65,7 @@ public class SslCacrlITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetCacrl()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetCacrl() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         File retrievedFile = client.getCacrl(fileName);
         Assert.assertNotNull(retrievedFile);
 

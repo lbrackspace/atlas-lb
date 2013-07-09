@@ -42,7 +42,7 @@ public class BandwidthITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateBandwidth()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateBandwidth() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Bandwidth createdBandwidth = client.createBandwidth(vsName, bandwidth);
         Assert.assertNotNull(createdBandwidth);
         Assert.assertEquals(createdBandwidth, client.getBandwidth(vsName));
@@ -57,7 +57,7 @@ public class BandwidthITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateBandwidth()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdateBandwidth() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         int testLimit = 1;
         bandwidth.getProperties().getBasic().setMaximum(testLimit);
         Bandwidth updatedBandwidth = client.updateBandwidth(vsName, bandwidth);
@@ -72,7 +72,7 @@ public class BandwidthITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfBandwidths()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfBandwidths() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getBandwidths();
         Assert.assertTrue(children.size() > 0);
     }
@@ -84,7 +84,7 @@ public class BandwidthITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetBandwidth()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetBandwidth() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Bandwidth retrievedBandwidth = client.getBandwidth(vsName);
         Assert.assertNotNull(retrievedBandwidth);
     }
@@ -96,11 +96,10 @@ public class BandwidthITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void deleteBandwidth()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void deleteBandwidth() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteBandwidth(vsName);
         Assert.assertTrue(wasDeleted);
         client.getBandwidth(vsName);
-
     }
 
 }

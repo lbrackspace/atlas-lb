@@ -45,7 +45,7 @@ public class PoolITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreatePool()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreatePool() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Pool createdPool = client.createPool(vsName, pool);
         Assert.assertNotNull(createdPool);
         Pool retrievedPool = client.getPool(vsName);
@@ -59,7 +59,7 @@ public class PoolITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdatePool()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdatePool() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         String updateNote = "qwertyuiop";
         pool.getProperties().getBasic().setNote(updateNote);
         Pool updatedPool = client.updatePool(vsName, pool);
@@ -74,7 +74,7 @@ public class PoolITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfPools()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfPools() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getPools();
         Assert.assertTrue(children.size() > 0);
     }
@@ -86,7 +86,7 @@ public class PoolITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetPool()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetPool() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Pool retrievedPool = client.getPool(vsName);
         Assert.assertNotNull(retrievedPool);
     }
@@ -98,7 +98,7 @@ public class PoolITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeletePool()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testDeletePool() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deletePool(vsName);
         Assert.assertTrue(wasDeleted);
         client.getPool(vsName);

@@ -103,7 +103,7 @@ public class RequestManagerTest {
             Assert.assertTrue(true);
         }
 
-
+        @Ignore
         @Test(expected = StingrayRestClientException.class)
         public void shouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
             mockClientHandler.when("pool", "GET").thenReturn(Response.Status.BAD_REQUEST, pool);

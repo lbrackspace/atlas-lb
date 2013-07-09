@@ -74,7 +74,7 @@ public class ActionScriptITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfActionScripts()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfActionScripts() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getActionScripts();
         Assert.assertTrue(children.size() > 0);
     }
@@ -86,7 +86,7 @@ public class ActionScriptITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetSpecificActionScript()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetActionScript() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         File retrievedFile = client.getActionScript(fileName);
         Assert.assertNotNull(retrievedFile);
     }
@@ -98,11 +98,9 @@ public class ActionScriptITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteActionScript()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testDeleteActionScript() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteActionScript(fileName);
         Assert.assertTrue(wasDeleted);
         client.getActionScript(fileName);
-
-
     }
 }

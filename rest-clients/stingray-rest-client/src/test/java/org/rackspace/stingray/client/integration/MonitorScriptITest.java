@@ -76,7 +76,7 @@ public class MonitorScriptITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfMonitorScripts()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfMonitorScripts() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getMonitorScripts();
         Assert.assertTrue(children.size() > 0);
     }
@@ -88,7 +88,7 @@ public class MonitorScriptITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetMonitorScript()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetMonitorScript() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         File retrievedFile = client.getMonitorScript(fileName);
         Assert.assertNotNull(retrievedFile);
     }
@@ -100,7 +100,7 @@ public class MonitorScriptITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteMonitorScript()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testDeleteMonitorScript() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteMonitorScript(fileName);
         Assert.assertTrue(wasDeleted);
         client.getMonitorScript(fileName);

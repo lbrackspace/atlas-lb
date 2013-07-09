@@ -46,7 +46,7 @@ public class LocationITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateLocation()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Location createdLocation = client.createLocation(vsName, location);
         Assert.assertNotNull(createdLocation);
         Assert.assertEquals(createdLocation, client.getLocation(vsName));
@@ -59,7 +59,7 @@ public class LocationITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateLocation()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdateLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         int updateId = 33;
         location.getProperties().getBasic().setId(updateId);
         Location updatedLocation = client.updateLocation(vsName, location);
@@ -75,7 +75,7 @@ public class LocationITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfLocations()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfLocations() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getLocations();
         Assert.assertTrue(children.size() > 0);
     }
@@ -87,7 +87,7 @@ public class LocationITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetSpecificLocation()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Location retrievedLocation = client.getLocation(vsName);
         Assert.assertNotNull(retrievedLocation);
     }
@@ -98,10 +98,11 @@ public class LocationITest extends StingrayTestBase {
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    @Test
-    public void testDeleteLocation()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testDeleteLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteLocation(vsName);
         Assert.assertTrue(wasDeleted);
+        client.getLocation(vsName);
 
     }
 }

@@ -43,7 +43,7 @@ public class RateITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateRate()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Rate createdRate = client.createRate(vsName, rate);
         Assert.assertNotNull(createdRate);
         Assert.assertEquals(createdRate, client.getRate(vsName));
@@ -56,7 +56,7 @@ public class RateITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateRate()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdateRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         int updatePerMin = 17;
         rate.getProperties().getBasic().setMax_rate_per_minute(updatePerMin);
         Rate updatedRate = client.updateRate(vsName, rate);
@@ -73,7 +73,7 @@ public class RateITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfRates()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfRates() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getRates();
         Assert.assertTrue(children.size() > 0);
     }
@@ -85,7 +85,7 @@ public class RateITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetRate()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Rate retrievedRate = client.getRate(vsName);
         Assert.assertNotNull(retrievedRate);
     }
@@ -96,9 +96,10 @@ public class RateITest extends StingrayTestBase {
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    @Test
-    public void testDeleteRate()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testDeleteRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteRate(vsName);
         Assert.assertTrue(wasDeleted);
+        client.getRate(vsName);
     }
 }

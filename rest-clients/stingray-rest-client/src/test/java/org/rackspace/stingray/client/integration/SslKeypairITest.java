@@ -38,7 +38,7 @@ public class SslKeypairITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateSslKeyPair()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateSslKeyPair() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Keypair createdKeypair = client.createKeypair(TESTNAME, keypair);
         Assert.assertNotNull(createdKeypair);
         Keypair verifyKeypair = client.getKeypair(TESTNAME);
@@ -52,7 +52,7 @@ public class SslKeypairITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfSslKeypairs()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfSslKeypairs() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getKeypairs();
         Assert.assertTrue(children.size() > 0);
     }
@@ -64,7 +64,7 @@ public class SslKeypairITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetSslKeypair()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetSslKeypair() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Keypair keypair = client.getKeypair(TESTNAME);
         Assert.assertNotNull(keypair);
     }
@@ -74,9 +74,10 @@ public class SslKeypairITest extends StingrayTestBase {
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    @Test
-    public void testDeleteSslKeyPair()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testDeleteSslKeyPair() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean result = client.deleteKeypair(TESTNAME);
         Assert.assertTrue(result);
+        client.getKeypair(TESTNAME);
     }
 }

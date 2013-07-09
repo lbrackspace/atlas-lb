@@ -439,13 +439,18 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertNotNull(createdSecureBandwidth);
             Assert.assertEquals(maxRequestsPerSecond, (int) createdSecureBandwidth.getProperties().getBasic().getMaximum());
             Assert.assertEquals(ticketComment, createdSecureBandwidth.getProperties().getBasic().getNote());
+            VirtualServer createdServer = stmClient.getVirtualServer(normalName);
+            //createdServer.getProperties().getBasic().getResponse_rules().contains()
+            //TODO need to add rules to constants or adapter file
+
+
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
             removeSimpleLoadBalancer();
         }
 
-        //TODO the Zxtm test has a rule check, but we don't set the rules afaik
+
     }
 
     private void verifyAccessListWithSsl() {
@@ -559,9 +564,7 @@ public class SslTerminationITest extends STMTestBase {
     }
 
     private void deleteCertificate() {
-        //TODO is this necessary for the REST Operations?
-        //I don't know how to get the ssl through the adapter and I'm not testing
-        //the integration of the client. (I think).
+
     }
 
 

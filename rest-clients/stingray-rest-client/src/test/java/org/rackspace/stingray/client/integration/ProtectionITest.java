@@ -42,7 +42,7 @@ public class ProtectionITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateProtection()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateProtection() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Protection createdProtection = client.createProtection(vsName, protection);
         Assert.assertNotNull(createdProtection);
         Assert.assertEquals(createdProtection, client.getProtection(vsName));
@@ -55,7 +55,7 @@ public class ProtectionITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateProtection()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdateProtection() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         String updateNote = "qwertyuiop";
         protection.getProperties().getBasic().setNote(updateNote);
         Protection updatedProtection = client.updateProtection(vsName, protection);
@@ -72,7 +72,7 @@ public class ProtectionITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfProtections()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfProtections() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getProtections();
         Assert.assertTrue(children.size() > 0);
     }
@@ -84,7 +84,7 @@ public class ProtectionITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetProtection()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetProtection() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Protection retrievedProtection = client.getProtection(vsName);
         Assert.assertNotNull(retrievedProtection);
     }
@@ -95,10 +95,11 @@ public class ProtectionITest extends StingrayTestBase {
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    @Test
-    public void testDeleteProtection()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testDeleteProtection() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteProtection(vsName);
         Assert.assertTrue(wasDeleted);
+        client.getProtection(vsName);
     }
 
 }

@@ -43,7 +43,7 @@ public class MonitorITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateMonitor()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateMonitor() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Monitor createdMonitor = client.createMonitor(vsName, monitor);
         Assert.assertNotNull(createdMonitor);
         Assert.assertEquals(createdMonitor, client.getMonitor(vsName));
@@ -57,7 +57,7 @@ public class MonitorITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateMonitor()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdateMonitor() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         int updateTimeout = 17;
         monitor.getProperties().getBasic().setTimeout(updateTimeout);
         Monitor updatedMonitor = client.updateMonitor(vsName, monitor);
@@ -74,7 +74,7 @@ public class MonitorITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfMonitors()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfMonitors() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getMonitors();
         Assert.assertTrue(children.size() > 0);
     }
@@ -86,7 +86,7 @@ public class MonitorITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetMonitor()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetMonitor() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Monitor retrievedMonitor = client.getMonitor(vsName);
         Assert.assertNotNull(retrievedMonitor);
     }
@@ -97,10 +97,11 @@ public class MonitorITest extends StingrayTestBase {
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    @Test
-    public void testDeleteMonitor()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testDeleteMonitor() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteMonitor(vsName);
         Assert.assertTrue(wasDeleted);
+        client.getMonitor(vsName);
 
     }
 

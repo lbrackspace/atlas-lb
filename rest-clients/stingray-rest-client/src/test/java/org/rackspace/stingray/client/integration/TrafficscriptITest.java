@@ -54,7 +54,7 @@ public class TrafficscriptITest extends StingrayTestBase {
      *
      */
     @Test
-    public void getListOfTrafficscripts()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void getListOfTrafficscripts() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getTrafficscripts();
         Assert.assertTrue(children.size() > 0);
     }
@@ -66,7 +66,7 @@ public class TrafficscriptITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetTrafficscript()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetTrafficscript() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         File retrievedFile = client.getTraffiscript(fileName);
         Assert.assertNotNull(retrievedFile);
 
