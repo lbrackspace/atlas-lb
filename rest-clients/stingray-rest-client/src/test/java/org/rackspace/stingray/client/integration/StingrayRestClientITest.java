@@ -17,14 +17,6 @@ public class StingrayRestClientITest {
     //TODO: clean these up, make more...
 
     @Test
-    public void verifyStingrayPoolManagerGet() throws Exception {
-//        StingrayRestClient client = new StingrayRestClient();
-//
-//        VirtualServer pool = client.getVirtualServer("528830_770");
-//        Assert.assertNotNull(pool);
-    }
-
-    @Test
     public void verifyStingrayPoolManagerCreateAndUpdate() throws Exception {
         StingrayRestClient client = new StingrayRestClient();
 
@@ -56,6 +48,15 @@ public class StingrayRestClientITest {
 
         Assert.assertEquals(2, upool.getProperties().getBasic().getNodes().size());
 
+
+    }
+
+    @Test
+    public void verifyStingrayPoolManagerGet() throws Exception {
+        StingrayRestClient client = new StingrayRestClient();
+
+        Pool pool = client.getPool("ctest_001");
+        Assert.assertNotNull(pool);
         client.deletePool("ctest_001");
     }
 

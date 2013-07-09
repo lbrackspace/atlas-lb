@@ -73,7 +73,7 @@ public class ExtraFileITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfExtraFiles()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfExtraFiles() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getExtraFiles();
         Assert.assertTrue(children.size() > 0);
     }
@@ -85,7 +85,7 @@ public class ExtraFileITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetSpecificExtraFile()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetExtraFile() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         File retrievedFile = client.getExtraFile(fileName);
         Assert.assertNotNull(retrievedFile);
     }
@@ -97,11 +97,9 @@ public class ExtraFileITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteExtraFile()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testDeleteExtraFile() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteExtraFile(fileName);
         Assert.assertTrue(wasDeleted);
         client.getExtraFile(fileName);
-
-
     }
 }

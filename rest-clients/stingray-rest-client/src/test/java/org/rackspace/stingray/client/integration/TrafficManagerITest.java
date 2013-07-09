@@ -39,7 +39,7 @@ public class TrafficManagerITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateTrafficManager()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateTrafficManager() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         TrafficManager createdManager = client.createTrafficManager(TESTNAME, manager);
         Assert.assertNotNull(createdManager);
     }
@@ -52,7 +52,7 @@ public class TrafficManagerITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfTrafficManagers()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfTrafficManagers() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getTrafficManagers();
         Assert.assertTrue(children.size() > 0);
     }
@@ -64,7 +64,7 @@ public class TrafficManagerITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetTrafficManager()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetTrafficManager() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         TrafficManager trafficManager = client.getTrafficManager(TESTNAME);
         Assert.assertNotNull(trafficManager);
     }
@@ -75,9 +75,10 @@ public class TrafficManagerITest extends StingrayTestBase {
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    @Test
-    public void testDeleteTrafficManager()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testDeleteTrafficManager() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean result = client.deleteTrafficManager(TESTNAME);
         Assert.assertTrue(result);
+        client.getTrafficManager(TESTNAME);
     }
 }

@@ -39,7 +39,7 @@ public class TrafficIpITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateTrafficIp()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         TrafficIp createdTip = client.createTrafficIp(TESTNAME, tip);
         Assert.assertNotNull(createdTip);
     }
@@ -52,7 +52,7 @@ public class TrafficIpITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfTrafficIps()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfTrafficIps() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getTrafficIps();
         Assert.assertTrue(children.size() > 0);
     }
@@ -64,7 +64,7 @@ public class TrafficIpITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetTrafficIp()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getTrafficIps();
         Assert.assertTrue(children.size() > 0);
         Child child = children.get(0);
@@ -79,9 +79,10 @@ public class TrafficIpITest extends StingrayTestBase {
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    @Test
-    public void testDeleteTrafficIp()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testDeleteTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean result = client.deleteTrafficIp(TESTNAME);
         Assert.assertTrue(result);
+        client.getTrafficIp(TESTNAME);
     }
 }

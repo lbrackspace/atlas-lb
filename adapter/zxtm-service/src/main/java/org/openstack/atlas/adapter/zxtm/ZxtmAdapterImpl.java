@@ -913,7 +913,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         final String virtualServerNameNonSecure = ZxtmNameBuilder.genVSName(loadBalancer);
         ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(zeusSslTermination.getSslTermination().getPrivatekey(), zeusSslTermination.getSslTermination().getCertificate(), zeusSslTermination.getSslTermination().getIntermediateCertificate());
         if (zeusCertFile.isError()) {
-            String fmt = "ZuesertFile generation Failure: %s";
+            String fmt = "ZuesCertFile generation Failure: %s";
             String errors = StringUtils.joinString(zeusCertFile.getErrorList(), ",");
             String msg = String.format(fmt, errors);
             throw new InsufficientRequestException(msg);

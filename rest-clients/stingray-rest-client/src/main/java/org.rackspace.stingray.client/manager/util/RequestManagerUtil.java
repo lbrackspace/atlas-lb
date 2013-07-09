@@ -40,15 +40,11 @@ public class RequestManagerUtil {
         ClientException exception = null;
 
         logger.info("ResponseWrapper, response status code is: " + response.getStatus());
-        try {
+
             //TODO: ClientException seems to break for certain errors: ex: Exception entity: {"error_id":"resource.not_found","error_text":"Invalid resource URI"}
             exception = response.getEntity(ClientException.class);
             logger.debug(String.format("Client Request failed: %s", exception.toString()));
-        } catch (Exception ex) {
-            logger.error("Exception was thrown and could not be handled or mapped by the client. " +
-                    "Response status code: " + response.getStatus());
-            throw new StingrayRestClientException(ClientConstants.STM_CLIENT_ERROR, ex);
-        }
+
 
         if (exception.getError_text().contains(objectNotFound)) {
             throw new StingrayRestClientObjectNotFoundException(objectNotFoundMessage);

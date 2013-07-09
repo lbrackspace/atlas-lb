@@ -42,7 +42,7 @@ public class PersistenceITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreatePersistence()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreatePersistence() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Persistence createdPersistence = client.createPersistence(vsName, persistence);
         Assert.assertNotNull(createdPersistence);
         Assert.assertEquals(createdPersistence, client.getPersistence(vsName));
@@ -55,7 +55,7 @@ public class PersistenceITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdatePersistence()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdatePersistence() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         String updateNote = "qwertyuiop";
         persistence.getProperties().getBasic().setNote(updateNote);
         Persistence updatedPersistence = client.updatePersistence(vsName, persistence);
@@ -72,7 +72,7 @@ public class PersistenceITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfPersistences()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfPersistences() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getPersistences();
         Assert.assertTrue(children.size() > 0);
     }
@@ -84,7 +84,7 @@ public class PersistenceITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetPersistence()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetPersistence() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Persistence retrievedPersistence = client.getPersistence(vsName);
         Assert.assertNotNull(retrievedPersistence);
     }
@@ -95,10 +95,11 @@ public class PersistenceITest extends StingrayTestBase {
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    @Test
-    public void testDeletePersistence()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testDeletePersistence() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deletePersistence(vsName);
         Assert.assertTrue(wasDeleted);
+        client.getPersistence(vsName);
     }
 
 

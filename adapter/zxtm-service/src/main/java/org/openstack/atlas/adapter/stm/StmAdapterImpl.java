@@ -1,5 +1,6 @@
 package org.openstack.atlas.adapter.stm;
 
+import com.zxtm.service.client.CertificateFiles;
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,6 +16,9 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
+import org.openstack.atlas.util.ca.StringUtils;
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -978,17 +982,58 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = loadSTMRestClient(config);
 
         ResourceTranslator translator = new ResourceTranslator();
-        String vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+        String secureName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+        String normalName = ZxtmNameBuilder.genVSName(loadBalancer);
+
+        ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(sslTermination.getSslTermination().getPrivatekey(),
+                sslTermination.getSslTermination().getCertificate(), sslTermination.getSslTermination().getIntermediateCertificate());
+        if (zeusCertFile.isError()) {
+            String fmt = "StingrayCertFile generation Failure: %s";
+            String errors = StringUtils.joinString(zeusCertFile.getErrorList(), ",");
+            String msg = String.format(fmt, errors);
+            throw new InsufficientRequestException(msg);
+        }
+        translator.translateVirtualServerResource(config, secureName, loadBalancer);
+        VirtualServer createdServer = translator.cVServer;
 
         try {
-            translator.translateLoadBalancerResource(config, vsName, loadBalancer);
+            LOG.info(String.format("Creating ssl termination load balancer %s in zeus... ", secureName));
+            updateVirtualServer(config, client, secureName, createdServer);
+
+        } catch (Exception e) {
+        }
+
+        if(!createdServer.getProperties().getBasic().getPort().equals(sslTermination.getSslTermination().getSecurePort()))
+        {
+            LOG.info(String.format("Updating secure servers port for ssl termination load balancer  %s in Stingray...", secureName));
+            updatePort(config, loadBalancer.getId(), loadBalancer.getAccountId(), sslTermination.getSslTermination().getSecurePort());
+            LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer %s in Stingray...", secureName));
+
+        }
+
+
+
+
+
+        try {
+            if(sslTermination.getCertIntermediateCert() != null)
+            {
+                LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
+                CertificateFiles certificateFiles = new CertificateFiles(zeusCertFile.getPublic_cert(), zeusCertFile.getPrivate_key());
+
+
+            }
+        } catch (Exception e) {}
+
+        try {
+            translator.translateLoadBalancerResource(config, secureName, loadBalancer);
 
 //            if (loadBalancer.getSessionPersistence() != null
 //                    && !loadBalancer.getSessionPersistence().equals(SessionPersistence.NONE)
 //                    && !loadBalancer.hasSsl()) //setSessionPersistence(config, loadBalancer);
 //
             if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
-                updateHealthMonitor(config, client, vsName, translator.getcMonitor());
+                updateHealthMonitor(config, client, secureName, translator.getcMonitor());
             }
 
             if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())
@@ -1002,9 +1047,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             }
 
-            updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
-            updateNodePool(config, client, vsName, translator.getcPool());
-            updateVirtualServer(config, client, vsName, translator.getcVServer());
+            updateVirtualIps(config, client, secureName, translator.getcTrafficIpGroups());
+            updateNodePool(config, client, secureName, translator.getcPool());
+            updateVirtualServer(config, client, secureName, translator.getcVServer());
         } catch (Exception ex) {
             LOG.error(ex);
             //TODO: roll back or handle as needed.. ...

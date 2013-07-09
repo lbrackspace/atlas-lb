@@ -51,7 +51,7 @@ public class VirtualServerITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateVirtualServer()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateVirtualServer() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Pool createdPool = client.createPool(poolName, pool);
         Assert.assertNotNull(createdPool);
         VirtualServer vs = client.createVirtualServer(vsName, virtualServer);
@@ -67,7 +67,7 @@ public class VirtualServerITest extends StingrayTestBase {
     }
 
     @Test
-    public void testUpdateVirtualServer()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdateVirtualServer() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Integer modPort = 8999;
         virtualServer.getProperties().getBasic().setPort(modPort);
         VirtualServer vs = client.updateVirtualServer(vsName, virtualServer);
@@ -80,7 +80,7 @@ public class VirtualServerITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetVirtualServersList()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetVirtualServersList() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getVirtualServers();
         Assert.assertTrue(children.size() > 0);
     }
@@ -91,7 +91,7 @@ public class VirtualServerITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetVirtualServer()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetVirtualServer() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         VirtualServer vs = client.getVirtualServer(vsName);
         Assert.assertNotNull(vs);
     }
@@ -101,10 +101,11 @@ public class VirtualServerITest extends StingrayTestBase {
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    @Test
-    public void testDeleteVirtualServer()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testDeleteVirtualServer() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean result = client.deleteVirtualServer(vsName);
         Assert.assertTrue(result);
-        client.deletePool(poolName);
+        Assert.assertTrue(client.deletePool(poolName));
+        client.getVirtualServer(vsName);
     }
 }
