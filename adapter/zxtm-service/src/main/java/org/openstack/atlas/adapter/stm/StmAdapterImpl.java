@@ -139,6 +139,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                                      StingrayRestClient client, String vsName, VirtualServer virtualServer)
             throws StmRollBackException {
 
+
         LOG.debug(String.format("Updating  virtual server '%s'...", vsName));
 
         VirtualServer curVs = null;
@@ -948,9 +949,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
     }
 
-    // TODO:  In progress.  Ignore for a while.
+
     @Override
     public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, StmRollBackException {
+       // TODO:  In progress.  Ignore for a while.
         /*
 
         Create Virtual Server
@@ -1050,7 +1052,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void enableDisableSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, boolean isSslTermination) throws RemoteException, InsufficientRequestException, StmRollBackException {
-
+        //TODO need to implement
     }
 
     // TODO: Remove me!!
@@ -1478,92 +1480,5 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         return ret;
     }
 
-    /**
-     * TODO: for the unsupported methods in rest we will probably have to still use soap :(
-     */
 
-
-    //Unsupported in STM Rest
-    @Override
-    public List<String> getStatsSystemLoadBalancerNames(LoadBalancerEndpointConfiguration config) throws RemoteException {
-        return null;
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public Map<String, Integer> getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, List<String> names) throws RemoteException {
-        return null;
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public Integer getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
-        return null;
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config) throws RemoteException {
-        return 0;
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws RemoteException, InsufficientRequestException {
-        return null;
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public Map<String, Long> getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, List<String> names) throws RemoteException {
-        return null;
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public Long getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
-        return null;
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public Map<String, Long> getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, List<String> names) throws RemoteException {
-        return null;
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public Long getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl) throws RemoteException, InsufficientRequestException {
-        return null;
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public Long getHostBytesIn(LoadBalancerEndpointConfiguration config) throws RemoteException {
-        return null;
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public Long getHostBytesOut(LoadBalancerEndpointConfiguration config) throws RemoteException {
-        return null;
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public void createHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
-
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public void deleteHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
-
-    }
-
-    //Unsupported in STM Rest
-    @Override
-    public void restoreHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws RemoteException {
-
-    }
 }

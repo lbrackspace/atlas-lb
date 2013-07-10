@@ -7,7 +7,6 @@ import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
-import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -16,7 +15,6 @@ import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundE
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 public interface ReverseProxyLoadBalancerStmAdapter {
 
@@ -107,15 +105,6 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException;
 
-    public void createHostBackup(LoadBalancerEndpointConfiguration config, String backupName)
-            throws RemoteException;
-
-    public void deleteHostBackup(LoadBalancerEndpointConfiguration config, String backupName)
-            throws RemoteException;
-
-    public void restoreHostBackup(LoadBalancerEndpointConfiguration config, String backupName)
-            throws RemoteException;
-
     public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
             throws RemoteException;
 
@@ -123,39 +112,6 @@ public interface ReverseProxyLoadBalancerStmAdapter {
             throws RemoteException;
 
     public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host)
-            throws RemoteException;
-
-    public List<String> getStatsSystemLoadBalancerNames(LoadBalancerEndpointConfiguration config)
-            throws RemoteException;
-
-    public Map<String, Integer> getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, List<String> names)
-            throws RemoteException;
-
-    public Integer getLoadBalancerCurrentConnections(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl)
-            throws RemoteException, InsufficientRequestException;
-
-    public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config)
-            throws RemoteException;
-
-    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId)
-            throws RemoteException, InsufficientRequestException;
-
-    public Map<String, Long> getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, List<String> names)
-            throws RemoteException;
-
-    public Long getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl)
-            throws RemoteException, InsufficientRequestException;
-
-    public Map<String, Long> getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, List<String> names)
-            throws RemoteException;
-
-    public Long getLoadBalancerBytesOut(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadBalancerId, boolean isSsl)
-            throws RemoteException, InsufficientRequestException;
-
-    public Long getHostBytesIn(LoadBalancerEndpointConfiguration config)
-            throws RemoteException;
-
-    public Long getHostBytesOut(LoadBalancerEndpointConfiguration config)
             throws RemoteException;
 
     public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config)
