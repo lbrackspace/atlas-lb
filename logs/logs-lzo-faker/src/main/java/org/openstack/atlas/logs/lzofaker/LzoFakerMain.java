@@ -187,8 +187,9 @@ public class LzoFakerMain {
 
         OutputStream os = StaticFileUtils.openOutputFile(lzoPath, BUFFSIZE);
         CompressionOutputStream cos = codec.createOutputStream(os);
-        String[] rndStrings = buildRandomStrings(32, 8192);
-
+        System.out.printf("Building random Strings\n");
+        String[] rndStrings = buildRandomStrings(32, 32768);
+        System.out.printf("Building Random Log Lines\n");
         StringBuilder logBuilder = new StringBuilder(SB_MAX_SIZE);
         for (int i = 0; i < nLines; i++) {
             if (i % 100000 == 0) {
