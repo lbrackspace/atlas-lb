@@ -16,6 +16,7 @@ import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 
 import org.openstack.atlas.config.HadoopLogsConfigs;
+import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.util.HdfsUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.common.VerboseLogger;
@@ -29,6 +30,7 @@ public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution imp
     @Override
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
         JobState state = createJob(JobName.MAPREDUCE, schedulerConfigs.getInputString());
+        int hadoopErrorCode = -1;
         //tool.setupHadoopRun(schedulerConfigs);
 
         try {
@@ -89,11 +91,11 @@ public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution imp
             }
             HadoopJob hadoopClient = new HadoopLogSplitterJob();
             hadoopClient.setConfiguration(HadoopLogsConfigs.getHadoopConfiguration());
-            int errorCode = hadoopClient.run(argsList);  // Actually runs the Hadoop Job
-            if (errorCode < 0) {
-                LOG.error(String.format("Hadoop run FAILED with error code %d", errorCode));
+            hadoopErrorCode = hadoopClient.run(argsList);  // Actually runs the Hadoop Job
+            if (hadoopErrorCode < 0) {
+                LOG.error(String.format("Hadoop run FAILED with error code %d", hadoopErrorCode));
             } else {
-                vlog.log(String.format("Hadoop run SUCCEEDED with code %d", errorCode));
+                vlog.log(String.format("Hadoop run SUCCEEDED with code %d", hadoopErrorCode));
             }
             // Note that the SplitLoadBalancerLogsJob being called below is the quartz job that reads the zip files from HDFS.
             // This does not call hadoop job. The hadoop job was actually ran above via the hadoopClient.run(argsList)
@@ -103,7 +105,11 @@ public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution imp
             failJob(state);
             throw new ExecutionException(e);
         }
+        if (hadoopErrorCode < 0) {
+            failJob(state);
+        } else {
+            finishJob(state);
+        }
 
-        finishJob(state);
     }
 }
