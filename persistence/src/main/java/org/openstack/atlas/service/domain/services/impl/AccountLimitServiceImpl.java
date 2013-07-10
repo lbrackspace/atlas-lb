@@ -10,6 +10,7 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.AllAbsoluteLimits;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Service
 public class AccountLimitServiceImpl extends BaseService implements AccountLimitService {
     private final Log LOG = LogFactory.getLog(AccountLimitServiceImpl.class);
 

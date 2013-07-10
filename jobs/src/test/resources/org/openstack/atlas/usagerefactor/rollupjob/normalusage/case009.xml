@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details: Already rolled up DELETE_LOADBALANCER event, but DELETE_LOADBALANCER event is still in table.
+-->
+<dataset>
+    <lb_merged_host_usage id="1" account_id="1234" loadbalancer_id="1234" outgoing_transfer="0" outgoing_transfer_ssl="0" incoming_transfer="0" incoming_transfer_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="0" tags_bitmask="0" poll_time="2013-04-10 19:03:05" event_type="DELETE_LOADBALANCER" />
+</dataset>

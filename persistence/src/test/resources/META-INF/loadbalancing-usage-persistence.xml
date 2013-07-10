@@ -1,0 +1,25 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+    <persistence-unit name="loadbalancingUsage" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <jta-data-source>jdbc/loadbalancing_usage</jta-data-source>
+        <!--Entities-->
+        <class>org.openstack.atlas.service.domain.usage.entities.Entity</class>
+        <class>org.openstack.atlas.service.domain.usage.entities.HostUsage</class>
+        <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage</class>
+        <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage</class>
+        <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage</class>
+        <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent</class>
+        <!-- Hibernate Properties -->
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <property name="hibernate.transaction.flush_before_completion" value="false"/>
+            <property name="hibernate.connection.autocommit" value="false"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.connection.release_mode" value="auto"/>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+        </properties>
+    </persistence-unit>
+</persistence>

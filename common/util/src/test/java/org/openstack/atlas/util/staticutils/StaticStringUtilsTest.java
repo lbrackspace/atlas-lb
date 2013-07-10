@@ -70,7 +70,6 @@ public class StaticStringUtilsTest {
 
         testSet.add("test3");
         out = StaticStringUtils.<String>collectionToString(testSet,", ");
-
     }
 
     @Test
@@ -83,6 +82,7 @@ public class StaticStringUtilsTest {
         assertFalse(out.equals(""));
 
         testSet.add("test1");
+
         out = StaticStringUtils.<String>collectionToString(testSet,", ");
         assertTrue(out.equals("[test1]"));
         assertFalse(out.equals(""));
@@ -93,6 +93,7 @@ public class StaticStringUtilsTest {
         assertFalse(out.equals(""));
 
         testSet.add("test3");
+
         out = StaticStringUtils.<String>collectionToString(testSet,", ");
         assertTrue(out.equals("[test1, test2, test3]"));
         assertFalse(out.equals(""));

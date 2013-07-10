@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.18.10-SNAPSHOT</version>
+        <version>1.19.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-common</artifactId>
@@ -14,9 +14,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>b64aes</module>
         <module>configuration</module>
         <module>util</module>
+        <module>b64aes</module>
         <!-- <module>debug</module> -->
         <module>cidr</module>
         <module>ca</module>

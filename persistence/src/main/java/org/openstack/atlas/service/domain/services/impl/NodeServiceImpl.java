@@ -17,6 +17,7 @@ import org.openstack.atlas.util.ip.IPUtils;
 import org.openstack.atlas.util.ip.IPv6;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,21 +26,14 @@ import java.util.*;
 
 @Service
 public class NodeServiceImpl extends BaseService implements NodeService {
-
     private final Log LOG = LogFactory.getLog(NodeServiceImpl.class);
+
+    @Autowired
     private AccountLimitService accountLimitService;
+    @Autowired
     private LoadBalancerService loadBalancerService;
+    @Autowired
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-
-    @Required
-    public void setAccountLimitService(AccountLimitService accountLimitService) {
-        this.accountLimitService = accountLimitService;
-    }
-
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
 
     @Override
     @Transactional
@@ -416,9 +410,5 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         }
 
         return validationErrors;
-    }
-
-    public void setLoadBalancerService(LoadBalancerService loadBalancerService) {
-        this.loadBalancerService = loadBalancerService;
     }
 }

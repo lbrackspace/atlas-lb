@@ -9,8 +9,11 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 
 import javax.jms.Message;
+
+import java.util.Calendar;
 
 import static org.openstack.atlas.api.atom.EntryHelper.*;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ACTIVE;
@@ -64,9 +67,28 @@ public class CreateLoadBalancerListener extends BaseListener {
             loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
 
             // Notify usage processor
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
-            return;
+            // DEPRECATED
+            Calendar usageEventTime = Calendar.getInstance();
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0, usageEventTime);
 
+            try {
+                // Notify usage processor
+                usageEventCollection.processZeroUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, usageEventTime);
+            } catch (UsageEventCollectionException uex) {
+                LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                        ":: Exception: %s", dbLoadBalancer.getId(), uex));
+            }
+            return;
+        }
+
+        Calendar usageEventTime = Calendar.getInstance();
+
+        try {
+            // Notify usage processor
+            usageEventCollection.processZeroUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, usageEventTime);
+        } catch (UsageEventCollectionException uex) {
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
         }
 
         // Update load balancer in DB
@@ -87,7 +109,8 @@ public class CreateLoadBalancerListener extends BaseListener {
         addAtomEntriesForAccessList(queueLb, dbLoadBalancer);
 
         // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
+        // DEPRECATED
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0, usageEventTime);
 
         LOG.info(String.format("Created load balancer '%d' successfully.", dbLoadBalancer.getId()));
     }

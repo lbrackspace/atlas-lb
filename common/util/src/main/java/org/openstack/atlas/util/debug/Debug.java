@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Map;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
@@ -140,6 +141,23 @@ public class Debug {
         return sbw.toString();
     }
 
+    public static String getThreadStacksString() {
+        StringBuilder sb = new StringBuilder();
+        Map<Thread, StackTraceElement[]> stMap = Thread.getAllStackTraces();
+        for (Thread th : stMap.keySet()) {
+            StackTraceElement[] seArray = stMap.get(th);
+            sb.append("Thread: ").append(th.getName()).append("\n");
+            if (seArray == null) {
+                sb.append("    No StackTrace\n");
+                continue;
+            }
+            for (int i = 0; i < seArray.length; i++) {
+                String se = seArray[i].toString();
+                sb.append("    ").append(se).append("\n");
+            }
+        }
+        return sb.toString();
+    }
     // Tests to see if the throwable exc was caused by any of the exceptions in causeClasses
     public static Class getThrowableCausedByOrAssignableFrom(Throwable exc, Class... causeClasses) {
         Throwable t;
@@ -165,7 +183,6 @@ public class Debug {
             return false;
         }
         return true;
-
     }
 
     public static String getExtendedStackTrace(Throwable th) {

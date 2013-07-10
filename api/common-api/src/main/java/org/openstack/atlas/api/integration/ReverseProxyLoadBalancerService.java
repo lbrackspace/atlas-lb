@@ -33,69 +33,71 @@ public interface ReverseProxyLoadBalancerService {
 
     void updateHalfClosed(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, Exception;
 
-    void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
+    public void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
 
-    void updateConnectionLogging(LoadBalancer lb) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
+    public void updateConnectionLogging(LoadBalancer lb) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
 
-    void updateContentCaching(LoadBalancer lb) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
+    public void updateContentCaching(LoadBalancer lb) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
 
-    void setNodes(LoadBalancer lb) throws Exception;
+    public void setNodes(LoadBalancer lb) throws Exception;
 
-    void removeNode(Integer id, Integer accountId, Node node) throws Exception;
+    public void removeNode(Integer id, Integer accountId, Node node) throws Exception;
 
-    void removeNodes(Integer lbId, Integer accountId,Collection<Node> nodes) throws Exception;
+    public void removeNodes(Integer lbId, Integer accountId, Collection<Node> nodes) throws Exception;
 
-    void setNodeWeights(Integer id, Integer accountId, Set<Node> nodes) throws Exception;
+    public void setNodeWeights(Integer id, Integer accountId, Set<Node> nodes) throws Exception;
 
-    void updateAccessList(LoadBalancer loadBalancer) throws Exception;
+    public void updateAccessList(LoadBalancer loadBalancer) throws Exception;
 
-    void updateConnectionThrottle(LoadBalancer loadbalancer) throws Exception;
+    public void updateConnectionThrottle(LoadBalancer loadbalancer) throws Exception;
 
-    void deleteConnectionThrottle(LoadBalancer loadBalancer) throws Exception;
+    public void deleteConnectionThrottle(LoadBalancer loadBalancer) throws Exception;
 
-    void updateSessionPersistence(Integer id, Integer accountId, SessionPersistence persistenceMode) throws Exception;
+    public void updateSessionPersistence(Integer id, Integer accountId, SessionPersistence persistenceMode) throws Exception;
 
-    void removeSessionPersistence(Integer id, Integer accountId) throws Exception;
+    public void removeSessionPersistence(Integer id, Integer accountId) throws Exception;
 
     void updateHealthMonitor(LoadBalancer loadBalancer) throws Exception;
 
-    void removeHealthMonitor(LoadBalancer loadBalancer) throws Exception;
+    public void updateHealthMonitor(Integer lbId, Integer accountId, HealthMonitor monitor) throws Exception;
 
-    void createHostBackup(Host host, String backupName) throws Exception;
+    public void removeHealthMonitor(LoadBalancer loadBalancer) throws Exception;
 
-    void restoreHostBackup(Host host, String backupName) throws Exception;
+    public void createHostBackup(Host host, String backupName) throws Exception;
 
-    void deleteHostBackup(Host host, String backupName) throws Exception;
+    public void restoreHostBackup(Host host, String backupName) throws Exception;
 
-    void suspendLoadBalancer(LoadBalancer lb) throws Exception;
+    public void deleteHostBackup(Host host, String backupName) throws Exception;
 
-    void removeSuspension(LoadBalancer lb) throws Exception;
+    public void suspendLoadBalancer(LoadBalancer lb) throws Exception;
 
-    void addVirtualIps(Integer id, Integer accountId, LoadBalancer loadBalancer) throws Exception;
+    public void removeSuspension(LoadBalancer lb) throws Exception;
 
-    void deleteAccessList(Integer id, Integer accountId) throws Exception;
+    public void addVirtualIps(Integer id, Integer accountId, LoadBalancer loadBalancer) throws Exception;
 
-    void deleteVirtualIp(LoadBalancer lb, Integer id) throws Exception;
+    public void deleteAccessList(Integer id, Integer accountId) throws Exception;
 
-    void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
+    public void deleteVirtualIp(LoadBalancer lb, Integer id) throws Exception;
 
-    void setErrorFile(LoadBalancer loadBalancer, String content) throws Exception,DecryptException, MalformedURLException;
+    public void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
 
-    int getTotalCurrentConnectionsForHost(Host host) throws Exception;
+    public void setErrorFile(LoadBalancer loadBalancer, String content) throws Exception, DecryptException, MalformedURLException;
 
-    Integer getLoadBalancerCurrentConnections(LoadBalancer lb, boolean isSsl) throws Exception;
+    public int getTotalCurrentConnectionsForHost(Host host) throws Exception;
 
-    Long getLoadBalancerBytesIn(LoadBalancer lb, boolean isSsl) throws Exception;
+    public Integer getLoadBalancerCurrentConnections(LoadBalancer lb, boolean isSsl) throws Exception;
 
-    Long getLoadBalancerBytesOut(LoadBalancer lb, boolean isSsl) throws Exception;
+    public Long getLoadBalancerBytesIn(LoadBalancer lb, boolean isSsl) throws Exception;
+
+    public Long getLoadBalancerBytesOut(LoadBalancer lb, boolean isSsl) throws Exception;
 
     public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception;
 
-    Hostssubnet getSubnetMappings(Host host) throws Exception;
+    public Hostssubnet getSubnetMappings(Host host) throws Exception;
 
-    void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
+    public void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
 
-    void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
+    public void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
 
     public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException;
 

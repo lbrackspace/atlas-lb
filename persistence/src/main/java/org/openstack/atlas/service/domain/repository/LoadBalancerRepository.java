@@ -40,11 +40,10 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DEL
 @Repository
 @Transactional
 public class LoadBalancerRepository {
+    private final Log LOG = LogFactory.getLog(LoadBalancerRepository.class);
 
-    final Log LOG = LogFactory.getLog(LoadBalancerRepository.class);
     @PersistenceContext(unitName = "loadbalancing")
-    private EntityManager entityManager;/**/
-
+    private EntityManager entityManager;
 
     public LoadBalancer getById(Integer id) throws EntityNotFoundException {
         LoadBalancer lb = entityManager.find(LoadBalancer.class, id);
@@ -394,6 +393,14 @@ public class LoadBalancerRepository {
         return vips;
     }
 
+    public boolean isServicenetLoadBalancer(Integer loadBalancerId) {
+        List<LoadBalancerJoinVip> vips;
+        for (LoadBalancerJoinVip vip : getVipsByLoadBalancerId(loadBalancerId)) {
+           if (VirtualIpType.SERVICENET == vip.getVirtualIp().getVipType()) return true;
+        }
+        return false;
+    }
+
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
             String status, LbQueryStatus queryStatus, Calendar changedSince,
             Integer offset, Integer limit, Integer marker) throws BadRequestException {
@@ -719,9 +726,8 @@ public class LoadBalancerRepository {
         return lb.getHealthMonitor();
     }
 
-    public Set<VirtualIp> getVipsByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId,
-            Integer... p) throws EntityNotFoundException, DeletedStatusException {
-        LoadBalancer lb = getByIdAndAccountId(loadBalancerId, accountId);
+    public Set<VirtualIp> getVipsByLbId(Integer loadBalancerId, Integer... p) throws EntityNotFoundException, DeletedStatusException {
+        LoadBalancer lb = getById(loadBalancerId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
         }
@@ -891,8 +897,12 @@ public class LoadBalancerRepository {
     }
 
     public void delete(Object o) {
-        entityManager.remove(o);
-        entityManager.flush();
+        try {
+            LoadBalancer lb = getById(((LoadBalancer)o).getId());
+            entityManager.remove(lb);
+            entityManager.flush();
+        } catch (EntityNotFoundException ignored) {
+        }
     }
 
     public Object save(Object o) {
@@ -1623,6 +1633,27 @@ public class LoadBalancerRepository {
         criteria.select(lbRoot);
         criteria.where(builder.and(hasAccountId, builder.or(createdBetweenDates, updatedBetweenDates)));
         return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit + 1).getResultList();
+    }
+
+    public Set<LbIdAccountId> getLoadBalancersActiveDuringPeriod(Calendar startTime, Calendar endTime) {
+        Set<LbIdAccountId> lbIds = new HashSet<LbIdAccountId>();
+
+//        Query query = entityManager.createQuery("SELECT l.id, l.accountId FROM LoadBalancer l");
+
+        Query query = entityManager.createQuery("SELECT l.id, l.accountId FROM LoadBalancer l where (l.status != 'DELETED' or l.updated >= :startTime) and l.created < :endTime and l.status not in ('BUILD', 'PENDING_DELETE')")
+                .setParameter("startTime", startTime)
+                .setParameter("endTime", endTime);
+
+        final List<Object[]> resultList = query.getResultList();
+
+        for (Object[] row : resultList) {
+            Integer loadBalancerId = (Integer) row[0];
+            Integer accountId = (Integer) row[1];
+            LbIdAccountId lbIdAccountId = new LbIdAccountId(loadBalancerId, accountId);
+            lbIds.add(lbIdAccountId);
+        }
+
+        return lbIds;
     }
 
     public Map<Integer, Integer> getAccountIdMapForUsageRecords(List<Usage> rawLoadBalancerUsageList) {

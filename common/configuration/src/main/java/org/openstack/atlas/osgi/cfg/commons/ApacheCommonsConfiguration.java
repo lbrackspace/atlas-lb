@@ -6,6 +6,8 @@ import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.ConfigurationNotFoundException;
 import org.openstack.atlas.cfg.Configuration;
 import java.io.File;
+import java.util.Iterator;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
@@ -74,5 +76,17 @@ public class ApacheCommonsConfiguration implements Configuration {
         }
 
         return okay;
+    }
+
+    @Override
+    public Iterator getKeys() {
+        checkState();
+        return configuration.getKeys();
+    }
+
+    @Override
+    public String getString(String key) throws ConfigurationInitializationException {
+        checkState();
+        return configuration.getString(key);
     }
 }

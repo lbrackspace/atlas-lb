@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details: CREATE_LOADBALANCER record followed by one auto-polled record. Then poller goes down.
+-->
+<dataset>
+    <lb_merged_host_usage id="1" account_id="1234" loadbalancer_id="1234" outgoing_transfer="0" outgoing_transfer_ssl="0" incoming_transfer="0" incoming_transfer_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 20:23:59" event_type="CREATE_LOADBALANCER" />
+    <lb_merged_host_usage id="2" account_id="1234" loadbalancer_id="1234" outgoing_transfer="100" outgoing_transfer_ssl="0" incoming_transfer="50" incoming_transfer_ssl="0" concurrent_connections="1" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 20:25:00"  />
+</dataset>

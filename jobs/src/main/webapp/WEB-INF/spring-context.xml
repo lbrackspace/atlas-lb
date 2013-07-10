@@ -9,13 +9,18 @@
 
     <import resource="classpath:META-INF/spring/quartzjobs.xml"/>
 
-    <!--STANDALONE SPRING SETTINGS-->
-    <bean id="configuration"
-          class="org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfiguration"
-          scope="prototype"/>
-     <!--Scans the classpath for annotated components @Component, @Repository, @Service, and @Controller -->
-    <!--<context:component-scan base-package="org.openstack.atlas.usage"/>-->
-    <!--<context:component-scan base-package="org.openstack.atlas.service.domain.repository"/>-->
-    <!--&lt;!&ndash;Activates @Required, @Autowired, @PostConstruct, @PreDestroy and @Resource &ndash;&gt;-->
-    <!--<context:annotation-config/>-->
+    <!--Scans the classpath for annotated components @Component, @Repository, @Service, and @Controller -->
+    <context:component-scan base-package="org.openstack.atlas"/>
+    <!--Activates @Required, @Autowired, @PostConstruct, @PreDestroy and @Resource -->
+    <context:annotation-config/>
+
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>file:/etc/openstack/atlas/public-api.conf</value>
+                <value>file:/etc/openstack/atlas/quartz.conf</value>
+            </list>
+        </property>
+    </bean>
+
 </beans>

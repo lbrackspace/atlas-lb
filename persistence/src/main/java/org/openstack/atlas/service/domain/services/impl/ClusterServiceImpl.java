@@ -21,6 +21,7 @@ import org.openstack.atlas.service.domain.pojos.VirtualIpBlocks;
 import org.openstack.atlas.service.domain.services.ClusterService;
 import org.openstack.atlas.service.domain.services.TicketService;
 import org.openstack.atlas.service.domain.services.VirtualIpService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,18 +36,11 @@ import java.util.Set;
 @Service
 public class ClusterServiceImpl extends BaseService implements ClusterService {
     private final Log LOG = LogFactory.getLog(ClusterServiceImpl.class);
+
+    @Autowired
     private VirtualIpService virtualIpService;
+    @Autowired
     private TicketService ticketService;
-
-    @Required
-    public void setVirtualIpService(VirtualIpService virtualIpService) {
-        this.virtualIpService = virtualIpService;
-    }
-
-    @Required
-    public void setTicketService(TicketService ticketService) {
-        this.ticketService = ticketService;
-    }
 
     @Override
     public Cluster get(Integer clusterId) throws EntityNotFoundException {

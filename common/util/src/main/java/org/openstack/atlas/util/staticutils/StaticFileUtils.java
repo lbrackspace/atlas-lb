@@ -2,6 +2,7 @@ package org.openstack.atlas.util.staticutils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -13,8 +14,13 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.util.debug.Debug;
+
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
@@ -29,12 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.util.common.exceptions.FileUtilsException;
-
-import org.openstack.atlas.util.debug.Debug;
 import java.util.zip.CRC32;
+import org.openstack.atlas.util.common.exceptions.FileUtilsException;
 
 public class StaticFileUtils {
 
@@ -569,6 +571,10 @@ public class StaticFileUtils {
             e.printStackTrace();
         }
         return monthYear;
+    }
+
+    public static BufferedReader inputStreamToBufferedReader(InputStream is) {
+        return new BufferedReader(new InputStreamReader(is), DEFAULT_BUFFSIZE);
     }
 
     public static Random getRnd() {

@@ -7,6 +7,7 @@ import org.openstack.atlas.service.domain.services.RateLimitingService;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +18,9 @@ import java.util.List;
 @Service
 public class RateLimitingServiceImpl extends BaseService implements RateLimitingService {
     private final Log LOG = LogFactory.getLog(RateLimitingServiceImpl.class);
-    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
+    @Autowired
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     @Override
     public RateLimit get(Integer id) throws EntityNotFoundException, DeletedStatusException {
@@ -29,12 +31,6 @@ public class RateLimitingServiceImpl extends BaseService implements RateLimiting
     public List<RateLimit> retrieveLoadBalancerRateLimits() {
         return loadBalancerRepository.getRateLimitByExpiration();
     }
-
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
-
 
     @Override
     @Transactional

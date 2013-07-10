@@ -7,6 +7,7 @@ import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.pojos.AccountLoadBalancer;
 import org.openstack.atlas.service.domain.pojos.ExtendedAccountLoadBalancer;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
+import org.openstack.atlas.service.domain.usage.BitTags;
 
 import java.util.Calendar;
 import java.util.List;
@@ -83,4 +84,8 @@ public interface LoadBalancerService {
     List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId);
 
     List<LoadBalancer> getLoadBalancersWithUsage(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit);
+
+    boolean isServiceNetLoadBalancer(Integer lbId);
+
+    BitTags getCurrentBitTags(Integer lbId);
 }

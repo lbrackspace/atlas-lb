@@ -65,6 +65,10 @@ public class AccountLimitRepository {
         entityManager.persist(accountLimit);
     }
 
+    public void save(LimitType limitType) {
+        entityManager.persist(limitType);
+    }
+
     public void delete(AccountLimit accountLimit) {
         accountLimit = entityManager.merge(accountLimit);
         entityManager.remove(accountLimit);

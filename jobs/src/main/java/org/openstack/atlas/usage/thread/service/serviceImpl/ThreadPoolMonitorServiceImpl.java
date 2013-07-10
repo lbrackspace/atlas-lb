@@ -2,14 +2,16 @@ package org.openstack.atlas.usage.thread.service.serviceImpl;
 
 import org.apache.log4j.Logger;
 import org.openstack.atlas.usage.thread.service.ThreadPoolMonitorService;
+import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
+@Service
 public class ThreadPoolMonitorServiceImpl implements ThreadPoolMonitorService {
-
-    private static Logger log = Logger.getLogger(ThreadPoolMonitorServiceImpl.class);
-    ThreadPoolExecutor executor;
-    private long monitoringPeriod;
+    private final Logger log = Logger.getLogger(ThreadPoolMonitorServiceImpl.class);
+    
+    private ThreadPoolExecutor executor;
+    private long monitoringPeriod = 5;
     private volatile boolean done = false;
 
     @Override
@@ -51,13 +53,5 @@ public class ThreadPoolMonitorServiceImpl implements ThreadPoolMonitorService {
     @Override
     public void shutDown() {
         done = true;
-    }
-
-    public long getMonitoringPeriod() {
-        return monitoringPeriod;
-    }
-
-    public void setMonitoringPeriod(long monitoringPeriod) {
-        this.monitoringPeriod = monitoringPeriod;
     }
 }

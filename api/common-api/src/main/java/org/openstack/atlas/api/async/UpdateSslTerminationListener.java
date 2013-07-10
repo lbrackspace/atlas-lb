@@ -8,10 +8,14 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.usagerefactor.SnmpUsage;
 
 import javax.jms.Message;
+
+import java.util.*;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -30,11 +34,17 @@ public class UpdateSslTerminationListener extends BaseListener {
         MessageDataContainer dataContainer = getDataContainerFromMessage(message);
         ZeusSslTermination queTermination = dataContainer.getZeusSslTermination();
         LoadBalancer dbLoadBalancer = new LoadBalancer();
+        @Deprecated
         Long bytesOut = null;
+        @Deprecated
         Long bytesIn = null;
+        @Deprecated
         Integer concurrentConns = null;
+        @Deprecated
         Long bytesOutSsl = null;
+        @Deprecated
         Long bytesInSsl = null;
+        @Deprecated
         Integer concurrentConnsSsl = null;
 
         try {
@@ -50,6 +60,7 @@ public class UpdateSslTerminationListener extends BaseListener {
             return;
         }
 
+        // DEPRECATED
         // Try to get non-ssl usage 1st pass
         try {
             bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
@@ -69,6 +80,7 @@ public class UpdateSslTerminationListener extends BaseListener {
             LOG.warn("Couldn't retrieve load balancer concurrent connections counter.");
         }
 
+        // DEPRECATED
         // Try to get ssl usage 1st pass
         try {
             bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
@@ -88,6 +100,21 @@ public class UpdateSslTerminationListener extends BaseListener {
             LOG.warn("Couldn't retrieve load balancer concurrent connections counter.");
         }
 
+        //First pass
+        List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
+        Map<Integer, SnmpUsage> usagesMap = new HashMap<Integer, SnmpUsage>();
+        try {
+            LOG.info(String.format("Collecting usage BEFORE ssl event for load balancer %s...", dbLoadBalancer.getId()));
+            usages = usageEventCollection.getUsage(dbLoadBalancer);
+            for (SnmpUsage usage : usages) {
+                usagesMap.put(usage.getHostId(), usage);
+            }
+            LOG.info(String.format("Successfully collected usage BEFORE ssl event for load balancer %s", dbLoadBalancer.getId()));
+        } catch (UsageEventCollectionException e) {
+            LOG.error(String.format("Collection of the ssl usage event failed for " +
+                    "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
+        }
+
         try {
             LOG.info("Updating load balancer ssl termination in Zeus...");
             reverseProxyLoadBalancerStmService.updateSslTermination(dbLoadBalancer, queTermination);
@@ -103,6 +130,7 @@ public class UpdateSslTerminationListener extends BaseListener {
             return;
         }
 
+        // DEPRECATED
         // Try to get non-ssl usage (2nd pass)
         try {
             if (bytesOut == null) bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
@@ -122,6 +150,7 @@ public class UpdateSslTerminationListener extends BaseListener {
             LOG.warn("Couldn't retrieve load balancer concurrent connections counter.");
         }
 
+        // DEPRECATED
         // Try to get ssl usage (2nd pass)
         try {
             if (bytesOutSsl == null) bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
@@ -141,21 +170,82 @@ public class UpdateSslTerminationListener extends BaseListener {
             LOG.warn("Couldn't retrieve load balancer concurrent connections counter.");
         }
 
+        //Second pass
+        List<SnmpUsage> usages2 = new ArrayList<SnmpUsage>();
+        Map<Integer, SnmpUsage> usagesMap2 = new HashMap<Integer, SnmpUsage>();
+        try {
+            LOG.info(String.format("Collecting usage AFTER ssl event for load balancer %s...", dbLoadBalancer.getId()));
+            usages2 = usageEventCollection.getUsage(dbLoadBalancer);
+            for (SnmpUsage usage : usages2) {
+                usagesMap2.put(usage.getHostId(), usage);
+            }
+            LOG.info(String.format("Successfully collected usage AFTER ssl event for load balancer %s", dbLoadBalancer.getId()));
+        } catch (UsageEventCollectionException e) {
+            LOG.error(String.format("Collection of the ssl usage event failed for " +
+                    "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
+        }
+
+        //In case the first pass missed a host
+        for (Integer hostId : usagesMap2.keySet()) {
+            if (!usagesMap.containsKey(hostId)) {
+                usagesMap.put(hostId, usagesMap2.get(hostId));
+            }
+        }
+
+        //Combine first pass and second pass
+        for (Integer hostId : usagesMap.keySet()) {
+            SnmpUsage usage1 = usagesMap.get(hostId);
+            SnmpUsage usage2 = usagesMap2.get(hostId);
+                if (usage1.getBytesIn() < usage2.getBytesIn()) {
+                    usage1.setBytesIn(usage2.getBytesIn());
+                }
+                if (usage1.getBytesInSsl() < usage2.getBytesInSsl()) {
+                    usage1.setBytesInSsl(usage2.getBytesInSsl());
+                }
+                if (usage1.getBytesOut() < usage2.getBytesOut()) {
+                    usage1.setBytesOut(usage2.getBytesOut());
+                }
+                if (usage1.getBytesOutSsl() < usage2.getBytesOutSsl()) {
+                    usage1.setBytesOutSsl(usage2.getBytesOutSsl());
+                }
+                if (usage1.getConcurrentConnections() < usage2.getConcurrentConnections()) {
+                    usage1.setConcurrentConnections(usage2.getConcurrentConnections());
+                }
+                if (usage1.getConcurrentConnectionsSsl() < usage2.getConcurrentConnectionsSsl()) {
+                    usage1.setConcurrentConnectionsSsl(usage2.getConcurrentConnectionsSsl());
+                }
+        }
+
+        Calendar eventTime = Calendar.getInstance();
+        // Notify usage processor
+        if (queTermination.getSslTermination().isEnabled()) {
+            LOG.debug(String.format("SSL Termination is enabled for load balancer: %s", dbLoadBalancer.getId()));
+            if (queTermination.getSslTermination().isSecureTrafficOnly()) {
+                // DEPRECATED
+                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
+
+                LOG.debug(String.format("SSL Termination is Secure Traffic Only for load balancer: %s", dbLoadBalancer.getId()));
+                usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
+            } else {
+                // DEPRECATED
+                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
+
+                LOG.debug(String.format("SSL Termination is Mixed Traffic for load balancer: %s", dbLoadBalancer.getId()));
+                usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
+            }
+        } else {
+            // DEPRECATED
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
+
+            LOG.debug(String.format("SSL Termination is NOT Enabled for load balancer: %s", dbLoadBalancer.getId()));
+            usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
+        }
+        LOG.info(String.format("Finished processing usage event for load balancer: %s", dbLoadBalancer.getId()));
+
         // Update load balancer status in DB
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
         addAtomEntriesForSslTermination(dbLoadBalancer, dbLoadBalancer.getSslTermination());
-
-        // Notify usage processor
-        if (queTermination.getSslTermination().isEnabled()) {
-            if(queTermination.getSslTermination().isSecureTrafficOnly()) {
-                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
-            } else {
-                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
-            }
-        } else {
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
-        }
 
         LOG.info(String.format("Updated load balancer '%d' ssl termination successfully for loadbalancer: ", dbLoadBalancer.getId()));
     }

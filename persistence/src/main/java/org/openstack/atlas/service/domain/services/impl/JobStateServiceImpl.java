@@ -20,6 +20,18 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
     }
 
     @Override
+    public JobState getByName(JobName jobName) {
+        JobState jobState;
+        try {
+            jobState = jobStateRepository.getByName(jobName);
+        } catch (EntityNotFoundException e) {
+            jobState = updateJobState(jobName, JobStateVal.CREATED);
+        }
+
+        return jobState;
+    }
+
+    @Override
     public List<JobState> getAll(Integer offset, Integer limit, Integer marker) {
         return jobStateRepository.getAll(offset, limit, marker);
     }
@@ -43,6 +55,22 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
         jobState.setState(jobStateVal);
         if (jobStateVal.equals(JobStateVal.IN_PROGRESS)) jobState.setStartTime(Calendar.getInstance());
         if (jobStateVal.equals(JobStateVal.FINISHED)) jobState.setEndTime(Calendar.getInstance());
+        jobStateRepository.update(jobState);
+        return jobState;
+    }
+
+    @Override
+    /* Creates an entry in the database if it doesn't exist */
+    public JobState updateInputPath(JobName jobName, String inputPath) {
+        JobState jobState;
+
+        try {
+            jobState = jobStateRepository.getByName(jobName);
+        } catch (EntityNotFoundException e) {
+            jobState = jobStateRepository.create(jobName, inputPath);
+        }
+
+        jobState.setInputPath(inputPath);
         jobStateRepository.update(jobState);
         return jobState;
     }

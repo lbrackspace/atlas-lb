@@ -7,8 +7,11 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 
 import javax.jms.Message;
+
+import java.util.Calendar;
 
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
@@ -37,7 +40,7 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
             sendErrorToEventResource(requestLb);
             return;
         }
-            
+
         try {
             LOG.debug(String.format("Removing suspension from load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
             reverseProxyLoadBalancerService.removeSuspension(dbLoadBalancer);
@@ -51,6 +54,15 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
             return;
         }
 
+        Calendar eventTime = Calendar.getInstance();
+        // Notify usage processor
+        try {
+            usageEventCollection.processZeroUsageEvent(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER, eventTime);
+        } catch (UsageEventCollectionException uex) {
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
+        }
+
         // Update load balancer in DB
         LOG.debug("Deleting Suspension from database...");
         loadBalancerService.removeSuspension(dbLoadBalancer.getId());
@@ -62,7 +74,9 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
         notificationService.saveLoadBalancerEvent(requestLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, UPDATE_LOADBALANCER, UPDATE, INFO);
 
         // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER);
+        // DEPRECATED
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER, eventTime);
+        // END DEPRECATED
 
         LOG.info(String.format("Remove suspension operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }

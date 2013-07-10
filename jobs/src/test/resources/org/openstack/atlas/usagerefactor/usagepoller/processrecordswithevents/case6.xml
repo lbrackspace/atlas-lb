@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details:
+
+    Last stored poll information for 2 Load Balancers stored in table with 2 hosts.
+    Usage counters on previous poll and event records greater than 0.
+    Usage from Snmp will not be 0.
+    Resets happen.
+    Includes concurrent Connections.
+-->
+<dataset>
+    <lb_host_usage id="1" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_out="100"  bandwidth_out_ssl="300"  bandwidth_in="500"  bandwidth_in_ssl="700"  concurrent_connections="1"  concurrent_connections_ssl="2"  num_vips="1" tags_bitmask="5" poll_time="2013-04-10 11:01:00" />
+    <lb_host_usage id="2" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_out="1000" bandwidth_out_ssl="3000" bandwidth_in="5000" bandwidth_in_ssl="7000" concurrent_connections="3"  concurrent_connections_ssl="4"  num_vips="1" tags_bitmask="5" poll_time="2013-04-10 11:01:00" />
+    <lb_host_usage id="3" account_id="1234" loadbalancer_id="124" host_id="1" bandwidth_out="200"  bandwidth_out_ssl="400"  bandwidth_in="600"  bandwidth_in_ssl="800"  concurrent_connections="5"  concurrent_connections_ssl="6"  num_vips="1" tags_bitmask="5" poll_time="2013-04-10 11:01:00" />
+    <lb_host_usage id="4" account_id="1234" loadbalancer_id="124" host_id="2" bandwidth_out="2000" bandwidth_out_ssl="4000" bandwidth_in="6000" bandwidth_in_ssl="8000" concurrent_connections="7"  concurrent_connections_ssl="8"  num_vips="1" tags_bitmask="5" poll_time="2013-04-10 11:01:00" />
+
+    <lb_host_usage id="5" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_out="50"   bandwidth_out_ssl="500"  bandwidth_in="600"  bandwidth_in_ssl="750"  concurrent_connections="9"  concurrent_connections_ssl="10" num_vips="1" tags_bitmask="5" poll_time="2013-04-10 20:03:00" event_type="SSL_MIXED_ON" />
+    <lb_host_usage id="6" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_out="1100" bandwidth_out_ssl="3200" bandwidth_in="5300" bandwidth_in_ssl="6600" concurrent_connections="0"  concurrent_connections_ssl="12" num_vips="1" tags_bitmask="5" poll_time="2013-04-10 20:03:00" event_type="SSL_MIXED_ON" />
+    <lb_host_usage id="7" account_id="1234" loadbalancer_id="124" host_id="1" bandwidth_out="400"  bandwidth_out_ssl="200"  bandwidth_in="800"  bandwidth_in_ssl="1100" concurrent_connections="13" concurrent_connections_ssl="0"  num_vips="1" tags_bitmask="3" poll_time="2013-04-10 20:03:01" event_type="SSL_ONLY_ON" />
+    <lb_host_usage id="8" account_id="1234" loadbalancer_id="124" host_id="2" bandwidth_out="2500" bandwidth_out_ssl="4100" bandwidth_in="5500" bandwidth_in_ssl="8100" concurrent_connections="15" concurrent_connections_ssl="16" num_vips="1" tags_bitmask="3" poll_time="2013-04-10 20:03:01" event_type="SSL_ONLY_ON" />
+</dataset>

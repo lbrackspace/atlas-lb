@@ -2,11 +2,13 @@ package org.openstack.atlas.usage.thread.service.serviceImpl;
 
 import org.openstack.atlas.usage.thread.service.RejectedExecutionHandler;
 import org.openstack.atlas.usage.thread.service.ThreadPoolExecutorService;
+import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+@Service
 public class ThreadPoolExecutorServiceImpl implements ThreadPoolExecutorService {
 
     private int corePoolSize;

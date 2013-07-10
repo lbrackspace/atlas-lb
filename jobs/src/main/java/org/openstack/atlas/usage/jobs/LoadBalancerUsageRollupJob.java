@@ -2,288 +2,145 @@ package org.openstack.atlas.usage.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.cfg.Configuration;
-import org.openstack.atlas.jobs.Job;
-import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfiguration;
-import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfigurationKeys;
-import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.jobs.AbstractJob;
+import org.openstack.atlas.service.domain.entities.JobName;
+import org.openstack.atlas.service.domain.entities.JobState;
+import org.openstack.atlas.service.domain.entities.JobStateVal;
+import org.openstack.atlas.service.domain.entities.Usage;
+import org.openstack.atlas.service.domain.pojos.LbIdAccountId;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
-import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
-import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
-import org.openstack.atlas.usage.execution.UsageToAtomHopperExecution;
-import org.openstack.atlas.usage.execution.UsageToAtomHopperRetryExecution;
-import org.openstack.atlas.usage.logic.UsageRollupProcessor;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
+import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
+import org.openstack.atlas.usagerefactor.UsageRollupProcessor;
+import org.openstack.atlas.util.common.CalendarUtils;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.StatefulJob;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import javax.persistence.PersistenceException;
-import java.util.ArrayList;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
-public class LoadBalancerUsageRollupJob extends Job implements StatefulJob {
+@Component
+public class LoadBalancerUsageRollupJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsageRollupJob.class);
 
-    // Shared Dependencies
+    @Autowired
     private UsageRepository usageRepository;
-
-    // Rollup Dependencies
-    private LoadBalancerUsageRepository pollingUsageRepository;
-
-    // Suspended Load Balancer Dependencies
-    private LoadBalancerUsageEventRepository usageEventRepository;
-
-    // Atom Hopper Pusher Dependencies
-    private UsageToAtomHopperExecution atomHopperUsageJobExecution;
-    private UsageToAtomHopperRetryExecution atomHopperUsageJobRetryExecution;
-    private Configuration configuration = new AtomHopperConfiguration();
+    @Autowired
+    private LoadBalancerMergedHostUsageRepository lbMergedHostUsageRepository;
+    @Autowired
     private LoadBalancerRepository loadBalancerRepository;
+    @Autowired
+    private UsageRollupProcessor usageRollupProcessor;
 
-
-    @Required
-    public void setUsageRepository(UsageRepository usageRepository) {
-        this.usageRepository = usageRepository;
-    }
-
-    @Required
-    public void setPollingUsageRepository(LoadBalancerUsageRepository pollingUsageRepository) {
-        this.pollingUsageRepository = pollingUsageRepository;
-    }
-
-    @Required
-    public void setUsageEventRepository(LoadBalancerUsageEventRepository usageEventRepository) {
-        this.usageEventRepository = usageEventRepository;
-    }
-
-    @Required
-    public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
-        this.loadBalancerRepository = loadBalancerRepository;
-    }
-
-    @Required
-    public void setAtomHopperUsageJobExecution(UsageToAtomHopperExecution atomHopperUsageJobExecution) {
-        this.atomHopperUsageJobExecution = atomHopperUsageJobExecution;
-    }
-
-    @Required
-    public void setAtomHopperUsageJobRetryExecution(UsageToAtomHopperRetryExecution atomHopperUsageJobRetryExecution) {
-        this.atomHopperUsageJobRetryExecution = atomHopperUsageJobRetryExecution;
+    @Override
+    public Log getLogger() {
+        return LOG;
     }
 
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        rollupUsage();
-        addSuspendedUsageEvents();
-//        pushUsageToAtomHopper();
+    public JobName getJobName() {
+        return JobName.LB_USAGE_ROLLUP;
+    }
+
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    }
+
+    @Override
+    public void run() throws Exception {
+        if (shouldRollup()) {
+            rollupUsage();
+        } else {
+            throw new Exception("Warning! We are currently not rolling up usage! Something may be wrong with the usage poller!");
+        }
+    }
+
+    @Override
+    public void cleanup() {
+    }
+
+    protected boolean shouldRollup() {
+        boolean rollup = false;
+        final JobState lbUsagePollerJobState = jobStateService.getByName(JobName.LB_USAGE_POLLER);
+        Calendar thisHour = Calendar.getInstance();
+        thisHour = CalendarUtils.stripOutMinsAndSecs(thisHour);
+
+        if (lbUsagePollerJobState.getEndTime().after(thisHour) && !lbUsagePollerJobState.getState().equals(JobStateVal.FAILED)) {
+            rollup = true;
+        }
+
+        return rollup;
+    }
+
+    private void rollupUsage() throws Exception {
+        Calendar hourToStop = getHourToStop();
+        Calendar hourToRollup = null;
+        Calendar rollupMarker = null;
+
+        while (hourToRollup == null || hourToRollup.before(hourToStop)) {
+            try {
+                hourToRollup = getHourToRollup(hourToStop);
+                if (hourToRollup == null) return;
+                rollupMarker = CalendarUtils.copy(hourToRollup);
+                rollupMarker.add(Calendar.HOUR, 1);
+            } catch (ParseException pe) {
+                LOG.error("Usage rollup job failed! Unable to parse inputPath which stores the last successful rollup hour.", pe);
+                throw pe;
+            }
+
+            LOG.info(String.format("Finding loadbalancers that were active for hour '%s'...", hourToRollup.getTime().toString()));
+            Set<LbIdAccountId> loadBalancersActiveDuringPeriod = loadBalancerRepository.getLoadBalancersActiveDuringPeriod(hourToRollup, rollupMarker);
+            LOG.info(String.format("%d loadbalancers were active for hour '%s'.", loadBalancersActiveDuringPeriod.size(), hourToRollup.getTime().toString()));
+
+            LOG.info(String.format("Retrieving usage entries to process from polling DB for hour '%s'...", hourToRollup.getTime().toString()));
+            List<LoadBalancerMergedHostUsage> pollingUsages = lbMergedHostUsageRepository.getAllUsageRecordsInOrderBeforeOrEqualToTime(rollupMarker);
+
+            LOG.info(String.format("Processing usage entries for hour '%s'...", hourToRollup.getTime().toString()));
+            List<Usage> usagesToInsert = usageRollupProcessor.processRecords(pollingUsages, hourToRollup, loadBalancersActiveDuringPeriod);
+
+            if (!usagesToInsert.isEmpty()) {
+                usageRepository.batchCreate(usagesToInsert);
+            }
+
+            String lastSuccessfulHourProcessed = CalendarUtils.calendarToString(hourToRollup);
+            jobStateService.updateInputPath(JobName.LB_USAGE_ROLLUP, lastSuccessfulHourProcessed);
+
+            LOG.info(String.format("Deleting polling usage entries before hour '%s'...", hourToRollup.getTime().toString()));
+            lbMergedHostUsageRepository.deleteAllRecordsBefore(hourToRollup);
+        }
+    }
+
+    protected Calendar getHourToStop() {
+        Calendar hourToStop = Calendar.getInstance();
+        hourToStop = CalendarUtils.stripOutMinsAndSecs(hourToStop);
+        return hourToStop;
+    }
+
+    protected Calendar getHourToRollup(Calendar hourToStop) throws ParseException {
+        Calendar hourToRollup;
+
         try {
-            atomHopperUsageJobExecution.execute();
-            if (Boolean.valueOf(configuration.getString(AtomHopperConfigurationKeys.ahusl_run_failed_entries))) {
-                atomHopperUsageJobRetryExecution.execute();
+            JobState jobState = jobStateService.getByName(JobName.LB_USAGE_ROLLUP);
+            String lastHourProcessedString = jobState.getInputPath();
+            hourToRollup = CalendarUtils.stringToCalendar(lastHourProcessedString);
+            hourToRollup.add(Calendar.HOUR, 1);
+            hourToRollup = CalendarUtils.stripOutMinsAndSecs(hourToRollup);
+
+            if (hourToRollup.compareTo(hourToStop) >= 0) {
+                return null;
             }
-        } catch (Exception e) {
-            throw new JobExecutionException(e);
+        } catch (NullPointerException npe) {
+            hourToRollup = Calendar.getInstance();
+            hourToRollup.add(Calendar.HOUR, -1);
+            hourToRollup = CalendarUtils.stripOutMinsAndSecs(hourToRollup);
         }
 
-
+        return hourToRollup;
     }
 
-    private void addSuspendedUsageEvents() {
-        Calendar startTime = Calendar.getInstance();
-        LOG.info(String.format("Usage rollup job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
-        jobStateService.updateJobState(JobName.SUSPENDED_LB_JOB, JobStateVal.IN_PROGRESS);
-
-        try {
-            final Calendar now = Calendar.getInstance();
-            List<LoadBalancer> suspendedLoadBalancers = loadBalancerRepository.getLoadBalancersWithStatus(LoadBalancerStatus.SUSPENDED);
-
-            for (LoadBalancer suspendedLoadBalancer : suspendedLoadBalancers) {
-                LoadBalancerUsageEvent newSuspendedEvent = new LoadBalancerUsageEvent(suspendedLoadBalancer.getAccountId(), suspendedLoadBalancer.getId(), now, suspendedLoadBalancer.getLoadBalancerJoinVipSet().size(), UsageEvent.SUSPENDED_LOADBALANCER.name(), null, null, null, null, null, null);
-                LOG.debug(String.format("Adding suspended usage event for load balancer '%d'...", suspendedLoadBalancer.getId()));
-                usageEventRepository.create(newSuspendedEvent);
-            }
-        } catch (Exception e) {
-            LOG.error("Suspended load balancer job failed!", e);
-            jobStateService.updateJobState(JobName.SUSPENDED_LB_JOB, JobStateVal.FAILED);
-            return;
-        }
-
-        Calendar endTime = Calendar.getInstance();
-        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-        jobStateService.updateJobState(JobName.SUSPENDED_LB_JOB, JobStateVal.FINISHED);
-        LOG.info(String.format("Suspended load balancer job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
-    }
-
-    private void rollupUsage() {
-        Calendar startTime = Calendar.getInstance();
-        LOG.info(String.format("Usage rollup job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
-        jobStateService.updateJobState(JobName.LB_USAGE_ROLLUP, JobStateVal.IN_PROGRESS);
-
-        try {
-            // Leaves at least one hour of data in the polling database. Ensures bitmask/numVips gets copied over and all events are accounted for.
-            Calendar rollupTimeMarker = Calendar.getInstance();
-            rollupTimeMarker.add(Calendar.HOUR_OF_DAY, -1);
-            rollupTimeMarker.set(Calendar.MINUTE, 0);
-            rollupTimeMarker.set(Calendar.SECOND, 0);
-            rollupTimeMarker.set(Calendar.MILLISECOND, 0);
-
-            LOG.info("Retrieving usage entries to process from polling DB...");
-            List<LoadBalancerUsage> pollingUsages = pollingUsageRepository.getAllRecordsBeforeTimeInOrder(rollupTimeMarker);
-
-            LOG.info("Processing usage entries...");
-            UsageRollupProcessor usagesForDatabase = new UsageRollupProcessor(pollingUsages, this.usageRepository).process();
-
-            int retries = 3;
-            while (retries > 0) {
-                if (!usagesForDatabase.getUsagesToUpdate().isEmpty()) {
-                    try {
-                        this.usageRepository.batchUpdate(usagesForDatabase.getUsagesToUpdate());
-                        retries = 0;
-                    } catch (PersistenceException e) {
-                        LOG.warn("Deleted load balancer(s) detected! Finding and removing from batch...", e);
-                        deleteBadEntries(usagesForDatabase.getUsagesToUpdate());
-                        retries--;
-                        LOG.warn(String.format("%d retries left.", retries));
-                    }
-                } else {
-                    break;
-                }
-            }
-
-            retries = 3;
-            while (retries > 0) {
-                if (!usagesForDatabase.getUsagesToCreate().isEmpty()) {
-                    try {
-                        this.usageRepository.batchCreate(usagesForDatabase.getUsagesToCreate());
-                        retries = 0;
-                    } catch (PersistenceException e) {
-                        LOG.warn("Deleted load balancer(s) detected! Finding and removing from batch...", e);
-                        deleteBadEntries(usagesForDatabase.getUsagesToCreate());
-                        retries--;
-                        LOG.warn(String.format("%d retries left.", retries));
-                    }
-                } else {
-                    break;
-                }
-            }
-            LOG.info("Deleting processed usage entries...");
-            pollingUsageRepository.deleteAllRecordsBeforeOrEqualTo(rollupTimeMarker);
-        } catch (Exception e) {
-            LOG.error("Usage rollup job failed!", e);
-            jobStateService.updateJobState(JobName.LB_USAGE_ROLLUP, JobStateVal.FAILED);
-            return;
-        }
-
-        Calendar endTime = Calendar.getInstance();
-        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-        jobStateService.updateJobState(JobName.LB_USAGE_ROLLUP, JobStateVal.FINISHED);
-        LOG.info(String.format("Usage rollup job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
-    }
-
-    @Deprecated
-    private void pushUsageToAtomHopper() {
-//        Calendar startTime = Calendar.getInstance();
-//        LOG.info(String.format("Atom hopper load balancer usage poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
-//        jobStateService.updateJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.IN_PROGRESS);
-//
-//        if (configuration.getString(AtomHopperConfigurationKeys.allow_ahusl).equals("true")) {
-//            try {
-//                authToken = retrieveAndProcessAuthToken();
-//                if (authToken != null) {
-////                    threadPoolMonitorService = AHUSLServiceUtil.startThreadMonitor(taskExecutor, threadPoolMonitorService);
-////                    taskExecutor = AHUSLServiceUtil.startThreadExecutor(taskExecutor, threadPoolExecutorService, corePoolSize, maxPoolSize, keepAliveTime);
-//
-//                    //Process usage rows, send batched rows to tasks@loadBalancerAHUSLTask
-//                    LOG.debug("Setting up the client...");
-//                    ahclient = new AtomHopperClientImpl();
-//                    int totalUsageRowsToSend = 0;
-//                    List<Usage> lbusages = loadBalancerRepository.getAllUsageNeedsPushed(AtomHopperUtil.getStartCal(), AtomHopperUtil.getNow());
-//
-//                    List<Usage> processUsage;
-//                    if (!lbusages.isEmpty()) {
-//                        int taskCounter = 0;
-//                        while (totalUsageRowsToSend < lbusages.size()) {
-//                            processUsage = new ArrayList<Usage>();
-//                            LOG.debug("Processing usage into tasks.. task: " + taskCounter);
-//                            for (int i = 0; i < nTasks; i++) {
-//                                if (totalUsageRowsToSend <= lbusages.size() - 1) {
-//                                    processUsage.add(lbusages.get(totalUsageRowsToSend));
-//                                    totalUsageRowsToSend++;
-//
-//                                } else {
-//                                    break;
-//                                }
-//                            }
-//                            taskCounter++;
-////                            taskExecutor.execute(new AtomHopperLBTask(processUsage, ahclient, authToken, usageRepository));
-//                        }
-//                    } else {
-//                        LOG.debug("No usage found for processing at this time...");
-//                    }
-//
-////                    AHUSLServiceUtil.shutDownAHUSLServices(taskExecutor, threadPoolMonitorService, ahclient);
-//                } else {
-//                    LOG.error("Could not retrieve authentication token, no requests are being processed, please notify operations... ::AUTH FAILED ALERT::");
-//                }
-//            } catch (Throwable t) {
-//                LOG.error(String.format("Exception: %s\n", AtomHopperUtil.getExtendedStackTrace(t)));
-//                Calendar endTime = Calendar.getInstance();
-//                Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-//                jobStateService.updateJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.FAILED);
-//                LOG.info(String.format("Atom hopper load balancer usage poller job failed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
-////                AHUSLServiceUtil.shutDownAHUSLServices(taskExecutor, threadPoolMonitorService, ahclient);
-//                return;
-//
-//            }
-//
-//            Calendar endTime = Calendar.getInstance();
-//            Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-//            jobStateService.updateJobState(JobName.ATOM_LOADBALANCER_USAGE_POLLER, JobStateVal.FINISHED);
-//            LOG.info(String.format("Atom hopper load balancer usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
-//        }
-    }
-
-    private void deleteBadEntries(List<Usage> usagesWithBadEntries) {
-        List<Integer> loadBalancerIdsWithBadId = new ArrayList<Integer>();
-        for (Usage usage : usagesWithBadEntries) {
-            loadBalancerIdsWithBadId.add(usage.getLoadbalancer().getId());
-        }
-
-        List<Integer> loadBalancersFromDatabase = this.usageRepository.getLoadBalancerIdsIn(loadBalancerIdsWithBadId);
-        loadBalancerIdsWithBadId.removeAll(loadBalancersFromDatabase); // Remove valid ids from list
-
-        for (Integer loadBalancerId : loadBalancerIdsWithBadId) {
-            pollingUsageRepository.deleteAllRecordsForLoadBalancer(loadBalancerId);
-        }
-
-        List<Usage> usageItemsToDelete = new ArrayList<Usage>();
-
-        for (Usage usageItem : usagesWithBadEntries) {
-            if (loadBalancerIdsWithBadId.contains(usageItem.getLoadbalancer().getId())) {
-                usageItemsToDelete.add(usageItem);
-            }
-        }
-
-        usagesWithBadEntries.removeAll(usageItemsToDelete);
-    }
-
-//    private String retrieveAndProcessAuthToken() {
-//        try {
-//            IdentityAuthClient ahuslAuthentication = new IdentityClientImpl();
-//            authToken = ahuslAuthentication.getAuthResponse().getToken().getId();
-//            if (authToken != null) {
-//                LOG.info("Successfully retrieved token for Admin user: " + configuration.getString(AuthenticationCredentialConfigurationKeys.identity_user));
-//                return authToken;
-//            }
-//        } catch (Exception e) {
-//            LOG.error("Could not retrieve authentication token, no requests are being processed, please notify operations... ::AUTH FAILED ALERT::");
-//            throw new AtomHopperUSLJobExecutionException("Error retrieving auth token: " + e);
-//        }
-//        return null;
-//    }
 }

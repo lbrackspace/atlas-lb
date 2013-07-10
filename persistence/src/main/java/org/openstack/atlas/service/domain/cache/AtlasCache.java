@@ -5,18 +5,22 @@ import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.cfg.Configuration;
-import org.openstack.atlas.service.domain.config.ServicesConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
+import org.openstack.atlas.cfg.ServicesConfigurationKeys;
 import org.openstack.atlas.service.domain.exceptions.MissingFieldException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component
 public class AtlasCache {
-    final Log LOG = LogFactory.getLog(AtlasCache.class);
+    private final Log LOG = LogFactory.getLog(AtlasCache.class);
     private static MemcachedClient cacheClient;
     private String ttl = "300";
 
-    private AtlasCache(Configuration configuration) throws IOException {
+    @Autowired
+    public AtlasCache(RestApiConfiguration configuration) throws IOException {
         String cacheHosts;
         //need to get config from a common place..
         if (configuration.hasKeys(ServicesConfigurationKeys.memcached_servers)) {

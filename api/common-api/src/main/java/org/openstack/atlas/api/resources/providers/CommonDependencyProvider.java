@@ -2,7 +2,7 @@ package org.openstack.atlas.api.resources.providers;
 
 import org.dozer.DozerBeanMapper;
 import org.openstack.atlas.api.atom.AtomFeedAdapter;
-import org.openstack.atlas.api.config.RestApiConfiguration;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;

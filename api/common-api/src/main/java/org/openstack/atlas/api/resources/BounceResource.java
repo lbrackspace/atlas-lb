@@ -1,9 +1,6 @@
 package org.openstack.atlas.api.resources;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
@@ -21,7 +18,7 @@ import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;

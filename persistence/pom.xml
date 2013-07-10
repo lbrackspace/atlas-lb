@@ -5,20 +5,35 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.18.10-SNAPSHOT</version>
+        <version>1.19.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-persistence</artifactId>
     <name>Openstack :: Atlas :: Persistence</name>
-
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-configuration</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>atlas-data-model</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-ca-rsa</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-dns-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -67,16 +82,7 @@
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.openstack.atlas</groupId>
-            <artifactId>atlas-ca-rsa</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openstack.atlas</groupId>
-            <artifactId>atlas-dns-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
 
         <dependency>
             <groupId>org.openstack.client.keystone</groupId>
@@ -92,6 +98,37 @@
             <groupId>ant</groupId>
             <artifactId>ant</artifactId>
             <version>1.6.5</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        <!--Testing Dependencies-->
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>1.4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>1.4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dbunit</groupId>
+            <artifactId>dbunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.springtestdbunit</groupId>
+            <artifactId>spring-test-dbunit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
@@ -142,6 +179,7 @@
                         </taskdef>
                         <instrument verbose="true">
                             <fileset dir="${project.build.outputDirectory}/org/openstack/atlas/service/domain">
+                                <include name="usage/entities/*.class" />
                                 <include name="entities/*.class" />
                             </fileset>
                         </instrument>

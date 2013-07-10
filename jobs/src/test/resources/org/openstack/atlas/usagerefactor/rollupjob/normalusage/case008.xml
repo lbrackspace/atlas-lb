@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details: Two load balancers. We should not create an entry for load balancer #4321.
+-->
+<dataset>
+    <lb_merged_host_usage id="1" account_id="1234" loadbalancer_id="1234" outgoing_transfer="0" outgoing_transfer_ssl="0" incoming_transfer="0" incoming_transfer_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 19:55:05" />
+
+    <lb_merged_host_usage id="2" account_id="1234" loadbalancer_id="1234" outgoing_transfer="0" outgoing_transfer_ssl="0" incoming_transfer="0" incoming_transfer_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 20:00:05" />
+
+    <lb_merged_host_usage id="3" account_id="1234" loadbalancer_id="4321" outgoing_transfer="0" outgoing_transfer_ssl="0" incoming_transfer="0" incoming_transfer_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 21:30:05" event_type="CREATE_LOADBALANCER" />
+</dataset>

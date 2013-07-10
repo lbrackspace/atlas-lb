@@ -6,9 +6,12 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 
 import javax.jms.Message;
+
+import java.util.Calendar;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -28,11 +31,17 @@ public class DeleteSslTerminationListener extends BaseListener {
 
         MessageDataContainer dataContainer = getDataContainerFromMessage(message);
         LoadBalancer dbLoadBalancer;
+        @Deprecated
         Long bytesOut;
+        @Deprecated
         Long bytesIn;
+        @Deprecated
         Integer concurrentConns;
+        @Deprecated
         Long bytesOutSsl;
+        @Deprecated
         Long bytesInSsl;
+        @Deprecated
         Integer concurrentConnsSsl;
         LoadBalancer errorMsgLB = new LoadBalancer();
         errorMsgLB.setUserName(dataContainer.getUserName());
@@ -49,6 +58,7 @@ public class DeleteSslTerminationListener extends BaseListener {
             return;
         }
 
+        // DEPRECATED
         // Try to get non-ssl usage
         try {
             bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
@@ -61,6 +71,7 @@ public class DeleteSslTerminationListener extends BaseListener {
             concurrentConns = null;
         }
 
+        // DEPRECATED
         // Try to get ssl usage
         try {
             bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
@@ -84,14 +95,32 @@ public class DeleteSslTerminationListener extends BaseListener {
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(errorMsgLB);
-            // Notify usage processor with a usage event
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+            Calendar eventTime = Calendar.getInstance();
+            // Notify usage processor
+            try {
+                usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
+            } catch (UsageEventCollectionException uex) {
+                LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                        ":: Exception: %s", dbLoadBalancer.getId(), uex));
+            }
 
+            // Notify usage processor with a usage event
+            // DEPRECATED
+            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
+            // END DEPRECATED
             return;
         }
 
         sslTerminationService.deleteSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
 
+        Calendar eventTime = Calendar.getInstance();
+        // Notify usage processor with a usage event
+        try {
+            usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
+        } catch (UsageEventCollectionException uex) {
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
+        }
 
         // Update load balancer status in DB
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
@@ -102,7 +131,9 @@ public class DeleteSslTerminationListener extends BaseListener {
         notificationService.saveLoadBalancerEvent(errorMsgLB.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_SSL_TERMINATION, DELETE, INFO);
 
         // Notify usage processor with a usage event
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+        // DEPRECATED
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
+        // END DEPRECATED
 
         LOG.info(String.format("Load balancer ssl termination '%d' successfully deleted.", dbLoadBalancer.getId()));
     }

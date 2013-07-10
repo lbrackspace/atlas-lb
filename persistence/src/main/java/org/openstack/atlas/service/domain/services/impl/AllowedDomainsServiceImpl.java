@@ -13,7 +13,6 @@ import org.openstack.atlas.service.domain.repository.AllowedDomainsRepository;
 
 @Service
 public class AllowedDomainsServiceImpl extends BaseService implements AllowedDomainsService {
-
     private final Log LOG = LogFactory.getLog(AllowedDomainsServiceImpl.class);
 
     @Override

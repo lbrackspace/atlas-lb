@@ -1,11 +1,6 @@
 package org.openstack.atlas.service.domain.services.impl;
 
 import com.sun.jersey.api.client.ClientResponse;
-import java.io.UnsupportedEncodingException;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.ws.rs.core.MultivaluedMap;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
@@ -22,7 +17,7 @@ import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,23 +33,16 @@ import org.openstack.atlas.util.debug.Debug;
 
 @Service
 public class VirtualIpServiceImpl extends BaseService implements VirtualIpService {
-
-    private static final int SB_INIT_SIZE = 1024 * 8;
     private final Log LOG = LogFactory.getLog(VirtualIpServiceImpl.class);
-    private AccountLimitService accountLimitService;
-    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+    private static final int SB_INIT_SIZE = 1024 * 8;
     public static final String DEL_PTR_FAILED = "Delete PTR on Virtual IP Fail";
     public static final String DEL_PTR_PASSED = "Delete PTR on Virtual IP Passed";
 
-    @Required
-    public void setAccountLimitService(AccountLimitService accountLimitService) {
-        this.accountLimitService = accountLimitService;
-    }
+    @Autowired
+    private AccountLimitService accountLimitService;
 
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
+    @Autowired
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     @Override
     public VirtualIp get(Integer id) throws EntityNotFoundException {
@@ -63,7 +51,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     @Override
     public Set<VirtualIp> get(Integer accountId, Integer loadBalancerId, Integer offset, Integer limit, Integer marker) throws EntityNotFoundException, DeletedStatusException {
-        return loadBalancerRepository.getVipsByAccountIdLoadBalancerId(accountId, loadBalancerId, offset, limit, marker);
+        return loadBalancerRepository.getVipsByLbId(loadBalancerId, offset, limit, marker);
     }
 
     @Override
@@ -763,4 +751,25 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         }
         return vipIdsInDb;
     }
+
+    @Override
+    public Map<Integer, List<VirtualIp>> getAllocatedVipsMappedByLbId() {
+        Map<Integer, List<VirtualIp>> vipMap = new HashMap<Integer, List<VirtualIp>>();
+        List<VirtualIp> vips = virtualIpRepository.getAll();
+        for (VirtualIp vip : vips) {
+            if(vip.getLoadBalancerJoinVipSet().size() == 0) {
+                continue;
+            }
+            Integer lbId = vip.getLoadBalancerJoinVipSet().iterator().next().getLoadBalancer().getId();
+            if (vip.isAllocated() && vip.getLoadBalancerJoinVipSet() != null &&
+                    !vip.getLoadBalancerJoinVipSet().isEmpty()) {
+                if (!vipMap.containsKey(lbId)) {
+                    vipMap.put(lbId, new ArrayList<VirtualIp>());
+                }
+                vipMap.get(lbId).add(vip);
+            }
+        }
+        return vipMap;
+    }
+
 }

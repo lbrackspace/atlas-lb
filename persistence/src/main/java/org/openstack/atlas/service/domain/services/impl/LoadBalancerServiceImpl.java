@@ -14,12 +14,14 @@ import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
 import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.openstack.atlas.service.domain.usage.BitTag;
+import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.util.CacheKeyGen;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,49 +35,21 @@ import static org.openstack.atlas.service.domain.entities.SessionPersistence.*;
 @Service
 public class LoadBalancerServiceImpl extends BaseService implements LoadBalancerService {
     private final Log LOG = LogFactory.getLog(LoadBalancerServiceImpl.class);
+
+    @Autowired
     private NotificationService notificationService;
+    @Autowired
     private AccountLimitService accountLimitService;
+    @Autowired
     private VirtualIpService virtualIpService;
+    @Autowired
     private HostService hostService;
+    @Autowired
     private NodeService nodeService;
+    @Autowired
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+    @Autowired
     private AtlasCache atlasCache;
-
-
-    @Required
-    public void setNotificationService(NotificationService notificationService) {
-        this.notificationService = notificationService;
-    }
-
-    @Required
-    public void setVirtualIpService(VirtualIpService virtualIpService) {
-        this.virtualIpService = virtualIpService;
-    }
-
-    @Required
-    public void setAccountLimitService(AccountLimitService accountLimitService) {
-        this.accountLimitService = accountLimitService;
-    }
-
-    @Required
-    public void setHostService(HostService hostService) {
-        this.hostService = hostService;
-    }
-
-    @Required
-    public void setNodeService(NodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
-
-    @Required
-    public void setAtlasCache(AtlasCache atlasCache) {
-        this.atlasCache = atlasCache;
-    }
 
     @Override
     @Transactional
@@ -812,38 +786,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         boolean isHost = false;
         LoadBalancer gLb = new LoadBalancer();
 
-//        //Check for and grab host if sharing ipv4
-//        for (LoadBalancerJoinVip loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVipSet()) {
-//            if (loadBalancerJoinVip.getVirtualIp().getId() != null) {
-//                List<LoadBalancer> lbs = virtualIpRepository.getLoadBalancersByVipId(loadBalancerJoinVip.getVirtualIp().getId());
-//                for (LoadBalancer lb : lbs) {
-//                    String hostName = lb.getHost().getName();
-//                    if (lb.getHost().getName().equals(hostName)) {
-//                        gLb = lb;
-//                        isHost = true;
-//                    } else {
-//                        throw new UnprocessableEntityException("There was a conflict between the hosts while trying to share a virtual IP.");
-//                    }
-//                }
-//            }
-//        }
-
-//        //Check for and grab host if sharing ipv6
-//        for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancer.getLoadBalancerJoinVip6Set()) {
-//            if (loadBalancerJoinVip6.getVirtualIp().getId() != null) {
-//                List<LoadBalancer> lbs = virtualIpv6Repository.getLoadBalancersByVipId(loadBalancerJoinVip6.getVirtualIp().getId());
-//                for (LoadBalancer lb : lbs) {
-//                    String hostName = lb.getHost().getName();
-//                    if (lb.getHost().getName().equals(hostName)) {
-//                        gLb = lb;
-//                        isHost = true;
-//                    } else {
-//                        throw new UnprocessableEntityException("There was a conflict between the hosts while trying to share a virtual IP.");
-//                    }
-//                }
-//            }
-//        }
-
         Integer vipId = null;
         try {
             for (LoadBalancerJoinVip loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVipSet()) {
@@ -1154,6 +1096,50 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         List<LoadBalancer> domainLbs;
         domainLbs = loadBalancerRepository.getLoadBalancersActiveInRange(accountId, startTime, endTime, offset, limit);
         return domainLbs;
+    }
+
+    @Override
+    public boolean isServiceNetLoadBalancer(Integer lbId) {
+        try {
+            final Set<VirtualIp> vipsByAccountIdLoadBalancerId = loadBalancerRepository.getVipsByLbId(lbId);
+
+            for (VirtualIp virtualIp : vipsByAccountIdLoadBalancerId) {
+                if (virtualIp.getVipType().equals(VirtualIpType.SERVICENET)) return true;
+            }
+
+        } catch (EntityNotFoundException e) {
+            return false;
+        } catch (DeletedStatusException e) {
+            return false;
+        }
+
+        return false;
+    }
+
+    @Override
+    public BitTags getCurrentBitTags(Integer lbId) {
+        BitTags bitTags = new BitTags();
+
+        try {
+            SslTermination sslTerm = sslTerminationRepository.getSslTerminationByLbId(lbId);
+
+            if (sslTerm.isEnabled()) {
+                bitTags.flipTagOn(BitTag.SSL);
+                if (!sslTerm.isSecureTrafficOnly()) {
+                    bitTags.flipTagOn(BitTag.SSL_MIXED_MODE);
+                }
+            }
+
+        } catch (EntityNotFoundException e1) {
+            bitTags.flipTagOff(BitTag.SSL);
+            bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
+        }
+
+        if (isServiceNetLoadBalancer(lbId)) {
+            bitTags.flipTagOn(BitTag.SERVICENET_LB);
+        }
+
+        return bitTags;
     }
 
     private List<LoadBalancer> verifySharedVipsOnLoadBalancers(List<LoadBalancer> lbs) throws EntityNotFoundException, BadRequestException {

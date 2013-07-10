@@ -2,146 +2,166 @@ package org.openstack.atlas.usage.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
-import org.openstack.atlas.jobs.Job;
-import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.events.UsageEvent;
-import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.repository.HostRepository;
-import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.repository.UsageRepository;
-import org.openstack.atlas.service.domain.usage.BitTag;
-import org.openstack.atlas.service.domain.usage.BitTags;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent;
-import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageEventRepository;
-import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
-import org.openstack.atlas.usage.BatchAction;
-import org.openstack.atlas.usage.ExecutionUtilities;
-import org.openstack.atlas.usage.logic.UsageCalculator;
-import org.openstack.atlas.usage.logic.UsageEventProcessor;
+import org.openstack.atlas.jobs.AbstractJob;
+import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.JobName;
+import org.openstack.atlas.service.domain.services.HostService;
+import org.openstack.atlas.service.domain.services.UsageRefactorService;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
+import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
+import org.openstack.atlas.usagerefactor.HostThread;
+import org.openstack.atlas.usagerefactor.SnmpUsage;
+import org.openstack.atlas.usagerefactor.UsageProcessor;
+import org.openstack.atlas.usagerefactor.helpers.HostIdUsageMap;
+import org.openstack.atlas.usagerefactor.helpers.UsageProcessorResult;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.StatefulJob;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.*;
 
-public class LoadBalancerUsagePoller extends Job implements StatefulJob {
+@Component
+public class LoadBalancerUsagePoller extends AbstractJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsagePoller.class);
-    private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
-    private LoadBalancerRepository loadBalancerRepository;
-    private HostRepository hostRepository;
-    private LoadBalancerUsageRepository hourlyUsageRepository;
-    private UsageRepository rollupUsageRepository;
-    private LoadBalancerUsageEventRepository usageEventRepository;
-    private final int BATCH_SIZE = 100;
 
-    @Required
-    public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
-        this.loadBalancerRepository = loadBalancerRepository;
-    }
+    @Autowired
+    private UsageRefactorService usageRefactorService;
+    @Autowired
+    private HostService hostService;
+    @Autowired
+    private UsageProcessor usageProcessor;
 
-    @Required
-    public void setReverseProxyLoadBalancerAdapter(ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter) {
-        this.reverseProxyLoadBalancerAdapter = reverseProxyLoadBalancerAdapter;
-    }
-
-    @Required
-    public void setHostRepository(HostRepository hostRepository) {
-        this.hostRepository = hostRepository;
-    }
-
-    @Required
-    public void setHourlyUsageRepository(LoadBalancerUsageRepository hourlyUsageRepository) {
-        this.hourlyUsageRepository = hourlyUsageRepository;
-    }
-
-    @Required
-    public void setRollupUsageRepository(UsageRepository rollupUsageRepository) {
-        this.rollupUsageRepository = rollupUsageRepository;
-    }
-
-    @Required
-    public void setUsageEventRepository(LoadBalancerUsageEventRepository usageEventRepository) {
-        this.usageEventRepository = usageEventRepository;
+    @Override
+    public Log getLogger() {
+        return LOG;
     }
 
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        processUsageEvents();
-        startUsagePoller();
+    public JobName getJobName() {
+        return JobName.LB_USAGE_POLLER;
     }
 
-    private void processUsageEvents() {
-        List<LoadBalancerUsageEvent> usageEventEntries = usageEventRepository.getAllUsageEventEntriesInOrder();
-        UsageEventProcessor usageEventProcessor = new UsageEventProcessor(usageEventEntries, hourlyUsageRepository, rollupUsageRepository, loadBalancerRepository);
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    }
 
-        usageEventProcessor.process();
-
-        List<LoadBalancerUsage> usagesToCreate = usageEventProcessor.getUsagesToCreate();
-        List<LoadBalancerUsage> usagesToUpdate = usageEventProcessor.getUsagesToUpdate();
-
-        if (!usagesToUpdate.isEmpty()) hourlyUsageRepository.batchUpdate(usagesToUpdate);
-        LOG.info(String.format("%d records updated.", usagesToUpdate.size()));
-        
-        if (!usagesToCreate.isEmpty()) hourlyUsageRepository.batchCreate(usagesToCreate);
-        LOG.info(String.format("%d records created.", usagesToCreate.size()));
-
+    @Override
+    public void run() {
+        Calendar pollTime = Calendar.getInstance();
+        LOG.info("Set poll time to " + pollTime.getTime().toString() + "...");
+        Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages = usageRefactorService.getRecordsBeforeTimeInclusive(pollTime);
+        LOG.info("Retrieved records for " + existingUsages.size() + " load balancers from lb_host_usage table.");
+        Map<Integer, Map<Integer, SnmpUsage>> currentUsages;
         try {
-            BatchAction<LoadBalancerUsageEvent> deleteEventUsagesAction = new BatchAction<LoadBalancerUsageEvent>() {
-                public void execute(Collection<LoadBalancerUsageEvent> usageEventEntries) throws Exception {
-                    usageEventRepository.batchDelete(usageEventEntries);
-                }
-            };
-            ExecutionUtilities.executeInBatches(usageEventEntries, BATCH_SIZE, deleteEventUsagesAction);
-            LOG.info(String.format("%d records deleted.", usageEventEntries.size()));
+            currentUsages = getCurrentData();
         } catch (Exception e) {
-            LOG.error("Exception occurred while deleting usage event entries.", e);
-        }
-    }
-
-    private void startUsagePoller() {
-        Calendar startTime = Calendar.getInstance();
-        LOG.info(String.format("Load balancer usage poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
-        jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.IN_PROGRESS);
-
-        boolean failed = false;
-        List<Host> hosts;
-        List<LoadBalancerUsagePollerThread> threads = new ArrayList<LoadBalancerUsagePollerThread>();
-
-        try {
-            hosts = hostRepository.getAllActive();
-        } catch (Exception ex) {
-            LOG.error(ex.getCause(), ex);
+            LOG.error("There was an error retrieving current usage from stingray using snmp. " + e);
             return;
         }
+        LOG.info("Retrieved records for " + currentUsages.size() + " hosts from stingray by SNMP.");
+        UsageProcessorResult result = usageProcessor.mergeRecords(existingUsages, currentUsages, pollTime);
+        LOG.info("Completed processing of current usage");
+        LOG.info("Checking if any events were inserted between the beginning of this job and now...");
+        Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> newEvents = usageRefactorService.getRecordsAfterTimeInclusive(pollTime);
+        Set<Integer> loadBalancersNotToDelete = removeLoadBalancerRecordsThatHadNewEvents(result, newEvents);
+        usageRefactorService.batchCreateLoadBalancerMergedHostUsages(result.getMergedUsages());
+        LOG.info("Completed insertion of " + result.getMergedUsages().size() + " new records into lb_merged_host_usage table.");
+        usageRefactorService.batchCreateLoadBalancerHostUsages(result.getLbHostUsages());
+        LOG.info("Completed insertion of " + result.getLbHostUsages().size() + " new records into lb_host_usage table.");
+        usageRefactorService.deleteOldLoadBalancerHostUsages(pollTime, loadBalancersNotToDelete);
+        LOG.info("Completed deletion of records from lb_host_usage table prior to poll time: " + pollTime.getTime().toString());
+    }
 
-        for (final Host host : hosts) {
-            LoadBalancerUsagePollerThread thread = new LoadBalancerUsagePollerThread(loadBalancerRepository, host.getName() + "-poller-thread", host, reverseProxyLoadBalancerAdapter, hostRepository, hourlyUsageRepository, rollupUsageRepository);
-            threads.add(thread);
-            thread.start();
+    @Override
+    public void cleanup() {
+    }
+
+    private Map<Integer, Map<Integer, SnmpUsage>> getCurrentData() throws Exception {
+        LOG.info("Collecting Stingray data from each host...");
+        Map<Integer, Map<Integer, SnmpUsage>> mergedHostsUsage = new HashMap<Integer, Map<Integer, SnmpUsage>>();
+        List<Host> hostList = getAccessibleHosts();
+        List<Callable<HostIdUsageMap>> callables = new ArrayList<Callable<HostIdUsageMap>>();
+
+        ExecutorService threadPool = Executors.newFixedThreadPool(hostList.size());
+        for (Host host : hostList) {
+            callables.add(new HostThread(host));
         }
 
-        for (LoadBalancerUsagePollerThread thread : threads) {
+        try {
+            List<Future<HostIdUsageMap>> futures = threadPool.invokeAll(callables);
+            for (Future<HostIdUsageMap> future : futures) {
+                mergedHostsUsage.put(future.get().getHostId(), future.get().getMap());
+            }
+
+            return mergedHostsUsage;
+        } finally {
+            shutdownAndAwaitTermination(threadPool);
+        }
+    }
+
+    private List<Host> getAccessibleHosts() {
+        LOG.info("Discovering accessible hosts...");
+        List<Host> hostList = hostService.getAll();
+        List<Host> accessibleHosts = new ArrayList<Host>();
+        for (Host host : hostList) {
             try {
-                thread.join();
-                LOG.debug(String.format("Load balancer usage poller thread '%s' completed.", thread.getName()));
-            } catch (InterruptedException e) {
-                LOG.error(String.format("Load balancer usage poller thread interrupted for thread '%s'", thread.getName()), e);
-                e.printStackTrace();
-                failed = true;
+                if (host.isSoapEndpointActive()) {
+                    LOG.info("Host: " + host.getName() + " is accessible.");
+                    accessibleHosts.add(host);
+                } else {
+                    LOG.info("Host: " + host.getName() + " is NOT accessible.");
+                }
+            } catch (Exception e) {
+                LOG.info("Exception while checking host: " + host.getName() + " endpoint. " + e.getMessage());
             }
         }
+        return accessibleHosts;
+    }
 
-        if (failed) {
-            jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FAILED);
-        } else {
-            Calendar endTime = Calendar.getInstance();
-            Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-            LOG.info(String.format("Usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
-            jobStateService.updateJobState(JobName.LB_USAGE_POLLER, JobStateVal.FINISHED);
+    private Set<Integer> removeLoadBalancerRecordsThatHadNewEvents(UsageProcessorResult recordsToInsert,
+                                                           Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> newEvents) {
+        Set<Integer> loadBalancersToExcludeFromDelete = new HashSet<Integer>();
+        for (Integer loadbalancerId : newEvents.keySet()) {
+            loadBalancersToExcludeFromDelete.add(loadbalancerId);
+            Iterator<LoadBalancerMergedHostUsage> lbmhuIter = recordsToInsert.getMergedUsages().iterator();
+            while (lbmhuIter.hasNext()) {
+                LoadBalancerMergedHostUsage mergedUsage = lbmhuIter.next();
+                if(mergedUsage.getLoadbalancerId() == loadbalancerId) {
+                    LOG.info(String.format("Load balancer %d had event come in during poller run.  Removing records that were to be inserted.", loadbalancerId));
+                    lbmhuIter.remove();
+                }
+            }
+            Iterator<LoadBalancerHostUsage> lbhuIter = recordsToInsert.getLbHostUsages().iterator();
+            while (lbhuIter.hasNext()) {
+                LoadBalancerHostUsage hostUsage = lbhuIter.next();
+                if (hostUsage.getLoadbalancerId() == loadbalancerId) {
+                    lbhuIter.remove();
+                }
+            }
+        }
+        return loadBalancersToExcludeFromDelete;
+    }
+
+    private void shutdownAndAwaitTermination(ExecutorService pool) {
+        final int THREAD_POOL_TIMEOUT = 30;
+
+        pool.shutdown(); // Disable new tasks from being submitted
+        
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(THREAD_POOL_TIMEOUT, TimeUnit.SECONDS)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(THREAD_POOL_TIMEOUT, TimeUnit.SECONDS))
+                    LOG.error(String.format("Pool '%s' did not terminate!", pool.toString()));
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
         }
     }
 

@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.18.10-SNAPSHOT</version>
+        <version>1.19.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-jobs</artifactId>
@@ -105,6 +105,31 @@
         <!--<artifactId>atom-hopper-usl-client</artifactId>-->
         <!--<version>1.0.0</version>-->
         <!--</dependency>-->
+        <dependency>
+            <groupId>org.dbunit</groupId>
+            <artifactId>dbunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <scope>test</scope>
+        </dependency>
+            <dependency>
+                <groupId>com.github.springtestdbunit</groupId>
+                <artifactId>spring-test-dbunit</artifactId>
+                <scope>test</scope>
+            </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -120,6 +145,18 @@
                         <debug>true</debug>
                     </configuration>
                 </plugin>
+            <plugin>
+                <inherited>true</inherited>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <optimize>false</optimize>
+                    <debug>true</debug>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
@@ -140,35 +177,6 @@
                     </webResources>
                 </configuration>
             </plugin>
-            <!--<plugin>-->
-            <!--<groupId>org.codehaus.mojo</groupId>-->
-            <!--<artifactId>jaxb2-maven-plugin</artifactId>-->
-            <!--<version>1.3</version>-->
-            <!--<dependencies>-->
-            <!--<dependency>-->
-            <!--<groupId>org.jvnet.jaxb2-commons</groupId>-->
-            <!--<artifactId>collection-setter-injector</artifactId>-->
-            <!--<version>1.0</version>-->
-            <!--</dependency>-->
-            <!--</dependencies>-->
-
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<id>generate-ahusage-sources</id>-->
-            <!--<configuration>-->
-            <!--<staleFile>target/lb.staleFile</staleFile>-->
-            <!--<schemaDirectory>${basedir}/src/main/resources/META-INF/xsd</schemaDirectory>-->
-            <!--<clearOutputDir>false</clearOutputDir>-->
-            <!--<schemaFiles>entry.xsd</schemaFiles>-->
-            <!--<schemaFiles>ProductExtensionExample-LBaaS.xsd</schemaFiles>-->
-            <!--<packageName>org.openstack.atlas.jobs</packageName>-->
-            <!--</configuration>-->
-            <!--<goals>-->
-            <!--<goal>xjc</goal>-->
-            <!--</goals>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
             <plugin>
                 <groupId>org.jvnet.jaxb2.maven2</groupId>
                 <artifactId>maven-jaxb2-plugin</artifactId>
@@ -178,6 +186,7 @@
                     <schemaIncludes>
                         <include>entry.xsd</include>
                         <include>ProductExtension-LBaaS.xsd</include>
+                        <include>ProductExtension-LBaaS-delete.xsd</include>
                     </schemaIncludes>
                 </configuration>
                 <executions>
@@ -188,8 +197,42 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-a-jar</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <groupId>${project.groupId}</groupId>
+                            <version>${project.version}</version>
+                            <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+
     <repositories>
         <repository>
             <id>hh-public</id>

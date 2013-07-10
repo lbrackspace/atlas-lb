@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:cxfse="http://servicemix.apache.org/cxfse/1.0"
        xmlns:tx="http://www.springframework.org/schema/tx"
-       xmlns:osgi="http://www.springframework.org/schema/osgi" xmlns:aop="http://www.springframework.org/schema/aop"
-       xsi:schemaLocation="
-                http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-                http://servicemix.apache.org/cxfse/1.0 http://servicemix.apache.org/cxfse/1.0/servicemix-cxf-se.xsd
-                http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
-                http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
-                http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
-">
-
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
 
     <!-- Wires up the @Tx's -->
     <tx:annotation-driven/>
@@ -39,70 +33,8 @@
 
     <!-- The EM Factory is where the magic happens :) -->
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-        <property name="persistenceXmlLocation"
-                  value="classpath:META-INF/lb-persistence.xml"/>
+        <property name="persistenceXmlLocation" value="classpath:META-INF/lb-persistence.xml"/>
         <property name="persistenceUnitName" value="loadbalancing"/>
     </bean>
 
-    <!-- Repo's go here, they MUST be prototype, they are not thread safe -->
-    <bean id="loadBalancerRepository" class="org.openstack.atlas.service.domain.repository.LoadBalancerRepository"
-          scope="prototype"/>
-    <bean id="hostRepository" class="org.openstack.atlas.service.domain.repository.HostRepository"
-          scope="prototype"/>
-    <bean id="groupRepository" class="org.openstack.atlas.service.domain.repository.GroupRepository"
-          scope="prototype"/>
-    <bean id="rollupUsageRepository" class="org.openstack.atlas.service.domain.repository.UsageRepository"
-          scope="prototype"/>
-    <bean id="accountUsageRepository" class="org.openstack.atlas.service.domain.repository.AccountUsageRepository"
-          scope="prototype"/>
-    <bean id="virtualIpRepository" class="org.openstack.atlas.service.domain.repository.VirtualIpRepository"
-          scope="prototype"/>
-    <bean id="alertRepository" class="org.openstack.atlas.service.domain.events.repository.AlertRepository"
-          scope="prototype"/>
-    <bean id="loadBalancerEventRepository"
-          class="org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository"
-          scope="prototype"/>
-    <bean id="usageRepository" class="org.openstack.atlas.service.domain.repository.UsageRepository"
-          scope="prototype"/>
-    <bean id="sslTerminationRepository" class="org.openstack.atlas.service.domain.repository.SslTerminationRepository"
-          scope="prototype"/>
-
-
-    <!-- AHUSL -->
-    <bean id="loadBalancerAHUSLTask" class="org.openstack.atlas.atomhopper.tasks.AtomHopperLBTask"/>
-
-    <bean id="abstractUsageExecution" abstract="true"
-          class="org.openstack.atlas.usage.execution.AbstractUsageExecution">
-        <property name="jobStateService" ref="jobStateService"/>
-        <property name="threadPoolMonitorService" ref="threadPoolMonitorService"/>
-        <property name="threadPoolExecutorService" ref="threadPoolExecutorService"/>
-    </bean>
-    <bean id="atomHopperUsageJobExecution" class="org.openstack.atlas.usage.execution.UsageToAtomHopperExecution"
-          parent="abstractUsageExecution">
-        <property name="usageRepository" ref="usageRepository"/>
-        <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
-        <property name="loadBalancerEventRepository" ref="loadBalancerEventRepository"/>
-        <property name="alertRepository" ref="alertRepository"/>
-    </bean>
-    <bean id="atomHopperUsageJobRetryExecution"
-          class="org.openstack.atlas.usage.execution.UsageToAtomHopperRetryExecution"
-          parent="abstractUsageExecution">
-        <property name="usageRepository" ref="usageRepository"/>
-        <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
-        <property name="loadBalancerEventRepository" ref="loadBalancerEventRepository"/>
-        <property name="alertRepository" ref="alertRepository"/>
-    </bean>
-    <bean id="threadPoolMonitorService"
-          class="org.openstack.atlas.usage.thread.service.serviceImpl.ThreadPoolMonitorServiceImpl">
-        <property name="monitoringPeriod" value="5"/>
-    </bean>
-    <bean id="rejectedExecutionHandler" class="org.openstack.atlas.usage.thread.service.RejectedExecutionHandler"/>
-    <bean id="threadPoolExecutorService"
-          class="org.openstack.atlas.usage.thread.service.serviceImpl.ThreadPoolExecutorServiceImpl">
-        <property name="corePoolSize" value="5"/>
-        <property name="maxPoolSize" value="10"/>
-        <property name="keepAliveTime" value="30"/>
-        <property name="queueCapacity" value="300"/>
-        <property name="rejectedExecutionHandler" ref="rejectedExecutionHandler"/>
-    </bean>
 </beans>

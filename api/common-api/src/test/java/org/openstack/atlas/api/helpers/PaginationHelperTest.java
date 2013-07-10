@@ -5,8 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
-import org.openstack.atlas.api.config.RestApiConfiguration;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.w3.atom.Link;
 
 import static org.mockito.Mockito.doReturn;

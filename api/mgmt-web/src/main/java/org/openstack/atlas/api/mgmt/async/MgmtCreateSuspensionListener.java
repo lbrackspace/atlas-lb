@@ -6,8 +6,14 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
+import org.openstack.atlas.usagerefactor.SnmpUsage;
 
 import javax.jms.Message;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
@@ -16,7 +22,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.UPDATE_LOADBALANCER;
 
-public class MgmtCreateSuspensionListener  extends BaseListener{
+public class MgmtCreateSuspensionListener extends BaseListener {
 
     private final Log LOG = LogFactory.getLog(MgmtCreateSuspensionListener.class);
 
@@ -26,11 +32,17 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
         LOG.debug(message);
         LoadBalancer requestLb = getEsbRequestFromMessage(message).getLoadBalancer();
         LoadBalancer dbLoadBalancer;
+        @Deprecated
         Long bytesOut;
+        @Deprecated
         Long bytesIn;
+        @Deprecated
         Integer concurrentConns;
+        @Deprecated
         Long bytesOutSsl;
+        @Deprecated
         Long bytesInSsl;
+        @Deprecated
         Integer concurrentConnsSsl;
 
         try {
@@ -67,6 +79,16 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
             concurrentConnsSsl = null;
         }
 
+        List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
+        try {
+            LOG.info(String.format("Collecting SUSPEND_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
+            usages = usageEventCollection.getUsage(dbLoadBalancer);
+            LOG.info(String.format("Successfully collected SUSPEND_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
+        } catch (UsageEventCollectionException e) {
+            LOG.error(String.format("Collection of the SUSPEND_LOADBALANCER usage event failed for " +
+                    "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
+        }
+
         try {
             LOG.debug(String.format("Suspending load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
             reverseProxyLoadBalancerService.suspendLoadBalancer(dbLoadBalancer);
@@ -91,8 +113,13 @@ public class MgmtCreateSuspensionListener  extends BaseListener{
         String atomSummary = "Load balancer suspended. Please contact support if you have any questions.";
         notificationService.saveLoadBalancerEvent(requestLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, UPDATE_LOADBALANCER, UPDATE, INFO);
 
-        // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+        // DEPRECATED
+        Calendar eventTime = Calendar.getInstance();
+        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
+        // END DEPRECATED
+
+        //New usage process
+        usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER, eventTime);
 
 
         LOG.info(String.format("Suspend load balancer operation complete for load balancer '%d'.", dbLoadBalancer.getId()));

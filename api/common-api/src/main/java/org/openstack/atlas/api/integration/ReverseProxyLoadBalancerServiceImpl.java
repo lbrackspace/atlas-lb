@@ -8,9 +8,9 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.helpers.CacheKeyGen;
 import org.openstack.atlas.api.helpers.DateHelpers;
 import org.openstack.atlas.cfg.Configuration;
@@ -74,6 +74,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             throw af;
         }
     }
+
     @Override
     public void deleteLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
@@ -328,6 +329,11 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
         }
+    }
+
+    //TODO: clean this one up...
+    @Override public void updateHealthMonitor(Integer lbId, Integer accountId, HealthMonitor monitor) throws Exception {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
