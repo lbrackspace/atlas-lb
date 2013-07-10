@@ -16,7 +16,6 @@ import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

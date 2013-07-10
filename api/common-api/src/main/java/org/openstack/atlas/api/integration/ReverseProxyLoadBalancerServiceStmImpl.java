@@ -1,7 +1,6 @@
 package org.openstack.atlas.api.integration;
 
 
-import com.zxtm.service.client.ObjectDoesNotExist;
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,15 +10,12 @@ import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
-import org.openstack.atlas.api.helpers.CacheKeyGen;
-import org.openstack.atlas.api.helpers.DateHelpers;
 import org.openstack.atlas.cfg.Configuration;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
-import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.HostService;
@@ -31,11 +27,8 @@ import org.openstack.atlas.util.debug.Debug;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
-
-import static java.util.Calendar.getInstance;
 
 public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadBalancerStmService {
 
@@ -366,40 +359,6 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void createHostBackup(Host host,
-                                 String backupName) throws RemoteException, MalformedURLException, DecryptException {
-        LoadBalancerEndpointConfiguration config = getConfigHost(host);
-        try {
-            reverseProxyLoadBalancerStmAdapter.createHostBackup(config, backupName);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
-    public void restoreHostBackup(Host host, String backupName) throws RemoteException, ObjectDoesNotExist, MalformedURLException, DecryptException {
-        LoadBalancerEndpointConfiguration config = getConfigHost(host);
-        try {
-            reverseProxyLoadBalancerStmAdapter.restoreHostBackup(config, backupName);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
-    public void deleteHostBackup(Host host, String backupName) throws RemoteException, ObjectDoesNotExist, MalformedURLException, DecryptException {
-        LoadBalancerEndpointConfiguration config = getConfigHost(host);
-        try {
-            reverseProxyLoadBalancerStmAdapter.deleteHostBackup(config, backupName);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
     public void suspendLoadBalancer(LoadBalancer lb) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
@@ -419,82 +378,6 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
         }
-    }
-
-    @Override
-    public int getTotalCurrentConnectionsForHost(Host host) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigHost(host);
-        int conn;
-        try {
-            conn = reverseProxyLoadBalancerStmAdapter.getTotalCurrentConnectionsForHost(config);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-        return conn;
-    }
-
-    @Override
-    public Integer getLoadBalancerCurrentConnections(LoadBalancer lb, boolean isSsl) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
-        int conn;
-        try {
-            conn = reverseProxyLoadBalancerStmAdapter.getLoadBalancerCurrentConnections(config, lb.getAccountId(), lb.getId(), isSsl);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-        return conn;
-    }
-
-    @Override
-    public Long getLoadBalancerBytesIn(LoadBalancer lb, boolean isSsl) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
-        long bytesIn;
-        try {
-            bytesIn = reverseProxyLoadBalancerStmAdapter.getLoadBalancerBytesIn(config, lb.getAccountId(), lb.getId(), isSsl);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-        return bytesIn;
-    }
-
-    @Override
-    public Long getLoadBalancerBytesOut(LoadBalancer lb, boolean isSsl) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
-        long bytesOut;
-        try {
-            bytesOut = reverseProxyLoadBalancerStmAdapter.getLoadBalancerBytesOut(config, lb.getAccountId(), lb.getId(), isSsl);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-        return bytesOut;
-    }
-
-    @Override
-    public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
-        String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
-        Stats lbStats;
-
-        long cal = getInstance().getTimeInMillis();
-        lbStats = (Stats) atlasCache.get(key);
-        if (lbStats == null) {
-            try {
-                lbStats = reverseProxyLoadBalancerStmAdapter.getLoadBalancerStats(config, loadbalancerId, accountId);
-                LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, Missed from cache, retrieved from api... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
-                atlasCache.set(key, lbStats);
-            } catch (AxisFault af) {
-                checkAndSetIfSoapEndPointBad(config, af);
-                throw af;
-            }
-        } else {
-            LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, retrieved from cache... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
-            return lbStats;
-        }
-        return lbStats;
     }
 
     @Override

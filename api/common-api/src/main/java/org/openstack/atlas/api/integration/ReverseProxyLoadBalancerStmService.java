@@ -4,10 +4,12 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ObjectExistsException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.RateLimit;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
-import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 
@@ -68,27 +70,11 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void removeHealthMonitor(LoadBalancer loadBalancer) throws Exception;
 
-    void createHostBackup(Host host, String backupName) throws Exception;
-
-    void restoreHostBackup(Host host, String backupName) throws Exception;
-
-    void deleteHostBackup(Host host, String backupName) throws Exception;
-
     void suspendLoadBalancer(LoadBalancer lb) throws Exception;
 
     void removeSuspension(LoadBalancer lb) throws Exception;
 
     void setErrorFile(LoadBalancer loadBalancer, String content) throws Exception,DecryptException, MalformedURLException;
-
-    int getTotalCurrentConnectionsForHost(Host host) throws Exception;
-
-    Integer getLoadBalancerCurrentConnections(LoadBalancer lb, boolean isSsl) throws Exception;
-
-    Long getLoadBalancerBytesIn(LoadBalancer lb, boolean isSsl) throws Exception;
-
-    Long getLoadBalancerBytesOut(LoadBalancer lb, boolean isSsl) throws Exception;
-
-    public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception;
 
     Hostssubnet getSubnetMappings(Host host) throws Exception;
 

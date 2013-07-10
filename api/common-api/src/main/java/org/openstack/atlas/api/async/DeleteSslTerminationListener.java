@@ -63,7 +63,7 @@ public class DeleteSslTerminationListener extends BaseListener {
         try {
             bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
             bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
-            concurrentConns = reverseProxyLoadBalancerStmService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
+            concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
         } catch (Exception e) {
             LOG.warn("Couldn't retrieve load balancer usage stats. Setting them to null.");
             bytesOut = null;
