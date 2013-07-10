@@ -17,8 +17,6 @@ public class SubnetMappingITest {
 
     }
 
-
-
     private void createSubnetMapping() {
         String subnetName = "TestSubnet";
         String netInterfaceName = "TestNetInterface";
@@ -40,11 +38,5 @@ public class SubnetMappingITest {
         subnetList.add(hostsubnet);
         hostssubnet.setHostsubnets(subnetList);
 
-
-
     }
-
-
-
-
 }
