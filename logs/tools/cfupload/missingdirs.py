@@ -76,8 +76,11 @@ def main(*args,**kw):
     
     printf("searching for missing hours between %s and %s\n",firstHour,lastHour)
     missingHours = set(buildOrdRange(firstHour,lastHour)) - set(hoursKeyList)
+    nMissing = 0
     for missingHour in sorted(list(missingHours)):
         printf("Missing %s\n",missingHour)
+        nMissing += 1
+    printf("Total missing dates = %i\n",nMissing)
 
 if __name__ == "__main__":
     main(*sys.argv)    
