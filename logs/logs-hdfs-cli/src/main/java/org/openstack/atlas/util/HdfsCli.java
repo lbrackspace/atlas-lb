@@ -122,6 +122,7 @@ public class HdfsCli {
                     System.out.printf("cpld <srcDir> <dstDir>  args [reps] [blocksize]\n");
                     System.out.printf("cpLocal <localSrc> <localDst> [buffsize] #None hadoop file copy\n");
                     System.out.printf("cptl <srcPath remote> <dstPath local> #Copy to Local\n");
+                    System.out.printf("cpjj #Copy the jobs jar\n");
                     System.out.printf("diffConfig <confA.xml> <confB.xml># Compare the differences between the configs\n");
                     System.out.printf("du #Get number of free space on HDFS\n");
                     System.out.printf("dumpConfig <outFile.xml> <confIn.xml..> #Dump config to outfile\n");
@@ -167,6 +168,12 @@ public class HdfsCli {
                     System.out.printf("fb #Free all bytes wasted so far");
                     System.out.printf("wbs #List the number of bytes in the wasted byte Cuffer\n");
                     System.out.printf("whoami\n");
+                    continue;
+                }
+                if (cmd.equals("cpjj")) {
+                    System.out.printf("Attempting to Copy jobs jar\n");
+                    HadoopLogsConfigs.copyJobsJar();
+                    System.out.printf("JobJar copied.\n");
                     continue;
                 }
                 if (cmd.equals("wbs")) {
