@@ -113,7 +113,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 throw new StmRollBackException("Failed to update loadbalancer, rolling back...", ex);
             }
         }
-        //Finish...
+        //todo: Finish...
     }
 
     @Override
@@ -123,7 +123,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
         LOG.debug(String.format("Removing loadbalancer: %s ...", vsName));
-        //others...
+        //todo: others...
         deleteHealthMonitor(config, client, vsName);
 //        deleteProtection(config, client, vsName);
         deleteVirtualIps(config, loadBalancer);
@@ -303,6 +303,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws AxisFault, InsufficientRequestException, StmRollBackException {
+        //TODO: need to update listener to follow 'DELETE' conventions, then update this method to handle correctly...
         final String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
         ResourceTranslator translator = new ResourceTranslator();
         StingrayRestClient client = loadSTMRestClient(config);
@@ -595,6 +596,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         Protection Resources
      */
 
+    //todo: rest of protection? rollback can go away..
     private void rollbackProtection(StingrayRestClient client, LoadBalancer loadBalancer, Protection curProtection) throws InsufficientRequestException, StmRollBackException {
         String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
         String protectionSslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
@@ -651,11 +653,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void updateHalfClosed(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
-
+         //todo: this can go away..
     }
 
 
-    //TODO:
+    //TODO: this can go away..
     // We can honestly get rid of alot of these one-offs by using the proper update'Resource'. example here, updateVirtualServer can handle this
     //But that means we have to update listeners and other code also..
     @Override
@@ -680,6 +682,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
     }
 
+    //todo: this can go away..
     @Override
     public void updateTimeout(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
@@ -706,16 +709,17 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void setLoadBalancingAlgorithm(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        //TODO: still in example phase...
+        //TODO: this can go away...
 //
     }
 
     @Override
     public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws RemoteException, InsufficientRequestException, StmRollBackException {
-
+        //todo: need to verify logic and that REST can support it, if so implement... else, this can go away...
     }
 
 
+    //todo: this can go away..
     @Override
     public void setNodeWeights(LoadBalancerEndpointConfiguration config,
                                Integer loadBalancerId, Integer accountId, Collection<Node> nodes)
@@ -723,6 +727,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
 
+    //This can maybe be moved to util class?
     private boolean persistenceIsSupported(LoadBalancer loadBalancer) {
         boolean supported = false;
         String type = loadBalancer.getSessionPersistence().getSessionPersistence().getPersistenceType().value();
@@ -1063,12 +1068,14 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     }
 
+    //TODO: this needs to stay and is 'special'...
     @Override
     public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException {
 
     }
 
 
+    //TODO: this can stay also, just simple verification...
     @Override
     public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config) throws RemoteException {
         return false;
@@ -1137,6 +1144,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
             //TODO: Not sure how to replace these calls, since I'm not sure what they do (yet)
             //TODO clean up needed as well
+
+            //TODO: verify the trafficscript helper, the XFF/XFP have been updated for REST.. follow same convention..
             //TrafficScriptHelper.addRateLimitScriptsIfNeeded(serviceStubs);
             //attachRateLimitRulesToVirtualServers(serviceStubs, new String[]{vsName});
 
@@ -1173,6 +1182,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             LOG.info(String.format("Successfully updated the rate limit for load balancer...'%s'...", vsName));
 
             //TODO: Not sure how to replace these calls, since I'm not sure what they do (yet)
+
+            //TODO: see above with same todo...
             //TrafficScriptHelper.addRateLimitScriptsIfNeeded(serviceStubs);
             //attachRateLimitRulesToVirtualServers(serviceStubs, new String[]{vsName});
 
@@ -1334,6 +1345,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     private File getFileWithContent(String content) throws IOException {
         File file = File.createTempFile("StmAdapterImpl_", ".err");
+        //todo: File will only be removed when we restart or redeploy the app 'deleteOnExit'
         file.deleteOnExit();
         BufferedWriter out = new BufferedWriter(new FileWriter(file));
         out.write(content);
