@@ -2,7 +2,10 @@ package org.openstack.atlas.adapter.itest;
 
 
 import junit.framework.Assert;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.service.domain.pojos.Cidr;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
@@ -18,7 +21,6 @@ import org.rackspace.stingray.client.tm.TrafficManagerTrafficIp;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -89,7 +91,8 @@ public class SubnetMappingITest extends STMTestBase {
         List<String> cidrBlocksBefore = null;
         try {
             cidrBlocksBefore = getCidrBlocks(beforeHss);
-        } catch (Exception e) { }
+        } catch (Exception e) {
+        }
 
         if (cidrBlocksBefore == null || cidrBlocksBefore.isEmpty()) {
             stmAdapter.setSubnetMappings(config, makeHostssubnet());
@@ -178,25 +181,22 @@ public class SubnetMappingITest extends STMTestBase {
     @Ignore
     @Test
     public void visualConfirmTest() throws RemoteException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
-        List<Child> managers = stmClient.getTrafficManagers();
+        List<Child> trafficManagerList = stmClient.getTrafficManagers();
 
-        for (Iterator<Child> i = managers.iterator(); i.hasNext();) {
-            Child c = i.next();
-            String tmName = c.getName();
-            TrafficManager tm = stmClient.getTrafficManager(tmName);
-            TrafficManagerProperties tmp = tm.getProperties();
-            TrafficManagerBasic tmb = tmp.getBasic();
-            List<TrafficManagerTrafficIp> tips = tmb.getTrafficip();
-            System.out.println("Traffic Manager: " + tmName);
+        for (Child c : trafficManagerList) {
+            String trafficManagerName = c.getName();
+            TrafficManager trafficManager = stmClient.getTrafficManager(trafficManagerName);
+            TrafficManagerProperties trafficManagerProperties = trafficManager.getProperties();
+            TrafficManagerBasic trafficManagerBasic = trafficManagerProperties.getBasic();
+            List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManagerBasic.getTrafficip();
+            System.out.println("Traffic Manager: " + trafficManagerName);
 
-            for (Iterator<TrafficManagerTrafficIp> i2 = tips.iterator(); i2.hasNext();) {
-                TrafficManagerTrafficIp tmtp = i2.next();
-                String interfaceName = tmtp.getName();
-                Set<String> masks = tmtp.getNetworks();
+            for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
+                String interfaceName = trafficManagerTrafficIp.getName();
+                Set<String> masks = trafficManagerTrafficIp.getNetworks();
                 System.out.println("\tNetwork Interface: " + interfaceName);
                 System.out.println("\tSubnets:");
-                for (Iterator<String> i3 = masks.iterator(); i3.hasNext();) {
-                    String mask = i3.next();
+                for (String mask : masks) {
                     System.out.println("\t\t" + mask);
                 }
             }
