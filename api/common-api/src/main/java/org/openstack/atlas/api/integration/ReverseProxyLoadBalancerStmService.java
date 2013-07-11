@@ -30,7 +30,7 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void removeNode(LoadBalancer lb, Node node) throws Exception;
 
-    void removeNodes(LoadBalancer lb) throws Exception;
+    void removeNodes(LoadBalancer lb, List<Node> doomedNodes) throws Exception;
 
     void setNodeWeights(Integer id, Integer accountId, Set<Node> nodes) throws Exception;
 
