@@ -149,6 +149,18 @@
         <property name="atlasCache" ref="atlasCache"/>
     </bean>
 
+    <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
+
+    <bean id="reverseProxyLoadBalancerService" class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl">
+        <property name="notificationService" ref="notificationService"/>
+        <property name="loadBalancerService" ref="loadBalancerService"/>
+        <property name="healthMonitorService" ref="healthMonitorService"/>
+        <property name="hostService" ref="hostService"/>
+        <property name="reverseProxyLoadBalancerAdapter" ref="reverseProxyLoadBalancerAdapter"/>
+        <property name="configuration" ref="configuration"/>
+        <property name="atlasCache" ref="atlasCache"/>
+    </bean>
+
     <bean id="deleteLoadBalancerListener"
           class="org.openstack.atlas.api.async.DeleteLoadBalancerListener"
           parent="baseListener"/>

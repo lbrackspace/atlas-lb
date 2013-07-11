@@ -33,6 +33,7 @@ import java.util.Set;
 public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadBalancerStmService {
 
     final Log LOG = LogFactory.getLog(ReverseProxyLoadBalancerServiceStmImpl.class);
+
     private ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
     private LoadBalancerService loadBalancerService;
     private HostService hostService;
@@ -547,7 +548,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
     }
 
-    public void setreverseProxyLoadBalancerStmAdapter(ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter) {
+    public void setReverseProxyLoadBalancerStmAdapter(ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter) {
         this.reverseProxyLoadBalancerStmAdapter = reverseProxyLoadBalancerStmAdapter;
     }
 
