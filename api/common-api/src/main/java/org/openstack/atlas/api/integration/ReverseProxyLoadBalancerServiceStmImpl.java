@@ -247,10 +247,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void removeNodes(LoadBalancer lb) throws Exception {
+    public void removeNodes(LoadBalancer lb, List<Node> doomedNodes) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.removeNodes(config, lb);
+            reverseProxyLoadBalancerStmAdapter.removeNodes(config, lb, doomedNodes);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;

@@ -302,12 +302,26 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws AxisFault, InsufficientRequestException, StmRollBackException {
-        //TODO: need to update listener to follow 'DELETE' conventions, then update this method to handle correctly...
+    public void removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Node> doomedNodes) throws AxisFault, InsufficientRequestException, StmRollBackException {
         final String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
-        ResourceTranslator translator = new ResourceTranslator();
         StingrayRestClient client = loadSTMRestClient(config);
-        translator.translateLoadBalancerResource(config, poolName, loadBalancer);
+        ResourceTranslator translator = new ResourceTranslator();
+        Set<Node> currentNodes = loadBalancer.getNodes();
+        Map<Integer, Node> nodesMap = new HashMap<Integer, Node>();
+
+        for (Node currentNode : currentNodes) {
+            nodesMap.put(currentNode.getId(), currentNode);
+        }
+
+        for (Node doomedNode : doomedNodes) {
+            Integer id = doomedNode.getId();
+            if (nodesMap.containsKey(id)) {
+                currentNodes.remove(nodesMap.get(id));
+            }
+        }
+        loadBalancer.setNodes(currentNodes);
+        translator.translatePoolResource(poolName, loadBalancer);
+
         LOG.info(String.format("Removing nodes from pool '%s'", poolName));
         updateNodePool(config, client, poolName, translator.getcPool());
         LOG.info(String.format("Successfully removed nodes from pool '%s'", poolName));

@@ -43,14 +43,11 @@ public class DeleteNodesListener extends BaseListener {
         List<Node> doomedNodes = nodeService.getNodesByIds(doomedNodeIds);
         String doomedIdsStr = StringConverter.integersAsString(doomedNodeIds);
 
-
-        //TODO: not sure why we are updating DB first, but this is affecting logic in the adapter, should would change this? was it done for a reason??? ATM, the adapter is assuming the DB LB is the truth and handling it as such(diff from other deletes..)
         try {
             LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in Zeus...", doomedIdsStr, msg.getLoadBalancerId()));
+            reverseProxyLoadBalancerStmService.removeNodes(dbLoadBalancer, doomedNodes);
+            // Removes node from load balancer in DB
             dbLoadBalancer = nodeService.delNodes(dbLoadBalancer, doomedNodes);
-//            Set<Node> survivingNodes = nodeService.getAllNodesByAccountIdLoadBalancerId(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId());
-//            reverseProxyLoadBalancerService.setNodesPriorities(ZxtmNameBuilder.genVSName(dbLoadBalancer), dbLoadBalancer);
-            reverseProxyLoadBalancerStmService.removeNodes(dbLoadBalancer);
             LOG.debug(String.format("Successfully removed nodes '[%s]' from load balancer '%d' in Zeus.", doomedIdsStr, msg.getLoadBalancerId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
@@ -61,12 +58,11 @@ public class DeleteNodesListener extends BaseListener {
             return;
         }
 
-        // Removes node from load balancer in DB
-
-
+        //TODO: is this necessary?
         // Refresh the LoadBalancer since the above may have been in a different transaction
         dbLoadBalancer = loadBalancerService.get(msg.getLoadBalancerId(), msg.getAccountId());
 
+        //TODO: Didn't we already do this? what if we JUST set it to ERROR status because of a failure?
         // Update load balancer status in DB
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);
