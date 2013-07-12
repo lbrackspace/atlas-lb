@@ -253,19 +253,20 @@ public class SslTerminationITest extends STMTestBase {
     private void updateLoadBalancerAttributes() {
 
         try {
+            //Should us updateSslTermination
             int securePort = 8080;
             int normalPort = 443;
             boolean isConnectionLogging = true;
             String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
             String normalVsName = ZxtmNameBuilder.genVSName(lb);
-            stmAdapter.updatePort(config, lb.getId(), lb.getAccountId(), securePort);
+            stmAdapter.updateSslTermination(config, lb, new ZeusSslTermination());
             VirtualServer createdSecureVs = stmClient.getVirtualServer(secureVsName);
             Assert.assertEquals(securePort, (int) createdSecureVs.getProperties().getBasic().getPort());
             VirtualServer createdNormalVs = stmClient.getVirtualServer(normalVsName);
             Assert.assertEquals(normalPort, (int) createdNormalVs.getProperties().getBasic().getPort());
 
             lb.setConnectionLogging(isConnectionLogging);
-            stmAdapter.updateConnectionLogging(config, lb);
+            stmAdapter.updateLoadBalancer(config, lb);
             createdSecureVs = stmClient.getVirtualServer(secureVsName);
             createdNormalVs = stmClient.getVirtualServer(normalVsName);
             Assert.assertEquals(isConnectionLogging, createdSecureVs.getProperties().getLog().getEnabled());
@@ -307,11 +308,14 @@ public class SslTerminationITest extends STMTestBase {
     private void verifyErrorPage() {
         try {
             String errorContent = "HI";
-            stmAdapter.setErrorFile(config, lb, errorContent);
+            lb.getUserPages().setErrorpage(errorContent);
+            stmAdapter.updateLoadBalancer(config, lb);
             errorPageHelper(errorContent);
-            stmAdapter.removeAndSetDefaultErrorFile(config, lb);
+            lb.getUserPages().setErrorpage(null);
+            stmAdapter.updateLoadBalancer(config, lb);
             errorPageHelper("Default");
-            stmAdapter.setErrorFile(config, lb, errorContent);
+            lb.getUserPages().setErrorpage(errorContent);
+            stmAdapter.updateLoadBalancer(config, lb);
             errorPageHelper(errorContent);
         } catch (Exception e) {
             e.printStackTrace();
@@ -323,9 +327,11 @@ public class SslTerminationITest extends STMTestBase {
     private void verifyDeleteErrorPage() {
         String errorContent = "HI";
         try {
-            stmAdapter.deleteErrorFile(config, lb);
-            errorPageHelper("");
-            stmAdapter.removeAndSetDefaultErrorFile(config, lb);
+            lb.getUserPages().setErrorpage(errorContent);
+            stmAdapter.updateLoadBalancer(config, lb);
+            errorPageHelper(errorContent);
+            lb.getUserPages().setErrorpage(null);
+            stmAdapter.updateLoadBalancer(config, lb);
             errorPageHelper("Default");
         } catch (Exception e) {
             e.printStackTrace();

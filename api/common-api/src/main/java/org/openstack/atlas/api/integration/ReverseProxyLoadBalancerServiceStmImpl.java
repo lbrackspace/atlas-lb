@@ -28,12 +28,10 @@ import org.openstack.atlas.util.debug.Debug;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.util.List;
-import java.util.Set;
 
 public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadBalancerStmService {
 
     final Log LOG = LogFactory.getLog(ReverseProxyLoadBalancerServiceStmImpl.class);
-
     private ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
     private LoadBalancerService loadBalancerService;
     private HostService hostService;
@@ -126,88 +124,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateAlgorithm(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), lb.getAlgorithm());
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
     public void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
             reverseProxyLoadBalancerStmAdapter.changeHostForLoadBalancer(config, lb, newHost);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
-    public void updatePort(LoadBalancer lb) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.updatePort(config, lb.getId(), lb.getAccountId(),
-                    lb.getPort());
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
-    public void updateTimeout(LoadBalancer lb) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.updateTimeout(config, lb);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
-    public void updateProtocol(LoadBalancer lb) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.updateProtocol(config, lb);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
-    public void updateHalfClosed(LoadBalancer lb) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.updateHalfClosed(config, lb);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
-    public void updateConnectionLogging(LoadBalancer lb) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.updateConnectionLogging(config, lb);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
-    public void updateContentCaching(LoadBalancer lb) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.updateContentCaching(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -248,26 +168,14 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void removeNodes(LoadBalancer lb, List<Node> doomedNodes) throws Exception {
+    public void removeNodes(LoadBalancer lb, List<Node> nodesToRemove) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.removeNodes(config, lb, doomedNodes);
+            reverseProxyLoadBalancerStmAdapter.removeNodes(config, lb, nodesToRemove);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
         }
-    }
-
-    @Override
-    public void setNodeWeights(Integer lbId, Integer accountId, Set<Node> nodes) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
-        try {
-            reverseProxyLoadBalancerStmAdapter.setNodeWeights(config, lbId, accountId, nodes);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-
     }
 
     @Override
@@ -316,28 +224,6 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateSessionPersistence(LoadBalancer lb) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.setSessionPersistence(config, lb);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
-    public void removeSessionPersistence(LoadBalancer lb) throws Exception {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.removeSessionPersistence(config, lb);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-    }
-
-    @Override
     public void updateHealthMonitor(LoadBalancer loadBalancer) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
@@ -378,21 +264,6 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
-        }
-    }
-
-    @Override
-    public void setErrorFile(LoadBalancer loadBalancer, String content) throws DecryptException, MalformedURLException, RemoteException, EntityNotFoundException, InsufficientRequestException {
-        LoadBalancer lb = loadBalancerService.get(loadBalancer.getId(), loadBalancer.getAccountId());
-        Host host = lb.getHost();
-        LoadBalancerEndpointConfiguration config = getConfig(host);
-        try {
-            reverseProxyLoadBalancerStmAdapter.setErrorFile(config, loadBalancer, content);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        } catch (RollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -458,51 +329,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void removeAndSetDefaultErrorFile(LoadBalancer loadBalancer) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.removeAndSetDefaultErrorFile(config, loadBalancer);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        } catch (RollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-    }
-
-    @Override
-    public void setDefaultErrorFile(LoadBalancer loadBalancer) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
-        LoadBalancer lb = loadBalancerService.get(loadBalancer.getId(), loadBalancer.getAccountId());
-        LoadBalancerEndpointConfiguration config = getConfig(lb.getHost());
-        try {
-            reverseProxyLoadBalancerStmAdapter.setDefaultErrorFile(config, loadBalancer);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        } catch (RollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-    }
-
-    @Override
     public void uploadDefaultErrorFile(Integer clusterId, String content) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
         LoadBalancerEndpointConfiguration config = getConfigbyClusterId(clusterId);
         try {
             reverseProxyLoadBalancerStmAdapter.uploadDefaultErrorFile(config, content);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        } catch (RollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-    }
-
-    @Override
-    public void deleteErrorFile(LoadBalancer loadBalancer) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
-        LoadBalancer lb = loadBalancerService.get(loadBalancer.getId(), loadBalancer.getAccountId());
-        LoadBalancerEndpointConfiguration config = getConfig(lb.getHost());
-        try {
-            reverseProxyLoadBalancerStmAdapter.deleteErrorFile(config, loadBalancer);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -548,7 +378,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
     }
 
-    public void setReverseProxyLoadBalancerStmAdapter(ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter) {
+    public void setreverseProxyLoadBalancerStmAdapter(ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter) {
         this.reverseProxyLoadBalancerStmAdapter = reverseProxyLoadBalancerStmAdapter;
     }
 
@@ -586,30 +416,6 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
         }
-    }
-
-    @Override
-    public void enableDisableSslTermination(LoadBalancer loadBalancer, boolean isSslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.enableDisableSslTermination(config, loadBalancer, isSslTermination);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-
-    }
-
-    @Override
-    public void setNodesPriorities(String poolName, LoadBalancer lb) throws DecryptException, EntityNotFoundException, MalformedURLException, RemoteException {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
-        try {
-            reverseProxyLoadBalancerStmAdapter.setNodesPriorities(config, poolName, lb);
-        } catch (AxisFault af) {
-            checkAndSetIfSoapEndPointBad(config, af);
-            throw af;
-        }
-
     }
 
     public void setAtlasCache(AtlasCache atlasCache) {

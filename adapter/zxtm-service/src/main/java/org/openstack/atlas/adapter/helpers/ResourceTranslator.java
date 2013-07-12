@@ -37,15 +37,13 @@ public class ResourceTranslator {
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
         //Order matters when translating the entire entity.
-        if (loadBalancer.getSessionPersistence() != null) translatePersistenceResource(vsName, loadBalancer);
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
-        translatePoolResource(vsName, loadBalancer);
         try {
             translateTrafficIpGroupsResource(config, loadBalancer);
         } catch (IPStringConversionException e) {
-            //Handle this, means ipv6 is broken..
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            //TODO: Handle this, means ipv6 is broken..
+            e.printStackTrace();
         }
         translatePoolResource(vsName, loadBalancer);
         translateVirtualServerResource(config, vsName, loadBalancer);
@@ -70,6 +68,8 @@ public class ResourceTranslator {
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
             basic.setProtection_class(vsName);
         }
+
+
 
         //connection log settings
         if (loadBalancer.isConnectionLogging() != null && loadBalancer.isConnectionLogging()) {
@@ -118,7 +118,6 @@ public class ResourceTranslator {
         //trafficIpGroup settings
         basic.setListen_on_any(false);
         basic.setListen_on_traffic_ips(genGroupNameSet(loadBalancer));
-
         properties.setBasic(basic);
         virtualServer.setProperties(properties);
 
@@ -246,10 +245,17 @@ public class ResourceTranslator {
         if (loadBalancer.getHealthMonitor() != null)
             basic.setMonitors(new HashSet<String>(Arrays.asList(vsName)));
 
+        if (loadBalancer.getSessionPersistence() != null && !loadBalancer.getSessionPersistence().name().equals(SessionPersistence.NONE)) {
+            basic.setPersistence_class(loadBalancer.getSessionPersistence().name());
+        } else {
+            basic.setPersistence_class(null);
+        }
 
-        if (loadBalancer.getSessionPersistence() != null)
-            basic.setPersistence_class(loadBalancer.getSessionPersistence()
-                    .getSessionPersistence().getPersistenceType().name());
+        if (loadBalancer.getRateLimit() != null) {
+            basic.setBandwidth_class(vsName);
+        } else {
+            basic.setBandwidth_class(null);
+        }
 
         properties.setBasic(basic);
         properties.setLoad_balancing(poollb);
@@ -339,12 +345,13 @@ public class ResourceTranslator {
         return cProtection;
     }
 
-    public Persistence translatePersistenceResource(String vsName, LoadBalancer loadBalancer) {
+    //TODO: add rest of values for 'default' persistent classes
+    public Persistence translatePersistenceResource(String vsName, SessionPersistence sessionPersistence) {
         Persistence persistence = new Persistence();
         PersistenceProperties properties = new PersistenceProperties();
         PersistenceBasic basic = new PersistenceBasic();
 
-        basic.setType(loadBalancer.getSessionPersistence().getSessionPersistence().getPersistenceType().value());
+        basic.setType(sessionPersistence.name());
         properties.setBasic(basic);
         persistence.setProperties(properties);
         cPersistence = persistence;

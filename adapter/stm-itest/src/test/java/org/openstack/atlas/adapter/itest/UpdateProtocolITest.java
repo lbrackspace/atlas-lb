@@ -47,13 +47,13 @@ public class UpdateProtocolITest extends STMTestBase{
             StingrayRestClient client = new StingrayRestClient();
             Assert.assertEquals(VirtualServerProtocol.http.toString().toUpperCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
             lb.setProtocol(LoadBalancerProtocol.HTTPS);
-            stmAdapter.updateProtocol(config, lb);
+            stmAdapter.updateLoadBalancer(config, lb);
             boolean isConnectionLogging = true;
             lb.setConnectionLogging(isConnectionLogging);
             Assert.assertEquals(LoadBalancerProtocol.HTTPS.toString().toUpperCase(),client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
             Assert.assertNotNull(client.getVirtualServer(vsName).getProperties().getLog());
             lb.setProtocol(LoadBalancerProtocol.HTTP);
-            stmAdapter.updateProtocol(config, lb);
+            stmAdapter.updateLoadBalancer(config, lb);
             Assert.assertEquals(LoadBalancerProtocol.HTTP.toString().toUpperCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
             Assert.assertTrue(client.getVirtualServer(vsName).getProperties().getLog().getEnabled());
 

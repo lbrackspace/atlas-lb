@@ -55,6 +55,10 @@ public class CreateLoadBalancerListener extends BaseListener {
             LOG.debug("Creating load balancer in STM...");
             reverseProxyLoadBalancerStmService.createLoadBalancer(dbLoadBalancer);
             LOG.debug("Successfully created a load balancer in STM.");
+
+//            LOG.debug("Creating load balancer in ZXTM...");
+//            reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
+//            LOG.debug("Successfully created a load balancer in ZXTM.");
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);
             NodesHelper.setNodesToStatus(dbLoadBalancer, OFFLINE);

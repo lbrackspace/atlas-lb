@@ -47,7 +47,7 @@ public class GlobalErrorFileITest extends STMTestBase {
     private void setCustomErrorFile() throws Exception {
         vsName = ZxtmNameBuilder.genVSName(lb);
 
-        stmAdapter.setErrorFile(config, lb, pageContent);
+        stmAdapter.uploadDefaultErrorFile(config, pageContent);
         File file = stmClient.getExtraFile(errorFileName());
         Assert.assertNotNull(file);
 
@@ -56,8 +56,9 @@ public class GlobalErrorFileITest extends STMTestBase {
         Assert.assertEquals(pageContent, content);
     }
 
+    //TODO: need to add delete to adapter. This is a 'global' file and only used by ops(which they have yet to ever use)
     private void deleteErrorFile() throws RollBackException, AxisFault, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        stmAdapter.deleteErrorFile(config, lb);
-        stmClient.getExtraFile(errorFileName());
+//        stmAdapter.deleteErrorFile(config, lb);
+//        stmClient.getExtraFile(errorFileName());
     }
 }

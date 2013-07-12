@@ -1135,6 +1135,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         setDefaultErrorFile(config, loadBalancer);
     }
 
+
     @Override
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content) throws InsufficientRequestException, RemoteException {
         ZxtmServiceStubs serviceStubs = null;
@@ -1772,7 +1773,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     }
 
-    @Deprecated
     @Override
     public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, int lbId, int accountId, HealthMonitor healthMonitor)
             throws RemoteException, InsufficientRequestException {

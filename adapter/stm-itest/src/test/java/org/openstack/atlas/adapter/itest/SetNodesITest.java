@@ -33,7 +33,8 @@ public class SetNodesITest extends STMTestBase {
     @Test
     public void testNodeOperations() throws Exception {
         vsName = ZxtmNameBuilder.genVSName(lb);
-        stmAdapter.setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS);
+        lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS);
+        stmAdapter.updateLoadBalancer(config, lb);
         setupNodes();
 
 

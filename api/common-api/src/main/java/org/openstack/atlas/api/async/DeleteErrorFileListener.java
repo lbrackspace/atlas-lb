@@ -36,7 +36,7 @@ public class DeleteErrorFileListener extends BaseListener {
         LOG.debug("About to remove the error file from zeus... ");
         if (data.getAccountId() != null && data.getLoadBalancerId() != null) {
             try {
-                reverseProxyLoadBalancerStmService.removeAndSetDefaultErrorFile(dbLoadBalancer);
+                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer);
             } catch (Exception e) {
                 loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
 

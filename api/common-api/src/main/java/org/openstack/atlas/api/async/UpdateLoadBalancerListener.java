@@ -19,8 +19,6 @@ import static org.openstack.atlas.service.domain.events.entities.EventType.UPDAT
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
 
-
-// TODO: Refactor this class so that we call one adapter method. Also have adapter deal with rollbacks
 public class UpdateLoadBalancerListener extends BaseListener {
 
     private final Log LOG = LogFactory.getLog(UpdateLoadBalancerListener.class);
@@ -49,6 +47,9 @@ public class UpdateLoadBalancerListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Updating load balancer '%d' STM...", dbLoadBalancer.getId()));
+             //Grr lazy loading...   todo: fix this some how...
+            String content = dbLoadBalancer.getUserPages().getErrorpage();
+            dbLoadBalancer.getUserPages().setErrorpage(content);
             reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer);
             LOG.debug(String.format("Successfully updated load balancer '%d' in STM.", dbLoadBalancer.getId()));
             atomSummary.append("algorithm: '").append(dbLoadBalancer.getAlgorithm().name()).append("', ");

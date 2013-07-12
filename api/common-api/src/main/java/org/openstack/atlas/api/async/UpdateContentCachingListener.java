@@ -39,7 +39,7 @@ public class UpdateContentCachingListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Updating content caching for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerStmService.updateContentCaching(dbLoadBalancer);
+            reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer);
             LOG.debug(String.format("Successfully updated content caching for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

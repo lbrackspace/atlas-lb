@@ -6,9 +6,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
-import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
@@ -24,7 +24,6 @@ import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.monitor.Monitor;
-import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.protection.Protection;
@@ -33,7 +32,6 @@ import org.rackspace.stingray.client.tm.TrafficManagerTrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
-import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
 import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
 import java.io.BufferedWriter;
@@ -51,7 +49,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config) throws StmRollBackException {
         StingrayRestClient client;
         try {
-            client = new StingrayRestClient(new URI(config.getEndpointUrl().toString()));
+            String baseUri = "api/tm/1.0/config/active/";
+            URI uri = new URI(config.getEndpointUrl().toString().split("soap")[0] + baseUri);
+            client = new StingrayRestClient(uri);
         } catch (URISyntaxException e) {
             LOG.error(String.format("Configuration error, verify soapendpoint is valid! Exception %s", e));
             throw new StmRollBackException("Configuration error: ", e);
@@ -63,6 +63,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
         try {
+            //Set Default on Create..
+            loadBalancer.getUserPages().setErrorpage("Default");
             updateLoadBalancer(config, loadBalancer);
         } catch (Exception e) {
             LOG.error(String.format("Failed to create load balancer %s, rolling back...", loadBalancer.getId()));
@@ -108,12 +110,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 updateNodePool(config, client, vsName, translator.getcPool());
                 updateVirtualServer(config, client, vsName, translator.getcVServer());
             } catch (Exception ex) {
-                LOG.error(ex);
-                //TODO: roll back or handle as needed.. ...
+                LOG.error("Exception creating load balancer: " + ex);
                 throw new StmRollBackException("Failed to update loadbalancer, rolling back...", ex);
             }
         }
-        //todo: Finish...
     }
 
     @Override
@@ -123,9 +123,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
         LOG.debug(String.format("Removing loadbalancer: %s ...", vsName));
-        //todo: others...
         deleteHealthMonitor(config, client, vsName);
-//        deleteProtection(config, client, vsName);
+        deleteProtection(config, client, loadBalancer, vsName);
         deleteVirtualIps(config, loadBalancer);
         deleteNodePool(config, client, vsName);
         deleteVirtualServer(config, client, vsName);
@@ -499,6 +498,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
     }
 
+    @Override public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws RemoteException, InsufficientRequestException, RollBackException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
         List<Integer> vipIds = new ArrayList<Integer>();
         Set<LoadBalancerJoinVip> jvipset = loadBalancer.getLoadBalancerJoinVipSet();
@@ -610,211 +613,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         Protection Resources
      */
 
-    //todo: rest of protection? rollback can go away..
-    private void rollbackProtection(StingrayRestClient client, LoadBalancer loadBalancer, Protection curProtection) throws InsufficientRequestException, StmRollBackException {
-        String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
-        String protectionSslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-        try {
-            LOG.info("Attempting to rollback " + protectionSslName + "...");
-            if (curProtection == null) {
-                if (loadBalancer.hasSsl()) {
-                    LOG.debug(String.format("Deleting protection for rollback '%s'", protectionSslName));
-                    client.deleteProtection(protectionSslName);
-                }
-                LOG.debug(String.format("Deleting protection for rollback '%s'", protectionName));
-                client.deleteProtection(protectionName);
-            }
-            if (loadBalancer.hasSsl()) {
-                LOG.debug(String.format("Updating protection for rollback '%s'", protectionSslName));
-                client.updateProtection(protectionSslName, curProtection);
-            }
-            LOG.debug(String.format("Updating protection for rollback '%s'", protectionName));
-            client.updateProtection(protectionName, curProtection);
-        } catch (StingrayRestClientException ex) {
-            LOG.error(String.format("Error updating monitor: %s Rolling back! \n Exception: %s Trace: %s"
-                    , protectionName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
-            throw new StmRollBackException(String.format("Error updating protection: %s Rolling back! \n Exception: %s Trace: %s"
-                    , protectionName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())), ex);
-        } catch (StingrayRestClientObjectNotFoundException ex) {
-            LOG.warn(String.format("Object not found when creating protection: %s, this is expected...", protectionName));
-        }
-    }
-
-    /*
-        Connection Logging Resources
-     */
-
-
-    @Override
-    public void updateConnectionLogging(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-        ResourceTranslator translator = new ResourceTranslator();
-        StingrayRestClient client = loadSTMRestClient(config);
-        translator.translateLoadBalancerResource(config, vsName, loadBalancer);
-
-        updateVirtualServer(config, client, vsName, translator.getcVServer());
-    }
-
-    @Override
-    public void updateProtocol(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-        ResourceTranslator translator = new ResourceTranslator();
-        StingrayRestClient client = loadSTMRestClient(config);
-        translator.translateLoadBalancerResource(config, vsName, loadBalancer);
-
-        updateVirtualServer(config, client, vsName, translator.getcVServer());
-    }
-
-    @Override
-    public void updateHalfClosed(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
-         //todo: this can go away..
-    }
-
-
-    //TODO: this can go away..
-    // We can honestly get rid of alot of these one-offs by using the proper update'Resource'. example here, updateVirtualServer can handle this
-    //But that means we have to update listeners and other code also..
-    @Override
-    public void updatePort(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Integer port) throws RemoteException, InsufficientRequestException, StmRollBackException {
-
-
-        //TODO do we want to pass a loadbalancer in?
-
-        StingrayRestClient client = loadSTMRestClient(config);
-        String vsName = Integer.toString(accountId) + "_" + Integer.toString(loadBalancerId);
-        try {
-            LOG.debug(String.format("Updating ort to '%d' for virtual server '%s'..", port, vsName));
-            VirtualServer virtualServer = client.getVirtualServer(vsName);
-            virtualServer.getProperties().getBasic().setPort(port);
-            client.updateVirtualServer(vsName, virtualServer);
-            LOG.info(String.format("Successfully updated port for "));
-
-        } catch (StingrayRestClientObjectNotFoundException onf) {
-            LOG.error(String.format("Cannot update port for virtual server '%s' as it does not exist.", vsName), onf);
-        } catch (StingrayRestClientException e) {
-            throw new StmRollBackException("Update port request canceled as there was an unexpected client error...", e);
-        }
-    }
-
-    //todo: this can go away..
-    @Override
-    public void updateTimeout(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        StingrayRestClient client = loadSTMRestClient(config);
-        ResourceTranslator translator = new ResourceTranslator();
-        String vsName;
-        if (loadBalancer.hasSsl()) {
-            vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-        } else {
-            vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-        }
-
-        translator.translateLoadBalancerResource(config, vsName, loadBalancer);
-        Pool pool = translator.getcPool();
-
-        try {
-            client.updatePool(vsName, pool);
-        } catch (StingrayRestClientObjectNotFoundException onf) {
-            LOG.error(String.format("Unable to update timeout as '%s' was not found", onf));
-        } catch (StingrayRestClientException e) {
-            LOG.error(String.format("Unable to update timeout due to unexpected client error '%s'", e));
-        }
-
-    }
-
-    @Override
-    public void setLoadBalancingAlgorithm(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        //TODO: this can go away...
-//
-    }
-
-    @Override
-    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        //todo: need to verify logic and that REST can support it, if so implement... else, this can go away...
-    }
-
-
-    //todo: this can go away..
-    @Override
-    public void setNodeWeights(LoadBalancerEndpointConfiguration config,
-                               Integer loadBalancerId, Integer accountId, Collection<Node> nodes)
-            throws RemoteException, InsufficientRequestException, StmRollBackException {
-    }
-
-
-    //This can maybe be moved to util class?
-    private boolean persistenceIsSupported(LoadBalancer loadBalancer) {
-        boolean supported = false;
-        String type = loadBalancer.getSessionPersistence().getSessionPersistence().getPersistenceType().value();
-        if (type.equals(StmConstants.HTTP_COOKIE) || type.equals(StmConstants.SOURCE_IP)) {
-            supported = true;
-        }
-        return supported;
-
-    }
-
-    @Override
-    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        StingrayRestClient client = loadSTMRestClient(config);
-        ResourceTranslator translator = new ResourceTranslator();
-        String vsName;
-        if (!lb.hasSsl() && lb.getSessionPersistence() != null && persistenceIsSupported(lb)) {
-            vsName = ZxtmNameBuilder.genVSName(lb);
-            translator.translateLoadBalancerResource(config, vsName, lb);
-            Persistence persistence = translator.getcPersistence();
-            String persistenceType = persistence.getProperties().getBasic().getType();
-            try {
-                client.createPersistence(persistenceType, persistence);
-            } catch (StingrayRestClientObjectNotFoundException onf) {
-                LOG.info(String.format("Did not find session persistence %s.  This is expected...", vsName));
-            } catch (StingrayRestClientException ex) {
-                LOG.error(String.format("Error creating session persistence: %s, Rolling back! \n Exception: %s Trace: %s",
-                        persistenceType, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace())));
-            }
-        }
-    }
-
-
-    @Override
-    public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
-
-        StingrayRestClient client = loadSTMRestClient(config);
-        ResourceTranslator translator = new ResourceTranslator();
-        String vsName;
-
-        if (!loadBalancer.hasSsl() && loadBalancer.getSessionPersistence() != null && persistenceIsSupported(loadBalancer)) {
-            vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-
-            Persistence persistence = translator.translatePersistenceResource(vsName, loadBalancer);
-            String persistenceType = persistence.getProperties().getBasic().getType();
-            try {
-                client.deletePersistence(persistenceType);
-                LOG.info("Successfully deleted session persistence " + persistenceType);
-            } catch (StingrayRestClientObjectNotFoundException onf) {
-                LOG.warn(String.format("Cannot delete persistence %s as client does not exist", persistenceType));
-            } catch (StingrayRestClientException ex) {
-                LOG.error("Unexpected client error when deleting session persistence.");
-            }
-        }
-    }
-
-
-    @Override
-    public void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        StingrayRestClient client = loadSTMRestClient(config);
-        ResourceTranslator rt = new ResourceTranslator();
-        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-        rt.translateLoadBalancerResource(config, vsName, loadBalancer);
-        VirtualServer virtualServer = rt.getcVServer();
-
-        LOG.info(String.format("Attempting to update content cacheing for %s", vsName));
-        try {
-            updateVirtualServer(config, client, vsName, virtualServer);
-        } catch (StmRollBackException re) {
-            LOG.error(String.format("Failed to update content cacheing for %s", vsName));
-            throw re;
-        }
-    }
-
     @Override
     public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws StmRollBackException, InsufficientRequestException {
         if (loadBalancer.getConnectionLimit() != null) {
@@ -882,6 +680,33 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             LOG.debug(String.format("Successfully updated protection for %s!", protectionSslName));
         }
         LOG.debug(String.format("Successfully updated protection for %s!", protectionName));
+    }
+
+    private void deleteProtection(LoadBalancerEndpointConfiguration config,
+                                     StingrayRestClient client, LoadBalancer loadBalancer, String protectionName)
+            throws StmRollBackException, InsufficientRequestException {
+
+        LOG.info(String.format("Removing  protection class '%s'...", protectionName));
+
+        Protection curPro = null;
+        try {
+            curPro = client.getProtection(protectionName);
+            client.deleteMonitor(protectionName);
+        } catch (StingrayRestClientObjectNotFoundException ex) {
+            LOG.error(String.format("Cloud not locate protection class: %s, continue...", protectionName));
+        } catch (StingrayRestClientException ex) {
+            String em = String.format("Error removing monitor: %s Attempting to RollBack... \n Exception: %s Trace: %s"
+                    , protectionName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
+            LOG.error(em);
+            if (curPro != null) {
+                LOG.debug(String.format("Updating virtual server to set previous configuration for rollback '%s'", protectionName));
+                updateProtection(config, client, loadBalancer, curPro);
+            } else {
+                LOG.warn(String.format("Protection was not rolled back as no previous configuration was available. '%s' ", protectionName));
+            }
+            throw new StmRollBackException(em, ex);
+        }
+        LOG.info(String.format("Successfully removed protection class '%s'...", protectionName));
     }
 
 
@@ -1010,10 +835,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         } catch (Exception e) {
         }
 
+        //TODO: this will be handled in translation..
         if(!createdServer.getProperties().getBasic().getPort().equals(sslTermination.getSslTermination().getSecurePort()))
         {
             LOG.info(String.format("Updating secure servers port for ssl termination load balancer  %s in Stingray...", secureName));
-            updatePort(config, loadBalancer.getId(), loadBalancer.getAccountId(), sslTermination.getSslTermination().getSecurePort());
+//            updatePort(config, loadBalancer.getId(), loadBalancer.getAccountId(), sslTermination.getSslTermination().getSecurePort());
             LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer %s in Stingray...", secureName));
 
         }
@@ -1065,16 +891,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         //TODO need to implement
     }
 
-    @Override
-    public void enableDisableSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, boolean isSslTermination) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        //TODO need to implement
-    }
-
-    // TODO: Remove me!!
-    @Override
-    public void setNodesPriorities(LoadBalancerEndpointConfiguration config, String poolName, LoadBalancer lb) throws RemoteException {
-
-    }
 
     //TODO: Suspension is special case, where no attribute coincides with the enabling/disabling of the VS. Will need to enable/disable the VS by grabbing the resource and setting then updating...
     @Override
@@ -1211,41 +1027,43 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     }
 
-    @Override
-    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, StmRollBackException {
-        deleteErrorFile(config, loadBalancer);
-        //setDefaultErrorFile(config, loadBalancer); //This isn't necessary anymore, since deleteErrorFile already ran an update
-    }
+    //TODO: Will still need to use this.. lazy loading breaks the wanted behaviour... :(
+//    @Override
+//    public void removeAndSetDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+//            throws RemoteException, InsufficientRequestException, StmRollBackException {
+//        deleteErrorFile(config, loadBalancer);
+//        //setDefaultErrorFile(config, loadBalancer); //This isn't necessary anymore, since deleteErrorFile already ran an update
+//    }
+//
+//    @Override
+//    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+//            throws InsufficientRequestException, RemoteException, StmRollBackException {
+//        setDefaultErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+//        if (loadBalancer.hasSsl()) {
+//            setDefaultErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
+//        }
+//    }
+//
+//    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName)
+//            throws InsufficientRequestException, RemoteException, StmRollBackException {
+//        StingrayRestClient client = loadSTMRestClient(config);
+//
+//        ResourceTranslator rt = new ResourceTranslator();
+//        rt.translateVirtualServerResource(config, vsName, loadBalancer);
+//        VirtualServer vs = rt.getcVServer();
+//        LOG.debug(String.format("Attempting to set the default error file for %s", vsName));
+//        try {
+//            // Update client with new properties
+//            updateVirtualServer(config, client, vsName, vs);
+//
+//            LOG.info(String.format("Successfully set the default error file for: %s", vsName));
+//        } catch (StmRollBackException re) {
+//            LOG.error(String.format("Failed to set the default error file for: %s", vsName));
+//            throw re;
+//        }
+//    }
 
-    @Override
-    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws InsufficientRequestException, RemoteException, StmRollBackException {
-        setDefaultErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
-        if (loadBalancer.hasSsl()) {
-            setDefaultErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
-        }
-    }
-
-    public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName)
-            throws InsufficientRequestException, RemoteException, StmRollBackException {
-        StingrayRestClient client = loadSTMRestClient(config);
-
-        ResourceTranslator rt = new ResourceTranslator();
-        rt.translateVirtualServerResource(config, vsName, loadBalancer);
-        VirtualServer vs = rt.getcVServer();
-        LOG.debug(String.format("Attempting to set the default error file for %s", vsName));
-        try {
-            // Update client with new properties
-            updateVirtualServer(config, client, vsName, vs);
-
-            LOG.info(String.format("Successfully set the default error file for: %s", vsName));
-        } catch (StmRollBackException re) {
-            LOG.error(String.format("Failed to set the default error file for: %s", vsName));
-            throw re;
-        }
-    }
-
+    //OPS will use this if they ever decide to put a different 'default' file...
     @Override
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
@@ -1264,99 +1082,99 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
     }
 
-    @Override
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws InsufficientRequestException, StmRollBackException {
-
-        deleteErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
-        if (loadBalancer.hasSsl()) {
-            deleteErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
-        }
-    }
-
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName)
-            throws InsufficientRequestException, StmRollBackException {
-
-        StingrayRestClient client = loadSTMRestClient(config);
-
-        ResourceTranslator rt = new ResourceTranslator();
-        rt.translateVirtualServerResource(config, vsName, loadBalancer);
-        VirtualServer vs = rt.getcVServer();
-        String fileToDelete = getErrorFileName(vsName);
-        try {
-            LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", vsName, fileToDelete));
-
-            // Update client with new properties
-            VirtualServerProperties properties = vs.getProperties();
-            properties.setConnection_errors(new VirtualServerConnectionError()); // this will set the default error page
-            updateVirtualServer(config, client, vsName, vs);
-
-            // Delete the old error file
-            client.deleteExtraFile(fileToDelete);
-
-            LOG.info(String.format("Successfully deleted a custom error file for %s (%s)", vsName, fileToDelete));
-        } catch (StingrayRestClientObjectNotFoundException onf) {
-            LOG.warn(String.format("Cannot delete custom error page as, %s, it does not exist. Ignoring...", fileToDelete));
-        } catch (StmRollBackException re) {
-            LOG.error(String.format("Failed deleting the error file for: %s Exception: %s", vsName, re.getMessage()));
-            throw re;
-        } catch (StingrayRestClientException e) {
-            LOG.error(String.format("There was a unexpected error deleting the error file for: %s Exception: %s", vsName, e.getMessage()));
-            throw new StmRollBackException("Deleting error file cancelled.", e);
-        }
-    }
-
-    @Override
-    public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String content) throws RemoteException, InsufficientRequestException, StmRollBackException {
-
-        setErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer), content);
-        if (loadBalancer.hasSsl()) {
-            setErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer), content);
-        }
-    }
-
-    public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName, String content) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        StingrayRestClient client = loadSTMRestClient(config);
-
-        ResourceTranslator rt = new ResourceTranslator();
-        rt.translateVirtualServerResource(config, vsName, loadBalancer);
-        VirtualServer vs = rt.getcVServer();
-        String errorFileName = getErrorFileName(vsName);
-        try {
-            LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
-            client.createExtraFile(errorFileName, getFileWithContent(content));
-            LOG.info(String.format("Successfully uploaded the error file for %s (%s)", vsName, errorFileName));
-        } catch (IOException ioe) {
-            // Failed to create file, use "Default"
-            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- IO exception", vsName, errorFileName));
-            errorFileName = "Default";
-        } catch (StingrayRestClientException ce) {
-            // Failed to upload file, use "Default"
-            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- REST Client exception", vsName, errorFileName));
-            errorFileName = "Default";
-        } catch (StingrayRestClientObjectNotFoundException onf) {
-            // Failed to create file, use "Default"
-            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
-            errorFileName = "Default";
-        }
-
-        try {
-            LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
-            // Update client with new properties
-            updateVirtualServer(config, client, vsName, vs);
-
-            LOG.info(String.format("Successfully set the error file for %s (%s)", vsName, errorFileName));
-        } catch (StmRollBackException re) {
-            // REST failure...
-            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Rolling back.", vsName, errorFileName));
-            throw re;
-        }
-    }
-
-    private String getErrorFileName(String vsName) {
-        return String.format("%s_error.html", vsName);
-    }
-
+//    @Override
+//    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+//            throws InsufficientRequestException, StmRollBackException {
+//
+//        deleteErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+//        if (loadBalancer.hasSsl()) {
+//            deleteErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
+//        }
+//    }
+//
+//    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName)
+//            throws InsufficientRequestException, StmRollBackException {
+//
+//        StingrayRestClient client = loadSTMRestClient(config);
+//
+//        ResourceTranslator rt = new ResourceTranslator();
+//        rt.translateVirtualServerResource(config, vsName, loadBalancer);
+//        VirtualServer vs = rt.getcVServer();
+//        String fileToDelete = getErrorFileName(vsName);
+//        try {
+//            LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", vsName, fileToDelete));
+//
+//            // Update client with new properties
+//            VirtualServerProperties properties = vs.getProperties();
+//            properties.setConnection_errors(new VirtualServerConnectionError()); // this will set the default error page
+//            updateVirtualServer(config, client, vsName, vs);
+//
+//            // Delete the old error file
+//            client.deleteExtraFile(fileToDelete);
+//
+//            LOG.info(String.format("Successfully deleted a custom error file for %s (%s)", vsName, fileToDelete));
+//        } catch (StingrayRestClientObjectNotFoundException onf) {
+//            LOG.warn(String.format("Cannot delete custom error page as, %s, it does not exist. Ignoring...", fileToDelete));
+//        } catch (StmRollBackException re) {
+//            LOG.error(String.format("Failed deleting the error file for: %s Exception: %s", vsName, re.getMessage()));
+//            throw re;
+//        } catch (StingrayRestClientException e) {
+//            LOG.error(String.format("There was a unexpected error deleting the error file for: %s Exception: %s", vsName, e.getMessage()));
+//            throw new StmRollBackException("Deleting error file cancelled.", e);
+//        }
+//    }
+//
+//    @Override
+//    public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String content) throws RemoteException, InsufficientRequestException, StmRollBackException {
+//
+//        setErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer), content);
+//        if (loadBalancer.hasSsl()) {
+//            setErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer), content);
+//        }
+//    }
+//
+//    public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName, String content) throws RemoteException, InsufficientRequestException, StmRollBackException {
+//        StingrayRestClient client = loadSTMRestClient(config);
+//
+//        ResourceTranslator rt = new ResourceTranslator();
+//        rt.translateVirtualServerResource(config, vsName, loadBalancer);
+//        VirtualServer vs = rt.getcVServer();
+//        String errorFileName = getErrorFileName(vsName);
+//        try {
+//            LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
+//            client.createExtraFile(errorFileName, getFileWithContent(content));
+//            LOG.info(String.format("Successfully uploaded the error file for %s (%s)", vsName, errorFileName));
+//        } catch (IOException ioe) {
+//            // Failed to create file, use "Default"
+//            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- IO exception", vsName, errorFileName));
+//            errorFileName = "Default";
+//        } catch (StingrayRestClientException ce) {
+//            // Failed to upload file, use "Default"
+//            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- REST Client exception", vsName, errorFileName));
+//            errorFileName = "Default";
+//        } catch (StingrayRestClientObjectNotFoundException onf) {
+//            // Failed to create file, use "Default"
+//            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
+//            errorFileName = "Default";
+//        }
+//
+//        try {
+//            LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
+//            // Update client with new properties
+//            updateVirtualServer(config, client, vsName, vs);
+//
+//            LOG.info(String.format("Successfully set the error file for %s (%s)", vsName, errorFileName));
+//        } catch (StmRollBackException re) {
+//            // REST failure...
+//            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Rolling back.", vsName, errorFileName));
+//            throw re;
+//        }
+//    }
+//
+//    private String getErrorFileName(String vsName) {
+//        return String.format("%s_error.html", vsName);
+//    }
+//
     private File getFileWithContent(String content) throws IOException {
         File file = File.createTempFile("StmAdapterImpl_", ".err");
         //todo: File will only be removed when we restart or redeploy the app 'deleteOnExit'

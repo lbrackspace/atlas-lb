@@ -42,8 +42,17 @@ public class RequestManagerUtil {
         logger.info("ResponseWrapper, response status code is: " + response.getStatus());
 
             //TODO: ClientException seems to break for certain errors: ex: Exception entity: {"error_id":"resource.not_found","error_text":"Invalid resource URI"}
+        try {
+
             exception = response.getEntity(ClientException.class);
             logger.debug(String.format("Client Request failed: %s", exception.toString()));
+        } catch (Exception ex) {
+            //TODO: Temp fix
+            logger.debug(String.format("Client Request failed: %s", ex));
+//            logger.debug(String.format("Error to process.. %s", response.getEntity(String.class)));
+
+            throw new StingrayRestClientException("Gathering error response entity failed, often means no response, body. Need to fix this bug...");
+        }
 
 
         if (exception.getError_text().contains(objectNotFound)) {

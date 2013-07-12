@@ -7,8 +7,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
-import org.openstack.atlas.adapter.helpers.ResourceTranslator;
-import org.openstack.atlas.adapter.helpers.ReverseResourceTranslator;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
 import org.openstack.atlas.service.domain.entities.*;
 
@@ -16,10 +14,11 @@ import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
 import static org.openstack.atlas.service.domain.entities.AccessListType.DENY;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
-import static org.mockito.Mockito.*;
 
 public class FullConfigIntegrationTest {
     //TODO: this is not proper... quick tests...
@@ -100,7 +99,8 @@ public class FullConfigIntegrationTest {
         when(lb.getUserPages()).thenReturn(up);
 
         try {
-            adapter.setErrorFile(null, lb, "some error text");
+            lb.getUserPages().setErrorpage("some error text");
+            adapter.updateLoadBalancer(null, lb);
             verify(lb).getUserPages();
         } catch (Exception e) {
             e.printStackTrace();

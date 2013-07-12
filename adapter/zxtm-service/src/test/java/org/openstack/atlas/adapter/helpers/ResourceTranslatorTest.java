@@ -904,9 +904,9 @@ public class ResourceTranslatorTest extends STMTestBase {
         }
 
         @Test
-        public void shouldCreateAValidPersistence() throws InsufficientRequestException {
+        public void shouldCreateAValidPersistenceClass() throws InsufficientRequestException {
             translator = new ResourceTranslator();
-            Persistence createdPersistence = translator.translatePersistenceResource(vsName, lb);
+            Persistence createdPersistence = translator.translatePersistenceResource(vsName, SessionPersistence.HTTP_COOKIE);
             PersistenceProperties createdProperties = createdPersistence.getProperties();
             PersistenceBasic createdBasic = createdProperties.getBasic();
 
