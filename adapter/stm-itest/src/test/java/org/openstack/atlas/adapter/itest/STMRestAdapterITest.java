@@ -46,7 +46,7 @@ public class STMRestAdapterITest extends STMTestBase {
 
         Assert.assertEquals(1, stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().size());
         lb.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);
-        stmAdapter.addVirtualIps(config, lb);
+        stmAdapter.updateVirtualIps(config, lb);
         Assert.assertEquals(2, stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().size());
     }
 
@@ -61,7 +61,7 @@ public class STMRestAdapterITest extends STMTestBase {
 
         Assert.assertEquals(1, stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().size());
         lb.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);
-        stmAdapter.addVirtualIps(config, lb);
+        stmAdapter.updateVirtualIps(config, lb);
         Assert.assertEquals(2, stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().size());
 //        Assert.assertTrue(stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().contains("10.69.0.61"));
 
@@ -83,7 +83,7 @@ public class STMRestAdapterITest extends STMTestBase {
 
         Assert.assertEquals(1, stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().size());
         lb.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);
-        stmAdapter.addVirtualIps(config, lb);
+        stmAdapter.updateVirtualIps(config, lb);
         Assert.assertEquals(2, stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().size());
 //        Assert.assertTrue(stmClient.getVirtualServer(loadBalancerName()).getProperties().getBasic().getListen_on_traffic_ips().contains("10.69.0.61"));
 

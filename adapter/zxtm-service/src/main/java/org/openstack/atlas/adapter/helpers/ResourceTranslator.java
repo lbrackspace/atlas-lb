@@ -347,6 +347,7 @@ public class ResourceTranslator {
     }
 
     //TODO: add rest of values for 'default' persistent classes
+    //this is actually completely unnecessary
     public Persistence translatePersistenceResource(String vsName, SessionPersistence sessionPersistence) {
         Persistence persistence = new Persistence();
         PersistenceProperties properties = new PersistenceProperties();

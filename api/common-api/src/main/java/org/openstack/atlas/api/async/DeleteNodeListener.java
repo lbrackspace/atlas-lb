@@ -47,7 +47,7 @@ public class DeleteNodeListener extends BaseListener {
         try {
             LOG.debug(String.format("Removing node '%d' from load balancer '%d' in Zeus...", nodeToDelete.getId(), queueLb.getId()));
 //            reverseProxyLoadBalancerService.setNodesPriorities(ZxtmNameBuilder.genVSName(dbLoadBalancer), dbLoadBalancer);
-            reverseProxyLoadBalancerStmService.removeNode(queueLb, nodeToDelete);
+            reverseProxyLoadBalancerStmService.removeNode(dbLoadBalancer, nodeToDelete);
             LOG.debug(String.format("Successfully removed node '%d' from load balancer '%d' in Zeus.", nodeToDelete.getId(), queueLb.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
