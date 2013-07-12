@@ -146,7 +146,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             throws StmRollBackException {
 
 
-        LOG.debug(String.format("Updating  virtual server '%s'...", vsName));
+        LOG.debug(String.format("Updating virtual server '%s'...", vsName));
 
         VirtualServer curVs = null;
         try {
@@ -820,11 +820,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = loadSTMRestClient(config);
 
         ResourceTranslator translator = new ResourceTranslator();
-        String secureName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-        String normalName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String sslVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
-
-
+        /* Check validity of the SSL cert. */
         ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(sslTermination.getSslTermination().getPrivatekey(),
                 sslTermination.getSslTermination().getCertificate(), sslTermination.getSslTermination().getIntermediateCertificate());
         if (zeusCertFile.isError()) {
@@ -833,43 +832,36 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             String msg = String.format(fmt, errors);
             throw new InsufficientRequestException(msg);
         }
-        translator.translateVirtualServerResource(config, secureName, loadBalancer);
+
+        translator.translateVirtualServerResource(config, sslVsName, loadBalancer);
         VirtualServer createdServer = translator.cVServer;
 
-        try {
-            LOG.info(String.format("Creating ssl termination load balancer %s in zeus... ", secureName));
-            updateVirtualServer(config, client, secureName, createdServer);
-
-        } catch (Exception e) {
-        }
+        LOG.info(String.format("Creating ssl termination load balancer %s in zeus... ", sslVsName));
+        updateVirtualServer(config, client, sslVsName, createdServer);
 
         //TODO: this will be handled in translation..
         if (!createdServer.getProperties().getBasic().getPort().equals(sslTermination.getSslTermination().getSecurePort())) {
-            LOG.info(String.format("Updating secure servers port for ssl termination load balancer  %s in Stingray...", secureName));
+            LOG.info(String.format("Updating secure servers port for ssl termination load balancer  %s in Stingray...", sslVsName));
 //            updatePort(config, loadBalancer.getId(), loadBalancer.getAccountId(), sslTermination.getSslTermination().getSecurePort());
-            LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer %s in Stingray...", secureName));
+            LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer %s in Stingray...", sslVsName));
 
         }
 
-        try {
-            if (sslTermination.getCertIntermediateCert() != null) {
-                LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
-                CertificateFiles certificateFiles = new CertificateFiles(zeusCertFile.getPublic_cert(), zeusCertFile.getPrivate_key());
-
-
-            }
-        } catch (Exception e) {
+        /* Check for intermediate cert */
+        if (sslTermination.getCertIntermediateCert() != null) {
+            LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
+            CertificateFiles certificateFiles = new CertificateFiles(zeusCertFile.getPublic_cert(), zeusCertFile.getPrivate_key());
         }
 
         try {
-            translator.translateLoadBalancerResource(config, secureName, loadBalancer);
+            translator.translateLoadBalancerResource(config, sslVsName, loadBalancer);
 
 //            if (loadBalancer.getSessionPersistence() != null
 //                    && !loadBalancer.getSessionPersistence().equals(SessionPersistence.NONE)
 //                    && !loadBalancer.hasSsl()) //setSessionPersistence(config, loadBalancer);
 //
             if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
-                updateHealthMonitor(config, client, secureName, translator.getcMonitor());
+                updateHealthMonitor(config, client, sslVsName, translator.getcMonitor());
             }
 
             if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())
@@ -883,9 +875,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             }
 
-            updateVirtualIps(config, client, secureName, translator.getcTrafficIpGroups());
-            updateNodePool(config, client, secureName, translator.getcPool());
-            updateVirtualServer(config, client, secureName, translator.getcVServer());
+            updateVirtualIps(config, client, sslVsName, translator.getcTrafficIpGroups());
+            updateNodePool(config, client, sslVsName, translator.getcPool());
+            updateVirtualServer(config, client, sslVsName, translator.getcVServer());
         } catch (Exception ex) {
             LOG.error(ex);
             //TODO: roll back or handle as needed.. ...
