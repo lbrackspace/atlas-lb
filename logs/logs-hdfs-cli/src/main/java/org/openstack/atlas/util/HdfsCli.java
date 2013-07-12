@@ -141,7 +141,7 @@ public class HdfsCli {
                     System.out.printf("lsout #List the hourKeys in the output directory usefull because ls prints long form\n");
                     System.out.printf("lsr [path] #List hdfs files recursivly\n");
                     System.out.printf("lszip [l=lid] [h=hour] [m=missing]#List all zip files in the HDFS ourput directory for hourh or and the given lid\n");
-                    System.out.printf("dlzip <hourKey> [l=lid] [a=accoundId] #Download all zip files in local cache directory for the given keys\n");
+                    System.out.printf("dlzip (<hourkey>|<startHour> <endHour>) [l=lid] [a=accoundId] #Download all zip files in local cache directory for the given keys\n");
                     System.out.printf("ullzo <file> #Upload the lzo file to hdfs\n");
                     System.out.printf("mem\n");
                     System.out.printf("mkdir <path>\n");
@@ -647,24 +647,60 @@ public class HdfsCli {
                 }
 
                 if (cmd.equals("dlzip") && args.length >= 2) {
-                    String hourKey = args[1];
                     Map<String, String> kw = argMapper(args);
+                    args = stripKwArgs(args);
+
                     Integer lid = (kw.containsKey("l")) ? Integer.valueOf(kw.get("l")) : null;
                     Integer aid = (kw.containsKey("a")) ? Integer.valueOf(kw.get("a")) : null;
                     List<String> pathComps = new ArrayList<String>();
                     pathComps.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
                     pathComps.add("lb_logs_split");
-                    pathComps.add(hourKey);
-                    String reducerOutputDir = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathComps));
-                    List<LogReducerOutputValue> reducerOutputList = hdfsUtils.getZipFileInfoList(reducerOutputDir);
-                    List<LogReducerOutputValue> filteredZipFileInfo = hdfsUtils.filterZipFileInfoList(reducerOutputList, aid, lid);
+                    String logSplitDir = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathComps));
+
+                    List<String> hourKeys = new ArrayList<String>();
+                    if (args.length >= 3) {
+                        // Add all hours in range of startHour and endHour for zip scan.
+                        long startHour = Long.parseLong(args[1]);
+                        long endHour = Long.parseLong(args[2]);
+                        FileStatus[] stats = hdfsUtils.getFileSystem().listStatus(new Path(logSplitDir));
+                        for (FileStatus stat : stats) {
+                            String tail = pathTailString(stat.getPath());
+                            if (!stat.isDir()) {
+                                continue; // If its a plain file don't count this one
+                            }
+                            try {
+                                long currHour = Long.parseLong(tail);
+                                if (currHour >= startHour && currHour <= endHour) {
+                                    hourKeys.add(tail);
+                                }
+                            } catch (NumberFormatException ex) {
+                                continue; // This is not an hour
+                            }
+                        }
+
+                    } else {
+                        hourKeys.add(args[1]); // Only scan for this one hour
+                    }
+                    Collections.sort(hourKeys);
                     List<ZipSrcDstFile> transferFiles = new ArrayList<ZipSrcDstFile>();
-                    for (LogReducerOutputValue val : filteredZipFileInfo) {
-                        ZipSrcDstFile transferFile = new ZipSrcDstFile();
-                        transferFile.setSrcFile(val.getLogFile());
-                        transferFile.setDstFile(zipFilePath(hourKey, val.getAccountId(), val.getLoadbalancerId()));
-                        System.out.printf("%s AccountId=%d LoadbalancerId=%d\n", transferFile.toString(), val.getAccountId(), val.getLoadbalancerId());
-                        transferFiles.add(transferFile);
+                    for (String hourKey : hourKeys) {
+                        String reducerOutputDir = mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), "lb_logs_split", hourKey);
+                        List<LogReducerOutputValue> reducerOutputList = hdfsUtils.getZipFileInfoList(reducerOutputDir);
+                        List<LogReducerOutputValue> filteredZipFileInfo = hdfsUtils.filterZipFileInfoList(reducerOutputList, aid, lid);
+
+                        for (LogReducerOutputValue val : filteredZipFileInfo) {
+                            ZipSrcDstFile transferFile = new ZipSrcDstFile();
+                            transferFile.setSrcFile(val.getLogFile());
+                            transferFile.setDstFile(zipFilePath(hourKey, val.getAccountId(), val.getLoadbalancerId()));
+                            transferFile.setHourKey(hourKey);
+                            transferFile.setAccountId(val.getAccountId());
+                            transferFile.setLoadbalancerId(val.getLoadbalancerId());
+                            transferFiles.add(transferFile);
+                        }
+                    }
+                    Collections.sort(transferFiles, new ZipSrcDstFileComparator());
+                    for (ZipSrcDstFile transferFile : transferFiles) {
+                        System.out.printf("%s AccountId=%d LoadbalancerId=%d\n", transferFile.toString(), transferFile.getAccountId(), transferFile.getLoadbalancerId());
                     }
                     System.out.printf("Are you sure you want to download the above zip files (Y/N)\n");
                     if (stdinMatches(stdin, "Y")) {

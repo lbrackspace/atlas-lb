@@ -352,13 +352,14 @@ public class HdfsUtils {
 
     public List<Path> listPaths(String inPath, boolean useLocal) throws IOException {
         List<Path> paths = new ArrayList<Path>();
-        FileStatus[] stats = remoteFileSystem.listStatus(new Path(inPath));
+
         FileSystem fs;
         if (useLocal) {
             fs = localFileSystem;
         } else {
             fs = remoteFileSystem;
         }
+        FileStatus[] stats = fs.listStatus(new Path(inPath));
         if (stats == null) {
             throw new IOException(String.format("could not list status for Directory %s", inPath));
         }
@@ -626,7 +627,7 @@ public class HdfsUtils {
         return fileNames;
     }
 
-    public static String rawPath(FileStatus fileStatus){
+    public static String rawPath(FileStatus fileStatus) {
         return fileStatus.getPath().toUri().getRawPath();
     }
 
