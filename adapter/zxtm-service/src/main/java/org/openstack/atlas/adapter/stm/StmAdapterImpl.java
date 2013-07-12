@@ -823,6 +823,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String secureName = ZxtmNameBuilder.genSslVSName(loadBalancer);
         String normalName = ZxtmNameBuilder.genVSName(loadBalancer);
 
+
+
         ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(sslTermination.getSslTermination().getPrivatekey(),
                 sslTermination.getSslTermination().getCertificate(), sslTermination.getSslTermination().getIntermediateCertificate());
         if (zeusCertFile.isError()) {

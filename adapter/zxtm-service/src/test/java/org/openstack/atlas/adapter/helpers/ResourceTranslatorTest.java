@@ -184,10 +184,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             Assert.assertNull(createdServer.getProperties().getBasic().getProtection_class());
 
-
         }
-
-
     }
 
     public static class whenTranslatingATrafficIpGroup {
