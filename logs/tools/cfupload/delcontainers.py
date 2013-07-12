@@ -7,9 +7,12 @@ import time
 import cfupload
 import datetime
 import ConfigParser
+import sys
 
 config = ConfigParser.ConfigParser()
 config.read(os.path.expanduser('~/cfupconfig'))
+
+deleted_containers = set()
 
 import pyrax
 import pyrax.exceptions as exc
@@ -79,7 +82,8 @@ def processUsersSplat(**kw):
                    date = d['date']
                    splat_count -= 1
                    print "FILES left to upload = ", splat_count
-                   uploadFile(username, aid, userkey, True, lid, lname, fp, date,**kw)
+		   #uploadFile(username, aid, userkey, True, lid, lname, fp, date,**kw)
+                   deleteFile(username, aid, userkey, True, lid, lname, fp, date,**kw)
     else:
         print 'Not attempting to process files, option declined. '
 
@@ -126,6 +130,36 @@ def removeLocalFile(fp):
         print format('Error occurred removing local file: %s Error: %s' % (fp, e))
         return
 
+def deleteFile(username, userid, userkey, userenabled, lid, lname, fp, date,**kw):
+                    
+    if userenabled:
+        print format('Access CloudFiles for user id %s : user name %s' %
+			(pyrax.identity.user['id'], pyrax.identity.user['name']))
+        filename = genRemoteFileName(lid, lname, date)
+        gencname = genContName(lid, lname, date)
+
+        if gencname in deleted_containers:
+            print "container %s already deleted"%gencname
+            return
+        cf = pyrax.connect_to_cloudfiles(region=getRegion())
+        try:
+            print format('Deleteing... \n Remote File Name: %s size(%i)  as %s, Container Name: %s' % (fp,os.stat(fp).st_size,filename, gencname))
+            print format('WARNING DELETING Container and files from %s' % gencname)
+	    delcont = cf.get_container(gencname)
+            print format('Retrieved container to delete is %s' % delcont.name)
+	    cf.delete_container(gencname,del_objects=True)
+            deleted_containers.add(gencname)
+            print format("Successfully deleted file/container for: LBID: %s" % lid)
+            
+        except Exception, e:
+            print 'DELETING failed for %s %s. Exception: %s' % (userid, username, e)
+            return
+        except KeyboardInterrupt:
+            print "Skipping this entry"
+            time.sleep(1.0)
+        except:
+            print "Unknown Exception caught:", traceback.format_exc()
+            time.sleep(1.0)
 
 def clearDirectories():
     print 'Clearing Directories: '
@@ -151,7 +185,7 @@ def clearDirectories():
 
 
 def genContName(lid, lname, date):
-    return format('lb_%d_%s_%s' % (lid, lname.replace('/', '_').replace(" ", "_"), parseMonthYear(date)))
+    return format('lb_%d_%s_%s' % (lid, lname.replace('/', '_'), parseMonthYear(date)))
 
 
 def genRemoteFileName(lid, lname, date):
