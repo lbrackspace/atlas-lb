@@ -329,6 +329,33 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
+    public void deleteErrorFile(LoadBalancer loadBalancer) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException, StmRollBackException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
+        try {
+            reverseProxyLoadBalancerStmAdapter.deleteErrorFile(config, loadBalancer);
+        } catch (StmRollBackException ex) {
+            checkAndSetIfSoapEndPointBad(config, ex);
+            throw ex;
+        } catch (RollBackException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    @Override
+    public void setErrorFile(LoadBalancer loadBalancer, String content)
+            throws RemoteException, InsufficientRequestException, StmRollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
+        try {
+            reverseProxyLoadBalancerStmAdapter.setErrorFile(config, loadBalancer, content);
+        } catch (StmRollBackException ex) {
+            checkAndSetIfSoapEndPointBad(config, ex);
+            throw ex;
+        } catch (RollBackException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    @Override
     public void uploadDefaultErrorFile(Integer clusterId, String content) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException {
         LoadBalancerEndpointConfiguration config = getConfigbyClusterId(clusterId);
         try {
@@ -384,6 +411,16 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
 
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
+    }
+
+    private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, StmRollBackException ex) throws AxisFault {
+        Host configuredHost = config.getEndpointUrlHost();
+        if (IpHelper.isNetworkConnectionException(ex)) {
+            LOG.error(String.format("STM endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
+            configuredHost.setSoapEndpointActive(Boolean.FALSE);
+            hostService.update(configuredHost);
+        }
+        LOG.warn(String.format("STM endpoint %s on host[%d] throw an STM Fault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
     }
 
     private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, AxisFault af) throws AxisFault {

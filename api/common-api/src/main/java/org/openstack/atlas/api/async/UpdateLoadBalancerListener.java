@@ -47,9 +47,6 @@ public class UpdateLoadBalancerListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Updating load balancer '%d' STM...", dbLoadBalancer.getId()));
-             //Grr lazy loading...   todo: fix this some how...
-            String content = dbLoadBalancer.getUserPages().getErrorpage();
-            dbLoadBalancer.getUserPages().setErrorpage(content);
             reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer);
             LOG.debug(String.format("Successfully updated load balancer '%d' in STM.", dbLoadBalancer.getId()));
             atomSummary.append("algorithm: '").append(dbLoadBalancer.getAlgorithm().name()).append("', ");

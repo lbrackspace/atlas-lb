@@ -83,6 +83,12 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
 
+    public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String content)
+            throws RemoteException, InsufficientRequestException, StmRollBackException;
+
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws InsufficientRequestException, StmRollBackException;
+
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content)
             throws RemoteException, InsufficientRequestException, RollBackException;
 

@@ -18,9 +18,9 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 public interface ReverseProxyLoadBalancerStmService {
-    public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException;
+    LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException;
 
-    public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException;
+    LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException;
 
     void createLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
 
@@ -60,13 +60,17 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void removeHealthMonitor(LoadBalancer loadBalancer) throws Exception;
 
-    void uploadDefaultErrorFile(Integer clusterId, String content) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException;
+    void uploadDefaultErrorFile(Integer clusterId, String content) throws Exception;
 
-    public void setRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws Exception;
+    void deleteErrorFile(LoadBalancer loadBalancer) throws Exception;
 
-    public void deleteRateLimit(LoadBalancer loadBalancer) throws Exception;
+    void setErrorFile(LoadBalancer loadBalancer, String content) throws Exception;
 
-    public void updateRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws Exception;
+    void setRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws Exception;
+
+    void deleteRateLimit(LoadBalancer loadBalancer) throws Exception;
+
+    void updateRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws Exception;
 
     boolean isEndPointWorking(Host host) throws Exception;
 
