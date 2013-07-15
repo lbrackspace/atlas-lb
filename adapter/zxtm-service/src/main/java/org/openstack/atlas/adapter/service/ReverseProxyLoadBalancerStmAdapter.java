@@ -32,8 +32,8 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
-    public void suspendLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws RemoteException, InsufficientRequestException;
+    public void addSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
+            throws RemoteException, InsufficientRequestException, StmRollBackException;
 
     public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException;
@@ -53,7 +53,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void removeNode(LoadBalancerEndpointConfiguration config, LoadBalancer lb, Node nodeToDelete)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
-    public void addVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+    public void updateVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void deleteVirtualIp(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Integer vipId)
@@ -65,16 +65,16 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
-    public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+    public void updateProtection(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
-    public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+    public void deleteProtection (LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
 
     public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
-    public void removeHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+    public void deleteHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException;
 
     public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
@@ -111,6 +111,6 @@ public interface ReverseProxyLoadBalancerStmAdapter {
             throws RemoteException;
 
     public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config)
-            throws RemoteException;
+            throws Exception;
 
 }

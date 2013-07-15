@@ -93,7 +93,6 @@ public class Ipv6ITest extends STMTestBase {
         Ipv6ITest.lb = lb;
     }
 
-    //TODO nothing changed from the normal load balancer... is this right?
     protected static void createSimpleIpv6LoadBalancer() {
         StingrayRestClient tclient;
         ResourceTranslator translator = new ResourceTranslator();

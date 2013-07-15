@@ -138,7 +138,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     public void addVirtualIps(Integer lbId, Integer accountId, LoadBalancer loadBalancer) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            reverseProxyLoadBalancerStmAdapter.addVirtualIps(config, loadBalancer);
+            reverseProxyLoadBalancerStmAdapter.updateVirtualIps(config, loadBalancer);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -205,7 +205,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     public void updateConnectionThrottle(LoadBalancer loadBalancer) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.updateConnectionThrottle(config, loadBalancer);
+            reverseProxyLoadBalancerStmAdapter.updateProtection(config, loadBalancer);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -216,7 +216,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     public void deleteConnectionThrottle(LoadBalancer loadBalancer) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.deleteConnectionThrottle(config, loadBalancer);
+            reverseProxyLoadBalancerStmAdapter.deleteProtection(config, loadBalancer);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -238,7 +238,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     public void removeHealthMonitor(LoadBalancer loadBalancer) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.removeHealthMonitor(config, loadBalancer);
+            reverseProxyLoadBalancerStmAdapter.deleteHealthMonitor(config, loadBalancer);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -249,7 +249,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     public void suspendLoadBalancer(LoadBalancer lb) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.suspendLoadBalancer(config, lb);
+            reverseProxyLoadBalancerStmAdapter.addSuspension(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;

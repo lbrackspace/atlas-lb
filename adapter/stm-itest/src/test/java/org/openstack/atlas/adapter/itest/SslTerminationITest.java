@@ -4,6 +4,7 @@ package org.openstack.atlas.adapter.itest;
 import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
+import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -12,6 +13,7 @@ import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
+import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 
@@ -204,13 +206,21 @@ public class SslTerminationITest extends STMTestBase {
 
             Assert.assertNotNull(createdSecureVs);
             Assert.assertNotNull(createdNormalVs);
-            VirtualServerBasic createdBasic = createdSecureVs.getProperties().getBasic();
-            Assert.assertEquals(port, (int) createdSecureVs.getProperties().getBasic().getPort());
-            Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(createdBasic.getProtocol().toString()));
-            Assert.assertEquals(isVsEnabled, createdBasic.getEnabled());
-            //TODO Do I need to add a check for the normal server default pool?
-            Assert.assertEquals(secureName, createdBasic.getPool().toString());
-            Assert.assertEquals(isSslTermEnabled, createdBasic.getSsl_decrypt());
+            VirtualServerBasic secureBasic = createdSecureVs.getProperties().getBasic();
+            Assert.assertEquals(port, (int) secureBasic.getPort());
+            Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(secureBasic.getProtocol().toString()));
+            Assert.assertEquals(isVsEnabled, secureBasic.getEnabled());
+            Assert.assertEquals(secureName, secureBasic.getPool().toString());
+            Assert.assertEquals(isSslTermEnabled, secureBasic.getSsl_decrypt());
+
+            VirtualServerBasic normalBasic = createdNormalVs.getProperties().getBasic();
+            Assert.assertEquals(port, (int) normalBasic.getPort());
+            Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(normalBasic.getProtocol().toString()));
+            Assert.assertEquals(isVsEnabled, normalBasic.getEnabled());
+            Assert.assertEquals(secureName, normalBasic.getPool().toString());
+
+
+
             Assert.assertEquals(testCert, createdSecureVs.getProperties().getSsl().getServer_cert_default());
         } catch (Exception e) {
             e.printStackTrace();
@@ -295,8 +305,9 @@ public class SslTerminationITest extends STMTestBase {
 
             createdVs = stmClient.getVirtualServer(ZxtmNameBuilder.genSslVSName(lb));
 
-            //TODO that val should be in an enum somewhere...
-            Assert.assertEquals("never", createdVs.getProperties().getHttp().getLocation_rewrite());
+
+            Assert.assertEquals(EnumFactory.Accept_from.NEVER.toString(),
+                    createdVs.getProperties().getHttp().getLocation_rewrite().toString());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -387,7 +398,7 @@ public class SslTerminationITest extends STMTestBase {
             connectionThrottleHelper(normalName, maxConnectionRate, maxConnections, minConnections, rateInterval, expectedMax10);
 
 
-            stmAdapter.deleteConnectionThrottle(config, lb);
+            stmAdapter.deleteProtection(config, lb);
 
 
             int deletedRate = 0;
@@ -404,7 +415,7 @@ public class SslTerminationITest extends STMTestBase {
     private void connectionThrottleHelper(String vsName, int maxConnectionRate, int maxConnections,
                                           int minConnections, int rateInterval, int expectedMax10) {
         try {
-            stmAdapter.updateConnectionThrottle(config, lb);
+            stmAdapter.updateProtection(config, lb);
 
 
             Protection protection = null;
@@ -433,7 +444,7 @@ public class SslTerminationITest extends STMTestBase {
             Ticket ticket = new Ticket();
             ticket.setComment(ticketComment);
             stmAdapter.setRateLimit(config, lb, rateLimit);
-            //I don't even...
+
 
             Bandwidth createdNormalBandwidth = stmClient.getBandwidth(normalName);
             Assert.assertNotNull(createdNormalBandwidth);
@@ -446,9 +457,8 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertEquals(maxRequestsPerSecond, (int) createdSecureBandwidth.getProperties().getBasic().getMaximum());
             Assert.assertEquals(ticketComment, createdSecureBandwidth.getProperties().getBasic().getNote());
             VirtualServer createdServer = stmClient.getVirtualServer(normalName);
-            //createdServer.getProperties().getBasic().getResponse_rules().contains()
-            //TODO need to add rules to constants or adapter file
-
+            Assert.assertTrue(createdServer.getProperties().getBasic().getResponse_rules().contains(StmConstants.XFF.toString()) ||
+                    createdServer.getProperties().getBasic().getResponse_rules().contains(StmConstants.XFP.toString()));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -554,7 +564,6 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertEquals(maxRequestsPerSecond, (int) createdNormalBandwidth.getProperties().getBasic().getMaximum());
             Assert.assertEquals(ticketComment, createdNormalBandwidth.getProperties().getBasic().getNote());
 
-            //TODO same thing about the rules
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
