@@ -2,7 +2,24 @@ package org.openstack.atlas.adapter.helpers;
 
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.AccessList;
+import org.openstack.atlas.service.domain.entities.AccessListType;
+import org.openstack.atlas.service.domain.entities.ConnectionLimit;
+import org.openstack.atlas.service.domain.entities.HealthMonitor;
+import org.openstack.atlas.service.domain.entities.HealthMonitorType;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
+import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.NodeCondition;
+import org.openstack.atlas.service.domain.entities.RateLimit;
+import org.openstack.atlas.service.domain.entities.SessionPersistence;
+import org.openstack.atlas.service.domain.entities.Ticket;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.util.ca.StringUtils;
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
@@ -14,15 +31,39 @@ import org.rackspace.stingray.client.monitor.MonitorProperties;
 import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.persistence.PersistenceBasic;
 import org.rackspace.stingray.client.persistence.PersistenceProperties;
-import org.rackspace.stingray.client.pool.*;
-import org.rackspace.stingray.client.protection.*;
+import org.rackspace.stingray.client.pool.Pool;
+import org.rackspace.stingray.client.pool.PoolBasic;
+import org.rackspace.stingray.client.pool.PoolConnection;
+import org.rackspace.stingray.client.pool.PoolLoadbalancing;
+import org.rackspace.stingray.client.pool.PoolNodeWeight;
+import org.rackspace.stingray.client.pool.PoolProperties;
+import org.rackspace.stingray.client.protection.Protection;
+import org.rackspace.stingray.client.protection.ProtectionAccessRestriction;
+import org.rackspace.stingray.client.protection.ProtectionBasic;
+import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
+import org.rackspace.stingray.client.protection.ProtectionProperties;
+import org.rackspace.stingray.client.ssl.keypair.Keypair;
+import org.rackspace.stingray.client.ssl.keypair.KeypairBasic;
+import org.rackspace.stingray.client.ssl.keypair.KeypairProperties;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
-import org.rackspace.stingray.client.virtualserver.*;
+import org.rackspace.stingray.client.virtualserver.VirtualServer;
+import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
+import org.rackspace.stingray.client.virtualserver.VirtualServerLog;
+import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
+import org.rackspace.stingray.client.virtualserver.VirtualServerTcp;
+import org.rackspace.stingray.client.virtualserver.VirtualServerWebcache;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ResourceTranslator {
     public Pool cPool;
@@ -32,6 +73,7 @@ public class ResourceTranslator {
     public Protection cProtection;
     public Persistence cPersistence;
     public Bandwidth cBandwidth;
+    public Keypair cKeypair;
 
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
@@ -59,17 +101,20 @@ public class ResourceTranslator {
         VirtualServerLog log = null;
 
         //basic virtual server settings
+        if (loadBalancer.hasSsl()) {
+            basic.setPort(loadBalancer.getSslTermination().getSecurePort());
+            basic.setPool(ZxtmNameBuilder.genVSName(loadBalancer));
+        } else {
+            basic.setPool(vsName);
+            basic.setPort(loadBalancer.getPort());
+        }
         basic.setProtocol(loadBalancer.getProtocol().name());
-        basic.setPort(loadBalancer.getPort());
-        basic.setPool(vsName);
         basic.setEnabled(true);
 
         //protection class settings
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
             basic.setProtection_class(vsName);
         }
-
-
 
         //connection log settings
         if (loadBalancer.isConnectionLogging() != null && loadBalancer.isConnectionLogging()) {
@@ -124,6 +169,27 @@ public class ResourceTranslator {
 
         cVServer = virtualServer;
         return cVServer;
+    }
+
+    public Keypair translateKeypairResource(LoadBalancerEndpointConfiguration config,
+                                            ZeusSslTermination sslTermination) throws InsufficientRequestException {
+        ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(sslTermination.getSslTermination().getPrivatekey(),
+                sslTermination.getSslTermination().getCertificate(), sslTermination.getSslTermination().getIntermediateCertificate());
+        if (zeusCertFile.isError()) {
+            String fmt = "StingrayCertFile generation Failure: %s";
+            String errors = StringUtils.joinString(zeusCertFile.getErrorList(), ",");
+            String msg = String.format(fmt, errors);
+            throw new InsufficientRequestException(msg);
+        }
+
+        cKeypair = new Keypair();
+        KeypairProperties keypairProperties = new KeypairProperties();
+        KeypairBasic keypairBasic = new KeypairBasic();
+        keypairBasic.setPrivate(zeusCertFile.getPrivate_key());
+        keypairBasic.setPublic(zeusCertFile.getPublic_cert());
+        keypairProperties.setBasic(keypairBasic);
+        cKeypair.setProperties(keypairProperties);
+        return cKeypair;
     }
 
     public Bandwidth translateBandwidthResource(LoadBalancer loadBalancer) throws InsufficientRequestException {
@@ -415,5 +481,13 @@ public class ResourceTranslator {
 
     public void setcBandwidth(Bandwidth cBandwidth) {
         this.cBandwidth = cBandwidth;
+    }
+
+    public Keypair getcKeypair() {
+        return cKeypair;
+    }
+
+    public void setcKeypair(Keypair keypair) {
+        this.cKeypair = keypair;
     }
 }

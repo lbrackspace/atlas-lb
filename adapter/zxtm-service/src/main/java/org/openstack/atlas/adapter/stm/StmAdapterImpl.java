@@ -1,6 +1,5 @@
 package org.openstack.atlas.adapter.stm;
 
-import com.zxtm.service.client.CertificateFiles;
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -8,15 +7,26 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.helpers.*;
+import org.openstack.atlas.adapter.helpers.IpHelper;
+import org.openstack.atlas.adapter.helpers.ResourceTranslator;
+import org.openstack.atlas.adapter.helpers.StmConstants;
+import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
-import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.pojos.*;
+import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
+import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
+import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.RateLimit;
+import org.openstack.atlas.service.domain.pojos.Cidr;
+import org.openstack.atlas.service.domain.pojos.Hostssubnet;
+import org.openstack.atlas.service.domain.pojos.Hostsubnet;
+import org.openstack.atlas.service.domain.pojos.NetInterface;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
-import org.openstack.atlas.util.ca.StringUtils;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
-import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -27,6 +37,7 @@ import org.rackspace.stingray.client.persistence.PersistenceBasic;
 import org.rackspace.stingray.client.persistence.PersistenceProperties;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.protection.Protection;
+import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.tm.TrafficManager;
 import org.rackspace.stingray.client.tm.TrafficManagerTrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
@@ -42,7 +53,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
@@ -856,21 +873,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
      */
 
     @Override
-    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        // TODO:  In progress.  Ignore for a while.
-        /*
+    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
 
-        Create Virtual Server
-        Add Virtual Ips
-        Follow HTTP header validation
-            Check for Session Persistence
-            Check for Health Monitoring
-            Check for Connection Limits
-            Check for Connection Logging
-            Check for Content Caching
-            Check for Access Lists
-            Check for Half Closed
-         */
+        // TODO:  check for secure traffic only being set; have to toggle "enabled" on original VS
 
         StingrayRestClient client = loadSTMRestClient(config);
 
@@ -879,38 +884,28 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
         /* Check validity of the SSL cert. */
-        ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(sslTermination.getSslTermination().getPrivatekey(),
-                sslTermination.getSslTermination().getCertificate(), sslTermination.getSslTermination().getIntermediateCertificate());
-        if (zeusCertFile.isError()) {
-            String fmt = "StingrayCertFile generation Failure: %s";
-            String errors = StringUtils.joinString(zeusCertFile.getErrorList(), ",");
-            String msg = String.format(fmt, errors);
-            throw new InsufficientRequestException(msg);
-        }
 
         translator.translateVirtualServerResource(config, sslVsName, loadBalancer);
-        VirtualServer createdServer = translator.cVServer;
+        translator.translateKeypairResource(config, sslTermination);
+        VirtualServer createdServer = translator.getcVServer();
+
+
+        /* Check for intermediate cert */
+        if (sslTermination.getCertIntermediateCert() != null) {
+            Keypair keypair = translator.getcKeypair();
+            LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
+            client.updateKeypair(sslVsName, keypair);
+        }
+
+        //TODO:  set the cert on the ssl object on the virtual server
 
         LOG.info(String.format("Creating ssl termination load balancer %s in zeus... ", sslVsName));
         updateVirtualServer(config, client, sslVsName, createdServer);
 
-        //TODO: this will be handled in translation..
-        if (!createdServer.getProperties().getBasic().getPort().equals(sslTermination.getSslTermination().getSecurePort())) {
-            LOG.info(String.format("Updating secure servers port for ssl termination load balancer  %s in Stingray...", sslVsName));
-//            updatePort(config, loadBalancer.getId(), loadBalancer.getAccountId(), sslTermination.getSslTermination().getSecurePort());
-            LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer %s in Stingray...", sslVsName));
-
-        }
-
-        /* Check for intermediate cert */
-        if (sslTermination.getCertIntermediateCert() != null) {
-            LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
-            CertificateFiles certificateFiles = new CertificateFiles(zeusCertFile.getPublic_cert(), zeusCertFile.getPrivate_key());
-        }
-
         try {
             translator.translateLoadBalancerResource(config, sslVsName, loadBalancer);
 
+            // TODO:  check this logic for necessity
 //            if (loadBalancer.getSessionPersistence() != null
 //                    && !loadBalancer.getSessionPersistence().equals(SessionPersistence.NONE)
 //                    && !loadBalancer.hasSsl()) //setSessionPersistence(config, loadBalancer);
@@ -930,13 +925,14 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             }
 
+            //TODO:  Verify the following 3 operations
             updateVirtualIps(config, client, sslVsName, translator.getcTrafficIpGroups());
             updatePool(config, client, sslVsName, translator.getcPool());
             updateVirtualServer(config, client, sslVsName, translator.getcVServer());
 
         } catch (Exception ex) {
             LOG.error(ex);
-            //TODO: roll back or handle as needed.. ...
+            //TODO: roll back or handle as needed...
             throw new StmRollBackException("Failed to update loadbalancer, rolling back...", ex);
         }
     }
