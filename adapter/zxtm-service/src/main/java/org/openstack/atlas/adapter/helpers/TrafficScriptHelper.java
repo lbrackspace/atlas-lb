@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TrafficScriptHelper {
@@ -127,7 +128,7 @@ public class TrafficScriptHelper {
 
         boolean ruleXForwardedForExists = false;
 //        String[] ruleNames = serviceStubs.getZxtmRuleCatalogService().getRuleNames();
-        List<Child> rules = null;
+        List<Child> rules = new ArrayList<Child>();
         try {
             rules = client.getTrafficscripts();
         } catch (StingrayRestClientObjectNotFoundException e) {

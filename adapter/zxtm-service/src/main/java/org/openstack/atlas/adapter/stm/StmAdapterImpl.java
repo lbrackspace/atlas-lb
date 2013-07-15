@@ -53,7 +53,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config) throws StmRollBackException {
         StingrayRestClient client;
         try {
-            //TODO: pull this out from config --- or add new column to Host table to support both endpoints...
+            //TODO: pull this out from config --- or add new column to Host table to support both soap and REST endpoints...
             String baseUri = "api/tm/1.0/config/active/";
             URI uri = new URI(config.getEndpointUrl().toString().split("soap")[0] + baseUri);
             client = new StingrayRestClient(uri);
@@ -70,8 +70,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = loadSTMRestClient(config);
         try {
             //createPersistentClasses(config);
-            TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
-            TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
+            if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
+                TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
+                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
+            }
             client.destroy();
 
             updateLoadBalancer(config, loadBalancer);
