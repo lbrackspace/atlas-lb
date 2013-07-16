@@ -24,29 +24,29 @@ public class DeleteSessionPersistenceListener extends BaseListener {
     public void doOnMessage(final Message message) throws Exception {
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
-        LoadBalancer requestLb = getLoadbalancerFromMessage(message);
+        LoadBalancer queLb = getLoadbalancerFromMessage(message);
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.get(requestLb.getId(), requestLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.get(queLb.getId(), queLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
-            String alertDescription = String.format("Load balancer '%d' not found in database.", requestLb.getId());
+            String alertDescription = String.format("Load balancer '%d' not found in database.", queLb.getId());
             LOG.error(alertDescription, enfe);
-            notificationService.saveAlert(requestLb.getAccountId(), requestLb.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(requestLb);
+            notificationService.saveAlert(queLb.getAccountId(), queLb.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
+            sendErrorToEventResource(queLb);
             return;
         }
 
         try {
-            LOG.debug(String.format("Removing session persistence for load balancer '%d' in Zeus...", requestLb.getId()));
-            reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer);
-            LOG.debug(String.format("Successfully removed session persistence for load balancer '%d' in Zeus.", requestLb.getId()));
+            LOG.debug(String.format("Removing session persistence for load balancer '%d' in Zeus...", queLb.getId()));
+            reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queLb);
+            LOG.debug(String.format("Successfully removed session persistence for load balancer '%d' in Zeus.", queLb.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error removing session persistence in Zeus for loadbalancer '%d'.", requestLb.getId());
+            String alertDescription = String.format("Error removing session persistence in Zeus for loadbalancer '%d'.", queLb.getId());
             LOG.error(alertDescription, e);
-            notificationService.saveAlert(requestLb.getAccountId(), requestLb.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(requestLb);
+            notificationService.saveAlert(queLb.getAccountId(), queLb.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            sendErrorToEventResource(queLb);
 
             return;
         }
@@ -62,9 +62,9 @@ public class DeleteSessionPersistenceListener extends BaseListener {
         // Add atom entry
         String atomTitle = "Session Persistence Successfully Deleted";
         String atomSummary = "Session persistence successfully deleted";
-        notificationService.saveSessionPersistenceEvent(requestLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_SESSION_PERSISTENCE, DELETE, INFO);
+        notificationService.saveSessionPersistenceEvent(queLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_SESSION_PERSISTENCE, DELETE, INFO);
 
-        LOG.info(String.format("Delete session persistence operation complete for load balancer '%d'.", requestLb.getId()));
+        LOG.info(String.format("Delete session persistence operation complete for load balancer '%d'.", queLb.getId()));
     }
 
     private void sendErrorToEventResource(LoadBalancer lb) {

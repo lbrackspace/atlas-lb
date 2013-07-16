@@ -276,7 +276,7 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertEquals(normalPort, (int) createdNormalVs.getProperties().getBasic().getPort());
 
             lb.setConnectionLogging(isConnectionLogging);
-            stmAdapter.updateLoadBalancer(config, lb);
+            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
             createdSecureVs = stmClient.getVirtualServer(secureVsName);
             createdNormalVs = stmClient.getVirtualServer(normalVsName);
             Assert.assertEquals(isConnectionLogging, createdSecureVs.getProperties().getLog().getEnabled());
@@ -320,13 +320,13 @@ public class SslTerminationITest extends STMTestBase {
         try {
             String errorContent = "HI";
             lb.getUserPages().setErrorpage(errorContent);
-            stmAdapter.updateLoadBalancer(config, lb);
+            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
             errorPageHelper(errorContent);
             lb.getUserPages().setErrorpage(null);
-            stmAdapter.updateLoadBalancer(config, lb);
+            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
             errorPageHelper("Default");
             lb.getUserPages().setErrorpage(errorContent);
-            stmAdapter.updateLoadBalancer(config, lb);
+            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
             errorPageHelper(errorContent);
         } catch (Exception e) {
             e.printStackTrace();
@@ -339,10 +339,10 @@ public class SslTerminationITest extends STMTestBase {
         String errorContent = "HI";
         try {
             lb.getUserPages().setErrorpage(errorContent);
-            stmAdapter.updateLoadBalancer(config, lb);
+            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
             errorPageHelper(errorContent);
             lb.getUserPages().setErrorpage(null);
-            stmAdapter.updateLoadBalancer(config, lb);
+            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
             errorPageHelper("Default");
         } catch (Exception e) {
             e.printStackTrace();

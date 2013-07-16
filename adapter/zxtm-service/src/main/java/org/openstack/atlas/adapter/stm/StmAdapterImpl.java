@@ -7,24 +7,10 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.helpers.IpHelper;
-import org.openstack.atlas.adapter.helpers.ResourceTranslator;
-import org.openstack.atlas.adapter.helpers.StmConstants;
-import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.helpers.*;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
-import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.RateLimit;
-import org.openstack.atlas.service.domain.pojos.Cidr;
-import org.openstack.atlas.service.domain.pojos.Hostssubnet;
-import org.openstack.atlas.service.domain.pojos.Hostsubnet;
-import org.openstack.atlas.service.domain.pojos.NetInterface;
-import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.rackspace.stingray.client.StingrayRestClient;
@@ -53,13 +39,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
@@ -89,15 +69,16 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
+
         try {
-            //createPersistentClasses(config);
             if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
                 TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
                 TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             }
+            createPersistentClasses(config);
             client.destroy();
 
-            updateLoadBalancer(config, loadBalancer);
+            updateLoadBalancer(config, loadBalancer, new LoadBalancer());
         } catch (Exception e) {
             LOG.error(String.format("Failed to create load balancer %s, rolling back...", loadBalancer.getId()));
             deleteLoadBalancer(config, loadBalancer);
@@ -106,7 +87,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
 
         StingrayRestClient client = loadSTMRestClient(config);
@@ -124,18 +105,27 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
                 translator.translateLoadBalancerResource(config, vsName, loadBalancer);
 
-                if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
+                if (queLb.getHealthMonitor() != null
+                        && loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
                     updateHealthMonitor(config, client, vsName, translator.getcMonitor());
                 }
 
-                if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())
+                if (queLb.getAccessLists() != null && (loadBalancer.getAccessLists() != null
+                        && !loadBalancer.getAccessLists().isEmpty())
                         || loadBalancer.getConnectionLimit() != null) {
                     updateProtection(config, client, vsName, translator.getcProtection());
                 }
 
-                updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
-                updatePool(config, client, vsName, translator.getcPool());
+                if (queLb.getLoadBalancerJoinVip6Set() != null || queLb.getLoadBalancerJoinVipSet() != null) {
+                    updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
+                }
+
+                if (queLb.getNodes() != null) {
+                    updatePool(config, client, vsName, translator.getcPool());
+                }
+
                 updateVirtualServer(config, client, vsName, translator.getcVServer());
+
                 client.destroy();
             } catch (Exception ex) {
                 LOG.error("Exception creating load balancer: " + ex);
@@ -180,6 +170,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         try {
             client.updateVirtualServer(vsName, virtualServer);
+
         } catch (Exception ex) {
             String em = String.format("Error updating virtual server: %s Attempting to RollBack... \n Exception: %s Trace: %s"
                     , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
@@ -232,61 +223,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
 
-    private void createPersistentClasses(LoadBalancerEndpointConfiguration config) {
-        StingrayRestClient client = null;
-        try {
-            client = loadSTMRestClient(config);
-
-        } catch (StmRollBackException e) {
-            e.printStackTrace();
-        }
-        if (client != null) {
-            try {
-                client.getPersistence(StmConstants.HTTP_COOKIE);
-            } catch (StingrayRestClientException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            } catch (StingrayRestClientObjectNotFoundException e) {
-                Persistence persistence = new Persistence();
-                PersistenceProperties properties = new PersistenceProperties();
-                PersistenceBasic basic = new PersistenceBasic();
-
-                basic.setType(StmConstants.HTTP_COOKIE);
-                properties.setBasic(basic);
-                persistence.setProperties(properties);
-                try {
-                    client.createPersistence(StmConstants.HTTP_COOKIE, persistence);
-                } catch (StingrayRestClientException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                } catch (StingrayRestClientObjectNotFoundException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-            }
-
-            try {
-                client.getPersistence(StmConstants.SOURCE_IP);
-            } catch (StingrayRestClientException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            } catch (StingrayRestClientObjectNotFoundException e) {
-                Persistence persistence = new Persistence();
-                PersistenceProperties properties = new PersistenceProperties();
-                PersistenceBasic basic = new PersistenceBasic();
-
-                basic.setType(StmConstants.SOURCE_IP);
-                properties.setBasic(basic);
-                persistence.setProperties(properties);
-                try {
-                    client.createPersistence(StmConstants.SOURCE_IP, persistence);
-                } catch (StingrayRestClientException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                } catch (StingrayRestClientObjectNotFoundException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-            }
-        }
-
-
-    }
-
     /*
        Pool Resources
     */
@@ -296,19 +232,17 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
 
-        final String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
         ResourceTranslator translator = new ResourceTranslator();
         StingrayRestClient client = loadSTMRestClient(config);
         translator.translatePoolResource(poolName, loadBalancer);
-        if(loadBalancer.hasSsl())
-        {
+        if (loadBalancer.hasSsl()) {
             String poolSslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
             translator.translatePoolResource(poolSslName, loadBalancer);
             updatePool(config, client, poolSslName, translator.getcPool());
         }
 
         updatePool(config, client, poolName, translator.getcPool());
-
 
 
         LOG.info(String.format("Removing nodes from pool '%s'", poolName));
@@ -318,7 +252,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Node> doomedNodes) throws AxisFault, InsufficientRequestException, StmRollBackException {
-        final String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
         StingrayRestClient client = loadSTMRestClient(config);
         ResourceTranslator translator = new ResourceTranslator();
         Set<Node> currentNodes = loadBalancer.getNodes();
@@ -335,10 +269,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             }
         }
         loadBalancer.setNodes(currentNodes);
-        if(loadBalancer.hasSsl())
-        {
-            LOG.error("I don't like you");
-        }
+        if (loadBalancer.hasSsl()) {
+            String poolSslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+            translator.translatePoolResource(poolSslName, loadBalancer);
+ }
         translator.translatePoolResource(poolName, loadBalancer);
 
         LOG.info(String.format("Removing nodes from pool '%s'", poolName));
@@ -355,7 +289,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
 
     private void updatePool(LoadBalancerEndpointConfiguration config,
-                                StingrayRestClient client, String poolName, Pool pool)
+                            StingrayRestClient client, String poolName, Pool pool)
             throws StmRollBackException {
 
         LOG.debug(String.format("Updating pool '%s' and setting nodes...", poolName));
@@ -450,6 +384,15 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         LOG.debug(String.format("Updating virtual server %s for virtual ip configuration update", vsName));
         updateVirtualServer(config, client, vsName, translator.getcVServer());
         LOG.info(String.format("Successfully updated virtual ips for virtual server %s", vsName));
+
+        if (loadBalancer.hasSsl()) {
+            vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+            LOG.debug(String.format("Updating virtual ips for virtual server %s", vsName));
+            updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
+            LOG.debug(String.format("Updating virtual server %s for virtual ip configuration update", vsName));
+            updateVirtualServer(config, client, vsName, translator.getcVServer());
+            LOG.info(String.format("Successfully updated virtual ips for virtual server %s", vsName));
+        }
     }
 
     @Override
@@ -466,6 +409,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         ResourceTranslator translator = new ResourceTranslator();
         String vsName;
         vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String sslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
 
         translator.translateLoadBalancerResource(config, vsName, loadBalancer);
         Map<String, TrafficIp> curTigMap = translator.getcTrafficIpGroups();
@@ -517,6 +461,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             LOG.debug(String.format("Updating virtual server %s for updated virtual ip configuration..", vsName));
             updateVirtualServer(config, client, vsName, translator.getcVServer());
             LOG.info(String.format("Successfully updated traffic ip configuration and removed vips %s for virtual server %s", vipsToRemove, vsName));
+            if (loadBalancer.hasSsl()) {
+                LOG.debug(String.format("Updating virtual server %s for updated virtual ip configuration..", sslName));
+                updateVirtualServer(config, client, sslName, translator.getcVServer());
+                LOG.info(String.format("Successfully updated traffic ip configuration and removed vips %s for virtual server %s", vipsToRemove, sslName));
+            }
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.error(String.format("Object not found when removing virtual ip: %s for virtual server %s, continue...", tname, vsName));
         } catch (Exception ex) {
@@ -591,11 +540,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         deleteVirtualIps(config, loadBalancer, vipIds);
     }
 
-    @Override
-    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws RemoteException, InsufficientRequestException, RollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     /*
         Monitor Resources
      */
@@ -604,13 +548,18 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
 
-        final String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         ResourceTranslator translator = new ResourceTranslator();
         StingrayRestClient client = loadSTMRestClient(config);
 
         translator.translateLoadBalancerResource(config, vsName, loadBalancer);
         updateHealthMonitor(config, client, vsName, translator.getcMonitor());
         updatePool(config, client, vsName, translator.getcPool());
+        if (loadBalancer.hasSsl()) {
+            vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+            updateHealthMonitor(config, client, vsName, translator.getcMonitor());
+            updatePool(config, client, vsName, translator.getcPool());
+        }
     }
 
     @Override
@@ -618,7 +567,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         final String monitorName = ZxtmNameBuilder.genVSName(loadBalancer);
         StingrayRestClient client = loadSTMRestClient(config);
         deleteHealthMonitor(config, client, monitorName);
-        if(loadBalancer.hasSsl()) {
+        if (loadBalancer.hasSsl()) {
             String monitorSslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
             deleteHealthMonitor(config, client, monitorSslName);
         }
@@ -699,7 +648,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             ResourceTranslator translator = new ResourceTranslator();
             StingrayRestClient client = loadSTMRestClient(config);
             String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
-            if(loadBalancer.hasSsl()) {
+            if (loadBalancer.hasSsl()) {
                 String protectionSslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
                 LOG.info(String.format("Updating Ssl connection throttling on %s...", protectionSslName));
                 updateProtection(config, client, protectionSslName, translator.translateProtectionResource(protectionSslName, loadBalancer));
@@ -821,58 +770,87 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     @Override
     public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
         if (loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) {
-            ResourceTranslator translator = new ResourceTranslator();
-            StingrayRestClient client = loadSTMRestClient(config);
             String name = ZxtmNameBuilder.genVSName(loadBalancer);
             LOG.info(String.format("Updating Access List on '%s'...", name));
-            updateProtection(config, client, name, translator.translateProtectionResource(name, loadBalancer));
+            updateProtection(config, loadBalancer);
             LOG.info(String.format("Successfully updated Access List on '%s'...", name));
+
         }
     }
 
     @Override
     public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         if (loadBalancer.getAccessLists() == null || loadBalancer.getAccessLists().isEmpty()) {
-            StingrayRestClient client = loadSTMRestClient(config);
-            String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
-            String protectionSslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-            Protection curProtection = null;
             try {
-                curProtection = client.getProtection(protectionName);
-            } catch (Exception e) {
-                LOG.warn(String.format("Could not load protection class: %s.  This is intended by the request.", protectionName));
+                deleteProtection(config, loadBalancer);
+            } catch (RemoteException e) {
+
             }
-            try {
-                if (loadBalancer.hasSsl()) {
-                    client.deleteProtection(protectionSslName);
-                }
-                client.deleteProtection(protectionName);
-            } catch (StingrayRestClientException e) {
-                String em = String.format("Error deleting protection: %s Attempting to RollBack... \n Exception: %s Trace: %s"
-                        , protectionName, e.getCause().getMessage(), Arrays.toString(e.getCause().getStackTrace()));
-                if (curProtection != null) {
-                    LOG.error(String.format("Unexpected client error when deleting protection %s: attempting to roll-back...", protectionName));
-                    if (loadBalancer.hasSsl()) {
-                        client.updateProtection(protectionSslName, curProtection);
-                    }
-                    client.updateProtection(protectionName, curProtection);
-                    LOG.error(String.format("Successfully rolled back to previous configuration."));
-                } else {
-                    LOG.error(String.format("Protection %s not rolled back for lack of previous configuration.", protectionName));
-                }
-                throw new StmRollBackException(em, e);
-            } catch (StingrayRestClientObjectNotFoundException onf) {
-                LOG.info(String.format("No protection with name %s found...", protectionName));
-            }
-            if (loadBalancer.hasSsl()) {
-                LOG.info(String.format("Successfully deleted protection %s!", protectionSslName));
-            }
-            LOG.info(String.format("Successfully deleted protection %s!", protectionName));
         }
     }
+
     /*
-    SSL Termination Resources
-     */
+   Persistence Resources
+    */
+
+    private void createPersistentClasses(LoadBalancerEndpointConfiguration config) {
+        //TODO: handle logging and exceptions better...
+        StingrayRestClient client = null;
+        try {
+            client = loadSTMRestClient(config);
+
+        } catch (StmRollBackException e) {
+            e.printStackTrace();
+        }
+        if (client != null) {
+            try {
+                client.getPersistence(StmConstants.HTTP_COOKIE);
+            } catch (StingrayRestClientException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (StingrayRestClientObjectNotFoundException e) {
+                Persistence persistence = new Persistence();
+                PersistenceProperties properties = new PersistenceProperties();
+                PersistenceBasic basic = new PersistenceBasic();
+
+                basic.setType(StmConstants.HTTP_COOKIE);
+                properties.setBasic(basic);
+                persistence.setProperties(properties);
+                try {
+                    client.createPersistence(StmConstants.HTTP_COOKIE, persistence);
+                } catch (StingrayRestClientException e1) {
+                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (StingrayRestClientObjectNotFoundException e1) {
+                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+
+            try {
+                client.getPersistence(StmConstants.SOURCE_IP);
+            } catch (StingrayRestClientException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (StingrayRestClientObjectNotFoundException e) {
+                Persistence persistence = new Persistence();
+                PersistenceProperties properties = new PersistenceProperties();
+                PersistenceBasic basic = new PersistenceBasic();
+
+                basic.setType(StmConstants.SOURCE_IP);
+                properties.setBasic(basic);
+                persistence.setProperties(properties);
+                try {
+                    client.createPersistence(StmConstants.SOURCE_IP, persistence);
+                } catch (StingrayRestClientException e1) {
+                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (StingrayRestClientObjectNotFoundException e1) {
+                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+        }
+    }
+
+
+    /*
+   SSL Termination Resources
+    */
 
     @Override
     public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, StmRollBackException {
@@ -973,7 +951,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         } catch (StmRollBackException e) {
             LOG.error(String.format("Failed to restore load balancer operation", e));
         }
-
     }
 
 
@@ -990,6 +967,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             }
             throw e;
         }
+    }
+
+    @Override
+    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws RemoteException, InsufficientRequestException, RollBackException {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     /*

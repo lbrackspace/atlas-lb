@@ -30,17 +30,8 @@ import org.rackspace.stingray.client.monitor.MonitorProperties;
 import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.persistence.PersistenceBasic;
 import org.rackspace.stingray.client.persistence.PersistenceProperties;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolBasic;
-import org.rackspace.stingray.client.pool.PoolConnection;
-import org.rackspace.stingray.client.pool.PoolLoadbalancing;
-import org.rackspace.stingray.client.pool.PoolNodeWeight;
-import org.rackspace.stingray.client.pool.PoolProperties;
-import org.rackspace.stingray.client.protection.Protection;
-import org.rackspace.stingray.client.protection.ProtectionAccessRestriction;
-import org.rackspace.stingray.client.protection.ProtectionBasic;
-import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
-import org.rackspace.stingray.client.protection.ProtectionProperties;
+import org.rackspace.stingray.client.pool.*;
+import org.rackspace.stingray.client.protection.*;
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.ssl.keypair.KeypairBasic;
 import org.rackspace.stingray.client.ssl.keypair.KeypairProperties;
@@ -75,18 +66,19 @@ public class ResourceTranslator {
     public Bandwidth cBandwidth;
     public Keypair cKeypair;
 
-
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
         //Order matters when translating the entire entity.
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
+
         try {
             translateTrafficIpGroupsResource(config, loadBalancer);
         } catch (IPStringConversionException e) {
             //TODO: Handle this, means ipv6 is broken..
             e.printStackTrace();
         }
+
         translatePoolResource(vsName, loadBalancer);
         translateKeypairResource(config, loadBalancer);
         translateVirtualServerResource(config, vsName, loadBalancer);
@@ -110,6 +102,7 @@ public class ResourceTranslator {
             basic.setPort(loadBalancer.getPort());
             basic.setEnabled(true);
         }
+
         basic.setPool(ZxtmNameBuilder.genVSName(loadBalancer));
         basic.setProtocol(loadBalancer.getProtocol().name());
 

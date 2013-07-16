@@ -26,8 +26,8 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
-    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, RollBackException;
+    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb)
+            throws RemoteException, InsufficientRequestException, StmRollBackException;
 
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException;
