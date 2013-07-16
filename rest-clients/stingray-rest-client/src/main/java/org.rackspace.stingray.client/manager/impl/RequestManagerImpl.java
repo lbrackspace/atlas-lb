@@ -105,7 +105,7 @@ public class RequestManagerImpl implements RequestManager {
 
         try {
             response = client.resource(endpoint + path)
-                    .accept(cType)
+                    .accept(MediaType.APPLICATION_JSON)
                     .type(cType)
                     .entity(object)
                     .put(ClientResponse.class);

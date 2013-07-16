@@ -127,7 +127,6 @@ public class TrafficScriptHelper {
         LOG.debug("Verifying that the X-Forwarded-For rule (traffic script) is properly configured...");
 
         boolean ruleXForwardedForExists = false;
-//        String[] ruleNames = serviceStubs.getZxtmRuleCatalogService().getRuleNames();
         List<Child> rules = new ArrayList<Child>();
         try {
             rules = client.getTrafficscripts();

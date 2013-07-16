@@ -132,6 +132,7 @@ public class ResourceTranslatorTest extends STMTestBase {
         }
 
         public void pathFour() {
+//            lb.setConnectionLimit(null);
             lb.setAccessLists(null);
         }
 
