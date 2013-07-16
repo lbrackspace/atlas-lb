@@ -133,7 +133,7 @@ public class ResourceTranslatorTest extends STMTestBase {
         }
 
         public void pathFour() {
-//            lb.setConnectionLimit(null);
+            lb.setConnectionLimit(null);
             lb.setAccessLists(null);
         }
 
@@ -185,7 +185,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             pathFour();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             //TODO:  Intern will handle this bug
-            //Assert.assertNull(createdServer.getProperties().getBasic().getProtection_class());
+            Assert.assertNull(createdServer.getProperties().getBasic().getProtection_class());
 
         }
     }
