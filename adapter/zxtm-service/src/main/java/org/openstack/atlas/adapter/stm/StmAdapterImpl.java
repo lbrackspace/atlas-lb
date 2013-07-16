@@ -875,7 +875,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
      */
 
     @Override
-    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, InsufficientRequestException, StmRollBackException {
 
         // TODO:  check for secure traffic only being set; have to toggle "enabled" on original VS
 
@@ -896,7 +896,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         if (sslTermination.getCertIntermediateCert() != null) {
             Keypair keypair = translator.getcKeypair();
             LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
-            client.updateKeypair(sslVsName, keypair);
+            try {
+                client.updateKeypair(sslVsName, keypair);
+            } catch (Exception e) {
+                //TODO: This exception has no need to bubble up. Throw a 'general' exception
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
         }
 
         //TODO:  set the cert on the ssl object on the virtual server
