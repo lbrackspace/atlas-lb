@@ -24,34 +24,34 @@ public class UpdateContentCachingListener extends BaseListener {
     public void doOnMessage(Message message) throws Exception {
         LOG.debug("Entering " + getClass());
         LOG.debug(message);
-        LoadBalancer queueLb = getLoadbalancerFromMessage(message);
+        LoadBalancer queLb = getLoadbalancerFromMessage(message);
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.get(queLb.getId(), queLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
-            String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
+            String alertDescription = String.format("Load balancer '%d' not found in database.", queLb.getId());
             LOG.error(alertDescription, enfe);
-            notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(queueLb);
+            notificationService.saveAlert(queLb.getAccountId(), queLb.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
+            sendErrorToEventResource(queLb);
             return;
         }
 
         try {
             LOG.debug(String.format("Updating content caching for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer);
+            reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queLb);
             LOG.debug(String.format("Successfully updated content caching for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error updating content caching for load balancer '%d' in Zeus.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(queueLb);
+            sendErrorToEventResource(queLb);
             return;
         }
 
         String desc = "Content caching successully set to " + dbLoadBalancer.isContentCaching().toString();
-        notificationService.saveLoadBalancerEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), UPDATE_CCACHING_TITLE, desc, EventType.UPDATE_CONTENT_CACHING, UPDATE, EventSeverity.INFO);
+        notificationService.saveLoadBalancerEvent(queLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), UPDATE_CCACHING_TITLE, desc, EventType.UPDATE_CONTENT_CACHING, UPDATE, EventSeverity.INFO);
 
         // Update load balancer status in DB
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);

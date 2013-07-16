@@ -2,20 +2,7 @@ package org.openstack.atlas.adapter.helpers;
 
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.service.domain.entities.AccessList;
-import org.openstack.atlas.service.domain.entities.AccessListType;
-import org.openstack.atlas.service.domain.entities.ConnectionLimit;
-import org.openstack.atlas.service.domain.entities.HealthMonitor;
-import org.openstack.atlas.service.domain.entities.HealthMonitorType;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
-import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.NodeCondition;
-import org.openstack.atlas.service.domain.entities.RateLimit;
-import org.openstack.atlas.service.domain.entities.SessionPersistence;
-import org.openstack.atlas.service.domain.entities.Ticket;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
@@ -31,17 +18,8 @@ import org.rackspace.stingray.client.monitor.MonitorProperties;
 import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.persistence.PersistenceBasic;
 import org.rackspace.stingray.client.persistence.PersistenceProperties;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolBasic;
-import org.rackspace.stingray.client.pool.PoolConnection;
-import org.rackspace.stingray.client.pool.PoolLoadbalancing;
-import org.rackspace.stingray.client.pool.PoolNodeWeight;
-import org.rackspace.stingray.client.pool.PoolProperties;
-import org.rackspace.stingray.client.protection.Protection;
-import org.rackspace.stingray.client.protection.ProtectionAccessRestriction;
-import org.rackspace.stingray.client.protection.ProtectionBasic;
-import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
-import org.rackspace.stingray.client.protection.ProtectionProperties;
+import org.rackspace.stingray.client.pool.*;
+import org.rackspace.stingray.client.protection.*;
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.ssl.keypair.KeypairBasic;
 import org.rackspace.stingray.client.ssl.keypair.KeypairProperties;
@@ -49,21 +27,9 @@ import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
-import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
-import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
-import org.rackspace.stingray.client.virtualserver.VirtualServerLog;
-import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
-import org.rackspace.stingray.client.virtualserver.VirtualServerTcp;
-import org.rackspace.stingray.client.virtualserver.VirtualServerWebcache;
+import org.rackspace.stingray.client.virtualserver.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ResourceTranslator {
     public Pool cPool;
@@ -75,18 +41,19 @@ public class ResourceTranslator {
     public Bandwidth cBandwidth;
     public Keypair cKeypair;
 
-
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
         //Order matters when translating the entire entity.
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
+
         try {
             translateTrafficIpGroupsResource(config, loadBalancer);
         } catch (IPStringConversionException e) {
             //TODO: Handle this, means ipv6 is broken..
             e.printStackTrace();
         }
+
         translatePoolResource(vsName, loadBalancer);
         translateVirtualServerResource(config, vsName, loadBalancer);
     }
@@ -108,6 +75,7 @@ public class ResourceTranslator {
             basic.setPool(vsName);
             basic.setPort(loadBalancer.getPort());
         }
+
         basic.setProtocol(loadBalancer.getProtocol().name());
         basic.setEnabled(true);
 

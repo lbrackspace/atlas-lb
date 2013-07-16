@@ -1,42 +1,35 @@
 package org.openstack.atlas.api.integration;
 
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
-import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.ObjectExistsException;
-import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.RateLimit;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
-import org.openstack.atlas.util.crypto.exception.DecryptException;
 
-import java.net.MalformedURLException;
-import java.rmi.RemoteException;
 import java.util.List;
 
 public interface ReverseProxyLoadBalancerStmService {
-    LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException;
+    LoadBalancerEndpointConfiguration getConfig(Host host) throws Exception;
 
-    LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException;
+    LoadBalancerEndpointConfiguration getConfigHost(Host host) throws Exception;
 
-    void createLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
+    void createLoadBalancer(LoadBalancer lb) throws Exception;
 
-    void updateLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
+    void updateLoadBalancer(LoadBalancer loadBalancer, LoadBalancer queLb) throws Exception;
 
-    void deleteLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
+    void deleteLoadBalancer(LoadBalancer lb) throws Exception;
 
-    void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
+    void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws Exception;
 
     void suspendLoadBalancer(LoadBalancer lb) throws Exception;
 
     void removeSuspension(LoadBalancer lb) throws Exception;
 
-    void updateSslTermination(LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException;
+    void updateSslTermination(LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws Exception;
 
-    void removeSslTermination(LoadBalancer lb) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException;
+    void removeSslTermination(LoadBalancer lb) throws Exception;
 
     void setNodes(LoadBalancer lb) throws Exception;
 
