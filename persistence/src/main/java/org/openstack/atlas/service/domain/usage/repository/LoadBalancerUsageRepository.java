@@ -28,7 +28,6 @@ public class LoadBalancerUsageRepository {
     final Log LOG = LogFactory.getLog(LoadBalancerUsageRepository.class);
     @PersistenceContext(unitName = "loadbalancingUsage")
     private EntityManager entityManager;
-    private final Integer NUM_DAYS_RETENTION = 90;
 
     public LoadBalancerUsage getById(Integer id) throws EntityNotFoundException {
         LoadBalancerUsage usageRecord = entityManager.find(LoadBalancerUsage.class, id);
@@ -78,11 +77,18 @@ public class LoadBalancerUsageRepository {
         return (usageEvents == null) ? new ArrayList<LoadBalancerUsage>() : usageEvents;
     }
 
-    public void deleteAllRecordsBeforeOrEqualTo(Calendar time) {
-        Query query = entityManager.createQuery("DELETE LoadBalancerUsage u WHERE u.endTime <= :timestamp")
+    public void deleteAllRecordsBefore(Calendar time) {
+        Query query = entityManager.createQuery("DELETE LoadBalancerUsage u WHERE u.endTime < :timestamp")
                 .setParameter("timestamp", time, TemporalType.TIMESTAMP);
         int numRowsDeleted = query.executeUpdate();
-        LOG.info(String.format("Deleted %d rows with endTime before %s", numRowsDeleted, time.getTime()));
+        LOG.info(String.format("Deleted %d rows from 'lb_usage' table with endTime before %s", numRowsDeleted, time.getTime()));
+    }
+
+    public void deleteAllEventsBefore(Calendar time) {
+        Query query = entityManager.createQuery("DELETE LoadBalancerUsageEvent u WHERE u.startTime < :timestamp")
+                .setParameter("timestamp", time, TemporalType.TIMESTAMP);
+        int numRowsDeleted = query.executeUpdate();
+        LOG.info(String.format("Deleted %d rows from 'lb_usage_event' with startTime before %s", numRowsDeleted, time.getTime()));
     }
 
     public void deleteAllRecordsForLoadBalancer(Integer loadBalancerId) {
@@ -90,12 +96,6 @@ public class LoadBalancerUsageRepository {
                 .setParameter("loadBalancerId", loadBalancerId);
         int numRowsDeleted = query.executeUpdate();
         LOG.info(String.format("Deleted %d rows with load balancer id %s", numRowsDeleted, loadBalancerId));
-    }
-
-    public void deleteOldRecords() {
-        Calendar deletePoint = Calendar.getInstance();
-        deletePoint.add(Calendar.DATE, -NUM_DAYS_RETENTION);
-        deleteAllRecordsBeforeOrEqualTo(deletePoint);
     }
 
     public void batchCreate(List<LoadBalancerUsage> usages) {

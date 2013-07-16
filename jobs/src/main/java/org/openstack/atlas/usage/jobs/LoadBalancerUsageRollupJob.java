@@ -12,6 +12,7 @@ import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
+import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
 import org.openstack.atlas.usagerefactor.UsageRollupProcessor;
 import org.openstack.atlas.util.common.CalendarUtils;
 import org.quartz.JobExecutionContext;
@@ -30,6 +31,8 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
 
     @Autowired
     private UsageRepository usageRepository;
+    @Autowired
+    private LoadBalancerUsageRepository lbUsageRepository;
     @Autowired
     private LoadBalancerMergedHostUsageRepository lbMergedHostUsageRepository;
     @Autowired
@@ -109,6 +112,12 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
 
             String lastSuccessfulHourProcessed = CalendarUtils.calendarToString(hourToRollup);
             jobStateService.updateInputPath(JobName.LB_USAGE_ROLLUP, lastSuccessfulHourProcessed);
+
+            // TODO: Remove after usage refactor code has been in production for a while.
+            LOG.info(String.format("Deleting usage records from old usage tables before '%s'...", rollupMarker.getTime().toString()));
+            lbUsageRepository.deleteAllRecordsBefore(rollupMarker);
+            lbUsageRepository.deleteAllEventsBefore(rollupMarker);
+            LOG.info(String.format("Successfully deleted usage records from old usage tables before '%s'.", rollupMarker.getTime().toString()));
 
             LOG.info(String.format("Deleting polling usage entries before hour '%s'...", hourToRollup.getTime().toString()));
             lbMergedHostUsageRepository.deleteAllRecordsBefore(hourToRollup);

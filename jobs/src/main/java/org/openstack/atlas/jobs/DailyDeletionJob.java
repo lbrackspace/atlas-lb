@@ -3,26 +3,22 @@ package org.openstack.atlas.jobs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.JobName;
-import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.events.entities.Alert;
+import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.services.helpers.AlertHelper;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRepository;
-import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
-
-import java.util.Calendar;
 
 @Component
 public class DailyDeletionJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(DailyDeletionJob.class);
 
     @Autowired
-    private LoadBalancerUsageRepository hourlyUsageRepository;
+    private UsageRepository usageRepository;
     @Autowired
     private HostUsageRepository hostUsageRepository;
 
@@ -57,15 +53,15 @@ public class DailyDeletionJob extends AbstractJob {
     }
 
     private void deleteLoadBalancerUsageRecords() {
-        LOG.info("Deleting old loadbalancer usage records...");
-        hourlyUsageRepository.deleteOldRecords();
-        LOG.info("Completed deleting old loadbalancer usage records.");
+        LOG.info("Deleting old loadbalancer usage records from the 'loadbalancing' database...");
+        usageRepository.deleteOldRecords();
+        LOG.info("Completed deleting old loadbalancer usage records from the 'loadbalancing' database.");
     }
 
     private void deleteHostUsageRecords() {
-        LOG.info("Deleting old host usage records...");
+        LOG.info("Deleting old host usage records from the 'loadbalancing_usage' database...");
         hostUsageRepository.deleteOldRecords();
-        LOG.info("Completed deleting old host usage records.");
+        LOG.info("Completed deleting old host usage records from the 'loadbalancing_usage' database.");
     }
 
 }
