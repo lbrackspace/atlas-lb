@@ -39,7 +39,7 @@ public class UpdateConnectionLoggingListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Updating connection logging for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer);
+            reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queueLb);
             LOG.debug(String.format("Successfully updated connection logging for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
@@ -31,7 +32,7 @@ public class STMRestAdapterITest extends STMTestBase {
     @Test
     public void updateAlgorithm() throws RollBackException, InsufficientRequestException, RemoteException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         lb.setAlgorithm(LoadBalancerAlgorithm.RANDOM);
-        stmAdapter.updateLoadBalancer(config, lb);
+        stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
         Assert.assertEquals(LoadBalancerAlgorithm.RANDOM.name().toLowerCase(), stmClient.getPool(loadBalancerName()).getProperties().getLoad_balancing().getAlgorithm());
     }
 

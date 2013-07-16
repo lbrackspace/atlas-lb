@@ -67,10 +67,11 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         }
     }
 
-    @Override public void updateLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
+    @Override
+    public void updateLoadBalancer(LoadBalancer lb, LoadBalancer queLb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.updateLoadBalancer(config, lb);
+            reverseProxyLoadBalancerStmAdapter.updateLoadBalancer(config, lb, queLb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;

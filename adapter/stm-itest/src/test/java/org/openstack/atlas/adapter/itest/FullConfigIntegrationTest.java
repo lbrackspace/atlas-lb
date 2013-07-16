@@ -100,7 +100,7 @@ public class FullConfigIntegrationTest {
 
         try {
             lb.getUserPages().setErrorpage("some error text");
-            adapter.updateLoadBalancer(null, lb);
+            adapter.updateLoadBalancer(null, lb, new LoadBalancer());
             verify(lb).getUserPages();
         } catch (Exception e) {
             e.printStackTrace();
