@@ -44,7 +44,7 @@ def format_rows(rows,keys=None):
 def printf(format,*args): sys.stdout.write(format%args)
 
 def usage(prog,conf):
-    printf("usage is %s <dataCenter> [id]\n",prog)
+    printf("usage is %s <dataCenter>\n",prog)
     printf("\n")
     printf("Scans the database at the specified data center\n")
     printf("to see if hadoop jobs got stuck\n")
