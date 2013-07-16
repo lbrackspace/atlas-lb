@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-rest-clients</artifactId>
-        <version>1.19.8-SNAPSHOT</version>
+        <version>1.19.8</version>
     </parent>
 
     <artifactId>atlas-atomhopper-client</artifactId>
