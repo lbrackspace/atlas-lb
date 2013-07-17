@@ -1,21 +1,9 @@
 package org.openstack.atlas.adapter.helpers;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.service.domain.entities.AccessList;
-import org.openstack.atlas.service.domain.entities.AccessListType;
-import org.openstack.atlas.service.domain.entities.ConnectionLimit;
-import org.openstack.atlas.service.domain.entities.HealthMonitor;
-import org.openstack.atlas.service.domain.entities.HealthMonitorType;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
-import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
-import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.NodeCondition;
-import org.openstack.atlas.service.domain.entities.RateLimit;
-import org.openstack.atlas.service.domain.entities.SessionPersistence;
-import org.openstack.atlas.service.domain.entities.Ticket;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtil;
@@ -39,22 +27,10 @@ import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
-import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
-import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
-import org.rackspace.stingray.client.virtualserver.VirtualServerLog;
-import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
-import org.rackspace.stingray.client.virtualserver.VirtualServerSsl;
-import org.rackspace.stingray.client.virtualserver.VirtualServerTcp;
-import org.rackspace.stingray.client.virtualserver.VirtualServerWebcache;
+import org.rackspace.stingray.client.virtualserver.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 
 public class ResourceTranslator {
     public Pool cPool;
@@ -79,8 +55,9 @@ public class ResourceTranslator {
             e.printStackTrace();
         }
 
+        if (loadBalancer.getSslTermination() != null) translateKeypairResource(config, loadBalancer);
+
         translatePoolResource(vsName, loadBalancer);
-        translateKeypairResource(config, loadBalancer);
         translateVirtualServerResource(config, vsName, loadBalancer);
     }
 
@@ -171,7 +148,7 @@ public class ResourceTranslator {
     }
 
     public Keypair translateKeypairResource(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-                                            throws InsufficientRequestException {
+            throws InsufficientRequestException {
         ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(loadBalancer.getSslTermination().getPrivatekey(),
                 loadBalancer.getSslTermination().getCertificate(), loadBalancer.getSslTermination().getIntermediateCertificate());
         if (zeusCertFile.isError()) {
@@ -268,7 +245,7 @@ public class ResourceTranslator {
     }
 
     public Pool translatePoolResource(String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
-        Pool pool = new Pool();
+        cPool = new Pool();
         PoolProperties properties = new PoolProperties();
         PoolBasic basic = new PoolBasic();
         List<PoolNodeWeight> weights = new ArrayList<PoolNodeWeight>();
@@ -326,9 +303,8 @@ public class ResourceTranslator {
         properties.setBasic(basic);
         properties.setLoad_balancing(poollb);
         properties.setConnection(connection);
-        pool.setProperties(properties);
+        cPool.setProperties(properties);
 
-        cPool = pool;
         return cPool;
     }
 
@@ -425,6 +401,12 @@ public class ResourceTranslator {
         return cPersistence;
     }
 
+    public <T> String objectToString(Object obj, Class<T> clazz) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Object myObject = mapper.writeValueAsString(obj);
+//        System.out.println(myObject.toString());
+        return myObject.toString();
+    }
 
     public Pool getcPool() {
         return cPool;

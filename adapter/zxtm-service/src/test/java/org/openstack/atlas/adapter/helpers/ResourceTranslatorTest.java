@@ -32,6 +32,7 @@ import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
 import org.rackspace.stingray.client.virtualserver.*;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -137,6 +138,14 @@ public class ResourceTranslatorTest extends STMTestBase {
             lb.setAccessLists(null);
         }
 
+        @Test
+        public void objToStringTest() throws InsufficientRequestException, IOException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+            Pool pool = translator.translatePoolResource(vsName, lb);
+            String poolString = translator.objectToString(pool, Pool.class);
+            System.out.println("Pool String AFter Mapping: " + poolString);
+
+        }
 
         @Test
         public void shouldCreateValidVirtualServer() throws InsufficientRequestException {
