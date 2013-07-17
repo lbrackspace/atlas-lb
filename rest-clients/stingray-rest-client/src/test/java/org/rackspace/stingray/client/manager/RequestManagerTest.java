@@ -170,6 +170,7 @@ public class RequestManagerTest {
             when(builder.put(ClientResponse.class)).thenReturn(mockedResponse);
         }
 
+        @Ignore
         @Test
         public void shouldReturnAPoolAfterUpdate() throws URISyntaxException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
             mockClientHandler.when("pool", "PUT").thenReturn(Response.Status.ACCEPTED, pool);

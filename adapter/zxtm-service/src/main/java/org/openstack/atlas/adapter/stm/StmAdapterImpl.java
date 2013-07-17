@@ -172,12 +172,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             client.updateVirtualServer(vsName, virtualServer);
 
         } catch (Exception ex) {
-            String em = String.format("Error updating virtual server: %s Attempting to RollBack... \n Exception: %s Trace: %s"
-                    , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
+            String em = String.format("Error updating virtual server: %s Attempting to RollBack... \n Exception: %s Trace: %s",
+                    vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
 
             LOG.error(em);
             if (curVs != null) {
-                LOG.debug(String.format("Updating virtual server to previous configuration for rollback '%s'", vsName));
+                LOG.debug(String.format("Updating virtual server to previous configuration for rollback '%s'...", vsName));
                 try {
                     client.updateVirtualServer(vsName, virtualServer);
                 } catch (Exception ex2) {
@@ -193,6 +193,62 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
         LOG.debug(String.format("Successfully updated virtual server '%s'...", vsName));
 
+    }
+
+    private void updateKeypair(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String vsName, Keypair keypair) throws StmRollBackException {
+        LOG.debug(String.format("Updating keypair '%s'...", vsName));
+
+        Keypair curKeypair = null;
+        try {
+            keypair = client.getKeypair(vsName);
+        } catch (Exception e) {
+            LOG.warn(String.format("Error retrieving keypair: %s, attempting to update...", vsName));
+        }
+        try {
+            client.updateKeypair(vsName, keypair);
+        } catch (Exception ex) {
+            String em = String.format("Error updating keypair: %s Attempting to roll back... \n Exception: %s Trace: %s",
+                    vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
+            LOG.error(em);
+            if (keypair != null) {
+                LOG.debug(String.format("Updating keypair to previous configuration for rollback '%s'...", vsName));
+                try {
+                    client.updateKeypair(vsName, curKeypair);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating keypair '%s' to previous configuration, Roll back aborted \n Exception: %s Trace: %s",
+                            vsName, ex2.getCause().getMessage(), Arrays.toString(ex2.getCause().getStackTrace()));
+                    LOG.error(em2);
+                }
+            } else {
+                LOG.warn(String.format("Keypair '%s' was not rolled back since no previous configuration was available.", vsName));
+            }
+            throw new StmRollBackException(em, ex);
+        }
+        LOG.debug(String.format("Successfully updated keypair '%s'", vsName));
+    }
+
+    private void deleteKeypair(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String vsName) throws StmRollBackException {
+        LOG.info(String.format("Removing the keypair of SSL cert used on virtual server '%s'...", vsName));
+        Keypair keypair = null;
+
+        try {
+            keypair = client.getKeypair(vsName);
+            client.deleteKeypair(vsName);
+        } catch (StingrayRestClientObjectNotFoundException notFoundException) {
+            LOG.error(String.format("Keypair '%s' not found during deletion attempt, continue...", vsName));
+        } catch (StingrayRestClientException clientException) {
+            String em = String.format("Error removing keypair '%s', Attempting to roll back... \n Exception: %s Trace: %s",
+                    vsName, clientException.getCause().getMessage(), Arrays.toString(clientException.getCause().getStackTrace()));
+            LOG.error(em);
+            //TODO:  Finish the deletion of the Keypair
+            if (keypair != null) {
+                LOG.debug(String.format("Updating Keypair to keep previous configuration for '%s'...", vsName));
+                updateKeypair(config, client, vsName, keypair);
+            } else {
+                LOG.warn(String.format("Keypair was not rolled back as keypair '%s' was not retrieved.", vsName));
+            }
+            throw new StmRollBackException(em, clientException);
+        }
     }
 
     private void deleteVirtualServer(LoadBalancerEndpointConfiguration config,
@@ -878,12 +934,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         if (sslTermination.getCertIntermediateCert() != null) {
             Keypair keypair = translator.getcKeypair();
             LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
-            try {
-                client.updateKeypair(sslVsName, keypair);
-            } catch (Exception e) {
-                //TODO: This exception has no need to bubble up. Throw a 'general' exception
-                e.printStackTrace();
-            }
+            updateKeypair(config, client, vsName, keypair);
         }
 
         try {
@@ -909,8 +960,17 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        //TODO need to implement
+    public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        StingrayRestClient client = loadSTMRestClient(config);
+        String vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+
+        LOG.debug(String.format("Removing ssl from loadbalancer: %s ...", vsName));
+        deleteProtection(config, client, loadBalancer, vsName);
+        deleteVirtualIps(config, loadBalancer);
+        deleteKeypair(config, client, vsName);
+        deleteVirtualServer(config, client, vsName);
+        client.destroy();
+        LOG.debug(String.format("Successfully removed ssl from loadbalancer: %s from the STM service...", vsName));
     }
 
 
