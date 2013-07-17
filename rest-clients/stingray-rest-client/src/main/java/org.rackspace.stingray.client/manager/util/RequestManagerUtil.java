@@ -42,6 +42,8 @@ public class RequestManagerUtil {
         logger.info("ResponseWrapper, response status code is: " + response.getStatus());
 
             //TODO: ClientException seems to break for certain errors: ex: Exception entity: {"error_id":"resource.not_found","error_text":"Invalid resource URI"}
+        //TODO: errors like these break response.GetEntity(ClientException.class) :::
+        //TODO: {"properties":{"basic":{"disabled":["127.0.0.2:80"],"draining":[],"monitors":[],"nodes":["127.0.0.1:80"],"passive_monitoring":false},"connection":{},"load_balancing":{"algorithm":"weighted_least_connections","node_weighting":[{"node":"127.0.0.1:80"},{"node":"127.0.0.2:80"}],"priority_enabled":false,"priority_values":["127.0.0.1:80:2"]}}}
         try {
 
             exception = response.getEntity(ClientException.class);

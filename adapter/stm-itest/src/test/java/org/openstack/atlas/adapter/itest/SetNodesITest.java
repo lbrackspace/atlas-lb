@@ -5,7 +5,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.Node;
 
@@ -35,7 +34,7 @@ public class SetNodesITest extends STMTestBase {
     public void testNodeOperations() throws Exception {
         vsName = ZxtmNameBuilder.genVSName(lb);
         lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS);
-        stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+        stmAdapter.updateLoadBalancer(config, lb, lb);
         setupNodes();
 
 
