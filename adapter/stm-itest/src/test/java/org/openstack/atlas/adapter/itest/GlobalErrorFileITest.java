@@ -1,7 +1,6 @@
 package org.openstack.atlas.adapter.itest;
 
 
-import org.apache.axis.AxisFault;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -96,7 +95,7 @@ public class GlobalErrorFileITest extends STMTestBase {
         stmAdapter.deleteErrorFile(config, lb);
         errorFile = null;
         try {
-             errorFile = stmClient.getExtraFile(errorFileName);
+            errorFile = stmClient.getExtraFile(errorFileName);
         } catch (StingrayRestClientObjectNotFoundException e) {
             //yup
         }
