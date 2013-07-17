@@ -42,7 +42,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
             throws RemoteException, InsufficientRequestException, RollBackException;
 
     public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws RemoteException, InsufficientRequestException, RollBackException;
+            throws RemoteException, InsufficientRequestException, RollBackException, StingrayRestClientException, StingrayRestClientObjectNotFoundException;
 
     public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException, RollBackException;

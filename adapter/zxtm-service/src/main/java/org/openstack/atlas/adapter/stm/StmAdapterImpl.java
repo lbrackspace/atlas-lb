@@ -195,6 +195,30 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     }
 
+    private void deleteKeypair(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String vsName) throws StingrayRestClientObjectNotFoundException, StingrayRestClientException, StmRollBackException {
+        LOG.info(String.format("Removing the keypair of SSL cert used on virtual server '%s'...", vsName));
+        Keypair keypair = null;
+
+        try {
+            keypair = client.getKeypair(vsName);
+            client.deleteKeypair(vsName);
+        } catch (StingrayRestClientObjectNotFoundException notFoundException) {
+            LOG.error(String.format("Keypair '%s' not found during deletion attempt, continue...", vsName));
+        } catch (StingrayRestClientException clientException) {
+            String em = String.format("Error removing keypair '%s', Attempting to roll back... \n Exception: %s Trace: %s",
+                    vsName, clientException.getCause().getMessage(), Arrays.toString(clientException.getCause().getStackTrace()));
+            LOG.error(em);
+            //TODO:  Finish the deletion of the Keypair
+            if (keypair != null) {
+                LOG.debug(String.format("Updating Keypair to keep previous configuration for '%s'...", vsName));
+                client.updateKeypair(vsName, keypair);
+            } else {
+                LOG.warn(String.format("Keypair was not rolled back as keypair '%s' was not retrieved.", vsName));
+            }
+            throw new StmRollBackException(em, clientException);
+        }
+    }
+
     private void deleteVirtualServer(LoadBalancerEndpointConfiguration config,
                                      StingrayRestClient client, String vsName)
             throws StmRollBackException {
@@ -910,8 +934,17 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException {
-        //TODO need to implement
+    public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        StingrayRestClient client = loadSTMRestClient(config);
+        String vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+
+        LOG.debug(String.format("Removing ssl from loadbalancer: %s ...", vsName));
+        deleteProtection(config, client, loadBalancer, vsName);
+        deleteVirtualIps(config, loadBalancer);
+        deleteKeypair(config, client, vsName);
+        deleteVirtualServer(config, client, vsName);
+        client.destroy();
+        LOG.debug(String.format("Successfully removed ssl from loadbalancer: %s from the STM service...", vsName));
     }
 
 
