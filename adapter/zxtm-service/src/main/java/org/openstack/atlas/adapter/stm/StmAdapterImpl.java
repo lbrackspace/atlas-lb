@@ -120,14 +120,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
                 }
 
-
-                try {
-                    String pstring = translator.objectToString(translator.getcPool(), Pool.class);
-                    LOG.debug("Pool String: " + pstring);
-                } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-
                 if (queLb.getNodes() != null) {
                     updatePool(config, client, vsName, translator.getcPool());
                 }

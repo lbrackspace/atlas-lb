@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
@@ -21,6 +22,8 @@ public class GlobalErrorFileITest extends STMTestBase {
     String pageContent = "ERROR PAGE CONTENT";
     String vsName;
 
+
+    //TODO: needs more testing for lb and its error files..
     @BeforeClass
     public static void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
@@ -47,8 +50,9 @@ public class GlobalErrorFileITest extends STMTestBase {
     private void setCustomErrorFile() throws Exception {
         vsName = ZxtmNameBuilder.genVSName(lb);
 
+        //This is mgmt call to set 'default' file other than stm Default, lb should have Default at this point.
         stmAdapter.uploadDefaultErrorFile(config, pageContent);
-        File file = stmClient.getExtraFile(errorFileName());
+        File file = stmClient.getExtraFile(Constants.DEFAULT_ERRORFILE);
         Assert.assertNotNull(file);
 
         BufferedReader reader = new BufferedReader(new FileReader(file));

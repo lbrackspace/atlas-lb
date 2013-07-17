@@ -111,6 +111,8 @@ public class STMTestBase {
         node2.setPort(80);
         node1.setCondition(ENABLED);
         node2.setCondition(DISABLED);
+        node1.setWeight(1);
+        node2.setWeight(1);
         nodeList.add(node1);
         nodeList.add(node2);
 

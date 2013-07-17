@@ -245,7 +245,7 @@ public class ResourceTranslator {
     }
 
     public Pool translatePoolResource(String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
-        Pool pool = new Pool();
+        cPool = new Pool();
         PoolProperties properties = new PoolProperties();
         PoolBasic basic = new PoolBasic();
         List<PoolNodeWeight> weights = new ArrayList<PoolNodeWeight>();
@@ -303,9 +303,8 @@ public class ResourceTranslator {
         properties.setBasic(basic);
         properties.setLoad_balancing(poollb);
         properties.setConnection(connection);
-        pool.setProperties(properties);
+        cPool.setProperties(properties);
 
-        cPool = pool;
         return cPool;
     }
 
