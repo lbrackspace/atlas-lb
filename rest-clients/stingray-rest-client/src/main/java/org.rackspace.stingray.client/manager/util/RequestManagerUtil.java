@@ -45,6 +45,16 @@ public class RequestManagerUtil {
         //TODO: errors like these break response.GetEntity(ClientException.class) :::
         //TODO: {"properties":{"basic":{"disabled":["127.0.0.2:80"],"draining":[],"monitors":[],"nodes":["127.0.0.1:80"],"passive_monitoring":false},"connection":{},"load_balancing":{"algorithm":"weighted_least_connections","node_weighting":[{"node":"127.0.0.1:80"},{"node":"127.0.0.2:80"}],"priority_enabled":false,"priority_values":["127.0.0.1:80:2"]}}}
         try {
+            String error = response.getEntity(String.class);
+            String[] errors  = error.split(",");
+            if(errors.length > 3)
+            {
+
+            }
+            else
+            {
+
+            }
 
             exception = response.getEntity(ClientException.class);
             logger.debug(String.format("Client Request failed: %s", exception.toString()));

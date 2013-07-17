@@ -244,18 +244,17 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         ResourceTranslator translator = new ResourceTranslator();
         StingrayRestClient client = loadSTMRestClient(config);
         translator.translatePoolResource(poolName, loadBalancer);
-
+        LOG.info(String.format("Setting nodes to pool '%s'", poolName));
+        updatePool(config, client, poolName, translator.getcPool());
+        LOG.info(String.format("Successfully added nodes to pool '%s'", poolName));
 
         if (loadBalancer.hasSsl()) {
             String poolSslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
             translator.translatePoolResource(poolSslName, loadBalancer);
+            LOG.info(String.format("Setting nodes to pool '%s'", poolSslName));
             updatePool(config, client, poolSslName, translator.getcPool());
+            LOG.info(String.format("Successfully added nodes to pool '%s'", poolSslName));
         }
-
-        updatePool(config, client, poolName, translator.getcPool());
-        LOG.info(String.format("Removing nodes from pool '%s'", poolName));
-        updatePool(config, client, poolName, translator.getcPool());
-        LOG.info(String.format("Successfully removed nodes from pool '%s'", poolName));
     }
 
     @Override
