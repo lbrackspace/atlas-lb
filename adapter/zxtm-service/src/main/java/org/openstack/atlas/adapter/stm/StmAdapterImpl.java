@@ -1065,28 +1065,21 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     private void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
+        ResourceTranslator rt = new ResourceTranslator();
 
         try {
             LOG.debug(String.format("Adding a rate limit to load balancer...'%s'...", vsName));
 
-
-            ResourceTranslator rt = new ResourceTranslator();
             rt.translateLoadBalancerResource(config, vsName, loadBalancer);
             Bandwidth bandwidth = rt.getcBandwidth();
             VirtualServer virtualServer = rt.getcVServer();
-            VirtualServerProperties properties = virtualServer.getProperties();
-            VirtualServerBasic basic = properties.getBasic();
-            basic.setBandwidth_class(vsName);
+            virtualServer.getProperties().getBasic().setBandwidth_class(vsName);
 
             client.createBandwidth(vsName, bandwidth);
+            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
             updateVirtualServer(config, client, vsName, virtualServer);
 
             LOG.info("Successfully added a rate limit to the rate limit pool.");
-
-            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
-            //TODO: don't think it is necessary to attach this anymore?
-            //attachRateLimitRulesToVirtualServers(serviceStubs, new String[]{vsName});
-
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.error(String.format("Failed to add rate limit for virtual server '%s' -- Object not found", vsName));
             throw new StmRollBackException("Add rate limit request canceled.", e);
@@ -1102,23 +1095,18 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
+        ResourceTranslator rt = new ResourceTranslator();
 
         try {
             LOG.debug(String.format("Updating the rate limit for load balancer...'%s'...", vsName));
 
-            ResourceTranslator rt = new ResourceTranslator();
             rt.translateLoadBalancerResource(config, vsName, loadBalancer);
             Bandwidth bandwidth = rt.getcBandwidth();
-            VirtualServer virtualServer = rt.getcVServer();
 
             client.updateBandwidth(vsName, bandwidth);
+            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
 
             LOG.info(String.format("Successfully updated the rate limit for load balancer...'%s'...", vsName));
-
-            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
-            //TODO: don't think it is necessary to attach this anymore?
-            //attachRateLimitRulesToVirtualServers(serviceStubs, new String[]{vsName});
-
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.error(String.format("Failed to update rate limit for virtual server %s -- REST Client exception", vsName));
             throw new StmRollBackException("Update rate limit request canceled.", e);
@@ -1129,7 +1117,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             LOG.error(String.format("Failed to update rate limit for virtual server %s -- IOException", vsName));
             throw new StmRollBackException("Update rate limit request canceled.", e);
         }
-
     }
 
 
