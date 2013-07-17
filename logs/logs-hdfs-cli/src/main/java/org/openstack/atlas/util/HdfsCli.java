@@ -91,6 +91,7 @@ public class HdfsCli {
 
         List<WastedBytesBlock> wastedBlocks = new ArrayList<WastedBytesBlock>();
 
+
         while (true) {
             try {
                 System.out.printf("lbaas_hadoop_client %s> ", fs.getWorkingDirectory().toUri().toString());
@@ -123,6 +124,7 @@ public class HdfsCli {
                     System.out.printf("cpLocal <localSrc> <localDst> [buffsize] #None hadoop file copy\n");
                     System.out.printf("cptl <srcPath remote> <dstPath local> #Copy to Local\n");
                     System.out.printf("cpjj #Copy the jobs jar\n");
+                    System.out.printf("cpjjf #Mark the jar as already copied\n");
                     System.out.printf("diffConfig <confA.xml> <confB.xml># Compare the differences between the configs\n");
                     System.out.printf("du #Get number of free space on HDFS\n");
                     System.out.printf("dumpConfig <outFile.xml> <confIn.xml..> #Dump config to outfile\n");
@@ -161,6 +163,8 @@ public class HdfsCli {
                     System.out.printf("scanhdfszips <yyyymmddhh> <yyyymmddhh> [scanparts=<true|false>]#Scan the hadoop output directories and count how many zips where found between the 2 days\n");
                     System.out.printf("setJobJar <jobJar> #set Jar file to classLoader\n");
                     System.out.printf("setReplCount <FilePath> <nReps> #Set the replication count for this file\n");
+                    System.out.printf("spon #Enable speculative execution\n");
+                    System.out.printf("spoff #Disable speculative execution\n");
                     System.out.printf("showCl <className> #Show class loader info via reflection\n");
                     System.out.printf("showConfig #Show hadoop configs\n");
                     System.out.printf("showCrc <fileName> #Show crc value that would be reported by Zip\n");
@@ -168,6 +172,29 @@ public class HdfsCli {
                     System.out.printf("fb #Free all bytes wasted so far");
                     System.out.printf("wbs #List the number of bytes in the wasted byte Cuffer\n");
                     System.out.printf("whoami\n");
+                    continue;
+                }
+                if (cmd.equals("cpjjf")) {
+                    System.out.printf("Marking the jobs jar as already copied\n");
+                    HadoopLogsConfigs.markJobsJarAsAlreadyCopied();
+                    continue;
+                }
+                if (cmd.equals("spoff")) {
+                    System.out.printf("Attempting to disable speculative execution\n");
+                    Configuration editConf;
+                    editConf = HadoopLogsConfigs.getHadoopConfiguration();
+                    editConf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
+                    editConf.setBoolean("mapred.map.tasks.speculative.execution", false);
+                    HadoopLogsConfigs.setHadoopConfiguration(editConf);
+                    continue;
+                }
+                if (cmd.equals("spon")) {
+                    System.out.printf("Attempting to enable speculative execution\n");
+                    Configuration editConf;
+                    editConf = HadoopLogsConfigs.getHadoopConfiguration();
+                    editConf.setBoolean("mapred.reduce.tasks.speculative.execution", true);
+                    editConf.setBoolean("mapred.map.tasks.speculative.execution", true);
+                    HadoopLogsConfigs.setHadoopConfiguration(editConf);
                     continue;
                 }
                 if (cmd.equals("cpjj")) {

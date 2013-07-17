@@ -97,6 +97,10 @@ public class HadoopLogsConfigs {
         return sb.toString();
     }
 
+    public static void setHadoopConfiguration(Configuration conf) {
+        hadoopConfiguration = conf;
+    }
+
     public static Configuration getHadoopConfiguration() {
         if (hadoopConfiguration == null) {
             hadoopConfiguration = new Configuration();
@@ -165,6 +169,10 @@ public class HadoopLogsConfigs {
 
     public static boolean isJarCopyed() {
         return jarCopyed;
+    }
+
+    public static void markJobsJarAsAlreadyCopied() {
+        jarCopyed = true;
     }
 
     public static void copyJobsJar() throws FileNotFoundException, IOException {
