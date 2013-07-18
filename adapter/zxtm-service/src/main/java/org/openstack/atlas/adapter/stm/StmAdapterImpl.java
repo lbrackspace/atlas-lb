@@ -1062,38 +1062,31 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
 
-    private void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws RemoteException, InsufficientRequestException, StmRollBackException {
+    private void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
+        ResourceTranslator rt = new ResourceTranslator();
 
         try {
             LOG.debug(String.format("Adding a rate limit to load balancer...'%s'...", vsName));
 
-
-            ResourceTranslator rt = new ResourceTranslator();
             rt.translateLoadBalancerResource(config, vsName, loadBalancer);
             Bandwidth bandwidth = rt.getcBandwidth();
             VirtualServer virtualServer = rt.getcVServer();
-            VirtualServerProperties properties = virtualServer.getProperties();
-            VirtualServerBasic basic = properties.getBasic();
-            basic.setBandwidth_class(vsName);
+            virtualServer.getProperties().getBasic().setBandwidth_class(vsName);
 
             client.createBandwidth(vsName, bandwidth);
+            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
             updateVirtualServer(config, client, vsName, virtualServer);
 
             LOG.info("Successfully added a rate limit to the rate limit pool.");
-
-            //TODO: Not sure how to replace these calls, since I'm not sure what they do (yet)
-            //TODO clean up needed as well
-
-            //TODO: verify the trafficscript helper, the XFF/XFP have been updated for REST.. follow same convention..
-            //TrafficScriptHelper.addRateLimitScriptsIfNeeded(serviceStubs);
-            //attachRateLimitRulesToVirtualServers(serviceStubs, new String[]{vsName});
-
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.error(String.format("Failed to add rate limit for virtual server '%s' -- Object not found", vsName));
             throw new StmRollBackException("Add rate limit request canceled.", e);
         } catch (StingrayRestClientException e) {
             LOG.error(String.format("Failed to add rate limit for virtual server %s -- REST Client exception", vsName));
+            throw new StmRollBackException("Add rate limit request canceled.", e);
+        } catch (IOException e) {
+            LOG.error(String.format("Failed to add rate limit for virtual server %s -- IOException", vsName));
             throw new StmRollBackException("Add rate limit request canceled.", e);
         }
     }
@@ -1101,33 +1094,28 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
+        ResourceTranslator rt = new ResourceTranslator();
 
         try {
             LOG.debug(String.format("Updating the rate limit for load balancer...'%s'...", vsName));
 
-            ResourceTranslator rt = new ResourceTranslator();
             rt.translateLoadBalancerResource(config, vsName, loadBalancer);
             Bandwidth bandwidth = rt.getcBandwidth();
-            VirtualServer virtualServer = rt.getcVServer();
 
             client.updateBandwidth(vsName, bandwidth);
+            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
 
             LOG.info(String.format("Successfully updated the rate limit for load balancer...'%s'...", vsName));
-
-            //TODO: Not sure how to replace these calls, since I'm not sure what they do (yet)
-
-            //TODO: see above with same todo...
-            //TrafficScriptHelper.addRateLimitScriptsIfNeeded(serviceStubs);
-            //attachRateLimitRulesToVirtualServers(serviceStubs, new String[]{vsName});
-
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.error(String.format("Failed to update rate limit for virtual server %s -- REST Client exception", vsName));
             throw new StmRollBackException("Update rate limit request canceled.", e);
         } catch (StingrayRestClientException e) {
             LOG.error(String.format("Failed to update rate limit for virtual server %s -- REST Client exception", vsName));
             throw new StmRollBackException("Update rate limit request canceled.", e);
+        } catch (IOException e) {
+            LOG.error(String.format("Failed to update rate limit for virtual server %s -- IOException", vsName));
+            throw new StmRollBackException("Update rate limit request canceled.", e);
         }
-
     }
 
 
@@ -1196,10 +1184,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content)
             throws RemoteException, InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
+        File errorFile = null;
 
-        LOG.debug("Attempting to upload the default error file...");
         try {
-            client.createExtraFile(Constants.DEFAULT_ERRORFILE, getFileWithContent(content));
+            LOG.debug("Attempting to upload the default error file...");
+            errorFile = getFileWithContent(content);
+            client.createExtraFile(Constants.DEFAULT_ERRORFILE, errorFile);
             LOG.info("Successfully uploaded the default error file...");
         } catch (IOException e) {
             LOG.error(String.format("Failed to upload default ErrorFile for %s -- IO exception", config.getEndpointUrl()));
@@ -1208,6 +1198,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         } catch (StingrayRestClientObjectNotFoundException onf) {
             LOG.error(String.format("Failed to upload default ErrorFile for %s -- Object not found", config.getEndpointUrl()));
         }
+
+        if (errorFile != null) errorFile.delete();
     }
 
     @Override
@@ -1263,6 +1255,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName, String content) throws RemoteException, InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
+        File errorFile = null;
 
         ResourceTranslator rt = new ResourceTranslator();
         rt.translateVirtualServerResource(config, vsName, loadBalancer);
@@ -1270,7 +1263,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String errorFileName = getErrorFileName(vsName);
         try {
             LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
-            client.createExtraFile(errorFileName, getFileWithContent(content));
+            errorFile = getFileWithContent(content);
+            client.createExtraFile(errorFileName, errorFile);
             LOG.info(String.format("Successfully uploaded the error file for %s (%s)", vsName, errorFileName));
         } catch (IOException ioe) {
             // Failed to create file, use "Default"
@@ -1285,6 +1279,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
             errorFileName = "Default";
         }
+
+        if (errorFile != null) errorFile.delete();
 
         try {
             LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
@@ -1305,8 +1301,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     private File getFileWithContent(String content) throws IOException {
         File file = File.createTempFile("StmAdapterImpl_", ".err");
-        //todo: File will only be removed when we restart or redeploy the app 'deleteOnExit'
-        file.deleteOnExit();
         BufferedWriter out = new BufferedWriter(new FileWriter(file));
         out.write(content);
         out.close();
