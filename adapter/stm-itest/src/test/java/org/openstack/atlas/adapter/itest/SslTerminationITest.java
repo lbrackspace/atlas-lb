@@ -114,7 +114,7 @@ public class SslTerminationITest extends STMTestBase {
         }
     }
 
-    @Ignore
+
     @Test
     public void testSSlTerminationOperations() {
         setSslTermination();
@@ -122,14 +122,14 @@ public class SslTerminationITest extends STMTestBase {
         deleteSslTermination();
     }
 
-    @Ignore
+
     @Test
     public void testSSlTerminationOperationsWhenUpdatingLBAttributes() throws Exception {
         setSslTermination();
         updateLoadBalancerAttributes();
     }
 
-    @Ignore
+
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testWhenAddingRateLimitWithSslTermination() throws Exception {
         setRateLimitBeforeSsl();
@@ -138,7 +138,7 @@ public class SslTerminationITest extends STMTestBase {
         setRateLimit();
     }
 
-    @Ignore
+
     @Test
     public void testWhenAddingAccessListWith() throws Exception {
         verifyAccessListWithoutSsl();
@@ -147,20 +147,20 @@ public class SslTerminationITest extends STMTestBase {
         verifyAccessListWithSsl();
     }
 
-    @Ignore
+
     @Test
     public void testErrorPageWhenCreatingSslTermination() throws Exception {
         verifyDeleteErrorPage();
         verifyErrorPage();
     }
 
-    @Ignore
+
     @Test
     public void testConnectionThrottleWhenCreatingSslTermination() throws Exception {
         verifyConnectionThrottle();
     }
 
-    @Ignore
+
     @Test
     public void shouldPassIfCertificateIsRemovedWithSecureVSStillThere() throws Exception {
         setSslTermination();
@@ -168,7 +168,7 @@ public class SslTerminationITest extends STMTestBase {
         deleteCertificate();
     }
 
-    @Ignore
+
     @Test
     public void verifyHostHeaderRewriteIsNever() {
         verifyHostHeaderRewrite();

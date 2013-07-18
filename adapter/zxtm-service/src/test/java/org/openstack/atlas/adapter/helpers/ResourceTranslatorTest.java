@@ -3,17 +3,18 @@ package org.openstack.atlas.adapter.helpers;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.stm.STMTestBase;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
 import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
+import org.rackspace.stingray.client.exception.ClientException;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.monitor.MonitorBasic;
 import org.rackspace.stingray.client.monitor.MonitorHttp;
@@ -138,12 +139,32 @@ public class ResourceTranslatorTest extends STMTestBase {
             lb.setAccessLists(null);
         }
 
+
         @Test
-        public void objToStringTest() throws InsufficientRequestException, IOException {
+        public void stringToObjTest() throws InsufficientRequestException, IOException {
             initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
-            Pool pool = translator.translatePoolResource(vsName, lb);
-            String poolString = translator.objectToString(pool, Pool.class);
-            System.out.println("Pool String AFter Mapping: " + poolString);
+            String refString = "{\"properties\":" +
+                    "{\"basic\":{\"disabled\":[\"127.0.0.2:80\"],\"draining\":[],\"monitors\":[],\"nodes\"" +
+                    ":[\"127.0.0.1:80\"],\"passive_monitoring\":false},\"connection\":{},\"load_balancing\":{\"algorithm\":" +
+                    "\"weighted_least_connections\",\"node_weighting\":[{\"node\":\"127.0.0.1:80\"},{\"node\":\"127.0.0.2:80\"}]," +
+                    "\"priority_enabled\":false,\"priority_values\":[\"127.0.0.1:80:2\"]}}}";
+            Pool createdPool = translator.stringToObject(refString, Pool.class);
+            System.out.println("Pool String AFter Mapping: " + createdPool.toString());
+            String poolString = translator.objectToString(createdPool, Pool.class);
+            Assert.assertEquals(refString, poolString);
+
+        }
+
+        @Ignore
+        @Test
+        public void experimental() throws InsufficientRequestException, IOException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+            String refString = "{\"error_id\":\"resource.validation_error\",\"error_text\":\"The resource provided is " +
+                    "invalid\",\"error_info\": {\"load_balancing\":{\"node_weighting\":{\"127.0.0.1:80\":{\"weight\":" +
+                    "{\"error_id\":\"table.no_default\",\"error_text\":\"Table field 'weight' is not set and has no " +
+                    "default value\"}},\"127.0.0.2:80\":{\"weight\":{\"error_id\":\"table.no_default\",\"error_text\":\"" +
+                    "Table field 'weight' is not set and has no default value\"}}}}}}";
+            ClientException exception = translator.stringToObject(refString, ClientException.class);
 
         }
 

@@ -408,6 +408,16 @@ public class ResourceTranslator {
         return myObject.toString();
     }
 
+
+public <T> T stringToObject(String str, Class<T> clazz) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Object myObject = mapper.readValue(str, clazz);
+        return (T) myObject;
+
+    }
+
+
+
     public Pool getcPool() {
         return cPool;
     }

@@ -125,6 +125,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 }
 
                 updateVirtualServer(config, client, vsName, translator.getcVServer());
+                if (loadBalancer.hasSsl()) {
+                    vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+                    translator.translateVirtualServerResource(config, vsName, loadBalancer);
+                    updateVirtualServer(config, client, vsName, translator.getcVServer());
+                }
 
             } catch (Exception ex) {
                 LOG.error("Exception creating load balancer: " + ex);
@@ -147,6 +152,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         deleteVirtualIps(config, loadBalancer);
         deletePool(config, client, vsName);
         deleteVirtualServer(config, client, vsName);
+        if(loadBalancer.hasSsl()) {
+            deleteVirtualServer(config, client, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        }
         client.destroy();
         LOG.debug(String.format("Successfully removed loadbalancer: %s from the STM service...", vsName));
     }
@@ -170,6 +178,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         try {
             client.updateVirtualServer(vsName, virtualServer);
+
 
         } catch (Exception ex) {
             String em = String.format("Error updating virtual server: %s Attempting to RollBack... \n Exception: %s Trace: %s",
@@ -296,13 +305,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         updatePool(config, client, poolName, translator.getcPool());
         LOG.info(String.format("Successfully added nodes to pool '%s'", poolName));
 
-        if (loadBalancer.hasSsl()) {
-            String poolSslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-            translator.translatePoolResource(poolSslName, loadBalancer);
-            LOG.info(String.format("Setting nodes to pool '%s'", poolSslName));
-            updatePool(config, client, poolSslName, translator.getcPool());
-            LOG.info(String.format("Successfully added nodes to pool '%s'", poolSslName));
-        }
+
     }
 
     @Override
@@ -439,15 +442,14 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         LOG.debug(String.format("Updating virtual server %s for virtual ip configuration update", vsName));
         updateVirtualServer(config, client, vsName, translator.getcVServer());
         LOG.info(String.format("Successfully updated virtual ips for virtual server %s", vsName));
-
         if (loadBalancer.hasSsl()) {
             vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-            LOG.debug(String.format("Updating virtual ips for virtual server %s", vsName));
-            updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
-            LOG.debug(String.format("Updating virtual server %s for virtual ip configuration update", vsName));
+            translator.translateVirtualServerResource(config, vsName, loadBalancer);
             updateVirtualServer(config, client, vsName, translator.getcVServer());
             LOG.info(String.format("Successfully updated virtual ips for virtual server %s", vsName));
         }
+
+
     }
 
     @Override
@@ -610,11 +612,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         translator.translateLoadBalancerResource(config, vsName, loadBalancer);
         updateHealthMonitor(config, client, vsName, translator.getcMonitor());
         updatePool(config, client, vsName, translator.getcPool());
-        if (loadBalancer.hasSsl()) {
-            vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-            updateHealthMonitor(config, client, vsName, translator.getcMonitor());
-            updatePool(config, client, vsName, translator.getcPool());
-        }
+
     }
 
     @Override
@@ -622,10 +620,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         final String monitorName = ZxtmNameBuilder.genVSName(loadBalancer);
         StingrayRestClient client = loadSTMRestClient(config);
         deleteHealthMonitor(config, client, monitorName);
-        if (loadBalancer.hasSsl()) {
-            String monitorSslName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-            deleteHealthMonitor(config, client, monitorSslName);
-        }
+
     }
 
     private void updateHealthMonitor(LoadBalancerEndpointConfiguration config,
@@ -987,6 +982,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         virtualServer.getProperties().getBasic().setEnabled(false);
         try {
             updateVirtualServer(config, client, vsName, virtualServer);
+            if (lb.hasSsl()) {
+                vsName = ZxtmNameBuilder.genSslVSName(lb);
+                VirtualServer secureServer = client.getVirtualServer(vsName);
+                secureServer.getProperties().getBasic().setEnabled(false);
+                updateVirtualServer(config, client, vsName, secureServer);
+            }
             LOG.info("Successfully added load balancer suspension");
         } catch (StmRollBackException e) {
             LOG.error(String.format("Failed to suspend load balancer operation", e));
@@ -1006,6 +1007,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         virtualServer.getProperties().getBasic().setEnabled(true);
         try {
             updateVirtualServer(config, client, vsName, virtualServer);
+            if (lb.hasSsl()) {
+                vsName = ZxtmNameBuilder.genVSName(lb);
+                VirtualServer secureServer = client.getVirtualServer(vsName);
+                secureServer.getProperties().getBasic().setEnabled(true);
+                updateVirtualServer(config, client, vsName, secureServer);
+            }
             LOG.info("Successfully removed load balancer suspension");
         } catch (StmRollBackException e) {
             LOG.error(String.format("Failed to restore load balancer operation", e));
@@ -1040,23 +1047,25 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     @Override
     public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, StmRollBackException {
         setRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
-        if (loadBalancer.hasSsl()) {
+        if(loadBalancer.hasSsl()) {
             setRateLimit(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
+
     }
 
     @Override
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, StmRollBackException {
         updateRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
-        if (loadBalancer.hasSsl()) {
+        if(loadBalancer.hasSsl()) {
             updateRateLimit(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
+
     }
 
     @Override
     public void deleteRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
         deleteRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
-        if (loadBalancer.hasSsl()) {
+        if(loadBalancer.hasSsl()) {
             deleteRateLimit(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
     }
@@ -1077,6 +1086,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             client.createBandwidth(vsName, bandwidth);
             TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
             updateVirtualServer(config, client, vsName, virtualServer);
+
 
             LOG.info("Successfully added a rate limit to the rate limit pool.");
         } catch (StingrayRestClientObjectNotFoundException e) {
@@ -1207,12 +1217,13 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             throws InsufficientRequestException, StmRollBackException {
 
         deleteErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
-        if (loadBalancer.hasSsl()) {
+        if(loadBalancer.hasSsl())
+        {
             deleteErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
     }
 
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName)
+    private void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName)
             throws InsufficientRequestException, StmRollBackException {
 
         StingrayRestClient client = loadSTMRestClient(config);
@@ -1246,14 +1257,13 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String content) throws RemoteException, InsufficientRequestException, StmRollBackException {
-
         setErrorFile(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer), content);
-        if (loadBalancer.hasSsl()) {
-            setErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer), content);
+        if(loadBalancer.hasSsl()) {
+            setErrorFile(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
     }
 
-    public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName, String content) throws RemoteException, InsufficientRequestException, StmRollBackException {
+    private void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName, String content) throws RemoteException, InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
         File errorFile = null;
 

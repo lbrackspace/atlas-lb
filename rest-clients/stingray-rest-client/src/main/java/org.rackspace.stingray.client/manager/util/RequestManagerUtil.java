@@ -3,10 +3,13 @@ package org.rackspace.stingray.client.manager.util;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.rackspace.stingray.client.exception.ClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.util.ClientConstants;
+
+import java.io.IOException;
 
 public class RequestManagerUtil {
     private static final Log logger = LogFactory.getLog(RequestManagerUtil.class);
@@ -24,6 +27,16 @@ public class RequestManagerUtil {
                 || response.getStatus() == ClientConstants.NO_CONTENT
                 || response.getStatus() == ClientConstants.CREATED));
     }
+
+
+
+    public <T> T stringToObject(String str, Class<T> clazz) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Object myObject = mapper.readValue(str, clazz);
+        return (T) myObject;
+
+    }
+
 
     /**
      * A method to build a message detailing a failure response from the Stingray REST api
@@ -47,14 +60,23 @@ public class RequestManagerUtil {
         try {
             String error = response.getEntity(String.class);
             String[] errors  = error.split(",");
+            String searchTerm = "\"error_info\"";
             if(errors.length > 3)
             {
+                 int locationToUse = error.indexOf(searchTerm) + searchTerm.length();
+
+
 
             }
             else
             {
 
             }
+
+
+
+
+
 
             exception = response.getEntity(ClientException.class);
             logger.debug(String.format("Client Request failed: %s", exception.toString()));
