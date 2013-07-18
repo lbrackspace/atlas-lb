@@ -1,0 +1,28 @@
+{
+  "db": {
+    "ord": {
+      "passwd": "CENSORED", 
+      "host": "CENSORED", 
+      "db": "loadbalancing", 
+      "user": "CENSORED"
+    }, 
+    "lon": {
+      "passwd": "CENSORED", 
+      "host": "CENSORED", 
+      "db": "loadbalancing", 
+      "user": "CENSORED"
+    }, 
+    "dfw": {
+      "passwd": "CENSORED", 
+      "host": "CENSORED", 
+      "db": "loadbalancing", 
+      "user": "CENSORED"
+    }, 
+    "syd": {
+      "passwd": "CENSORED", 
+      "host": "CENSORED", 
+      "db": "loadbalancing", 
+      "user": "CENSORED"
+    }
+  }
+}	

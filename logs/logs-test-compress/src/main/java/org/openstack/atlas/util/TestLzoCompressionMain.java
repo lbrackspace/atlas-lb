@@ -50,7 +50,7 @@ public class TestLzoCompressionMain {
         }
         String filePath = StaticFileUtils.expandUser(args[0]);
         String lzoPath = filePath + ".lzo";
-        String idxPath = lzoPath + ".idx";
+        String idxPath = lzoPath + ".index";
         System.out.printf("Compression input  file: %s\n", filePath);
         System.out.printf("Compression output file: %s\n", lzoPath);
         System.out.printf("Compression index  file: %s\n", idxPath);
