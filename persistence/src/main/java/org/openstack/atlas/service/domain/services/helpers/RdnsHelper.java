@@ -72,7 +72,6 @@ public class RdnsHelper {
             String stackTrace = Debug.getEST(ex);
             String fmt = "Error decrypting rDNS admin passwd. Call to delete "
                     + "PTR record will fail: %s";
-            LOG.error(String.format(fmt, stackTrace), ex);
             rdnsPasswd = "????";
         }
     }
