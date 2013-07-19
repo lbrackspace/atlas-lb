@@ -897,7 +897,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         if (sslTermination.getCertIntermediateCert() != null) {
             Keypair keypair = translator.getcKeypair();
             LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
-            updateKeypair(config, client, vsName, keypair);
+            updateKeypair(config, client, sslVsName, keypair);
         }
 
         try {
@@ -928,8 +928,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
 
         LOG.debug(String.format("Removing ssl from loadbalancer: %s ...", vsName));
-        deleteProtection(config, client, loadBalancer, vsName);
-        deleteVirtualIps(config, loadBalancer);
         deleteKeypair(config, client, vsName);
         deleteVirtualServer(config, client, vsName);
         client.destroy();

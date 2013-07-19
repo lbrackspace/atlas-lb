@@ -72,12 +72,17 @@ public class ResourceTranslator {
         VirtualServerLog log = null;
 
         //basic virtual server settings
-        if (loadBalancer.hasSsl()) {
+        if (vsName.equals(ZxtmNameBuilder.genSslVSName(loadBalancer))) {
             basic.setPort(loadBalancer.getSslTermination().getSecurePort());
+            basic.setSsl_decrypt(true);
             basic.setEnabled(loadBalancer.isUsingSsl());
         } else {
             basic.setPort(loadBalancer.getPort());
-            basic.setEnabled(true);
+            if (loadBalancer.hasSsl()) {
+                basic.setEnabled(!loadBalancer.isSecureOnly());
+            } else {
+                basic.setEnabled(true);
+            }
         }
 
         basic.setPool(ZxtmNameBuilder.genVSName(loadBalancer));

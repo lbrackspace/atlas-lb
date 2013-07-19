@@ -28,7 +28,7 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.H
 import static org.openstack.atlas.service.domain.entities.NodeCondition.DISABLED;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 
-public class STMTestBase {
+public class STMTestBase extends StmTestConstants {
     public static final Integer SLEEP_TIME_BETWEEN_TESTS = 500;
     private static Configuration configuration = new STMConfiguration();
 

@@ -1,7 +1,7 @@
 package org.openstack.atlas.adapter.itest;
 
 
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +17,7 @@ import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
 import org.rackspace.stingray.client.util.EnumFactory;
@@ -26,7 +27,9 @@ import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
@@ -36,7 +39,6 @@ public class SslTerminationITest extends STMTestBase {
 
     private String normalName;
     private String secureName;
-
 
     final String testCert = "-----BEGIN CERTIFICATE-----\n" +
             "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
@@ -102,12 +104,12 @@ public class SslTerminationITest extends STMTestBase {
         secureName = ZxtmNameBuilder.genSslVSName(lb);
     }
 
-    @After
-    public void tearDownClass() {
+    @AfterClass
+    public static void tearDownClass() {
         removeSimpleLoadBalancer();
     }
 
-    public void removeSimpleLoadBalancer() {
+    public static void removeSimpleLoadBalancer() {
         try {
             stmAdapter.deleteLoadBalancer(config, lb);
         } catch (Exception e) {
@@ -180,13 +182,13 @@ public class SslTerminationITest extends STMTestBase {
     }
 
 
-    private void setSslTermination(int port, boolean isSslTermEnabled, boolean allowSecureTrafficOnly) {
+    private void setSslTermination(boolean isSslTermEnabled, boolean allowSecureTrafficOnly) {
         try {
             boolean isVsEnabled = true;
             SslTermination sslTermination = new SslTermination();
             sslTermination.setSecureTrafficOnly(allowSecureTrafficOnly);
             sslTermination.setEnabled(isSslTermEnabled);
-            sslTermination.setSecurePort(port);
+            sslTermination.setSecurePort(StmTestConstants.LB_SECURE_PORT);
             sslTermination.setCertificate(testCert);
             sslTermination.setPrivatekey(testKey);
 
@@ -206,63 +208,60 @@ public class SslTerminationITest extends STMTestBase {
                 createdSecureVs = stmClient.getVirtualServer(secureName);
                 createdNormalVs = stmClient.getVirtualServer(normalName);
             } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
 
             Assert.assertNotNull(createdSecureVs);
             Assert.assertNotNull(createdNormalVs);
+
             VirtualServerBasic secureBasic = createdSecureVs.getProperties().getBasic();
-            Assert.assertEquals(port, (int) secureBasic.getPort());
+            Assert.assertEquals(StmTestConstants.LB_SECURE_PORT, (int) secureBasic.getPort());
             Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(secureBasic.getProtocol().toString()));
             Assert.assertEquals(isVsEnabled, secureBasic.getEnabled());
-            Assert.assertEquals(secureName, secureBasic.getPool().toString());
+            Assert.assertEquals(normalName, secureBasic.getPool().toString());
             Assert.assertEquals(isSslTermEnabled, secureBasic.getSsl_decrypt());
 
             VirtualServerBasic normalBasic = createdNormalVs.getProperties().getBasic();
-            Assert.assertEquals(port, (int) normalBasic.getPort());
+            Assert.assertEquals(StmTestConstants.LB_PORT, (int) normalBasic.getPort());
             Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(normalBasic.getProtocol().toString()));
             Assert.assertEquals(isVsEnabled, normalBasic.getEnabled());
-            Assert.assertEquals(secureName, normalBasic.getPool().toString());
-
-
-
-            Assert.assertEquals(testCert, createdSecureVs.getProperties().getSsl().getServer_cert_default());
+            Assert.assertEquals(normalName, normalBasic.getPool().toString());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
             removeSimpleLoadBalancer();
         }
-
     }
 
     private void setSslTermination() {
-        int port = 443;
         boolean isSslTermEnabled = true;
         boolean allowSecureTrafficOnly = false;
-        setSslTermination(port, isSslTermEnabled, allowSecureTrafficOnly);
+        setSslTermination(isSslTermEnabled, allowSecureTrafficOnly);
     }
 
     private void updateSslTermination() {
-        int port = 500;
         boolean isSslTermEnabled = false;
         boolean allowSecureTrafficOnly = true;
-        setSslTermination(port, isSslTermEnabled, allowSecureTrafficOnly);
+        setSslTermination(isSslTermEnabled, allowSecureTrafficOnly);
     }
 
     private void deleteSslTermination() {
         try {
-            VirtualServer createdSecureVs = stmClient.getVirtualServer(secureName);
+            String vsName = ZxtmNameBuilder.genVSName(lb);
+            String vsSslName = ZxtmNameBuilder.genSslVSName(lb);
             VirtualServer createdNormalVs = stmClient.getVirtualServer(normalName);
             stmAdapter.removeSslTermination(config, lb);
-            Assert.assertFalse(stmClient.getVirtualServers().contains(createdSecureVs));
-            Assert.assertTrue(stmClient.getVirtualServers().contains(createdNormalVs));
+            List<String> names = new ArrayList<String>();
+            for (Child child : stmClient.getVirtualServers()) {
+                names.add(child.getName());
+            }
+            Assert.assertFalse(names.contains(vsSslName));
+            Assert.assertTrue(names.contains(vsName));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
             removeSimpleLoadBalancer();
         }
-
-
     }
 
     private void updateLoadBalancerAttributes() {
@@ -296,16 +295,13 @@ public class SslTerminationITest extends STMTestBase {
             Assert.fail(e.getMessage());
             removeSimpleLoadBalancer();
         }
-
     }
-
 
     private void verifyHostHeaderRewrite() {
         try {
-            int port = 443;
             boolean allowSecureTrafficOnly = false;
             boolean isSslTermEnabled = true;
-            setSslTermination(port, isSslTermEnabled, allowSecureTrafficOnly);
+            setSslTermination(isSslTermEnabled, allowSecureTrafficOnly);
             VirtualServer createdVs = null;
 
             createdVs = stmClient.getVirtualServer(ZxtmNameBuilder.genSslVSName(lb));
@@ -354,8 +350,6 @@ public class SslTerminationITest extends STMTestBase {
             Assert.fail(e.getMessage());
             removeSimpleLoadBalancer();
         }
-
-
     }
 
     private void errorPageHelper(String expectedContent) {
