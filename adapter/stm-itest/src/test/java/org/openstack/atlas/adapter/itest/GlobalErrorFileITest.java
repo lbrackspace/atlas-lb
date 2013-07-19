@@ -48,9 +48,10 @@ public class GlobalErrorFileITest extends STMTestBase {
         setCustomErrorFile();
     }
 
+    //TODO I don't know why we expect an error here.
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testSimpleDeleteErrorFileOperations() throws Exception {
-        //setCustomErrorFile();
+        setCustomErrorFile();
         deleteErrorFile();
     }
 
