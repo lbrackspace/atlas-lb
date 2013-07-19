@@ -31,25 +31,26 @@ public class UpdateErrorFileListener extends BaseListener {
         LoadBalancer dbLoadBalancer = null;
 
 
-        try {
-            LOG.debug("Grabbing loadbalancer...");
-            dbLoadBalancer = loadBalancerService.get(data.getLoadBalancerId(), data.getAccountId());
-            dbLoadBalancer.setUserName(data.getUserName());
-        } catch (EntityNotFoundException enfe) {
-            String alertDescription = String.format("Load balancer '%d' not found in database.", data.getLoadBalancerId());
-            LOG.error(alertDescription, enfe);
-            notificationService.saveAlert(data.getAccountId(), data.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(dbLoadBalancer);
-            loadBalancerStatusHistoryService.save(data.getAccountId(), data.getLoadBalancerId(), LoadBalancerStatus.ERROR);
-
-            return;
-        }
-
         if (aid != null && lid != null) {
+
+            try {
+                LOG.debug("Grabbing loadbalancer...");
+                dbLoadBalancer = loadBalancerService.get(data.getLoadBalancerId(), data.getAccountId());
+                dbLoadBalancer.setUserName(data.getUserName());
+            } catch (EntityNotFoundException enfe) {
+                String alertDescription = String.format("Load balancer '%d' not found in database.", data.getLoadBalancerId());
+                LOG.error(alertDescription, enfe);
+                notificationService.saveAlert(data.getAccountId(), data.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
+                sendErrorToEventResource(dbLoadBalancer);
+                loadBalancerStatusHistoryService.save(data.getAccountId(), data.getLoadBalancerId(), LoadBalancerStatus.ERROR);
+                return;
+            }
+
             try {
                 LOG.debug("Attempting to set error file in zeus...calling setErrorFile");
                 reverseProxyLoadBalancerStmService.setErrorFile(dbLoadBalancer, content);
                 LOG.debug("Successfully updated error file in zeus.");
+                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
             } catch (Exception e) {
                 loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
 
@@ -57,8 +58,8 @@ public class UpdateErrorFileListener extends BaseListener {
                 LOG.error(tmpMsg, e);
                 notificationService.saveAlert(aid, lid, e, AlertType.ZEUS_FAILURE.name(), msg);
                 sendErrorToEventResource(dbLoadBalancer);
-
             }
+
         } else if (clusterId != null) {
             LOG.debug("Attempting to upload default error file in zeus...calling uploadDefaultErrorFile");
             try {
@@ -71,7 +72,6 @@ public class UpdateErrorFileListener extends BaseListener {
             }
         }
 
-        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
     }
 
     private void sendErrorToEventResource(LoadBalancer lb) {
