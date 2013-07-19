@@ -31,11 +31,11 @@ public class UpdateProtocolITest extends STMTestBase{
         try {
             stmAdapter.deleteLoadBalancer(config, lb);
         } catch (RemoteException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (InsufficientRequestException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (RollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 

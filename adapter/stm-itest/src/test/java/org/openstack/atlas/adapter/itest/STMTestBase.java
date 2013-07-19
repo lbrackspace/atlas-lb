@@ -176,7 +176,6 @@ public class STMTestBase {
     protected static void createSimpleLoadBalancer() {
         StingrayRestClient tclient;
         ResourceTranslator translator = new ResourceTranslator();
-
         try {
             stmAdapter.createLoadBalancer(config, lb);
             //TODO: use test config(update stingray-rest-client to use openstack.configuration)

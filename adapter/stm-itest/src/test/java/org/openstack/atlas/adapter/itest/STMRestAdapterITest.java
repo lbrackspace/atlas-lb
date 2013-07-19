@@ -25,7 +25,11 @@ public class STMRestAdapterITest extends STMTestBase {
 
     @AfterClass
     public static void tearDownClass() {
-        //clean up...
+        try {
+       stmAdapter.deleteLoadBalancer(config, lb);
+        } catch(Exception e) {
+
+        }
     }
 
     //wip...

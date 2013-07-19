@@ -35,7 +35,11 @@ public class SubnetMappingITest extends STMTestBase {
 
     @AfterClass
     public static void tearDownClass() throws RemoteException {
-        stmAdapter.setSubnetMappings(config, EXISTING_MAPPINGS);
+        try {
+        stmAdapter.deleteLoadBalancer(config, lb);
+        } catch(Exception e) {
+
+        }
     }
 
     @Test
