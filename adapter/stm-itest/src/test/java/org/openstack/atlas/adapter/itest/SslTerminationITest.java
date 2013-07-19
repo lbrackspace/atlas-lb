@@ -1,12 +1,18 @@
 package org.openstack.atlas.adapter.itest;
 
 
-import org.junit.*;
-import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.RollBackException;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.AccessList;
+import org.openstack.atlas.service.domain.entities.ConnectionLimit;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.RateLimit;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.entities.Ticket;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
@@ -20,7 +26,6 @@ import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -105,12 +110,12 @@ public class SslTerminationITest extends STMTestBase {
     public void removeSimpleLoadBalancer() {
         try {
             stmAdapter.deleteLoadBalancer(config, lb);
-        } catch (RemoteException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (InsufficientRequestException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (RollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (Exception e) {
+            String output = "Failure to delete load balancer:\n";
+            for (StackTraceElement line : e.getStackTrace()) {
+                output += line.toString() + "\n";
+            }
+            System.err.println(output);
         }
     }
 
