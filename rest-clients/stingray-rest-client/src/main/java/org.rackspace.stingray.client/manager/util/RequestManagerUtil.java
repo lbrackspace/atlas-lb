@@ -4,7 +4,6 @@ import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.rackspace.stingray.client.exception.ClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.util.ClientConstants;
@@ -50,7 +49,7 @@ public class RequestManagerUtil {
 
         String objectNotFound = "Invalid resource URI";
         String objectNotFoundMessage = "The resource does not exist.";
-        ClientException exception = null;
+        String error;
 
         logger.info("ResponseWrapper, response status code is: " + response.getStatus());
 
@@ -58,28 +57,8 @@ public class RequestManagerUtil {
         //TODO: errors like these break response.GetEntity(ClientException.class) :::
         //TODO: {"properties":{"basic":{"disabled":["127.0.0.2:80"],"draining":[],"monitors":[],"nodes":["127.0.0.1:80"],"passive_monitoring":false},"connection":{},"load_balancing":{"algorithm":"weighted_least_connections","node_weighting":[{"node":"127.0.0.1:80"},{"node":"127.0.0.2:80"}],"priority_enabled":false,"priority_values":["127.0.0.1:80:2"]}}}
         try {
-            String error = response.getEntity(String.class);
-            String[] errors  = error.split(",");
-            String searchTerm = "\"error_info\"";
-            if(errors.length > 3)
-            {
-                 int locationToUse = error.indexOf(searchTerm) + searchTerm.length();
-
-
-
-            }
-            else
-            {
-
-            }
-
-
-
-
-
-
-            exception = response.getEntity(ClientException.class);
-            logger.debug(String.format("Client Request failed: %s", exception.toString()));
+             error = response.getEntity(String.class);
+            logger.debug(String.format("Client Request failed: %s", error.toString()));
         } catch (Exception ex) {
             //TODO: Temp fix
             logger.debug(String.format("Client Request failed: %s", ex));
@@ -89,11 +68,11 @@ public class RequestManagerUtil {
         }
 
 
-        if (exception.getError_text().contains(objectNotFound)) {
+        if (error.contains(objectNotFound)) {
             throw new StingrayRestClientObjectNotFoundException(objectNotFoundMessage);
         } else {
             throw new StingrayRestClientException(String.format("Caused By: %s: Reason: %s: Additional: %s",
-                    exception.getError_id(), exception.getError_text(), exception.getError_info()));
+                    error));
         }
         //TODO: other messages?
     }

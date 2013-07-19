@@ -26,7 +26,11 @@ public class SetNodesITest extends STMTestBase {
     @AfterClass
     public static void tearDownClass() {
 
-        //stmAdapter.deleteLoadBalancer(config, lb);
+        try {
+            stmAdapter.deleteLoadBalancer(config, lb);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
