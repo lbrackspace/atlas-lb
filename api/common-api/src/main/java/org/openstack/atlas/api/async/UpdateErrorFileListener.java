@@ -27,6 +27,7 @@ public class UpdateErrorFileListener extends BaseListener {
         Integer aid = data.getAccountId();
         Integer lid = data.getLoadBalancerId();
         Integer clusterId = data.getClusterId();
+        String userName = data.getUserName();
 
         LoadBalancer dbLoadBalancer = null;
 
@@ -35,14 +36,14 @@ public class UpdateErrorFileListener extends BaseListener {
 
             try {
                 LOG.debug("Grabbing loadbalancer...");
-                dbLoadBalancer = loadBalancerService.get(data.getLoadBalancerId(), data.getAccountId());
-                dbLoadBalancer.setUserName(data.getUserName());
+                dbLoadBalancer = loadBalancerService.get(lid, aid);
+                dbLoadBalancer.setUserName(userName);
             } catch (EntityNotFoundException enfe) {
-                String alertDescription = String.format("Load balancer '%d' not found in database.", data.getLoadBalancerId());
+                String alertDescription = String.format("Load balancer '%d' not found in database.", lid);
                 LOG.error(alertDescription, enfe);
-                notificationService.saveAlert(data.getAccountId(), data.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
-                sendErrorToEventResource(dbLoadBalancer);
-                loadBalancerStatusHistoryService.save(data.getAccountId(), data.getLoadBalancerId(), LoadBalancerStatus.ERROR);
+                notificationService.saveAlert(aid, lid, enfe, DATABASE_FAILURE.name(), alertDescription);
+                //sendErrorToEventResource(dbLoadBalancer);
+                loadBalancerStatusHistoryService.save(aid, lid, LoadBalancerStatus.ERROR);
                 return;
             }
 

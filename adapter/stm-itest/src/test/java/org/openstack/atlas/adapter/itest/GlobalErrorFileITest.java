@@ -86,7 +86,6 @@ public class GlobalErrorFileITest extends STMTestBase {
         Assert.assertEquals(customPageContent2, content);
     }
 
-    //TODO: need to add delete to adapter. This is a 'global' file and only used by ops(which they have yet to ever use)
     private void deleteErrorFile() throws InsufficientRequestException, StmRollBackException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         final String errorFileName = errorFileName();
         File errorFile = stmClient.getExtraFile(errorFileName);
