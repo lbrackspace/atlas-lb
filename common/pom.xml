@@ -19,7 +19,6 @@
         <module>util</module>
         <module>cidr</module>
         <module>ca</module>
-        <module>capman-ca</module>
         <module>crypto-tool</module>
     </modules>
 

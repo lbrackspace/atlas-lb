@@ -3,6 +3,7 @@ package org.bouncycastle.openpgp.examples.test;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
 import org.bouncycastle.openpgp.examples.ClearSignedFileProcessor;
 import org.bouncycastle.openpgp.examples.DSAElGamalKeyRingGenerator;
 import org.bouncycastle.openpgp.examples.KeyBasedFileProcessor;

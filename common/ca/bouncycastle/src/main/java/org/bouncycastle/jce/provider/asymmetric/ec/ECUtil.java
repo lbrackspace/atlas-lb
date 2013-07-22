@@ -13,9 +13,9 @@ import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.jce.provider.ProviderUtil;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.jce.provider.ProviderUtil;
+import org.bouncycastle.jce.spec.ECParameterSpec;
 
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;

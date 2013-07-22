@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.openstack.atlas</groupId>
-        <artifactId>ca-parent</artifactId>
+        <artifactId>atlas-ca-parent</artifactId>
         <version>1.18.12-SNAPSHOT</version>
     </parent>
 
@@ -11,14 +11,22 @@
     <artifactId>atlas-ca-rsa</artifactId>
     <packaging>jar</packaging>
     <name>Atlas :: CA :: RSA</name>
-    <url>http://maven.apache.org</url>
 
     <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+
+
         <dependency>
             <groupId>org.openstack.atlas</groupId>
             <artifactId>atlas-ca-bc</artifactId>
             <version>${project.version}</version>
         </dependency>
+
     </dependencies>
     <build>
         <defaultGoal>install</defaultGoal>
@@ -35,42 +43,17 @@
                         <debug>true</debug>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <configuration>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                        <finalName>${project.artifactId}-${project.version}-assembly</finalName>
+                        <appendAssemblyId>false</appendAssemblyId>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
-    <profiles>
-        <profile>
-            <id>gen-deb-packages</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>jdeb</artifactId>
-                        <groupId>org.vafer</groupId>
-                        <version>0.8</version>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jdeb</goal>
-                                </goals>
-                                <configuration>
-                                    <deb>target/${artifactId}_${version}_all.deb</deb>
-                                    <dataSet>
-                                        <data>
-                                            <src>${project.build.directory}/${project.build.finalName}.jar</src>
-                                            <type>file</type>
-                                            <mapper>
-                                                <type>perm</type>
-                                                <prefix>/opt/glassfish/glassfish/lib</prefix>
-                                            </mapper>
-                                        </data>
-                                    </dataSet>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
