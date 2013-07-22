@@ -198,7 +198,7 @@ public class TrafficScriptHelper {
                 LOG.debug("There was an error in StingrayRestClient: " + e);
             }
 
-            crule.delete();
+            deleteFile(crule);
             LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmConstants.XFF));
         }
 
@@ -250,7 +250,7 @@ public class TrafficScriptHelper {
                 LOG.debug("There was an error in StingrayRestClient: " + e);
             }
 
-            crule.delete();
+            deleteFile(crule);
             LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmConstants.XFP));
         }
     }
@@ -261,5 +261,15 @@ public class TrafficScriptHelper {
         out.write(fileText);
         out.close();
         return fixx;
+    }
+
+    private static void deleteFile(File file) {
+        boolean deleted = true;
+        while (deleted) {
+            try {
+                if (file.delete()) deleted = false;
+            } catch (Exception ex) {
+            }
+        }
     }
 }

@@ -130,7 +130,7 @@ public class Ipv6ITest extends STMTestBase {
                 Assert.assertNotNull(vip);
                 Assert.assertEquals(1, vip.getProperties().getBasic().getIpaddresses().size());
                 Assert.assertEquals(true, vip.getProperties().getBasic().getEnabled());
-                Assert.assertEquals(new HashSet(Arrays.asList(lb.getLoadBalancerJoinVipSet().iterator().next().getVirtualIp().getIpAddress())), vip.getProperties().getBasic().getIpaddresses());
+                Assert.assertEquals(new HashSet(Arrays.asList(lb.getLoadBalancerJoinVip6Set().iterator().next().getVirtualIp().getDerivedIpString())), vip.getProperties().getBasic().getIpaddresses());
                 Set<String> machines = new HashSet<String>();
                 machines.add(config.getTrafficManagerName());
                 machines.addAll(config.getFailoverTrafficManagerNames());
