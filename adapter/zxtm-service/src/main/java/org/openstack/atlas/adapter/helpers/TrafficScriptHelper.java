@@ -264,10 +264,10 @@ public class TrafficScriptHelper {
     }
 
     private static void deleteFile(File file) {
-        boolean deleted = true;
-        while (deleted) {
+        boolean deleted = false;
+        while (!deleted) {
             try {
-                if (file.delete()) deleted = false;
+                if (file.delete()) deleted = true;
             } catch (Exception ex) {
             }
         }
