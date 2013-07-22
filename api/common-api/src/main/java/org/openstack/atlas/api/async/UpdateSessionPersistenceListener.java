@@ -38,20 +38,18 @@ public class UpdateSessionPersistenceListener extends BaseListener {
             return;
         }
 
-        if (dbLoadBalancer.getSessionPersistence() != SessionPersistence.NONE) {
-            try {
-                LOG.debug(String.format("Updating session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queueLb);
-                LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            } catch (Exception e) {
-                loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-                String alertDescription = String.format("Error updating session persistence in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());
-                LOG.error(alertDescription, e);
-                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-                sendErrorToEventResource(queueLb);
+        try {
+            LOG.debug(String.format("Updating session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+            reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queueLb);
+            LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+        } catch (Exception e) {
+            loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+            String alertDescription = String.format("Error updating session persistence in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());
+            LOG.error(alertDescription, e);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+            sendErrorToEventResource(queueLb);
 
-                return;
-            }
+            return;
         }
 
         // Update load balancer status in DB
