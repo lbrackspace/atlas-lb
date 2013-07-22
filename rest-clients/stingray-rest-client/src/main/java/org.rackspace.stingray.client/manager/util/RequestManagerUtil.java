@@ -19,14 +19,13 @@ public class RequestManagerUtil {
      * @param response Holds all the details from the response of the Stingray REST api
      * @return Boolean result for the validity check
      */
-    public  boolean isResponseValid(ClientResponse response) {
+    public boolean isResponseValid(ClientResponse response) {
         return (response != null && (response.getStatus() == ClientConstants.ACCEPTED
                 || response.getStatus() == ClientConstants.NON_AUTHORATIVE
                 || response.getStatus() == ClientConstants.OK
                 || response.getStatus() == ClientConstants.NO_CONTENT
                 || response.getStatus() == ClientConstants.CREATED));
     }
-
 
 
     public <T> T stringToObject(String str, Class<T> clazz) throws IOException {
@@ -43,21 +42,24 @@ public class RequestManagerUtil {
      * @param response Holds all the details from the response of the Stingray REST api
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      * @throws org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException
+     *
      */
     public void buildFaultMessage(ClientResponse response)
             throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
 
-        String objectNotFound = "Invalid resource URI";
         String objectNotFoundMessage = "The resource does not exist.";
+        String objectNotFound = "Invalid resource URI";
+        String notFound = "not found";
+
         String error;
 
         logger.info("ResponseWrapper, response status code is: " + response.getStatus());
 
-            //TODO: ClientException seems to break for certain errors: ex: Exception entity: {"error_id":"resource.not_found","error_text":"Invalid resource URI"}
+        //TODO: ClientException seems to break for certain errors: ex: Exception entity: {"error_id":"resource.not_found","error_text":"Invalid resource URI"}
         //TODO: errors like these break response.GetEntity(ClientException.class) :::
         //TODO: {"properties":{"basic":{"disabled":["127.0.0.2:80"],"draining":[],"monitors":[],"nodes":["127.0.0.1:80"],"passive_monitoring":false},"connection":{},"load_balancing":{"algorithm":"weighted_least_connections","node_weighting":[{"node":"127.0.0.1:80"},{"node":"127.0.0.2:80"}],"priority_enabled":false,"priority_values":["127.0.0.1:80:2"]}}}
         try {
-             error = response.getEntity(String.class);
+            error = response.getEntity(String.class);
             logger.debug(String.format("Client Request failed: %s", error.toString()));
         } catch (Exception ex) {
             //TODO: Temp fix
@@ -68,10 +70,10 @@ public class RequestManagerUtil {
         }
 
 
-        if (error.contains(objectNotFound)) {
+        if (error.contains(objectNotFound) || error.contains(objectNotFoundMessage) || error.contains(notFound)) {
             throw new StingrayRestClientObjectNotFoundException(objectNotFoundMessage);
         } else {
-            throw new StingrayRestClientException(String.format("Caused By: %s: Reason: %s: Additional: %s",
+            throw new StingrayRestClientException(String.format("Error processing request: Caused By: %s: ",
                     error));
         }
         //TODO: other messages?
