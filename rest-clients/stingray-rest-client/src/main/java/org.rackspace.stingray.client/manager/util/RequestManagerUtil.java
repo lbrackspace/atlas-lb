@@ -60,13 +60,11 @@ public class RequestManagerUtil {
         //TODO: {"properties":{"basic":{"disabled":["127.0.0.2:80"],"draining":[],"monitors":[],"nodes":["127.0.0.1:80"],"passive_monitoring":false},"connection":{},"load_balancing":{"algorithm":"weighted_least_connections","node_weighting":[{"node":"127.0.0.1:80"},{"node":"127.0.0.2:80"}],"priority_enabled":false,"priority_values":["127.0.0.1:80:2"]}}}
         try {
             error = response.getEntity(String.class);
-            logger.debug(String.format("Client Request failed: %s", error.toString()));
+            logger.debug(String.format("Client Request failed: %s", error));
         } catch (Exception ex) {
             //TODO: Temp fix
             logger.debug(String.format("Client Request failed: %s", ex));
-//            logger.debug(String.format("Error to process.. %s", response.getEntity(String.class)));
-
-            throw new StingrayRestClientException("Gathering error response entity failed, often means no response, body. Need to fix this bug...");
+            throw new StingrayRestClientException(String.format("Gathering error response entity failed: %s", ex));
         }
 
 
