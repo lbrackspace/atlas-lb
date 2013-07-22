@@ -47,7 +47,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>org.rackspace.capman.tools.ca.gui.CaFrame</mainClass>
+                                <mainClass>org.openstack.atlas.ca.gui.CaFrame</mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>
