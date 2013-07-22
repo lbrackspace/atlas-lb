@@ -35,6 +35,7 @@
 
     <modules>
         <module>common</module>
+<!--
         <module>data-model</module>
         <module>rest-clients</module>
         <module>persistence</module>
@@ -43,6 +44,7 @@
         <module>logs</module>
         <module>jobs</module>
         <module>migration</module>
+!-->
     </modules>
 
     <build>

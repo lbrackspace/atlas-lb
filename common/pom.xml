@@ -17,9 +17,9 @@
         <module>b64aes</module>
         <module>configuration</module>
         <module>util</module>
-        <!-- <module>debug</module> -->
         <module>cidr</module>
         <module>ca</module>
+        <module>capman-ca</module>
         <module>crypto-tool</module>
     </modules>
 
