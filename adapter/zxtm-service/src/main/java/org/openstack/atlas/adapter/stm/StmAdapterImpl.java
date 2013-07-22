@@ -411,8 +411,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     client.updatePool(poolName, curPool);
                 } catch (Exception ex2) {
                     String em2 = String.format("Error updating node pool while attempting to previous configuration" +
-                            ": %s RollBack aborted \n Exception: %s Trace: %s"
-                            , poolName, ex2.getCause().getMessage(), Arrays.toString(ex2.getCause().getStackTrace()));
+                            ": %s RollBack aborted \n Exception: %s "
+                            , poolName, ex2);
                     LOG.error(em2);
                 }
             } else {
@@ -509,8 +509,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.error(String.format("Object not found when removing virtual ip: %s for virtual server %s, continue...", tname, vsName));
         } catch (Exception ex) {
-            String em = String.format("Error removing virtual ips for vs: %s ... \n Exception: %s Trace: %s",
-                    vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
+            String em = String.format("Error removing virtual ips for vs: %s ... \n Exception: %s",
+                    vsName, ex);
             LOG.error(em);
             if (!curTigMap.isEmpty()) {
                 LOG.debug(String.format("Attempting to roll back to previous virtual ips: %s for virtual server %s", vipsToRemove, vsName));
@@ -549,8 +549,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                         client.updateTrafficIp(vsName, curTig);
                     } catch (Exception ex2) {
                         String em2 = String.format("Error updating virtual ips while attempting to set previous configuration" +
-                                ": %s RollBack aborted \n Exception: %s Trace: %s"
-                                , vsName, ex2.getCause().getMessage(), Arrays.toString(ex2.getCause().getStackTrace()));
+                                ": %s RollBack aborted \n Exception: %s"
+                                , vsName, ex2);
                         LOG.error(em2);
                     }
                 } else {
@@ -632,8 +632,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     client.updateMonitor(monitorName, curMon);
                 } catch (Exception ex2) {
                     String em2 = String.format("Error updating monitor while attempting to set previous configuration" +
-                            ": %s RollBack aborted \n Exception: %s Trace: %s"
-                            , monitorName, ex2.getCause().getMessage(), Arrays.toString(ex2.getCause().getStackTrace()));
+                            ": %s RollBack aborted \n Exception: %s"
+                            , monitorName, ex2);
                     LOG.error(em2);
                 }
             } else {
@@ -744,8 +744,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     client.updateProtection(protectionName, curProtection);
                 } catch (Exception ex2) {
                     String em2 = String.format("Error updating protection while attempting to set previous configuration" +
-                            ": %s RollBack aborted \n Exception: %s Trace: %s"
-                            , protectionName, ex2.getCause().getMessage(), Arrays.toString(ex2.getCause().getStackTrace()));
+                            ": %s RollBack aborted \n Exception: %s"
+                            , protectionName, ex2);
                     LOG.error(em2);
                 }
             } else {
