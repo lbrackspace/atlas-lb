@@ -108,6 +108,10 @@ public class ResourceTranslator {
             log.setEnabled(loadBalancer.isConnectionLogging());
             log.setFilename(config.getLogFileLocation());
             properties.setLog(log);
+        } else if (loadBalancer.isConnectionLogging() != null && !loadBalancer.isConnectionLogging()) {
+            log = new VirtualServerLog();
+            log.setEnabled(false);
+            properties.setLog(log);
         }
 
         //webcache settings

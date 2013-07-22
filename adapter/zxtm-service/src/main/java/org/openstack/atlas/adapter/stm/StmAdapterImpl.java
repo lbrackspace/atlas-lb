@@ -125,11 +125,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 }
 
                 updateVirtualServer(config, client, vsName, translator.getcVServer());
-                if (loadBalancer.hasSsl()) {
-                    vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-                    translator.translateVirtualServerResource(config, vsName, loadBalancer);
-                    updateVirtualServer(config, client, vsName, translator.getcVServer());
-                }
+//                if (loadBalancer.hasSsl()) {
+//                    vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+//                    translator.translateVirtualServerResource(config, vsName, loadBalancer);
+//                    updateVirtualServer(config, client, vsName, translator.getcVServer());
+//                }
 
             } catch (Exception ex) {
                 LOG.error("Exception creating load balancer: " + ex);
@@ -681,7 +681,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             ResourceTranslator translator = new ResourceTranslator();
             StingrayRestClient client = loadSTMRestClient(config);
             String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
-            LOG.info(String.format("Updating connection throttling on %s...", protectionName));
+            LOG.info(String.format("Updating protection on %s...", protectionName));
             updateProtection(config, client, protectionName, translator.translateProtectionResource(protectionName, loadBalancer));
             LOG.info(String.format("Successfully created protection ", protectionName));
         }
@@ -726,7 +726,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         try {
             curProtection = client.getProtection(protectionName);
         } catch (Exception e) {
-            LOG.warn(String.format("Could not load protection class: %s, attempting to recreating...", protectionName));
+            LOG.warn(String.format("Could not load protection class: %s, attempting to recreate...", protectionName));
         }
 
         try {
@@ -792,7 +792,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             LOG.info(String.format("Updating Access List on '%s'...", name));
             updateProtection(config, loadBalancer);
             LOG.info(String.format("Successfully updated Access List on '%s'...", name));
-
         }
     }
 
@@ -901,6 +900,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
 
         try {
+            translator.translateLoadBalancerResource(config, vsName, loadBalancer);
             translator.translateLoadBalancerResource(config, sslVsName, loadBalancer);
 
             if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())

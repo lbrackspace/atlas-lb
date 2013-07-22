@@ -121,7 +121,6 @@ public class SslTerminationITest extends STMTestBase {
         }
     }
 
-
     @Test
     public void testSSlTerminationOperations() {
         setSslTermination();
@@ -129,13 +128,11 @@ public class SslTerminationITest extends STMTestBase {
         deleteSslTermination();
     }
 
-
     @Test
     public void testSSlTerminationOperationsWhenUpdatingLBAttributes() throws Exception {
         setSslTermination();
         updateLoadBalancerAttributes();
     }
-
 
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testWhenAddingRateLimitWithSslTermination() throws Exception {
@@ -145,7 +142,7 @@ public class SslTerminationITest extends STMTestBase {
         setRateLimit();
     }
 
-
+    //TODO: Test needs to make sure access list is created before the test is run
     @Test
     public void testWhenAddingAccessListWith() throws Exception {
         verifyAccessListWithoutSsl();
@@ -154,19 +151,17 @@ public class SslTerminationITest extends STMTestBase {
         verifyAccessListWithSsl();
     }
 
-
+    //TODO: Null Pointer Exception on User Pages on LB.  Need to make it a value
     @Test
     public void testErrorPageWhenCreatingSslTermination() throws Exception {
         verifyDeleteErrorPage();
         verifyErrorPage();
     }
 
-
     @Test
     public void testConnectionThrottleWhenCreatingSslTermination() throws Exception {
         verifyConnectionThrottle();
     }
-
 
     @Test
     public void shouldPassIfCertificateIsRemovedWithSecureVSStillThere() throws Exception {
@@ -175,12 +170,10 @@ public class SslTerminationITest extends STMTestBase {
         deleteCertificate();
     }
 
-
     @Test
     public void verifyHostHeaderRewriteIsNever() {
         verifyHostHeaderRewrite();
     }
-
 
     private void setSslTermination(boolean isSslTermEnabled, boolean allowSecureTrafficOnly) {
         try {
@@ -224,7 +217,11 @@ public class SslTerminationITest extends STMTestBase {
             VirtualServerBasic normalBasic = createdNormalVs.getProperties().getBasic();
             Assert.assertEquals(StmTestConstants.LB_PORT, (int) normalBasic.getPort());
             Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(normalBasic.getProtocol().toString()));
-            Assert.assertEquals(isVsEnabled, normalBasic.getEnabled());
+            if (allowSecureTrafficOnly) {
+                Assert.assertEquals(!isVsEnabled, normalBasic.getEnabled());
+            } else {
+                Assert.assertEquals(isVsEnabled, normalBasic.getEnabled());
+            }
             Assert.assertEquals(normalName, normalBasic.getPool().toString());
         } catch (Exception e) {
             e.printStackTrace();
@@ -240,7 +237,7 @@ public class SslTerminationITest extends STMTestBase {
     }
 
     private void updateSslTermination() {
-        boolean isSslTermEnabled = false;
+        boolean isSslTermEnabled = true;
         boolean allowSecureTrafficOnly = true;
         setSslTermination(isSslTermEnabled, allowSecureTrafficOnly);
     }
@@ -268,8 +265,8 @@ public class SslTerminationITest extends STMTestBase {
 
         try {
             //Should us updateSslTermination
-            int securePort = 8080;
-            int normalPort = 443;
+            int securePort = StmTestConstants.LB_SECURE_PORT;
+            int normalPort = StmTestConstants.LB_PORT;
             boolean isConnectionLogging = true;
             String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
             String normalVsName = ZxtmNameBuilder.genVSName(lb);
@@ -287,7 +284,10 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertEquals(isConnectionLogging, createdNormalVs.getProperties().getLog().getEnabled());
 
             isConnectionLogging = false;
-
+            lb.setConnectionLogging(isConnectionLogging);
+            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+            createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            createdNormalVs = stmClient.getVirtualServer(normalVsName);
             Assert.assertEquals(isConnectionLogging, createdSecureVs.getProperties().getLog().getEnabled());
             Assert.assertEquals(isConnectionLogging, createdNormalVs.getProperties().getLog().getEnabled());
         } catch (Exception e) {

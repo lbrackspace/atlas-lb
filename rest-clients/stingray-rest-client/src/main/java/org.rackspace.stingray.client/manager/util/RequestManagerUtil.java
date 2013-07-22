@@ -71,8 +71,7 @@ public class RequestManagerUtil {
         if (error.contains(objectNotFound)) {
             throw new StingrayRestClientObjectNotFoundException(objectNotFoundMessage);
         } else {
-            throw new StingrayRestClientException(String.format("Caused By: %s: Reason: %s: Additional: %s",
-                    error));
+            throw new StingrayRestClientException(String.format("Caused By: %s", error));
         }
         //TODO: other messages?
     }
