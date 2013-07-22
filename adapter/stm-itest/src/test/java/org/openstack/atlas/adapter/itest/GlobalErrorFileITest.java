@@ -48,6 +48,7 @@ public class GlobalErrorFileITest extends STMTestBase {
         setCustomErrorFile();
     }
 
+    //TODO: Because the client (STM) will throw an ONFE when the item does not exist, thus verifying the removal of the item.
     //TODO I don't know why we expect an error here.
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testSimpleDeleteErrorFileOperations() throws Exception {
@@ -97,7 +98,7 @@ public class GlobalErrorFileITest extends STMTestBase {
         try {
             errorFile = stmClient.getExtraFile(errorFileName);
         } catch (StingrayRestClientObjectNotFoundException e) {
-            //yup
+            throw e;
         }
         Assert.assertNull(errorFile);
     }
