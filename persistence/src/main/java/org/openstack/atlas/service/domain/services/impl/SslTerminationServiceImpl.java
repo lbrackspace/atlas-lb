@@ -15,8 +15,8 @@ import org.openstack.atlas.service.domain.services.SslTerminationService;
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.StringUtilities;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
-import org.openstack.atlas.util.ca.zeus.ZeusUtil;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +28,13 @@ import java.util.TreeMap;
 
 @Service
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
+    protected static final ZeusUtils zeusUtils;
     protected final Log LOG = LogFactory.getLog(SslTerminationServiceImpl.class);
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+
+    static{
+        zeusUtils = new ZeusUtils();
+    }
 
     @Required
     public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
@@ -40,7 +45,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     @Transactional
     public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
         ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
-        ZeusCertFile zeusCertFile = null;
+        ZeusCrtFile zeusCrtFile = null;
 
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbId, accountId);
 
@@ -80,8 +85,8 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             if (!SslTerminationHelper.modificationStatus(sslTermination, dbLoadBalancer)) {
                 //Validate the certifications and key return the list of errors if there are any, otherwise, pass the transport object to async layer...
                 SslTerminationHelper.cleanSSLCertKeyEntries(dbTermination);
-                zeusCertFile = ZeusUtil.getCertFile(dbTermination.getPrivatekey(), dbTermination.getCertificate(), dbTermination.getIntermediateCertificate());
-                SslTerminationHelper.verifyCertificationCredentials(zeusCertFile);
+                zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(dbTermination.getPrivatekey(), dbTermination.getCertificate(), dbTermination.getIntermediateCertificate());
+                SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
             }
         } else {
           //*Should never happen...
@@ -104,8 +109,8 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         LOG.info(String.format("Succesfully saved ssl termination to the data base for loadbalancer: '%s'", lbId));
 
         zeusSslTermination.setSslTermination(dbTermination);
-        if (zeusCertFile != null) {
-            zeusSslTermination.setCertIntermediateCert(zeusCertFile.getPublic_cert());
+        if (zeusCrtFile != null) {
+            zeusSslTermination.setCertIntermediateCert(zeusCrtFile.getPublic_cert());
         }
 
         return zeusSslTermination;

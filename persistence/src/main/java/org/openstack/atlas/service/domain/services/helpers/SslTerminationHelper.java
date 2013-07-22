@@ -6,7 +6,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.util.StringUtilities;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 
 import java.util.List;
 import java.util.Map;
@@ -67,9 +67,9 @@ public final class SslTerminationHelper {
         return true;
     }
 
-    public static void verifyCertificationCredentials(ZeusCertFile zeusCertFile) throws BadRequestException {
-        if (zeusCertFile.getErrorList().size() > 0) {
-            String errors = StringUtilities.buildDelemtedListFromStringArray(zeusCertFile.getErrorList().toArray(new String[zeusCertFile.getErrorList().size()]), ",");
+    public static void verifyCertificationCredentials(ZeusCrtFile zeusCrtFile) throws BadRequestException {
+        if (zeusCrtFile.getErrorList().size() > 0) {
+            String errors = StringUtilities.buildDelemtedListFromStringArray(zeusCrtFile.getErrorList().toArray(new String[zeusCrtFile.getErrorList().size()]), ",");
             LOG.error(String.format("There was an error(s) while updating ssl termination: '%s'", errors));
             throw new BadRequestException(errors);
         }

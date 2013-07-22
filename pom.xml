@@ -37,8 +37,8 @@
         <module>common</module>
         <module>data-model</module>
         <module>rest-clients</module>
-<!--
         <module>persistence</module>
+<!--
         <module>adapter</module>
         <module>api</module>
         <module>logs</module>

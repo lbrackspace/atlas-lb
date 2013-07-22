@@ -87,4 +87,12 @@ public class ZeusCrtFile {
         }
         return sb.toString();
     }
+
+    public List<String> getErrorList(){
+        List<String> errorList = new ArrayList<String>();
+        for(ErrorEntry errorEntry : getErrors()){
+            errorList.add(errorEntry.getErrorDetail());
+        }
+        return errorList;
+    }
 }
