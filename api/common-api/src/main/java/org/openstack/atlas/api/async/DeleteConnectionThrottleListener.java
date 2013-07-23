@@ -59,7 +59,7 @@ public class DeleteConnectionThrottleListener extends BaseListener {
         String atomSummary = "Connection throttle successfully deleted";
         try {
             //TODO: fix the event...
-        notificationService.saveConnectionLimitEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getConnectionLimit().getId(), atomTitle, atomSummary, DELETE_CONNECTION_THROTTLE, DELETE, INFO);
+            notificationService.saveConnectionLimitEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), dbLoadBalancer.getConnectionLimit().getId(), atomTitle, atomSummary, DELETE_CONNECTION_THROTTLE, DELETE, INFO);
         } catch (PersistenceException pe) {
             LOG.error("Error saving the connection throttle event for load balancer: " + queueLb.getId() + "for account: " + queueLb.getAccountId());
         }
