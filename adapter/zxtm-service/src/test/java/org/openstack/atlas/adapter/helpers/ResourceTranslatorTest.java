@@ -199,13 +199,13 @@ public class ResourceTranslatorTest extends STMTestBase {
             VirtualServerProperties createdProperties = createdServer.getProperties();
             VirtualServerBasic createdBasic = createdServer.getProperties().getBasic();
             VirtualServerLog log = createdProperties.getLog();
+            Assert.assertNotNull(createdServer.getProperties().getLog());
             Assert.assertEquals(logFormat, log.getFormat());
 //            Assert.assertEquals(expectedError, createdProperties.getConnection_errors());
             Assert.assertEquals(vsName, createdBasic.getProtection_class());
             pathOne();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             Assert.assertNull(createdServer.getProperties().getBasic().getProtection_class());
-            Assert.assertNull(createdServer.getProperties().getLog());
             pathTwo();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             Assert.assertEquals(vsName, createdServer.getProperties().getBasic().getProtection_class());
