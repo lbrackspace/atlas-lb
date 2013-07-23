@@ -139,12 +139,26 @@ public class SslTerminationITest extends STMTestBase {
     }
 
     //TODO: Test needs to make sure access list is created before the test is run
-    @Test
-    public void testWhenAddingAccessListWithSslTermination() throws Exception {
+    @Test(expected=StingrayRestClientObjectNotFoundException.class)
+    public void testWhenAddingOnlyAccessListWithSslTermination() throws Exception {
         verifyAccessListWithoutSsl();
-        verifyDeleteAccessList();
+        verifyDeleteAccessListWithoutConnectionThrottling();
+    }
+
+    @Test
+    public void testWhenAddingAccessListAndConnectionThrottlingWithSslTermination() throws Exception {
+        lb.setConnectionLimit(new ConnectionLimit());
+        stmAdapter.updateConnectionThrottle(config, lb);
+        verifyAccessListWithoutSsl();
+        verifyDeleteAccessListWithConnectionThrottling();
         setSslTermination();
         verifyAccessListWithSsl();
+    }
+
+    private void verifyDeleteAccessListWithoutConnectionThrottling() throws Exception {
+        verifyAccessListWithSsl();
+        stmAdapter.deleteAccessList(config, lb);
+        stmClient.getProtection(normalName);
     }
 
     //TODO: Null Pointer Exception on User Pages on LB.  Need to make it a value
@@ -486,8 +500,7 @@ public class SslTerminationITest extends STMTestBase {
         }
     }
 
-
-    private void verifyDeleteAccessList() {
+    private void verifyDeleteAccessListWithConnectionThrottling() {
         try {
             verifyAccessListWithSsl();
             stmAdapter.deleteAccessList(config, lb);

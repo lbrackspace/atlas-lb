@@ -661,46 +661,42 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void updateProtection(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws StmRollBackException, InsufficientRequestException {
-        if (loadBalancer.getConnectionLimit() != null || loadBalancer.getAccessLists() != null) {
-            ResourceTranslator translator = new ResourceTranslator();
-            StingrayRestClient client = loadSTMRestClient(config);
-            String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
-            LOG.info(String.format("Updating protection on %s...", protectionName));
-            updateProtection(config, client, protectionName, translator.translateProtectionResource(protectionName, loadBalancer));
-            LOG.info(String.format("Successfully created protection ", protectionName));
-        }
+        ResourceTranslator translator = new ResourceTranslator();
+        StingrayRestClient client = loadSTMRestClient(config);
+        String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
+        LOG.info(String.format("Updating protection on %s...", protectionName));
+        updateProtection(config, client, protectionName, translator.translateProtectionResource(protectionName, loadBalancer));
+        LOG.info(String.format("Successfully created protection ", protectionName));
     }
 
     @Override
     public void deleteProtection(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
-        if (loadBalancer.getConnectionLimit() != null || loadBalancer.getAccessLists() != null) {
-            StingrayRestClient client = loadSTMRestClient(config);
-            String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
-            Protection curProtection = null;
-            try {
-                curProtection = client.getProtection(protectionName);
-            } catch (Exception e) {
-                LOG.warn(String.format("Could not load protection class: %s.  This is intended by the request.", protectionName));
-            }
-            try {
-                client.deleteProtection(protectionName);
-            } catch (StingrayRestClientException e) {
-                String em = String.format("Error deleting protection: %s Attempting to RollBack... \n Exception: %s "
-                        , protectionName, e);
-                if (curProtection != null) {
-                    LOG.error(String.format("Unexpected client error when deleting protection %s: attempting to roll-back...", protectionName));
-                    client.updateProtection(protectionName, curProtection);
-                    LOG.error(String.format("Successfully rolled back to previous configuration."));
-                } else {
-                    LOG.error(String.format("Protection %s not rolled back for lack of previous configuration.", protectionName));
-                }
-                throw new StmRollBackException(em, e);
-            } catch (StingrayRestClientObjectNotFoundException onf) {
-                LOG.error(String.format("No protection with name %s was found...", protectionName));
-            }
-
-            LOG.info(String.format("Successfully deleted protection %s!", protectionName));
+        StingrayRestClient client = loadSTMRestClient(config);
+        String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
+        Protection curProtection = null;
+        try {
+            curProtection = client.getProtection(protectionName);
+        } catch (Exception e) {
+            LOG.warn(String.format("Could not load protection class: %s.  This is intended by the request.", protectionName));
         }
+        try {
+            client.deleteProtection(protectionName);
+        } catch (StingrayRestClientException e) {
+            String em = String.format("Error deleting protection: %s Attempting to RollBack... \n Exception: %s "
+                    , protectionName, e);
+            if (curProtection != null) {
+                LOG.error(String.format("Unexpected client error when deleting protection %s: attempting to roll-back...", protectionName));
+                client.updateProtection(protectionName, curProtection);
+                LOG.error(String.format("Successfully rolled back to previous configuration."));
+            } else {
+                LOG.error(String.format("Protection %s not rolled back for lack of previous configuration.", protectionName));
+            }
+            throw new StmRollBackException(em, e);
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            LOG.error(String.format("No protection with name %s was found...", protectionName));
+        }
+
+        LOG.info(String.format("Successfully deleted protection %s!", protectionName));
     }
 
     public void updateProtection(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String protectionName, Protection protection) throws InsufficientRequestException, StmRollBackException {
@@ -714,7 +710,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
 
         try {
-
             LOG.debug(String.format("Updating protection for %s...", protectionName));
             client.updateProtection(protectionName, protection);
         } catch (Exception ex) {
@@ -780,9 +775,39 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
-        loadBalancer.setAccessLists(new HashSet<AccessList>());
-        updateProtection(config, loadBalancer);
+    public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException, RemoteException {
+        loadBalancer.setAccessLists(null);
+        String name = ZxtmNameBuilder.genVSName(loadBalancer);
+        LOG.info(String.format("Deleting Access List on '%s'...", name));
+        if (loadBalancer.getConnectionLimit() != null) {
+            updateProtection(config, loadBalancer);
+        } else {
+            deleteProtection(config, loadBalancer);
+        }
+        LOG.info(String.format("Successfully deleted Access List on '%s'.", name));
+    }
+
+    @Override
+    public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        if (loadBalancer.getConnectionLimit() != null) {
+            String name = ZxtmNameBuilder.genVSName(loadBalancer);
+            LOG.info(String.format("Updating Connection Throttling on '%s'...", name));
+            updateProtection(config, loadBalancer);
+            LOG.info(String.format("Successfully updated Connection Throttling on '%s'.", name));
+        }
+    }
+
+    @Override
+    public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException{
+        loadBalancer.setConnectionLimit(null);
+        String name = ZxtmNameBuilder.genVSName(loadBalancer);
+        LOG.info(String.format("Deleting Connection Throttling on '%s'...", name));
+        if (loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) {
+            updateProtection(config, loadBalancer);
+        } else {
+            deleteProtection(config, loadBalancer);
+        }
+        LOG.info(String.format("Successfully deleted Connection Throttling on '%s'.", name));
     }
 
     /*

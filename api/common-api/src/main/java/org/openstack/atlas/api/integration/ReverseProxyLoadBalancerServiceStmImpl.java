@@ -219,7 +219,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     public void deleteConnectionThrottle(LoadBalancer loadBalancer) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.deleteProtection(config, loadBalancer);
+            reverseProxyLoadBalancerStmAdapter.deleteConnectionThrottle(config, loadBalancer);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
