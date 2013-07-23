@@ -18,6 +18,11 @@ import traceback
 pyrax.set_setting("identity_type", "rackspace")
 pyrax.set_http_debug(True)
 
+def keygetter(key):
+    def wrapper(entry):
+        return entry[key]
+    return wrapper
+
 def getUser(acctId):
     username = config.get('general', 'b_user')
     password = config.get('general', 'b_pass')
@@ -45,13 +50,14 @@ def processUsersSplat(**kw):
     splats = cfupload.getCfFiles(**kw)[1]
 
     splat_count = 0
-    for k in splats.keys():
+    for k in sorted(splats.keys()):
         for splat in splats[k]:
             print "%i: %s" % (k, splat)
             splat_count += 1
     print 'Spalts count:', splat_count
     if verify(splats):
-        for aid in splats:
+        for aid in sorted(splats.keys()):
+            print "fetching auth data for aid %s"%aid
             userenabled = True
             user = getUser(aid)
             if user is not None:
@@ -72,7 +78,7 @@ def processUsersSplat(**kw):
                       continue
                   return
 
-               for d in splats[aid]:
+               for d in sorted(splats[aid],key=keygetter("date")):
                    fp = d['file_path']
                    lid = d['lid']
                    lname = d['lname']
