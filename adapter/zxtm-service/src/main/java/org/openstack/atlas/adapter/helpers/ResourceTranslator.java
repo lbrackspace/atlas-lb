@@ -330,9 +330,9 @@ public class ResourceTranslator {
         basic.setFailures(hm.getAttemptsBeforeDeactivation());
 
         if (hm.getType().equals(HealthMonitorType.CONNECT)) {
-            basic.setType(EnumFactory.Accept_from.CONNECT.name());
+            basic.setType(EnumFactory.Accept_from.CONNECT.toString());
         } else if (hm.getType().equals(HealthMonitorType.HTTP) || hm.getType().equals(HealthMonitorType.HTTPS)) {
-            basic.setType(EnumFactory.Accept_from.HTTP.name());
+            basic.setType(EnumFactory.Accept_from.HTTP.toString());
             http = new MonitorHttp();
             http.setPath(hm.getPath());
             http.setStatus_regex(hm.getStatusRegex());
