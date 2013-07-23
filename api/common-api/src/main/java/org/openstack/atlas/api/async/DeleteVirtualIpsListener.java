@@ -61,6 +61,7 @@ public class DeleteVirtualIpsListener extends BaseListener {
             virtualIpService.removeVipsFromLoadBalancer(dbLoadBalancer, vipIdsToDelete);
             LOG.debug(String.format("Successfully removed virtual ips from load balancer '%d' in database.", dbLoadBalancer.getId()));
         } catch (Exception e) {
+        //TODO: it is impossible to hit this catch block, as virtualIpService.removeVipsFromLoadBalancer() doesn't throw any exceptions
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error deleting virtual ips in database for loadbalancer '%d'.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
