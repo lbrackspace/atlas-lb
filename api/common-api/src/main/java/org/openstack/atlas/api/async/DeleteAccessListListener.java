@@ -74,7 +74,7 @@ public class DeleteAccessListListener extends BaseListener {
         for (AccessList accessList : accessLists) {
             String desc = createAtomErrorSummary(accessList).toString();
             itemId = accessList == null ? lb.getId() : accessList.getId(); // TODO: Find a better way of dealing with null id
-            notificationService.saveAccessListEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), itemId, title, desc, DELETE_ACCESS_LIST, UPDATE, CRITICAL);
+            notificationService.saveAccessListEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), itemId, title, desc, DELETE_ACCESS_LIST, DELETE, CRITICAL);
         }
     }
 
