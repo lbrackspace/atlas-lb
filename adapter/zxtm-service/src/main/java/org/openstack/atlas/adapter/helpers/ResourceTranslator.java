@@ -297,7 +297,7 @@ public class ResourceTranslator {
         if (loadBalancer.getHealthMonitor() != null)
             basic.setMonitors(new HashSet<String>(Arrays.asList(vsName)));
 
-        if (loadBalancer.getSessionPersistence() != null && !loadBalancer.getSessionPersistence().name().equals(SessionPersistence.NONE)) {
+        if ((loadBalancer.getSessionPersistence() != null) && !(loadBalancer.getSessionPersistence().name().equals(SessionPersistence.NONE.name()))) {
             basic.setPersistence_class(loadBalancer.getSessionPersistence().name());
         } else {
             basic.setPersistence_class(null);
