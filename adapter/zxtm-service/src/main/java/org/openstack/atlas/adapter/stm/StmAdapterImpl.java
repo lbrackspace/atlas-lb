@@ -27,10 +27,8 @@ import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.tm.TrafficManager;
 import org.rackspace.stingray.client.tm.TrafficManagerTrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
-import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
-import org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError;
-import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
+import org.rackspace.stingray.client.util.EnumFactory;
+import org.rackspace.stingray.client.virtualserver.*;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -855,7 +853,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         translator.translateVirtualServerResource(config, sslVsName, loadBalancer);
         translator.translateKeypairResource(config, loadBalancer);
         VirtualServer createdServer = translator.getcVServer();
-
+        VirtualServerHttp http = new VirtualServerHttp();
+        http.setLocation_rewrite(EnumFactory.Accept_from.NEVER.toString());
+        createdServer.getProperties().setHttp(http);
         if (loadBalancer.isSecureOnly()) {
             VirtualServer virtualServer = null;
             try {

@@ -1,18 +1,13 @@
 package org.openstack.atlas.adapter.itest;
 
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import org.openstack.atlas.service.domain.entities.AccessList;
-import org.openstack.atlas.service.domain.entities.ConnectionLimit;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.RateLimit;
-import org.openstack.atlas.service.domain.entities.SslTermination;
-import org.openstack.atlas.service.domain.entities.Ticket;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
@@ -105,8 +100,8 @@ public class SslTerminationITest extends STMTestBase {
         secureName = ZxtmNameBuilder.genSslVSName(lb);
     }
 
-    @AfterClass
-    public static void tearDownClass() {
+    @After
+    public void tearDownClass() {
         removeSimpleLoadBalancer();
     }
 
@@ -304,7 +299,6 @@ public class SslTerminationITest extends STMTestBase {
             boolean isSslTermEnabled = true;
             setSslTermination(isSslTermEnabled, allowSecureTrafficOnly);
             VirtualServer createdVs = null;
-
             createdVs = stmClient.getVirtualServer(ZxtmNameBuilder.genSslVSName(lb));
 
 
