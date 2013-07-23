@@ -53,6 +53,11 @@ def getUser(acctId):
        print 'Error gather 1.1 auth user: STATUS CODE: %s REASON %s ::  ' % (r.status_code, userjson)
        return
 
+def mergvals(dictin):
+    out = []
+    for (k,v) in dictin.iteritems():
+        out.extend(v)
+    return out
 
 def processUsersSplat(**kw):
     print "Args: ", kw
@@ -60,10 +65,9 @@ def processUsersSplat(**kw):
     splats = cfupload.getCfFiles(**kw)[1]
 
     splat_count = 0
-    for k in sorted(splats.keys()):
-        for splat in splats[k]:
-            print "%i: %s" % (k, splat)
-            splat_count += 1
+    for r in sortdictlist(mergvals(splats),["date","aid","lid"]):
+        print r
+        splat_count += 1
     print 'Spalts count:', splat_count
     if verify(splats):
         for aid in sorted(splats.keys()):
