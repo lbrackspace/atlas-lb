@@ -413,7 +413,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation, restPort);
     }
 
-    public void setreverseProxyLoadBalancerStmAdapter(ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter) {
+    public void setReverseProxyLoadBalancerStmAdapter(ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter) {
         this.reverseProxyLoadBalancerStmAdapter = reverseProxyLoadBalancerStmAdapter;
     }
 
@@ -427,8 +427,9 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
             LOG.error(String.format("STM endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
             configuredHost.setSoapEndpointActive(Boolean.FALSE);
             hostService.update(configuredHost);
+        } else {
+            LOG.warn(String.format("STM endpoint %s on host[%d] throw an STM Fault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
         }
-        LOG.warn(String.format("STM endpoint %s on host[%d] throw an STM Fault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
     }
 
     private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, AxisFault af) throws AxisFault {

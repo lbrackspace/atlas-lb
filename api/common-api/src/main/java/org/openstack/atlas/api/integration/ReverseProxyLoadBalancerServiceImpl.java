@@ -689,12 +689,17 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, AxisFault af) throws AxisFault {
         Host configuredHost = config.getEndpointUrlHost();
-        if (IpHelper.isNetworkConnectionException(af)) {
-            LOG.error(String.format("SOAP endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
-            configuredHost.setSoapEndpointActive(Boolean.FALSE);
-            hostService.update(configuredHost);
+        //TODO: TMP for ONE/ONF exception handing, need to update debug to grab these messages from throwable..
+        if ((!af.getFaultString().contentEquals("Object not found")) || (!af.getFaultString().contentEquals("Object does not exist"))) {
+            if (IpHelper.isNetworkConnectionException(af)) {
+                LOG.error(String.format("SOAP endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
+                configuredHost.setSoapEndpointActive(Boolean.FALSE);
+                hostService.update(configuredHost);
+            } else {
+                LOG.warn(String.format("SOAP endpoint %s on host[%d] throw an AxisFault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
+            }
         }
-        LOG.warn(String.format("SOAP endpoint %s on host[%d] throw an AxisFault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
+        LOG.warn(String.format("SOAP endpoint Failure: %s for host[%d] Exception messages %s", configuredHost.getEndpoint(), configuredHost.getId(), af.getFaultString()));
     }
 
     @Override

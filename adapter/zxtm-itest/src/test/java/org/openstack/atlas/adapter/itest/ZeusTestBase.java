@@ -86,7 +86,7 @@ public class ZeusTestBase {
         soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
         Host trafficManagerHost = new Host();
         trafficManagerHost.setTrafficManagerName(TARGET_HOST);
-        config = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts);
+        config = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts, "9070");
         config.setLogFileLocation(DEFAULT_LOG_FILE_LOCATION);
     }
 

@@ -39,7 +39,7 @@ public class ZxtmAdapterStagingIntegrationTest {
         soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
         Host trafficManagerHost = new Host();
         trafficManagerHost.setTrafficManagerName(TARGET_HOST);
-        this.config = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts);
+        this.config = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts, "9070");
 
         // This is the default directory where the logs will go.
         this.config.setLogFileLocation("/opt/zeus/zxtm/log/access_log");

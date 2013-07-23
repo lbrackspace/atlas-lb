@@ -94,7 +94,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
 
         try {
             LOG.debug(String.format("Deleting load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
+            reverseProxyLoadBalancerStmService.deleteLoadBalancer(dbLoadBalancer);
             LOG.debug(String.format("Successfully deleted load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);

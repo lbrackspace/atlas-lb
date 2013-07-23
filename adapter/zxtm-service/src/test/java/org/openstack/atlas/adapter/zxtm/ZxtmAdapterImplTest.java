@@ -155,7 +155,7 @@ public class ZxtmAdapterImplTest {
             soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
             Host trafficManagerHost = new Host();
             trafficManagerHost.setTrafficManagerName(TARGET_HOST);
-            dummyConfig = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts);
+            dummyConfig = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts, "9070");
 
             adapterSpy = spy(new ZxtmAdapterImpl());
             serviceStubs = mock(ZxtmServiceStubs.class);
@@ -442,7 +442,7 @@ public class ZxtmAdapterImplTest {
             soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
             Host trafficManagerHost = new Host();
             trafficManagerHost.setTrafficManagerName(TARGET_HOST);
-            dummyConfig = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts);
+            dummyConfig = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts, "9070");
             RsaConst.init();
             adapterSpy = spy(new ZxtmAdapterImpl());
             serviceStubs = mock(ZxtmServiceStubs.class);

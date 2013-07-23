@@ -128,6 +128,7 @@
         <property name="contentCachingService" ref="contentCachingService"/>
         <property name="sessionPersistenceService" ref="sessionPersistenceService"/>
         <property name="reverseProxyLoadBalancerStmService" ref="reverseProxyLoadBalancerStmService"/>
+        <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
         <property name="accessListService" ref="accessListService"/>
         <property name="rateLimitingService" ref="rateLimitingService"/>
         <property name="hostService" ref="hostService"/>

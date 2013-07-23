@@ -38,7 +38,7 @@ public class LoadBalancerEndpointConfiguration {
             throw new RuntimeException("Invalid endpoint...", e);
         }
         try {
-            this.restEndpoint = new URI(String.format("%s:%s/api/tm/1.0/config/active/", soapEndpoint.getEndpoint().split(":")[0], restPort));
+            this.restEndpoint = new URI(String.format("%s:%s/api/tm/1.0/config/active/", soapEndpoint.getEndpoint().split("(:[0-9]+)")[0], restPort));
         } catch (URISyntaxException e) {
             e.printStackTrace();
             throw new RuntimeException("Invalid rest port and or base_uri...", e);
@@ -61,7 +61,7 @@ public class LoadBalancerEndpointConfiguration {
             throw new RuntimeException("Invalid endpoint...", e);
         }
         try {
-            this.restEndpoint = new URI(String.format("%s:%s/api/tm/1.0/config/active/", soapEndpoint.getEndpoint().split(":")[0], restPort));
+            this.restEndpoint = new URI(String.format("%s:%s/api/tm/1.0/config/active/", soapEndpoint.getEndpoint().split("(:[0-9]+)")[0], restPort));
         } catch (URISyntaxException e) {
             e.printStackTrace();
             throw new RuntimeException("Invalid rest port and or base_uri...", e);
