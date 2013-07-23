@@ -18,6 +18,16 @@ import traceback
 pyrax.set_setting("identity_type", "rackspace")
 pyrax.set_http_debug(True)
 
+def sortdictlist(dictlist,keys):
+    tmp_row = []
+    for r in dictlist:
+        tkey=[]
+        for k in keys:
+            tkey.append(r[k])
+        tmp_row.append((tuple(tkey),r))
+    tmp_row.sort()
+    return [r[1] for r in tmp_row]
+
 def keygetter(key):
     def wrapper(entry):
         return entry[key]
