@@ -57,7 +57,7 @@ public class Ipv6ITest extends STMTestBase {
     }
 
     protected static void setupIvars() {
-        Set<LoadBalancerJoinVip6> ipv6VipList = new HashSet<LoadBalancerJoinVip6>();
+        Set<LoadBalancerJoinVip6> ipv6VipSet = new HashSet<LoadBalancerJoinVip6>();
         vip1 = new VirtualIpv6();
         vip1.setId(TEST_IPV6_VIP_ID);
         vip1.setAccountId(TEST_ACCOUNT_ID);
@@ -65,7 +65,7 @@ public class Ipv6ITest extends STMTestBase {
         vip1.setVipOctets(1);
         LoadBalancerJoinVip6 loadBalancerJoinVip = new LoadBalancerJoinVip6();
         loadBalancerJoinVip.setVirtualIp(vip1);
-        ipv6VipList.add(loadBalancerJoinVip);
+        ipv6VipSet.add(loadBalancerJoinVip);
 
         Set<Node> nodeList = new HashSet<Node>();
         node1 = new Node();
@@ -87,7 +87,7 @@ public class Ipv6ITest extends STMTestBase {
         lb.setName("ipv6_integration_test_lb");
         lb.setProtocol(HTTP);
         lb.setNodes(nodeList);
-        lb.setLoadBalancerJoinVip6Set(ipv6VipList);
+        lb.setLoadBalancerJoinVip6Set(ipv6VipSet);
 
         Ipv6ITest.lb = lb;
     }
@@ -130,7 +130,9 @@ public class Ipv6ITest extends STMTestBase {
                 Assert.assertNotNull(vip);
                 Assert.assertEquals(1, vip.getProperties().getBasic().getIpaddresses().size());
                 Assert.assertEquals(true, vip.getProperties().getBasic().getEnabled());
-                Assert.assertEquals(new HashSet(Arrays.asList(lb.getLoadBalancerJoinVip6Set().iterator().next().getVirtualIp().getDerivedIpString())), vip.getProperties().getBasic().getIpaddresses());
+
+                Assert.assertEquals(new HashSet(Arrays.asList(lb.getLoadBalancerJoinVip6Set().iterator().
+                        next().getVirtualIp().getDerivedIpString())), vip.getProperties().getBasic().getIpaddresses());
                 Set<String> machines = new HashSet<String>();
                 machines.add(config.getTrafficManagerName());
                 machines.addAll(config.getFailoverTrafficManagerNames());
