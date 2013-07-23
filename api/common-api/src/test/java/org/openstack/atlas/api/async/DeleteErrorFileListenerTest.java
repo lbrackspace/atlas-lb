@@ -9,7 +9,6 @@ import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
-import org.openstack.atlas.service.domain.services.ConnectionThrottleService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.NotificationService;
@@ -37,8 +36,6 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-    @Mock
-    private ConnectionThrottleService connectionThrottleService;
 
     private DeleteErrorFileListener deleteErrorFileListener;
 
@@ -53,7 +50,6 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
         deleteErrorFileListener.setNotificationService(notificationService);
         deleteErrorFileListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteErrorFileListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
-        deleteErrorFileListener.setConnectionThrottleService(connectionThrottleService);
     }
 
     @Test
@@ -98,7 +94,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
     }
 
     @Test
-    public void testDeleteInvalidThrottle() throws Exception {
+    public void testDeleteInvalidErrorFile() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
