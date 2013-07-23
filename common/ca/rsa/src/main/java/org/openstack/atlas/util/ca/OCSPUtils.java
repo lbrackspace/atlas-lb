@@ -35,6 +35,7 @@ import org.bouncycastle.ocsp.OCSPResp;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
 import org.openstack.atlas.util.ca.primitives.OCSPResponseEvent;
 import org.openstack.atlas.util.ca.primitives.OCSPResponseContainer;
+import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ca.util.StaticHelpers;
 import org.openstack.atlas.util.ca.util.X509Inspector;
 import sun.security.provider.certpath.OCSP;
@@ -49,6 +50,7 @@ public class OCSPUtils {
     private static final int PAGESIZE = 4096;
 
     static {
+        RsaConst.init();
         SecureRandom srTmp;
         try {
             srTmp = SecureRandom.getInstance("SHA1PRNG", "SUN");
@@ -173,7 +175,7 @@ public class OCSPUtils {
     }
 
     public String getOCSPStatusMsg(OCSPResponseContainer rc) throws OCSPException {
-        StringBuilder sb = new StringBuilder(PAGESIZE * 4);
+        StringBuilder sb = new StringBuilder();
         OCSPResp rr = rc.getRawOCSPResponse();
         BasicOCSPResp br = (BasicOCSPResp) rr.getResponseObject();
 
@@ -182,7 +184,7 @@ public class OCSPUtils {
     }
 
     public static String getRevocationStatusMsg(RevocationStatus revStatus) {
-        StringBuilder sb = new StringBuilder(PAGESIZE * 4);
+        StringBuilder sb = new StringBuilder();
         sb.append("{");
         CertStatus certStatus = revStatus.getCertStatus();
         Reason reason = revStatus.getRevocationReason();

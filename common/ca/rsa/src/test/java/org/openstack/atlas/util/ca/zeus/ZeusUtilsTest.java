@@ -269,53 +269,56 @@ public class ZeusUtilsTest {
 
     @Test
     public void testLbaasValidation() throws PemException {
-        Set<X509CertificateObject> roots = loadX509Set((X509CertificateObject)PemUtils.fromPemString(workingRootCa));
+        Set<X509CertificateObject> roots = loadX509Set((X509CertificateObject) PemUtils.fromPemString(workingRootCa));
         Set<X509CertificateObject> blanks = loadX509Set();
-        boolean expectSuccess = true;
-        boolean expectErrors = false;
-        boolean failOnFatal = true;
-        boolean failOnAnyError = false;
-        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, workingUserChain, failOnFatal, expectSuccess);
-        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, workingUserChain, failOnAnyError, expectSuccess);
-        assertZCFLbaasErrors(blanks, workingUserKey, workingUserCrt, workingUserChain, failOnAnyError, expectErrors);
-        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, workingUserChain, failOnFatal, expectSuccess);
-        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, "", failOnFatal, expectErrors);
-        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, null, failOnFatal, expectErrors);
-        assertZCFLbaasErrors(roots, workingUserKey, "", "", failOnFatal, expectErrors);
-        assertZCFLbaasErrors(roots, workingUserKey, "", null, failOnFatal, expectErrors);
-        assertZCFLbaasErrors(roots, workingUserKey, null, null, failOnFatal, expectErrors);
-        assertZCFLbaasErrors(roots, "", "", "", failOnFatal, expectErrors);
-        assertZCFLbaasErrors(roots, "", null, null, failOnFatal, expectErrors);
-        assertZCFLbaasErrors(roots, null, null, null, failOnFatal, expectErrors);
-        assertZCFLbaasErrors(roots, "", "", workingUserChain, failOnFatal, expectErrors);
+        boolean expectNoErrors = false;
+        boolean expectErrors = true;
+        boolean expectFatalErrors = true;
+        boolean expectNoFatalErrors = false;
+        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, workingUserChain, expectNoFatalErrors, expectNoErrors);
+        assertZCFLbaasErrors(blanks, workingUserKey, workingUserCrt, workingUserChain, expectNoFatalErrors, expectErrors);
+        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, "", expectNoFatalErrors, expectErrors);
+        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, null, expectNoFatalErrors, expectErrors);
+        assertZCFLbaasErrors(roots, workingUserKey, "", "", expectFatalErrors, expectErrors);
+        assertZCFLbaasErrors(roots, workingUserKey, "", null, expectFatalErrors, expectErrors);
+        assertZCFLbaasErrors(roots, workingUserKey, null, null, expectFatalErrors, expectErrors);
+        assertZCFLbaasErrors(roots, "", "", "", expectFatalErrors, expectErrors);
+        assertZCFLbaasErrors(roots, "", null, null, expectFatalErrors, expectErrors);
+        assertZCFLbaasErrors(roots, null, null, null, expectFatalErrors, expectErrors);
+        assertZCFLbaasErrors(roots, "", "", workingUserChain, expectFatalErrors, expectErrors);
 
         // Test if zeus failes when chain is reverse
         List<PemBlock> reverseChain = PemUtils.parseMultiPem(workingUserChain);
         Collections.reverse(reverseChain);
         String reverseChainStr = PemUtils.toMultiPemString(reverseChain);
-        assertZCFLbaasErrors(roots,workingUserKey,workingUserCrt,reverseChainStr,failOnAnyError,expectErrors);
+        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, reverseChainStr, expectNoFatalErrors, expectErrors);
     }
 
-    private void assertZCFLbaasErrors(Set<X509CertificateObject> roots, String key, String crt, String imd, boolean failOnlyOnFatalErrors, boolean failOnErrors) {
+    private void assertZCFLbaasErrors(Set<X509CertificateObject> roots, String key, String crt, String imd, boolean expectFatalErrors, boolean expectErrors) {
         ZeusUtils zu = new ZeusUtils(roots);
         ZeusCrtFile zcf = zu.buildZeusCrtFile(key, crt, imd, true);
-        boolean hasError;
-        String errorMsg;
-        if (failOnlyOnFatalErrors) {
-            hasError = zcf.hasFatalErrors();
-            errorMsg = StringUtils.joinString(zcf.getFatalErrors(), ",");
-        } else {
-            hasError = !zcf.getErrors().isEmpty();
-            errorMsg = StringUtils.joinString(zcf.getErrors(), ",");
+        boolean hasErrors = zcf.hasErrors();
+        boolean hasFatalErrors = zcf.hasFatalErrors();
+        boolean testFailed = false;
+        StringBuilder assertFailSb = new StringBuilder();
+        if (expectErrors && !hasErrors) {
+            assertFailSb.append(String.format("Expected errors but buildZeusCrtFile returned no Errors. "));
+            testFailed = true;
+        }
+        if (!expectErrors && hasErrors) {
+            assertFailSb.append(String.format("Wasn't expected errors but buildZeusCrtFile returned %s.", StringUtils.joinString(zcf.getErrors(), ",")));
+            testFailed = true;
+        }
+        if (expectFatalErrors && !hasFatalErrors) {
+            assertFailSb.append(String.format("Expected fatal Errors but buildZeusCrtFile returned no Fatal Errors. "));
+            testFailed = true;
+        }
+        if (!expectFatalErrors && hasFatalErrors) {
+            assertFailSb.append(String.format("wasn't expecting Fatal Errors but buildZeusCrtFile returned %s. ", StringUtils.joinString(zcf.getFatalErrors(), ",")));
         }
 
-        if (failOnErrors && hasError) {
-            fail(String.format("Wasn't expecting Errors: %s", errorMsg));
-        } else if (!failOnErrors && !hasError) {
-            fail(String.format("Was expecting errors but but no errors found %s", errorMsg));
-        } else {
-            // Everythings cool
-            return;
+        if (testFailed) {
+            fail(assertFailSb.toString());
         }
     }
 

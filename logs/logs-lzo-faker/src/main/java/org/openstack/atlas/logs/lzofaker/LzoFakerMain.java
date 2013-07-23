@@ -20,8 +20,8 @@ import org.joda.time.DateTime;
 import org.openstack.atlas.config.HadoopLogsConfigs;
 
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.logs.hibernatetoy.HibernateDbConf;
-import org.openstack.atlas.logs.hibernatetoy.HuApp;
+import org.openstack.atlas.util.itest.hibernate.HibernateDbConf;
+import org.openstack.atlas.util.itest.hibernate.HuApp;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;

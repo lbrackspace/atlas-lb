@@ -1,5 +1,8 @@
 package org.openstack.atlas.api.resources;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
@@ -17,19 +20,28 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
+import org.openstack.atlas.api.validation.context.HttpRequestType;
+import org.openstack.atlas.api.validation.results.ValidatorResult;
 
-import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.api.repository.ValidatorRepository;
+import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
-import org.openstack.atlas.util.ca.zeus.ZeusUtil;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 
 // TODO: Remove this class resource when we go to production
 public class BounceResource extends CommonDependencyProvider {
+
+    private static final ZeusUtils zeusUtils;
+
+    static {
+        zeusUtils = new ZeusUtils();
+    }
 
     @POST
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -127,20 +139,26 @@ public class BounceResource extends CommonDependencyProvider {
 
     @POST
     @Path("ssltermination")
-    public Response echoSslTerminationValidation(SslTermination in) {
+    public Response echoSslTermination(org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination sslTerm) {
         if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        String key = in.getPrivatekey();
-        String crt = in.getCertificate();
-        String chain = in.getIntermediateCertificate();
+        ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(sslTerm, HttpRequestType.PUT);
+        if (!result.passedValidation()) {
+            return getValidationFaultResponse(result);
+        }
+
+        String key = sslTerm.getPrivatekey();
+        String crt = sslTerm.getCertificate();
+        String chain = sslTerm.getIntermediateCertificate();
         Response resp;
-        ZeusCertFile zcf = ZeusUtil.getCertFile(key, crt, chain);
-        if (zcf.isError()) {
-            resp = getValidationFaultResponse(zcf.getErrorList());
+        ZeusCrtFile zcf = zeusUtils.buildZeusCrtFileLbassValidation(key, crt, chain);
+        if (zcf.hasFatalErrors()) {
+            resp = getValidationFaultResponse(zcf.getFatalErrorList());
         } else {
-            resp = ResponseFactory.getSuccessResponse("ssltermination was valid", 200);
+            resp = Response.status(200).entity(sslTerm).build();
         }
         return resp;
     }
+
 }

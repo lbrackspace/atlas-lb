@@ -68,8 +68,8 @@ public final class SslTerminationHelper {
     }
 
     public static void verifyCertificationCredentials(ZeusCrtFile zeusCrtFile) throws BadRequestException {
-        if (zeusCrtFile.getErrorList().size() > 0) {
-            String errors = StringUtilities.buildDelemtedListFromStringArray(zeusCrtFile.getErrorList().toArray(new String[zeusCrtFile.getErrorList().size()]), ",");
+        if (zeusCrtFile.getFatalErrorList().size() > 0) {
+            String errors = StringUtilities.buildDelemtedListFromStringArray(zeusCrtFile.getFatalErrorList().toArray(new String[zeusCrtFile.getFatalErrorList().size()]), ",");
             LOG.error(String.format("There was an error(s) while updating ssl termination: '%s'", errors));
             throw new BadRequestException(errors);
         }

@@ -10,7 +10,7 @@
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-ca-bc</artifactId>
     <packaging>jar</packaging>
-    <name>Atlas :: CA :: BouncyCastle</name>
+    <name>Openstack :: Atlas :: CA :: BouncyCastle</name>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

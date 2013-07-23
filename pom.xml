@@ -38,13 +38,12 @@
         <module>data-model</module>
         <module>rest-clients</module>
         <module>persistence</module>
-<!--
         <module>adapter</module>
         <module>api</module>
         <module>logs</module>
         <module>jobs</module>
         <module>migration</module>
-!-->
+        <module>itest</module>
     </modules>
 
     <build>

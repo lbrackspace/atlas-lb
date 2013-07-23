@@ -12,7 +12,7 @@ public class ZeusCrtFile {
     private String public_cert;
     private String private_key;
 
-    static{
+    static {
         RsaConst.init();
     }
 
@@ -23,7 +23,16 @@ public class ZeusCrtFile {
     }
 
     public boolean hasFatalErrors() {
-        return getFatalErrors().size() > 0;
+        for (ErrorEntry errorEntry : errors) {
+            if (errorEntry.isFatal()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasErrors() {
+        return getErrors().size() > 0;
     }
 
     // Get errors that can't be ignored
@@ -88,10 +97,12 @@ public class ZeusCrtFile {
         return sb.toString();
     }
 
-    public List<String> getErrorList(){
+    public List<String> getFatalErrorList() {
         List<String> errorList = new ArrayList<String>();
-        for(ErrorEntry errorEntry : getErrors()){
-            errorList.add(errorEntry.getErrorDetail());
+        for (ErrorEntry errorEntry : getErrors()) {
+            if (errorEntry.isFatal()) {
+                errorList.add(errorEntry.getErrorDetail());
+            }
         }
         return errorList;
     }

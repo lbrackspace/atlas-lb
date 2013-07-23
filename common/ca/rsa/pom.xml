@@ -10,7 +10,7 @@
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-ca-rsa</artifactId>
     <packaging>jar</packaging>
-    <name>Atlas :: CA :: RSA</name>
+    <name>Openstack :: Atlas :: CA :: RSA</name>
 
     <dependencies>
         <dependency>

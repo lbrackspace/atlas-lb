@@ -9,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-ca-gui</artifactId>
-    <name>Atlas :: CA :: GUI</name>
+    <name>Openstack :: Atlas :: CA :: GUI</name>
     <packaging>jar</packaging>
 
     <dependencies>

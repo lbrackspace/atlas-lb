@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openstack.atlas</groupId>
-            <artifactId>atlas-logs-hibernate-toy</artifactId>
+            <artifactId>atlas-itest-hibernate-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -9,7 +9,7 @@
     <groupId>org.openstack.atlas</groupId>
     <version>1.18.12-SNAPSHOT</version>
     <artifactId>atlas-exp-logs-test-compress</artifactId>
-    <name>Toy :: HDFS :: Compress LZO tester</name>
+    <name>Openstack :: Atlqas :: Logs :: Compress LZO tester</name>
     <packaging>jar</packaging>
 
     <dependencies>
