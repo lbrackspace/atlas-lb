@@ -47,7 +47,7 @@ public class UpdateHealthMonitorListener extends BaseListener {
             String alertDescription = String.format("Error updating health monitor in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(queueLb);
+            sendErrorToEventResource(dbLoadBalancer);
 
             return;
         }
@@ -63,7 +63,13 @@ public class UpdateHealthMonitorListener extends BaseListener {
     private void sendErrorToEventResource(LoadBalancer lb) {
         String title = "Error Updating Health Monitor";
         String desc = "Could not update the health monitor at this time";
-        Integer itemId = lb.getHealthMonitor() == null ? lb.getId() : lb.getHealthMonitor().getId(); // TODO: Find a better way of dealing with null id
+        Integer itemId;
+        //Dont like this and not sure why this hasnt been fixed... quelb doesnt have HM or other item ids...
+        if (lb.getHealthMonitor() != null && lb.getHealthMonitor().getId() != null) {
+            itemId = lb.getHealthMonitor().getId();
+        } else {
+            itemId = lb.getId();
+        }
         notificationService.saveHealthMonitorEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), itemId, title, desc, UPDATE_HEALTH_MONITOR, UPDATE, CRITICAL);
    }
 }
