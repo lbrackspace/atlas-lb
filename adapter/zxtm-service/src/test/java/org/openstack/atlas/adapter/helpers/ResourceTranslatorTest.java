@@ -511,7 +511,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdProperties);
             Assert.assertNotNull(createdBasic);
             Assert.assertNotNull(createdHttp);
-            Assert.assertEquals(createdBasic.getType(), HealthMonitorType.HTTP.toString()); //The REST API does not use HTTPS as a type
+            Assert.assertEquals(createdBasic.getType(), HealthMonitorType.HTTP.toString().toLowerCase()); //The REST API does not use HTTPS as a type
             Assert.assertTrue(createdBasic.getUse_ssl());
 
             // Test MonitorType HTTP
@@ -529,7 +529,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdProperties);
             Assert.assertNotNull(createdBasic);
             Assert.assertNotNull(createdHttp);
-            Assert.assertEquals(createdBasic.getType(), monitorType.toString());
+            Assert.assertEquals(createdBasic.getType(), monitorType.toString().toLowerCase());
             Assert.assertFalse(createdBasic.getUse_ssl());
 
             // Test MonitorType CONNECT
@@ -545,7 +545,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdMonitor);
             Assert.assertNotNull(createdProperties);
             Assert.assertNotNull(createdBasic);
-            Assert.assertEquals(createdBasic.getType(), monitorType.toString());
+            Assert.assertEquals(createdBasic.getType(), monitorType.toString().toLowerCase());
 
             // Test Number of Attempts (type doesn't matter)
             numAttemptsCheck = 20;

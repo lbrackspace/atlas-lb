@@ -119,7 +119,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             } catch (Exception ex) {
                 client.destroy();
                 LOG.error("Exception updating load balancer: " + ex);
-
                 throw new StmRollBackException("Failed to update loadbalancer", ex);
             }
         }
@@ -596,7 +595,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                                      StingrayRestClient client, String monitorName, Monitor monitor)
             throws StmRollBackException {
 
-        LOG.debug(String.format("Update Monitor '%s' ...", monitor));
+        LOG.debug(String.format("Update Monitor '%s' ...", monitorName));
 
         Monitor curMon = null;
         try {
@@ -608,8 +607,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         try {
             client.updateMonitor(monitorName, monitor);
         } catch (Exception ex) {
-            String em = String.format("Error updating virtual server: %s Attempting to RollBack... \n Exception: %s Trace: %s"
-                    , monitorName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
+            String em = String.format("Error updating virtual server: %s Attempting to RollBack... \n Exception: %s "
+                    , monitorName, ex);
 
             LOG.error(em);
             if (curMon != null) {
@@ -627,7 +626,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             }
             throw new StmRollBackException(em, ex);
         }
-        LOG.debug(String.format("Successfully updated Monitor '%s' ...", monitor));
+        LOG.debug(String.format("Successfully updated Monitor '%s' ...", monitorName));
     }
 
     private void deleteHealthMonitor(LoadBalancerEndpointConfiguration config,
