@@ -20,6 +20,7 @@ import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundE
 import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
+import org.rackspace.stingray.client.protection.ProtectionProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
@@ -134,7 +135,7 @@ public class SslTerminationITest extends STMTestBase {
         updateLoadBalancerAttributes();
     }
 
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    @Test
     public void testWhenAddingRateLimitWithSslTermination() throws Exception {
         setRateLimitBeforeSsl();
         deleteRateLimit();
@@ -144,7 +145,7 @@ public class SslTerminationITest extends STMTestBase {
 
     //TODO: Test needs to make sure access list is created before the test is run
     @Test
-    public void testWhenAddingAccessListWith() throws Exception {
+    public void testWhenAddingAccessListWithSslTermination() throws Exception {
         verifyAccessListWithoutSsl();
         verifyDeleteAccessList();
         setSslTermination();
@@ -442,6 +443,7 @@ public class SslTerminationITest extends STMTestBase {
             rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
             Ticket ticket = new Ticket();
             ticket.setComment(ticketComment);
+            rateLimit.setTicket(ticket);
             stmAdapter.setRateLimit(config, lb, rateLimit);
 
 
@@ -450,14 +452,9 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertEquals(maxRequestsPerSecond, (int) createdNormalBandwidth.getProperties().getBasic().getMaximum());
             Assert.assertEquals(ticketComment, createdNormalBandwidth.getProperties().getBasic().getNote());
 
-
-            Bandwidth createdSecureBandwidth = stmClient.getBandwidth(secureName);
-            Assert.assertNotNull(createdSecureBandwidth);
-            Assert.assertEquals(maxRequestsPerSecond, (int) createdSecureBandwidth.getProperties().getBasic().getMaximum());
-            Assert.assertEquals(ticketComment, createdSecureBandwidth.getProperties().getBasic().getNote());
             VirtualServer createdServer = stmClient.getVirtualServer(normalName);
-            Assert.assertTrue(createdServer.getProperties().getBasic().getResponse_rules().contains(StmConstants.XFF.toString()) ||
-                    createdServer.getProperties().getBasic().getResponse_rules().contains(StmConstants.XFP.toString()));
+            Assert.assertTrue(createdServer.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF.toString()) ||
+                    createdServer.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP.toString()));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -486,14 +483,8 @@ public class SslTerminationITest extends STMTestBase {
             stmAdapter.updateAccessList(config, lb);
 
             Protection normalProtection = stmClient.getProtection(normalName);
-            Protection secureProtection = stmClient.getProtection(secureName);
-
             Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getBanned().contains(ipAddressOne));
             Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getAllowed().contains(ipAddressTwo));
-
-
-            Assert.assertTrue(secureProtection.getProperties().getAccess_restriction().getBanned().contains(ipAddressOne));
-            Assert.assertTrue(secureProtection.getProperties().getAccess_restriction().getAllowed().contains(ipAddressTwo));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -506,13 +497,10 @@ public class SslTerminationITest extends STMTestBase {
         try {
             verifyAccessListWithSsl();
             stmAdapter.deleteAccessList(config, lb);
-            Protection normalProtection = stmClient.getProtection(normalName);
-            Protection secureProtection = stmClient.getProtection(secureName);
-            Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getAllowed().isEmpty());
-            Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getBanned().isEmpty());
-
-            Assert.assertTrue(secureProtection.getProperties().getAccess_restriction().getBanned().isEmpty());
-            Assert.assertTrue(secureProtection.getProperties().getAccess_restriction().getAllowed().isEmpty());
+            Protection protection = stmClient.getProtection(normalName);
+            ProtectionProperties properties = protection.getProperties();
+            Assert.assertTrue(properties.getAccess_restriction().getAllowed().isEmpty());
+            Assert.assertTrue(properties.getAccess_restriction().getBanned().isEmpty());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -555,8 +543,8 @@ public class SslTerminationITest extends STMTestBase {
             rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
             Ticket ticket = new Ticket();
             ticket.setComment(ticketComment);
+            rateLimit.setTicket(ticket);
             stmAdapter.setRateLimit(config, lb, rateLimit);
-
 
             Bandwidth createdNormalBandwidth = stmClient.getBandwidth(normalName);
             Assert.assertNotNull(createdNormalBandwidth);
@@ -572,9 +560,14 @@ public class SslTerminationITest extends STMTestBase {
 
 
     private void deleteRateLimit() throws Exception {
+        Boolean notFound = false;
         stmAdapter.deleteRateLimit(config, lb);
-        Bandwidth createdNormalBandwidth = stmClient.getBandwidth(normalName);
-        Bandwidth createdSecureBandwidth = stmClient.getBandwidth(secureName);
+        try {
+            stmClient.getBandwidth(normalName);
+        } catch (StingrayRestClientObjectNotFoundException notFoundException) {
+            notFound = true;
+        }
+        Assert.assertTrue(notFound);
     }
 
     private void deleteCertificate() {

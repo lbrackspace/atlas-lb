@@ -133,6 +133,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
         LOG.debug(String.format("Removing loadbalancer: %s ...", vsName));
+        deleteRateLimit(config, loadBalancer, vsName);
         deleteHealthMonitor(config, client, vsName);
         deleteProtection(config, client, loadBalancer, vsName);
         deleteVirtualIps(config, loadBalancer);
@@ -663,7 +664,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void updateProtection(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws StmRollBackException, InsufficientRequestException {
-        if (loadBalancer.getConnectionLimit() != null) {
+        if (loadBalancer.getConnectionLimit() != null || loadBalancer.getAccessLists() != null) {
             ResourceTranslator translator = new ResourceTranslator();
             StingrayRestClient client = loadSTMRestClient(config);
             String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
@@ -675,7 +676,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void deleteProtection(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
-        if (loadBalancer.getConnectionLimit() != null) {
+        if (loadBalancer.getConnectionLimit() != null || loadBalancer.getAccessLists() != null) {
             StingrayRestClient client = loadSTMRestClient(config);
             String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
             Protection curProtection = null;
@@ -783,13 +784,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
-        if (loadBalancer.getAccessLists() == null || loadBalancer.getAccessLists().isEmpty()) {
-            try {
-                deleteProtection(config, loadBalancer);
-            } catch (RemoteException e) {
-
-            }
-        }
+        loadBalancer.setAccessLists(new HashSet<AccessList>());
+        updateProtection(config, loadBalancer);
     }
 
     /*
@@ -805,7 +801,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             try {
                 client.getPersistence(StmConstants.HTTP_COOKIE);
             } catch (StingrayRestClientException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             } catch (StingrayRestClientObjectNotFoundException e) {
                 Persistence persistence = new Persistence();
                 PersistenceProperties properties = new PersistenceProperties();
@@ -986,15 +982,14 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        loadBalancer.setRateLimit(rateLimit);
         setRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
-
     }
 
     @Override
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        loadBalancer.setRateLimit(rateLimit);
         updateRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
-
-
     }
 
     @Override
@@ -1068,7 +1063,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         try {
             ResourceTranslator rt = new ResourceTranslator();
             rt.translateLoadBalancerResource(config, vsName, loadBalancer);
-//            Bandwidth bandwidth = rt.getcBandwidth();
             VirtualServer virtualServer = rt.getcVServer();
             VirtualServerProperties properties = virtualServer.getProperties();
             VirtualServerBasic basic = properties.getBasic();
@@ -1078,8 +1072,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             updateVirtualServer(config, client, vsName, virtualServer);
 
         } catch (StingrayRestClientObjectNotFoundException e) {
-            LOG.warn(String.format("Failed to delete rate limit for virtual server '%s' -- Object not found", vsName));
-            throw new StmRollBackException("Delete rate limit request canceled.", e);
+            LOG.warn(String.format("Cannot delete rate limit '%s', it does not exist. Ignoring...", vsName));
         } catch (StingrayRestClientException e) {
             LOG.error(String.format("Failed to delete rate limit for virtual server %s -- REST Client exception", vsName));
             throw new StmRollBackException("Delete rate limit request canceled.", e);
