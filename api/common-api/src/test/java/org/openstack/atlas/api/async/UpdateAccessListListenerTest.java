@@ -33,6 +33,7 @@ public class UpdateAccessListListenerTest extends STMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
+    private Integer ACCESS_LIST_ID = 15;
     private Set<AccessList> accessLists;
     private AccessList accessList;
 
@@ -53,7 +54,6 @@ public class UpdateAccessListListenerTest extends STMTestBase {
     public void standUp() {
         MockitoAnnotations.initMocks(this);
         setupIvars();
-        setupAccessList();
         accessLists = new HashSet<AccessList>();
         AccessList accessList = setupAccessList();
         accessLists.add(accessList);
@@ -72,7 +72,7 @@ public class UpdateAccessListListenerTest extends STMTestBase {
         accessList = mock(AccessList.class);
         IpVersion ipVersion = IpVersion.IPV4;
 
-        when(accessList.getId()).thenReturn(15);
+        when(accessList.getId()).thenReturn(ACCESS_LIST_ID);
         when(accessList.getIpVersion()).thenReturn(ipVersion);
         // Could set up more of this class, but not sure if it matters.
         
@@ -80,7 +80,7 @@ public class UpdateAccessListListenerTest extends STMTestBase {
     }
 
     @Test
-    public void testUpdateLoadBalancerWithValidThrottle() throws Exception {
+    public void testUpdateLoadBalancerWithValidAccessList() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(accessListService.diffRequestAccessListWithDomainAccessList(lb, lb)).thenReturn(accessLists);
@@ -89,7 +89,7 @@ public class UpdateAccessListListenerTest extends STMTestBase {
 
         verify(reverseProxyLoadBalancerStmService).updateAccessList(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
-        verify(notificationService).saveAccessListEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, accessList.getId(), EntryHelper.UPDATE_ACCESS_LIST_TITLE, EntryHelper.createAccessListSummary(accessList), EventType.UPDATE_ACCESS_LIST, CategoryType.UPDATE, EventSeverity.INFO);
+        verify(notificationService).saveAccessListEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, ACCESS_LIST_ID, EntryHelper.UPDATE_ACCESS_LIST_TITLE, EntryHelper.createAccessListSummary(accessList), EventType.UPDATE_ACCESS_LIST, CategoryType.UPDATE, EventSeverity.INFO);
     }
 
     @Test
@@ -105,7 +105,7 @@ public class UpdateAccessListListenerTest extends STMTestBase {
     }
 
     @Test
-    public void testUpdateLoadBalancerWithInvalidThrottle() throws Exception {
+    public void testUpdateLoadBalancerWithInvalidAccessList() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
