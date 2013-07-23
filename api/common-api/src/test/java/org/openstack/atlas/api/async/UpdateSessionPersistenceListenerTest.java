@@ -73,7 +73,6 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);
 
-        //This is currently not being called? Do we not want to allow users to set SessionPersistence to NONE? Possible bug...
         verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(notificationService, never()).saveSessionPersistenceEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(EntryHelper.UPDATE_PERSISTENCE_TITLE), anyString(), eq(EventType.UPDATE_SESSION_PERSISTENCE), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
