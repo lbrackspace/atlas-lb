@@ -236,7 +236,7 @@ public class TrafficScriptHelper {
         }
 
         for (Child ruleName : rules) {
-            if (ruleName.getName().equals(StmConstants.XFF)) ruleXForwardedProtoExists = true;
+            if (ruleName.getName().equals(StmConstants.XFP)) ruleXForwardedProtoExists = true;
         }
 
         if (!ruleXForwardedProtoExists) {
@@ -245,7 +245,7 @@ public class TrafficScriptHelper {
             crule = createRuleFile(StmConstants.XFP, TrafficScriptHelper.getXForwardedProtoHeaderScript());
 
             try {
-                client.createTrafficscript(StmConstants.XFF, crule);
+                client.createTrafficscript(StmConstants.XFP, crule);
             } catch (StingrayRestClientObjectNotFoundException e) {
                 LOG.debug("There was an error in StingrayRestClient: " + e);
             }

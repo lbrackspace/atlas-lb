@@ -6,6 +6,8 @@ import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
@@ -18,6 +20,8 @@ public class LoadBalancerEndpointConfiguration {
 
     public static Log LOG = LogFactory.getLog(LoadBalancerEndpointConfiguration.class);
     private URL endpointUrl;
+    private URI restEndpoint;
+    private String restPort;
     private String username;
     private String password;
     private String trafficManagerName;
@@ -26,14 +30,21 @@ public class LoadBalancerEndpointConfiguration {
     private Host endpointUrlHost;
     private String logFileLocation;
 
-    public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames) {
+    public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames, String restPort) {
         try {
             this.endpointUrl = new URL(soapEndpoint.getEndpoint());
         } catch (MalformedURLException e) {
             e.printStackTrace();
             throw new RuntimeException("Invalid endpoint...", e);
         }
+        try {
+            this.restEndpoint = new URI(String.format("%s:%s/api/tm/1.0/config/active/", soapEndpoint.getEndpoint().split(":")[0], restPort));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Invalid rest port and or base_uri...", e);
+        }
         this.endpointUrlHost = soapEndpoint;
+        this.restPort = restPort;
         this.username = username;
         this.password = password;
         this.trafficManagerHost = trafficManagerHost;
@@ -42,12 +53,18 @@ public class LoadBalancerEndpointConfiguration {
         LOG.info(String.format("Selecting %s as SoapEndpoint", this.endpointUrl));
     }
 
-    public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames, String logFileLocation) {
+    public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames, String logFileLocation, String restPort) {
         try {
             this.endpointUrl = new URL(soapEndpoint.getEndpoint());
         } catch (MalformedURLException e) {
             e.printStackTrace();
             throw new RuntimeException("Invalid endpoint...", e);
+        }
+        try {
+            this.restEndpoint = new URI(String.format("%s:%s/api/tm/1.0/config/active/", soapEndpoint.getEndpoint().split(":")[0], restPort));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Invalid rest port and or base_uri...", e);
         }
         this.endpointUrlHost = soapEndpoint;
         this.username = username;
@@ -57,12 +74,15 @@ public class LoadBalancerEndpointConfiguration {
         this.failoverTrafficManagerNames = failoverTrafficManagerNames;
         this.logFileLocation = logFileLocation;
         LOG.info(String.format("Selecting %s as SoapEndPoint", this.endpointUrl));
+        LOG.info(String.format("Selecting %s as RestEndPoint", this.restEndpoint));
     }
 
     @Override
     public String toString() {
         return "{"
                 + " endpointUrlHost: " + endpointUrlHost
+                + ", restEndpoint: " + restEndpoint
+                + ", restPort: " + restPort
                 + ", userName: " + username
                 + ", passwd: " + "Censored"
                 + ", trafficManagerHost: {" + ((trafficManagerHost == null) ? "null" : trafficManagerHost.toString()) + "}"
@@ -77,6 +97,22 @@ public class LoadBalancerEndpointConfiguration {
 
     public URL getEndpointUrl() {
         return endpointUrl;
+    }
+
+    public URI getRestEndpoint() {
+        return restEndpoint;
+    }
+
+    public void setRestEndpoint(URI restEndpoint) {
+        this.restEndpoint = restEndpoint;
+    }
+
+    public String getRestPort() {
+        return restPort;
+    }
+
+    public void setRestPort(String restPort) {
+        this.restPort = restPort;
     }
 
     public String getUsername() {

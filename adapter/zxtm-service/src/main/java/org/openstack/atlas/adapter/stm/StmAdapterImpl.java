@@ -36,29 +36,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.util.*;
 
 public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
 
-    //TODO: make sure to destroy client after operations...
-
-
-    public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config) throws StmRollBackException {
-        StingrayRestClient client;
-        try {
-            //TODO: pull this out from config --- or add new column to Host table to support both soap and REST endpoints...
-            String baseUri = "api/tm/1.0/config/active/";
-            URI uri = new URI(config.getEndpointUrl().toString().split("soap")[0] + baseUri);
-            client = new StingrayRestClient(uri);
-        } catch (URISyntaxException e) {
-            LOG.error(String.format("Configuration error, verify soapendpoint is valid! Exception %s", e));
-            throw new StmRollBackException("Configuration error: ", e);
-        }
-        return client;
+    public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config) {
+        return new StingrayRestClient(config.getRestEndpoint());
     }
 
     /*
@@ -152,7 +137,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         deleteVirtualIps(config, loadBalancer);
         deletePool(config, client, vsName);
         deleteVirtualServer(config, client, vsName);
-        if(loadBalancer.hasSsl()) {
+        if (loadBalancer.hasSsl()) {
             deleteVirtualServer(config, client, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
         client.destroy();
@@ -539,8 +524,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             try {
                 client.updateTrafficIp(tm.getKey(), tm.getValue());
             } catch (Exception ex) {
-                String em = String.format("Error updating virtual ips: %s Attempting to RollBack... \n Exception: %s Trace: %s"
-                        , vsName, ex.getCause().getMessage(), Arrays.toString(ex.getCause().getStackTrace()));
+                String em = String.format("Error updating virtual ips: %s Attempting to RollBack... \n Exception: %s "
+                        , vsName, ex);
 
                 LOG.error(em);
                 if (curTig != null) {
@@ -813,12 +798,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     private void createPersistentClasses(LoadBalancerEndpointConfiguration config) {
         //TODO: handle logging and exceptions better...
         StingrayRestClient client = null;
-        try {
-            client = loadSTMRestClient(config);
+        client = loadSTMRestClient(config);
 
-        } catch (StmRollBackException e) {
-            e.printStackTrace();
-        }
         if (client != null) {
             try {
                 client.getPersistence(StmConstants.HTTP_COOKIE);
@@ -938,11 +919,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     @Override
     public void addSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StmRollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         StingrayRestClient client = null;
-        try {
-            client = loadSTMRestClient(config);
-        } catch (StmRollBackException e) {
-            LOG.error(String.format("Failed to instantiate client", e));
-        }
+        client = loadSTMRestClient(config);
         String vsName = ZxtmNameBuilder.genVSName(lb);
         VirtualServer virtualServer = client.getVirtualServer(vsName);
         virtualServer.getProperties().getBasic().setEnabled(false);
@@ -963,11 +940,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     @Override
     public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         StingrayRestClient client = null;
-        try {
-            client = loadSTMRestClient(config);
-        } catch (StmRollBackException e) {
-            LOG.error(String.format("Failed to instantiate client", e));
-        }
+        client = loadSTMRestClient(config);
         String vsName = ZxtmNameBuilder.genVSName(lb);
         VirtualServer virtualServer = client.getVirtualServer(vsName);
         virtualServer.getProperties().getBasic().setEnabled(true);
@@ -1308,8 +1281,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 trafficManager.getProperties().getBasic().setTrafficip(trafficManagerTrafficIpList);
                 client.updateTrafficManager(hsName, trafficManager);
             }
-        } catch (StmRollBackException e) {
-            e.printStackTrace();
         } catch (StingrayRestClientObjectNotFoundException e) {
             e.printStackTrace();
         } catch (StingrayRestClientException e) {
@@ -1355,8 +1326,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 }
                 client.updateTrafficManager(hsName, trafficManager);
             }
-        } catch (StmRollBackException e) {
-            e.printStackTrace();
         } catch (StingrayRestClientObjectNotFoundException e) {
             e.printStackTrace();
         } catch (StingrayRestClientException e) {
@@ -1397,8 +1366,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             subnetList.add(hostsubnet);
             ret.setHostsubnets(subnetList);
         } catch (StingrayRestClientObjectNotFoundException e) {
-            e.printStackTrace();
-        } catch (StmRollBackException e) {
             e.printStackTrace();
         } catch (StingrayRestClientException e) {
             e.printStackTrace();

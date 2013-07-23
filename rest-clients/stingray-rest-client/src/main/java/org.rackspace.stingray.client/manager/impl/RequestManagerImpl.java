@@ -30,8 +30,9 @@ public class RequestManagerImpl implements RequestManager {
         ClientResponse response = null;
         RequestManagerUtil rmu = new RequestManagerUtil();
         try {
+            LOG.debug(String.format("GET requested for endpoint: %s", endpoint));
             response = client.resource(URI.create(endpoint + path))
-                    .accept(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON_TYPE)
                     .get(ClientResponse.class);
         } catch (Exception e) {
             throw new StingrayRestClientException(ClientConstants.REQUEST_ERROR, e);
