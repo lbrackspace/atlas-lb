@@ -22,19 +22,20 @@ public class DeleteErrorFileListener extends BaseListener {
         LOG.debug(message);
         MessageDataContainer data = getDataContainerFromMessage(message);
 
-        LoadBalancer dbLoadBalancer;
+        LoadBalancer dbLoadBalancer = null;
 
-        try {
-            dbLoadBalancer = loadBalancerService.get(data.getLoadBalancerId(), data.getAccountId());
-        } catch (EntityNotFoundException enfe) {
-            String alertDescription = String.format("Load balancer '%d' not found in database.", data.getLoadBalancerId());
-            LOG.error(alertDescription, enfe);
-            notificationService.saveAlert(data.getAccountId(), data.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
-            return;
-        }
-
-        LOG.debug("About to remove the error file from zeus... ");
         if (data.getAccountId() != null && data.getLoadBalancerId() != null) {
+            try {
+                dbLoadBalancer = loadBalancerService.get(data.getLoadBalancerId(), data.getAccountId());
+            } catch (EntityNotFoundException enfe) {
+                String alertDescription = String.format("Load balancer '%d' not found in database.", data.getLoadBalancerId());
+                LOG.error(alertDescription, enfe);
+                notificationService.saveAlert(data.getAccountId(), data.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
+                return;
+            }
+
+            LOG.debug("About to remove the error file from zeus... ");
+
             try {
                 reverseProxyLoadBalancerStmService.deleteErrorFile(dbLoadBalancer);
             } catch (Exception e) {
@@ -45,12 +46,13 @@ public class DeleteErrorFileListener extends BaseListener {
                 notificationService.saveAlert(data.getAccountId(), data.getLoadBalancerId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                 return;
             }
+
+            //Set status record
+            loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+            LOG.debug("Successfully removed the error file from zeus... ");
         } else {
+            //TODO I feel like there should be something else here -- this whole listener is a bit sparse
             LOG.error("Error LoadbalancerId or accountId was null in call to DeleteErrorFileListener");
         }
-
-        //Set status record
-        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
-        LOG.debug("Successfully removed the error file from zeus... ");
     }
 }
