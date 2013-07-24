@@ -7,6 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.service.domain.pojos.Cidr;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Hostsubnet;
@@ -19,7 +20,6 @@ import org.rackspace.stingray.client.tm.TrafficManagerBasic;
 import org.rackspace.stingray.client.tm.TrafficManagerProperties;
 import org.rackspace.stingray.client.tm.TrafficManagerTrafficIp;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -29,12 +29,12 @@ public class SubnetMappingITest extends STMTestBase {
     private static Hostssubnet EXISTING_MAPPINGS;
 
     @BeforeClass
-    public static void setUpClass() throws RemoteException {
+    public static void setUpClass() throws StmRollBackException {
         EXISTING_MAPPINGS = stmAdapter.getSubnetMappings(config, TARGET_HOST);
     }
 
     @AfterClass
-    public static void tearDownClass() throws RemoteException {
+    public static void tearDownClass() throws StmRollBackException {
         try {
         stmAdapter.deleteLoadBalancer(config, lb);
         } catch(Exception e) {
@@ -43,7 +43,7 @@ public class SubnetMappingITest extends STMTestBase {
     }
 
     @Test
-    public void getSubnetMappingsTest() throws RemoteException {
+    public void getSubnetMappingsTest() throws StmRollBackException {
         Hostssubnet existingMapping = stmAdapter.getSubnetMappings(config, TARGET_HOST);
         List<Hostsubnet> existingSubnets = existingMapping.getHostsubnets();
         Hostsubnet targetHost = existingSubnets.get(0);
@@ -66,7 +66,7 @@ public class SubnetMappingITest extends STMTestBase {
     }
 
     @Test
-    public void setSubnetMappingsTest() throws RemoteException {
+    public void setSubnetMappingsTest() throws StmRollBackException {
         Hostssubnet newHss = makeHostssubnet();
         Hostssubnet beforeHss = stmAdapter.getSubnetMappings(config, TARGET_HOST);
         List<String> cidrBlocksExisting = getCidrBlocks(EXISTING_MAPPINGS);
@@ -99,7 +99,7 @@ public class SubnetMappingITest extends STMTestBase {
 
 
     @Test
-    public void deleteSubnetMappingsTest() throws RemoteException {
+    public void deleteSubnetMappingsTest() throws StmRollBackException {
         Hostssubnet backupHss = null;
         Hostssubnet beforeHss = stmAdapter.getSubnetMappings(config, TARGET_HOST);
         List<String> cidrBlocksBefore = null;
@@ -194,7 +194,7 @@ public class SubnetMappingITest extends STMTestBase {
 
     @Ignore
     @Test
-    public void visualConfirmTest() throws RemoteException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+    public void visualConfirmTest() throws StmRollBackException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         List<Child> trafficManagerList = stmClient.getTrafficManagers();
 
         for (Child c : trafficManagerList) {

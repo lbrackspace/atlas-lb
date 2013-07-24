@@ -39,8 +39,6 @@ public class Ipv6ITest extends STMTestBase {
     public static void removeIpv6LoadBalancer() {
         try {
             stmAdapter.deleteLoadBalancer(config, lb);
-        } catch (RemoteException e) {
-            e.printStackTrace();
         } catch (InsufficientRequestException e) {
             e.printStackTrace();
         } catch (RollBackException e) {

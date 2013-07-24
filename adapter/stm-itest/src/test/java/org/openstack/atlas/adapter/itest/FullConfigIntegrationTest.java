@@ -6,6 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
 import org.openstack.atlas.service.domain.entities.*;
@@ -87,7 +88,7 @@ public class FullConfigIntegrationTest {
     }
 
     @Test
-    public void setErrorFileTest() throws RemoteException {
+    public void setErrorFileTest() throws StmRollBackException {
         StmAdapterImpl adapter = new StmAdapterImpl();
 
         //adapter.setErrorFile(null,"386085_324", "hrodjger");

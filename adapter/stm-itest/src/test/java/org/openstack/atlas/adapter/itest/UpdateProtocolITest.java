@@ -13,8 +13,6 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 import org.rackspace.stingray.client.StingrayRestClient;
 
-import java.rmi.RemoteException;
-
 public class UpdateProtocolITest extends STMTestBase{
 
 
@@ -30,8 +28,6 @@ public class UpdateProtocolITest extends STMTestBase{
     {
         try {
             stmAdapter.deleteLoadBalancer(config, lb);
-        } catch (RemoteException e) {
-            e.printStackTrace();
         } catch (InsufficientRequestException e) {
             e.printStackTrace();
         } catch (RollBackException e) {
