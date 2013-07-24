@@ -48,12 +48,7 @@ public class ResourceTranslator {
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
 
-        try {
-            translateTrafficIpGroupsResource(config, loadBalancer);
-        } catch (IPStringConversionException e) {
-            //TODO: Handle this, means ipv6 is broken..
-            e.printStackTrace();
-        }
+        translateTrafficIpGroupsResource(config, loadBalancer);
 
         if (loadBalancer.getSslTermination() != null) translateKeypairResource(config, loadBalancer);
 
@@ -200,7 +195,7 @@ public class ResourceTranslator {
     }
 
     public Map<String, TrafficIp> translateTrafficIpGroupsResource(LoadBalancerEndpointConfiguration config,
-                                                                   LoadBalancer loadBalancer) throws InsufficientRequestException, IPStringConversionException {
+                                                                   LoadBalancer loadBalancer) throws InsufficientRequestException {
         Map<String, TrafficIp> nameandgroup = new HashMap<String, TrafficIp>();
 
         // Add new traffic ip groups for IPv4 vips
@@ -211,8 +206,13 @@ public class ResourceTranslator {
 
         // Add new traffic ip groups for IPv6 vips
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6ToAdd : loadBalancer.getLoadBalancerJoinVip6Set()) {
-            nameandgroup.put(ZxtmNameBuilder.generateTrafficIpGroupName(loadBalancer, loadBalancerJoinVip6ToAdd.getVirtualIp()),
-                    translateTrafficIpGroupResource(config, loadBalancerJoinVip6ToAdd.getVirtualIp().getDerivedIpString()));
+            try {
+                nameandgroup.put(ZxtmNameBuilder.generateTrafficIpGroupName(loadBalancer, loadBalancerJoinVip6ToAdd.getVirtualIp()),
+                        translateTrafficIpGroupResource(config, loadBalancerJoinVip6ToAdd.getVirtualIp().getDerivedIpString()));
+            } catch (IPStringConversionException e) {
+                //Generally means there is a missing value, wrap up the exception into general IRE;
+                throw new InsufficientRequestException(e);
+            }
         }
 
         cTrafficIpGroups = nameandgroup;
@@ -422,13 +422,12 @@ public class ResourceTranslator {
     }
 
 
-public <T> T stringToObject(String str, Class<T> clazz) throws IOException {
+    public <T> T stringToObject(String str, Class<T> clazz) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         Object myObject = mapper.readValue(str, clazz);
         return (T) myObject;
 
     }
-
 
 
     public Pool getcPool() {
