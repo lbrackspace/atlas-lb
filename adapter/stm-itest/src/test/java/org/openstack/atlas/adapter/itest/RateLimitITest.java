@@ -72,12 +72,12 @@ public class RateLimitITest extends STMTestBase {
 
     private void setRateLimit(StingrayRestClient client, String vsName, RateLimit rateLimit) throws InsufficientRequestException, RollBackException, RemoteException {
         lb.setRateLimit(rateLimit);
-        stmAdapter.setRateLimit(config,lb,null);
+        stmAdapter.setRateLimit(config,lb,rateLimit);
     }
 
     private void updateRateLimit(StingrayRestClient client, String vsName, RateLimit rateLimit) throws InsufficientRequestException, RollBackException, RemoteException {
         lb.setRateLimit(rateLimit);
-        stmAdapter.updateRateLimit(config,lb,null);
+        stmAdapter.updateRateLimit(config,lb,rateLimit);
     }
 
     private Bandwidth getRateLimit(StingrayRestClient client, String vsName) throws StingrayRestClientObjectNotFoundException, StingrayRestClientException {
@@ -86,7 +86,6 @@ public class RateLimitITest extends STMTestBase {
     }
 
     private void deleteRateLimit(StingrayRestClient client, String vsName) throws InsufficientRequestException, RollBackException, RemoteException {
-        lb.setRateLimit(null);
         stmAdapter.deleteRateLimit(config, lb);
     }
 

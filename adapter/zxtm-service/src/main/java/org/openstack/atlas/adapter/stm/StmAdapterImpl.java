@@ -106,6 +106,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     updatePool(config, client, vsName, translator.getcPool());
                 }
 
+                UserPages userPages = queLb.getUserPages();
+                if (userPages != null) {
+                    if (userPages.getErrorpage() != null) {
+                        setErrorFile(config, queLb, queLb.getUserPages().getErrorpage());
+                    }
+                }
                 updateVirtualServer(config, client, vsName, translator.getcVServer());
 //                if (loadBalancer.hasSsl()) {
 //                    vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
@@ -681,7 +687,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 try {
                     client.updateProtection(protectionName, curProtection);
                 } catch (Exception e1) {
-                    throw new StmRollBackException("Could not update previous configuration for protection: "+ protectionName, e);
+                    throw new StmRollBackException("Could not update previous configuration for protection: " + protectionName, e);
                 }
                 LOG.error(String.format("Successfully rolled back to previous configuration."));
             } else {
@@ -1170,7 +1176,15 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = loadSTMRestClient(config);
         File errorFile = null;
         String errorFileName = getErrorFileName(vsName);
-        loadBalancer.getUserPages().setErrorpage(errorFileName);
+
+        if (loadBalancer.getUserPages() != null) {
+            loadBalancer.getUserPages().setErrorpage(errorFileName);
+        } else {
+            UserPages userPages = new UserPages();
+            userPages.setErrorpage(errorFileName);
+            userPages.setLoadbalancer(loadBalancer);
+            loadBalancer.setUserPages(userPages);
+        }
 
         ResourceTranslator rt = new ResourceTranslator();
         rt.translateVirtualServerResource(config, vsName, loadBalancer);
@@ -1193,7 +1207,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
             errorFileName = "Default";
         }
-
         if (errorFile != null) errorFile.delete();
 
         try {
@@ -1207,6 +1220,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Rolling back.", vsName, errorFileName));
             throw re;
         }
+
     }
 
     private String getErrorFileName(String vsName) {
