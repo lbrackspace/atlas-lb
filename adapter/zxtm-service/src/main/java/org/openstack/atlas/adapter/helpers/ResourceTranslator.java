@@ -260,7 +260,6 @@ public class ResourceTranslator {
         PoolBasic basic = new PoolBasic();
         List<PoolNodeWeight> weights = new ArrayList<PoolNodeWeight>();
         PoolLoadbalancing poollb = new PoolLoadbalancing();
-        PoolConnection connection = new PoolConnection();
 
 
         Set<Node> nodes = loadBalancer.getNodes();
@@ -293,6 +292,7 @@ public class ResourceTranslator {
         poollb.setPriority_values(znpc.getPriorityValuesSet());
         poollb.setAlgorithm(lbAlgo);
 
+        PoolConnection connection = new PoolConnection();
         connection.setMax_reply_time(loadBalancer.getTimeout());
 
         if (loadBalancer.getHealthMonitor() != null)
