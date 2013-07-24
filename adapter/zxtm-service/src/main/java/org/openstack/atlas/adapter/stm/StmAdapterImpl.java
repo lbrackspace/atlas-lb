@@ -1177,7 +1177,15 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = loadSTMRestClient(config);
         File errorFile = null;
         String errorFileName = getErrorFileName(vsName);
-        loadBalancer.getUserPages().setErrorpage(errorFileName);
+
+        if (loadBalancer.getUserPages() != null) {
+            loadBalancer.getUserPages().setErrorpage(errorFileName);
+        } else {
+            UserPages userPages = new UserPages();
+            userPages.setErrorpage(errorFileName);
+            userPages.setLoadbalancer(loadBalancer);
+            loadBalancer.setUserPages(userPages);
+        }
 
         ResourceTranslator rt = new ResourceTranslator();
         rt.translateVirtualServerResource(config, vsName, loadBalancer);
