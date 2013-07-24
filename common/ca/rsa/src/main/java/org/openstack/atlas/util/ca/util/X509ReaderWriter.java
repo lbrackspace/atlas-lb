@@ -391,6 +391,8 @@ public class X509ReaderWriter {
     }
 
     public static int nop() {
+        X509CertificateObject blah;
+
         return nopCount++;
     }
 }

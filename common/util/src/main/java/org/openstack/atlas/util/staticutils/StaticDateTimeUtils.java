@@ -1,5 +1,7 @@
 package org.openstack.atlas.util.staticutils;
 
+import java.util.Calendar;
+import java.util.Date;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -9,6 +11,7 @@ public class StaticDateTimeUtils {
 
     public static final DateTimeFormatter apacheDateTimeFormat = DateTimeFormat.forPattern("dd/MMM/yyyy:HH:mm:ss Z");
     public static final DateTimeFormatter utcApacheDateTimeFormat = apacheDateTimeFormat.withZone(DateTimeZone.UTC);
+    public static final DateTimeFormatter sqlDateTimeFormat = DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss");
 
     public static long dateTimeToOrdinalMillis(DateTime dt) {
         return dt.getYear() * 10000000000000L
@@ -60,7 +63,33 @@ public class StaticDateTimeUtils {
         return DateTime.now();
     }
 
+    public static String toSqlTime(Date date) {
+        return sqlDateTimeFormat.print(toDateTime(date, true));
+    }
+
     public static double getEpochSeconds() {
         return ((double) System.currentTimeMillis()) * 0.001;
+    }
+
+    public static DateTime toDateTime(Date date, boolean useUTC) {
+        if (useUTC) {
+            return new DateTime(date).withZone(DateTimeZone.UTC);
+        }
+        return new DateTime(date);
+    }
+
+    public static Date toDate(Calendar cal) {
+        return cal.getTime();
+    }
+
+    public static Date toDate(DateTime dt) {
+        return dt.toDate();
+    }
+
+    public static DateTime toDateTime(Calendar cal, boolean useUTC) {
+        if (useUTC) {
+            return new DateTime(cal).withZone(DateTimeZone.UTC);
+        }
+        return new DateTime(cal);
     }
 }
