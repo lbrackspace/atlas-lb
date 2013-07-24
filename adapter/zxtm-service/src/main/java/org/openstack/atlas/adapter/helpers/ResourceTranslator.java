@@ -116,18 +116,17 @@ public class ResourceTranslator {
             properties.setWeb_cache(cache);
         }
 
-        //Lazy loading breaks this :(
         //error file settings
-//        UserPages userPages = loadBalancer.getUserPages();
-//        String ep = null;
-//        if (userPages != null) { // if userPages is null, just leave the ce object alone and it should use the default page
-//            ep = userPages.getErrorpage();
-//            ce.setError_file(ep);
-//        } else {
-//            //Doesnt look like thats the case for some reason :( may be bug in STM
-//            ce.setError_file("Default");
-//        }
-//        properties.setConnection_errors(ce);
+        UserPages userPages = loadBalancer.getUserPages();
+        String ep = null;
+        if (userPages != null) { // if userPages is null, just leave the ce object alone and it should use the default page
+            ep = userPages.getErrorpage();
+            ce.setError_file(ep);
+        } else {
+            //Doesnt look like thats the case for some reason :( may be bug in STM
+            ce.setError_file("Default");
+        }
+        properties.setConnection_errors(ce);
 
         //trafficscript or rule settings
         List<String> rules = Arrays.asList(StmConstants.XFF, StmConstants.XFP);
