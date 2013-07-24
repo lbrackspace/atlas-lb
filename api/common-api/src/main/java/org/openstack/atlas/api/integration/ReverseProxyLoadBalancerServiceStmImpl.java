@@ -55,8 +55,6 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         this.healthMonitorService = healthMonitorService;
     }
 
-    //TODO: Start changing the AxisFault to STMrollbackEx
-
     @Override
     public void createLoadBalancer(LoadBalancer lb) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());

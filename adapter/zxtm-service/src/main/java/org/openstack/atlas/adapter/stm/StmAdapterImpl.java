@@ -106,6 +106,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     updatePool(config, client, vsName, translator.getcPool());
                 }
 
+
                 updateVirtualServer(config, client, vsName, translator.getcVServer());
 //                if (loadBalancer.hasSsl()) {
 //                    vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);

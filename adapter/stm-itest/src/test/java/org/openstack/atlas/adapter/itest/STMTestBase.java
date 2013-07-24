@@ -16,6 +16,7 @@ import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
@@ -222,6 +223,41 @@ public class STMTestBase extends StmTestConstants {
             e.printStackTrace();
             Assert.fail(e.getMessage());
 
+        }
+    }
+
+    protected static void removeLoadBalancer() {
+        StingrayRestClient tclient;
+        tclient = new StingrayRestClient();
+
+
+        try {
+            stmAdapter.deleteLoadBalancer(config, lb);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+
+        try {
+            tclient.getVirtualServer(loadBalancerName());
+            Assert.fail("Virtual Server should have been deleted!");
+        } catch (Exception e) {
+            if (e instanceof StingrayRestClientObjectNotFoundException) {
+            } else {
+                e.printStackTrace();
+                Assert.fail(e.getMessage());
+            }
+        }
+
+        try {
+            tclient.getPool(poolName());
+            Assert.fail("Node Pool should have been deleted!");
+        } catch (Exception e) {
+            if (e instanceof StingrayRestClientObjectNotFoundException) {
+            } else {
+                e.printStackTrace();
+                Assert.fail(e.getMessage());
+            }
         }
     }
 }

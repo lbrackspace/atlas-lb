@@ -38,12 +38,12 @@ public class DeleteRateLimitListener extends BaseListener {
 
         try {
             LOG.debug("Deleting rate limit in Zeus...");
-            reverseProxyLoadBalancerService.deleteRateLimit(dbLoadBalancer);
-            LOG.debug("Successfully deleted rate limit in Zeus.");
+            reverseProxyLoadBalancerStmService.deleteRateLimit(dbLoadBalancer);
+            LOG.debug("Successfully deleted rate limit in STM.");
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
 
-            String alertDescription = String.format("Error deleting rate limit in Zeus for loadbalancer '%d'.", queueLb.getId());
+            String alertDescription = String.format("Error deleting rate limit in STM for loadbalancer '%d'.", queueLb.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
