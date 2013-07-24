@@ -685,8 +685,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             try {
                 client.deleteProtection(protectionName);
             } catch (StingrayRestClientException e) {
-                String em = String.format("Error deleting protection: %s Attempting to RollBack... \n Exception: %s "
-                        , protectionName, e);
+                String em = String.format("Error deleting protection: %s Attempting to RollBack... \n Exception: %s ", protectionName, e);
                 if (curProtection != null) {
                     LOG.error(String.format("Unexpected client error when deleting protection %s: attempting to roll-back...", protectionName));
                     client.updateProtection(protectionName, curProtection);
