@@ -58,11 +58,9 @@ public class DeleteNodesListener extends BaseListener {
             return;
         }
 
-        //TODO: is this necessary?
         // Refresh the LoadBalancer since the above may have been in a different transaction
         dbLoadBalancer = loadBalancerService.get(msg.getLoadBalancerId(), msg.getAccountId());
 
-        //TODO: Didn't we already do this? what if we JUST set it to ERROR status because of a failure?
         // Update load balancer status in DB
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);

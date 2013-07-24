@@ -362,9 +362,8 @@ public class ResourceTranslator {
         ConnectionLimit limits = loadBalancer.getConnectionLimit();
         Set<AccessList> accessList = loadBalancer.getAccessLists();
 
-        ProtectionAccessRestriction pac;
+        ProtectionAccessRestriction pac = new ProtectionAccessRestriction();
         if (accessList != null && !accessList.isEmpty()) {
-            pac = new ProtectionAccessRestriction();
             Set<String> allowed = new HashSet<String>();
             Set<String> banned = new HashSet<String>();
             for (AccessList item : accessList) {
@@ -376,19 +375,24 @@ public class ResourceTranslator {
             }
             pac.setAllowed(allowed);
             pac.setBanned(banned);
-            properties.setAccess_restriction(pac);
         }
+        properties.setAccess_restriction(pac);
 
-        ProtectionConnectionLimiting limiting;
+        ProtectionConnectionLimiting limiting = new ProtectionConnectionLimiting();
         if (limits != null) {
-            limiting = new ProtectionConnectionLimiting();
             limiting.setMax_10_connections(expectedMax10);
             limiting.setMax_1_connections(limits.getMaxConnections());
             limiting.setMax_connection_rate(limits.getMaxConnectionRate());
             limiting.setMin_connections(limits.getMinConnections());
             limiting.setRate_timer(limits.getRateInterval());
-            properties.setConnection_limiting(limiting);
+        } else {
+            limiting.setMax_10_connections(0);
+            limiting.setMax_1_connections(0);
+            limiting.setMax_connection_rate(0);
+            limiting.setMin_connections(0);
+            limiting.setRate_timer(0);
         }
+        properties.setConnection_limiting(limiting);
 
         properties.setBasic(basic);
         cProtection.setProperties(properties);
