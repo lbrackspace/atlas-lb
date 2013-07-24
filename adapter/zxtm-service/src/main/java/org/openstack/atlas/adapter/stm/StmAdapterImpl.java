@@ -106,6 +106,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     updatePool(config, client, vsName, translator.getcPool());
                 }
 
+                UserPages userPages = queLb.getUserPages();
+                if (userPages != null) {
+                    if (userPages.getErrorpage() != null) {
+                        setErrorFile(config, queLb, queLb.getUserPages().getErrorpage());
+                    }
+                }
 
                 updateVirtualServer(config, client, vsName, translator.getcVServer());
 //                if (loadBalancer.hasSsl()) {
@@ -682,7 +688,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 try {
                     client.updateProtection(protectionName, curProtection);
                 } catch (Exception e1) {
-                    throw new StmRollBackException("Could not update previous configuration for protection: "+ protectionName, e);
+                    throw new StmRollBackException("Could not update previous configuration for protection: " + protectionName, e);
                 }
                 LOG.error(String.format("Successfully rolled back to previous configuration."));
             } else {
@@ -1194,7 +1200,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
             errorFileName = "Default";
         }
-
         if (errorFile != null) errorFile.delete();
 
         try {
@@ -1208,6 +1213,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Rolling back.", vsName, errorFileName));
             throw re;
         }
+
     }
 
     private String getErrorFileName(String vsName) {

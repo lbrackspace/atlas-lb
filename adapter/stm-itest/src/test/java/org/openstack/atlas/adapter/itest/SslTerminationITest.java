@@ -329,14 +329,17 @@ public class SslTerminationITest extends STMTestBase {
     private void verifyErrorPage() {
         try {
             String errorContent = "HI";
-            lb.getUserPages().setErrorpage(errorContent);
+            String errorFileNormalName = normalName + "_error.html";
+            lb.getUserPages().setErrorpage(errorFileNormalName);
             stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+            stmAdapter.setErrorFile(config, lb, errorContent);
             errorPageHelper(errorContent);
-            lb.getUserPages().setErrorpage(null);
+           // lb.getUserPages().setErrorpage(null);
             stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+            stmAdapter.setErrorFile(config, lb, "Default");
             errorPageHelper("Default");
-            lb.getUserPages().setErrorpage(errorContent);
             stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+            stmAdapter.setErrorFile(config, lb, errorContent);
             errorPageHelper(errorContent);
         } catch (Exception e) {
             e.printStackTrace();
@@ -347,12 +350,18 @@ public class SslTerminationITest extends STMTestBase {
 
     private void verifyDeleteErrorPage() {
         String errorContent = "HI";
+        String errorFileNormalName = normalName + "_error.html";
         try {
-            lb.getUserPages().setErrorpage(errorContent);
-            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+            UserPages userPages = new UserPages();
+            userPages.setLoadbalancer(lb);
+            userPages.setErrorpage(errorFileNormalName);
+            lb.setUserPages(userPages);
+            stmAdapter.updateLoadBalancer(config,lb, lb);
+            stmAdapter.setErrorFile(config, lb, errorContent);
             errorPageHelper(errorContent);
-            lb.getUserPages().setErrorpage(null);
-            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+//            lb.getUserPages().setErrorpage(null);
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+            stmAdapter.setErrorFile(config, lb, "Default");
             errorPageHelper("Default");
         } catch (Exception e) {
             e.printStackTrace();
@@ -363,19 +372,11 @@ public class SslTerminationITest extends STMTestBase {
 
     private void errorPageHelper(String expectedContent) {
         try {
-            String secureErrorFileName = stmClient.getVirtualServer(secureName).getProperties().getConnection_errors().getError_file();
             String normalErrorFileName = stmClient.getVirtualServer(normalName).getProperties().getConnection_errors().getError_file();
-            Assert.assertEquals(secureName + "_error.html", secureErrorFileName);
             Assert.assertEquals(normalName + "_error.html", normalErrorFileName);
-
-            File secureFile = stmClient.getExtraFile(secureErrorFileName);
             File normalFile = stmClient.getExtraFile(normalErrorFileName);
-            BufferedReader secureReader = new BufferedReader(new FileReader(secureFile));
             BufferedReader normalReader = new BufferedReader(new FileReader(normalFile));
-            Assert.assertEquals(secureReader.readLine(), expectedContent);
             Assert.assertEquals(normalReader.readLine(), expectedContent);
-
-            secureReader.close();
             normalReader.close();
         } catch (Exception e) {
             e.printStackTrace();
