@@ -51,6 +51,8 @@ public class ResourceTranslator {
         translateTrafficIpGroupsResource(config, loadBalancer);
 
         if (loadBalancer.getSslTermination() != null) translateKeypairResource(config, loadBalancer);
+        if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null)
+            translateProtectionResource(vsName, loadBalancer);
 
         translatePoolResource(vsName, loadBalancer);
         translateVirtualServerResource(config, vsName, loadBalancer);
