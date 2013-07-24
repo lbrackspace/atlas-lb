@@ -1170,11 +1170,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     private void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName, String content) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
         File errorFile = null;
+        String errorFileName = getErrorFileName(vsName);
+        loadBalancer.getUserPages().setErrorpage(errorFileName);
 
         ResourceTranslator rt = new ResourceTranslator();
         rt.translateVirtualServerResource(config, vsName, loadBalancer);
         VirtualServer vs = rt.getcVServer();
-        String errorFileName = getErrorFileName(vsName);
         try {
             LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
             errorFile = getFileWithContent(content);
