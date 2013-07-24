@@ -400,18 +400,9 @@ public class SslTerminationITest extends STMTestBase {
 
             lb.setConnectionLimit(throttle);
 
-
             setSslTermination();
             connectionThrottleHelper(secureName, maxConnectionRate, maxConnections, minConnections, rateInterval, expectedMax10);
             connectionThrottleHelper(normalName, maxConnectionRate, maxConnections, minConnections, rateInterval, expectedMax10);
-
-
-            stmAdapter.deleteProtection(config, lb);
-
-
-            int deletedRate = 0;
-            connectionThrottleHelper(normalName, deletedRate, deletedRate, deletedRate, deletedRate, deletedRate);
-            connectionThrottleHelper(secureName, deletedRate, deletedRate, deletedRate, deletedRate, deletedRate);
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -423,11 +414,10 @@ public class SslTerminationITest extends STMTestBase {
     private void connectionThrottleHelper(String vsName, int maxConnectionRate, int maxConnections,
                                           int minConnections, int rateInterval, int expectedMax10) {
         try {
-            stmAdapter.updateProtection(config, lb);
+            stmAdapter.updateConnectionThrottle(config, lb);
 
 
-            Protection protection = null;
-            protection = stmClient.getProtection(vsName);
+            Protection protection = stmClient.getProtection(vsName);
 
             Assert.assertNotNull(protection);
             ProtectionConnectionLimiting createdThrottle = protection.getProperties().getConnection_limiting();
