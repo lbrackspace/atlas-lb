@@ -45,23 +45,6 @@ public class SslTerminationITest extends STMTestBase {
         secureName = ZxtmNameBuilder.genSslVSName(lb);
     }
 
-    @After
-    public void tearDownClass() {
-        removeSimpleLoadBalancer();
-    }
-
-    public static void removeSimpleLoadBalancer() {
-        try {
-            stmAdapter.deleteLoadBalancer(config, lb);
-        } catch (Exception e) {
-            String output = "Failure to delete load balancer:\n";
-            for (StackTraceElement line : e.getStackTrace()) {
-                output += line.toString() + "\n";
-            }
-            System.err.println(output);
-        }
-    }
-
     @Test
     public void testSSlTerminationOperations() {
         setSslTermination();
@@ -76,22 +59,21 @@ public class SslTerminationITest extends STMTestBase {
     }
 
     @Test
-    public void testWhenAddingRateLimitWithSslTermination() throws Exception {
+    public void testAddingRateLimitWithSslTermination() throws Exception {
         setRateLimitBeforeSsl();
         deleteRateLimit();
         setSslTermination();
         setRateLimit();
     }
 
-    //TODO: Test needs to make sure access list is created before the test is run
     @Test(expected=StingrayRestClientObjectNotFoundException.class)
-    public void testWhenAddingOnlyAccessListWithSslTermination() throws Exception {
+    public void testAddingOnlyAccessListWithSslTermination() throws Exception {
         verifyAccessListWithoutSsl();
         verifyDeleteAccessListWithoutConnectionThrottling();
     }
 
     @Test
-    public void testWhenAddingAccessListAndConnectionThrottlingWithSslTermination() throws Exception {
+    public void testAddingAccessListAndConnectionThrottlingWithSslTermination() throws Exception {
         lb.setConnectionLimit(new ConnectionLimit());
         stmAdapter.updateConnectionThrottle(config, lb);
         verifyAccessListWithoutSsl();
@@ -100,13 +82,11 @@ public class SslTerminationITest extends STMTestBase {
         verifyAccessListWithSsl();
     }
 
-    private void verifyDeleteAccessListWithoutConnectionThrottling() throws Exception {
-        verifyAccessListWithSsl();
-        stmAdapter.deleteAccessList(config, lb);
-        stmClient.getProtection(normalName);
+    @Test
+    public void testConnectionThrottleWhenCreatingSslTermination() throws Exception {
+        verifyConnectionThrottle();
     }
 
-    //TODO: Null Pointer Exception on User Pages on LB.  Need to make it a value
     @Test
     public void testErrorPageWhenCreatingSslTermination() throws Exception {
         verifyDeleteErrorPage();
@@ -114,20 +94,26 @@ public class SslTerminationITest extends STMTestBase {
     }
 
     @Test
-    public void testConnectionThrottleWhenCreatingSslTermination() throws Exception {
-        verifyConnectionThrottle();
-    }
-
-    @Test
     public void shouldPassIfCertificateIsRemovedWithSecureVSStillThere() throws Exception {
         setSslTermination();
         updateSslTermination();
-        deleteCertificate();
     }
 
     @Test
     public void verifyHostHeaderRewriteIsNever() {
         verifyHostHeaderRewrite();
+    }
+
+    private void setSslTermination() {
+        boolean isSslTermEnabled = true;
+        boolean allowSecureTrafficOnly = false;
+        setSslTermination(isSslTermEnabled, allowSecureTrafficOnly);
+    }
+
+    private void updateSslTermination() {
+        boolean isSslTermEnabled = true;
+        boolean allowSecureTrafficOnly = true;
+        setSslTermination(isSslTermEnabled, allowSecureTrafficOnly);
     }
 
     private void setSslTermination(boolean isSslTermEnabled, boolean allowSecureTrafficOnly) {
@@ -185,18 +171,6 @@ public class SslTerminationITest extends STMTestBase {
         }
     }
 
-    private void setSslTermination() {
-        boolean isSslTermEnabled = true;
-        boolean allowSecureTrafficOnly = false;
-        setSslTermination(isSslTermEnabled, allowSecureTrafficOnly);
-    }
-
-    private void updateSslTermination() {
-        boolean isSslTermEnabled = true;
-        boolean allowSecureTrafficOnly = true;
-        setSslTermination(isSslTermEnabled, allowSecureTrafficOnly);
-    }
-
     private void deleteSslTermination() {
         try {
             String vsName = ZxtmNameBuilder.genVSName(lb);
@@ -245,6 +219,107 @@ public class SslTerminationITest extends STMTestBase {
             createdNormalVs = stmClient.getVirtualServer(normalVsName);
             Assert.assertEquals(isConnectionLogging, createdSecureVs.getProperties().getLog().getEnabled());
             Assert.assertEquals(isConnectionLogging, createdNormalVs.getProperties().getLog().getEnabled());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+        }
+    }
+
+    private void setRateLimit() {
+        try {
+            int maxRequestsPerSecond = 1000;
+            String ticketComment = "HI";
+            RateLimit rateLimit = new RateLimit();
+            rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
+            Ticket ticket = new Ticket();
+            ticket.setComment(ticketComment);
+            rateLimit.setTicket(ticket);
+            stmAdapter.setRateLimit(config, lb, rateLimit);
+
+
+            Bandwidth createdNormalBandwidth = stmClient.getBandwidth(normalName);
+            Assert.assertNotNull(createdNormalBandwidth);
+            Assert.assertEquals(maxRequestsPerSecond, (int) createdNormalBandwidth.getProperties().getBasic().getMaximum());
+            Assert.assertEquals(ticketComment, createdNormalBandwidth.getProperties().getBasic().getNote());
+
+            VirtualServer createdServer = stmClient.getVirtualServer(normalName);
+            Assert.assertTrue(createdServer.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF.toString()) ||
+                    createdServer.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP.toString()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+        }
+
+
+    }
+
+    private void setRateLimitBeforeSsl() {
+        try {
+            int maxRequestsPerSecond = 1000;
+            String ticketComment = "HI";
+            RateLimit rateLimit = new RateLimit();
+            rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
+            Ticket ticket = new Ticket();
+            ticket.setComment(ticketComment);
+            rateLimit.setTicket(ticket);
+            stmAdapter.setRateLimit(config, lb, rateLimit);
+
+            Bandwidth createdNormalBandwidth = stmClient.getBandwidth(normalName);
+            Assert.assertNotNull(createdNormalBandwidth);
+            Assert.assertEquals(maxRequestsPerSecond, (int) createdNormalBandwidth.getProperties().getBasic().getMaximum());
+            Assert.assertEquals(ticketComment, createdNormalBandwidth.getProperties().getBasic().getNote());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+        }
+    }
+
+    private void deleteRateLimit() throws Exception {
+        Boolean notFound = false;
+        stmAdapter.deleteRateLimit(config, lb);
+        try {
+            stmClient.getBandwidth(normalName);
+        } catch (StingrayRestClientObjectNotFoundException notFoundException) {
+            notFound = true;
+        }
+        Assert.assertTrue(notFound);
+    }
+
+    private void connectionThrottleHelper(String vsName, int maxConnectionRate, int maxConnections,
+                                          int minConnections, int rateInterval, int expectedMax10) {
+        try {
+            stmAdapter.updateConnectionThrottle(config, lb);
+
+
+            Protection protection = stmClient.getProtection(vsName);
+
+            Assert.assertNotNull(protection);
+            ProtectionConnectionLimiting createdThrottle = protection.getProperties().getConnection_limiting();
+            Assert.assertEquals(maxConnectionRate, (int) createdThrottle.getMax_connection_rate());
+            Assert.assertEquals(expectedMax10, (int) createdThrottle.getMax_10_connections());
+            Assert.assertEquals(maxConnections, (int) createdThrottle.getMax_1_connections());
+            Assert.assertEquals(rateInterval, (int) createdThrottle.getRate_timer());
+            Assert.assertEquals(minConnections, (int) createdThrottle.getMin_connections());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+        }
+    }
+
+    private void errorPageHelper(String expectedContent) {
+        try {
+            String normalErrorFileName = stmClient.getVirtualServer(normalName).getProperties().getConnection_errors().getError_file();
+            Assert.assertEquals(normalName + "_error.html", normalErrorFileName);
+            File normalFile = stmClient.getExtraFile(normalErrorFileName);
+            BufferedReader normalReader = new BufferedReader(new FileReader(normalFile));
+            Assert.assertEquals(normalReader.readLine(), expectedContent);
+            normalReader.close();
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -315,21 +390,6 @@ public class SslTerminationITest extends STMTestBase {
         }
     }
 
-    private void errorPageHelper(String expectedContent) {
-        try {
-            String normalErrorFileName = stmClient.getVirtualServer(normalName).getProperties().getConnection_errors().getError_file();
-            Assert.assertEquals(normalName + "_error.html", normalErrorFileName);
-            File normalFile = stmClient.getExtraFile(normalErrorFileName);
-            BufferedReader normalReader = new BufferedReader(new FileReader(normalFile));
-            Assert.assertEquals(normalReader.readLine(), expectedContent);
-            normalReader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail(e.getMessage());
-            removeSimpleLoadBalancer();
-        }
-    }
-
     private void verifyConnectionThrottle() {
         try {
             ConnectionLimit throttle = new ConnectionLimit();
@@ -357,56 +417,10 @@ public class SslTerminationITest extends STMTestBase {
 
     }
 
-    private void connectionThrottleHelper(String vsName, int maxConnectionRate, int maxConnections,
-                                          int minConnections, int rateInterval, int expectedMax10) {
-        try {
-            stmAdapter.updateConnectionThrottle(config, lb);
-
-
-            Protection protection = stmClient.getProtection(vsName);
-
-            Assert.assertNotNull(protection);
-            ProtectionConnectionLimiting createdThrottle = protection.getProperties().getConnection_limiting();
-            Assert.assertEquals(maxConnectionRate, (int) createdThrottle.getMax_connection_rate());
-            Assert.assertEquals(expectedMax10, (int) createdThrottle.getMax_10_connections());
-            Assert.assertEquals(maxConnections, (int) createdThrottle.getMax_1_connections());
-            Assert.assertEquals(rateInterval, (int) createdThrottle.getRate_timer());
-            Assert.assertEquals(minConnections, (int) createdThrottle.getMin_connections());
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail(e.getMessage());
-            removeSimpleLoadBalancer();
-        }
-    }
-
-    private void setRateLimit() {
-        try {
-            int maxRequestsPerSecond = 1000;
-            String ticketComment = "HI";
-            RateLimit rateLimit = new RateLimit();
-            rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
-            Ticket ticket = new Ticket();
-            ticket.setComment(ticketComment);
-            rateLimit.setTicket(ticket);
-            stmAdapter.setRateLimit(config, lb, rateLimit);
-
-
-            Bandwidth createdNormalBandwidth = stmClient.getBandwidth(normalName);
-            Assert.assertNotNull(createdNormalBandwidth);
-            Assert.assertEquals(maxRequestsPerSecond, (int) createdNormalBandwidth.getProperties().getBasic().getMaximum());
-            Assert.assertEquals(ticketComment, createdNormalBandwidth.getProperties().getBasic().getNote());
-
-            VirtualServer createdServer = stmClient.getVirtualServer(normalName);
-            Assert.assertTrue(createdServer.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF.toString()) ||
-                    createdServer.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP.toString()));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail(e.getMessage());
-            removeSimpleLoadBalancer();
-        }
-
-
+    private void verifyDeleteAccessListWithoutConnectionThrottling() throws Exception {
+        verifyAccessListWithSsl();
+        stmAdapter.deleteAccessList(config, lb);
+        stmClient.getProtection(normalName);
     }
 
     private void verifyAccessListWithSsl() {
@@ -451,7 +465,6 @@ public class SslTerminationITest extends STMTestBase {
         }
     }
 
-
     private void verifyAccessListWithoutSsl() {
         try {
             Set<AccessList> networkItems = new HashSet<AccessList>();
@@ -478,44 +491,20 @@ public class SslTerminationITest extends STMTestBase {
         }
     }
 
-    private void setRateLimitBeforeSsl() {
+    @After
+    public void tearDownClass() {
+        removeSimpleLoadBalancer();
+    }
+
+    public static void removeSimpleLoadBalancer() {
         try {
-            int maxRequestsPerSecond = 1000;
-            String ticketComment = "HI";
-            RateLimit rateLimit = new RateLimit();
-            rateLimit.setMaxRequestsPerSecond(maxRequestsPerSecond);
-            Ticket ticket = new Ticket();
-            ticket.setComment(ticketComment);
-            rateLimit.setTicket(ticket);
-            stmAdapter.setRateLimit(config, lb, rateLimit);
-
-            Bandwidth createdNormalBandwidth = stmClient.getBandwidth(normalName);
-            Assert.assertNotNull(createdNormalBandwidth);
-            Assert.assertEquals(maxRequestsPerSecond, (int) createdNormalBandwidth.getProperties().getBasic().getMaximum());
-            Assert.assertEquals(ticketComment, createdNormalBandwidth.getProperties().getBasic().getNote());
-
+            stmAdapter.deleteLoadBalancer(config, lb);
         } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail(e.getMessage());
-            removeSimpleLoadBalancer();
+            String output = "Failure to delete load balancer:\n";
+            for (StackTraceElement line : e.getStackTrace()) {
+                output += line.toString() + "\n";
+            }
+            System.err.println(output);
         }
     }
-
-
-    private void deleteRateLimit() throws Exception {
-        Boolean notFound = false;
-        stmAdapter.deleteRateLimit(config, lb);
-        try {
-            stmClient.getBandwidth(normalName);
-        } catch (StingrayRestClientObjectNotFoundException notFoundException) {
-            notFound = true;
-        }
-        Assert.assertTrue(notFound);
-    }
-
-    private void deleteCertificate() {
-
-    }
-
-
 }

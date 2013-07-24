@@ -39,13 +39,6 @@ public class STMTestBase extends StmTestConstants {
     public static String FAILOVER_HOST_1;
     public static String DEFAULT_LOG_FILE_LOCATION;
 
-    public static final Integer TEST_ACCOUNT_ID = 999998;
-    public static final Integer TEST_LOADBALANCER_ID = 999998;
-    public static final Integer TEST_VIP_ID = 1000041;
-    public static final Integer TEST_IPV6_VIP_ID = 1000061;
-    public static final Integer ADDITIONAL_VIP_ID = 88887;
-    public static final Integer ADDITIONAL_IPV6_VIP_ID = 88885;
-
     protected static ReverseProxyLoadBalancerStmAdapter stmAdapter;
     protected static StingrayRestClient stmClient;
     protected static LoadBalancerEndpointConfiguration config;

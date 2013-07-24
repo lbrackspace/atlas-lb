@@ -745,7 +745,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         Protection curPro = null;
         try {
             curPro = client.getProtection(protectionName);
-            client.deleteMonitor(protectionName);
+            client.deleteProtection(protectionName);
             LOG.info(String.format("Successfully removed protection class '%s'...", protectionName));
         } catch (StingrayRestClientObjectNotFoundException ex) {
             LOG.error(String.format("Protection already removed: %s, continue...", protectionName));

@@ -5,6 +5,15 @@ public class StmTestConstants {
     public static final int LB_SECURE_PORT = 443;
     public static final int NODE_1_PORT = 80;
     public static final int NODE_2_PORT = 81;
+
+    public static final Integer TEST_ACCOUNT_ID = 999998;
+    public static final Integer TEST_LOADBALANCER_ID = 999998;
+
+    public static final Integer TEST_VIP_ID = 1000041;
+    public static final Integer TEST_IPV6_VIP_ID = 1000061;
+    public static final Integer ADDITIONAL_VIP_ID = 88887;
+    public static final Integer ADDITIONAL_IPV6_VIP_ID = 88885;
+
     public static final String SSL_CERT = "-----BEGIN CERTIFICATE-----\n" +
                 "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
                 "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
