@@ -4,8 +4,6 @@ package org.openstack.atlas.adapter.itest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -13,11 +11,11 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.VirtualIpv6;
 import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 
-import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,22 +34,27 @@ public class Ipv6ITest extends STMTestBase {
         setupIvars();
     }
 
-    public static void removeIpv6LoadBalancer() {
+    public static void removeIpv6LoadBalancer() throws Exception {
         try {
             stmAdapter.deleteLoadBalancer(config, lb);
-        } catch (InsufficientRequestException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (RollBackException e) {
-            e.printStackTrace();
+            Assert.fail();
         }
+
+        StingrayRestClient client = new StingrayRestClient();
+        client.getVirtualServer(loadBalancerName());
     }
 
 
     @Test
-    public void createAndRemoveIpv6LoadBalancer() {
+    public void testCreateIpv6LoadBalancer() throws Exception {
         createSimpleIpv6LoadBalancer();
-        removeIpv6LoadBalancer();
+    }
 
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testRemoveIpv6LoadBalancer() throws Exception {
+        removeIpv6LoadBalancer();
     }
 
     protected static void setupIvars() {
