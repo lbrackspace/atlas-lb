@@ -1,143 +1,200 @@
 package org.openstack.atlas.api.async;
 
-import org.junit.Assert;
+import junit.framework.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.mockito.Matchers;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.openstack.atlas.api.async.util.STMTestBase;
+import org.openstack.atlas.api.atom.EntryHelper;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
-import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.NotificationService;
-import org.openstack.atlas.service.domain.services.UsageRefactorService;
-import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
+import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
-import org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 
 import javax.jms.ObjectMessage;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
+public class UpdateSslTerminationListenerTest extends STMTestBase {
+    private Integer LOAD_BALANCER_ID;
+    private Integer ACCOUNT_ID;
+    private String USERNAME = "SOME_USERNAME";
+    private Integer SSL_TERMINATION_ID = 15;
+    private List<SnmpUsage> usages;
 
-@Ignore
-@RunWith(Enclosed.class)
-public class UpdateSslTerminationListenerTest {
-    @Test
-    public void sampleTest() {
+    @Mock
+    private ObjectMessage objectMessage;
+    @Mock
+    private MessageDataContainer messageDataContainer;
+    @Mock
+    private LoadBalancerService loadBalancerService;
+    @Mock
+    private NotificationService notificationService;
+    @Mock
+    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    @Mock
+    private UsageEventCollection usageEventCollection;
+    @Mock
+    private ZeusSslTermination queTermination;
+    @Mock
+    private SslTermination sslTermination;
 
+    private UpdateSslTerminationListener updateSslTerminationListener;
+
+    @Before
+    public void standUp() {
+        MockitoAnnotations.initMocks(this);
+        setupIvars();
+        usages = new ArrayList<SnmpUsage>();
+        LOAD_BALANCER_ID = lb.getId();
+        ACCOUNT_ID = lb.getAccountId();
+        lb.setUserName(USERNAME);
+        updateSslTerminationListener = new UpdateSslTerminationListener();
+        updateSslTerminationListener.setLoadBalancerService(loadBalancerService);
+        updateSslTerminationListener.setNotificationService(notificationService);
+        updateSslTerminationListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        updateSslTerminationListener.setUsageEventCollection(usageEventCollection);
     }
 
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(locations = {"classpath:context.xml"})
-    @Transactional
-    public static class WhenTestingUpdateSslTerminationListener {
+    @Test
+    public void testUpdateLoadBalancerWithValidSslTerminationEnabledSecureOnly() throws Exception {
+        when(objectMessage.getObject()).thenReturn(messageDataContainer);
+        when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
+        when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
+        when(messageDataContainer.getUserName()).thenReturn(USERNAME);
+        when(messageDataContainer.getZeusSslTermination()).thenReturn(queTermination);
+        when(sslTermination.isEnabled()).thenReturn(true);
+        when(sslTermination.isSecureTrafficOnly()).thenReturn(true);
+        when(sslTermination.getSecurePort()).thenReturn(80);
+        when(sslTermination.getId()).thenReturn(SSL_TERMINATION_ID);
+        when(queTermination.getSslTermination()).thenReturn(sslTermination);
+        lb.setSslTermination(sslTermination);
+        when(usageEventCollection.getUsage(lb)).thenReturn(usages);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
-        //TODO: update stuff for injections....
+        updateSslTerminationListener.doOnMessage(objectMessage);
 
-        @Autowired
-        public UpdateSslTerminationListener updateSslTerminationListener;
+        verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
+        Assert.assertEquals(lb.getUserName(), USERNAME);
+        verify(usageEventCollection, times(2)).getUsage(lb);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_ONLY_ON), any(Calendar.class));
+        verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
+        verify(notificationService).saveSslTerminationEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, SSL_TERMINATION_ID, EntryHelper.UPDATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), EventType.UPDATE_SSL_TERMINATION, CategoryType.UPDATE, EventSeverity.INFO);
+    }
 
-        @Autowired
-        @Qualifier("usageRefactorService")
-        public UsageRefactorService usageRefactorService;
+    @Test
+    public void testUpdateLoadBalancerWithValidSslTerminationEnabledMixed() throws Exception {
+        when(objectMessage.getObject()).thenReturn(messageDataContainer);
+        when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
+        when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
+        when(messageDataContainer.getUserName()).thenReturn(USERNAME);
+        when(messageDataContainer.getZeusSslTermination()).thenReturn(queTermination);
+        when(sslTermination.isEnabled()).thenReturn(true);
+        when(sslTermination.isSecureTrafficOnly()).thenReturn(false);
+        when(sslTermination.getSecurePort()).thenReturn(80);
+        when(sslTermination.getId()).thenReturn(SSL_TERMINATION_ID);
+        when(queTermination.getSslTermination()).thenReturn(sslTermination);
+        lb.setSslTermination(sslTermination);
+        when(usageEventCollection.getUsage(lb)).thenReturn(usages);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
-        @Autowired
-        @Qualifier("usageEventProcessorImpl")
-        public UsageEventProcessorImpl usageEventProcessor;
+        updateSslTerminationListener.doOnMessage(objectMessage);
 
-        @Autowired
-        @Qualifier("loadBalancerRepository")
-        public LoadBalancerRepository loadBalancerRepository;
+        verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
+        Assert.assertEquals(lb.getUserName(), USERNAME);
+        verify(usageEventCollection, times(2)).getUsage(lb);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_MIXED_ON), any(Calendar.class));
+        verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
+        verify(notificationService).saveSslTerminationEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, SSL_TERMINATION_ID, EntryHelper.UPDATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), EventType.UPDATE_SSL_TERMINATION, CategoryType.UPDATE, EventSeverity.INFO);
+    }
 
+    @Test
+    public void testUpdateLoadBalancerWithValidSslTerminationDisabled() throws Exception {
+        when(objectMessage.getObject()).thenReturn(messageDataContainer);
+        when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
+        when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
+        when(messageDataContainer.getUserName()).thenReturn(USERNAME);
+        when(messageDataContainer.getZeusSslTermination()).thenReturn(queTermination);
+        when(sslTermination.isEnabled()).thenReturn(false);
+        when(sslTermination.getSecurePort()).thenReturn(80);
+        when(sslTermination.getId()).thenReturn(SSL_TERMINATION_ID);
+        when(queTermination.getSslTermination()).thenReturn(sslTermination);
+        lb.setSslTermination(sslTermination);
+        when(usageEventCollection.getUsage(lb)).thenReturn(usages);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
-        public NotificationService notificationService;
+        updateSslTerminationListener.doOnMessage(objectMessage);
 
-        public LoadBalancerService loadBalancerService;
+        verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
+        Assert.assertEquals(lb.getUserName(), USERNAME);
+        verify(usageEventCollection, times(2)).getUsage(lb);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_OFF), any(Calendar.class));
+        verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
+        verify(notificationService).saveSslTerminationEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, SSL_TERMINATION_ID, EntryHelper.UPDATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), EventType.UPDATE_SSL_TERMINATION, CategoryType.UPDATE, EventSeverity.INFO);
+    }
 
-        @Autowired
-        public ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+    @Test
+    public void testUpdateInvalidLoadBalancer() throws Exception {
+        EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
+        when(objectMessage.getObject()).thenReturn(messageDataContainer);
+        when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
+        when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
+        when(messageDataContainer.getUserName()).thenReturn(USERNAME);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
-        public SnmpUsage snmpUsage;
-        public SnmpUsage snmpUsage2;
-        public List<SnmpUsage> snmpUsages;
-        public LoadBalancer lb;
+        updateSslTerminationListener.doOnMessage(objectMessage);
 
-        @Before
-        public void standUp() throws Exception {
-            loadBalancerRepository = mock(LoadBalancerRepository.class);
+        //verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_SSL_TERMINATION), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
+    }
 
-            lb = new LoadBalancer();
-            lb.setId(543221);
-            lb.setAccountId(55555);
+    @Test
+    public void testUpdateLoadBalancerWithInvalidSslTermination() throws Exception {
+        Exception exception = new Exception();
+        when(objectMessage.getObject()).thenReturn(messageDataContainer);
+        when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
+        when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
+        when(messageDataContainer.getUserName()).thenReturn(USERNAME);
+        when(messageDataContainer.getZeusSslTermination()).thenReturn(queTermination);
+        when(sslTermination.isEnabled()).thenReturn(true);
+        when(sslTermination.isSecureTrafficOnly()).thenReturn(true);
+        when(sslTermination.getSecurePort()).thenReturn(80);
+        when(sslTermination.getId()).thenReturn(SSL_TERMINATION_ID);
+        when(queTermination.getSslTermination()).thenReturn(sslTermination);
+        lb.setSslTermination(sslTermination);
+        when(usageEventCollection.getUsage(lb)).thenReturn(usages);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
 
-            snmpUsages = new ArrayList<SnmpUsage>();
-            snmpUsage = new SnmpUsage();
-            snmpUsage.setHostId(1);
-            snmpUsage.setLoadbalancerId(lb.getId());
-            snmpUsage.setBytesIn(1234455);
-            snmpUsage.setBytesInSsl(4321);
-            snmpUsage.setBytesOut(987);
-            snmpUsage.setBytesOutSsl(986);
-            snmpUsage.setConcurrentConnections(1);
-            snmpUsage.setConcurrentConnectionsSsl(3);
-            snmpUsages.add(snmpUsage);
+        updateSslTerminationListener.doOnMessage(objectMessage);
 
-            loadBalancerService = mock(LoadBalancerService.class);
-            notificationService = mock(NotificationService.class);
-            doNothing().when(loadBalancerService).update(Matchers.<LoadBalancer>any());
-            doNothing().when(loadBalancerService).setStatus(Matchers.<LoadBalancer>any(), Matchers.<LoadBalancerStatus>any());
-            doNothing().when(notificationService).saveAlert(Matchers.<Integer>any(), Matchers.<Integer>any(), Matchers.<Exception>any(), Matchers.<String>any(), Matchers.<String>any());
-            doNothing().when(notificationService).saveAlert(Matchers.<Exception>any(), Matchers.<String>any(), Matchers.<String>any());
-            doNothing().when(notificationService).saveSslTerminationEvent(Matchers.<String>any(), Matchers.<Integer>any(), Matchers.<Integer>any(),
-                    Matchers.<Integer>any(), Matchers.<String>any(), Matchers.<String>any(), Matchers.<EventType>any(), Matchers.<CategoryType>any(), Matchers.<EventSeverity>any());
-            doNothing().when(notificationService).saveLoadBalancerEvent(Matchers.<String>any(), Matchers.<Integer>any(), Matchers.<Integer>any(), Matchers.<String>any(),
-                    Matchers.<String>any(), Matchers.<EventType>any(), Matchers.<CategoryType>any(), Matchers.<EventSeverity>any());
-        }
-
-        @Test
-        public void shouldHaveNoPreviousUsagesForTestDB() throws Exception {
-            Calendar starttime = Calendar.getInstance();
-            starttime.roll(Calendar.MONTH, false);
-
-            ObjectMessage m = mock(ObjectMessage.class);
-            MessageDataContainer md = new MessageDataContainer();
-            md.setAccountId(lb.getAccountId());
-            md.setLoadBalancerId(lb.getId());
-            md.setUserName("me");
-
-            ZeusSslTermination zm = new ZeusSslTermination();
-            md.setZeusSslTermination(zm);
-
-            when(loadBalancerService.get(Matchers.anyInt(), Matchers.anyInt())).thenReturn(lb);
-            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
-            doNothing().when(reverseProxyLoadBalancerService).updateSslTermination(Matchers.<LoadBalancer>any(), Matchers.<ZeusSslTermination>any());
-
-            updateSslTerminationListener.doOnMessage(m);
-
-//            usageEventProcessor.processUsageEvent(snmpUsages, lb, UsageEvent.SSL_ON);
-            Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> oUsages = usageRefactorService.getAllLoadBalancerHostUsages();
-            Assert.assertNotNull(oUsages);
-            Assert.assertEquals(1, oUsages.size());
-            Assert.assertEquals(true, oUsages.containsKey(543221));
-        }
+        verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
+        Assert.assertEquals(lb.getUserName(), USERNAME);
+        verify(usageEventCollection).getUsage(lb);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ERROR);
+        verify(loadBalancerService).update(lb);
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_SSL_TERMINATION), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
     }
 }
 
