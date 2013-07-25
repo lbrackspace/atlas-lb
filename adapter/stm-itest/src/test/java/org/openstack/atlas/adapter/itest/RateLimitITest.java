@@ -34,8 +34,9 @@ public class RateLimitITest extends STMTestBase {
         }
     }
 
-    @Test
-    public void testSimpleRateLimitOperations() {
+    // Test everything together for completeness I guess?
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testSimpleRateLimitOperations() throws StingrayRestClientObjectNotFoundException {
         String vsName;
         StingrayRestClient client;
         RateLimit rateLimit;
@@ -46,38 +47,98 @@ public class RateLimitITest extends STMTestBase {
 
             rateLimit = new RateLimit();
             rateLimit.setMaxRequestsPerSecond(5);
-            setRateLimit(client, vsName, rateLimit);
+            setRateLimit(rateLimit);
             bandwidth = getRateLimit(client, vsName);
             Assert.assertNotNull(bandwidth);
             Assert.assertEquals(bandwidth.getProperties().getBasic().getMaximum(), rateLimit.getMaxRequestsPerSecond());
 
             rateLimit = new RateLimit();
             rateLimit.setMaxRequestsPerSecond(10);
-            updateRateLimit(client, vsName, rateLimit);
+            updateRateLimit(rateLimit);
             bandwidth = getRateLimit(client, vsName);
             Assert.assertNotNull(bandwidth);
             Assert.assertEquals(bandwidth.getProperties().getBasic().getMaximum(), rateLimit.getMaxRequestsPerSecond());
 
-            deleteRateLimit(client, vsName);
-            bandwidth = null;
-            try {
-                bandwidth = getRateLimit(client, vsName);
-            } catch (Exception e) { }
+            deleteRateLimit();
+            bandwidth = getRateLimit(client, vsName);
             Assert.assertNull(bandwidth);
-
+        } catch (StingrayRestClientObjectNotFoundException onfe) {
+            throw (onfe);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void setRateLimit(StingrayRestClient client, String vsName, RateLimit rateLimit) throws InsufficientRequestException, RollBackException, RemoteException {
-        lb.setRateLimit(rateLimit);
-        stmAdapter.setRateLimit(config,lb,rateLimit);
+    // Test Get (though we need Set to work for this to work)
+    @Test
+    public void testGetRateLimit() throws Exception {
+        String vsName = ZxtmNameBuilder.genVSName(lb);
+        StingrayRestClient client = new StingrayRestClient();
+        RateLimit rateLimit = new RateLimit();
+        Bandwidth bandwidth;
+
+        rateLimit.setMaxRequestsPerSecond(5);
+        setRateLimit(rateLimit);
+        bandwidth = getRateLimit(client, vsName);
+        Assert.assertNotNull(bandwidth);
+        Assert.assertEquals(bandwidth.getProperties().getBasic().getMaximum(), rateLimit.getMaxRequestsPerSecond());
     }
 
-    private void updateRateLimit(StingrayRestClient client, String vsName, RateLimit rateLimit) throws InsufficientRequestException, RollBackException, RemoteException {
+    // Test Set (though we need Get to work for this to work)
+    @Test
+    public void testSetRateLimit() throws Exception {
+        String vsName = ZxtmNameBuilder.genVSName(lb);
+        StingrayRestClient client = new StingrayRestClient();
+        RateLimit rateLimit = new RateLimit();
+        Bandwidth bandwidth;
+
+        rateLimit.setMaxRequestsPerSecond(10);
+        setRateLimit(rateLimit);
+        bandwidth = getRateLimit(client, vsName);
+        Assert.assertNotNull(bandwidth);
+        Assert.assertEquals(bandwidth.getProperties().getBasic().getMaximum(), rateLimit.getMaxRequestsPerSecond());
+
+        rateLimit = new RateLimit();
+        rateLimit.setMaxRequestsPerSecond(15);
+        updateRateLimit(rateLimit);
+        bandwidth = getRateLimit(client, vsName);
+        Assert.assertNotNull(bandwidth);
+        Assert.assertEquals(bandwidth.getProperties().getBasic().getMaximum(), rateLimit.getMaxRequestsPerSecond());
+    }
+
+    // Test Delete (though we need Set and Get for this to work)
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void testDeleteRateLimit() throws Exception {
+        String vsName = ZxtmNameBuilder.genVSName(lb);
+        StingrayRestClient client = new StingrayRestClient();
+        RateLimit rateLimit = new RateLimit();
+        Bandwidth bandwidth;
+
+        try {
+            rateLimit.setMaxRequestsPerSecond(20);
+            setRateLimit(rateLimit);
+            bandwidth = getRateLimit(client, vsName);
+            Assert.assertNotNull(bandwidth);
+            Assert.assertEquals(bandwidth.getProperties().getBasic().getMaximum(), rateLimit.getMaxRequestsPerSecond());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+        deleteRateLimit();
+        bandwidth = getRateLimit(client, vsName); //should throw an exception
+        Assert.assertNull(bandwidth);
+    }
+
+
+    private void setRateLimit(RateLimit rateLimit) throws InsufficientRequestException, RollBackException, RemoteException {
         lb.setRateLimit(rateLimit);
-        stmAdapter.updateRateLimit(config,lb,rateLimit);
+        stmAdapter.setRateLimit(config, lb, rateLimit);
+    }
+
+    private void updateRateLimit(RateLimit rateLimit) throws InsufficientRequestException, RollBackException, RemoteException {
+        lb.setRateLimit(rateLimit);
+        stmAdapter.updateRateLimit(config, lb, rateLimit);
     }
 
     private Bandwidth getRateLimit(StingrayRestClient client, String vsName) throws StingrayRestClientObjectNotFoundException, StingrayRestClientException {
@@ -85,9 +146,7 @@ public class RateLimitITest extends STMTestBase {
         return b;
     }
 
-    private void deleteRateLimit(StingrayRestClient client, String vsName) throws InsufficientRequestException, RollBackException, RemoteException {
+    private void deleteRateLimit() throws InsufficientRequestException, RollBackException, RemoteException {
         stmAdapter.deleteRateLimit(config, lb);
     }
-
-
 }
