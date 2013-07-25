@@ -175,11 +175,10 @@ public class STMTestBase extends StmTestConstants {
         try {
             stmAdapter.createLoadBalancer(config, lb);
             //TODO: use test config(update stingray-rest-client to use openstack.configuration)
-            tclient = new StingrayRestClient();
             VirtualServer vs;
             Pool pool;
 
-            vs = tclient.getVirtualServer(loadBalancerName());
+            vs = stmClient.getVirtualServer(loadBalancerName());
 
             Assert.assertNotNull(vs);
             Assert.assertEquals(true, vs.getProperties().getBasic().getEnabled());
@@ -190,19 +189,19 @@ public class STMTestBase extends StmTestConstants {
             Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP));
             Assert.assertEquals(false, vs.getProperties().getBasic().getListen_on_any());
             Assert.assertEquals(false, vs.getProperties().getTcp().getProxy_close());
-            Assert.assertEquals(vs.getProperties().getBasic().getListen_on_traffic_ips(), translator.genGroupNameSet(lb));
+            Assert.assertEquals(translator.genGroupNameSet(lb), vs.getProperties().getBasic().getListen_on_traffic_ips());
 
             Assert.assertEquals("", vs.getProperties().getBasic().getProtection_class());
             Assert.assertEquals("", vs.getProperties().getBasic().getBandwidth_class());
 
-            pool = tclient.getPool(loadBalancerName());
+            pool = stmClient.getPool(loadBalancerName());
             Assert.assertNotNull(pool);
             Assert.assertEquals(0, pool.getProperties().getBasic().getMonitors().size());
             Assert.assertEquals(lb.getAlgorithm().name().toLowerCase(), pool.getProperties().getLoad_balancing().getAlgorithm());
 
             TrafficIp vip;
             for (String v : vs.getProperties().getBasic().getListen_on_traffic_ips()) {
-                vip = tclient.getTrafficIp(v);
+                vip = stmClient.getTrafficIp(v);
                 Assert.assertNotNull(vip);
                 Assert.assertEquals(1, vip.getProperties().getBasic().getIpaddresses().size());
                 Assert.assertEquals(true, vip.getProperties().getBasic().getEnabled());

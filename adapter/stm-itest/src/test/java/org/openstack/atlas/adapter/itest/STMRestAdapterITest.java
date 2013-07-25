@@ -36,7 +36,9 @@ public class STMRestAdapterITest extends STMTestBase {
     @Test
     public void updateAlgorithm() throws RollBackException, InsufficientRequestException, RemoteException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         lb.setAlgorithm(LoadBalancerAlgorithm.RANDOM);
-        stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+        LoadBalancer nlb = new LoadBalancer();
+        nlb.setAlgorithm(LoadBalancerAlgorithm.ROUND_ROBIN);
+        stmAdapter.updateLoadBalancer(config, lb, nlb);
         Assert.assertEquals(LoadBalancerAlgorithm.RANDOM.name().toLowerCase(), stmClient.getPool(loadBalancerName()).getProperties().getLoad_balancing().getAlgorithm());
     }
 

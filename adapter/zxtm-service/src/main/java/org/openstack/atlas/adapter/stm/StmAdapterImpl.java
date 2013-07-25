@@ -51,6 +51,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+
+        ResourceTranslator translator = new ResourceTranslator();
+        translator.translateLoadBalancerResource(config, vsName, loadBalancer);
 
         try {
             if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
@@ -58,9 +62,22 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             }
             createPersistentClasses(config);
-            client.destroy();
 
-            updateLoadBalancer(config, loadBalancer, loadBalancer);
+
+            if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
+                updateHealthMonitor(config, client, vsName, translator.getcMonitor());
+            }
+
+            if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())
+                    || loadBalancer.getConnectionLimit() != null) {
+                updateProtection(config, client, vsName, translator.getcProtection());
+            }
+
+            updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
+            updatePool(config, client, vsName, translator.getcPool());
+            updateVirtualServer(config, client, vsName, translator.getcVServer());
+
+            client.destroy();
         } catch (Exception e) {
             LOG.error(String.format("Failed to create load balancer %s, rolling back...", loadBalancer.getId()));
             deleteLoadBalancer(config, loadBalancer);
@@ -76,53 +93,46 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         ResourceTranslator translator = new ResourceTranslator();
 
-        List<String> vsNames = new ArrayList<String>();
-        if (loadBalancer.isUsingSsl()) {
-            vsNames.add(ZxtmNameBuilder.genSslVSName(loadBalancer));
-        }
-        vsNames.add(ZxtmNameBuilder.genVSName(loadBalancer));
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String secureVsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
-        for (String vsName : vsNames) {
-            try {
+        try {
 
-                translator.translateLoadBalancerResource(config, vsName, loadBalancer);
+            translator.translateLoadBalancerResource(config, vsName, loadBalancer);
 
-                if (queLb.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
-                    updateHealthMonitor(config, client, vsName, translator.getcMonitor());
-                }
-
-                if ((queLb.getAccessLists() != null && !queLb.getAccessLists().isEmpty())
-                        || queLb.getConnectionLimit() != null) {
-                    updateProtection(config, client, vsName, translator.getcProtection());
-                }
-
-                if (queLb.getLoadBalancerJoinVip6Set() != null || queLb.getLoadBalancerJoinVipSet() != null) {
-                    updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
-                }
-
-                if (queLb.getNodes() != null && !queLb.getNodes().isEmpty()) {
-                    updatePool(config, client, vsName, translator.getcPool());
-                }
-
-                UserPages userPages = queLb.getUserPages();
-                if (userPages != null) {
-                    if (userPages.getErrorpage() != null) {
-                        setErrorFile(config, queLb, queLb.getUserPages().getErrorpage());
-                    }
-                }
-
-                updateVirtualServer(config, client, vsName, translator.getcVServer());
-//                if (loadBalancer.hasSsl()) {
-//                    vsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-//                    translator.translateVirtualServerResource(config, vsName, loadBalancer);
-//                    updateVirtualServer(config, client, vsName, translator.getcVServer());
-//                }
-
-            } catch (Exception ex) {
-                client.destroy();
-                LOG.error("Exception updating load balancer: " + ex);
-                throw new StmRollBackException("Failed to update loadbalancer", ex);
+            if (queLb.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
+                updateHealthMonitor(config, client, vsName, translator.getcMonitor());
             }
+
+            if ((queLb.getAccessLists() != null && !queLb.getAccessLists().isEmpty())
+                    || queLb.getConnectionLimit() != null) {
+                updateProtection(config, client, vsName, translator.getcProtection());
+            }
+
+            if (queLb.getLoadBalancerJoinVip6Set() != null || queLb.getLoadBalancerJoinVipSet() != null) {
+                updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
+            }
+
+            if (queLb.getNodes() != null && !queLb.getNodes().isEmpty() || queLb.getAlgorithm() != null) {
+                updatePool(config, client, vsName, translator.getcPool());
+            }
+
+            UserPages userPages = queLb.getUserPages();
+            if (userPages != null) {
+                if (userPages.getErrorpage() != null) {
+                    setErrorFile(config, queLb, queLb.getUserPages().getErrorpage());
+                }
+            }
+
+            if (loadBalancer.isUsingSsl()) {
+                updateVirtualServer(config, client, secureVsName, translator.getcVServer());
+            }
+            updateVirtualServer(config, client, vsName, translator.getcVServer());
+
+        } catch (Exception ex) {
+            client.destroy();
+            LOG.error("Exception updating load balancer: " + ex);
+            throw new StmRollBackException("Failed to update loadbalancer", ex);
         }
         client.destroy();
     }
