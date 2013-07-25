@@ -66,7 +66,7 @@ public class SslTerminationITest extends STMTestBase {
         setRateLimit();
     }
 
-    @Test(expected=StingrayRestClientObjectNotFoundException.class)
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testAddingOnlyAccessListWithSslTermination() throws Exception {
         verifyAccessListWithoutSsl();
         verifyDeleteAccessListWithoutConnectionThrottling();
@@ -205,8 +205,10 @@ public class SslTerminationITest extends STMTestBase {
             VirtualServer createdNormalVs = stmClient.getVirtualServer(normalVsName);
             Assert.assertEquals(normalPort, (int) createdNormalVs.getProperties().getBasic().getPort());
 
+            LoadBalancer nlb = new LoadBalancer();
             lb.setConnectionLogging(isConnectionLogging);
-            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+            nlb.setConnectionLogging(isConnectionLogging);
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             createdSecureVs = stmClient.getVirtualServer(secureVsName);
             createdNormalVs = stmClient.getVirtualServer(normalVsName);
             Assert.assertEquals(isConnectionLogging, createdSecureVs.getProperties().getLog().getEnabled());
@@ -214,7 +216,8 @@ public class SslTerminationITest extends STMTestBase {
 
             isConnectionLogging = false;
             lb.setConnectionLogging(isConnectionLogging);
-            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+            nlb.setConnectionLogging(isConnectionLogging);
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             createdSecureVs = stmClient.getVirtualServer(secureVsName);
             createdNormalVs = stmClient.getVirtualServer(normalVsName);
             Assert.assertEquals(isConnectionLogging, createdSecureVs.getProperties().getLog().getEnabled());
@@ -350,15 +353,22 @@ public class SslTerminationITest extends STMTestBase {
         try {
             String errorContent = "HI";
             String errorFileNormalName = normalName + "_error.html";
+            LoadBalancer nlb = new LoadBalancer();
+
             lb.getUserPages().setErrorpage(errorFileNormalName);
-            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+            nlb.getUserPages().setErrorpage(errorFileNormalName);
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             stmAdapter.setErrorFile(config, lb, errorContent);
             errorPageHelper(errorContent);
-           // lb.getUserPages().setErrorpage(null);
-            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+            lb.getUserPages().setErrorpage(null);
+            nlb.getUserPages().setErrorpage(null);
+
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             stmAdapter.setErrorFile(config, lb, "Default");
             errorPageHelper("Default");
-            stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
+            lb.getUserPages().setErrorpage("Default");
+            nlb.getUserPages().setErrorpage("Default");
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             stmAdapter.setErrorFile(config, lb, errorContent);
             errorPageHelper(errorContent);
         } catch (Exception e) {
@@ -376,7 +386,7 @@ public class SslTerminationITest extends STMTestBase {
             userPages.setLoadbalancer(lb);
             userPages.setErrorpage(errorFileNormalName);
             lb.setUserPages(userPages);
-            stmAdapter.updateLoadBalancer(config,lb, lb);
+            stmAdapter.updateLoadBalancer(config, lb, lb);
             stmAdapter.setErrorFile(config, lb, errorContent);
             errorPageHelper(errorContent);
 //            lb.getUserPages().setErrorpage(null);

@@ -94,7 +94,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         ResourceTranslator translator = new ResourceTranslator();
 
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-        String secureVsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
         try {
 
@@ -124,10 +123,13 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 }
             }
 
+            updateVirtualServer(config, client, vsName, translator.getcVServer());
+
             if (loadBalancer.isUsingSsl()) {
+                String secureVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+                translator.translateLoadBalancerResource(config, secureVsName, loadBalancer);
                 updateVirtualServer(config, client, secureVsName, translator.getcVServer());
             }
-            updateVirtualServer(config, client, vsName, translator.getcVServer());
 
         } catch (Exception ex) {
             client.destroy();
