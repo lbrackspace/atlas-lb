@@ -966,7 +966,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             virtualServer.getProperties().getBasic().setEnabled(true);
             updateVirtualServer(config, client, vsName, virtualServer);
             if (lb.hasSsl()) {
-                vsName = ZxtmNameBuilder.genVSName(lb);
+                vsName = ZxtmNameBuilder.genSslVSName(lb);
                 VirtualServer secureServer = client.getVirtualServer(vsName);
                 secureServer.getProperties().getBasic().setEnabled(true);
                 updateVirtualServer(config, client, vsName, secureServer);
