@@ -60,7 +60,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             createPersistentClasses(config);
             client.destroy();
 
-            updateLoadBalancer(config, loadBalancer, new LoadBalancer());
+            updateLoadBalancer(config, loadBalancer, loadBalancer);
         } catch (Exception e) {
             LOG.error(String.format("Failed to create load balancer %s, rolling back...", loadBalancer.getId()));
             deleteLoadBalancer(config, loadBalancer);
@@ -87,14 +87,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
                 translator.translateLoadBalancerResource(config, vsName, loadBalancer);
 
-                if (queLb.getHealthMonitor() != null
-                        && loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
+                if (queLb.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
                     updateHealthMonitor(config, client, vsName, translator.getcMonitor());
                 }
 
-                if (queLb.getAccessLists() != null && (loadBalancer.getAccessLists() != null
-                        && !loadBalancer.getAccessLists().isEmpty())
-                        || loadBalancer.getConnectionLimit() != null) {
+                if ((queLb.getAccessLists() != null && !queLb.getAccessLists().isEmpty())
+                        || queLb.getConnectionLimit() != null) {
                     updateProtection(config, client, vsName, translator.getcProtection());
                 }
 
@@ -102,7 +100,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
                 }
 
-                if (queLb.getNodes() != null) {
+                if (queLb.getNodes() != null && !queLb.getNodes().isEmpty()) {
                     updatePool(config, client, vsName, translator.getcPool());
                 }
 
@@ -167,8 +165,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         try {
             client.updateVirtualServer(vsName, virtualServer);
-
-
         } catch (Exception ex) {
             String em = String.format("Error updating virtual server: %s Attempting to RollBack... \n Exception: %s ",
                     vsName, ex);

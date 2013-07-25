@@ -12,6 +12,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolNodeWeight;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
@@ -34,7 +35,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
     public static void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
-        createSimpleLoadBalancer();
+//        createSimpleLoadBalancer();
     }
 
     @AfterClass
@@ -45,13 +46,14 @@ public class FullConfigIntegrationTest extends STMTestBase {
     @Test
     public void createFullyConfiguredLoadBalancer() {
         try {
-            removeLoadBalancer();
+//            removeLoadBalancer();
             stmAdapter.createLoadBalancer(config, buildHydratedLb());
             Thread.sleep(1000);
             StingrayRestClient tclient = new StingrayRestClient();
             verifyVS(tclient);
             verifyPool(tclient);
-            removeLoadBalancer();
+            verifyMonitor(tclient);
+//            removeLoadBalancer();
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -147,7 +149,6 @@ public class FullConfigIntegrationTest extends STMTestBase {
         Assert.assertEquals(1, pool.getProperties().getBasic().getMonitors().size());
         Assert.assertEquals(lb.getAlgorithm().name().toLowerCase(), pool.getProperties().getLoad_balancing().getAlgorithm());
         Assert.assertEquals(3, pool.getProperties().getBasic().getNodes().size());
-
         Assert.assertEquals(2, pool.getProperties().getBasic().getDisabled().size());
         Assert.assertEquals(1, pool.getProperties().getBasic().getDraining().size());
 
@@ -172,5 +173,13 @@ public class FullConfigIntegrationTest extends STMTestBase {
         Assert.assertEquals("", pool.getProperties().getBasic().getBandwidth_class());
 
         return pool;
+    }
+
+    private Monitor verifyMonitor(StingrayRestClient client) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        Monitor monitor = client.getMonitor(loadBalancerName());
+        Assert.assertEquals(lb.getHealthMonitor().getType().name(), monitor.getProperties().getBasic().getType().toUpperCase());
+        Assert.assertEquals(lb.getHealthMonitor().getTimeout(), monitor.getProperties().getBasic().getTimeout());
+        Assert.assertEquals(lb.getHealthMonitor().getAttemptsBeforeDeactivation(), monitor.getProperties().getBasic().getFailures());
+        return monitor;
     }
 }

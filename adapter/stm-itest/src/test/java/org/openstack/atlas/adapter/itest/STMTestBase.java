@@ -105,6 +105,8 @@ public class STMTestBase extends StmTestConstants {
         node2.setPort(80);
         node1.setCondition(ENABLED);
         node2.setCondition(DISABLED);
+        node1.setStatus(NodeStatus.ONLINE);
+        node2.setStatus(NodeStatus.ONLINE);
         node1.setWeight(1);
         node2.setWeight(1);
         nodeList.add(node1);
