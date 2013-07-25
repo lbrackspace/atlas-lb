@@ -108,7 +108,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 updateProtection(config, client, vsName, translator.getcProtection());
             }
 
-            if (queLb.getLoadBalancerJoinVip6Set() != null || queLb.getLoadBalancerJoinVipSet() != null) {
+            if ((queLb.getLoadBalancerJoinVip6Set() != null && !queLb.getLoadBalancerJoinVip6Set().isEmpty())
+                    || (queLb.getLoadBalancerJoinVipSet() != null && !queLb.getLoadBalancerJoinVipSet().isEmpty())) {
                 updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
             }
 
@@ -119,7 +120,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             UserPages userPages = queLb.getUserPages();
             if (userPages != null) {
                 if (userPages.getErrorpage() != null) {
-                    setErrorFile(config, queLb, queLb.getUserPages().getErrorpage());
+                    setErrorFile(config, loadBalancer, loadBalancer.getUserPages().getErrorpage());
                 }
             }
 

@@ -353,7 +353,11 @@ public class SslTerminationITest extends STMTestBase {
         try {
             String errorContent = "HI";
             String errorFileNormalName = normalName + "_error.html";
+
             LoadBalancer nlb = new LoadBalancer();
+            UserPages up = new UserPages();
+            up.setErrorpage(errorContent);
+            nlb.setUserPages(up);
 
             lb.getUserPages().setErrorpage(errorFileNormalName);
             nlb.getUserPages().setErrorpage(errorFileNormalName);
@@ -385,12 +389,16 @@ public class SslTerminationITest extends STMTestBase {
             UserPages userPages = new UserPages();
             userPages.setLoadbalancer(lb);
             userPages.setErrorpage(errorFileNormalName);
+
+            LoadBalancer nlb = new LoadBalancer();
             lb.setUserPages(userPages);
-            stmAdapter.updateLoadBalancer(config, lb, lb);
+            nlb.setUserPages(userPages);
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             stmAdapter.setErrorFile(config, lb, errorContent);
             errorPageHelper(errorContent);
-//            lb.getUserPages().setErrorpage(null);
-            stmAdapter.updateLoadBalancer(config, lb, lb);
+            lb.getUserPages().setErrorpage(null);
+            nlb.getUserPages().setErrorpage(null);
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             stmAdapter.setErrorFile(config, lb, "Default");
             errorPageHelper("Default");
         } catch (Exception e) {
