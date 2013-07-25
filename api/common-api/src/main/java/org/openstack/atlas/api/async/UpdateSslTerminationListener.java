@@ -43,7 +43,7 @@ public class UpdateSslTerminationListener extends BaseListener {
             LOG.error(alertDescription, enfe);
             //OPS requested 11/07/12
 //            notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
-            sendErrorToEventResource(dbLoadBalancer);
+            sendErrorToEventResourceUsingDataContainer(dataContainer);
             return;
         }
 
@@ -149,12 +149,18 @@ public class UpdateSslTerminationListener extends BaseListener {
     }
 
     private void addAtomEntriesForSslTermination(LoadBalancer dbLoadBalancer, SslTermination sslTermination) {
-        notificationService.saveSslTerminationEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), sslTermination.getId(), "UPDATE_SSL_TERMINATION", EntryHelper.createSslTerminationSummary(sslTermination), UPDATE_SSL_TERMINATION, UPDATE, INFO);
+        notificationService.saveSslTerminationEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), sslTermination.getId(), EntryHelper.UPDATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), UPDATE_SSL_TERMINATION, UPDATE, INFO);
     }
 
     private void sendErrorToEventResource(LoadBalancer lb) {
         String title = "Error Updating Load Balancer SSL Termination";
         String desc = "Could not update a load balancer SSL Termination at this time";
         notificationService.saveLoadBalancerEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, UPDATE_SSL_TERMINATION, UPDATE, CRITICAL);
+    }
+
+    private void sendErrorToEventResourceUsingDataContainer(MessageDataContainer dataContainer) {
+        String title = "Error Updating Load Balancer SSL Termination";
+        String desc = "Could not update a load balancer SSL Termination at this time";
+        notificationService.saveLoadBalancerEvent(dataContainer.getUserName(), dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), title, desc, UPDATE_SSL_TERMINATION, UPDATE, CRITICAL);
     }
 }

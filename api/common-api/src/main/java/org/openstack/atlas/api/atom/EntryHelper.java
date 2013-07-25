@@ -18,6 +18,7 @@ public final class EntryHelper {
     public static final String UPDATE_THROTTLE_TITLE = "Connection Throttle Successfully Updated";
     public static final String UPDATE_ACCESS_LIST_TITLE = "Access List Successfully Updated";
     public static final String CREATE_SSL_TERMINATION_TITLE = "SSL Termination Successfully created";
+    public static final String UPDATE_SSL_TERMINATION_TITLE = "SSL Termination Successfully updated";
 
     public static String createNodeSummary(Node node) {
         StringBuilder atomSummary = new StringBuilder();
