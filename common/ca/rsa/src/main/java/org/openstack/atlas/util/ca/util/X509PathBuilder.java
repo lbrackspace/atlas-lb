@@ -37,7 +37,6 @@ public class X509PathBuilder<E extends X509Certificate> {
 
     private Set<E> rootCAs;
     private Set<E> intermediates;
-    private static final BigInteger serial = new BigInteger("2");
 
     static {
         RsaConst.init();
@@ -151,13 +150,13 @@ public class X509PathBuilder<E extends X509Certificate> {
             String msg = String.format(fmt, rootSubj);
             throw new NotAnX509CertificateException(msg);
         }
-        X509CertificateObject rootCrt = (X509CertificateObject)obj;
-        chain.add(new X509ChainEntry(rootKey,rootCsr,rootCrt));
+        X509CertificateObject rootCrt = (X509CertificateObject) obj;
+        chain.add(new X509ChainEntry(rootKey, rootCsr, rootCrt));
         List<String> subjNamesForSubChain = new ArrayList<String>();
         for (int i = 1; i < subjNames.size(); i++) {
             subjNamesForSubChain.add(subjNames.get(i));
         }
-        chain.addAll(newChain(rootKey,rootCrt,subjNamesForSubChain,keySize,notBefore,notAfter));
+        chain.addAll(newChain(rootKey, rootCrt, subjNamesForSubChain, keySize, notBefore, notAfter));
         return chain;
     }
 
@@ -174,7 +173,7 @@ public class X509PathBuilder<E extends X509Certificate> {
         for (String subjName : subjNames) {
             key = RSAKeyUtils.genKeyPair(keySize);
             csr = CsrUtils.newCsr(subjName, key, true);
-            obj = CertUtils.signCSR(csr, caKey, caCrt, notBefore, notAfter, serial);
+            obj = CertUtils.signCSR(csr, caKey, caCrt, notBefore, notAfter, null);
             if (!(obj instanceof X509CertificateObject)) {
                 String fmt = "Could not generate X509CertificateObject for subj \"%s\"";
                 String msg = String.format(fmt, subjName);

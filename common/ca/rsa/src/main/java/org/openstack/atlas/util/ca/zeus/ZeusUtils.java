@@ -40,6 +40,13 @@ import static org.openstack.atlas.util.ca.zeus.ErrorType.SIGNATURE_ERROR;
 
 public class ZeusUtils {
 
+    private static final String USASCII = "US-ASCII";
+    private static final String KEYREQUIRED = "Key Required";
+    private static final String CERTREQUIRED = "Cert Required";
+    private static final String MISSINGUSASCII = String.format("Missing charset %s", USASCII);
+    private static final String ERRORDECODINGKEY = "Error Decoding Key";
+    private static final String ERRORDECODINGCERT = "Error Decoding Cert";
+
     static {
         RsaConst.init();
     }
