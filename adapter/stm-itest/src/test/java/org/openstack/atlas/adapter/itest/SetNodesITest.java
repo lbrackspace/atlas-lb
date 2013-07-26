@@ -1,20 +1,17 @@
 package org.openstack.atlas.adapter.itest;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.Node;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.NodeCondition.*;
 
 public class SetNodesITest extends STMTestBase {
-    String vsName;
+    private String vsName;
+    private Set<Node> createdNodes;
 
     @BeforeClass
     public static void setupClass() throws InterruptedException {
@@ -34,18 +31,14 @@ public class SetNodesITest extends STMTestBase {
 
     }
 
-    @Test
-    public void testNodeOperations() throws Exception {
+    @Before
+    public void standUp() throws Exception {
         vsName = ZxtmNameBuilder.genVSName(lb);
         lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS);
         stmAdapter.updateLoadBalancer(config, lb, lb);
-        setupNodes();
-
-
     }
 
-    private void setupNodes() throws Exception {
-        final int defaultNodeWeight = 1;
+    private void setNodes() throws Exception {
         int node3Port = 81;
         int node4Port = 82;
         int node5Port = 83;
@@ -58,6 +51,9 @@ public class SetNodesITest extends STMTestBase {
         Node node3 = new Node();
         Node node4 = new Node();
         Node node5 = new Node();
+        node3.setId(3);
+        node4.setId(4);
+        node5.setId(5);
         node3.setIpAddress(node3Ip);
         node4.setIpAddress(node4Ip);
         node5.setIpAddress(node5Ip);
@@ -70,32 +66,130 @@ public class SetNodesITest extends STMTestBase {
         node3.setWeight(node3Weight);
         node4.setWeight(node4Weight);
         node5.setWeight(node5Weight);
-        Set<Node> createdNodes = new HashSet<Node>();
+        createdNodes = new HashSet<Node>();
         createdNodes.add(node3);
         createdNodes.add(node4);
         createdNodes.add(node5);
         lb.setNodes(createdNodes);
 
-        String node3StrRep = node3Ip + ":" + Integer.toString(node3Port);
-        String node4StrRep = node4Ip + ":" + Integer.toString(node4Port);
-        String node5StrRep = node5Ip + ":" + Integer.toString(node5Port);
+        createdNodes = new HashSet<Node>(createdNodes);
 
         stmAdapter.setNodes(config, lb);
-        int expectedDisabledNodes = 1;
-        int expectedDrainingNodes = 1;
-        int expectedEnabledNodes = 2;
+    }
+
+    private String getFullAddress(Node node) {
+        return node.getIpAddress() + ":" + node.getPort();
+    }
+
+    @Test
+    public void testSetNodes() throws Exception {
+        setNodes();
+
+        int expectedDisabledNodes = 0;
+        int expectedDrainingNodes = 0;
+        int expectedEnabledNodes = 0;
         Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
         Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
         Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
+
+        for (Node node : createdNodes) {
+            if (node.getCondition() == DRAINING) {
+                Assert.assertTrue(setOfDrainingNodes.contains(getFullAddress(node)));
+                expectedDrainingNodes++;
+                expectedEnabledNodes++;
+            } else if (node.getCondition() == DISABLED) {
+                Assert.assertTrue(setOfDisabledNodes.contains(getFullAddress(node)));
+                expectedDisabledNodes++;
+            } else if (node.getCondition() == ENABLED) {
+                Assert.assertTrue(setOfEnabledNodes.contains(getFullAddress(node)));
+                expectedEnabledNodes++;
+            } else {
+                Assert.fail();
+            }
+        }
+
         Assert.assertEquals(expectedEnabledNodes, setOfEnabledNodes.size());
         Assert.assertEquals(expectedDisabledNodes, setOfDisabledNodes.size());
         Assert.assertEquals(expectedDrainingNodes, setOfDrainingNodes.size());
-        Assert.assertTrue(setOfEnabledNodes.contains(node3StrRep));
-        Assert.assertTrue(setOfDisabledNodes.contains(node4StrRep));
-        Assert.assertTrue(setOfDrainingNodes.contains(node5StrRep));
-
-
     }
 
+    @Test
+    public void testRemoveNode() throws Exception {
+        setNodes();
 
+        Node nodeToRemove = createdNodes.iterator().next();
+        createdNodes.remove(nodeToRemove);
+
+        stmAdapter.removeNode(config, lb, nodeToRemove);
+
+        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
+        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
+        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
+
+        int expectedDisabledNodes = 0;
+        int expectedDrainingNodes = 0;
+        int expectedEnabledNodes = 0;
+
+        for (Node node : createdNodes) {
+            if (node.getCondition() == DRAINING) {
+                Assert.assertTrue(setOfDrainingNodes.contains(getFullAddress(node)));
+                expectedDrainingNodes++;
+                expectedEnabledNodes++;
+            } else if (node.getCondition() == DISABLED) {
+                Assert.assertTrue(setOfDisabledNodes.contains(getFullAddress(node)));
+                expectedDisabledNodes++;
+            } else if (node.getCondition() == ENABLED) {
+                Assert.assertTrue(setOfEnabledNodes.contains(getFullAddress(node)));
+                expectedEnabledNodes++;
+            } else {
+                Assert.fail();
+            }
+        }
+
+        Assert.assertEquals(expectedEnabledNodes, setOfEnabledNodes.size());
+        Assert.assertEquals(expectedDisabledNodes, setOfDisabledNodes.size());
+        Assert.assertEquals(expectedDrainingNodes, setOfDrainingNodes.size());
+    }
+
+    @Test
+    public void testRemoveNodes() throws Exception {
+        setNodes();
+
+        Iterator<Node> createdNodesIterator = createdNodes.iterator();
+        List<Node> nodesToRemove = new ArrayList<Node>();
+        nodesToRemove.add(createdNodesIterator.next());
+        nodesToRemove.add(createdNodesIterator.next());
+//        createdNodes.remove(nodesToRemove);
+        for (Node node : nodesToRemove) createdNodes.remove(node);
+
+        stmAdapter.removeNodes(config, lb, nodesToRemove);
+
+        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
+        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
+        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
+
+        int expectedDisabledNodes = 0;
+        int expectedDrainingNodes = 0;
+        int expectedEnabledNodes = 0;
+
+        for (Node node : createdNodes) {
+            if (node.getCondition() == DRAINING) {
+                Assert.assertTrue(setOfDrainingNodes.contains(getFullAddress(node)));
+                expectedDrainingNodes++;
+                expectedEnabledNodes++;
+            } else if (node.getCondition() == DISABLED) {
+                Assert.assertTrue(setOfDisabledNodes.contains(getFullAddress(node)));
+                expectedDisabledNodes++;
+            } else if (node.getCondition() == ENABLED) {
+                Assert.assertTrue(setOfEnabledNodes.contains(getFullAddress(node)));
+                expectedEnabledNodes++;
+            } else {
+                Assert.fail();
+            }
+        }
+
+        Assert.assertEquals(expectedEnabledNodes, setOfEnabledNodes.size());
+        Assert.assertEquals(expectedDisabledNodes, setOfDisabledNodes.size());
+        Assert.assertEquals(expectedDrainingNodes, setOfDrainingNodes.size());
+    }
 }
