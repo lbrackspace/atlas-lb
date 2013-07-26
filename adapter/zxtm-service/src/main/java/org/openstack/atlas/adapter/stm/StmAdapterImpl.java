@@ -828,10 +828,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = loadSTMRestClient(config);
         try {
             client.getPersistence(StmConstants.HTTP_COOKIE);
-        } catch (StingrayRestClientException e) {
-            LOG.error(String.format("Error retrieving '%s' Persistence Class.\n%s", StmConstants.HTTP_COOKIE,
-                    Arrays.toString(e.getStackTrace())));
-        } catch (StingrayRestClientObjectNotFoundException e) {
+        } catch (StingrayRestClientException clientException) {
+            LOG.error(String.format("Error retrieving Persistence Class '%s'.\n%s", StmConstants.HTTP_COOKIE,
+                    Arrays.toString(clientException.getStackTrace())));
+        } catch (StingrayRestClientObjectNotFoundException notFoundException) {
             Persistence persistence = new Persistence();
             PersistenceProperties properties = new PersistenceProperties();
             PersistenceBasic basic = new PersistenceBasic();
@@ -840,19 +840,21 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             properties.setBasic(basic);
             persistence.setProperties(properties);
             try {
+                LOG.info(String.format("Updating Persistence type %s...", StmConstants.HTTP_COOKIE));
                 client.createPersistence(StmConstants.HTTP_COOKIE, persistence);
-            } catch (StingrayRestClientException e1) {
-                e1.printStackTrace();
-            } catch (StingrayRestClientObjectNotFoundException e1) {
-                e1.printStackTrace();
+                LOG.info(String.format("Successfully updated Persistence type %s.", StmConstants.HTTP_COOKIE));
+            } catch (Exception ex) {
+                LOG.error(String.format("Error creating Persistence Class '%s'.\n%s", StmConstants.HTTP_COOKIE,
+                        Arrays.toString(ex.getStackTrace())));
             }
         }
 
         try {
             client.getPersistence(StmConstants.SOURCE_IP);
-        } catch (StingrayRestClientException e) {
-            e.printStackTrace();
-        } catch (StingrayRestClientObjectNotFoundException e) {
+        } catch (StingrayRestClientException clientException) {
+            LOG.error(String.format("Error retrieving Persistence Class '%s'.\n%s", StmConstants.SOURCE_IP,
+                    Arrays.toString(clientException.getStackTrace())));
+        } catch (StingrayRestClientObjectNotFoundException notFoundException) {
             Persistence persistence = new Persistence();
             PersistenceProperties properties = new PersistenceProperties();
             PersistenceBasic basic = new PersistenceBasic();
@@ -861,11 +863,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             properties.setBasic(basic);
             persistence.setProperties(properties);
             try {
+                LOG.info(String.format("Updating Persistence type %s...", StmConstants.SOURCE_IP));
                 client.createPersistence(StmConstants.SOURCE_IP, persistence);
-            } catch (StingrayRestClientException e1) {
-                e1.printStackTrace();
-            } catch (StingrayRestClientObjectNotFoundException e1) {
-                e1.printStackTrace();
+                LOG.info(String.format("Successfully updated Persistence type %s.", StmConstants.SOURCE_IP));
+            } catch (Exception ex) {
+                LOG.error(String.format("Error creating Persistence Class '%s'.\n%s", StmConstants.SOURCE_IP,
+                        Arrays.toString(ex.getStackTrace())));
             }
         }
     }
