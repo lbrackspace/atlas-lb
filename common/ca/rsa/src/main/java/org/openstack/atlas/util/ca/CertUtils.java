@@ -55,10 +55,10 @@ import org.openstack.atlas.util.ca.zeus.ErrorType;
 
 public class CertUtils {
 
-    public static final String ISSUER_NOT_AFTER_FAIL = "issuer Cert Not After Fail";
-    public static final String ISSUER_NOT_BEFORE_FAIL = "issuer Cert Not Before Fail";
-    public static final String SUBJECT_NOT_AFTER_FAIL = "subject Cert Not After Fail";
-    public static final String SUBJECT_NOT_BEFORE_FAIL = "subject Cert Not Before Fail";
+    public static final String ISSUER_NOT_AFTER_FAIL = "Issuer Cert Expired";
+    public static final String ISSUER_NOT_BEFORE_FAIL = "Sssuer Cert Premature";
+    public static final String SUBJECT_NOT_AFTER_FAIL = "Subject Cert Expired";
+    public static final String SUBJECT_NOT_BEFORE_FAIL = "subject Cert Premature";
     public static final int DEFAULT_NOT_AFTER_YEARS = 2;
     public static final long DAY_IN_MILLIS = (long) 24 * 60 * 60 * 1000;
 

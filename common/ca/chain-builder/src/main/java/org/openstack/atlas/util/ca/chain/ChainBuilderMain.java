@@ -3,12 +3,17 @@ package org.openstack.atlas.util.ca.chain;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.X509CertificateObject;
+import org.openstack.atlas.util.ca.CertUtils;
+import org.openstack.atlas.util.ca.CsrUtils;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.RSAKeyUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
@@ -38,9 +43,9 @@ public class ChainBuilderMain {
             System.out.printf("%s", ChainConfig.getConfExample());
             return;
         }
-        BufferedReader stdin = StaticFileUtils.inputStreamToBufferedReader(System.in, PAGESIZE);
-        System.out.printf("press enter to confinute");
-        stdin.readLine();
+        //BufferedReader stdin = StaticFileUtils.inputStreamToBufferedReader(System.in, PAGESIZE);
+        //System.out.printf("press enter to confinute");
+        //stdin.readLine();
         confFile = args[0];
         try {
             conf = ChainConfig.loadChainerConfig(confFile);
@@ -99,14 +104,42 @@ public class ChainBuilderMain {
         String imdFile = StaticFileUtils.expandUser(conf.getImdFile());
 
         System.out.printf("Saving imd chain to file %s\n", imdFile);
+        Collections.reverse(chainEntries);
         OutputStream os;
         os = StaticFileUtils.openOutputFile(imdFile, BUFFSIZE);
         for (X509ChainEntry entry : chainEntries) {
             String x509Pem = PemUtils.toPemString(entry.getX509obj());
-            os.write(x509Pem.getBytes());
+            os.write(x509Pem.getBytes("utf-8"));
         }
         os.close();
         System.out.printf("imd file saved\n");
+
+        System.out.printf("Generating %d bit key for userKey\n", conf.getKeySize());
+        KeyPair key = RSAKeyUtils.genKeyPair(conf.getKeySize());
+        System.out.printf("user key generated\n");
+        String keyPem = PemUtils.toPemString(key);
+        System.out.printf("%s\n", keyPem);
+        System.out.printf("Saving key top %s\n", keyFile);
+        os = StaticFileUtils.openOutputFile(keyFile, BUFFSIZE);
+        os.write(keyPem.getBytes("utf-8"));
+        os.close();
+        System.out.printf("key saved\n");
+
+        System.out.printf("Generating csr for key with subjName: %s\n", conf.getSubjName());
+        PKCS10CertificationRequest csr = CsrUtils.newCsr(conf.getSubjName(), key, false);
+        System.out.printf("CSR generated\n");
+        String csrPem = PemUtils.toPemString(csr);
+        System.out.printf("%s\n", csrPem);
+        System.out.printf("Signing CSR with crt %s\n", inspectCrt(finalIssueingCrt));
+        X509CertificateObject crt = (X509CertificateObject) CertUtils.signCSR(csr, finalSigningKey, finalIssueingCrt, notBefore, notAfter, BigInteger.ZERO);
+        System.out.printf("Certificate signed\n%s\n", inspectCrt((X509CertificateObject) crt));
+        String crtPem = PemUtils.toPemString(crt);
+        System.out.printf("%s\n", crtPem);
+        System.out.printf("Saving crt to file %s\n", crtFile);
+        os = StaticFileUtils.openOutputFile(crtFile, BUFFSIZE);
+        os.write(crtPem.getBytes("utf-8"));
+        os.close();
+        System.out.printf("crt saved\n");
     }
 
     public static Date daysFromDate(Date now, double days) {

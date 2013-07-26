@@ -53,7 +53,7 @@ public class RootCaBuilderMain {
         System.out.printf("%s\n", keyPem);
         System.out.printf("Saving key to file %s\n", keyFile);
         OutputStream os = StaticFileUtils.openOutputFile(keyFile, BUFFSIZE);
-        os.write(keyPem.getBytes());
+        os.write(keyPem.getBytes("utf-8"));
         os.close();
         System.out.printf("keyfile writtent\n");
 
@@ -74,7 +74,7 @@ public class RootCaBuilderMain {
         System.out.printf("%s\n", crtPem);
         System.out.printf("Saving rootCrt to: %s\n", crtFile);
         os = StaticFileUtils.openOutputFile(crtFile, BUFFSIZE);
-        os.write(crtPem.getBytes());
+        os.write(crtPem.getBytes("utf-8"));
         os.close();
         System.out.printf("Crt saved\n");
     }

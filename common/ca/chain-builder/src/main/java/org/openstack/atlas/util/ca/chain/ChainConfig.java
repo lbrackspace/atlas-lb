@@ -29,6 +29,7 @@ public class ChainConfig {
             + "  \"issuers\": [\n"
             + "    \"C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Cloud LoadBalancing,CN=Lbaas Example Imd1 crt\", \n"
             + "    \"C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Cloud LoadBalancing,CN=Lbaas Example Imd2 crt\", \n"
+            + "    \"C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Cloud LoadBalancing,CN=Lbaas Example Imd3 crt\" \n"
             + "  ]\n"
             + "}\n"
             + "";

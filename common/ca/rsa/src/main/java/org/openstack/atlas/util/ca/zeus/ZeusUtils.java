@@ -28,15 +28,6 @@ import org.openstack.atlas.util.ca.util.StaticHelpers;
 import org.openstack.atlas.util.ca.util.X509BuiltPath;
 import org.openstack.atlas.util.ca.util.X509PathBuilder;
 import org.openstack.atlas.util.ca.util.X509ReaderWriter;
-import static org.openstack.atlas.util.ca.zeus.ErrorType.UNREADABLE_CERT;
-import static org.openstack.atlas.util.ca.zeus.ErrorType.UNREADABLE_KEY;
-import static org.openstack.atlas.util.ca.zeus.ErrorType.COULDENT_ENCODE_KEY;
-import static org.openstack.atlas.util.ca.zeus.ErrorType.COULDENT_ENCODE_CERT;
-import static org.openstack.atlas.util.ca.zeus.ErrorType.NO_PATH_TO_ROOT;
-import static org.openstack.atlas.util.ca.zeus.ErrorType.EXPIRED_CERT;
-import static org.openstack.atlas.util.ca.zeus.ErrorType.PREMATURE_CERT;
-import static org.openstack.atlas.util.ca.zeus.ErrorType.KEY_CERT_MISMATCH;
-import static org.openstack.atlas.util.ca.zeus.ErrorType.SIGNATURE_ERROR;
 
 public class ZeusUtils {
 
@@ -82,7 +73,7 @@ public class ZeusUtils {
         List<X509CertificateObject> imdCrts = decodeImd(lineMap, intermediates, zcf);
 
         // Verify key matches cert if both are Present
-        if (!zcf.containsErrorTypes(UNREADABLE_CERT, UNREADABLE_KEY)) {
+        if (!zcf.containsErrorTypes(ErrorType.UNREADABLE_CERT, ErrorType.UNREADABLE_KEY)) {
             List<ErrorEntry> keyMatchErrors;
             keyMatchErrors = CertUtils.validateKeyMatchesCrt(userKey, userCrt);
             errors.addAll(keyMatchErrors);
@@ -92,15 +83,15 @@ public class ZeusUtils {
         if (!imdCrts.isEmpty() && userCrt != null) {
             X509CertificateObject subjectCrt = userCrt;
             X509CertificateObject issuerCrt = imdCrts.get(0);
-            List<ErrorEntry> crtSignErrors = CertUtils.verifyIssuerAndSubjectCert(issuerCrt, subjectCrt, false);
+            List<ErrorEntry> crtSignErrors = CertUtils.verifyIssuerAndSubjectCert(issuerCrt, subjectCrt, true);
             if (ErrorEntry.hasFatal(crtSignErrors)) {
                 if (lineMap.containsKey(issuerCrt)) {
                     int issuerLineNum = lineMap.get(issuerCrt).intValue();
                     msg = String.format("Error the cert at line %d of the  Chain file does not sign the main cert", issuerLineNum);
-                    errors.add(new ErrorEntry(SIGNATURE_ERROR, msg, true, null));
+                    errors.add(new ErrorEntry(ErrorType.SIGNATURE_ERROR, msg, true, null));
                 } else {
                     msg = String.format("Error the cert at the top of the chain file does not sign the main cert");
-                    errors.add(new ErrorEntry(SIGNATURE_ERROR, msg, true, null));
+                    errors.add(new ErrorEntry(ErrorType.SIGNATURE_ERROR, msg, true, null));
                 }
             }
             errors.addAll(crtSignErrors);
@@ -116,10 +107,10 @@ public class ZeusUtils {
                     int issuerLineNum = lineMap.get(issuerCrt).intValue();
                     int subjectLineNum = lineMap.get(subjectCrt).intValue();
                     msg = String.format("Error chain out of order Certificate at line %d does not sign crt at line %d", issuerLineNum, subjectLineNum);
-                    errors.add(new ErrorEntry(SIGNATURE_ERROR, msg, true, null));
+                    errors.add(new ErrorEntry(ErrorType.SIGNATURE_ERROR, msg, true, null));
                 } else {
                     msg = String.format("Error chain out of order");
-                    errors.add(new ErrorEntry(SIGNATURE_ERROR, msg, true, null));
+                    errors.add(new ErrorEntry(ErrorType.SIGNATURE_ERROR, msg, true, null));
                 }
             }
             errors.addAll(crtSignErrors);
@@ -132,12 +123,12 @@ public class ZeusUtils {
             try {
                 zkey = PemUtils.toPemString(userKey);
             } catch (PemException ex) {
-                errors.add(new ErrorEntry(COULDENT_ENCODE_KEY, "Error encodeing users key", true, ex));
+                errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_KEY, "Error encodeing users key", true, ex));
             }
             try {
                 sb.append(PemUtils.toPemString(userCrt));
             } catch (PemException ex) {
-                errors.add(new ErrorEntry(COULDENT_ENCODE_CERT, "Error encodeing users Crt", true, ex));
+                errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Error encodeing users Crt", true, ex));
             }
             for (X509CertificateObject x509obj : imdCrts) {
                 try {
@@ -147,9 +138,9 @@ public class ZeusUtils {
                     if (lineMap.containsKey(x509obj)) {
                         int x509lineNum = lineMap.get(x509obj).intValue();
                         msg = String.format("Error encodeing chain crt at line %d", x509lineNum);
-                        errors.add(new ErrorEntry(COULDENT_ENCODE_CERT, msg, true, ex));
+                        errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, msg, true, ex));
                     } else {
-                        errors.add(new ErrorEntry(COULDENT_ENCODE_CERT, "Error encodeing chain crt", true, ex));
+                        errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Error encodeing chain crt", true, ex));
                     }
                 }
             }
@@ -162,7 +153,7 @@ public class ZeusUtils {
                     X509BuiltPath<X509CertificateObject> builtPath = pathBuilder.buildPath(userCrt);
                 } catch (X509PathBuildException ex) {
                     // Make NO PATH to ROOT a  non fatal error
-                    errors.add(new ErrorEntry(NO_PATH_TO_ROOT, "Chain has no path to root", false, ex));
+                    errors.add(new ErrorEntry(ErrorType.NO_PATH_TO_ROOT, "Chain has no path to root", false, ex));
                 }
             }
 
@@ -191,13 +182,13 @@ public class ZeusUtils {
             if (CertUtils.isCertExpired(userCrt, date)) {
                 Date after = userCrt.getNotAfter();
                 String errorMsg = invalidDateMessage("User cert expired on", after);
-                errors.add(new ErrorEntry(EXPIRED_CERT, errorMsg, true, null));
+                errors.add(new ErrorEntry(ErrorType.EXPIRED_CERT, errorMsg, true, null));
             }
 
             if (CertUtils.isCertPremature(userCrt, date)) {
                 Date before = userCrt.getNotBefore();
                 String errorMsg = invalidDateMessage("User cert isn't valid till", date);
-                errors.add(new ErrorEntry(PREMATURE_CERT, errorMsg, false, null));
+                errors.add(new ErrorEntry(ErrorType.PREMATURE_CERT, errorMsg, false, null));
             }
         }
 
@@ -216,7 +207,7 @@ public class ZeusUtils {
             ResponseWithExcpetions<Set<X509CertificateObject>> resp = X509ReaderWriter.readSet(intermediates);
             imdSet = resp.getReturnObject();
             for (Throwable th : resp.getExceptions()) {
-                errors.add(new ErrorEntry(UNREADABLE_CERT, th.getMessage(), false, th));
+                errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, th.getMessage(), false, th));
             }
         } else {
             imdSet = new HashSet<X509CertificateObject>();
@@ -228,7 +219,7 @@ public class ZeusUtils {
             try {
                 builtPath = pathBuilder.buildPath(userCrt, date);
             } catch (X509PathBuildException ex) {
-                errors.add(new ErrorEntry(NO_PATH_TO_ROOT, "No Path to root", false, ex));
+                errors.add(new ErrorEntry(ErrorType.NO_PATH_TO_ROOT, "No Path to root", false, ex));
                 return zcf;
             }
             StringBuilder zcrtString = new StringBuilder(RsaConst.PAGESIZE);
@@ -238,7 +229,7 @@ public class ZeusUtils {
                     String x509String = PemUtils.toPemString(x509obj);
                     zcrtString.append(x509String);
                 } catch (PemException ex) {
-                    certWriteErrors.add(new ErrorEntry(COULDENT_ENCODE_CERT, "Coulden't encode intermediate", true, ex));
+                    certWriteErrors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Coulden't encode intermediate certififacte", true, ex));
                 }
                 if (certWriteErrors.size() > 0) {
                     errors.addAll(certWriteErrors);
@@ -252,7 +243,7 @@ public class ZeusUtils {
                 String privKey = PemUtils.toPemString(kp);
                 zcf.setPrivate_key(privKey);
             } catch (PemException ex) {
-                errors.add(new ErrorEntry(COULDENT_ENCODE_KEY, ex.getMessage(), true, ex));
+                errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_KEY, ex.getMessage(), true, ex));
                 return zcf;
             }
         }
@@ -272,34 +263,42 @@ public class ZeusUtils {
         List<PemBlock> blocks = PemUtils.parseMultiPem(keyIn);
         Object obj;
         if (blocks.size() < 1) {
-            errors.add(new ErrorEntry(UNREADABLE_KEY, "No pemblock found in key String", true, null));
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, KEYREQUIRED, true, null));
             return kp;
         }
 
         if (blocks.size() > 1) {
-            errors.add(new ErrorEntry(UNREADABLE_KEY, "Multiple pem blocks used in Key", true, null));
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, "Multiple pem blocks used in Key", true, null));
             return kp;
         }
         obj = blocks.get(0).getDecodedObject();
         if (obj == null) {
-            errors.add(new ErrorEntry(UNREADABLE_KEY, "Unable to parse pemblock to RSA object", true, null));
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, "Unable to parse pemblock to RSA Key", true, null));
             return kp;
         }
         if (obj instanceof JCERSAPrivateCrtKey) {
             try {
                 obj = HackedProviderAccessor.newKeyPair((JCERSAPrivateCrtKey) obj);
             } catch (InvalidKeySpecException ex) {
-                errors.add(new ErrorEntry(UNREADABLE_KEY, "Error when attempting to convert PKCS8 key to PKCS1", true, ex));
+                errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, "Error while attempting to convert key from PKCS8 to PKCS1", true, ex));
             }
         }
         if (!(obj instanceof KeyPair)) {
-            errors.add(new ErrorEntry(UNREADABLE_KEY, "Unable to parse pemblock to RSA object", true, null));
+            String msg = String.format("%s keyobject was an unstance of %s but was expecting a %s", ERRORDECODINGKEY, obj.getClass().getName(), className(KeyPair.class));
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, msg, true, null));
             return kp;
         }
 
         kp = (KeyPair) obj;
-        if (!(kp.getPublic() instanceof JCERSAPublicKey) || !(kp.getPrivate() instanceof JCERSAPrivateCrtKey)) {
-            errors.add(new ErrorEntry(UNREADABLE_KEY, "KeyPair object was not an RSA keyPair", true, null));
+        if (!(kp.getPublic() instanceof JCERSAPublicKey)) {
+            String msg = String.format("%s Error decoding public portion of key. Objected decoded to class %s but was expecting %s", ERRORDECODINGKEY, obj.getClass().getName(), className(JCERSAPublicKey.class));
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, msg, true, null));
+            kp = null;
+            return kp;
+        }
+        if (!(kp.getPrivate() instanceof JCERSAPrivateCrtKey)) {
+            String msg = String.format("%s Error decoding private portion of key. Object decoded to class %s but was expecting %s", ERRORDECODINGKEY, obj.getClass().getName(), className(JCERSAPrivateCrtKey.class));
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, msg, true, null));
             kp = null;
             return kp;
         }
@@ -311,17 +310,18 @@ public class ZeusUtils {
         List<PemBlock> blocks = PemUtils.parseMultiPem(certIn);
         Object obj;
         if (blocks.size() < 1) {
-            errors.add(new ErrorEntry(UNREADABLE_CERT, "userCrt did not contain a pem block", true, null));
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, CERTREQUIRED, true, null));
             return x509obj;
         }
 
         if (blocks.size() > 1) {
-            errors.add(new ErrorEntry(UNREADABLE_CERT, "userCrt contains more then one pem block", true, null));
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "userCrt contains more then one pem block", true, null));
             return x509obj;
         }
         obj = blocks.get(0).getDecodedObject();
         if ((obj == null) || !(obj instanceof X509CertificateObject)) {
-            errors.add(new ErrorEntry(UNREADABLE_CERT, "unable to parse userCrt to a X509Certificate", true, null));
+            String msg = String.format("%s Crtificate decoded to class %s but was expecting %s", ERRORDECODINGCERT, obj.getClass().getName(), className(X509CertificateObject.class));
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, msg, true, null));
             return x509obj;
         }
         x509obj = (X509CertificateObject) obj;
@@ -348,13 +348,13 @@ public class ZeusUtils {
             Object obj = block.getDecodedObject();
             if (obj == null) {
                 msg = String.format("Empty object at line starting at line %d", block.getLineNum());
-                errorEntry = new ErrorEntry(UNREADABLE_CERT, msg, false, null);
+                errorEntry = new ErrorEntry(ErrorType.UNREADABLE_CERT, msg, true, null);
                 errors.add(errorEntry);
                 continue;
             }
             if (!(obj instanceof X509CertificateObject)) {
-                msg = String.format("Object at line %d decoded to class %s but was expecting X509CertificateObject", block.getLineNum(), obj.getClass().getName());
-                errorEntry = new ErrorEntry(UNREADABLE_CERT, msg, false, null);
+                msg = String.format("Object at line %d decoded to class %s but was expecting %s", block.getLineNum(), obj.getClass().getName(), className(X509CertificateObject.class));
+                errorEntry = new ErrorEntry(ErrorType.UNREADABLE_CERT, msg, true, null);
                 errors.add(errorEntry);
                 continue;
             }
@@ -373,17 +373,24 @@ public class ZeusUtils {
         try {
             obj = PemUtils.fromPemString(crtStr);
             if (!(obj instanceof X509CertificateObject)) {
-                String msg = String.format("crt object decoded to class %s but was expecting X509CertificateObject", obj.getClass().getName());
-                errorEntry = new ErrorEntry(UNREADABLE_CERT, msg, true, null);
+                String msg = String.format("crt object decoded to class %s but was expecting X509CertificateObject", obj.getClass().getName(), className(X509CertificateObject.class));
+                errorEntry = new ErrorEntry(ErrorType.UNREADABLE_CERT, msg, true, null);
                 errors.add(errorEntry);
                 return null;
             }
             crt = (X509CertificateObject) obj;
             return crt;
         } catch (PemException ex) {
-            errorEntry = new ErrorEntry(UNREADABLE_CERT, "Unable to read userCrt", true, ex);
+            errorEntry = new ErrorEntry(ErrorType.UNREADABLE_CERT, "Unable to read userCrt", true, ex);
             errors.add(errorEntry);
             return null;
         }
+    }
+
+    private static String className(Class clazz) {
+        if (clazz == null) {
+            return null;
+        }
+        return clazz.getName();
     }
 }

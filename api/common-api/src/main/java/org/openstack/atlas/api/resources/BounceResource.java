@@ -3,10 +3,6 @@ package org.openstack.atlas.api.resources;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
@@ -20,7 +16,6 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
-import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 
 import javax.ws.rs.core.MediaType;
@@ -139,7 +134,7 @@ public class BounceResource extends CommonDependencyProvider {
 
     @POST
     @Path("ssltermination")
-    public Response echoSslTermination(org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination sslTerm) {
+    public Response SslTermination(SslTermination sslTerm) {
         if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
@@ -156,7 +151,11 @@ public class BounceResource extends CommonDependencyProvider {
         if (zcf.hasFatalErrors()) {
             resp = getValidationFaultResponse(zcf.getFatalErrorList());
         } else {
-            resp = Response.status(200).entity(sslTerm).build();
+            SslTermination sslOut = new SslTermination();
+            sslOut.setPrivatekey(zcf.getPrivate_key());
+            sslOut.setCertificate(zcf.getPublic_cert());
+
+            resp = Response.status(200).entity(sslOut).build();
         }
         return resp;
     }
