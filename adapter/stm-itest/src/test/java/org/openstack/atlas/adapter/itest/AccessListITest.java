@@ -3,11 +3,15 @@ package org.openstack.atlas.adapter.itest;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.AccessListType;
+import org.openstack.atlas.service.domain.entities.ConnectionLimit;
 import org.openstack.atlas.service.domain.entities.IpVersion;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.protection.Protection;
 
 import java.util.Arrays;
@@ -59,6 +63,20 @@ public class AccessListITest extends STMTestBase {
         verifyAccessList();
     }
 
+    @Ignore
+    @Test
+    public void testAccessListCreationWithConnectionThrottleEnabled() throws Exception {
+        enableConnectionThrottle();
+    }
+
+    @Ignore
+    @Test
+    public void testAccessListCreationOnSslLoadBalancer() throws Exception {
+        enableSsl();
+        createAccessList();
+        verifyAccessList();
+    }
+
     public void createAccessList() throws Exception {
         lb.setAccessLists(list);
         stmAdapter.updateAccessList(config, lb);
@@ -73,16 +91,38 @@ public class AccessListITest extends STMTestBase {
         Assert.assertTrue(banned.contains(item2.getIpAddress()));
     }
 
-    @AfterClass
-    public static void tearDown() {
-        removeSimpleLoadBalancer();
+    public void enableConnectionThrottle() {
+        ConnectionLimit limit = lb.getConnectionLimit();
+        limit.setMaxConnectionRate(MAX_CONECT_RATE);
+        limit.setMaxConnections(MAX_CONNECTIONS);
+        limit.setMinConnections(MIN_CONNECTIONS);
+        limit.setRateInterval(RATE_INTERVAL);
+        lb.setConnectionLimit(limit);
+        try {
+            stmAdapter.updateConnectionThrottle(config, lb);
+        } catch(Exception e) {
+            Assert.fail(String.format("Error updating Connection Throttle on '%s'.\n%s", name,
+                    Arrays.toString(e.getStackTrace())));
+        }
     }
 
-    public static void removeSimpleLoadBalancer() {
+    public void enableSsl() {
+        ZeusSslTermination sslTermination = new ZeusSslTermination();
+        SslTermination termination = new SslTermination();
+        termination.setCertificate(StmTestConstants.SSL_CERT);
+        termination.setPrivatekey(StmTestConstants.SSL_KEY);
+        sslTermination.setSslTermination(termination);
+        lb.setSslTermination(termination);
         try {
-            stmAdapter.deleteLoadBalancer(config, lb);
+            stmAdapter.updateSslTermination(config, lb, sslTermination);
         } catch (Exception e) {
-            System.err.println("Failure to delete load balancer:\n" + Arrays.toString(e.getStackTrace()));
+            Assert.fail(String.format("Error updating SSL termination on '%s'.\n%s", name,
+                    Arrays.toString(e.getStackTrace())));
         }
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        removeLoadBalancer();
     }
 }

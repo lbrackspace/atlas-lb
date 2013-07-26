@@ -14,6 +14,12 @@ public class StmTestConstants {
     public static final Integer ADDITIONAL_VIP_ID = 88887;
     public static final Integer ADDITIONAL_IPV6_VIP_ID = 88885;
 
+    // Concerns Connection Throttle
+    public static final int MAX_CONECT_RATE = 100;
+    public static final int MAX_CONNECTIONS = 30;
+    public static final int MIN_CONNECTIONS = 4;
+    public static final int RATE_INTERVAL = 60;
+
     public static final String SSL_CERT = "-----BEGIN CERTIFICATE-----\n" +
                 "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
                 "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
