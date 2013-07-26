@@ -946,6 +946,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         LOG.debug(String.format("Successfully removed ssl from loadbalancer: %s from the STM service...", vsName));
     }
 
+    //TODO: follow logic in zxtm adapter for suspension..
+
     @Override
     public void addSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = null;
@@ -960,6 +962,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 VirtualServer secureServer = client.getVirtualServer(vsName);
                 secureServer.getProperties().getBasic().setEnabled(false);
                 updateVirtualServer(config, client, vsName, secureServer);
+
             }
             LOG.info("Successfully added load balancer suspension");
         } catch (Exception e) {
@@ -1071,11 +1074,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         try {
             LOG.debug(String.format("Updating the rate limit for load balancer...'%s'...", vsName));
 
+            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
+
             rt.translateLoadBalancerResource(config, vsName, loadBalancer);
             Bandwidth bandwidth = rt.getcBandwidth();
 
             client.updateBandwidth(vsName, bandwidth);
-            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
 
             LOG.info(String.format("Successfully updated the rate limit for load balancer...'%s'...", vsName));
         } catch (StingrayRestClientObjectNotFoundException e) {
@@ -1152,7 +1156,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         ResourceTranslator rt = new ResourceTranslator();
         rt.translateVirtualServerResource(config, vsName, loadBalancer);
         VirtualServer vs = rt.getcVServer();
-        String fileToDelete = getErrorFileName(vsName);
+        String fileToDelete = ZxtmNameBuilder.generateErrorPageName(vsName);
         try {
             LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", vsName, fileToDelete));
 
@@ -1185,38 +1189,26 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     private void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName, String content) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = loadSTMRestClient(config);
         File errorFile = null;
-        String errorFileName = getErrorFileName(vsName);
-
-        if (loadBalancer.getUserPages() != null) {
-            loadBalancer.getUserPages().setErrorpage(errorFileName);
-        } else {
-            UserPages userPages = new UserPages();
-            userPages.setErrorpage(errorFileName);
-            userPages.setLoadbalancer(loadBalancer);
-            loadBalancer.setUserPages(userPages);
-        }
+        String errorFileName = ZxtmNameBuilder.generateErrorPageName(vsName);
 
         ResourceTranslator rt = new ResourceTranslator();
         rt.translateVirtualServerResource(config, vsName, loadBalancer);
         VirtualServer vs = rt.getcVServer();
+
+        //?rollback
         try {
             LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
             errorFile = getFileWithContent(content);
             client.createExtraFile(errorFileName, errorFile);
             LOG.info(String.format("Successfully uploaded the error file for %s (%s)", vsName, errorFileName));
-        } catch (IOException ioe) {
+        } catch (Exception e) {
             // Failed to create file, use "Default"
-            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- IO exception", vsName, errorFileName));
+            // Failed to create error file, error out..
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) Exception: %s -- exception", vsName, errorFileName, e));
             errorFileName = "Default";
-        } catch (StingrayRestClientException ce) {
-            // Failed to upload file, use "Default"
-            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- REST Client exception", vsName, errorFileName));
-            errorFileName = "Default";
-        } catch (StingrayRestClientObjectNotFoundException onf) {
-            // Failed to create file, use "Default"
-            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Object not found", vsName, errorFileName));
-            errorFileName = "Default";
+            throw new StmRollBackException(String.format("Failed creating error page %s for: %s.", errorFileName, vsName), e);
         }
+
         if (errorFile != null) errorFile.delete();
 
         try {
@@ -1231,10 +1223,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             throw re;
         }
 
-    }
-
-    private String getErrorFileName(String vsName) {
-        return String.format("%s_error.html", vsName);
     }
 
     private File getFileWithContent(String content) throws IOException {

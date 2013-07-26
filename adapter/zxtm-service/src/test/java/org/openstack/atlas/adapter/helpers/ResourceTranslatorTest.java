@@ -19,9 +19,6 @@ import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.monitor.MonitorBasic;
 import org.rackspace.stingray.client.monitor.MonitorHttp;
 import org.rackspace.stingray.client.monitor.MonitorProperties;
-import org.rackspace.stingray.client.persistence.Persistence;
-import org.rackspace.stingray.client.persistence.PersistenceBasic;
-import org.rackspace.stingray.client.persistence.PersistenceProperties;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolNodeWeight;
@@ -71,7 +68,11 @@ public class ResourceTranslatorTest extends STMTestBase {
             errorFile = "Default";
             expectedError.setError_file(errorFile);
 
-            rules = java.util.Arrays.asList(StmConstants.XFF, StmConstants.XFP);
+            if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
+                rules = java.util.Arrays.asList(StmConstants.XFF, StmConstants.XFP, StmConstants.RATE_LIMIT_HTTP);
+            } else {
+                rules = java.util.Arrays.asList(StmConstants.XFF, StmConstants.XFP, StmConstants.RATE_LIMIT_NON_HTTP);
+            }
             translator = new ResourceTranslator();
 
             ConnectionLimit connectionLimit = new ConnectionLimit();
@@ -189,6 +190,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertEquals(expectedTcp, createdTcp);
             Assert.assertFalse(createdBasic.getListen_on_any());
             Assert.assertEquals(rules, createdBasic.getRequest_rules());
+
 //            Assert.assertEquals(expectedError, createdProperties.getConnection_errors());
         }
 
@@ -912,8 +914,8 @@ public class ResourceTranslatorTest extends STMTestBase {
         public void shouldGenGroupNameSet() throws InsufficientRequestException {
             translator = new ResourceTranslator();
             Set<String> groupNameSet = translator.genGroupNameSet(lb);
-
             Assert.assertFalse(groupNameSet.isEmpty());
+            //Should probably verify if they are generated correctly..
         }
     }
 
@@ -934,16 +936,8 @@ public class ResourceTranslatorTest extends STMTestBase {
         }
 
         @Test
-        public void shouldCreateAValidPersistenceClass() throws InsufficientRequestException {
-            translator = new ResourceTranslator();
-            Persistence createdPersistence = translator.translatePersistenceResource(vsName, SessionPersistence.HTTP_COOKIE);
-            PersistenceProperties createdProperties = createdPersistence.getProperties();
-            PersistenceBasic createdBasic = createdProperties.getBasic();
-
-            Assert.assertNotNull(createdPersistence);
-            Assert.assertNotNull(createdProperties);
-            Assert.assertNotNull(createdBasic);
-            Assert.assertEquals(createdBasic.getType(), persistenceType.toString());
+        public void test() {
+            //gotta initialize test or tests break
         }
     }
 }

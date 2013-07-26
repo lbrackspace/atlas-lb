@@ -101,7 +101,7 @@ public final class ZxtmNameBuilder {
         return lb.getAccountId() + "_" + vip.getId();
     }
 
-    public static String generateErrorPageNameWithAccountIdAndLoadBalancerId(Integer lbId, Integer accountId) throws InsufficientRequestException {
+    public static String generateErrorPageName(Integer lbId, Integer accountId) throws InsufficientRequestException {
         if (lbId == null) {
             throw new InsufficientRequestException("Missing id for load balancer.");
         }
@@ -110,5 +110,9 @@ public final class ZxtmNameBuilder {
         }
 
         return accountId + "_" + lbId + "_error.html";
+    }
+
+    public static String generateErrorPageName(String vsName) throws InsufficientRequestException {
+        return vsName+ "_error.html";
     }
 }

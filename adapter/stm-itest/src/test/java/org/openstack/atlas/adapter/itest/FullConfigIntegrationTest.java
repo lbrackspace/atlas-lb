@@ -9,14 +9,21 @@ import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.monitor.Monitor;
+import org.rackspace.stingray.client.monitor.MonitorHttp;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolNodeWeight;
+import org.rackspace.stingray.client.protection.Protection;
+import org.rackspace.stingray.client.protection.ProtectionAccessRestriction;
+import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
+import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 
+import java.io.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -46,14 +53,46 @@ public class FullConfigIntegrationTest extends STMTestBase {
     @Test
     public void createFullyConfiguredLoadBalancer() {
         try {
-//            removeLoadBalancer();
             stmAdapter.createLoadBalancer(config, buildHydratedLb());
-            Thread.sleep(1000);
+            Thread.sleep(3000);
             StingrayRestClient tclient = new StingrayRestClient();
             verifyVS(tclient);
             verifyPool(tclient);
             verifyMonitor(tclient);
-//            removeLoadBalancer();
+            verifyProtection(tclient);
+            verifyVips(tclient);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void updateFullyConfiguredLoadBalancer() {
+        StingrayRestClient tclient = new StingrayRestClient();
+
+        try {
+            stmAdapter.createLoadBalancer(config, buildHydratedLb());
+            Thread.sleep(3000);
+            verifyVS(tclient);
+            verifyPool(tclient);
+            verifyMonitor(tclient);
+            verifyProtection(tclient);
+            verifyVips(tclient);
+
+            UserPages up = new UserPages();
+            up.setErrorpage("iError");
+            lb.setUserPages(up);
+            lb.setProtocol(LoadBalancerProtocol.FTP);
+
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+            Thread.sleep(3000);
+            verifyVS(tclient);
+            verifyPool(tclient);
+            verifyMonitor(tclient);
+            verifyProtection(tclient);
+            verifyVips(tclient);
+
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -124,7 +163,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
         return lb;
     }
 
-    private VirtualServer verifyVS(StingrayRestClient client) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    private VirtualServer verifyVS(StingrayRestClient client) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, IOException {
         VirtualServer vs = client.getVirtualServer(loadBalancerName());
         ResourceTranslator translator = new ResourceTranslator();
 
@@ -132,14 +171,35 @@ public class FullConfigIntegrationTest extends STMTestBase {
         Assert.assertEquals(true, vs.getProperties().getBasic().getEnabled());
         Assert.assertEquals(lb.getPort(), vs.getProperties().getBasic().getPort());
         Assert.assertEquals(poolName(), vs.getProperties().getBasic().getPool());
-        Assert.assertEquals("Default", vs.getProperties().getConnection_errors().getError_file());
-        Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF));
-        Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP));
+
+        if (lb.getUserPages() != null) {
+            Assert.assertEquals(errorFileName(), vs.getProperties().getConnection_errors().getError_file());
+            File ef = client.getExtraFile(errorFileName());
+            BufferedReader br = new BufferedReader(new FileReader(ef));
+
+            Assert.assertEquals(lb.getUserPages().getErrorpage(), br.readLine());
+            ef.delete();
+        } else {
+            Assert.assertEquals("Default", vs.getProperties().getConnection_errors().getError_file());
+        }
+
+        if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
+            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF));
+            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP));
+            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.RATE_LIMIT_HTTP));
+        } else {
+            Assert.assertFalse(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF));
+            Assert.assertFalse(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP));
+            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.RATE_LIMIT_NON_HTTP));
+        }
+
         Assert.assertEquals(false, vs.getProperties().getBasic().getListen_on_any());
         Assert.assertEquals(false, vs.getProperties().getTcp().getProxy_close());
         Assert.assertEquals(vs.getProperties().getBasic().getListen_on_traffic_ips(), translator.genGroupNameSet(lb));
 
         Assert.assertEquals(protectionClassName(), vs.getProperties().getBasic().getProtection_class());
+
+
         return vs;
     }
 
@@ -156,7 +216,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
         for (PoolNodeWeight pnw : pws) {
             Node lbn = lb.getNodes().iterator().next();
             if (lbn.getIpAddress().equals(pnw.getNode().split(":")[0])) {
-                Assert.assertEquals(lbn.getIpAddress() + ":" + lbn.getPort(),pnw.getNode());
+                Assert.assertEquals(lbn.getIpAddress() + ":" + lbn.getPort(), pnw.getNode());
                 Assert.assertEquals(lbn.getWeight(), pnw.getWeight());
             }
         }
@@ -180,6 +240,62 @@ public class FullConfigIntegrationTest extends STMTestBase {
         Assert.assertEquals(lb.getHealthMonitor().getType().name(), monitor.getProperties().getBasic().getType().toUpperCase());
         Assert.assertEquals(lb.getHealthMonitor().getTimeout(), monitor.getProperties().getBasic().getTimeout());
         Assert.assertEquals(lb.getHealthMonitor().getAttemptsBeforeDeactivation(), monitor.getProperties().getBasic().getFailures());
+
+        if (lb.getHealthMonitor().getType().equals(HealthMonitorType.HTTP) || lb.getHealthMonitor().equals(HealthMonitorType.HTTPS)) {
+            MonitorHttp http = new MonitorHttp();
+            HealthMonitor hm = lb.getHealthMonitor();
+            Assert.assertEquals(hm.getPath(), http.getPath());
+            Assert.assertEquals(hm.getStatusRegex(), http.getStatus_regex());
+            Assert.assertEquals(hm.getBodyRegex(), http.getBody_regex());
+            Assert.assertEquals(hm.getHostHeader(), http.getHost_header());
+        }
+
         return monitor;
+    }
+
+    private Protection verifyProtection(StingrayRestClient client) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        Protection protection = client.getProtection(loadBalancerName());
+        if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
+            ProtectionAccessRestriction pal = protection.getProperties().getAccess_restriction();
+            for (AccessList al : lb.getAccessLists()) {
+                if (al.getType().equals(AccessListType.ALLOW)) {
+                    Assert.assertTrue(pal.getAllowed().contains(al.getIpAddress()));
+                } else {
+                    Assert.assertTrue(pal.getBanned().contains(al.getIpAddress()));
+                }
+            }
+        }
+
+        if (lb.getConnectionLimit() != null) {
+            ProtectionConnectionLimiting cl = protection.getProperties().getConnection_limiting();
+            Assert.assertEquals(lb.getConnectionLimit().getMinConnections(), cl.getMin_connections());
+            Assert.assertEquals(lb.getConnectionLimit().getMaxConnectionRate(), cl.getMax_connection_rate());
+            Assert.assertEquals(lb.getConnectionLimit().getMaxConnections(), cl.getMax_1_connections());
+            Assert.assertEquals(lb.getConnectionLimit().getRateInterval(), cl.getRate_timer());
+        }
+
+        return protection;
+    }
+
+    private void verifyVips(StingrayRestClient client) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, IPStringConversionException {
+        TrafficIp t;
+        for (LoadBalancerJoinVip jv : lb.getLoadBalancerJoinVipSet()) {
+            t = client.getTrafficIp(trafficIpGroupName(jv.getVirtualIp()));
+            Assert.assertTrue(t.getProperties().getBasic().getIpaddresses().contains(jv.getVirtualIp().getIpAddress()));
+            Assert.assertEquals(true, t.getProperties().getBasic().getEnabled());
+
+            Assert.assertTrue(t.getProperties().getBasic().getMachines().contains(config.getFailoverTrafficManagerNames().iterator().next()));
+            Assert.assertTrue(t.getProperties().getBasic().getMachines().contains(config.getTrafficManagerName()));
+        }
+
+        for (LoadBalancerJoinVip6 jv : lb.getLoadBalancerJoinVip6Set()) {
+            t = client.getTrafficIp(trafficIpGroupName(jv.getVirtualIp()));
+            Assert.assertTrue(t.getProperties().getBasic().getIpaddresses().contains(jv.getVirtualIp().getDerivedIpString()));
+            Assert.assertEquals(true, t.getProperties().getBasic().getEnabled());
+
+            Assert.assertTrue(t.getProperties().getBasic().getMachines().contains(config.getFailoverTrafficManagerNames().iterator().next()));
+            Assert.assertTrue(t.getProperties().getBasic().getMachines().contains(config.getTrafficManagerName()));
+        }
+
     }
 }

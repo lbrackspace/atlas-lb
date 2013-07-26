@@ -163,7 +163,7 @@ public class STMTestBase {
     }
 
     protected static String errorFileName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.generateErrorPageNameWithAccountIdAndLoadBalancerId(lb.getId(), lb.getAccountId());
+        return ZxtmNameBuilder.generateErrorPageName(lb.getId(), lb.getAccountId());
     }
 
     protected static String monitorName() throws InsufficientRequestException {

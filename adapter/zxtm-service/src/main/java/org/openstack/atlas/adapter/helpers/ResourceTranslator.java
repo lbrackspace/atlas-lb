@@ -16,8 +16,6 @@ import org.rackspace.stingray.client.monitor.MonitorBasic;
 import org.rackspace.stingray.client.monitor.MonitorHttp;
 import org.rackspace.stingray.client.monitor.MonitorProperties;
 import org.rackspace.stingray.client.persistence.Persistence;
-import org.rackspace.stingray.client.persistence.PersistenceBasic;
-import org.rackspace.stingray.client.persistence.PersistenceProperties;
 import org.rackspace.stingray.client.pool.*;
 import org.rackspace.stingray.client.protection.*;
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
@@ -119,20 +117,23 @@ public class ResourceTranslator {
         }
 
         //error file settings
-        UserPages userPages = loadBalancer.getUserPages();
-        String ep = null;
-        if (userPages != null) { // if userPages is null, just leave the ce object alone and it should use the default page
-            ep = userPages.getErrorpage();
-            ce.setError_file(ep);
+
+        if (loadBalancer.getUserPages() != null) { // if userPages is null, just leave the ce object alone and it should use the default page
+            ce.setError_file(ZxtmNameBuilder.generateErrorPageName(vsName));
         } else {
-            //Doesnt look like thats the case for some reason :( may be bug in STM
+            //Doesnt look like thats the case for some reason :( may be bug in STM -- need to reverify this
             ce.setError_file("Default");
         }
         properties.setConnection_errors(ce);
 
         //trafficscript or rule settings
-        List<String> rules = Arrays.asList(StmConstants.XFF, StmConstants.XFP);
-        basic.setRequest_rules(rules);
+        if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
+            List<String> rules = Arrays.asList(StmConstants.XFF, StmConstants.XFP, StmConstants.RATE_LIMIT_HTTP);
+            basic.setRequest_rules(rules);
+        } else {
+            List<String> rules = Arrays.asList(StmConstants.RATE_LIMIT_NON_HTTP);
+            basic.setRequest_rules(rules);
+        }
 
         //Half closed proxy settings
         tcp.setProxy_close(loadBalancer.isHalfClosed());
@@ -150,49 +151,6 @@ public class ResourceTranslator {
         cVServer.setProperties(properties);
 
         return cVServer;
-    }
-
-    public Keypair translateKeypairResource(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws InsufficientRequestException {
-        ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(loadBalancer.getSslTermination().getPrivatekey(),
-                loadBalancer.getSslTermination().getCertificate(), loadBalancer.getSslTermination().getIntermediateCertificate());
-        if (zeusCertFile.isError()) {
-            String fmt = "StingrayCertFile generation Failure: %s";
-            String errors = StringUtils.joinString(zeusCertFile.getErrorList(), ",");
-            String msg = String.format(fmt, errors);
-            throw new InsufficientRequestException(msg);
-        }
-
-        cKeypair = new Keypair();
-        KeypairProperties keypairProperties = new KeypairProperties();
-        KeypairBasic keypairBasic = new KeypairBasic();
-        keypairBasic.setPrivate(zeusCertFile.getPrivate_key());
-        keypairBasic.setPublic(zeusCertFile.getPublic_cert());
-        keypairProperties.setBasic(keypairBasic);
-        cKeypair.setProperties(keypairProperties);
-        return cKeypair;
-    }
-
-    public Bandwidth translateBandwidthResource(LoadBalancer loadBalancer) throws InsufficientRequestException {
-        Bandwidth bandwidth = new Bandwidth();
-        BandwidthProperties properties = new BandwidthProperties();
-        BandwidthBasic basic = new BandwidthBasic();
-
-        RateLimit rateLimit = loadBalancer.getRateLimit();
-
-        if (rateLimit != null) {
-            Ticket ticket = rateLimit.getTicket();
-            basic.setMaximum(rateLimit.getMaxRequestsPerSecond());
-
-            if (ticket != null)
-                basic.setNote(ticket.getComment());
-        }
-
-        properties.setBasic(basic);
-        bandwidth.setProperties(properties);
-
-        cBandwidth = bandwidth;
-        return cBandwidth;
     }
 
     public Map<String, TrafficIp> translateTrafficIpGroupsResource(LoadBalancerEndpointConfiguration config,
@@ -401,18 +359,47 @@ public class ResourceTranslator {
         return cProtection;
     }
 
-    //TODO: add rest of values for 'default' persistent classes
-    //this is actually completely unnecessary
-    public Persistence translatePersistenceResource(String vsName, SessionPersistence sessionPersistence) {
-        Persistence persistence = new Persistence();
-        PersistenceProperties properties = new PersistenceProperties();
-        PersistenceBasic basic = new PersistenceBasic();
+    public Keypair translateKeypairResource(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws InsufficientRequestException {
+        ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(loadBalancer.getSslTermination().getPrivatekey(),
+                loadBalancer.getSslTermination().getCertificate(), loadBalancer.getSslTermination().getIntermediateCertificate());
+        if (zeusCertFile.isError()) {
+            String fmt = "StingrayCertFile generation Failure: %s";
+            String errors = StringUtils.joinString(zeusCertFile.getErrorList(), ",");
+            String msg = String.format(fmt, errors);
+            throw new InsufficientRequestException(msg);
+        }
 
-        basic.setType(sessionPersistence.name());
+        cKeypair = new Keypair();
+        KeypairProperties keypairProperties = new KeypairProperties();
+        KeypairBasic keypairBasic = new KeypairBasic();
+        keypairBasic.setPrivate(zeusCertFile.getPrivate_key());
+        keypairBasic.setPublic(zeusCertFile.getPublic_cert());
+        keypairProperties.setBasic(keypairBasic);
+        cKeypair.setProperties(keypairProperties);
+        return cKeypair;
+    }
+
+    public Bandwidth translateBandwidthResource(LoadBalancer loadBalancer) throws InsufficientRequestException {
+        Bandwidth bandwidth = new Bandwidth();
+        BandwidthProperties properties = new BandwidthProperties();
+        BandwidthBasic basic = new BandwidthBasic();
+
+        RateLimit rateLimit = loadBalancer.getRateLimit();
+
+        if (rateLimit != null) {
+            Ticket ticket = rateLimit.getTicket();
+            basic.setMaximum(rateLimit.getMaxRequestsPerSecond());
+
+            if (ticket != null)
+                basic.setNote(ticket.getComment());
+        }
+
         properties.setBasic(basic);
-        persistence.setProperties(properties);
-        cPersistence = persistence;
-        return cPersistence;
+        bandwidth.setProperties(properties);
+
+        cBandwidth = bandwidth;
+        return cBandwidth;
     }
 
     public <T> String objectToString(Object obj, Class<T> clazz) throws IOException {
@@ -422,14 +409,11 @@ public class ResourceTranslator {
         return myObject.toString();
     }
 
-
     public <T> T stringToObject(String str, Class<T> clazz) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         Object myObject = mapper.readValue(str, clazz);
         return (T) myObject;
-
     }
-
 
     public Pool getcPool() {
         return cPool;
