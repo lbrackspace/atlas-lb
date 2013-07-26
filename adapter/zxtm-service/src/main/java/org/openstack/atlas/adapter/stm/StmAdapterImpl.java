@@ -247,7 +247,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             String em = String.format("Error removing keypair '%s', Attempting to roll back... \n Exception: %s ",
                     vsName, clientException);
             LOG.error(em);
-            //TODO:  Finish the deletion of the Keypair
             if (keypair != null) {
                 LOG.debug(String.format("Updating Keypair to keep previous configuration for '%s'...", vsName));
                 updateKeypair(config, client, vsName, keypair);
@@ -826,50 +825,47 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     private void createPersistentClasses(LoadBalancerEndpointConfiguration config) {
         //TODO: handle logging and exceptions better...
-        StingrayRestClient client = null;
-        client = loadSTMRestClient(config);
+        StingrayRestClient client = loadSTMRestClient(config);
+        try {
+            client.getPersistence(StmConstants.HTTP_COOKIE);
+        } catch (StingrayRestClientException e) {
+            LOG.error(String.format("Error retrieving '%s' Persistence Class.\n%s", StmConstants.HTTP_COOKIE,
+                    Arrays.toString(e.getStackTrace())));
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            Persistence persistence = new Persistence();
+            PersistenceProperties properties = new PersistenceProperties();
+            PersistenceBasic basic = new PersistenceBasic();
 
-        if (client != null) {
+            basic.setType(StmConstants.HTTP_COOKIE);
+            properties.setBasic(basic);
+            persistence.setProperties(properties);
             try {
-                client.getPersistence(StmConstants.HTTP_COOKIE);
-            } catch (StingrayRestClientException e) {
-                e.printStackTrace();
-            } catch (StingrayRestClientObjectNotFoundException e) {
-                Persistence persistence = new Persistence();
-                PersistenceProperties properties = new PersistenceProperties();
-                PersistenceBasic basic = new PersistenceBasic();
-
-                basic.setType(StmConstants.HTTP_COOKIE);
-                properties.setBasic(basic);
-                persistence.setProperties(properties);
-                try {
-                    client.createPersistence(StmConstants.HTTP_COOKIE, persistence);
-                } catch (StingrayRestClientException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                } catch (StingrayRestClientObjectNotFoundException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
+                client.createPersistence(StmConstants.HTTP_COOKIE, persistence);
+            } catch (StingrayRestClientException e1) {
+                e1.printStackTrace();
+            } catch (StingrayRestClientObjectNotFoundException e1) {
+                e1.printStackTrace();
             }
+        }
 
+        try {
+            client.getPersistence(StmConstants.SOURCE_IP);
+        } catch (StingrayRestClientException e) {
+            e.printStackTrace();
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            Persistence persistence = new Persistence();
+            PersistenceProperties properties = new PersistenceProperties();
+            PersistenceBasic basic = new PersistenceBasic();
+
+            basic.setType(StmConstants.SOURCE_IP);
+            properties.setBasic(basic);
+            persistence.setProperties(properties);
             try {
-                client.getPersistence(StmConstants.SOURCE_IP);
-            } catch (StingrayRestClientException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            } catch (StingrayRestClientObjectNotFoundException e) {
-                Persistence persistence = new Persistence();
-                PersistenceProperties properties = new PersistenceProperties();
-                PersistenceBasic basic = new PersistenceBasic();
-
-                basic.setType(StmConstants.SOURCE_IP);
-                properties.setBasic(basic);
-                persistence.setProperties(properties);
-                try {
-                    client.createPersistence(StmConstants.SOURCE_IP, persistence);
-                } catch (StingrayRestClientException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                } catch (StingrayRestClientObjectNotFoundException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
+                client.createPersistence(StmConstants.SOURCE_IP, persistence);
+            } catch (StingrayRestClientException e1) {
+                e1.printStackTrace();
+            } catch (StingrayRestClientObjectNotFoundException e1) {
+                e1.printStackTrace();
             }
         }
     }
@@ -896,7 +892,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             try {
                 virtualServer = client.getVirtualServer(vsName);
             } catch (Exception e) {
-                //TODO: Catch Exception behind failure to pull original VS
+                LOG.error(String.format("Error retrieving non-secure virtual server.\n%s", e.getStackTrace()));
+                throw new StmRollBackException("Error retrieving non-secure virtual server.", e);
             }
             if (virtualServer != null) {
                 virtualServer.getProperties().getBasic().setEnabled(false);
@@ -904,12 +901,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             }
         }
 
-        /* Check for intermediate cert */
-        if (sslTermination.getCertIntermediateCert() != null) {
-            Keypair keypair = translator.getcKeypair();
-            LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
-            updateKeypair(config, client, sslVsName, keypair);
-        }
+        Keypair keypair = translator.getcKeypair();
+        LOG.info(String.format("Updating certificate for load balancer: %s", loadBalancer.getId()));
+        updateKeypair(config, client, sslVsName, keypair);
 
         try {
             translator.translateLoadBalancerResource(config, vsName, loadBalancer);
@@ -1010,7 +1004,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws InsufficientRequestException, RollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 
     /*

@@ -96,6 +96,7 @@ public class SslTerminationITest extends STMTestBase {
     @Test
     public void shouldPassIfCertificateIsRemovedWithSecureVSStillThere() throws Exception {
         setSslTermination();
+        stmClient.deleteKeypair(secureName);
         updateSslTermination();
     }
 
