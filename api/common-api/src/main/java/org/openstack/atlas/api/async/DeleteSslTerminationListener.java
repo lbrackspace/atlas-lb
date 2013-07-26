@@ -36,7 +36,7 @@ public class DeleteSslTerminationListener extends BaseListener {
         errorMsgLB.setAccountId(dataContainer.getAccountId());
 
         try {
-            dbLoadBalancer = loadBalancerService.get(errorMsgLB.getId()); //why doesn't this also use accountId?
+            dbLoadBalancer = loadBalancerService.getWithUserPages(errorMsgLB.getId(), errorMsgLB.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", errorMsgLB.getId());
             LOG.error(alertDescription, enfe);

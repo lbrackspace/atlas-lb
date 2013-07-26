@@ -83,7 +83,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     @Test
     public void testDeleteAccessList() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         deleteAccessListListener.doOnMessage(objectMessage);
 
@@ -98,7 +98,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         deleteAccessListListener.doOnMessage(objectMessage);
 
@@ -110,7 +110,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     public void testDeleteInvalidAccessList() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteAccessList(lb);
 
         deleteAccessListListener.doOnMessage(objectMessage);

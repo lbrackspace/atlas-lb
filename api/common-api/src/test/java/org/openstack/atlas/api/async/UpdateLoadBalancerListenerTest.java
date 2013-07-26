@@ -79,7 +79,7 @@ public class UpdateLoadBalancerListenerTest extends STMTestBase {
     public void testUpdateValidLoadBalancer() throws Exception {
         String atomSummary = genAtomSummary();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         updateLoadBalancerListener.doOnMessage(objectMessage);
 
@@ -92,7 +92,7 @@ public class UpdateLoadBalancerListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         updateLoadBalancerListener.doOnMessage(objectMessage);
 
@@ -104,7 +104,7 @@ public class UpdateLoadBalancerListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithInvalidPayload() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
 
         updateLoadBalancerListener.doOnMessage(objectMessage);

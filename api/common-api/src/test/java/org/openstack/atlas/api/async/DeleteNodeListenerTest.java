@@ -67,7 +67,7 @@ public class DeleteNodeListenerTest extends STMTestBase {
     @Test
     public void testDeleteNode() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         Assert.assertTrue(lb.getNodes().contains(nodeToDelete));
         deleteNodeListener.doOnMessage(objectMessage);
@@ -84,7 +84,7 @@ public class DeleteNodeListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         deleteNodeListener.doOnMessage(objectMessage);
 
@@ -96,7 +96,7 @@ public class DeleteNodeListenerTest extends STMTestBase {
     public void testDeleteInvalidNode() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
 
         deleteNodeListener.doOnMessage(objectMessage);

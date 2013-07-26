@@ -67,7 +67,7 @@ public class DeleteConnectionThrottleListenerTest extends STMTestBase {
     @Test
     public void testDeleteThrottle() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         deleteConnectionThrottleListener.doOnMessage(objectMessage);
 
@@ -81,7 +81,7 @@ public class DeleteConnectionThrottleListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         deleteConnectionThrottleListener.doOnMessage(objectMessage);
 
@@ -93,7 +93,7 @@ public class DeleteConnectionThrottleListenerTest extends STMTestBase {
     public void testDeleteInvalidThrottle() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteConnectionThrottle(lb);
 
         deleteConnectionThrottleListener.doOnMessage(objectMessage);

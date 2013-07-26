@@ -85,11 +85,11 @@ public class DeleteNodesListenerTest extends STMTestBase {
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getIds()).thenReturn(doomedNodeIds);
         when(nodeService.getNodesByIds(doomedNodeIds)).thenReturn(doomedNodes);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         deleteNodesListener.doOnMessage(objectMessage);
 
-        verify(loadBalancerService, times(2)).get(LOAD_BALANCER_ID, ACCOUNT_ID);
+        verify(loadBalancerService, times(2)).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
         verify(messageDataContainer).getIds();
         verify(nodeService).getNodesByIds(doomedNodeIds);
         verify(reverseProxyLoadBalancerStmService).removeNodes(lb, doomedNodes);
@@ -107,7 +107,7 @@ public class DeleteNodesListenerTest extends STMTestBase {
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         deleteNodesListener.doOnMessage(objectMessage);
 
@@ -124,7 +124,7 @@ public class DeleteNodesListenerTest extends STMTestBase {
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getIds()).thenReturn(doomedNodeIds);
         when(nodeService.getNodesByIds(doomedNodeIds)).thenReturn(doomedNodes);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).removeNodes(lb, doomedNodes);
 
         deleteNodesListener.doOnMessage(objectMessage);

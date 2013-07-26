@@ -54,7 +54,7 @@ public class UpdateContentCachingListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithCachingTrue() throws Exception {
         lb.setContentCaching(true);
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         updateContentCachingListener.doOnMessage(objectMessage);
 
@@ -67,7 +67,7 @@ public class UpdateContentCachingListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithCachingFalse() throws Exception {
         lb.setContentCaching(false);
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         updateContentCachingListener.doOnMessage(objectMessage);
 
@@ -80,7 +80,7 @@ public class UpdateContentCachingListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         updateContentCachingListener.doOnMessage(objectMessage);
 
@@ -92,7 +92,7 @@ public class UpdateContentCachingListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithInvalidCache() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
 
         updateContentCachingListener.doOnMessage(objectMessage);

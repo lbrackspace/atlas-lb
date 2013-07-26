@@ -85,7 +85,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getIds()).thenReturn(vipIdsToDelete);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         deleteVirtualIpsListener.doOnMessage(objectMessage);
 
@@ -105,7 +105,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getIds()).thenReturn(vipIdsToDelete);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         deleteVirtualIpsListener.doOnMessage(objectMessage);
 
@@ -121,7 +121,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getIds()).thenReturn(vipIdsToDelete);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete);
 
         deleteVirtualIpsListener.doOnMessage(objectMessage);
@@ -141,7 +141,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getIds()).thenReturn(vipIdsToDelete);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(virtualIpService).removeVipsFromLoadBalancer(lb, vipIdsToDelete);
 
         deleteVirtualIpsListener.doOnMessage(objectMessage);

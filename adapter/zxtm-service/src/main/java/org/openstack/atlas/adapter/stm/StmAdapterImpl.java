@@ -1189,7 +1189,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         rt.translateVirtualServerResource(config, vsName, loadBalancer);
         VirtualServer vs = rt.getcVServer();
 
-        //?rollback
+        //todo: ?rollback
         try {
             LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
             errorFile = getFileWithContent(content);

@@ -34,7 +34,7 @@ public class DeleteVirtualIpsListener extends BaseListener {
         List<Integer> vipIdsToDelete = dataContainer.getIds();
 
         try {
-            dbLoadBalancer = loadBalancerService.get(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", dataContainer.getLoadBalancerId());
             LOG.error(alertDescription, enfe);

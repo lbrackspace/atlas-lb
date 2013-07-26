@@ -56,7 +56,7 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithValidSessionPersistence() throws Exception {
         lb.setSessionPersistence(SessionPersistence.HTTP_COOKIE);
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);
 
@@ -69,7 +69,7 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithValidNoSessionPersistence() throws Exception {
         lb.setSessionPersistence(SessionPersistence.NONE);
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);
 
@@ -82,7 +82,7 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);
 
@@ -94,7 +94,7 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithInvalidNode() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);

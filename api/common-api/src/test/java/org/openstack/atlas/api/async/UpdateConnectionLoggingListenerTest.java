@@ -54,7 +54,7 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithLoggingTrue() throws Exception {
         lb.setConnectionLogging(true);
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         updateConnectionLoggingListener.doOnMessage(objectMessage);
 
@@ -67,7 +67,7 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithLoggingFalse() throws Exception {
         lb.setConnectionLogging(false);
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         updateConnectionLoggingListener.doOnMessage(objectMessage);
 
@@ -80,7 +80,7 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         updateConnectionLoggingListener.doOnMessage(objectMessage);
 
@@ -92,7 +92,7 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithInvalidLogging() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
 
         updateConnectionLoggingListener.doOnMessage(objectMessage);

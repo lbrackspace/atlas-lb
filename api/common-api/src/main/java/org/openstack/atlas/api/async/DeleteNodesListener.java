@@ -30,7 +30,7 @@ public class DeleteNodesListener extends BaseListener {
         MessageDataContainer msg = getDataContainerFromMessage(message);
         LoadBalancer dbLoadBalancer;
         try {
-            dbLoadBalancer = loadBalancerService.get(msg.getLoadBalancerId(), msg.getAccountId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(msg.getLoadBalancerId(), msg.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", msg.getLoadBalancerId());
             LOG.error(alertDescription, enfe);
@@ -59,7 +59,7 @@ public class DeleteNodesListener extends BaseListener {
         }
 
         // Refresh the LoadBalancer since the above may have been in a different transaction
-        dbLoadBalancer = loadBalancerService.get(msg.getLoadBalancerId(), msg.getAccountId());
+        dbLoadBalancer = loadBalancerService.getWithUserPages(msg.getLoadBalancerId(), msg.getAccountId());
 
         // Update load balancer status in DB
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);

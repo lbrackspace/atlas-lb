@@ -61,7 +61,7 @@ public class UpdateConnectionThrottleListenerTest extends STMTestBase {
     @Test
     public void testUpdateLoadBalancerWithValidThrottle() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         updateConnectionThrottleListener.doOnMessage(objectMessage);
 
@@ -74,7 +74,7 @@ public class UpdateConnectionThrottleListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         updateConnectionThrottleListener.doOnMessage(objectMessage);
 
@@ -86,7 +86,7 @@ public class UpdateConnectionThrottleListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithInvalidThrottle() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateConnectionThrottle(lb);
 
         updateConnectionThrottleListener.doOnMessage(objectMessage);
