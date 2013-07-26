@@ -41,7 +41,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(queueLb.getId(), queueLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
             LOG.error(alertDescription, enfe);
@@ -53,7 +53,14 @@ public class CreateLoadBalancerListener extends BaseListener {
         try {
 
             LOG.debug("Creating load balancer in STM...");
-            reverseProxyLoadBalancerStmService.createLoadBalancer(dbLoadBalancer);
+            //:(
+//            UserPages up = new UserPages();
+//            up.setErrorpage(null);
+            UserPages up = dbLoadBalancer.getUserPages();
+            LoadBalancer lb = new LoadBalancer();
+            lb = dbLoadBalancer;
+            lb.setUserPages(up);
+            reverseProxyLoadBalancerStmService.createLoadBalancer(lb);
             LOG.debug("Successfully created a load balancer in STM.");
 
 //            LOG.debug("Creating load balancer in ZXTM...");

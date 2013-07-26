@@ -84,6 +84,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
             up.setErrorpage("iError");
             lb.setUserPages(up);
             lb.setProtocol(LoadBalancerProtocol.FTP);
+            lb.getHealthMonitor().setType(HealthMonitorType.HTTP);
 
             stmAdapter.updateLoadBalancer(config, lb, lb);
             Thread.sleep(3000);

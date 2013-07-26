@@ -59,7 +59,7 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
     @Test
     public void testDeleteSessionPersistence() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         deleteSessionPersistenceListener.doOnMessage(objectMessage);
 
@@ -75,7 +75,7 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         deleteSessionPersistenceListener.doOnMessage(objectMessage);
 
@@ -87,7 +87,7 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
     public void testDeleteInvalidSessionPersistence() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
 
         deleteSessionPersistenceListener.doOnMessage(objectMessage);

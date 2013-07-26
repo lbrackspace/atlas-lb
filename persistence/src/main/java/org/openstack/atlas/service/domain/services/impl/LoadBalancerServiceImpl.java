@@ -422,6 +422,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
+    @Transactional
+    public LoadBalancer getWithUserPages(Integer id, Integer accountId) throws EntityNotFoundException {
+        return loadBalancerRepository.getByIdAndAccountIdWithUserPages(id, accountId);
+    }
+
+    @Override
     public List<org.openstack.atlas.service.domain.pojos.AccountLoadBalancer> getAccountLoadBalancers(Integer accountId) {
         return loadBalancerRepository.getAccountLoadBalancers(accountId);
     }
