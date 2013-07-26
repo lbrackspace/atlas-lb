@@ -9,12 +9,14 @@
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-ca-parent</artifactId>
     <version>1.18.12-SNAPSHOT</version>
-    <name>Atlas :: CA :: Parent</name>
+    <name>Openstack :: Atlas :: CA :: Parent</name>
     <packaging>pom</packaging>
 
     <modules>
         <module>bouncycastle</module>
         <module>rsa</module>
+        <module>chain-builder</module>
+        <module>root-ca-builder</module>
         <module>gui</module>
     </modules>
 

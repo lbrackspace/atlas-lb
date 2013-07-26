@@ -2,6 +2,7 @@ package org.openstack.atlas.util.staticutils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -13,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.DateFormat;
@@ -328,7 +330,7 @@ public class StaticFileUtils {
             return null;
         }
         String[] pathComps = splitPath(path);
-        if(pathComps == null || pathComps.length<=0){
+        if (pathComps == null || pathComps.length <= 0) {
             return null;
         }
         return pathComps[pathComps.length - 1];
@@ -586,5 +588,11 @@ public class StaticFileUtils {
         } catch (Exception ex) {
             // Not logging since the stream is likely already closed
         }
+    }
+
+    public static BufferedReader inputStreamToBufferedReader(InputStream is, int buffSize) {
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr, buffSize);
+        return br;
     }
 }
