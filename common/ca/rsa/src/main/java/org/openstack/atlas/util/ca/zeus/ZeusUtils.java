@@ -1,5 +1,7 @@
 package org.openstack.atlas.util.ca.zeus;
 
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import org.openstack.atlas.util.ca.primitives.bcextenders.HackedProviderAccessor;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
@@ -77,6 +79,20 @@ public class ZeusUtils {
             List<ErrorEntry> keyMatchErrors;
             keyMatchErrors = CertUtils.validateKeyMatchesCrt(userKey, userCrt);
             errors.addAll(keyMatchErrors);
+        }
+
+        // Verify user Crt is in valid date range
+        Date now = new Date(System.currentTimeMillis());
+        if (userCrt != null && CertUtils.isCertExpired(userCrt, now)) {
+            Date after = userCrt.getNotAfter();
+            String errorMsg = invalidDateMessage("User cert expired on", after);
+            errors.add(new ErrorEntry(ErrorType.EXPIRED_CERT, errorMsg, true, null));
+        }
+
+        if (userCrt != null && CertUtils.isCertPremature(userCrt, now)) {
+            Date before = userCrt.getNotBefore();
+            String errorMsg = invalidDateMessage("User cert isn't valid till", before);
+            errors.add(new ErrorEntry(ErrorType.PREMATURE_CERT, errorMsg, false, null));
         }
 
         // If their is a chain veify that the top of the chain signs the users crt
@@ -187,7 +203,7 @@ public class ZeusUtils {
 
             if (CertUtils.isCertPremature(userCrt, date)) {
                 Date before = userCrt.getNotBefore();
-                String errorMsg = invalidDateMessage("User cert isn't valid till", date);
+                String errorMsg = invalidDateMessage("User cert isn't valid till", before);
                 errors.add(new ErrorEntry(ErrorType.PREMATURE_CERT, errorMsg, false, null));
             }
         }
