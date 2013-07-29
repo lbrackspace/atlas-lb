@@ -431,7 +431,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
             configuredHost.setSoapEndpointActive(Boolean.FALSE);
             hostService.update(configuredHost);
         }
-        LOG.warn(String.format("SOAP endpoint %s on host[%d] throw an AxisFault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
+        LOG.warn(String.format("SOAP endpoint %s on host[%d] throw an RollBackException but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
     }
 
     @Override

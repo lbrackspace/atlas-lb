@@ -56,13 +56,15 @@ public class FullConfigIntegrationTest extends STMTestBase {
             stmAdapter.createLoadBalancer(config, buildHydratedLb());
             Thread.sleep(3000);
             StingrayRestClient tclient = new StingrayRestClient();
-            verifyVS(tclient);
-            verifyPool(tclient);
-            verifyMonitor(tclient);
-            verifyProtection(tclient);
-            verifyVips(tclient);
+            verifyVS(tclient, lb);
+            verifyPool(tclient, lb);
+            verifyMonitor(tclient, lb);
+            verifyProtection(tclient, lb);
+            verifyVips(tclient, lb);
+            removeLoadBalancer();
         } catch (Exception e) {
             e.printStackTrace();
+            removeLoadBalancer();
             Assert.fail(e.getMessage());
         }
     }
@@ -72,30 +74,46 @@ public class FullConfigIntegrationTest extends STMTestBase {
         StingrayRestClient tclient = new StingrayRestClient();
 
         try {
+            Thread.sleep(15000);
             stmAdapter.createLoadBalancer(config, buildHydratedLb());
             Thread.sleep(3000);
-            verifyVS(tclient);
-            verifyPool(tclient);
-            verifyMonitor(tclient);
-            verifyProtection(tclient);
-            verifyVips(tclient);
+            verifyVS(tclient, lb);
+            verifyPool(tclient, lb);
+            verifyMonitor(tclient, lb);
+            verifyProtection(tclient, lb);
+            verifyVips(tclient, lb);
 
+            LoadBalancer nlb = new LoadBalancer();
             UserPages up = new UserPages();
             up.setErrorpage("iError");
-            lb.setUserPages(up);
-            lb.setProtocol(LoadBalancerProtocol.FTP);
-            lb.getHealthMonitor().setType(HealthMonitorType.HTTP);
+            nlb.setUserPages(up);
+            nlb.setProtocol(LoadBalancerProtocol.FTP);
+            HealthMonitor mon = new HealthMonitor();
+            mon.setType(HealthMonitorType.HTTP);
+            mon.setStatusRegex("202");
+            mon.setBodyRegex("");
+            mon.setAttemptsBeforeDeactivation(4);
+            mon.setDelay(3);
+            mon.setPath("/");
+            mon.setTimeout(2);
+            mon.setHostHeader("");
+            nlb.setHealthMonitor(mon);
 
-            stmAdapter.updateLoadBalancer(config, lb, lb);
+            buildHydratedLb();
+            lb.setUserPages(up);
+            lb.setHealthMonitor(mon);
+
+            stmAdapter.updateLoadBalancer(config, buildHydratedLb(), nlb);
             Thread.sleep(3000);
-            verifyVS(tclient);
-            verifyPool(tclient);
-            verifyMonitor(tclient);
-            verifyProtection(tclient);
-            verifyVips(tclient);
+            verifyVS(tclient, lb);
+            verifyPool(tclient, lb);
+            verifyMonitor(tclient, lb);
+            verifyProtection(tclient, lb);
+            verifyVips(tclient, lb);
 
         } catch (Exception e) {
             e.printStackTrace();
+            removeLoadBalancer();
             Assert.fail(e.getMessage());
         }
     }
@@ -164,7 +182,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
         return lb;
     }
 
-    private VirtualServer verifyVS(StingrayRestClient client) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, IOException {
+    private VirtualServer verifyVS(StingrayRestClient client, LoadBalancer lb) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, IOException {
         VirtualServer vs = client.getVirtualServer(loadBalancerName());
         ResourceTranslator translator = new ResourceTranslator();
 
@@ -204,7 +222,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
         return vs;
     }
 
-    private Pool verifyPool(StingrayRestClient client) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    private Pool verifyPool(StingrayRestClient client, LoadBalancer lb) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Pool pool = client.getPool(loadBalancerName());
         Assert.assertNotNull(pool);
         Assert.assertEquals(1, pool.getProperties().getBasic().getMonitors().size());
@@ -236,7 +254,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
         return pool;
     }
 
-    private Monitor verifyMonitor(StingrayRestClient client) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    private Monitor verifyMonitor(StingrayRestClient client, LoadBalancer lb) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Monitor monitor = client.getMonitor(loadBalancerName());
         Assert.assertEquals(lb.getHealthMonitor().getType().name(), monitor.getProperties().getBasic().getType().toUpperCase());
         Assert.assertEquals(lb.getHealthMonitor().getTimeout(), monitor.getProperties().getBasic().getTimeout());
@@ -254,7 +272,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
         return monitor;
     }
 
-    private Protection verifyProtection(StingrayRestClient client) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    private Protection verifyProtection(StingrayRestClient client, LoadBalancer lb) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Protection protection = client.getProtection(loadBalancerName());
         if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
             ProtectionAccessRestriction pal = protection.getProperties().getAccess_restriction();
@@ -278,7 +296,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
         return protection;
     }
 
-    private void verifyVips(StingrayRestClient client) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, IPStringConversionException {
+    private void verifyVips(StingrayRestClient client, LoadBalancer lb) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, IPStringConversionException {
         TrafficIp t;
         for (LoadBalancerJoinVip jv : lb.getLoadBalancerJoinVipSet()) {
             t = client.getTrafficIp(trafficIpGroupName(jv.getVirtualIp()));
