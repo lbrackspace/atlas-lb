@@ -285,43 +285,45 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         return out;
     }
 
-    @Override
-    public Hostssubnet getSubnetMappings(Host host) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
-        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
-        String hostName = host.getTrafficManagerName();
-        Hostssubnet hostssubnet;
-        try {
-            hostssubnet = reverseProxyLoadBalancerStmAdapter.getSubnetMappings(getConfig(host), hostName);
-        } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(hostConfig, af);
-            throw af;
-        }
-        return hostssubnet;
-    }
+    //Deprecated
 
-    @Override
-    public void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
-        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
-        String hostName = host.getTrafficManagerName();
-        try {
-            reverseProxyLoadBalancerStmAdapter.setSubnetMappings(hostConfig, hostssubnet);
-        } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(hostConfig, af);
-            throw af;
-        }
-    }
-
-    @Override
-    public void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
-        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
-        String hostName = host.getTrafficManagerName();
-        try {
-            reverseProxyLoadBalancerStmAdapter.deleteSubnetMappings(hostConfig, hostssubnet);
-        } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(hostConfig, af);
-            throw af;
-        }
-    }
+//    @Override
+//    public Hostssubnet getSubnetMappings(Host host) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+//        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
+//        String hostName = host.getTrafficManagerName();
+//        Hostssubnet hostssubnet;
+//        try {
+//            hostssubnet = reverseProxyLoadBalancerStmAdapter.getSubnetMappings(getConfig(host), hostName);
+//        } catch (RollBackException af) {
+//            checkAndSetIfSoapEndPointBad(hostConfig, af);
+//            throw af;
+//        }
+//        return hostssubnet;
+//    }
+//
+//    @Override
+//    public void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+//        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
+//        String hostName = host.getTrafficManagerName();
+//        try {
+//            reverseProxyLoadBalancerStmAdapter.setSubnetMappings(hostConfig, hostssubnet);
+//        } catch (RollBackException af) {
+//            checkAndSetIfSoapEndPointBad(hostConfig, af);
+//            throw af;
+//        }
+//    }
+//
+//    @Override
+//    public void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+//        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
+//        String hostName = host.getTrafficManagerName();
+//        try {
+//            reverseProxyLoadBalancerStmAdapter.deleteSubnetMappings(hostConfig, hostssubnet);
+//        } catch (RollBackException af) {
+//            checkAndSetIfSoapEndPointBad(hostConfig, af);
+//            throw af;
+//        }
+//    }
 
     @Override
     public void deleteErrorFile(LoadBalancer loadBalancer) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException, StmRollBackException {

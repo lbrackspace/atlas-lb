@@ -1115,6 +1115,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     }
 
+    /*
+    Error File Resources
+     */
+
+
     @Override
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content)
             throws InsufficientRequestException, StmRollBackException {
@@ -1235,129 +1240,129 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
      * Deprecating these(SubnetMapping calls) as per ops. Unused call that is difficult to test, may support in future if needed... *
      */
 
-    @Override
-    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws StmRollBackException {
-        StingrayRestClient client;
-        try {
-            client = loadSTMRestClient(config);
-            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
-
-            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
-            for (Hostsubnet hostsubnet : subnetList) {
-                String hsName = hostsubnet.getName();
-                TrafficManager trafficManager = client.getTrafficManager(hsName);
-                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = new ArrayList<TrafficManagerTrafficIp>();
-                List<NetInterface> interfaceList = hostsubnet.getNetInterfaces();
-
-                //Loop over interfaces (eth0, eth1, etc)
-                for (NetInterface netInterface : interfaceList) {
-                    List<Cidr> cidrList = netInterface.getCidrs();
-                    TrafficManagerTrafficIp trafficManagerTrafficIp = new TrafficManagerTrafficIp();
-                    Set<String> networkList = new HashSet<String>();
-
-                    // Loop over Cidr list which contains one subnet per Cidr
-                    for (Cidr cidr : cidrList) {
-                        networkList.add(cidr.getBlock());
-                    }
-
-                    trafficManagerTrafficIp.setName(netInterface.getName());
-                    trafficManagerTrafficIp.setNetworks(networkList);
-                    trafficManagerTrafficIpList.add(trafficManagerTrafficIp);
-                }
-                trafficManager.getProperties().getBasic().setTrafficip(trafficManagerTrafficIpList);
-                client.updateTrafficManager(hsName, trafficManager);
-            }
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            throw new StmRollBackException("Failed updating subnet mappings", e);
-        } catch (StingrayRestClientException e) {
-            throw new StmRollBackException("Failed updating subnet mappings", e);
-        }
-    }
-
-    @Override
-    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws StmRollBackException {
-        StingrayRestClient client;
-        try {
-            client = loadSTMRestClient(config);
-            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
-
-            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
-            for (Hostsubnet hostsubnet : subnetList) {
-                String hsName = hostsubnet.getName();       // This name is of the form "dev1.lbaas.mysite.com"
-                TrafficManager trafficManager = client.getTrafficManager(hsName);
-                List<NetInterface> netInterfaceList = hostsubnet.getNetInterfaces();
-                //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
-                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
-                Map<String, TrafficManagerTrafficIp> tipsMap = new HashMap<String, TrafficManagerTrafficIp>();
-
-                //Loop over tips to compile an indexed list by name
-                for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
-                    tipsMap.put(trafficManagerTrafficIp.getName(), trafficManagerTrafficIp);
-                }
-
-                //Loop over interfaces (eth0, eth1, etc)
-                for (NetInterface netInterface : netInterfaceList) {
-                    String netInterfaceName = netInterface.getName(); //This name is of the form "eth0"
-
-                    if (tipsMap.containsKey(netInterfaceName)) {
-                        TrafficManagerTrafficIp tip = tipsMap.get(netInterfaceName);
-                        Set<String> networkSet = tip.getNetworks();
-                        List<Cidr> cidrList = netInterface.getCidrs(); //This is the list of objects containing subnet strings
-
-                        // Loop over Cidr list which contains one subnet per Cidr
-                        for (Cidr cidr : cidrList) {
-                            networkSet.remove(cidr.getBlock()); //Remove the subnet if it exists
-                        }
-                    }
-                }
-                client.updateTrafficManager(hsName, trafficManager);
-            }
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            throw new StmRollBackException("Failed removing subnet mappings", e);
-        } catch (StingrayRestClientException e) {
-            throw new StmRollBackException("Failed removing subnet mappings", e);
-        }
-    }
-
-    @Override
-    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws StmRollBackException {
-        StingrayRestClient client;
-        Hostssubnet ret = new Hostssubnet();
-        try {
-            client = loadSTMRestClient(config);
-            TrafficManager trafficManager = client.getTrafficManager(host);
-            //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
-            List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
-            List<Hostsubnet> subnetList = new ArrayList<Hostsubnet>();
-            Hostsubnet hostsubnet = new Hostsubnet();
-            hostsubnet.setName(host);
-
-            //Loop over trafficIPs (== interfaces) (eth0, eth1, etc)
-            for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
-                Set<String> networkSet = trafficManagerTrafficIp.getNetworks();
-                NetInterface netInterface = new NetInterface();
-                List<Cidr> cidrs = new ArrayList<Cidr>();
-
-                //Loop over networks (== cidr blocks)
-                for (String block : networkSet) {
-                    Cidr cidr = new Cidr();
-                    cidr.setBlock(block);
-                    cidrs.add(cidr);
-                }
-
-                netInterface.setName(trafficManagerTrafficIp.getName());
-                netInterface.setCidrs(cidrs);
-                hostsubnet.getNetInterfaces().add(netInterface);
-            }
-            subnetList.add(hostsubnet);
-            ret.setHostsubnets(subnetList);
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            throw new StmRollBackException("Failed retrieving subnet mappings", e);
-        } catch (StingrayRestClientException e) {
-            throw new StmRollBackException("Failed retrieving subnet mappings", e);
-        }
-        return ret;
-    }
+//    @Override
+//    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws StmRollBackException {
+//        StingrayRestClient client;
+//        try {
+//            client = loadSTMRestClient(config);
+//            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
+//
+//            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
+//            for (Hostsubnet hostsubnet : subnetList) {
+//                String hsName = hostsubnet.getName();
+//                TrafficManager trafficManager = client.getTrafficManager(hsName);
+//                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = new ArrayList<TrafficManagerTrafficIp>();
+//                List<NetInterface> interfaceList = hostsubnet.getNetInterfaces();
+//
+//                //Loop over interfaces (eth0, eth1, etc)
+//                for (NetInterface netInterface : interfaceList) {
+//                    List<Cidr> cidrList = netInterface.getCidrs();
+//                    TrafficManagerTrafficIp trafficManagerTrafficIp = new TrafficManagerTrafficIp();
+//                    Set<String> networkList = new HashSet<String>();
+//
+//                    // Loop over Cidr list which contains one subnet per Cidr
+//                    for (Cidr cidr : cidrList) {
+//                        networkList.add(cidr.getBlock());
+//                    }
+//
+//                    trafficManagerTrafficIp.setName(netInterface.getName());
+//                    trafficManagerTrafficIp.setNetworks(networkList);
+//                    trafficManagerTrafficIpList.add(trafficManagerTrafficIp);
+//                }
+//                trafficManager.getProperties().getBasic().setTrafficip(trafficManagerTrafficIpList);
+//                client.updateTrafficManager(hsName, trafficManager);
+//            }
+//        } catch (StingrayRestClientObjectNotFoundException e) {
+//            throw new StmRollBackException("Failed updating subnet mappings", e);
+//        } catch (StingrayRestClientException e) {
+//            throw new StmRollBackException("Failed updating subnet mappings", e);
+//        }
+//    }
+//
+//    @Override
+//    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws StmRollBackException {
+//        StingrayRestClient client;
+//        try {
+//            client = loadSTMRestClient(config);
+//            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
+//
+//            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
+//            for (Hostsubnet hostsubnet : subnetList) {
+//                String hsName = hostsubnet.getName();       // This name is of the form "dev1.lbaas.mysite.com"
+//                TrafficManager trafficManager = client.getTrafficManager(hsName);
+//                List<NetInterface> netInterfaceList = hostsubnet.getNetInterfaces();
+//                //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
+//                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
+//                Map<String, TrafficManagerTrafficIp> tipsMap = new HashMap<String, TrafficManagerTrafficIp>();
+//
+//                //Loop over tips to compile an indexed list by name
+//                for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
+//                    tipsMap.put(trafficManagerTrafficIp.getName(), trafficManagerTrafficIp);
+//                }
+//
+//                //Loop over interfaces (eth0, eth1, etc)
+//                for (NetInterface netInterface : netInterfaceList) {
+//                    String netInterfaceName = netInterface.getName(); //This name is of the form "eth0"
+//
+//                    if (tipsMap.containsKey(netInterfaceName)) {
+//                        TrafficManagerTrafficIp tip = tipsMap.get(netInterfaceName);
+//                        Set<String> networkSet = tip.getNetworks();
+//                        List<Cidr> cidrList = netInterface.getCidrs(); //This is the list of objects containing subnet strings
+//
+//                        // Loop over Cidr list which contains one subnet per Cidr
+//                        for (Cidr cidr : cidrList) {
+//                            networkSet.remove(cidr.getBlock()); //Remove the subnet if it exists
+//                        }
+//                    }
+//                }
+//                client.updateTrafficManager(hsName, trafficManager);
+//            }
+//        } catch (StingrayRestClientObjectNotFoundException e) {
+//            throw new StmRollBackException("Failed removing subnet mappings", e);
+//        } catch (StingrayRestClientException e) {
+//            throw new StmRollBackException("Failed removing subnet mappings", e);
+//        }
+//    }
+//
+//    @Override
+//    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws StmRollBackException {
+//        StingrayRestClient client;
+//        Hostssubnet ret = new Hostssubnet();
+//        try {
+//            client = loadSTMRestClient(config);
+//            TrafficManager trafficManager = client.getTrafficManager(host);
+//            //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
+//            List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
+//            List<Hostsubnet> subnetList = new ArrayList<Hostsubnet>();
+//            Hostsubnet hostsubnet = new Hostsubnet();
+//            hostsubnet.setName(host);
+//
+//            //Loop over trafficIPs (== interfaces) (eth0, eth1, etc)
+//            for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
+//                Set<String> networkSet = trafficManagerTrafficIp.getNetworks();
+//                NetInterface netInterface = new NetInterface();
+//                List<Cidr> cidrs = new ArrayList<Cidr>();
+//
+//                //Loop over networks (== cidr blocks)
+//                for (String block : networkSet) {
+//                    Cidr cidr = new Cidr();
+//                    cidr.setBlock(block);
+//                    cidrs.add(cidr);
+//                }
+//
+//                netInterface.setName(trafficManagerTrafficIp.getName());
+//                netInterface.setCidrs(cidrs);
+//                hostsubnet.getNetInterfaces().add(netInterface);
+//            }
+//            subnetList.add(hostsubnet);
+//            ret.setHostsubnets(subnetList);
+//        } catch (StingrayRestClientObjectNotFoundException e) {
+//            throw new StmRollBackException("Failed retrieving subnet mappings", e);
+//        } catch (StingrayRestClientException e) {
+//            throw new StmRollBackException("Failed retrieving subnet mappings", e);
+//        }
+//        return ret;
+//    }
 
 
 }

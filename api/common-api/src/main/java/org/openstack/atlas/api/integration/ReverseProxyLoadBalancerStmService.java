@@ -5,7 +5,6 @@ import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.RateLimit;
-import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 
 import java.util.List;
@@ -66,12 +65,13 @@ public interface ReverseProxyLoadBalancerStmService {
     void updateRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws Exception;
 
     boolean isEndPointWorking(Host host) throws Exception;
+    //Deprecated
 
-    Hostssubnet getSubnetMappings(Host host) throws Exception;
-
-    void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
-
-    void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
+//    Hostssubnet getSubnetMappings(Host host) throws Exception;
+//
+//    void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
+//
+//    void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
 
 
 }
