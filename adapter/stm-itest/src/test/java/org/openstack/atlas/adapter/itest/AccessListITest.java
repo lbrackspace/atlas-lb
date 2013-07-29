@@ -63,13 +63,13 @@ public class AccessListITest extends STMTestBase {
         verifyAccessList();
     }
 
-    @Ignore
     @Test
     public void testAccessListCreationWithConnectionThrottleEnabled() throws Exception {
         enableConnectionThrottle();
+        createAccessList();
+        verifyAccessList();
     }
 
-    @Ignore
     @Test
     public void testAccessListCreationOnSslLoadBalancer() throws Exception {
         enableSsl();
@@ -92,7 +92,7 @@ public class AccessListITest extends STMTestBase {
     }
 
     public void enableConnectionThrottle() {
-        ConnectionLimit limit = lb.getConnectionLimit();
+        ConnectionLimit limit = new ConnectionLimit();
         limit.setMaxConnectionRate(MAX_CONECT_RATE);
         limit.setMaxConnections(MAX_CONNECTIONS);
         limit.setMinConnections(MIN_CONNECTIONS);
@@ -111,13 +111,13 @@ public class AccessListITest extends STMTestBase {
         SslTermination termination = new SslTermination();
         termination.setCertificate(StmTestConstants.SSL_CERT);
         termination.setPrivatekey(StmTestConstants.SSL_KEY);
+        termination.setSecurePort(LB_SECURE_PORT);
         sslTermination.setSslTermination(termination);
         lb.setSslTermination(termination);
         try {
             stmAdapter.updateSslTermination(config, lb, sslTermination);
         } catch (Exception e) {
-            Assert.fail(String.format("Error updating SSL termination on '%s'.\n%s", name,
-                    Arrays.toString(e.getStackTrace())));
+            Assert.fail(String.format("Error updating SSL termination on '%s'.", name));
         }
     }
 
