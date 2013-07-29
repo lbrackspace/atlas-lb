@@ -280,7 +280,7 @@ public class ResourceTranslatorTest extends STMTestBase {
         @Test
         public void shouldCreateValidTrafficIpGroup() throws IPStringConversionException, InsufficientRequestException {
             translator = new ResourceTranslator();
-            Map<String, TrafficIp> mappedGroups = translator.translateTrafficIpGroupsResource(config, lb);
+            Map<String, TrafficIp> mappedGroups = translator.translateTrafficIpGroupsResource(config, lb, true);
 
             Assert.assertTrue(mappedGroups.containsKey(expectedGroupName4));
             Assert.assertTrue(mappedGroups.containsKey(expectedGroupName6));
