@@ -61,6 +61,7 @@ public class GlobalErrorFileITest extends STMTestBase {
         Scanner reader = new Scanner(file);
         String content = "";
         while (reader.hasNextLine()) content += reader.nextLine();
+        reader.close();
         Assert.assertEquals(defaultPageContent, content);
     }
 
@@ -75,6 +76,7 @@ public class GlobalErrorFileITest extends STMTestBase {
         reader = new Scanner(file);
         content = "";
         while (reader.hasNextLine()) content += reader.nextLine();
+        reader.close();
         Assert.assertEquals(customPageContent, content);
 
         stmAdapter.setErrorFile(config, lb, customPageContent2);
@@ -82,6 +84,7 @@ public class GlobalErrorFileITest extends STMTestBase {
         reader = new Scanner(file);
         content = "";
         while (reader.hasNextLine()) content += reader.nextLine();
+        reader.close();
         Assert.assertEquals(customPageContent2, content);
     }
 

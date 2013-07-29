@@ -20,13 +20,8 @@ import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
 import static org.openstack.atlas.service.domain.entities.AccessListType.DENY;
@@ -321,9 +316,11 @@ public class SslTerminationITest extends STMTestBase {
             String normalErrorFileName = stmClient.getVirtualServer(normalName).getProperties().getConnection_errors().getError_file();
 //            Assert.assertEquals(normalName + "_error.html", normalErrorFileName);
             File normalFile = stmClient.getExtraFile(normalErrorFileName);
-            BufferedReader normalReader = new BufferedReader(new FileReader(normalFile));
-            Assert.assertEquals(normalReader.readLine(), expectedContent);
-            normalReader.close();
+            Scanner reader = new Scanner(normalFile);
+            String content = "";
+            while (reader.hasNextLine()) content += reader.nextLine();
+            reader.close();
+            Assert.assertEquals(content, expectedContent);
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
