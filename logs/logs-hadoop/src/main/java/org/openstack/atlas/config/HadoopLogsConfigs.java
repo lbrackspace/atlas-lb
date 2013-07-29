@@ -105,6 +105,11 @@ public class HadoopLogsConfigs {
         if (hadoopConfiguration == null) {
             hadoopConfiguration = new Configuration();
             hadoopConfiguration.addResource(new Path(StaticFileUtils.expandUser(hadoopXmlFile)));
+
+            // Disable Speculative Execution
+            hadoopConfiguration.setBoolean("mapred.reduce.tasks.speculative.execution", false);
+            hadoopConfiguration.setBoolean("mapred.map.tasks.speculative.execution", false);
+            // Cause its wastful.
         }
         return hadoopConfiguration;
     }

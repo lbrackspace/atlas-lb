@@ -28,7 +28,7 @@ import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 public class ChainBuilderMain {
 
-    private static final double DAY_IN_MILLIS = 86400000.0;
+    private static final double MILLIS_PER_SEC = 1000.0;
     public static final int PAGESIZE = 4096;
     public static final int BUFFSIZE = 1024 * 64;
 
@@ -36,7 +36,7 @@ public class ChainBuilderMain {
         ChainConfig conf;
         String confFile;
         if (args.length <= 0) {
-            System.out.printf("usage is %s <config_file>\n", Debug.getProgName(ChainBuilderMain.class));
+            System.out.printf("usage is %s <config_file> [notAfterSecs] [notBeforeSecs]\n", Debug.getProgName(ChainBuilderMain.class));
             System.out.printf("\n");
             System.out.printf("Builds a certificate based on the criteria in the config_file\n");
             System.out.printf("An example configuration file is:\n");
@@ -53,6 +53,15 @@ public class ChainBuilderMain {
             System.out.printf("%s\n", Debug.getExtendedStackTrace(ex));
             return;
         }
+
+        if (args.length >= 2) {
+            conf.setNotAfter(Double.parseDouble(args[1]));
+        }
+
+        if (args.length >= 3) {
+            conf.setNotBefore(Double.parseDouble(args[2]));
+        }
+
         System.out.printf("using config: %s\n", conf.toString());
         KeyPair rootKey = null;
         X509CertificateObject rootCrt = null;
@@ -82,8 +91,8 @@ public class ChainBuilderMain {
         }
         List<String> issuerNames = conf.getIssuers();
         Date now = new Date(System.currentTimeMillis());
-        Date notBefore = daysFromDate(now, conf.getNotBefore());
-        Date notAfter = daysFromDate(now, conf.getNotAfter());
+        Date notBefore = secsFromDate(now, conf.getNotBefore());
+        Date notAfter = secsFromDate(now, conf.getNotAfter());
         List<X509ChainEntry> chainEntries = X509PathBuilder.newChain(rootKey, rootCrt, issuerNames, conf.getKeySize(), notBefore, notAfter);
         KeyPair finalSigningKey;
         X509CertificateObject finalIssueingCrt;
@@ -142,8 +151,8 @@ public class ChainBuilderMain {
         System.out.printf("crt saved\n");
     }
 
-    public static Date daysFromDate(Date now, double days) {
-        return new Date((long) ((double) (now.getTime()) + days * DAY_IN_MILLIS));
+    public static Date secsFromDate(Date now, double secs) {
+        return new Date((long) ((double) (now.getTime()) + secs * MILLIS_PER_SEC));
     }
 
     public static String inspectCrt(X509CertificateObject crt) throws NotAnX509CertificateException {

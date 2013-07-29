@@ -81,7 +81,7 @@ public class HdfsCli {
         HdfsUtils hdfsUtils = HadoopLogsConfigs.getHdfsUtils();
         String user = HadoopLogsConfigs.getHdfsUserName();
         Configuration conf = HadoopLogsConfigs.getHadoopConfiguration();
-
+        HadoopLogsConfigs.markJobsJarAsAlreadyCopied();
         URI defaultHdfsUri = FileSystem.getDefaultUri(conf);
         FileSystem fs = hdfsUtils.getFileSystem();
         System.setProperty(HDUNAME, user);
