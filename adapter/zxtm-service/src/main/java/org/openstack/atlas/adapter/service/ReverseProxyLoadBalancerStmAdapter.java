@@ -8,7 +8,6 @@ import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.RateLimit;
-import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.StingrayRestClient;
 
@@ -103,14 +102,14 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit)
             throws InsufficientRequestException, RollBackException;
 
-    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
-            throws StmRollBackException;
-
-    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
-            throws StmRollBackException;
-
-    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host)
-            throws StmRollBackException;
+//    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
+//            throws StmRollBackException;
+//
+//    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
+//            throws StmRollBackException;
+//
+//    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host)
+//            throws StmRollBackException;
 
     public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config)
             throws StmRollBackException;
