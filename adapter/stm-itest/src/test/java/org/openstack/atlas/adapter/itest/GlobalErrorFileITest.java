@@ -13,10 +13,9 @@ import org.openstack.atlas.service.domain.util.Constants;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.rmi.RemoteException;
+import java.util.Scanner;
 
 public class GlobalErrorFileITest extends STMTestBase {
     String defaultPageContent = "DEFAULT ERROR PAGE CONTENT";
@@ -24,8 +23,6 @@ public class GlobalErrorFileITest extends STMTestBase {
     String customPageContent2 = "CUSTOM ERROR PAGE CONTENT 2";
     String vsName;
 
-
-    //TODO: needs more testing for lb and its error files..
     @BeforeClass
     public static void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
@@ -50,7 +47,6 @@ public class GlobalErrorFileITest extends STMTestBase {
 
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testSimpleDeleteErrorFileOperations() throws Exception {
-        setCustomErrorFile();
         deleteErrorFile();
     }
 
@@ -62,26 +58,33 @@ public class GlobalErrorFileITest extends STMTestBase {
         File file = stmClient.getExtraFile(Constants.DEFAULT_ERRORFILE);
         Assert.assertNotNull(file);
 
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String content = reader.readLine();
+        Scanner reader = new Scanner(file);
+        String content = "";
+        while (reader.hasNextLine()) content += reader.nextLine();
+        reader.close();
         Assert.assertEquals(defaultPageContent, content);
     }
 
     private void setCustomErrorFile() throws Exception {
         vsName = ZxtmNameBuilder.genVSName(lb);
-
+        Scanner reader;
+        String content;
         Assert.assertFalse(customPageContent.equals(customPageContent2)); //assert our assumption
 
         stmAdapter.setErrorFile(config, lb, customPageContent);
         File file = stmClient.getExtraFile(errorFileName());
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String content = reader.readLine();
+        reader = new Scanner(file);
+        content = "";
+        while (reader.hasNextLine()) content += reader.nextLine();
+        reader.close();
         Assert.assertEquals(customPageContent, content);
 
         stmAdapter.setErrorFile(config, lb, customPageContent2);
         file = stmClient.getExtraFile(errorFileName());
-        reader = new BufferedReader(new FileReader(file));
-        content = reader.readLine();
+        reader = new Scanner(file);
+        content = "";
+        while (reader.hasNextLine()) content += reader.nextLine();
+        reader.close();
         Assert.assertEquals(customPageContent2, content);
     }
 
