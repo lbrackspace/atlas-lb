@@ -1,5 +1,7 @@
 package org.openstack.atlas.adapter.stm;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -10,8 +12,39 @@ public class StmAdapterImplTest {
 
         @Test
         public void sampleTest() {
+        }
+
+        @Before
+        public void standUp () {
+
 
         }
+
+        @Test
+        public void testCreateLoadBalancerValidPath() {
+
+        }
+
+        @Test
+        public void testUpdateLoadBalancerValidPath() {
+
+        }
+
+        @Test
+        public void testDeleteLoadBalancerValidPath () {
+
+        }
+
+
+
+
+
+        @After
+        public void tearDown() {
+
+        }
+
+
 
     }
 
@@ -48,6 +81,23 @@ public class StmAdapterImplTest {
     }
 
     private static class ErrorFileResourcesTest {
+
+        @Before
+        public void standUp() {
+
+        }
+
+
+        @Test
+        public void testUploadDefaultErrorFile() {
+
+        }
+
+        @Test
+        public void testDeleteErrorFile() {
+
+        }
+
 
     }
 

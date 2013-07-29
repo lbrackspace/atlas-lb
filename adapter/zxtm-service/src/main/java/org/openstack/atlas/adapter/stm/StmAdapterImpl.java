@@ -522,6 +522,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         for (Map.Entry<String, TrafficIp> tm : tigmap.entrySet()) {
             try {
                 curTig = client.getTrafficIp(tm.getKey());
+                vsName = tm.getKey();
             } catch (Exception e) {
                 LOG.warn(String.format("Could not load virtual ips for: %s, attempting to recreate...", vsName));
             }
@@ -939,24 +940,31 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         LOG.debug(String.format("Successfully removed ssl from loadbalancer: %s from the STM service...", vsName));
     }
 
-    //TODO: follow logic in zxtm adapter for suspension..
-
     @Override
     public void addSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = null;
+        boolean isEnabled = false;
         client = loadSTMRestClient(config);
+        ResourceTranslator translator = new ResourceTranslator();
         String vsName = ZxtmNameBuilder.genVSName(lb);
         try {
+            LOG.info(String.format("Attempting to disable virtual server %s", vsName));
             VirtualServer virtualServer = client.getVirtualServer(vsName);
-            virtualServer.getProperties().getBasic().setEnabled(false);
+            virtualServer.getProperties().getBasic().setEnabled(isEnabled);
             updateVirtualServer(config, client, vsName, virtualServer);
+            LOG.info(String.format("Successfully disabled virtual server %s", vsName));
             if (lb.hasSsl()) {
+                LOG.info(String.format("Attempting to disable virtual server %s", vsName));
                 vsName = ZxtmNameBuilder.genSslVSName(lb);
                 VirtualServer secureServer = client.getVirtualServer(vsName);
-                secureServer.getProperties().getBasic().setEnabled(false);
+                secureServer.getProperties().getBasic().setEnabled(isEnabled);
                 updateVirtualServer(config, client, vsName, secureServer);
-
+                LOG.info(String.format("Successfully disabled virtual server %s", vsName));
             }
+            LOG.info(String.format("Attempting to disable Traffic Ip Groups"));
+            translator.translateTrafficIpGroupsResource(config, lb, isEnabled);
+            updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
+            LOG.info(String.format("Traffic Ip Groups disabled"));
             LOG.info("Successfully added load balancer suspension");
         } catch (Exception e) {
             LOG.error(String.format("Failed to suspend load balancer operation for load balancer: %s Exception: %s", lb.getId(), e));
@@ -969,17 +977,27 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws InsufficientRequestException, RollBackException {
         StingrayRestClient client = null;
         client = loadSTMRestClient(config);
+        boolean isEnabled = true;
+        ResourceTranslator translator = new ResourceTranslator();
         String vsName = ZxtmNameBuilder.genVSName(lb);
         try {
+            LOG.info(String.format("Attempting to enable virtual server %s", vsName));
             VirtualServer virtualServer = client.getVirtualServer(vsName);
-            virtualServer.getProperties().getBasic().setEnabled(true);
+            virtualServer.getProperties().getBasic().setEnabled(isEnabled);
             updateVirtualServer(config, client, vsName, virtualServer);
+            LOG.info(String.format("Successfully enabled virtual server %s", vsName));
             if (lb.hasSsl()) {
+                LOG.info(String.format("Attempting to enable virtual server %s", vsName));
                 vsName = ZxtmNameBuilder.genSslVSName(lb);
                 VirtualServer secureServer = client.getVirtualServer(vsName);
-                secureServer.getProperties().getBasic().setEnabled(true);
+                secureServer.getProperties().getBasic().setEnabled(isEnabled);
                 updateVirtualServer(config, client, vsName, secureServer);
+                LOG.info(String.format("Successfully enabled virtual server %s", vsName));
             }
+            LOG.info(String.format("Attempting to enable Traffic Ip Groups"));
+            translator.translateTrafficIpGroupsResource(config, lb, isEnabled);
+            updateVirtualIps(config, client, vsName, translator.getcTrafficIpGroups());
+            LOG.info(String.format("Successfully enabled Traffic Ip Groups"));
             LOG.info("Successfully removed load balancer suspension");
         } catch (Exception e) {
             LOG.error(String.format("Failed to remove load balancer suspension for load balancer: %s. Exception: %s", lb.getId(), e));

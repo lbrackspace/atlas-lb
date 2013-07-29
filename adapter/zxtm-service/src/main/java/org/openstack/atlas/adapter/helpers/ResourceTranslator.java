@@ -46,7 +46,8 @@ public class ResourceTranslator {
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
 
-        translateTrafficIpGroupsResource(config, loadBalancer);
+        boolean areTigsEnabled = true;
+        translateTrafficIpGroupsResource(config, loadBalancer, areTigsEnabled);
 
         if (loadBalancer.getSslTermination() != null) translateKeypairResource(config, loadBalancer);
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null)
@@ -154,20 +155,20 @@ public class ResourceTranslator {
     }
 
     public Map<String, TrafficIp> translateTrafficIpGroupsResource(LoadBalancerEndpointConfiguration config,
-                                                                   LoadBalancer loadBalancer) throws InsufficientRequestException {
+                                                                   LoadBalancer loadBalancer, boolean isEnabled) throws InsufficientRequestException {
         Map<String, TrafficIp> nameandgroup = new HashMap<String, TrafficIp>();
 
         // Add new traffic ip groups for IPv4 vips
         for (LoadBalancerJoinVip loadBalancerJoinVipToAdd : loadBalancer.getLoadBalancerJoinVipSet()) {
             nameandgroup.put(ZxtmNameBuilder.generateTrafficIpGroupName(loadBalancer, loadBalancerJoinVipToAdd.getVirtualIp()),
-                    translateTrafficIpGroupResource(config, loadBalancerJoinVipToAdd.getVirtualIp().getIpAddress()));
+                    translateTrafficIpGroupResource(config, loadBalancerJoinVipToAdd.getVirtualIp().getIpAddress(), isEnabled));
         }
 
         // Add new traffic ip groups for IPv6 vips
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6ToAdd : loadBalancer.getLoadBalancerJoinVip6Set()) {
             try {
                 nameandgroup.put(ZxtmNameBuilder.generateTrafficIpGroupName(loadBalancer, loadBalancerJoinVip6ToAdd.getVirtualIp()),
-                        translateTrafficIpGroupResource(config, loadBalancerJoinVip6ToAdd.getVirtualIp().getDerivedIpString()));
+                        translateTrafficIpGroupResource(config, loadBalancerJoinVip6ToAdd.getVirtualIp().getDerivedIpString(), isEnabled));
             } catch (IPStringConversionException e) {
                 //Generally means there is a missing value, wrap up the exception into general IRE;
                 throw new InsufficientRequestException(e);
@@ -178,12 +179,13 @@ public class ResourceTranslator {
         return nameandgroup;
     }
 
-    private TrafficIp translateTrafficIpGroupResource(LoadBalancerEndpointConfiguration config, String ipaddress) {
+    private TrafficIp translateTrafficIpGroupResource(LoadBalancerEndpointConfiguration config
+            , String ipaddress, boolean isEnabled) {
         TrafficIp tig = new TrafficIp();
         TrafficIpProperties properties = new TrafficIpProperties();
         TrafficIpBasic basic = new TrafficIpBasic();
 
-        basic.setEnabled(true);
+        basic.setEnabled(isEnabled);
         basic.setIpaddresses(new HashSet<String>(Arrays.asList(ipaddress)));
 
         Set<String> machines = new HashSet<String>();
