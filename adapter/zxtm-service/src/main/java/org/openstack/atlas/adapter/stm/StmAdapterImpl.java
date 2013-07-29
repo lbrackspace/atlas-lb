@@ -1230,7 +1230,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     private File getFileWithContent(String content) throws IOException {
         File file = File.createTempFile("StmAdapterImpl_", ".err");
         BufferedWriter out = new BufferedWriter(new FileWriter(file));
-        out.write(content);
+        out.write('\n' + content);
         out.close();
         return file;
     }
