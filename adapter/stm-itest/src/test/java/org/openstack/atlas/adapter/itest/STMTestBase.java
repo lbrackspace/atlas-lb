@@ -2,7 +2,6 @@ package org.openstack.atlas.adapter.itest;
 
 import Util.ConfigurationKeys;
 import Util.STMConfiguration;
-import org.apache.axis.AxisFault;
 import org.junit.Assert;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
@@ -11,7 +10,6 @@ import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
-import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
@@ -124,10 +122,6 @@ public class STMTestBase extends StmTestConstants {
         lb.setLoadBalancerJoinVipSet(vipList);
 
         STMTestBase.lb = lb;
-    }
-
-    protected static ZxtmServiceStubs getServiceStubs() throws AxisFault {
-        return ZxtmServiceStubs.getServiceStubs(config.getEndpointUrl(), config.getUsername(), config.getPassword());
     }
 
     protected static String loadBalancerName() throws InsufficientRequestException {

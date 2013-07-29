@@ -9,7 +9,7 @@ import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.*;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.pojos.*;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.rackspace.stingray.client.StingrayRestClient;
@@ -23,8 +23,6 @@ import org.rackspace.stingray.client.persistence.PersistenceProperties;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
-import org.rackspace.stingray.client.tm.TrafficManager;
-import org.rackspace.stingray.client.tm.TrafficManagerTrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.*;
@@ -301,8 +299,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         LOG.info(String.format("Setting nodes to pool '%s'", poolName));
         updatePool(config, client, poolName, translator.getcPool());
         LOG.info(String.format("Successfully added nodes to pool '%s'", poolName));
-
-
     }
 
     @Override

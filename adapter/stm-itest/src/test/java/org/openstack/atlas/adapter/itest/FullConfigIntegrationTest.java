@@ -24,10 +24,7 @@ import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
 import static org.openstack.atlas.service.domain.entities.AccessListType.DENY;
@@ -38,11 +35,14 @@ public class FullConfigIntegrationTest extends STMTestBase {
     Node n2;
     Node n3;
 
+    /**
+     * Have to run in order, some tests depend on others for values in STM...
+     **/
+
     @BeforeClass
     public static void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
-//        createSimpleLoadBalancer();
     }
 
     @AfterClass
@@ -61,7 +61,6 @@ public class FullConfigIntegrationTest extends STMTestBase {
             verifyMonitor(tclient, lb);
             verifyProtection(tclient, lb);
             verifyVips(tclient, lb);
-            removeLoadBalancer();
         } catch (Exception e) {
             e.printStackTrace();
             removeLoadBalancer();
@@ -74,20 +73,13 @@ public class FullConfigIntegrationTest extends STMTestBase {
         StingrayRestClient tclient = new StingrayRestClient();
 
         try {
-            Thread.sleep(15000);
-            stmAdapter.createLoadBalancer(config, buildHydratedLb());
-            Thread.sleep(3000);
-            verifyVS(tclient, lb);
-            verifyPool(tclient, lb);
-            verifyMonitor(tclient, lb);
-            verifyProtection(tclient, lb);
-            verifyVips(tclient, lb);
-
             LoadBalancer nlb = new LoadBalancer();
             UserPages up = new UserPages();
             up.setErrorpage("iError");
             nlb.setUserPages(up);
-            nlb.setProtocol(LoadBalancerProtocol.FTP);
+
+//            nlb.setProtocol(LoadBalancerProtocol.HTTP);
+
             HealthMonitor mon = new HealthMonitor();
             mon.setType(HealthMonitorType.HTTP);
             mon.setStatusRegex("202");
@@ -103,7 +95,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
             lb.setUserPages(up);
             lb.setHealthMonitor(mon);
 
-            stmAdapter.updateLoadBalancer(config, buildHydratedLb(), nlb);
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             Thread.sleep(3000);
             verifyVS(tclient, lb);
             verifyPool(tclient, lb);
@@ -194,9 +186,8 @@ public class FullConfigIntegrationTest extends STMTestBase {
         if (lb.getUserPages() != null) {
             Assert.assertEquals(errorFileName(), vs.getProperties().getConnection_errors().getError_file());
             File ef = client.getExtraFile(errorFileName());
-            BufferedReader br = new BufferedReader(new FileReader(ef));
-
-            Assert.assertEquals(lb.getUserPages().getErrorpage(), br.readLine());
+            String content = readFile(ef);
+            Assert.assertEquals(lb.getUserPages().getErrorpage(), content);
             ef.delete();
         } else {
             Assert.assertEquals("Default", vs.getProperties().getConnection_errors().getError_file());
@@ -261,7 +252,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
         Assert.assertEquals(lb.getHealthMonitor().getAttemptsBeforeDeactivation(), monitor.getProperties().getBasic().getFailures());
 
         if (lb.getHealthMonitor().getType().equals(HealthMonitorType.HTTP) || lb.getHealthMonitor().equals(HealthMonitorType.HTTPS)) {
-            MonitorHttp http = new MonitorHttp();
+            MonitorHttp http = monitor.getProperties().getHttp();
             HealthMonitor hm = lb.getHealthMonitor();
             Assert.assertEquals(hm.getPath(), http.getPath());
             Assert.assertEquals(hm.getStatusRegex(), http.getStatus_regex());
@@ -316,5 +307,13 @@ public class FullConfigIntegrationTest extends STMTestBase {
             Assert.assertTrue(t.getProperties().getBasic().getMachines().contains(config.getTrafficManagerName()));
         }
 
+    }
+
+    private String readFile(File file) throws FileNotFoundException {
+        Scanner reader = new Scanner(file);
+        String content = "";
+        while (reader.hasNextLine()) content += reader.nextLine();
+        reader.close();
+        return content;
     }
 }
