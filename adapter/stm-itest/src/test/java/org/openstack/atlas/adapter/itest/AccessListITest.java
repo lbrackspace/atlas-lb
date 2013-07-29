@@ -1,10 +1,6 @@
 package org.openstack.atlas.adapter.itest;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.AccessListType;
@@ -16,12 +12,12 @@ import org.rackspace.stingray.client.protection.Protection;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 public class AccessListITest extends STMTestBase {
 
     private String name;
-    private String secureName;
     Set<AccessList> list;
     AccessList item1;
     AccessList item2;
@@ -51,39 +47,75 @@ public class AccessListITest extends STMTestBase {
             setupIvars();
             createSimpleLoadBalancer();
             name = ZxtmNameBuilder.genVSName(lb);
-            secureName = ZxtmNameBuilder.genSslVSName(lb);
         } catch(Exception e) {
             Assert.fail(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
         }
     }
 
     @Test
-    public void testAccessListCreationOnBasicLoadBalancer() throws Exception {
+    public void testAccessListCreationOnBasicLoadBalancer() {
         createAccessList();
         verifyAccessList();
     }
 
     @Test
-    public void testAccessListCreationWithConnectionThrottleEnabled() throws Exception {
+    public void testAccessListCreationWithConnectionThrottleEnabled() {
         enableConnectionThrottle();
         createAccessList();
         verifyAccessList();
     }
 
     @Test
-    public void testAccessListCreationOnSslLoadBalancer() throws Exception {
+    public void testAccessListCreationOnSslLoadBalancer() {
         enableSsl();
         createAccessList();
         verifyAccessList();
     }
 
-    public void createAccessList() throws Exception {
-        lb.setAccessLists(list);
-        stmAdapter.updateAccessList(config, lb);
+    @Test
+    public void testAccessListCreationOnSslOnlyLoadBalancer() {
+        enableSslOnly();
+        createAccessList();
+        verifyAccessList();
     }
 
-    public void verifyAccessList() throws Exception {
-        Protection protection = stmClient.getProtection(name);
+    @Ignore
+    @Test
+    public void testInvalidAccessListCreation() {
+        createInvalidAccessList();
+    }
+
+    public void createAccessList() {
+        lb.setAccessLists(list);
+        try {
+            stmAdapter.updateAccessList(config, lb);
+        } catch (Exception e) {
+            Assert.fail(String.format("Error updating Access List on '%s'.\n%s", name,
+                    Arrays.toString(e.getStackTrace())));
+        }
+    }
+
+    public void createInvalidAccessList() {
+        list = new HashSet<AccessList>();
+        list.add(new AccessList());
+        lb.setAccessLists(list);
+        try {
+            stmAdapter.updateAccessList(config, lb);
+        } catch (Exception e) {
+            Assert.fail(String.format("Error updating Access List on '%s'.\n%s", name,
+                    Arrays.toString(e.getStackTrace())));
+        }
+    }
+
+    public void verifyAccessList() {
+        Protection protection;
+        try {
+            protection = stmClient.getProtection(name);
+        } catch (Exception e) {
+            Assert.fail(String.format("Error retrieving Protection on '%s'.\n%s", name,
+                    Arrays.toString(e.getStackTrace())));
+            return;
+        }
         Assert.assertNotNull(protection);
         Set<String> allowed = protection.getProperties().getAccess_restriction().getAllowed();
         Set<String> banned = protection.getProperties().getAccess_restriction().getBanned();
@@ -108,10 +140,7 @@ public class AccessListITest extends STMTestBase {
 
     public void enableSsl() {
         ZeusSslTermination sslTermination = new ZeusSslTermination();
-        SslTermination termination = new SslTermination();
-        termination.setCertificate(StmTestConstants.SSL_CERT);
-        termination.setPrivatekey(StmTestConstants.SSL_KEY);
-        termination.setSecurePort(LB_SECURE_PORT);
+        SslTermination termination = setupSsl(false);
         sslTermination.setSslTermination(termination);
         lb.setSslTermination(termination);
         try {
@@ -121,8 +150,29 @@ public class AccessListITest extends STMTestBase {
         }
     }
 
-    @AfterClass
-    public static void tearDown() {
+    public void enableSslOnly() {
+        ZeusSslTermination sslTermination = new ZeusSslTermination();
+        SslTermination termination = setupSsl(true);
+        sslTermination.setSslTermination(termination);
+        lb.setSslTermination(termination);
+        try {
+            stmAdapter.updateSslTermination(config, lb, sslTermination);
+        } catch (Exception e) {
+            Assert.fail(String.format("Error updating SSL termination on '%s'.", name));
+        }
+    }
+
+    public SslTermination setupSsl(Boolean SslOnly) {
+        SslTermination termination = new SslTermination();
+        termination.setCertificate(StmTestConstants.SSL_CERT);
+        termination.setPrivatekey(StmTestConstants.SSL_KEY);
+        termination.setSecurePort(LB_SECURE_PORT);
+        termination.setSecureTrafficOnly(SslOnly);
+        return termination;
+    }
+
+    @After
+    public void tearDown() {
         removeLoadBalancer();
     }
 }
