@@ -2,9 +2,14 @@ package org.openstack.atlas.util.ca;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 
 public class StringUtils {
+
+    private static final String USASCII = "US-ASCII";
+    private static final int PAGESIZE = 4096;
 
     public static String displayParsedInt(String strIn) {
         try {
@@ -67,12 +72,11 @@ public class StringUtils {
         while (t != null) {
             if (t instanceof Exception) {
                 currEx = (Exception) t;
-                sb.append(String.format("Exception: %s:%s\n", currEx.getMessage(), currEx.getClass().getName()));
+                sb.append(String.format("\"%s\":\"%s\"\n", currEx.getClass().getName(), currEx.getMessage()));
                 for (StackTraceElement se : currEx.getStackTrace()) {
                     sb.append(String.format("%s\n", se.toString()));
                 }
                 sb.append("\n");
-
                 t = t.getCause();
             }
         }
@@ -83,20 +87,34 @@ public class StringUtils {
         StringBuilder sb = new StringBuilder();
         Object[] oarray = objects.toArray();
         int nobjects = oarray.length;
-        if(nobjects==0){
+        if (nobjects == 0) {
             return "";
         }
-        for(int i=0;i<nobjects -1; i++){
-            sb.append(String.format("%s%s",oarray[i].toString(),delim));
+        for (int i = 0; i < nobjects - 1; i++) {
+            sb.append(String.format("%s%s", oarray[i].toString(), delim));
         }
-        sb.append(String.format("%s",oarray[nobjects-1]));
+        sb.append(String.format("%s", oarray[nobjects - 1]));
         return sb.toString();
+    }
+
+    public static String asciiString(byte[] asciiBytes) {
+        if(asciiBytes == null){
+            return "";
+        }
+        try {
+            return new String(asciiBytes, USASCII);
+        } catch (UnsupportedEncodingException ex) {
+            return null; // Impossable exception
+        }
     }
 
     public static byte[] asciiBytes(String asciiStr) {
         byte[] out = null;
+        if(asciiStr==null){
+            return new byte[0];
+        }
         try {
-            out = asciiStr.getBytes("US-ASCII");
+            out = asciiStr.getBytes(USASCII);
             return out;
         } catch (UnsupportedEncodingException ex) {
             // Impossable Exception as Java Spec says all Implementations will
@@ -104,5 +122,33 @@ public class StringUtils {
             // return null
             return out;
         }
+    }
+
+    // checks if the strings are equal but will conclude the strings
+    // are not equal if either is null.
+    public static boolean strEquals(String a, String b) {
+        if (a == null || b == null) {
+            return false;
+        } else {
+            return a.equals(b);
+        }
+    }
+
+    // LineWrapper for jython encodeing of Strings
+    public static String lineWrap(String strIn,int cols){
+        StringBuilder sb = new StringBuilder(PAGESIZE);
+        char[] strArray = strIn.toCharArray();
+        int chrsLeftToWrite = strArray.length;
+        int offset = 0;
+        while(chrsLeftToWrite > 0){
+            int nChrs = (chrsLeftToWrite<cols)?chrsLeftToWrite:cols;
+            sb.append(strArray, offset, nChrs);
+            offset += nChrs;
+            chrsLeftToWrite -= nChrs;
+            if(chrsLeftToWrite>0){
+                sb.append('\n');
+            }
+        }
+        return sb.toString();
     }
 }

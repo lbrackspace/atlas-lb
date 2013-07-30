@@ -6,14 +6,15 @@ public class ConversionException extends RsaException {
         super();
     }
 
-    public ConversionException(String msg){
+    public ConversionException(String msg) {
         super(msg);
     }
 
-    public ConversionException(Throwable th){
+    public ConversionException(Throwable th) {
         super(th);
     }
-    public ConversionException(String msg,Throwable th){
-        super(msg,th);
+
+    public ConversionException(String msg, Throwable th) {
+        super(msg, th);
     }
 }

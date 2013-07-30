@@ -3,14 +3,14 @@ package org.bouncycastle.openpgp.test;
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 
-import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.ArmoredInputStream;
+import org.bouncycastle.bcpg.ArmoredOutputStream;
+import org.bouncycastle.openpgp.PGPObjectFactory;
 import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.Strings;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.test.SimpleTest;
-import org.bouncycastle.openpgp.PGPObjectFactory;
 
 public class PGPArmoredTest
     extends SimpleTest

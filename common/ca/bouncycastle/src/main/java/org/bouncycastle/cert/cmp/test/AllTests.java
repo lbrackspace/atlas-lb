@@ -15,6 +15,7 @@ import java.util.Date;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.cmp.CertConfirmContent;

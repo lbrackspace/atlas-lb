@@ -17,7 +17,6 @@
         <module>configuration</module>
         <module>util</module>
         <module>b64aes</module>
-        <!-- <module>debug</module> -->
         <module>cidr</module>
         <module>ca</module>
         <module>crypto-tool</module>

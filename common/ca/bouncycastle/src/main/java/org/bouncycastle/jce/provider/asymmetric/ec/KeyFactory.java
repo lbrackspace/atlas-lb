@@ -15,9 +15,9 @@ import org.bouncycastle.jce.provider.JCEECPrivateKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.jce.provider.JDKKeyFactory;
 import org.bouncycastle.jce.provider.ProviderUtil;
+import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.jce.spec.ECParameterSpec;
 
 public class KeyFactory
     extends JDKKeyFactory

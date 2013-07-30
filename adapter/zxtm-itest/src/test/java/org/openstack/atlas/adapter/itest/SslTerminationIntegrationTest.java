@@ -15,7 +15,7 @@ import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 
 import java.rmi.RemoteException;
 import java.util.Calendar;
@@ -164,9 +164,9 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             sslTermination.setCertificate(testCert);
             sslTermination.setPrivatekey(testKey);
 
-            ZeusCertFile zeusCertFile = new ZeusCertFile();
-            zeusCertFile.setPublic_cert(testCert);
-            zeusCertFile.setPrivate_key(testKey);
+            ZeusCrtFile zeusCrtFile = new ZeusCrtFile();
+            zeusCrtFile.setPublic_cert(testCert);
+            zeusCrtFile.setPrivate_key(testKey);
 
             ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
             zeusSslTermination.setCertIntermediateCert(testCert);
@@ -228,9 +228,9 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             sslTermination.setCertificate(testCert);
             sslTermination.setPrivatekey(testKey);
 
-            ZeusCertFile zeusCertFile = new ZeusCertFile();
-            zeusCertFile.setPublic_cert(testCert);
-            zeusCertFile.setPrivate_key(testKey);
+            ZeusCrtFile zeusCrtFile = new ZeusCrtFile();
+            zeusCrtFile.setPublic_cert(testCert);
+            zeusCrtFile.setPrivate_key(testKey);
 
             ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
             zeusSslTermination.setCertIntermediateCert(testCert);
@@ -296,7 +296,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             sslTermination.setCertificate(testCert);
             sslTermination.setPrivatekey(testKey);
 
-            ZeusCertFile zeusCertFile = new ZeusCertFile();
+            ZeusCrtFile zeusCertFile = new ZeusCrtFile();
             zeusCertFile.setPublic_cert(testCert);
             zeusCertFile.setPrivate_key(testKey);
 

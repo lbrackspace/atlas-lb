@@ -330,7 +330,7 @@ public class StaticFileUtils {
             return null;
         }
         String[] pathComps = splitPath(path);
-        if(pathComps == null || pathComps.length<=0){
+        if (pathComps == null || pathComps.length <= 0) {
             return null;
         }
         return pathComps[pathComps.length - 1];
@@ -592,5 +592,11 @@ public class StaticFileUtils {
         } catch (Exception ex) {
             // Not logging since the stream is likely already closed
         }
+    }
+
+    public static BufferedReader inputStreamToBufferedReader(InputStream is, int buffSize) {
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr, buffSize);
+        return br;
     }
 }

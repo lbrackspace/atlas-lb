@@ -1,0 +1,16 @@
+2012-03-17: Version 1.0.2
+
+ - Added support for Unicode Supplementary characters (i.e. characters outside the Basic Multilingual Plane)
+   http://opensource.xhaus.com/issues/2
+ - Updated the handling of some datatypes to be more 2.5 compatible.
+   True and False now encoded as 'true' and 'false'
+   All strings and object keys now decoded as PyUnicode
+
+2009-11-05: Version 1.0.1
+
+ - Fixed a bug whereby a stack overflow resulted when parsing a malformed array ("[").
+   http://opensource.xhaus.com/issues/1
+
+2009-03-17: version 1.0.0
+
+ - Initial release
