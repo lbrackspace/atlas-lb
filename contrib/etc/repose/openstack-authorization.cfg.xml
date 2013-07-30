@@ -1,0 +1,5 @@
+<!-- http://wiki.openrepose.org/display/REPOSE/Client+Authorization+Filter -->
+<rackspace-authorization xmlns='http://openrepose.org/components/openstack-identity/auth-z/v1.0'>
+    <authentication-server username="cloudLBAAS" password="password" href="https://identity.api.rackspacecloud.com/v2.0" />
+        <service-endpoint href="https://ord.loadbalancers.api.rackspacecloud.com/v1.0"/>
+        </rackspace-authorization>
