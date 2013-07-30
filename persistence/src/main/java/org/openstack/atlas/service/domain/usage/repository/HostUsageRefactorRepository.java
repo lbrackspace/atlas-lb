@@ -31,8 +31,10 @@ public class HostUsageRefactorRepository {
 
     public void batchCreate(List<LoadBalancerHostUsage> usageRecords) {
         LOG.info(String.format("batchCreate() called with %d records", usageRecords.size()));
-        String query = generateBatchInsertQuery(usageRecords);
-        entityManager.createNativeQuery(query).executeUpdate();
+        if (usageRecords.size() > 0) {
+            String query = generateBatchInsertQuery(usageRecords);
+            entityManager.createNativeQuery(query).executeUpdate();
+        }
     }
 
     private String generateBatchInsertQuery(List<LoadBalancerHostUsage> usages) {
