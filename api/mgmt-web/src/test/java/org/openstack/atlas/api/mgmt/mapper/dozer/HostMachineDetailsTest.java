@@ -1,14 +1,12 @@
 package org.openstack.atlas.api.mgmt.mapper.dozer;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostMachineDetails;
 import org.dozer.DozerBeanMapper;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostMachineDetails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +36,7 @@ public class HostMachineDetailsTest {
             host.setMaxConcurrentConnections(1);
             host.setTrafficManagerName("imaTrafficeMngr");
             host.setSoapEndpointActive(true);
+            host.setRestEndpointActive(true);
             hosts = new ArrayList<org.openstack.atlas.service.domain.entities.Host>();
             hosts.add(host);
 
@@ -71,6 +70,7 @@ public class HostMachineDetailsTest {
             Assert.assertEquals(host.getName(), dHostMD.getHost().getName());
             Assert.assertEquals(host.getTrafficManagerName(), dHostMD.getHost().getTrafficManagerName());
             Assert.assertEquals(host.isSoapEndpointActive(), dHostMD.getHost().isSoapEndpointActive());
+            Assert.assertEquals(host.isRestEndpointActive(), dHostMD.getHost().isRestEndpointActive());
         }
         //TODO:more test
     }

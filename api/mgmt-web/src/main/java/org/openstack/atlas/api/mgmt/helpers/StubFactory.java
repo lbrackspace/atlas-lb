@@ -298,6 +298,7 @@ public class StubFactory {
         h.setStatus((HostStatus) rndChoice(HostStatus.values()));
         h.setManagementIp(rndIp());
         h.setManagementSoapInterface(String.format("http://%s:8080/soap", rndIp()));
+        h.setManagementRestInterface(String.format("http://%s:8080/rest", rndIp()));
         h.setMaxConcurrentConnections(rndInt(0, 900));
         h.setType((HostType) rndChoice(HostType.values()));
         return h;

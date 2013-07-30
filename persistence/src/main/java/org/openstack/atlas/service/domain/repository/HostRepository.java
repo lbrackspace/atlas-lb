@@ -169,6 +169,7 @@ public class HostRepository {
         return host;
     }
 
+    //TODO update for rest endpoint...
     public Host getEndPointHost(Integer clusterId) {
         String hqlStr = "from Host h where h.soapEndpointActive = 1 "
                 + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER','SOAP_API_ENDPOINT') "

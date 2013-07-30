@@ -87,6 +87,10 @@ public class HostServiceImpl extends BaseService implements HostService {
 
             dbHost.setEndpoint(queueHost.getEndpoint());
         }
+        if (queueHost.getRestEndpoint() != null) {
+
+            dbHost.setRestEndpoint(queueHost.getRestEndpoint());
+        }
         if (queueHost.getHostStatus() != null) {
 
             dbHost.setHostStatus(queueHost.getHostStatus());
@@ -107,6 +111,11 @@ public class HostServiceImpl extends BaseService implements HostService {
         if (queueHost.isSoapEndpointActive() != null) {
 
             dbHost.setSoapEndpointActive(queueHost.isSoapEndpointActive());
+        }
+
+        if (queueHost.isRestEndpointActive() != null) {
+
+            dbHost.setRestEndpointActive(queueHost.isRestEndpointActive());
         }
 
         if (queueHost.getIpv4Public() != null) {

@@ -70,7 +70,7 @@ public class STMTestBase {
     private static void retrieveConfigValues() {
         STM_USERNAME = configuration.getString(ConfigurationKeys.stingray_admin_user);
         STM_PASSWORD = configuration.getString(ConfigurationKeys.stingray_admin_key);
-        STM_ENDPOINT_URI = configuration.getString(ConfigurationKeys.stingray_rest_endpoint) + configuration.getString(ConfigurationKeys.stingray_base_uri);
+        STM_ENDPOINT_URI = configuration.getString(ConfigurationKeys.stingray_rest_endpoint);
         TARGET_HOST = configuration.getString(ConfigurationKeys.target_host);
         FAILOVER_HOST_1 = configuration.getString(ConfigurationKeys.failover_host_1);
         DEFAULT_LOG_FILE_LOCATION = configuration.getString(ConfigurationKeys.default_log_file_location);
@@ -81,6 +81,7 @@ public class STMTestBase {
         targetFailoverHosts.add(FAILOVER_HOST_1);
         Host soapEndpointHost = new Host();
         soapEndpointHost.setEndpoint(STM_ENDPOINT_URI);
+        soapEndpointHost.setRestEndpoint(STM_ENDPOINT_URI);
         Host trafficManagerHost = new Host();
         trafficManagerHost.setTrafficManagerName(TARGET_HOST);
         config = new LoadBalancerEndpointConfiguration(soapEndpointHost, STM_USERNAME, STM_PASSWORD, trafficManagerHost, targetFailoverHosts, "9090");

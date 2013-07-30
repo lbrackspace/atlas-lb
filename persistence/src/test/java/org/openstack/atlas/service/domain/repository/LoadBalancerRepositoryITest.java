@@ -8,20 +8,12 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.service.domain.Base;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.entities.Cluster;
-import org.openstack.atlas.service.domain.entities.DataCenter;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.HostStatus;
-import org.openstack.atlas.service.domain.entities.LimitType;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.LbIdAccountId;
 import org.openstack.atlas.util.common.CalendarUtils;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Set;
 
@@ -129,6 +121,7 @@ public class LoadBalancerRepositoryITest {
             host.setCoreDeviceId("someId");
             host.setManagementIp("10.0.0.1");
             host.setEndpoint("endpoint");
+            host.setRestEndpoint("restEndpoint");
             host.setTrafficManagerName("trafficManagerName");
 
             if (hostRepository.getAll().isEmpty()) {

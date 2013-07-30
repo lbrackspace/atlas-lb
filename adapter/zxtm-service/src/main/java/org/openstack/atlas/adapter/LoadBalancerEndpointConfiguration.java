@@ -21,7 +21,6 @@ public class LoadBalancerEndpointConfiguration {
     public static Log LOG = LogFactory.getLog(LoadBalancerEndpointConfiguration.class);
     private URL endpointUrl;
     private URI restEndpoint;
-    private String restPort;
     private String username;
     private String password;
     private String trafficManagerName;
@@ -30,7 +29,7 @@ public class LoadBalancerEndpointConfiguration {
     private Host endpointUrlHost;
     private String logFileLocation;
 
-    public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames, String restPort) {
+    public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames) {
         try {
             this.endpointUrl = new URL(soapEndpoint.getEndpoint());
         } catch (MalformedURLException e) {
@@ -38,13 +37,12 @@ public class LoadBalancerEndpointConfiguration {
             throw new RuntimeException("Invalid endpoint...", e);
         }
         try {
-            this.restEndpoint = new URI(String.format("%s:%s/api/tm/1.0/config/active/", soapEndpoint.getEndpoint().split("(:[0-9]+)")[0], restPort));
+            this.restEndpoint = new URI(soapEndpoint.getRestEndpoint());
         } catch (URISyntaxException e) {
             e.printStackTrace();
-            throw new RuntimeException("Invalid rest port and or base_uri...", e);
+            throw new RuntimeException("Invalid rest endpoint...", e);
         }
         this.endpointUrlHost = soapEndpoint;
-        this.restPort = restPort;
         this.username = username;
         this.password = password;
         this.trafficManagerHost = trafficManagerHost;
@@ -53,7 +51,7 @@ public class LoadBalancerEndpointConfiguration {
         LOG.info(String.format("Selecting %s as SoapEndpoint", this.endpointUrl));
     }
 
-    public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames, String logFileLocation, String restPort) {
+    public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames, String logFileLocation) {
         try {
             this.endpointUrl = new URL(soapEndpoint.getEndpoint());
         } catch (MalformedURLException e) {
@@ -61,10 +59,10 @@ public class LoadBalancerEndpointConfiguration {
             throw new RuntimeException("Invalid endpoint...", e);
         }
         try {
-            this.restEndpoint = new URI(String.format("%s:%s/api/tm/1.0/config/active/", soapEndpoint.getEndpoint().split("(:[0-9]+)")[0], restPort));
+            this.restEndpoint = new URI(soapEndpoint.getRestEndpoint());
         } catch (URISyntaxException e) {
             e.printStackTrace();
-            throw new RuntimeException("Invalid rest port and or base_uri...", e);
+            throw new RuntimeException("Invalid rest endpoint...", e);
         }
         this.endpointUrlHost = soapEndpoint;
         this.username = username;
@@ -82,7 +80,6 @@ public class LoadBalancerEndpointConfiguration {
         return "{"
                 + " endpointUrlHost: " + endpointUrlHost
                 + ", restEndpoint: " + restEndpoint
-                + ", restPort: " + restPort
                 + ", userName: " + username
                 + ", passwd: " + "Censored"
                 + ", trafficManagerHost: {" + ((trafficManagerHost == null) ? "null" : trafficManagerHost.toString()) + "}"
@@ -105,14 +102,6 @@ public class LoadBalancerEndpointConfiguration {
 
     public void setRestEndpoint(URI restEndpoint) {
         this.restEndpoint = restEndpoint;
-    }
-
-    public String getRestPort() {
-        return restPort;
-    }
-
-    public void setRestPort(String restPort) {
-        this.restPort = restPort;
     }
 
     public String getUsername() {

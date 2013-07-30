@@ -74,10 +74,11 @@ public class STMTestBase extends StmTestConstants {
         targetFailoverHosts.add(FAILOVER_HOST_1);
         Host soapEndpointHost = new Host();
         soapEndpointHost.setEndpoint(STM_ENDPOINT_URI);
+        soapEndpointHost.setRestEndpoint(STM_ENDPOINT_URI);
         Host trafficManagerHost = new Host();
         trafficManagerHost.setEndpoint(STM_ENDPOINT_URI);
         trafficManagerHost.setTrafficManagerName(TARGET_HOST);
-        config = new LoadBalancerEndpointConfiguration(soapEndpointHost, STM_USERNAME, STM_PASSWORD, trafficManagerHost, targetFailoverHosts, "9070");
+        config = new LoadBalancerEndpointConfiguration(soapEndpointHost, STM_USERNAME, STM_PASSWORD, trafficManagerHost, targetFailoverHosts);
         config.setLogFileLocation(DEFAULT_LOG_FILE_LOCATION);
     }
 

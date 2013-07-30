@@ -10,9 +10,9 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostType;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Zone;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+import org.openstack.atlas.util.debug.Debug;
 
 import java.io.IOException;
-import org.openstack.atlas.util.debug.Debug;
 
 public class JsonObjectMapperTest {
 
@@ -179,7 +179,7 @@ public class JsonObjectMapperTest {
 
     @Test
     public void shouldCreateHost() throws IOException {
-        String input = "{\"host\": {\"name\": \"someName\",\"zone\": \"B\",\"type\": \"FAILOVER\",\"managementIp\": \"12.34.56.78\",\"trafficManagerName\": \"zues01.blah.blah\",\"clusterId\": 1,\"maxConcurrentConnections\": 5,\"coreDeviceId\": \"SomeCoreDevice\",\"managementSoapInterface\": \"https://SomeSoapNode.com:9090\",\"soapEndpointActive\": \"true\",\"ipv4Servicenet\": \"10.2.2.80\",\"ipv4Public\": \"172.11.11.110\"}}";
+        String input = "{\"host\": {\"name\": \"someName\",\"zone\": \"B\",\"type\": \"FAILOVER\",\"managementIp\": \"12.34.56.78\",\"trafficManagerName\": \"zues01.blah.blah\",\"clusterId\": 1,\"maxConcurrentConnections\": 5,\"coreDeviceId\": \"SomeCoreDevice\",\"managementSoapInterface\": \"https://SomeSoapNode.com:9090\",\"soapEndpointActive\": \"true\",\"managementRestInterface\": \"https://SomeRestNode.com:9070\",\"restEndpointActive\": \"true\",\"ipv4Servicenet\": \"10.2.2.80\",\"ipv4Public\": \"172.11.11.110\"}}";
 
         Host host;
         host = mapper.readValue(input, Host.class);
@@ -190,7 +190,8 @@ public class JsonObjectMapperTest {
         Assert.assertEquals(host.getTrafficManagerName(), "zues01.blah.blah");
         Assert.assertEquals(host.getMaxConcurrentConnections(), new Integer(5));
         Assert.assertEquals(host.getManagementSoapInterface(), "https://SomeSoapNode.com:9090");
-        Assert.assertEquals(host.isSoapEndpointActive(), true);
+        Assert.assertEquals(host.getManagementRestInterface(), "https://SomeRestNode.com:9070");
+        Assert.assertEquals(host.isRestEndpointActive(), true);
         Assert.assertEquals(host.getIpv4Servicenet(), "10.2.2.80");
         Assert.assertEquals(host.getCoreDeviceId(), "SomeCoreDevice");
         Assert.assertEquals(host.getIpv4Public(), "172.11.11.110");

@@ -14,7 +14,6 @@ import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.HostService;
@@ -61,7 +60,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.createLoadBalancer(config, lb);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -72,7 +71,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.updateLoadBalancer(config, lb, queLb);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -83,7 +82,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.deleteLoadBalancer(config, lb);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -94,7 +93,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.setRateLimit(config, loadBalancer, rateLimit);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -105,7 +104,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.deleteRateLimit(config, loadBalancer);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -116,7 +115,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.updateRateLimit(config, loadBalancer, rateLimit);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -127,7 +126,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.changeHostForLoadBalancer(config, lb, newHost);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -138,7 +137,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.updateVirtualIps(config, loadBalancer);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -149,7 +148,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.setNodes(config, lb);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -160,7 +159,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.removeNode(config, lb, node);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -171,7 +170,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.removeNodes(config, lb, nodesToRemove);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -182,7 +181,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.updateAccessList(config, loadBalancer);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
 
         }
@@ -194,7 +193,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.deleteAccessList(config, lb);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -205,7 +204,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.updateProtection(config, loadBalancer);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -216,7 +215,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.deleteConnectionThrottle(config, loadBalancer);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -227,7 +226,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.updateHealthMonitor(config, loadBalancer);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -238,7 +237,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.deleteHealthMonitor(config, loadBalancer);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -249,7 +248,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.addSuspension(config, lb);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -260,7 +259,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.removeSuspension(config, lb);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -271,7 +270,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.deleteVirtualIps(config, lb, ids);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
 
@@ -331,7 +330,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.deleteErrorFile(config, loadBalancer);
         } catch (StmRollBackException ex) {
-            checkAndSetIfSoapEndPointBad(config, ex);
+            checkAndSetIfRestEndPointBad(config, ex);
             throw ex;
         } catch (RollBackException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -345,7 +344,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.setErrorFile(config, loadBalancer, content);
         } catch (StmRollBackException ex) {
-            checkAndSetIfSoapEndPointBad(config, ex);
+            checkAndSetIfRestEndPointBad(config, ex);
             throw ex;
         } catch (RollBackException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -358,7 +357,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.uploadDefaultErrorFile(config, content);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -368,9 +367,8 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
-        String restPort = configuration.getString(PublicApiServiceConfigurationKeys.rest_port);
 
-        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), soapEndpointHost, failoverHosts, logFileLocation, restPort);
+        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), soapEndpointHost, failoverHosts, logFileLocation);
     }
 
     // Send request to proper SOAPEndpoint(Calculated by the database) for host's traffic manager
@@ -380,9 +378,8 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
-        String restPort = configuration.getString(PublicApiServiceConfigurationKeys.rest_port);
 
-        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation, restPort);
+        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
     }
 
     // Send SOAP request directly to the hosts traffic manager.
@@ -391,9 +388,8 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         Cluster cluster = host.getCluster();
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
-        String restPort = configuration.getString(PublicApiServiceConfigurationKeys.rest_port);
 
-        return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation, restPort);
+        return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
     }
 
     private LoadBalancerEndpointConfiguration getConfigbyLoadBalancerId(Integer lbId) throws EntityNotFoundException, DecryptException, MalformedURLException {
@@ -403,8 +399,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
-        String restPort = configuration.getString(PublicApiServiceConfigurationKeys.rest_port);
-        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation, restPort);
+        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
     }
 
     public void setReverseProxyLoadBalancerStmAdapter(ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter) {
@@ -415,22 +410,22 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         this.configuration = configuration;
     }
 
-    private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, StmRollBackException ex) {
+    private void checkAndSetIfRestEndPointBad(LoadBalancerEndpointConfiguration config, StmRollBackException ex) {
         Host configuredHost = config.getEndpointUrlHost();
         if (IpHelper.isNetworkConnectionException(ex)) {
             LOG.error(String.format("STM endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
-            configuredHost.setSoapEndpointActive(Boolean.FALSE);
+            configuredHost.setRestEndpointActive(Boolean.FALSE);
             hostService.update(configuredHost);
         } else {
             LOG.warn(String.format("STM endpoint %s on host[%d] throw an STM Fault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
         }
     }
 
-    private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, RollBackException af) {
+    private void checkAndSetIfRestEndPointBad(LoadBalancerEndpointConfiguration config, RollBackException af) {
         Host configuredHost = config.getEndpointUrlHost();
         if (IpHelper.isNetworkConnectionException(af)) {
             LOG.error(String.format("SOAP endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
-            configuredHost.setSoapEndpointActive(Boolean.FALSE);
+            configuredHost.setRestEndpointActive(Boolean.FALSE);
             hostService.update(configuredHost);
         }
         LOG.warn(String.format("SOAP endpoint %s on host[%d] throw an RollBackException but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
@@ -442,7 +437,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.updateSslTermination(config, loadBalancer, sslTermination);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }
@@ -453,7 +448,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         try {
             reverseProxyLoadBalancerStmAdapter.removeSslTermination(config, lb);
         } catch (RollBackException af) {
-            checkAndSetIfSoapEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
     }

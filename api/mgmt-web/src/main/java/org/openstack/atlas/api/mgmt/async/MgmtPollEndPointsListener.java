@@ -1,14 +1,14 @@
 package org.openstack.atlas.api.mgmt.async;
 
-import java.util.ArrayList;
-import org.openstack.atlas.service.domain.entities.Host;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.api.integration.threads.HostEndpointPollThread;
+import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.util.debug.Debug;
 
 import javax.jms.Message;
+import java.util.ArrayList;
 import java.util.List;
-import org.openstack.atlas.api.integration.threads.HostEndpointPollThread;
-import org.openstack.atlas.util.debug.Debug;
 
 public class MgmtPollEndPointsListener extends BaseListener {
 
@@ -47,6 +47,7 @@ public class MgmtPollEndPointsListener extends BaseListener {
                 LOG.error(String.format("Error retretreiving hostEndpointStatus from thread %s: Exception was %s", epThread.toString(), Debug.getExtendedStackTrace(ex)));
                 continue;
             }
+
             if (epThread.isEndPointWorking()) {
                 LOG.info(String.format("Thread %s reports host is up Marking HOST GOOD", epThread.toString()));
                 epThread.getHost().setSoapEndpointActive(Boolean.TRUE);
@@ -55,6 +56,16 @@ public class MgmtPollEndPointsListener extends BaseListener {
                 LOG.error(String.format("Thread %s reports host is down MARKING HOST BAD!!!!!", epThread.toString()));
                 epThread.getHost().setSoapEndpointActive(Boolean.FALSE);
             }
+
+            if (epThread.isRestEndPointWorking()) {
+                LOG.info(String.format("Thread %s reports host Rest endpoint is up Marking HOST GOOD", epThread.toString()));
+                epThread.getHost().setRestEndpointActive(Boolean.TRUE);
+
+            } else {
+                LOG.error(String.format("Thread %s reports host Rest endpoint is down MARKING HOST BAD!!!!!", epThread.toString()));
+                epThread.getHost().setRestEndpointActive(Boolean.FALSE);
+            }
+
             hostService.update(epThread.getHost());
         }
         double pollTime = jobFinishTime - jobStartTime;

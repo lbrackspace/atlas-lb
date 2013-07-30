@@ -1,22 +1,21 @@
 package org.openstack.atlas.api.mgmt.validation.validators;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.openstack.atlas.api.mgmt.validation.contexts.ReassignHostContext;
+import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostStatus;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostType;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Zone;
-import org.openstack.atlas.api.mgmt.validation.contexts.ReassignHostContext;
-import org.openstack.atlas.api.mgmt.validation.validators.HostValidator;
-import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.List;
 import java.util.Random;
 
-import static org.openstack.atlas.api.helpers.ResultMessage.resultMessage;
-import static org.openstack.atlas.api.mgmt.validation.contexts.HostContext.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.openstack.atlas.api.helpers.ResultMessage.resultMessage;
+import static org.openstack.atlas.api.mgmt.validation.contexts.HostContext.*;
 
 //@Ignore
 public class HostValidatorTest {
@@ -64,9 +63,11 @@ public class HostValidatorTest {
         h.setMaxConcurrentConnections(rndPosInt(0, 900));
         h.setManagementIp(rndIp());
         h.setManagementSoapInterface(String.format("http://%s:8080/soap", rndIp()));
+        h.setManagementRestInterface(String.format("http://%s:8080/rest", rndIp()));
         h.setType((HostType) rndChoice(HostType.values()));
         h.setTrafficManagerName("someZuesNode.rackspace.com");
         h.setSoapEndpointActive(true);
+        h.setRestEndpointActive(true);
         h.setIpv4Public("10.10.10.100");
         h.setIpv4Servicenet("20.20.20.200");
 
@@ -131,6 +132,13 @@ public class HostValidatorTest {
     @Test
     public void shouldRejectifMissingSOAPInterfaceOnPost() {
         host.setManagementSoapInterface(null);
+        res = hv.validate(host, POST);
+        assertFalse(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test
+    public void shouldRejectifMissingRESTInterfaceOnPost() {
+        host.setManagementRestInterface(null);
         res = hv.validate(host, POST);
         assertFalse(resultMessage(res, POST), res.passedValidation());
     }

@@ -79,6 +79,7 @@ public class STMTestBase {
         targetFailoverHosts.add(FAILOVER_HOST_1);
         Host soapEndpointHost = new Host();
         soapEndpointHost.setEndpoint(STM_ENDPOINT_URI);
+        soapEndpointHost.setRestEndpoint(STM_ENDPOINT_URI);
         Host trafficManagerHost = new Host();
         trafficManagerHost.setTrafficManagerName(TARGET_HOST);
         config = new LoadBalancerEndpointConfiguration(soapEndpointHost, STM_USERNAME, STM_PASSWORD, trafficManagerHost, targetFailoverHosts, "9070");

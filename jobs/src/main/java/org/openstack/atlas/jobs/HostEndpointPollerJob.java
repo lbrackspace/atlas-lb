@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
+import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
@@ -28,6 +29,8 @@ public class HostEndpointPollerJob extends AbstractJob {
     @Autowired
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
     @Autowired
+    private ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
+    @Autowired
     private HostRepository hostRepository;
 
     @Override
@@ -49,15 +52,25 @@ public class HostEndpointPollerJob extends AbstractJob {
     public void run() throws Exception {
         try {
             boolean endpointWorks;
+            boolean restEndpointWorks;
             List<Host> hosts = hostRepository.getAll();
             for (Host host : hosts) {
                 endpointWorks = reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host));
+                restEndpointWorks = reverseProxyLoadBalancerStmAdapter.isEndPointWorking(getConfigHost(host));
                 if (endpointWorks) {
                     host.setSoapEndpointActive(Boolean.TRUE);
                     LOG.info("Host: " + host.getId() + " is active");
                 } else {
                     host.setSoapEndpointActive(Boolean.FALSE);
                     LOG.info("Host: " + host.getId() + " is inactive");
+                }
+
+                if (restEndpointWorks) {
+                    host.setRestEndpointActive(Boolean.TRUE);
+                    LOG.info("Host: " + host.getId() + " Rest Endpoint is active");
+                } else {
+                    host.setRestEndpointActive(Boolean.FALSE);
+                    LOG.info("Host: " + host.getId() + " Rest Endpoint is inactive");
                 }
                 LOG.info("Host: " + host.getId() + " is being updated in the database.");
                 hostRepository.update(host);

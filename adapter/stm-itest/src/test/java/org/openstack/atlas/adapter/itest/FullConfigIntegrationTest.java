@@ -37,7 +37,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
 
     /**
      * Have to run in order, some tests depend on others for values in STM...
-     **/
+     */
 
     @BeforeClass
     public static void setupClass() throws InterruptedException {
@@ -78,8 +78,6 @@ public class FullConfigIntegrationTest extends STMTestBase {
             up.setErrorpage("iError");
             nlb.setUserPages(up);
 
-//            nlb.setProtocol(LoadBalancerProtocol.HTTP);
-
             HealthMonitor mon = new HealthMonitor();
             mon.setType(HealthMonitorType.HTTP);
             mon.setStatusRegex("202");
@@ -95,6 +93,8 @@ public class FullConfigIntegrationTest extends STMTestBase {
             lb.setUserPages(up);
             lb.setHealthMonitor(mon);
 
+            //TODO: add/test ssl termination
+
             stmAdapter.updateLoadBalancer(config, lb, nlb);
             Thread.sleep(3000);
             verifyVS(tclient, lb);
@@ -107,6 +107,46 @@ public class FullConfigIntegrationTest extends STMTestBase {
             e.printStackTrace();
             removeLoadBalancer();
             Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void updateFullyConfiguredLoadBalancerWithHealthMonitorRollbacks() throws StingrayRestClientException, IOException, StingrayRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException {
+        StingrayRestClient tclient = new StingrayRestClient();
+
+        LoadBalancer clb = null;
+        try {
+            LoadBalancer nlb = new LoadBalancer();
+            UserPages up = new UserPages();
+            up.setErrorpage("iError");
+            nlb.setUserPages(up);
+
+            clb = new LoadBalancer();
+            clb.setHealthMonitor(lb.getHealthMonitor());
+
+            HealthMonitor mon = new HealthMonitor();
+            mon.setType(HealthMonitorType.HTTP);
+            mon.setStatusRegex("207");
+            mon.setBodyRegex("[0-9]");
+            mon.setAttemptsBeforeDeactivation(1);
+            mon.setDelay(6);
+            mon.setPath("circle");
+            mon.setTimeout(3);
+            mon.setHostHeader("header");
+            nlb.setHealthMonitor(mon);
+
+            buildHydratedLb();
+            lb.setUserPages(up);
+            lb.setHealthMonitor(mon);
+
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
+
+        } catch (Exception e) {
+            verifyVS(tclient, lb);
+            verifyPool(tclient, lb);
+            verifyMonitor(tclient, clb);
+            verifyProtection(tclient, lb);
+            verifyVips(tclient, lb);
         }
     }
 

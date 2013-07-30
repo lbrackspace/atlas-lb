@@ -1,38 +1,25 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.util.debug.Debug;
-import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfInts;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.UserRole;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.LdapGroup;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.LdapInfo;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.ByIdOrName;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Ticket;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Zone;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostType;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostStatus;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostsubnet;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet;
-import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import org.openstack.atlas.api.helpers.ResponseFactory;
-import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.api.mgmt.helpers.StubFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
+import org.openstack.atlas.service.domain.events.entities.CategoryType;
+import org.openstack.atlas.service.domain.events.entities.EventSeverity;
+import org.openstack.atlas.service.domain.events.entities.EventType;
+import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent;
+import org.openstack.atlas.util.debug.Debug;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
-import org.openstack.atlas.service.domain.events.entities.CategoryType;
-import org.openstack.atlas.service.domain.events.entities.EventSeverity;
-import org.openstack.atlas.service.domain.events.entities.EventType;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.openstack.atlas.api.mgmt.helpers.StubFactory.newNetInterface;
 
@@ -65,6 +52,7 @@ public class StubResource extends ManagementDependencyProvider {
         host.setCoreDeviceId("SomeCoreDevice");
         host.setManagementIp("12.34.56.78");
         host.setManagementSoapInterface("https://SomeSoapNode.com:9090");
+        host.setManagementRestInterface("https://SomeRestNode.com:9070");
         host.setId(5);
         host.setMaxConcurrentConnections(5);
         host.setName("someName");

@@ -153,6 +153,7 @@ public class ZxtmAdapterImplTest {
             targetFailoverHosts.add(FAILOVER_HOST_2);
             Host soapEndpointHost = new Host();
             soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
+            soapEndpointHost.setRestEndpoint(ZXTM_ENDPOINT_URI);
             Host trafficManagerHost = new Host();
             trafficManagerHost.setTrafficManagerName(TARGET_HOST);
             dummyConfig = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts, "9070");
@@ -440,6 +441,7 @@ public class ZxtmAdapterImplTest {
             targetFailoverHosts.add(FAILOVER_HOST_2);
             Host soapEndpointHost = new Host();
             soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
+            soapEndpointHost.setRestEndpoint(ZXTM_ENDPOINT_URI);
             Host trafficManagerHost = new Host();
             trafficManagerHost.setTrafficManagerName(TARGET_HOST);
             dummyConfig = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts, "9070");

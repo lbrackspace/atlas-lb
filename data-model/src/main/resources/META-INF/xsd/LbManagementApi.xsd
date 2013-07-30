@@ -233,7 +233,9 @@
         <xsd:attribute name="managementIp" type="xsd:string"/>
         <xsd:attribute name="trafficManagerName" type="xsd:string"/>
         <xsd:attribute name="soapEndpointActive" type="xsd:boolean"/>
+        <xsd:attribute name="restEndpointActive" type="xsd:boolean"/>
         <xsd:attribute name="managementSoapInterface" type="xsd:string"/>
+        <xsd:attribute name="managementRestInterface" type="xsd:string"/>
         <xsd:attribute name="utilization" type="xsd:string"/>
         <xsd:attribute name="numberOfLoadBalancingConfigurations" type="xsd:int"/>
         <xsd:attribute name="numberOfUniqueCustomers" type="xsd:int"/>

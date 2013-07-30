@@ -16,16 +16,16 @@ public class Host extends Entity implements Serializable {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "ipv6_servicenet",nullable = true)
+    @Column(name = "ipv6_servicenet", nullable = true)
     private String ipv6Servicenet;
 
-    @Column(name = "ipv6_public",nullable = true)
+    @Column(name = "ipv6_public", nullable = true)
     private String ipv6Public;
 
-    @Column(name = "ipv4_servicenet",nullable = true)
+    @Column(name = "ipv4_servicenet", nullable = true)
     private String ipv4Servicenet;
 
-    @Column(name = "ipv4_public",nullable = true)
+    @Column(name = "ipv4_public", nullable = true)
     private String ipv4Public;
 
 
@@ -39,7 +39,7 @@ public class Host extends Entity implements Serializable {
     @Column(name = "host_status", length = 32, nullable = false)
     private HostStatus hostStatus;
 
-    @ManyToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cluster_id", nullable = false)
     private Cluster cluster;
 
@@ -53,6 +53,9 @@ public class Host extends Entity implements Serializable {
     @Column(name = "endpoint", nullable = false)
     private String endpoint;
 
+    @Column(name = "rest_endpoint", nullable = false)
+    private String restEndpoint;
+
     @Column(name = "traffic_manager_name", nullable = false)
     private String trafficManagerName;
 
@@ -62,6 +65,9 @@ public class Host extends Entity implements Serializable {
 
     @Column(name = "soap_endpoint_active")
     private Boolean soapEndpointActive;
+
+    @Column(name = "rest_endpoint_active")
+    private Boolean restEndpointActive;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "host")
     @OrderBy("id")
@@ -136,14 +142,6 @@ public class Host extends Entity implements Serializable {
         this.endpoint = endpoint;
     }
 
-    public Set<Backup> getBackups() {
-        return backups;
-    }
-
-    public void setBackups(Set<Backup> backups) {
-        this.backups = backups;
-    }
-
     public Boolean isSoapEndpointActive() {
         return soapEndpointActive;
     }
@@ -152,19 +150,43 @@ public class Host extends Entity implements Serializable {
         this.soapEndpointActive = soapEndpointActive;
     }
 
+    public String getRestEndpoint() {
+        return restEndpoint;
+    }
+
+    public void setRestEndpoint(String restEndpoint) {
+        this.restEndpoint = restEndpoint;
+    }
+
+    public Boolean isRestEndpointActive() {
+        return restEndpointActive;
+    }
+
+    public void setRestEndpointActive(Boolean restEndpointActive) {
+        this.restEndpointActive = restEndpointActive;
+    }
+
+    public Set<Backup> getBackups() {
+        return backups;
+    }
+
+    public void setBackups(Set<Backup> backups) {
+        this.backups = backups;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         sb.append(String.format("id=%s, ", vorn(this.getId())));
         sb.append(String.format("name= \"%s\",", vorn(this.getName())));
-        sb.append(String.format("clusterid = %s, ", this.getCluster()==null?"":this.getCluster().getId()));
+        sb.append(String.format("clusterid = %s, ", this.getCluster() == null ? "" : this.getCluster().getId()));
         sb.append(String.format("hoststatus= \"%s\", ", vorn(this.getHostStatus())));
         sb.append(String.format("managementip = \"%s\", ", vorn(this.getManagementIp())));
         sb.append(String.format("maxconnections= %s, ", vorn(this.getMaxConcurrentConnections())));
         sb.append(String.format("trafficManagerName = \"%s\", ", vorn(this.getTrafficManagerName())));
         sb.append(String.format("coreid= %s,", vorn(this.getCoreDeviceId())));
-        sb.append(String.format("endpoint=\"%s\",",vorn(this.getEndpoint())));
-        sb.append(String.format("endpointActive=\"%s\"",vorn(this.isSoapEndpointActive())));
+        sb.append(String.format("endpoint=\"%s\",", vorn(this.getEndpoint())));
+        sb.append(String.format("endpointActive=\"%s\"", vorn(this.isSoapEndpointActive())));
         sb.append("}");
 
         return sb.toString();
