@@ -21,7 +21,7 @@ import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 public class RootCaBuilderMain {
 
-    private static final double DAY_IN_MILLIS = 86400000.0;
+    private static final double MILLIS_PER_SEC = 1000.0;
     private static final int PAGESIZE = 4096;
     private static final int BUFFSIZE = 1024 * 64;
 
@@ -53,13 +53,13 @@ public class RootCaBuilderMain {
         System.out.printf("%s\n", keyPem);
         System.out.printf("Saving key to file %s\n", keyFile);
         OutputStream os = StaticFileUtils.openOutputFile(keyFile, BUFFSIZE);
-        os.write(keyPem.getBytes());
+        os.write(keyPem.getBytes("utf-8"));
         os.close();
         System.out.printf("keyfile writtent\n");
 
         Date now = new Date(System.currentTimeMillis());
-        Date notBefore = daysFromDate(now, conf.getNotBefore());
-        Date notAfter = daysFromDate(now, conf.getNotAfter());
+        Date notBefore = secsFromDate(now, conf.getNotBefore());
+        Date notAfter = secsFromDate(now, conf.getNotAfter());
         System.out.printf("Generating CSR for subj: %s\n", conf.getSubjName());
         System.out.printf("Setting notBefore in CSR to: %s\n", StaticDateTimeUtils.toSqlTime(notBefore));
         System.out.printf("Setting notAfter in CSR to: %s\n", StaticDateTimeUtils.toSqlTime(notAfter));
@@ -74,12 +74,12 @@ public class RootCaBuilderMain {
         System.out.printf("%s\n", crtPem);
         System.out.printf("Saving rootCrt to: %s\n", crtFile);
         os = StaticFileUtils.openOutputFile(crtFile, BUFFSIZE);
-        os.write(crtPem.getBytes());
+        os.write(crtPem.getBytes("utf-8"));
         os.close();
         System.out.printf("Crt saved\n");
     }
 
-    public static Date daysFromDate(Date now, double days) {
-        return new Date((long) ((double) (now.getTime()) + days * DAY_IN_MILLIS));
+    public static Date secsFromDate(Date now, double secs) {
+        return new Date((long) ((double) (now.getTime()) + secs * MILLIS_PER_SEC));
     }
 }
