@@ -169,16 +169,29 @@ public class HostRepository {
         return host;
     }
 
-    //TODO update for rest endpoint...
     public Host getEndPointHost(Integer clusterId) {
-        String hqlStr = "from Host h where h.soapEndpointActive = 1 "
-                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER','SOAP_API_ENDPOINT') "
+        String hqlStr = "from Host h where h.soapEndpoint = 1 "
+                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER', 'SOAP_API_ENDPOINT') "
                 + "and h.cluster.id = :clusterId "
                 + "order by h.hostStatus desc, h.id asc";
         Query q = entityManager.createQuery(hqlStr).setParameter("clusterId", clusterId).setMaxResults(1);
         List<Host> results = q.getResultList();
         if (results.size() < 1) {
             LOG.error(String.format("Error no more SOAP endpoints left for ClusterId %d.", clusterId));
+            return null;
+        }
+        return results.get(0);
+    }
+
+    public Host getRestEndPointHost(Integer clusterId) {
+        String hqlStr = "from Host h where h.restEndpoint = 1 "
+                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER', 'REST_API_ENDPOINT') "
+                + "and h.cluster.id = :clusterId "
+                + "order by h.hostStatus desc, h.id asc";
+        Query q = entityManager.createQuery(hqlStr).setParameter("clusterId", clusterId).setMaxResults(1);
+        List<Host> results = q.getResultList();
+        if (results.size() < 1) {
+            LOG.error(String.format("Error no more REST endpoints left for ClusterId %d.", clusterId));
             return null;
         }
         return results.get(0);

@@ -403,7 +403,7 @@ public class ResourceTranslatorTest extends STMTestBase {
         public void shouldCreateAValidPool() throws InsufficientRequestException {
             ResourceTranslator translator = new ResourceTranslator();
             standUp(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
-            Pool createdPool = translator.translatePoolResource(vsName, lb);
+            Pool createdPool = translator.translatePoolResource(vsName, lb, lb);
             Assert.assertNotNull(createdPool);
             PoolProperties createdProperties = createdPool.getProperties();
             Assert.assertNotNull(createdProperties);
@@ -430,7 +430,7 @@ public class ResourceTranslatorTest extends STMTestBase {
         public void testAlternatePaths() throws InsufficientRequestException {
             ResourceTranslator translator = new ResourceTranslator();
             standUp(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS);
-            Pool createdPool = translator.translatePoolResource(vsName, lb);
+            Pool createdPool = translator.translatePoolResource(vsName, lb, lb);
             PoolProperties createdProperties = createdPool.getProperties();
             Assert.assertNotNull(createdProperties);
             Assert.assertEquals(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS.toString().toLowerCase(), createdProperties.getLoad_balancing().getAlgorithm());
@@ -440,10 +440,10 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertTrue(weights.contains(poolNodeDrainingWeight));
             Assert.assertTrue(weights.contains(poolNodeDisabledWeight));
             standUp(LoadBalancerAlgorithm.RANDOM);
-            createdPool = translator.translatePoolResource(vsName, lb);
+            createdPool = translator.translatePoolResource(vsName, lb, lb);
             Assert.assertTrue(createdPool.getProperties().getLoad_balancing().getNode_weighting().size() == 0);
             tearDown();
-            createdPool = translator.translatePoolResource(vsName, lb);
+            createdPool = translator.translatePoolResource(vsName, lb, lb);
             createdProperties = createdPool.getProperties();
             PoolBasic createdBasic = createdProperties.getBasic();
             Assert.assertNull(createdBasic.getPersistence_class());

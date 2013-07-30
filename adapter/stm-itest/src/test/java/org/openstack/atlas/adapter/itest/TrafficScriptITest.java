@@ -20,6 +20,7 @@ public class TrafficScriptITest extends STMTestBase {
         setupIvars();
     }
 
+
     @Test
     public void testAddRateLimitScript() throws StingrayRestClientObjectNotFoundException, StingrayRestClientException, IOException {
         StingrayRestClient client = new StingrayRestClient();

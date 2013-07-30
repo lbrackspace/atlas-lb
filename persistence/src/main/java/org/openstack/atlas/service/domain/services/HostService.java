@@ -1,9 +1,6 @@
 package org.openstack.atlas.service.domain.services;
 
-import org.openstack.atlas.service.domain.entities.Backup;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
@@ -12,7 +9,6 @@ import org.openstack.atlas.service.domain.pojos.Customer;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHostId;
 
 import java.util.List;
-import org.openstack.atlas.service.domain.entities.Cluster;
 
 public interface HostService {
     public Cluster getClusterById(Integer id) throws EntityNotFoundException;
@@ -44,6 +40,8 @@ public interface HostService {
     public Host update(Host host);
 
     public Host getEndPointHost(Integer clusterId);
+
+    public Host getRestEndPointHost(Integer clusterId);
 
     public List<String> getFailoverHostNames (Integer clusterId);
 
