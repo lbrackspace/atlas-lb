@@ -364,7 +364,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
 
     LoadBalancerEndpointConfiguration getConfigbyClusterId(Integer clusterId) throws EntityNotFoundException, DecryptException {
         Cluster cluster = hostService.getClusterById(clusterId);
-        Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
+        Host soapEndpointHost = hostService.getRestEndPointHost(cluster.getId());
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
 
@@ -375,7 +375,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     @Override
     public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException {
         Cluster cluster = host.getCluster();
-        Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
+        Host soapEndpointHost = hostService.getRestEndPointHost(cluster.getId());
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
 
@@ -396,7 +396,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         LoadBalancer loadBalancer = loadBalancerService.get(lbId);
         Host host = loadBalancer.getHost();
         Cluster cluster = host.getCluster();
-        Host soapEndpointHost = hostService.getEndPointHost(cluster.getId());
+        Host soapEndpointHost = hostService.getRestEndPointHost(cluster.getId());
         List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
         return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);

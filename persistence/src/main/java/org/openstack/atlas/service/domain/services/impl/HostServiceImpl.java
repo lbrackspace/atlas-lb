@@ -215,6 +215,11 @@ public class HostServiceImpl extends BaseService implements HostService {
     }
 
     @Override
+    public Host getRestEndPointHost(Integer clusterId) {
+        return hostRepository.getRestEndPointHost(clusterId);
+    }
+
+    @Override
     public List<String> getFailoverHostNames(Integer clusterId) {
         return hostRepository.getFailoverHostNames(clusterId);
     }

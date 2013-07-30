@@ -3,7 +3,6 @@ package org.openstack.atlas.adapter.itest;
 import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.ConnectionLimit;
@@ -69,15 +68,6 @@ public class ConnectionThrottleITest extends STMTestBase {
         verifyConnectionThrottle();
         deleteConnectionThrottle();
         stmClient.getProtection(vsName);
-    }
-
-    //TODO does this need to happen or will validation catch nulls?
-    //TODO per Phil, may need to test this in a unit test with Mocks
-    @Ignore
-    @Test
-    public void failureCases() throws Exception {
-        setConnectionLimitParams(null, null, null, null);
-        setupConnectionThrottle();
     }
 
     public void setupConnectionThrottle() throws Exception {

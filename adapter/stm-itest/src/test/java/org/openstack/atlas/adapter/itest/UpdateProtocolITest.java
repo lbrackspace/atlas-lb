@@ -1,7 +1,6 @@
 package org.openstack.atlas.adapter.itest;
 
 
-import com.zxtm.service.client.VirtualServerProtocol;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -36,6 +35,8 @@ public class UpdateProtocolITest extends STMTestBase {
         }
     }
 
+
+    //TODO: verify logic regarding protcol switching. Primarily switching from HTTP to Non-HTTP protocols.
     //These tests need to run in order -- HTTPS is the first test
     @Test
     public void updateProtocolToHTTPS() throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException, StmRollBackException {

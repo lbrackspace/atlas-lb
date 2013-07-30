@@ -41,7 +41,7 @@ public class ResourceTranslator {
     public Keypair cKeypair;
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
-                                              String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
+                                              String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException {
         //Order matters when translating the entire entity.
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
@@ -53,7 +53,7 @@ public class ResourceTranslator {
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null)
             translateProtectionResource(vsName, loadBalancer);
 
-        translatePoolResource(vsName, loadBalancer);
+        translatePoolResource(vsName, loadBalancer, queLb);
         translateVirtualServerResource(config, vsName, loadBalancer);
     }
 
@@ -214,16 +214,16 @@ public class ResourceTranslator {
         return groupSet;
     }
 
-    public Pool translatePoolResource(String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
+    public Pool translatePoolResource(String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException {
         cPool = new Pool();
         PoolProperties properties = new PoolProperties();
         PoolBasic basic = new PoolBasic();
         List<PoolNodeWeight> weights = new ArrayList<PoolNodeWeight>();
         PoolLoadbalancing poollb = new PoolLoadbalancing();
 
-
         Set<Node> nodes = loadBalancer.getNodes();
         Set<Node> enabledNodes = new HashSet<Node>();
+
 
         enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.ENABLED));
         enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING));
@@ -235,16 +235,19 @@ public class ResourceTranslator {
 
 
         String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
-        if (lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.toString())
-                || lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_LEAST_CONNECTIONS.toString())) {
-            PoolNodeWeight nw;
-            for (Node n : nodes) {
-                nw = new PoolNodeWeight();
-                nw.setNode(n.getIpAddress() + ":" + Integer.toString(n.getPort()));
-                nw.setWeight(n.getWeight());
-                weights.add(nw);
+
+        if (queLb.getNodes() != null && !queLb.getNodes().isEmpty()) {
+            if (lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.toString())
+                    || lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_LEAST_CONNECTIONS.toString())) {
+                PoolNodeWeight nw;
+                for (Node n : nodes) {
+                    nw = new PoolNodeWeight();
+                    nw.setNode(n.getIpAddress() + ":" + Integer.toString(n.getPort()));
+                    nw.setWeight(n.getWeight());
+                    weights.add(nw);
+                }
+                poollb.setNode_weighting(weights);
             }
-            poollb.setNode_weighting(weights);
         }
 
         ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(loadBalancer.getNodes());
@@ -252,19 +255,22 @@ public class ResourceTranslator {
         poollb.setPriority_values(znpc.getPriorityValuesSet());
         poollb.setAlgorithm(lbAlgo);
 
-        PoolConnection connection = new PoolConnection();
-        connection.setMax_reply_time(loadBalancer.getTimeout());
+        PoolConnection connection = null;
+        if (queLb.getTimeout() != null) {
+            connection = new PoolConnection();
+            connection.setMax_reply_time(loadBalancer.getTimeout());
+        }
 
-        if (loadBalancer.getHealthMonitor() != null)
+        if (queLb.getHealthMonitor() != null)
             basic.setMonitors(new HashSet<String>(Arrays.asList(vsName)));
 
-        if ((loadBalancer.getSessionPersistence() != null) && !(loadBalancer.getSessionPersistence().name().equals(SessionPersistence.NONE.name()))) {
+        if ((queLb.getSessionPersistence() != null) && !(queLb.getSessionPersistence().name().equals(SessionPersistence.NONE.name()))) {
             basic.setPersistence_class(loadBalancer.getSessionPersistence().name());
         } else {
             basic.setPersistence_class(null);
         }
 
-        if (loadBalancer.getRateLimit() != null) {
+        if (queLb.getRateLimit() != null) {
             basic.setBandwidth_class(vsName);
         } else {
             basic.setBandwidth_class(null);
