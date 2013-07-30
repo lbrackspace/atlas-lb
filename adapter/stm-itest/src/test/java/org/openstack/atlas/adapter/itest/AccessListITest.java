@@ -29,7 +29,7 @@ public class AccessListITest extends STMTestBase {
         item1 = new AccessList();
         item1.setIpAddress("10.0.0.1");
         item1.setIpVersion(IpVersion.IPV4);
-        item1.setUserName("doesntMatter");
+        item1.setUserName("anonymous");
         item1.setLoadbalancer(lb);
         item1.setType(AccessListType.ALLOW);
         list.add(item1);
@@ -37,7 +37,7 @@ public class AccessListITest extends STMTestBase {
         item2 = new AccessList();
         item2.setIpAddress("10.0.0.2");
         item2.setIpVersion(IpVersion.IPV4);
-        item2.setUserName("stillDoesntMatter");
+        item2.setUserName("stillAnonymous");
         item2.setLoadbalancer(lb);
         item2.setType(AccessListType.DENY);
         list.add(item2);
@@ -79,25 +79,7 @@ public class AccessListITest extends STMTestBase {
         verifyAccessList();
     }
 
-    @Ignore
-    @Test
-    public void testInvalidAccessListCreation() {
-        createInvalidAccessList();
-    }
-
     public void createAccessList() {
-        lb.setAccessLists(list);
-        try {
-            stmAdapter.updateAccessList(config, lb);
-        } catch (Exception e) {
-            Assert.fail(String.format("Error updating Access List on '%s'.\n%s", name,
-                    Arrays.toString(e.getStackTrace())));
-        }
-    }
-
-    public void createInvalidAccessList() {
-        list = new HashSet<AccessList>();
-        list.add(new AccessList());
         lb.setAccessLists(list);
         try {
             stmAdapter.updateAccessList(config, lb);
@@ -173,6 +155,6 @@ public class AccessListITest extends STMTestBase {
 
     @After
     public void tearDown() {
-        removeLoadBalancer();
+        teardownEverything();
     }
 }

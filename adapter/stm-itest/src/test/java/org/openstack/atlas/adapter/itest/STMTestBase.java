@@ -217,10 +217,6 @@ public class STMTestBase extends StmTestConstants {
     }
 
     protected static void removeLoadBalancer() {
-        StingrayRestClient tclient;
-        tclient = new StingrayRestClient();
-
-
         try {
             stmAdapter.deleteLoadBalancer(config, lb);
             Thread.sleep(3000);
@@ -230,7 +226,7 @@ public class STMTestBase extends StmTestConstants {
         }
 
         try {
-            tclient.getVirtualServer(loadBalancerName());
+            stmClient.getVirtualServer(loadBalancerName());
             Assert.fail("Virtual Server should have been deleted!");
         } catch (Exception e) {
             if (e instanceof StingrayRestClientObjectNotFoundException) {
@@ -241,7 +237,7 @@ public class STMTestBase extends StmTestConstants {
         }
 
         try {
-            tclient.getPool(poolName());
+            stmClient.getPool(poolName());
             Assert.fail("Node Pool should have been deleted!");
         } catch (Exception e) {
             if (e instanceof StingrayRestClientObjectNotFoundException) {
@@ -250,5 +246,10 @@ public class STMTestBase extends StmTestConstants {
                 Assert.fail(e.getMessage());
             }
         }
+    }
+
+    protected void teardownEverything() {
+        removeLoadBalancer();
+        stmClient.destroy();
     }
 }
