@@ -796,10 +796,16 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void deleteConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException {
-        loadBalancer.setConnectionLimit(null);
         String name = ZxtmNameBuilder.genVSName(loadBalancer);
+
         LOG.info(String.format("Deleting Connection Throttling on '%s'...", name));
         if (loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) {
+            ConnectionLimit nullConnectionLimit = new ConnectionLimit();
+            nullConnectionLimit.setRateInterval(0);
+            nullConnectionLimit.setMaxConnections(0);
+            nullConnectionLimit.setMinConnections(0);
+            nullConnectionLimit.setMaxConnectionRate(0);
+            loadBalancer.setConnectionLimit(nullConnectionLimit);
             updateProtection(config, loadBalancer);
         } else {
             deleteProtection(config, loadBalancer);
