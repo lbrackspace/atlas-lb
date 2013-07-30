@@ -14,9 +14,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>b64aes</module>
         <module>configuration</module>
         <module>util</module>
+        <module>b64aes</module>
         <module>cidr</module>
         <module>ca</module>
         <module>crypto-tool</module>
