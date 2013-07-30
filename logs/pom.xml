@@ -19,6 +19,7 @@
         <module>logs-hdfs-cli</module>
         <module>logs-lzo-faker</module>
         <module>logs-test-compress</module>
+        <module>logs-cache-faker</module>
     </modules>
 
     <build>
