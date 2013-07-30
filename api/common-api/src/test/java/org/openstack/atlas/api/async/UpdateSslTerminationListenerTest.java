@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.async;
 
 import junit.framework.Assert;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -70,6 +71,11 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         updateSslTerminationListener.setNotificationService(notificationService);
         updateSslTerminationListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         updateSslTerminationListener.setUsageEventCollection(usageEventCollection);
+    }
+
+    @After
+    public void tearDown() {
+        stmClient.destroy();
     }
 
     @Test

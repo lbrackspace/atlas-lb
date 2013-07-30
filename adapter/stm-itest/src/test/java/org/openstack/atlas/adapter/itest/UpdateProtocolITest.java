@@ -26,13 +26,8 @@ public class UpdateProtocolITest extends STMTestBase {
 
     @AfterClass
     public static void tearDownClass() {
-        try {
-            stmAdapter.deleteLoadBalancer(config, lb);
-        } catch (InsufficientRequestException e) {
-            e.printStackTrace();
-        } catch (RollBackException e) {
-            e.printStackTrace();
-        }
+        removeLoadBalancer();
+        stmClient.destroy();
     }
 
 

@@ -27,11 +27,8 @@ public class RateLimitITest extends STMTestBase {
 
     @AfterClass
     public static void tearDownClass() {
-        try {
-            stmAdapter.deleteLoadBalancer(config, lb);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        removeLoadBalancer();
+        stmClient.destroy();
     }
 
     // Test everything together for completeness I guess?

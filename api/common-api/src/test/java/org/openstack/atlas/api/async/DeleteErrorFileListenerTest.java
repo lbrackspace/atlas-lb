@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.async;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -50,6 +51,11 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
         deleteErrorFileListener.setNotificationService(notificationService);
         deleteErrorFileListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteErrorFileListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
+    }
+
+    @After
+    public void tearDown() {
+        stmClient.destroy();
     }
 
     @Test

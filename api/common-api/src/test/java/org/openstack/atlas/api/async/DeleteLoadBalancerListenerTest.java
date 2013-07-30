@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.async;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -74,6 +75,11 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         deleteLoadBalancerListener.setUsageEventHelper(usageEventHelper);
         deleteLoadBalancerListener.setUsageEventCollection(usageEventCollection);
         deleteLoadBalancerListener.setSslTerminationService(sslTerminationService);
+    }
+
+    @After
+    public void tearDown() {
+        stmClient.destroy();
     }
 
     @Test

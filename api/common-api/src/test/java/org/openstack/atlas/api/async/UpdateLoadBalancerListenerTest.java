@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.async;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -59,6 +60,11 @@ public class UpdateLoadBalancerListenerTest extends STMTestBase {
         updateLoadBalancerListener.setLoadBalancerService(loadBalancerService);
         updateLoadBalancerListener.setNotificationService(notificationService);
         updateLoadBalancerListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+    }
+
+    @After
+    public void tearDown() {
+        stmClient.destroy();
     }
 
     private String genAtomSummary() {

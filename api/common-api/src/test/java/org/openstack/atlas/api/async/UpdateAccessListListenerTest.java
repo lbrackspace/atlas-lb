@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.async;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -68,14 +69,18 @@ public class UpdateAccessListListenerTest extends STMTestBase {
         updateAccessListListener.setAccessListService(accessListService);
     }
 
+    @After
+    public void tearDown() {
+        stmClient.destroy();
+    }
+
     private AccessList setupAccessList() {
         accessList = mock(AccessList.class);
-        IpVersion ipVersion = IpVersion.IPV4;
 
         when(accessList.getId()).thenReturn(ACCESS_LIST_ID);
-        when(accessList.getIpVersion()).thenReturn(ipVersion);
+        when(accessList.getIpVersion()).thenReturn(IpVersion.IPV4);
         // Could set up more of this class, but not sure if it matters.
-        
+
         return accessList;
     }
 

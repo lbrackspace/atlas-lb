@@ -1,6 +1,7 @@
 package org.openstack.atlas.adapter.itest;
 
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,6 +33,11 @@ public class Ipv6ITest extends STMTestBase {
     public static void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        stmClient.destroy();
     }
 
     public static void removeIpv6LoadBalancer() throws Exception {

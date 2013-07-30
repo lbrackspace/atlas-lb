@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.async;
 
 import junit.framework.Assert;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -95,6 +96,11 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
         createLoadBalancerListener.setUsageEventCollection(usageEventCollection);
     }
 
+    @After
+    public void tearDown() {
+        stmClient.destroy();
+    }
+
     // I started doing this with mocks, but it turns out it's easier to just use a real object
     private HealthMonitor setupHealthMonitor() {
         healthMonitor = mock(HealthMonitor.class);
@@ -113,10 +119,9 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
     private Set<AccessList> setupAccessList() {
         Set<AccessList> accessLists = new HashSet<AccessList>();
         accessList = mock(AccessList.class);
-        IpVersion ipVersion = IpVersion.IPV4;
 
         when(accessList.getId()).thenReturn(ACCESS_LIST_ID);
-        when(accessList.getIpVersion()).thenReturn(ipVersion);
+        when(accessList.getIpVersion()).thenReturn(IpVersion.IPV4);
         // Could set up more of this class, but not sure if it matters.
 
         accessLists.add(accessList);

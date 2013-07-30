@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.async;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -67,6 +68,11 @@ public class AddVirtualIpListenerTest extends STMTestBase {
         addVirtualIpListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         addVirtualIpListener.setUsageEventCollection(usageEventCollection);
         addVirtualIpListener.setUsageEventHelper(usageEventHelper);
+    }
+
+    @After
+    public void tearDown() {
+        stmClient.destroy();
     }
 
     @Test

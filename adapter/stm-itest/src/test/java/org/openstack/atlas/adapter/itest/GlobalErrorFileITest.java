@@ -31,8 +31,9 @@ public class GlobalErrorFileITest extends STMTestBase {
     }
 
     @AfterClass
-    public static void tearDownClass() throws RollBackException, InsufficientRequestException, RemoteException {
-        stmAdapter.deleteLoadBalancer(config, lb);
+    public static void tearDownClass() {
+        removeLoadBalancer();
+        stmClient.destroy();
     }
 
     @Test

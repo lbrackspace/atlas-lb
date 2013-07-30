@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.async;
 
 import junit.framework.Assert;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -62,6 +63,11 @@ public class DeleteNodeListenerTest extends STMTestBase {
         deleteNodeListener.setNotificationService(notificationService);
         deleteNodeListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteNodeListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
+    }
+
+    @After
+    public void tearDown() {
+        stmClient.destroy();
     }
 
     @Test

@@ -1,6 +1,7 @@
 package org.openstack.atlas.adapter.itest;
 
 import junit.framework.Assert;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openstack.atlas.adapter.helpers.StmConstants;
@@ -18,6 +19,11 @@ public class TrafficScriptITest extends STMTestBase {
     public static void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        stmClient.destroy();
     }
 
 

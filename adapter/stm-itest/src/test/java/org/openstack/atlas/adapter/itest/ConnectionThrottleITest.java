@@ -43,6 +43,7 @@ public class ConnectionThrottleITest extends STMTestBase {
     @After
     public void tearDown() {
         removeLoadBalancer();
+        stmClient.destroy();
     }
 
     @Test

@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.async;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -78,6 +79,11 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         deleteVirtualIpsListener.setUsageEventCollection(usageEventCollection);
     }
 
+    @After
+    public void tearDown() {
+        stmClient.destroy();
+    }
+
     @Test
     public void testDeleteVirtualIps() throws Exception {
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
@@ -132,7 +138,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         verify(notificationService, times(2)).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 
-    @Ignore
+    @Ignore //This test is for testing a catch block that is currently unreachable... When that is fixed, revisit.
     @Test
     public void testDeleteInvalidDatabaseVirtualIps() throws Exception {
         Exception exception = new Exception();

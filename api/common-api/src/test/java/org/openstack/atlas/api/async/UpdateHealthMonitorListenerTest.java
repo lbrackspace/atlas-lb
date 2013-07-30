@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.async;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -57,6 +58,11 @@ public class UpdateHealthMonitorListenerTest extends STMTestBase {
         updateHealthMonitorListener.setLoadBalancerService(loadBalancerService);
         updateHealthMonitorListener.setNotificationService(notificationService);
         updateHealthMonitorListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+    }
+
+    @After
+    public void tearDown() {
+        stmClient.destroy();
     }
 
     private void setupHealthMonitor() {
