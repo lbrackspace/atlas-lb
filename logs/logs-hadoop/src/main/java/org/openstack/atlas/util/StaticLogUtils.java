@@ -26,4 +26,12 @@ public class StaticLogUtils {
         File file = new File(StaticFileUtils.expandUser(filePath));
         return org.apache.commons.io.FileUtils.isSymlink(file);
     }
+
+    public static String getZipFileName(int loadbalancerId, int fileHour) {
+        return "access_log_" + loadbalancerId + "_" + fileHour + ".zip";
+    }
+
+    public static String getZipContentsName(int loadbalancerId, int fileHour) {
+        return "access_log_" + loadbalancerId + "_" + fileHour;
+    }
 }

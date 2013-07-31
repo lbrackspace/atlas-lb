@@ -56,7 +56,6 @@ import org.joda.time.DateTime;
 public class HdfsCli {
 
     private static final Pattern zipPattern = Pattern.compile(".*\\.zip$");
-    private static final long MILLIS_COEF = 10000000L;
     private static final String HDUNAME = "HADOOP_USER_NAME";
     private static final int LARGEBUFFERSIZE = 8 * 1024 * 1024;
     private static final int PAGESIZE = 4096;
@@ -233,7 +232,7 @@ public class HdfsCli {
                     Map<String, String> kw = argMapper(args);
                     args = stripKwArgs(args);
                     List<Long> hourKeysListL = new ArrayList<Long>();
-                    String lbLogSplitDir = mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), LB_LOGS_SPLIT);
+                    String lbLogSplitDir = StaticFileUtils.mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), LB_LOGS_SPLIT);
                     FileStatus[] dateDirsStats = hdfsUtils.getFileSystem().listStatus(new Path(lbLogSplitDir));
                     for (FileStatus fileStatus : dateDirsStats) {
                         Long hourLong;
@@ -251,19 +250,19 @@ public class HdfsCli {
                     Collections.sort(hourKeysListL);
                     DateTime startDt;
                     if (args.length > 2) {
-                        startDt = hourKeyToDateTime(args[1], false);
+                        startDt = StaticDateTimeUtils.hourKeyToDateTime(args[1], false);
                     } else {
-                        startDt = hourKeyToDateTime(hourKeysListL.get(0), false);
+                        startDt = StaticDateTimeUtils.hourKeyToDateTime(hourKeysListL.get(0), false);
                     }
                     DateTime endDt;
                     if (args.length > 3) {
-                        endDt = hourKeyToDateTime(args[2], false);
+                        endDt = StaticDateTimeUtils.hourKeyToDateTime(args[2], false);
                     } else {
-                        endDt = hourKeyToDateTime(hourKeysListL.get(hourKeysListL.size() - 1), false);
+                        endDt = StaticDateTimeUtils.hourKeyToDateTime(hourKeysListL.get(hourKeysListL.size() - 1), false);
                     }
                     DateTime curDt = new DateTime(startDt);
                     String fmt = "Scanning for zips in date range (%d,%d)\n";
-                    System.out.printf(fmt, dateTimeToHourLong(startDt), dateTimeToHourLong(endDt));
+                    System.out.printf(fmt, StaticDateTimeUtils.dateTimeToHourLong(startDt), StaticDateTimeUtils.dateTimeToHourLong(endDt));
                     System.out.printf("Press Enter to continue\n");
                     stdin.readLine();
                     hourKeysListL = new ArrayList<Long>();
@@ -277,7 +276,7 @@ public class HdfsCli {
                         if (curDt.isAfter(endDt)) {
                             break;
                         }
-                        Long hourKeyL = dateTimeToHourLong(curDt);
+                        Long hourKeyL = StaticDateTimeUtils.dateTimeToHourLong(curDt);
                         hourKeysListL.add(hourKeyL);
                         curDt = curDt.plusHours(1);
                     }
@@ -554,7 +553,7 @@ public class HdfsCli {
                             try {
                                 long currHour = Long.parseLong(hourKey);
                                 if (currHour >= startHour && currHour <= stopHour) {
-                                    hourDirs.add(mergePathString(inDir, hourKey));
+                                    hourDirs.add(StaticFileUtils.mergePathString(inDir, hourKey));
                                 }
                             } catch (NumberFormatException ex) {
                                 continue;
@@ -580,7 +579,7 @@ public class HdfsCli {
                     if (args.length >= 3) {
                         long startHour = Long.parseLong(args[1]);
                         long stopHour = Long.parseLong(args[2]);
-                        String outDir = mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), LB_LOGS_SPLIT);
+                        String outDir = StaticFileUtils.mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), LB_LOGS_SPLIT);
                         FileStatus[] stats = hdfsUtils.getFileSystem().listStatus(new Path(outDir));
                         for (FileStatus stat : stats) {
                             String hourKey = pathTailString(stat.getPath());
@@ -590,7 +589,7 @@ public class HdfsCli {
                             try {
                                 long currHour = Long.parseLong(hourKey);
                                 if (currHour >= startHour && currHour <= stopHour) {
-                                    hourDirs.add(mergePathString(outDir, hourKey));
+                                    hourDirs.add(StaticFileUtils.mergePathString(outDir, hourKey));
                                 }
                             } catch (NumberFormatException ex) {
                                 continue;
@@ -649,7 +648,7 @@ public class HdfsCli {
                     Collections.sort(hourKeys);
                     List<ZipSrcDstFile> transferFiles = new ArrayList<ZipSrcDstFile>();
                     for (String hourKey : hourKeys) {
-                        String reducerOutputDir = mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), LB_LOGS_SPLIT, hourKey);
+                        String reducerOutputDir = StaticFileUtils.mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), LB_LOGS_SPLIT, hourKey);
                         List<LogReducerOutputValue> reducerOutputList = hdfsUtils.getZipFileInfoList(reducerOutputDir);
                         List<LogReducerOutputValue> filteredZipFileInfo = hdfsUtils.filterZipFileInfoList(reducerOutputList, aid, lid);
 
@@ -1059,17 +1058,6 @@ public class HdfsCli {
         return sb.toString();
     }
 
-    public static DateTime hourKeyToDateTime(String dateHour, boolean useUTC) {
-        return hourKeyToDateTime(Long.parseLong(dateHour), useUTC);
-    }
-
-    public static DateTime hourKeyToDateTime(long ord, boolean useUTC) {
-        return StaticDateTimeUtils.OrdinalMillisToDateTime(ord * MILLIS_COEF, useUTC);
-    }
-
-    public static long dateTimeToHourLong(DateTime dt) {
-        return StaticDateTimeUtils.dateTimeToOrdinalMillis(dt) / MILLIS_COEF;
-    }
 
     public static HdfsZipDirScan scanHdfsZipDirs(HdfsUtils hdfsUtils, String hourKey, boolean scanParts) {
         Matcher zipMatch = zipPattern.matcher("");
@@ -1125,11 +1113,5 @@ public class HdfsCli {
 
     public static String pathTailString(FileStatus fileStatus) {
         return pathTailString(fileStatus.getPath());
-    }
-
-    public static String mergePathString(String... pathArray) {
-        List<String> pathList = new ArrayList<String>();
-        pathList.addAll(Arrays.asList(pathArray));
-        return StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathList));
     }
 }

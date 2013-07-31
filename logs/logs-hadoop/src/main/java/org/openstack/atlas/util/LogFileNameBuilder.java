@@ -3,6 +3,7 @@ package org.openstack.atlas.util;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 public class LogFileNameBuilder {
+
     public static String getContainerName(String lbId, String lbName, String dateString) {
         String monthYear = StaticFileUtils.getMonthYearFromFileDate(dateString);
         StringBuilder sb = new StringBuilder();
@@ -31,13 +32,21 @@ public class LogFileNameBuilder {
     public static String getFormattedFileDate(String fileDate) {
         char[] c = fileDate.toCharArray();
         StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < c.length; i++) {
+        for (int i = 0; i < c.length; i++) {
             sb.append(c[i]);
-            if(i==3 || i == 5 || i == 7) {
+            if (i == 3 || i == 5 || i == 7) {
                 sb.append("-");
             }
         }
         sb.append(":00");
         return sb.toString();
+    }
+
+    public static String getZipFileName(int loadbalancerId, int fileHour) {
+        return "access_log_" + loadbalancerId + "_" + fileHour + ".zip";
+    }
+
+    public static String getZipContentsName(int loadbalancerId, int fileHour) {
+        return "access_log_" + loadbalancerId + "_" + fileHour;
     }
 }
