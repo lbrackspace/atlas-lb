@@ -12,8 +12,6 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
-import org.openstack.atlas.util.crypto.CryptoUtil;
-import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -42,14 +40,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config) throws InsufficientRequestException {
         LOG.debug("Building new STM client using endpoint: " + config.getRestEndpoint());
-        String password = null;
-        try {
-            password = CryptoUtil.decrypt(config.getPassword());
-        } catch (DecryptException e) {
-            LOG.error("Error decrypting password: " + e);
-            throw new InsufficientRequestException("Error decrypting password: ", e);
-        }
-        return new StingrayRestClient(config.getRestEndpoint(), config.getUsername(), password);
+        return new StingrayRestClient(config.getRestEndpoint(), config.getUsername(), config.getPassword());
     }
 
     /*

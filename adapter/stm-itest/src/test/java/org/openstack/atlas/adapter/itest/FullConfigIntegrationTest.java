@@ -45,7 +45,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
     public static void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
-        client = new StingrayRestClient();
+        client = stmClient;
     }
 
     @AfterClass
