@@ -35,9 +35,12 @@ public class DeleteAccessListListener extends BaseListener {
             return;
         }
 
+        Set<AccessList> accessListsToDelete = new HashSet<AccessList>();
+        accessListsToDelete.addAll(dbLoadBalancer.getAccessLists());
+
         try {
             LOG.debug(String.format("Deleting access list for load balancer '%s' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerStmService.deleteAccessList(dbLoadBalancer);
+            reverseProxyLoadBalancerStmService.deleteAccessList(dbLoadBalancer, accessListsToDelete);
             LOG.debug(String.format("Access list successfully deleted for load balancer '%s' in Zeus.", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
@@ -46,11 +49,9 @@ public class DeleteAccessListListener extends BaseListener {
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb, queueLb.getAccessLists());
 
-           return;
+            return;
         }
 
-        Set<AccessList> accessListsToDelete = new HashSet<AccessList>();
-        accessListsToDelete.addAll(dbLoadBalancer.getAccessLists());
         String atomTitle = "Network Item Successfully Deleted";
         for (AccessList accessList : accessListsToDelete) {
             String atomSummary = String.format("Network Item '%d' successfully deleted", accessList.getId());
@@ -60,7 +61,6 @@ public class DeleteAccessListListener extends BaseListener {
             LOG.debug(String.format("Removing access list item '%d' from database...", accessList.getId()));
         }
 
-        dbLoadBalancer.getAccessLists().removeAll(accessListsToDelete);
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);
 

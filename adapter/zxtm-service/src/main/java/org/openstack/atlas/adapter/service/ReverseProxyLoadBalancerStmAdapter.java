@@ -4,14 +4,12 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.RateLimit;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.StingrayRestClient;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ReverseProxyLoadBalancerStmAdapter {
 
@@ -75,7 +73,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException;
 
-    public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+    public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Set<AccessList> accessListToDelete)
             throws InsufficientRequestException, StmRollBackException;
 
     public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)

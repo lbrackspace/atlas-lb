@@ -1,13 +1,11 @@
 package org.openstack.atlas.api.integration;
 
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.RateLimit;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ReverseProxyLoadBalancerStmService {
     LoadBalancerEndpointConfiguration getConfig(Host host) throws Exception;
@@ -38,7 +36,7 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void addVirtualIps(Integer id, Integer accountId, LoadBalancer loadBalancer) throws Exception;
 
-    void deleteAccessList(LoadBalancer lb) throws Exception;
+    void deleteAccessList(LoadBalancer lb, Set<AccessList> accessListToDelete) throws Exception;
 
     void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
 

@@ -26,6 +26,7 @@ import org.openstack.atlas.util.debug.Debug;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Set;
 
 public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadBalancerStmService {
 
@@ -188,10 +189,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteAccessList(LoadBalancer lb) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void deleteAccessList(LoadBalancer lb, Set<AccessList> accessListToDelete) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.deleteAccessList(config, lb);
+            reverseProxyLoadBalancerStmAdapter.deleteAccessList(config, lb, accessListToDelete);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;

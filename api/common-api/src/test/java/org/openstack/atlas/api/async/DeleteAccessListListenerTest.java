@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
@@ -86,13 +87,29 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     }
 
     @Test
+    public void testDeleteAccessListItem() throws Exception {
+        when(objectMessage.getObject()).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        Set<AccessList> deletionList = new HashSet<AccessList>();
+        deletionList.add(lb.getAccessLists().iterator().next());
+
+        deleteAccessListListener.doOnMessage(objectMessage);
+
+        verify(reverseProxyLoadBalancerStmService).deleteAccessList(lb, deletionList);
+        verify(notificationService).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(ACCESS_LIST_ID), anyString(), anyString(), eq(EventType.DELETE_ACCESS_LIST), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
+        Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
+        verify(loadBalancerService).update(lb);
+        verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ACTIVE);
+    }
+
+    @Test
     public void testDeleteAccessList() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         deleteAccessListListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteAccessList(lb);
+        verify(reverseProxyLoadBalancerStmService).deleteAccessList(lb, lb.getAccessLists());
         verify(notificationService).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(ACCESS_LIST_ID), anyString(), anyString(), eq(EventType.DELETE_ACCESS_LIST), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
         verify(loadBalancerService).update(lb);
@@ -116,11 +133,11 @@ public class DeleteAccessListListenerTest extends STMTestBase {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteAccessList(lb);
+        doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteAccessList(eq(lb), anySet());
 
         deleteAccessListListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteAccessList(lb);
+        verify(reverseProxyLoadBalancerStmService).deleteAccessList(eq(lb), anySet());
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_ACCESS_LIST), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));

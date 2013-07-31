@@ -8,11 +8,12 @@ import org.openstack.atlas.service.domain.entities.ConnectionLimit;
 import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.protection.Protection;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 public class AccessListITest extends STMTestBase {
@@ -79,6 +80,22 @@ public class AccessListITest extends STMTestBase {
         verifyAccessList();
     }
 
+    @Test
+    public void testAccessListRemovalOfOneItem() {
+        createAccessList();
+        verifyAccessList();
+        deleteAccessListItem();
+        verifyAccessListSingleDeletion();
+    }
+
+    @Test
+    public void testAccessListDeletion() {
+        createAccessList();
+        verifyAccessList();
+        deleteAccessList();
+        verifyAccessListDeletion();
+    }
+
     public void createAccessList() {
         lb.setAccessLists(list);
         try {
@@ -98,11 +115,43 @@ public class AccessListITest extends STMTestBase {
                     Arrays.toString(e.getStackTrace())));
             return;
         }
-        Assert.assertNotNull(protection);
+        if (lb.getConnectionLimit() != null) {
+            Assert.assertNotNull(protection);
+        }
         Set<String> allowed = protection.getProperties().getAccess_restriction().getAllowed();
         Set<String> banned = protection.getProperties().getAccess_restriction().getBanned();
         Assert.assertTrue(allowed.contains(item1.getIpAddress()));
         Assert.assertTrue(banned.contains(item2.getIpAddress()));
+    }
+
+    public void verifyAccessListSingleDeletion() {
+        Protection protection;
+        try {
+            protection = stmClient.getProtection(name);
+        } catch (Exception e) {
+            Assert.fail(String.format("Error retrieving Protection on '%s'.\n%s", name,
+                    Arrays.toString(e.getStackTrace())));
+            return;
+        }
+        if (lb.getConnectionLimit() != null) {
+            Assert.assertNotNull(protection);
+        }
+        Set<String> allowed = protection.getProperties().getAccess_restriction().getAllowed();
+        Set<String> banned = protection.getProperties().getAccess_restriction().getBanned();
+        Assert.assertTrue(allowed.contains(item1.getIpAddress()));
+        Assert.assertTrue(banned.isEmpty());
+    }
+
+    public void verifyAccessListDeletion() {
+        try {
+            stmClient.getProtection(name);
+        } catch (StingrayRestClientObjectNotFoundException notFoundException) {
+            Assert.assertTrue("Protection object removed successfully", true);
+        } catch (StingrayRestClientException e) {
+            Assert.fail(String.format("Error retrieving Protection on '%s'.\n%s", name,
+                    Arrays.toString(e.getStackTrace())));
+            return;
+        }
     }
 
     public void enableConnectionThrottle() {
@@ -151,6 +200,27 @@ public class AccessListITest extends STMTestBase {
         termination.setSecurePort(LB_SECURE_PORT);
         termination.setSecureTrafficOnly(SslOnly);
         return termination;
+    }
+
+    public void deleteAccessListItem() {
+        Set<AccessList> deletionItems = new HashSet<AccessList>();
+        deletionItems.add(item2);
+        try {
+            stmAdapter.deleteAccessList(config, lb, deletionItems);
+        } catch(Exception e) {
+            Assert.fail(String.format("Error deleting SSL termination on '%s'.", name));
+        }
+    }
+
+    public void deleteAccessList() {
+        Set<AccessList> deletionItems = new HashSet<AccessList>();
+        deletionItems.add(item1);
+        deletionItems.add(item2);
+        try {
+            stmAdapter.deleteAccessList(config, lb, deletionItems);
+        } catch(Exception e) {
+            Assert.fail(String.format("Error deleting SSL termination on '%s'.", name));
+        }
     }
 
     @After
