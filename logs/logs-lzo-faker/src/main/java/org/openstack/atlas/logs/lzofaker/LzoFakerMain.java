@@ -34,87 +34,15 @@ public class LzoFakerMain {
     private static final int REAL_MILLIS_PER_HOUR = 60 * 60 * 1000;
     public static final String alphaNum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890";
     public static final Random rnd = new Random();
-    private static final String exampleJson = ""
-            + "{\n"
-            + "  \"dialect\": \"org.hibernate.dialect.MySQL5InnoDBDialect\", \n"
-            + "  \"url\": \"jdbc:mysql://mysql-master-n01.ord1.lbaas.rackspace.net:3306/loadbalancing\", \n"
-            + "  \"driver\": \"com.mysql.jdbc.Driver\", \n"
-            + "  \"passwd\": \"YourPassword\", \n"
-            + "  \"classes\": [\n"
-            + "    \"org.openstack.atlas.service.domain.entities.AccessList\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.AccessListType\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.Cluster\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.GroupRateLimit\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.AccountGroup\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.ConnectionLimit\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.Entity\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.HealthMonitor\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.HealthMonitorType\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.Host\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.HostStatus\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.Backup\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.IpVersion\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.LoadBalancer\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.LoadBalancerProtocol\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.LoadBalancerProtocolObject\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.RateLimit\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.LoadBalancerStatus\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.Node\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.NodeCondition\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.NodeStatus\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.SessionPersistence\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.SessionPersistenceObject\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.Suspension\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.Usage\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.AccountUsage\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.VirtualIp\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.VirtualIpv6\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.TrafficScripts\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithmObject\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.Ticket\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.BlacklistItem\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.BlacklistType\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.Account\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.AccountLimit\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.LimitType\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.JobState\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.UserPages\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.SslTermination\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.Defaults\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.AllowedDomain\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.LoadbalancerMeta\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.NodeMeta\", \n"
-            + "    \"org.openstack.atlas.service.domain.entities.LoadBalancerStatusHistory\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.Event\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.Alert\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.AlertStatus\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.AccessListEvent\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.ConnectionLimitEvent\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.HealthMonitorEvent\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.LoadBalancerEvent\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.NodeEvent\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.NodeServiceEvent\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.VirtualIpEvent\", \n"
-            + "    \"org.openstack.atlas.service.domain.events.entities.SessionPersistenceEvent\"\n"
-            + "  ], \n"
-            + "  \"db_key\": \"lb\", \n"
-            + "  \"user\": \"lbaas\", \n"
-            + "  \"hbm2ddl\": \"none\"\n"
-            + "}\n"
-            + "\n"
-            + "";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 4) {
             System.out.printf("Usage is <configFile> <hourkey> <nLines> <outputDir> [lbId...]\n");
             System.out.printf("\n");
-            System.out.printf("Test if the configuration file can be loaded.");
+            System.out.printf("Attempt to create fake LZO files for the given hour key with nLines\n");
+            System.out.printf("If lbid... is specified then only consider the lbs for the specified on the command line\n");
             System.out.printf("ExampleUsage of a config file is:\n");
-            System.out.printf("%s\n", exampleJson);
+            System.out.printf("%s\n", HibernateDbConf.exampleJson);
             return;
         }
 
