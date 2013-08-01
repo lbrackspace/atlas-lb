@@ -18,6 +18,11 @@
             <artifactId>atlas-logs-hadoop</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-logs-itest-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -40,7 +45,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>org.openstack.atlas.util.HdfsCli</mainClass>
+                                <mainClass>org.openstack.atlas.logs.itest.HdfsCli</mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>

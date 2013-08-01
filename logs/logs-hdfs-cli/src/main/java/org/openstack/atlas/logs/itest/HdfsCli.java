@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.logs.itest;
 
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -33,7 +33,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.Integer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,7 +40,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.math.linear.Array2DRowFieldMatrix;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.compress.CompressionInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
@@ -52,11 +50,13 @@ import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 import org.openstack.atlas.util.debug.Debug;
 import org.joda.time.DateTime;
+import org.openstack.atlas.util.HdfsUtils;
+import org.openstack.atlas.util.LogChopper;
 
 public class HdfsCli {
 
     private static final Pattern zipPattern = Pattern.compile(".*\\.zip$");
-    private static final String HDUNAME = "HADOOP_USER_NAME";
+
     private static final int LARGEBUFFERSIZE = 8 * 1024 * 1024;
     private static final int PAGESIZE = 4096;
     private static final int HDFSBUFFSIZE = 512 * 1024;
@@ -83,7 +83,7 @@ public class HdfsCli {
         HadoopLogsConfigs.markJobsJarAsAlreadyCopied();
         URI defaultHdfsUri = FileSystem.getDefaultUri(conf);
         FileSystem fs = hdfsUtils.getFileSystem();
-        System.setProperty(HDUNAME, user);
+        System.setProperty(CommonItestStatic.HDUNAME, user);
         FileSystem lfs = hdfsUtils.getLocalFileSystem();
 
         BufferedReader stdin = HdfsCliHelpers.inputStreamToBufferedReader(System.in);
@@ -99,7 +99,7 @@ public class HdfsCli {
                 if (cmdLine == null) {
                     break; // EOF
                 }
-                args = stripBlankArgs(cmdLine);
+                args = CommonItestStatic.stripBlankArgs(cmdLine);
                 if (args.length < 1) {
                     System.out.printf("Usage is help\n");
                     continue;
@@ -229,8 +229,8 @@ public class HdfsCli {
                     String fileDisplay = listHourKeyFiles(hdfsUtils, outputDir, hourKey);
                     System.out.printf("%s\n", fileDisplay);
                 } else if (cmd.equals("scanhdfszips")) {
-                    Map<String, String> kw = argMapper(args);
-                    args = stripKwArgs(args);
+                    Map<String, String> kw = CommonItestStatic.argMapper(args);
+                    args = CommonItestStatic.stripKwArgs(args);
                     List<Long> hourKeysListL = new ArrayList<Long>();
                     String lbLogSplitDir = StaticFileUtils.mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), LB_LOGS_SPLIT);
                     FileStatus[] dateDirsStats = hdfsUtils.getFileSystem().listStatus(new Path(lbLogSplitDir));
@@ -328,7 +328,7 @@ public class HdfsCli {
 
                     // Verify the user wants to upload this file
                     System.out.printf("Are you sure you want to upload %s to %s with index %s(Y/N)\n", localLzoFilePath, hdfsLzoPath, hdfsLzoIdxPath);
-                    if (inputStream(stdin, "Y")) {
+                    if (CommonItestStatic.inputStream(stdin, "Y")) {
                         System.out.printf("Uploading lzo\n");
                     } else {
                         System.out.printf("Not uploading lzo\n");
@@ -391,7 +391,7 @@ public class HdfsCli {
                     System.out.printf("Hadoop tun response code was %d\n", errorCode);
 
                 } else if (cmd.equals("getzip") && args.length > 1) {
-                    Map<String, String> kw = argMapper(args);
+                    Map<String, String> kw = CommonItestStatic.argMapper(args);
                     String lid = (kw.containsKey("l")) ? kw.get("l") : null;
                     String hourKey = (kw.containsKey("h")) ? kw.get("h") : null;
                     String downloadDir = args[1];
@@ -401,7 +401,7 @@ public class HdfsCli {
                         System.out.printf("%s\n", HdfsCliHelpers.displayFileStatus(zipFileStatus));
                     }
                     System.out.printf("Are you sure you want to download the above files (Y/N)?");
-                    if (inputStream(stdin, "Y")) {
+                    if (CommonItestStatic.inputStream(stdin, "Y")) {
                         for (FileStatus zipFileStatus : zipStatusList) {
                             String hdfsZipFileStr = zipFileStatus.getPath().toUri().getRawPath();
                             String dstZipFileStr = StaticFileUtils.joinPath(downloadDir, StaticFileUtils.pathTail(hdfsZipFileStr));
@@ -423,7 +423,7 @@ public class HdfsCli {
                         System.out.printf("%s\n", HdfsCliHelpers.displayFileStatus(lzoFileStatus));
                     }
                     System.out.printf("Are you sure you want to download the lzo files above?(Y/N)?");
-                    if (inputStream(stdin, "Y")) {
+                    if (CommonItestStatic.inputStream(stdin, "Y")) {
                         for (FileStatus lzoFileStatus : lzoFileStatusList) {
                             String srcLzoFileStr = StaticFileUtils.pathTail(lzoFileStatus.getPath().toUri().getRawPath());
                             Matcher m = HdfsUtils.hdfsLzoPattern.matcher(srcLzoFileStr);
@@ -463,7 +463,7 @@ public class HdfsCli {
                 } else if (cmd.equals("chuser") && args.length >= 2) {
                     user = args[1];
                     fs = FileSystem.get(defaultHdfsUri, conf, user);
-                    System.setProperty(HDUNAME, user);
+                    System.setProperty(CommonItestStatic.HDUNAME, user);
                     System.out.printf("Switched to user %s\n", user);
                 } else if (cmd.equals("mem")) {
                     System.out.printf("Memory\n=================================\n%s\n", Debug.showMem());
@@ -504,7 +504,7 @@ public class HdfsCli {
                     System.out.printf("Calling garbage collector\n");
                     Debug.gc();
                 } else if (cmd.equals("lszip")) {
-                    Map<String, String> kw = argMapper(args);
+                    Map<String, String> kw = CommonItestStatic.argMapper(args);
                     String dateHour = (kw.containsKey("h")) ? kw.get("h") : null;
                     String lid = (kw.containsKey("l")) ? kw.get("l") : null;
                     System.out.printf("Scanning for zips on hour[%s] lid[%s]\n", dateHour, lid);
@@ -568,7 +568,7 @@ public class HdfsCli {
                         System.out.printf("Deleting %s\n", hourDir);
                     }
                     System.out.printf("Are you sure you want to delete the above %d directories (Y/N))", hourDirs.size());
-                    if (inputStream(stdin, "Y")) {
+                    if (CommonItestStatic.inputStream(stdin, "Y")) {
                         for (String hourDir : hourDirs) {
                             boolean resp = fs.delete(new Path(hourDir), true);
                             System.out.printf("%s = %s\n", hourDir, resp);
@@ -604,15 +604,15 @@ public class HdfsCli {
                         System.out.printf("Deleting %s\n", hourDir);
                     }
                     System.out.printf("Are you sure you want to delete the above %d directories (Y/N))", hourDirs.size());
-                    if (inputStream(stdin, "Y")) {
+                    if (CommonItestStatic.inputStream(stdin, "Y")) {
                         for (String hourDir : hourDirs) {
                             boolean resp = fs.delete(new Path(hourDir), true);
                             System.out.printf("%s = %s\n", hourDir, resp);
                         }
                     }
                 } else if (cmd.equals("dlzip") && args.length >= 2) {
-                    Map<String, String> kw = argMapper(args);
-                    args = stripKwArgs(args);
+                    Map<String, String> kw = CommonItestStatic.argMapper(args);
+                    args = CommonItestStatic.stripKwArgs(args);
 
                     Integer lid = (kw.containsKey("l")) ? Integer.valueOf(kw.get("l")) : null;
                     Integer aid = (kw.containsKey("a")) ? Integer.valueOf(kw.get("a")) : null;
@@ -667,7 +667,7 @@ public class HdfsCli {
                         System.out.printf("%s AccountId=%d LoadbalancerId=%d\n", transferFile.toString(), transferFile.getAccountId(), transferFile.getLoadbalancerId());
                     }
                     System.out.printf("Are you sure you want to download the above zip files (Y/N)\n");
-                    if (inputStream(stdin, "Y")) {
+                    if (CommonItestStatic.inputStream(stdin, "Y")) {
                         for (ZipSrcDstFile transferFile : transferFiles) {
                             String srcFile = transferFile.getSrcFile();
                             String dstFile = transferFile.getDstFile();
@@ -981,57 +981,6 @@ public class HdfsCli {
 
     public static String chop(String line) {
         return line.replace("\r", "").replace("\n", "");
-    }
-
-    public static String[] stripBlankArgs(String line) {
-        int nargs = 0;
-        int i;
-        int j;
-        String[] argsIn = line.replace("\r", "").replace("\n", "").split(" ");
-        for (i = 0; i < argsIn.length; i++) {
-            if (argsIn[i].length() > 0) {
-                nargs++;
-            }
-        }
-        String[] argsOut = new String[nargs];
-        j = 0;
-        for (i = 0; i < argsIn.length; i++) {
-            if (argsIn[i].length() > 0) {
-                argsOut[j] = argsIn[i];
-                j++;
-            }
-        }
-        return argsOut;
-    }
-
-    public static String[] stripKwArgs(String[] args) {
-        String[] argsOut;
-        List<String> filteredArgs = new ArrayList<String>();
-        for (int i = 0; i < args.length; i++) {
-            String arg = args[i];
-            if (arg.split("=").length >= 2) {
-                continue;
-            }
-            filteredArgs.add(arg);
-        }
-        argsOut = filteredArgs.toArray(new String[filteredArgs.size()]);
-        return argsOut;
-    }
-
-    public static Map<String, String> argMapper(String[] args) {
-        Map<String, String> argMap = new HashMap<String, String>();
-        for (String arg : args) {
-            String[] kwArg = arg.split("=");
-            if (kwArg.length == 2) {
-                argMap.put(kwArg[0], kwArg[1]);
-            }
-        }
-        return argMap;
-    }
-
-    public static boolean inputStream(BufferedReader stdin, String val) throws IOException {
-        String[] resp = stripBlankArgs(stdin.readLine());
-        return (resp.length > 0 && resp[0].equalsIgnoreCase(val));
     }
 
     public static String zipFilePath(String dateHour, int accountId, int loadbalancerId) {

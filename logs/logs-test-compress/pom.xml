@@ -40,7 +40,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>org.openstack.atlas.util.TestLzoCompressionMain</mainClass>
+                                <mainClass>org.openstack.atlas.logs.itest.TestLzoCompressionMain</mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>

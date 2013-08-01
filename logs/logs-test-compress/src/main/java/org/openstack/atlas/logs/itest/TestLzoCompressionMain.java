@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.logs.itest;
 
 import com.hadoop.compression.lzo.LzopCodec;
 import java.io.DataOutputStream;

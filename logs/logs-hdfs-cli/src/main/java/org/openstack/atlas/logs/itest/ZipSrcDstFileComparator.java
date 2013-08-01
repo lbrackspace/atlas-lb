@@ -1,5 +1,5 @@
 
-package org.openstack.atlas.util;
+package org.openstack.atlas.logs.itest;
 
 import java.util.Comparator;
 

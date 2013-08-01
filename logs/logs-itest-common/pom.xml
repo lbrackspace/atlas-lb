@@ -7,20 +7,30 @@
         <version>1.18.12-SNAPSHOT</version>
     </parent>
     <groupId>org.openstack.atlas</groupId>
-    <artifactId>atlas-exp-cache-faker</artifactId>
-    <name>OpenStack :: Atlas :: Logs :: HDFS :: Cache zip faker</name>
+    <artifactId>atlas-logs-itest-common</artifactId>
     <version>1.18.12-SNAPSHOT</version>
+    <name>OpenStack :: Atlas :: Logs :: Itest Commons</name>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.openstack.atlas</groupId>
-            <artifactId>atlas-logs-itest-common</artifactId>
+            <artifactId>atlas-logs-hadoop</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openstack.atlas</groupId>
-            <artifactId>atlas-persistence</artifactId>
+            <artifactId>atlas-data-model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-itest-hibernate-adapter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -35,23 +45,6 @@
             <version>3.5.1-Final</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.6</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>sqljdbc4</artifactId>
-            <version>4.0</version>
-            <scope>compile</scope>
-        </dependency>
-            <dependency>
-                <groupId>postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>9.0-801.jdbc3</version>
-            </dependency>
     </dependencies>
 
     <build>
@@ -74,7 +67,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>org.openstack.atlas.logs.itest.CacheFakerMain</mainClass>
+                                <mainClass></mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>

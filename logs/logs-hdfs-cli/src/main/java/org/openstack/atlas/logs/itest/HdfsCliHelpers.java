@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.logs.itest;
 
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;

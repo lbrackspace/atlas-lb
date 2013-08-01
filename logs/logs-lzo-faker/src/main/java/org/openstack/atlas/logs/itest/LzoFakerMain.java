@@ -1,4 +1,4 @@
-package org.openstack.atlas.logs.lzofaker;
+package org.openstack.atlas.logs.itest;
 
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import com.hadoop.compression.lzo.LzopCodec;

@@ -7,8 +7,8 @@
         <version>1.18.12-SNAPSHOT</version>
     </parent>
     <groupId>org.openstack.atlas</groupId>
-    <artifactId>atlas-exp-cache-faker</artifactId>
-    <name>OpenStack :: Atlas :: Logs :: HDFS :: Cache zip faker</name>
+    <artifactId>atlas-logs-test-reuploader</artifactId>
+    <name>OpenStack :: Atlas :: Logs :: HDFS :: test reuploader</name>
     <version>1.18.12-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -19,13 +19,24 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openstack.atlas</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>atlas-persistence</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-logs-hadoop</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
+            <version>3.5.1-Final</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-annotations</artifactId>
             <version>3.5.1-Final</version>
             <scope>compile</scope>
         </dependency>
@@ -53,7 +64,6 @@
                 <version>9.0-801.jdbc3</version>
             </dependency>
     </dependencies>
-
     <build>
         <defaultGoal>install</defaultGoal>
         <pluginManagement>
@@ -74,7 +84,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>org.openstack.atlas.logs.itest.CacheFakerMain</mainClass>
+                                <mainClass>org.openstack.atlas.logs.itest.ReuploadTestStatic</mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>
