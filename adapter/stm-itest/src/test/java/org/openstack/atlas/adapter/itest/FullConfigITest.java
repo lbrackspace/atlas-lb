@@ -35,7 +35,7 @@ import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
 import static org.openstack.atlas.service.domain.entities.AccessListType.DENY;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
 
-public class FullConfigIntegrationTest extends STMTestBase {
+public class FullConfigITest extends STMTestBase {
     static StingrayRestClient client;
 
     Node n;
