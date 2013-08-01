@@ -59,7 +59,6 @@ public class UpdateLoadBalancerListener extends BaseListener {
             return;
         }
 
-        //Have to maintain this i think...
         if (queueLb.getAlgorithm() != null) atomSummary.append("algorithm: '").append(dbLoadBalancer.getAlgorithm().name()).append("', ");
         if (queueLb.getProtocol() != null) atomSummary.append("protocol: '").append(dbLoadBalancer.getProtocol().name()).append("', ");
         if (queueLb.getPort() != null) atomSummary.append("port: '").append(dbLoadBalancer.getPort()).append("', ");

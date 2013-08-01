@@ -61,8 +61,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
                 TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             }
-            createPersistentClasses(config);
 
+            createPersistentClasses(config);
 
             if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
                 updateHealthMonitor(config, client, vsName, translator.getcMonitor());

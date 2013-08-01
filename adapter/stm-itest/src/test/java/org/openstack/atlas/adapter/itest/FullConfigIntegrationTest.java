@@ -9,6 +9,8 @@ import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -22,6 +24,7 @@ import org.rackspace.stingray.client.protection.ProtectionAccessRestriction;
 import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
+import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 
 import java.io.*;
 import java.util.*;
@@ -50,8 +53,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
 
     @AfterClass
     public static void tearDownClass() {
-        removeLoadBalancer();
-        client.destroy();
+        teardownEverything();
     }
 
     @Test
@@ -125,9 +127,27 @@ public class FullConfigIntegrationTest extends STMTestBase {
             lb.setConnectionLogging(true);
             lb.setContentCaching(true);
 
-            //TODO: add/test ssl termination  and others...
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setSecureTrafficOnly(false);
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(StmTestConstants.LB_SECURE_PORT);
+            sslTermination.setCertificate(StmTestConstants.SSL_CERT);
+            sslTermination.setPrivatekey(StmTestConstants.SSL_KEY);
+
+            ZeusCertFile zeusCertFile = new ZeusCertFile();
+            zeusCertFile.setPublic_cert(StmTestConstants.SSL_CERT);
+            zeusCertFile.setPrivate_key(StmTestConstants.SSL_KEY);
+
+            ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
+            zeusSslTermination.setCertIntermediateCert(StmTestConstants.SSL_CERT);
+            zeusSslTermination.setSslTermination(sslTermination);
 
             stmAdapter.updateLoadBalancer(config, lb, nlb);
+
+            lb.setSslTermination(zeusSslTermination.getSslTermination());
+            stmAdapter.updateSslTermination(config, lb, zeusSslTermination);
+            verifySsltermination(lb);
+
             Thread.sleep(3000);
             verifyVS(lb);
             verifyPool(lb);
@@ -147,10 +167,6 @@ public class FullConfigIntegrationTest extends STMTestBase {
         LoadBalancer clb = null;
         try {
             LoadBalancer nlb = new LoadBalancer();
-            UserPages up = new UserPages();
-            up.setErrorpage("iError");
-            nlb.setUserPages(up);
-
             clb = new LoadBalancer();
             clb.setHealthMonitor(lb.getHealthMonitor());
 
@@ -166,16 +182,38 @@ public class FullConfigIntegrationTest extends STMTestBase {
             nlb.setHealthMonitor(mon);
 
             buildHydratedLb();
-            lb.setUserPages(up);
+            lb.setSslTermination(null);
             lb.setHealthMonitor(mon);
 
             stmAdapter.updateLoadBalancer(config, lb, nlb);
+            Assert.fail("Should have failed to update");
 
         } catch (Exception e) {
             verifyMonitor(clb);
         }
     }
-        //todo: rollback tests
+
+    @Test
+    public void updateFullyConfiguredLoadBalancerWithProtectionrollbacks() throws StingrayRestClientException, IOException, StingrayRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException {
+        LoadBalancer clb = null;
+        try {
+            LoadBalancer nlb = new LoadBalancer();
+            clb = new LoadBalancer();
+            clb.setConnectionLimit(lb.getConnectionLimit());
+
+            buildHydratedLb();
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+
+            lb.getConnectionLimit().setRateInterval(-2);
+            nlb.setConnectionLimit(lb.getConnectionLimit());
+
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
+            Assert.fail("Should have failed to update");
+
+        } catch (Exception e) {
+            verifyProtection(clb);
+        }
+    }
 
     private LoadBalancer buildHydratedLb() {
         lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
@@ -376,6 +414,25 @@ public class FullConfigIntegrationTest extends STMTestBase {
             Assert.assertTrue(t.getProperties().getBasic().getMachines().contains(config.getFailoverTrafficManagerNames().iterator().next()));
             Assert.assertTrue(t.getProperties().getBasic().getMachines().contains(config.getTrafficManagerName()));
         }
+
+    }
+
+    private void verifySsltermination(LoadBalancer lb) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, IPStringConversionException {
+        String svsName = secureLoadBalancerName();
+        String vsName = loadBalancerName();
+        VirtualServer createdSecureVs = client.getVirtualServer(svsName);
+        VirtualServer createdVs = client.getVirtualServer(vsName);
+        VirtualServerBasic secureBasic = createdSecureVs.getProperties().getBasic();
+        Assert.assertEquals(StmTestConstants.LB_SECURE_PORT, (int) secureBasic.getPort());
+        Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(secureBasic.getProtocol().toString()));
+        Assert.assertEquals(lb.getSslTermination().isEnabled(), secureBasic.getEnabled());
+        Assert.assertEquals(vsName, secureBasic.getPool().toString());
+        Assert.assertEquals(true, secureBasic.getSsl_decrypt());
+
+        VirtualServerBasic normalBasic = createdVs.getProperties().getBasic();
+        Assert.assertEquals(StmTestConstants.LB_PORT, (int) normalBasic.getPort());
+        Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(normalBasic.getProtocol().toString()));
+        Assert.assertEquals(lb.isSecureOnly(), !normalBasic.getEnabled());
 
     }
 

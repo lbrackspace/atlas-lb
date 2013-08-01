@@ -172,7 +172,6 @@ public class STMTestBase extends StmTestConstants {
         ResourceTranslator translator = new ResourceTranslator();
         try {
             stmAdapter.createLoadBalancer(config, lb);
-            //TODO: use test config(update stingray-rest-client to use openstack.configuration)
             VirtualServer vs;
             Pool pool;
 
@@ -229,6 +228,10 @@ public class STMTestBase extends StmTestConstants {
 
         try {
             stmClient.getVirtualServer(loadBalancerName());
+
+            if (lb.getSslTermination() != null) {
+                stmClient.getVirtualServer(secureLoadBalancerName());
+            }
             Assert.fail("Virtual Server should have been deleted!");
         } catch (Exception e) {
             if (e instanceof StingrayRestClientObjectNotFoundException) {
@@ -248,9 +251,71 @@ public class STMTestBase extends StmTestConstants {
                 Assert.fail(e.getMessage());
             }
         }
+
+        try {
+            if (lb.getHealthMonitor() != null) {
+                stmClient.getMonitor(monitorName());
+                Assert.fail("Health monitor should have been deleted!");
+            }
+        } catch (Exception e) {
+            if (e instanceof StingrayRestClientObjectNotFoundException) {
+            } else {
+                e.printStackTrace();
+                Assert.fail(e.getMessage());
+            }
+        }
+
+        try {
+            if (lb.getRateLimit() != null) {
+                stmClient.getBandwidth(rateLimitName());
+                Assert.fail("Rate limit/Bandwidth should have been deleted!");
+            }
+        } catch (Exception e) {
+            if (e instanceof StingrayRestClientObjectNotFoundException) {
+            } else {
+                e.printStackTrace();
+                Assert.fail(e.getMessage());
+            }
+        }
+
+        try {
+            if (!lb.getAccessLists().isEmpty() || lb.getConnectionLimit() != null) {
+                stmClient.getProtection(protectionClassName());
+                Assert.fail("Protection class should have been deleted!");
+            }
+        } catch (Exception e) {
+            if (e instanceof StingrayRestClientObjectNotFoundException) {
+            } else {
+                e.printStackTrace();
+                Assert.fail(e.getMessage());
+            }
+        }
+
+        try {
+            if (!lb.getLoadBalancerJoinVipSet().isEmpty()) {
+                for (LoadBalancerJoinVip jv : lb.getLoadBalancerJoinVipSet()) {
+                    stmClient.getTrafficIp(trafficIpGroupName(jv.getVirtualIp()));
+
+                }
+                Assert.fail("Traffic ips should have been deleted!");
+            }
+
+            if (!lb.getLoadBalancerJoinVip6Set().isEmpty()) {
+                for (LoadBalancerJoinVip6 jv : lb.getLoadBalancerJoinVip6Set()) {
+                    stmClient.getTrafficIp(trafficIpGroupName(jv.getVirtualIp()));
+                }
+                Assert.fail("Traffic ips should have been deleted!");
+            }
+        } catch (Exception e) {
+            if (e instanceof StingrayRestClientObjectNotFoundException) {
+            } else {
+                e.printStackTrace();
+                Assert.fail(e.getMessage());
+            }
+        }
     }
 
-    protected void teardownEverything() {
+    protected static void teardownEverything() {
         removeLoadBalancer();
         stmClient.destroy();
     }
