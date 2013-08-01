@@ -10,7 +10,7 @@ import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -26,7 +26,9 @@ import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
@@ -134,7 +136,7 @@ public class FullConfigIntegrationTest extends STMTestBase {
             sslTermination.setCertificate(StmTestConstants.SSL_CERT);
             sslTermination.setPrivatekey(StmTestConstants.SSL_KEY);
 
-            ZeusCertFile zeusCertFile = new ZeusCertFile();
+            ZeusCrtFile zeusCertFile = new ZeusCrtFile();
             zeusCertFile.setPublic_cert(StmTestConstants.SSL_CERT);
             zeusCertFile.setPrivate_key(StmTestConstants.SSL_KEY);
 

@@ -5,8 +5,8 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.StringUtils;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
-import org.openstack.atlas.util.ca.zeus.ZeusUtil;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
@@ -39,6 +39,12 @@ public class ResourceTranslator {
     public Persistence cPersistence;
     public Bandwidth cBandwidth;
     public Keypair cKeypair;
+    protected static final ZeusUtils zeusUtil;
+
+    static {
+        zeusUtil = new ZeusUtils();
+    }
+
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException {
@@ -369,11 +375,11 @@ public class ResourceTranslator {
 
     public Keypair translateKeypairResource(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException {
-        ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(loadBalancer.getSslTermination().getPrivatekey(),
+        ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(loadBalancer.getSslTermination().getPrivatekey(),
                 loadBalancer.getSslTermination().getCertificate(), loadBalancer.getSslTermination().getIntermediateCertificate());
-        if (zeusCertFile.isError()) {
+        if (zeusCertFile.hasFatalErrors()) {
             String fmt = "StingrayCertFile generation Failure: %s";
-            String errors = StringUtils.joinString(zeusCertFile.getErrorList(), ",");
+            String errors = StringUtils.joinString(zeusCertFile.getErrors(), ",");
             String msg = String.format(fmt, errors);
             throw new InsufficientRequestException(msg);
         }
