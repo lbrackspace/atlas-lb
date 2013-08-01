@@ -36,6 +36,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
     private Integer ACCESS_LIST_ID = 15;
+    private Set<AccessList> accessLists;
 
     @Mock
     private ObjectMessage objectMessage;
@@ -56,7 +57,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     public void standUp() {
         MockitoAnnotations.initMocks(this);
         setupIvars();
-        Set<AccessList> accessLists = new HashSet<AccessList>();
+        accessLists = new HashSet<AccessList>();
         AccessList accessList = setupAccessList();
         accessLists.add(accessList);
         LOAD_BALANCER_ID = lb.getId();
@@ -90,12 +91,10 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     public void testDeleteAccessListItem() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        Set<AccessList> deletionList = new HashSet<AccessList>();
-        deletionList.add(lb.getAccessLists().iterator().next());
 
         deleteAccessListListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteAccessList(lb, deletionList);
+        verify(reverseProxyLoadBalancerStmService).deleteAccessList(lb, accessLists);
         verify(notificationService).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(ACCESS_LIST_ID), anyString(), anyString(), eq(EventType.DELETE_ACCESS_LIST), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
         verify(loadBalancerService).update(lb);

@@ -115,6 +115,19 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
 
     @Override
     @Transactional
+    public Set<AccessList> getNetworkItemsByIdList(int loadbalancerId, int accountId, List<Integer> networkItemIds) throws DeletedStatusException, EntityNotFoundException {
+        List<AccessList> list = loadBalancerRepository.getAccessListByAccountIdLoadBalancerId(accountId, loadbalancerId);
+        Set<AccessList> retSet = new HashSet<AccessList>();
+        for (AccessList item : list) {
+            if (networkItemIds.contains(item.getId())) {
+                retSet.add(item);
+            }
+        }
+        return retSet;
+    }
+
+    @Override
+    @Transactional
     public LoadBalancer markForDeletionNetworkItems(LoadBalancer returnLB, List<Integer> networkItemIds) throws BadRequestException, ImmutableEntityException, EntityNotFoundException {
         LoadBalancer domainLB;
         List<AccessList> accessLists = new ArrayList<AccessList>();

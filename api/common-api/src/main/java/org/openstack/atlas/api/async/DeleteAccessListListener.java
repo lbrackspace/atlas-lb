@@ -35,8 +35,7 @@ public class DeleteAccessListListener extends BaseListener {
             return;
         }
 
-        Set<AccessList> accessListsToDelete = new HashSet<AccessList>();
-        accessListsToDelete.addAll(dbLoadBalancer.getAccessLists());
+        Set<AccessList> accessListsToDelete = queueLb.getAccessLists();
 
         try {
             LOG.debug(String.format("Deleting access list for load balancer '%s' in Zeus...", dbLoadBalancer.getId()));
@@ -61,6 +60,8 @@ public class DeleteAccessListListener extends BaseListener {
             LOG.debug(String.format("Removing access list item '%d' from database...", accessList.getId()));
         }
 
+        //Todo:  This is broken, and isn't removing the old items.
+        dbLoadBalancer.getAccessLists().removeAll(accessListsToDelete);
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);
 
