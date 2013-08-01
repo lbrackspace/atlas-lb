@@ -17,7 +17,7 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
-import org.openstack.atlas.util.LogFileNameBuilder;
+import org.openstack.atlas.logs.hadoop.util.LogFileNameBuilder;
 
 import org.springframework.beans.factory.annotation.Required;
 
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.tools.ant.filters.LineContains.Contains;
-import org.openstack.atlas.util.StaticLogUtils;
+import org.openstack.atlas.logs.hadoop.util.StaticLogUtils;
 import org.openstack.atlas.util.common.VerboseLogger;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;

@@ -17,7 +17,7 @@ import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
-import org.openstack.atlas.util.HdfsUtils;
+import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.common.VerboseLogger;
 import org.springframework.beans.factory.annotation.Required;

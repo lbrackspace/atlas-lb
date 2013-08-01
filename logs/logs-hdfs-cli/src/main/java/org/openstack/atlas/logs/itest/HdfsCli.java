@@ -50,8 +50,8 @@ import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 import org.openstack.atlas.util.debug.Debug;
 import org.joda.time.DateTime;
-import org.openstack.atlas.util.HdfsUtils;
-import org.openstack.atlas.util.LogChopper;
+import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
+import org.openstack.atlas.logs.hadoop.util.LogChopper;
 
 public class HdfsCli {
 

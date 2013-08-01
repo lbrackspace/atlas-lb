@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.logs.hadoop.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.logs.hadoop.util;
 
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.io.LbLogsWritable;

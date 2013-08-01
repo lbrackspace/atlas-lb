@@ -21,14 +21,14 @@ import org.json.simple.parser.ParseException;
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.logs.hadoop.comparators.LbLidAidNameContainerComparator;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
-import org.openstack.atlas.util.HdfsUtils;
-import org.openstack.atlas.util.LbLidAidNameContainer;
-import org.openstack.atlas.util.LogFileNameBuilder;
+import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
+import org.openstack.atlas.logs.hadoop.util.LbLidAidNameContainer;
+import org.openstack.atlas.logs.hadoop.util.LogFileNameBuilder;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.itest.hibernate.HibernateDbConf;
 import org.openstack.atlas.util.itest.hibernate.HuApp;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
-import org.openstack.atlas.util.StaticLogUtils;
+import org.openstack.atlas.logs.hadoop.util.StaticLogUtils;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 
 public class CacheFakerMain {

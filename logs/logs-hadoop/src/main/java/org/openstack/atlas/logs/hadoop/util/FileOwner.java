@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.logs.hadoop.util;
 
 public class FileOwner {
 

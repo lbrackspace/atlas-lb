@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.logs.hadoop.util;
 
 // An embasy object so that Hadoop logs doesn't need the atlas persistence module.
 import java.util.Comparator;

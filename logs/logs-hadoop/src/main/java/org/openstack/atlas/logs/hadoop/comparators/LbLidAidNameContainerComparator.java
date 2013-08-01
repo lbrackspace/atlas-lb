@@ -1,7 +1,7 @@
 package org.openstack.atlas.logs.hadoop.comparators;
 
 import java.util.Comparator;
-import org.openstack.atlas.util.LbLidAidNameContainer;
+import org.openstack.atlas.logs.hadoop.util.LbLidAidNameContainer;
 
 
 public class LbLidAidNameContainerComparator implements Comparator<LbLidAidNameContainer>{

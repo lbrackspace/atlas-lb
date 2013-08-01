@@ -20,7 +20,7 @@ import org.openstack.atlas.scheduler.JobScheduler;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
-import org.openstack.atlas.util.HdfsUtils;
+import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
 
 import org.openstack.atlas.util.common.VerboseLogger;
 

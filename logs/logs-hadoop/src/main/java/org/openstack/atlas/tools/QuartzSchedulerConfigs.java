@@ -1,7 +1,7 @@
 package org.openstack.atlas.tools;
 
 import java.util.ArrayList;
-import org.openstack.atlas.util.Constants;
+import org.openstack.atlas.logs.hadoop.util.Constants;
 
 import java.util.HashMap;
 import java.util.LinkedList;

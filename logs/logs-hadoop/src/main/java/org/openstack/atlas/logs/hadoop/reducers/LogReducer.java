@@ -19,8 +19,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
-import org.openstack.atlas.util.StaticLogUtils;
-import org.openstack.atlas.util.LogFileNameBuilder;
+import org.openstack.atlas.logs.hadoop.util.StaticLogUtils;
+import org.openstack.atlas.logs.hadoop.util.LogFileNameBuilder;
 
 public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue, LogReducerOutputKey, LogReducerOutputValue> {
 

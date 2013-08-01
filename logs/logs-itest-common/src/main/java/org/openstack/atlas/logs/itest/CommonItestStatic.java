@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.joda.time.DateTime;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
-import org.openstack.atlas.util.LbLidAidNameContainer;
+import org.openstack.atlas.logs.hadoop.util.LbLidAidNameContainer;
 import org.openstack.atlas.util.itest.hibernate.HuApp;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 

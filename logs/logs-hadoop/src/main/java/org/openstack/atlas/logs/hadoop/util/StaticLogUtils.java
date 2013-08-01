@@ -1,4 +1,4 @@
-package org.openstack.atlas.util;
+package org.openstack.atlas.logs.hadoop.util;
 
 import java.io.File;
 import java.io.IOException;

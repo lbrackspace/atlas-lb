@@ -14,7 +14,7 @@ import org.openstack.atlas.logs.hadoop.counters.LogCounters;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 
-import org.openstack.atlas.util.LogChopper;
+import org.openstack.atlas.logs.hadoop.util.LogChopper;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
