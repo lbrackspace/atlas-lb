@@ -13,6 +13,8 @@ import org.openstack.atlas.adapter.stm.StmAdapterImpl;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
+import org.openstack.atlas.util.crypto.CryptoUtil;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
@@ -53,7 +55,7 @@ public class STMTestBase extends StmTestConstants {
             retrieveConfigValues();
             setupEndpointConfiguration();
             RsaConst.init();
-        } catch (MalformedURLException e) {
+        } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
         setUpClusterForIPv6Operations();
@@ -69,7 +71,7 @@ public class STMTestBase extends StmTestConstants {
         DEFAULT_LOG_FILE_LOCATION = configuration.getString(ConfigurationKeys.default_log_file_location);
     }
 
-    private static void setupEndpointConfiguration() throws MalformedURLException {
+    private static void setupEndpointConfiguration() throws MalformedURLException, DecryptException {
         List<String> targetFailoverHosts = new ArrayList<String>();
         targetFailoverHosts.add(FAILOVER_HOST_1);
         Host soapEndpointHost = new Host();
@@ -78,7 +80,7 @@ public class STMTestBase extends StmTestConstants {
         Host trafficManagerHost = new Host();
         trafficManagerHost.setEndpoint(STM_ENDPOINT_URI);
         trafficManagerHost.setTrafficManagerName(TARGET_HOST);
-        config = new LoadBalancerEndpointConfiguration(soapEndpointHost, STM_USERNAME, STM_PASSWORD, trafficManagerHost, targetFailoverHosts);
+        config = new LoadBalancerEndpointConfiguration(soapEndpointHost, STM_USERNAME, CryptoUtil.decrypt(STM_PASSWORD), trafficManagerHost, targetFailoverHosts);
         config.setLogFileLocation(DEFAULT_LOG_FILE_LOCATION);
     }
 
