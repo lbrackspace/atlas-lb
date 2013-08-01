@@ -48,11 +48,12 @@ public class GlobalErrorFileITest extends STMTestBase {
 
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testSimpleDeleteErrorFileOperations() throws Exception {
+        setCustomErrorFile();
         deleteErrorFile();
     }
 
     private void setDefaultErrorFile() throws Exception {
-        vsName = ZxtmNameBuilder.genVSName(lb);
+        //vsName = ZxtmNameBuilder.genVSName(lb);
 
         //This is mgmt call to set 'default' file other than stm Default, lb should have Default at this point.
         stmAdapter.uploadDefaultErrorFile(config, defaultPageContent);
@@ -96,6 +97,8 @@ public class GlobalErrorFileITest extends STMTestBase {
         Assert.assertNotNull(errorFile);
 
         stmAdapter.deleteErrorFile(config, lb);
+        String errorFileNameLocal = stmClient.getVirtualServer(vsName).getProperties().getConnection_errors().getError_file();
+        Assert.assertEquals(errorFileNameLocal, "Default");
         stmClient.getExtraFile(errorFileName); //expect ONFException
     }
 }

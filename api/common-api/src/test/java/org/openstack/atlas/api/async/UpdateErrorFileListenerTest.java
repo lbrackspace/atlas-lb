@@ -31,7 +31,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
     private final String ERROR_FILE_CONTENT = "SOME ERROR FILE CONTENT";
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
-    private final Integer CLUSTER_ID = 15;
+    private final Integer CLUSTER_ID = 1;
 
     @Mock
     private ObjectMessage objectMessage;

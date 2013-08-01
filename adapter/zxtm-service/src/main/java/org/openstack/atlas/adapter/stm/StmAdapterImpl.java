@@ -1171,7 +1171,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
             // Update client with new properties
             VirtualServerProperties properties = vs.getProperties();
-            properties.setConnection_errors(new VirtualServerConnectionError()); // this will set the default error page
+            VirtualServerConnectionError ce = new VirtualServerConnectionError();
+            ce.setError_file("Default");
+            properties.setConnection_errors(ce); // this will set the default error page
             updateVirtualServer(config, client, vsName, vs);
 
             // Delete the old error file
