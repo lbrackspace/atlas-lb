@@ -10,11 +10,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.openstack.atlas.api.helpers.ResponseFactory;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
-import org.openstack.atlas.util.ca.zeus.ZeusUtil;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 
 // TODO: Undocumented Resource
 public class BounceResource extends ManagementDependencyProvider {
+
+    private static final ZeusUtils zeusUtils;
+
+    static {
+        zeusUtils = new ZeusUtils();
+    }
 
     @POST
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -60,10 +66,11 @@ public class BounceResource extends ManagementDependencyProvider {
         Response resp = Response.status(200).entity(virtualIp).build();
         return resp;
     }
+
     @POST
     @Path("alloweddomain")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public Response echoAllowedDomain(AllowedDomain ad){
+    public Response echoAllowedDomain(AllowedDomain ad) {
         Response resp = Response.status(200).entity(ad).build();
         return resp;
     }
@@ -76,19 +83,18 @@ public class BounceResource extends ManagementDependencyProvider {
         return resp;
     }
 
-
     @POST
     @Path("ssltermination")
-    public Response echoSslTermination(org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination in) {
-        String key = in.getPrivatekey();
-        String crt = in.getCertificate();
-        String chain = in.getIntermediateCertificate();
+    public Response echoSslTermination(org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination sslTerm) {
+        String key = sslTerm.getPrivatekey();
+        String crt = sslTerm.getCertificate();
+        String chain = sslTerm.getIntermediateCertificate();
         Response resp;
-        ZeusCertFile zcf = ZeusUtil.getCertFile(key, crt, chain);
-        if (zcf.isError()) {
-            resp = getValidationFaultResponse(zcf.getErrorList());
+        ZeusCrtFile zcf = zeusUtils.buildZeusCrtFileLbassValidation(key, crt, chain);
+        if (zcf.hasFatalErrors()) {
+            resp = getValidationFaultResponse(zcf.getFatalErrorList());
         } else {
-            resp = ResponseFactory.getSuccessResponse("ssltermination was valid", 200);
+            resp = Response.status(200).entity(sslTerm).build();
         }
         return resp;
     }

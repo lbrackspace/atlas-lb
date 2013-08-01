@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import org.apache.commons.math.linear.Array2DRowFieldMatrix;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
 import org.hibernate.Query;
@@ -19,8 +20,9 @@ import org.joda.time.DateTime;
 import org.openstack.atlas.config.HadoopLogsConfigs;
 
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.logs.hibernatetoy.HibernateDbConf;
-import org.openstack.atlas.logs.hibernatetoy.HuApp;
+import org.openstack.atlas.util.itest.hibernate.HibernateDbConf;
+import org.openstack.atlas.util.itest.hibernate.HuApp;
+import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
@@ -30,12 +32,14 @@ public class LzoFakerMain {
     private static final int BUFFSIZE = 512 * 1024;
     private static final long ORD_MILLIS_PER_HOUR = 10000000;
     private static final int REAL_MILLIS_PER_HOUR = 60 * 60 * 1000;
+    public static final String alphaNum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890";
+    public static final Random rnd = new Random();
     private static final String exampleJson = ""
             + "{\n"
             + "  \"dialect\": \"org.hibernate.dialect.MySQL5InnoDBDialect\", \n"
             + "  \"url\": \"jdbc:mysql://mysql-master-n01.ord1.lbaas.rackspace.net:3306/loadbalancing\", \n"
             + "  \"driver\": \"com.mysql.jdbc.Driver\", \n"
-            + "  \"passwd\": \"Eirohr0m\", \n"
+            + "  \"passwd\": \"YourPassword\", \n"
             + "  \"classes\": [\n"
             + "    \"org.openstack.atlas.service.domain.entities.AccessList\", \n"
             + "    \"org.openstack.atlas.service.domain.entities.AccessListType\", \n"
@@ -183,8 +187,9 @@ public class LzoFakerMain {
 
         OutputStream os = StaticFileUtils.openOutputFile(lzoPath, BUFFSIZE);
         CompressionOutputStream cos = codec.createOutputStream(os);
-
-
+        System.out.printf("Building random Strings\n");
+        String[] rndStrings = buildRandomStrings(32, 32768);
+        System.out.printf("Building Random Log Lines\n");
         StringBuilder logBuilder = new StringBuilder(SB_MAX_SIZE);
         for (int i = 0; i < nLines; i++) {
             if (i % 100000 == 0) {
@@ -194,7 +199,8 @@ public class LzoFakerMain {
             String apacheTime = StaticDateTimeUtils.toApacheDateTime(offsetDt);
             LoadBalancerIdAndName lb = lbArray[i % lbArrayLength];
             String vsName = lb.getAccountId() + "_" + lb.getLoadbalancerId();
-            buildFakeLogLine(vsName, apacheTime, logBuilder);
+            String rndString = pickRandomString(rndStrings);
+            buildFakeLogLine(vsName, apacheTime, logBuilder, rndString);
 
             if (logBuilder.length() >= SB_MAX_SIZE) {
                 cos.write(logBuilder.toString().getBytes());
@@ -208,10 +214,23 @@ public class LzoFakerMain {
         StaticFileUtils.close(cos);
     }
 
-    public static void buildFakeLogLine(String lbName, String apacheTime, StringBuilder sb) {
+    public static String[] buildRandomStrings(int nChars, int nGets) {
+        String[] rndStrings = new String[nGets];
+        for (int i = 0; i < nGets; i++) {
+            rndStrings[i] = Debug.buildRandomString(nChars, alphaNum);
+        }
+        return rndStrings;
+    }
+
+    public static String pickRandomString(String[] strings) {
+        return strings[rnd.nextInt(strings.length)];
+    }
+
+    public static void buildFakeLogLine(String lbName, String apacheTime, StringBuilder sb, String rndString) {
         sb.append(lbName).
                 append(" www.refferer.com 127.0.0.1 - - [").append(apacheTime).
-                append("] \"GET /blah/blah?f=u HTTP/1.1\" 200 2769 \"http://www.blah.org/pfft\" \"Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17\" 127.0.0.1:80\n");
+                append("] \"GET /blah/").append(rndString).
+                append("?f=u HTTP/1.1\" 200 2769 \"http://www.blah.org/pfft\" \"Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17\" 127.0.0.1:80\n");
     }
 
     public static List<LoadBalancerIdAndName> getActiveLoadbalancerIdsAndNames(HuApp huApp) {

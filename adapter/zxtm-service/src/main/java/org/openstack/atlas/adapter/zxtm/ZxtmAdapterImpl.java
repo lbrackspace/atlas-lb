@@ -16,8 +16,8 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.ca.StringUtils;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
-import org.openstack.atlas.util.ca.zeus.ZeusUtil;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.openstack.atlas.util.converters.StringConverter;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.springframework.stereotype.Component;
@@ -44,6 +44,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedProto = new VirtualServerRule(XFP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleContentCaching = new VirtualServerRule(CONTENT_CACHING, true, VirtualServerRuleRunFlag.run_every);
+    protected static final ZeusUtils zeusUtil;
+
+    static {
+        zeusUtil = new ZeusUtils();
+    }
 
     @Override
     public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
@@ -913,10 +918,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void updateSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, ZeusSslTermination zeusSslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         final String virtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         final String virtualServerNameNonSecure = ZxtmNameBuilder.genVSName(loadBalancer);
-        ZeusCertFile zeusCertFile = ZeusUtil.getCertFile(zeusSslTermination.getSslTermination().getPrivatekey(), zeusSslTermination.getSslTermination().getCertificate(), zeusSslTermination.getSslTermination().getIntermediateCertificate());
-        if (zeusCertFile.isError()) {
-            String fmt = "ZuesCertFile generation Failure: %s";
-            String errors = StringUtils.joinString(zeusCertFile.getErrorList(), ",");
+
+        String userKey = zeusSslTermination.getSslTermination().getPrivatekey();
+        String userCrt = zeusSslTermination.getSslTermination().getCertificate();
+        String imdCrt = zeusSslTermination.getSslTermination().getIntermediateCertificate();
+        ZeusCrtFile zeusCrtFile = zeusUtil.buildZeusCrtFileLbassValidation(userKey, userCrt, imdCrt);
+        if (zeusCrtFile.hasFatalErrors()) {
+            String fmt = "ZuesertFile generation Failure: %s";
+            String errors = StringUtils.joinString(zeusCrtFile.getFatalErrorList(), ",");
             String msg = String.format(fmt, errors);
             throw new InsufficientRequestException(msg);
         }
@@ -959,8 +968,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             if (zeusSslTermination.getCertIntermediateCert() != null) {
                 LOG.info(String.format("Importing certificate for load balancer: %s", loadBalancer.getId()));
                 CertificateFiles certificateFiles = new CertificateFiles();
-                certificateFiles.setPrivate_key(zeusCertFile.getPrivate_key());
-                certificateFiles.setPublic_cert(zeusCertFile.getPublic_cert());
+                String privKey = zeusCrtFile.getPrivate_key();
+                String pubCrt = zeusCrtFile.getPublic_cert();
+                certificateFiles.setPrivate_key(privKey);
+                certificateFiles.setPublic_cert(pubCrt);
                 certificateCatalogService.importCertificate(new String[]{virtualServerName}, new CertificateFiles[]{certificateFiles});
                 LOG.debug(String.format("Successfully imported certificate for load balancer: %s", loadBalancer.getId()));
             }

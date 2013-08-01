@@ -3,17 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.openstack.atlas</groupId>
-        <artifactId>ca-parent</artifactId>
-        <version>1.19.8-SNAPSHOT</version>
+        <artifactId>atlas-ca-parent</artifactId>
+        <version>1.19.11-SNAPSHOT</version>
     </parent>
-
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-ca-bc</artifactId>
     <packaging>jar</packaging>
-    <name>Atlas :: CA :: BouncyCastle</name>
-    <url>http://maven.apache.org</url>
-
+    <name>Openstack :: Atlas :: CA :: BouncyCastle</name>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -22,11 +19,11 @@
             <scope>compile</scope>
         </dependency>
 
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
-            <version>1.4</version>
-        </dependency>
+    <dependency>
+	<groupId>javax.mail</groupId>
+	<artifactId>mail</artifactId>
+	<version>1.4</version>
+    </dependency>
     </dependencies>
 
     <build>
@@ -43,10 +40,19 @@
                         <debug>true</debug>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <configuration>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                        <finalName>${project.artifactId}-${project.version}-assembly</finalName>
+                        <appendAssemblyId>false</appendAssemblyId>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
-
     <profiles>
         <profile>
             <id>gen-deb-packages</id>
@@ -82,6 +88,4 @@
             </build>
         </profile>
     </profiles>
-
-
 </project>

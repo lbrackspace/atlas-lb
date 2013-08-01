@@ -1,8 +1,8 @@
 package org.bouncycastle.asn1.esf;
 
-import org.bouncycastle.asn1.x509.NoticeReference;
-import org.bouncycastle.asn1.x509.DisplayText;
 import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.x509.DisplayText;
+import org.bouncycastle.asn1.x509.NoticeReference;
 
 import java.util.Enumeration;
 

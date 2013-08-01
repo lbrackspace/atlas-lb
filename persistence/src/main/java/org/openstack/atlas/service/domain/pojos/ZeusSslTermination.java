@@ -1,7 +1,6 @@
 package org.openstack.atlas.service.domain.pojos;
 
 import org.openstack.atlas.service.domain.entities.SslTermination;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
 
 import java.io.Serializable;
 

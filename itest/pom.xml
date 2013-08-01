@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.19.8-SNAPSHOT</version>
+        <version>1.19.11-SNAPSHOT</version>
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
@@ -16,6 +16,8 @@
     <modules>
         <module>snmp-test</module>
         <module>usage-refactor</module>
+        <module>jyson</module>
+        <module>jython-tests</module>
     </modules>
     <build>
          <pluginManagement>

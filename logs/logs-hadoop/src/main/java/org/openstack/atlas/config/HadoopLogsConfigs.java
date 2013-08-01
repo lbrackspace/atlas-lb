@@ -97,10 +97,19 @@ public class HadoopLogsConfigs {
         return sb.toString();
     }
 
+    public static void setHadoopConfiguration(Configuration conf) {
+        hadoopConfiguration = conf;
+    }
+
     public static Configuration getHadoopConfiguration() {
         if (hadoopConfiguration == null) {
             hadoopConfiguration = new Configuration();
             hadoopConfiguration.addResource(new Path(StaticFileUtils.expandUser(hadoopXmlFile)));
+
+            // Disable Speculative Execution
+            hadoopConfiguration.setBoolean("mapred.reduce.tasks.speculative.execution", false);
+            hadoopConfiguration.setBoolean("mapred.map.tasks.speculative.execution", false);
+            // Cause its wastful.
         }
         return hadoopConfiguration;
     }
@@ -165,6 +174,10 @@ public class HadoopLogsConfigs {
 
     public static boolean isJarCopyed() {
         return jarCopyed;
+    }
+
+    public static void markJobsJarAsAlreadyCopied() {
+        jarCopyed = true;
     }
 
     public static void copyJobsJar() throws FileNotFoundException, IOException {

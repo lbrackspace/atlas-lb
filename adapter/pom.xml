@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.19.8-SNAPSHOT</version>
+        <version>1.19.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>atlas-adapter</artifactId>
@@ -17,6 +17,7 @@
         <module>zxtm-service</module>
         <module>zxtm-itest</module>
         <module>stm-itest</module>
+        <module>itest-hibernate-adapter</module>
     </modules>
 
     <!--    <dependencyManagement>

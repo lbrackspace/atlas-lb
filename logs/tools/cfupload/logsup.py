@@ -13,9 +13,25 @@ config.read(os.path.expanduser('~/cfupconfig'))
 
 import pyrax
 import pyrax.exceptions as exc
+import traceback
 
 pyrax.set_setting("identity_type", "rackspace")
 pyrax.set_http_debug(True)
+
+def sortdictlist(dictlist,keys):
+    tmp_row = []
+    for r in dictlist:
+        tkey=[]
+        for k in keys:
+            tkey.append(r[k])
+        tmp_row.append((tuple(tkey),r))
+    tmp_row.sort()
+    return [r[1] for r in tmp_row]
+
+def keygetter(key):
+    def wrapper(entry):
+        return entry[key]
+    return wrapper
 
 def getUser(acctId):
     username = config.get('general', 'b_user')
@@ -37,6 +53,11 @@ def getUser(acctId):
        print 'Error gather 1.1 auth user: STATUS CODE: %s REASON %s ::  ' % (r.status_code, userjson)
        return
 
+def mergvals(dictin):
+    out = []
+    for (k,v) in dictin.iteritems():
+        out.extend(v)
+    return out
 
 def processUsersSplat(**kw):
     print "Args: ", kw
@@ -44,13 +65,13 @@ def processUsersSplat(**kw):
     splats = cfupload.getCfFiles(**kw)[1]
 
     splat_count = 0
-    for k in splats.keys():
-        for splat in splats[k]:
-            print "%i: %s" % (k, splat)
-            splat_count += 1
+    for r in sortdictlist(mergvals(splats),["date","aid","lid"]):
+        print r
+        splat_count += 1
     print 'Spalts count:', splat_count
     if verify(splats):
-        for aid in splats:
+        for aid in sorted(splats.keys()):
+            print "fetching auth data for aid %s"%aid
             userenabled = True
             user = getUser(aid)
             if user is not None:
@@ -71,7 +92,7 @@ def processUsersSplat(**kw):
                       continue
                   return
 
-               for d in splats[aid]:
+               for d in sorted(splats[aid],key=keygetter("date")):
                    fp = d['file_path']
                    lid = d['lid']
                    lname = d['lname']
@@ -112,6 +133,9 @@ def uploadFile(username, userid, userkey, userenabled, lid, lname, fp, date,**kw
         except KeyboardInterrupt:
             print "Skipping this entry"
             time.sleep(1.0)
+        except:
+            print "Unknown Exception caught:", traceback.format_exc()
+            time.sleep(1.0)
 
 def removeLocalFile(fp):
     try:
@@ -147,7 +171,7 @@ def clearDirectories():
 
 
 def genContName(lid, lname, date):
-    return format('lb_%d_%s_%s' % (lid, lname.replace('/', '_'), parseMonthYear(date)))
+    return format('lb_%d_%s_%s' % (lid, lname.replace('/', '_').replace(" ", "_"), parseMonthYear(date)))
 
 
 def genRemoteFileName(lid, lname, date):

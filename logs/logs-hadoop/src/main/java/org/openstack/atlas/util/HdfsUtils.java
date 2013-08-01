@@ -63,6 +63,7 @@ public class HdfsUtils {
     protected FileSystem localFileSystem;
     protected short repCount = 3;
     protected long blockSize = 64 * 1024 * 1024;
+    protected static int recompressBufferSize = 8 * 1024 * 1024;
 
     public HdfsUtils() {
     }
@@ -95,6 +96,20 @@ public class HdfsUtils {
     // For debugging Not used by the Application
     public Map<String, String> getConfigurationMap() {
         return getConfigurationMap(conf);
+    }
+
+    public List<LogReducerOutputValue> filterZipFileInfoList(List<LogReducerOutputValue> valueListIn, Integer accountId, Integer loadbalancerId) {
+        List<LogReducerOutputValue> valueListOut = new ArrayList<LogReducerOutputValue>();
+        for (LogReducerOutputValue val : valueListIn) {
+            if (accountId != null && accountId != val.getAccountId()) {
+                continue;
+            }
+            if (loadbalancerId != null && loadbalancerId != val.getLoadbalancerId()) {
+                continue;
+            }
+            valueListOut.add(val);
+        }
+        return valueListOut;
     }
 
     public List<LogReducerOutputValue> getZipFileInfoList(String reducerOutputDirectory) throws SequenceFileReaderException {
@@ -172,7 +187,7 @@ public class HdfsUtils {
         codec.setConf(codecConf);
         CompressionInputStream cis = codec.createInputStream(lzoInputStream);
         CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
-        StaticFileUtils.copyStreams(cis, cos, ps, bufferSize);
+        StaticFileUtils.copyStreams(cis, cos, ps, recompressBufferSize);
         cis.close();
         cos.close();
     }
@@ -337,13 +352,14 @@ public class HdfsUtils {
 
     public List<Path> listPaths(String inPath, boolean useLocal) throws IOException {
         List<Path> paths = new ArrayList<Path>();
-        FileStatus[] stats = remoteFileSystem.listStatus(new Path(inPath));
+
         FileSystem fs;
         if (useLocal) {
             fs = localFileSystem;
         } else {
             fs = remoteFileSystem;
         }
+        FileStatus[] stats = fs.listStatus(new Path(inPath));
         if (stats == null) {
             throw new IOException(String.format("could not list status for Directory %s", inPath));
         }
@@ -609,6 +625,10 @@ public class HdfsUtils {
             }
         }
         return fileNames;
+    }
+
+    public static String rawPath(FileStatus fileStatus) {
+        return fileStatus.getPath().toUri().getRawPath();
     }
 
     public static Object newUtils(Class utilClass, String user, String... confFiles) throws ReflectionException {

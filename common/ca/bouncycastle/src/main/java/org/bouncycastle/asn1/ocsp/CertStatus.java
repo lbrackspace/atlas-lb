@@ -1,8 +1,8 @@
 package org.bouncycastle.asn1.ocsp;
 
 import org.bouncycastle.asn1.ASN1Choice;
-import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERObject;

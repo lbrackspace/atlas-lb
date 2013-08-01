@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -30,6 +31,7 @@ public class UsageRepository {
     final Log LOG = LogFactory.getLog(UsageRepository.class);
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
+    private final Integer NUM_DAYS_RETENTION = 90;
 
     public List<Usage> getMostRecentUsageForLoadBalancers(Collection<Integer> loadBalancerIds) {
         if (loadBalancerIds == null || loadBalancerIds.isEmpty()) return new ArrayList<Usage>();
@@ -63,6 +65,19 @@ public class UsageRepository {
         }
 
         return rowToUsage(resultList.get(0));
+    }
+
+    public void deleteAllRecordsBeforeOrEqualTo(Calendar time) {
+        Query query = entityManager.createQuery("DELETE Usage u WHERE u.endTime <= :timestamp")
+                .setParameter("timestamp", time, TemporalType.TIMESTAMP);
+        int numRowsDeleted = query.executeUpdate();
+        LOG.info(String.format("Deleted %d rows with endTime before %s", numRowsDeleted, time.getTime()));
+    }
+
+    public void deleteOldRecords() {
+        Calendar deletePoint = Calendar.getInstance();
+        deletePoint.add(Calendar.DATE, -NUM_DAYS_RETENTION);
+        deleteAllRecordsBeforeOrEqualTo(deletePoint);
     }
 
     public void batchCreate(List<Usage> usages) {

@@ -1,5 +1,8 @@
 package org.openstack.atlas.adapter.zxtm;
 
+import org.openstack.atlas.util.ca.primitives.RsaConst;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import com.zxtm.service.client.*;
 import org.apache.axis.types.UnsignedInt;
 import org.junit.Assert;
@@ -17,8 +20,6 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
-import org.openstack.atlas.util.ca.zeus.ZeusUtil;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
@@ -39,6 +40,7 @@ import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTT
 @RunWith(Enclosed.class)
 public class ZxtmAdapterImplTest {
 
+    protected static final ZeusUtils zeusUtils;
     protected static final String testpkcs1 = "-----BEGIN RSA PRIVATE KEY-----\n"
             + "MIICWwIBAAKBgQCV9RAA8bqJ0igreCLb1cAQKlu9Sd/arkX4N42giadMgGkDDH96\n"
             + "nhus2x/Ljh2+I7C/pUuTVA83yRxIE4oc1OYXNsbxNqZhR8rPbeT1l/OJUJR2ohk8\n"
@@ -124,6 +126,10 @@ public class ZxtmAdapterImplTest {
             + "LeZnkJImpkWH4AoCHGtVRs9P4hJpgSLou/bgM2kw/gh5QK5ZyJpTBNCpbmzXv32z\n"
             + "8+ZxXJuXPBYk2O1RnJKCjA==\n"
             + "-----END CERTIFICATE-----\n";
+
+    static {
+        zeusUtils = new ZeusUtils();
+    }
 
     public static class WhenTestingOrderOfZeusApiCalls {
 
@@ -522,10 +528,10 @@ public class ZxtmAdapterImplTest {
             sslTermination.setSecureTrafficOnly(false);
 
             lb.setSslTermination(sslTermination);
-            ZeusCertFile zcf = ZeusUtil.getCertFile(testpkcs8, testCrt, testChain);
+            ZeusCrtFile zcf = zeusUtils.buildZeusCrtFileLbassValidation(testpkcs8, testCrt, testChain);
             String pkcs1 = zcf.getPrivate_key();
-            String errors = StringUtils.joinString(zcf.getErrorList(),",");
-            Assert.assertFalse(errors,zcf.isError());
+            String errors = StringUtils.joinString(zcf.getFatalErrorList(), ",");
+            Assert.assertFalse(errors, zcf.hasFatalErrors());
             ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
             zeusSslTermination.setCertIntermediateCert(testChain);
             zeusSslTermination.setSslTermination(sslTermination);

@@ -3,12 +3,12 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-common</artifactId>
-        <version>1.19.8-SNAPSHOT</version>
+        <version>1.19.11-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-cidr</artifactId>
-    <name>Atlas :: Cidr</name>
+    <name>Openstack :: Atlas :: Cidr</name>
     <url>http://maven.apache.org</url>
     <packaging>jar</packaging>
 

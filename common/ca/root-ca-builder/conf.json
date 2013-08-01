@@ -1,0 +1,9 @@
+{
+  "key_size": 2048, 
+  "key_file": "~/root.key", 
+  "crt_file": "~/root.crt", 
+  "subjname": "CN=RootCa Lbaas Example,OU=Cloud LoadBalancing,O=Rackspace Hosting,L=San Antonio,ST=TX,C=US", 
+  "notbefore": 0.0, 
+  "notafter": 125798400.0
+}
+

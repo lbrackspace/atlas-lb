@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Map;
+import java.util.Random;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
@@ -18,6 +19,7 @@ public class Debug {
 
     private static final String[] binBaseNames = new String[]{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
     private static final int PAGESIZE = 4096;
+    private static final Random rnd = new Random();
 
     public static double getEpochSeconds() {
         long millisLong = System.currentTimeMillis();
@@ -28,6 +30,14 @@ public class Debug {
 
     public static long nowMillis() {
         return System.currentTimeMillis();
+    }
+
+    public static String buildRandomString(int nChars, String alphaNum) {
+        StringBuilder sb = new StringBuilder();
+        for (int j = 0; j < nChars; j++) {
+            sb.append(alphaNum.charAt(rnd.nextInt(alphaNum.length())));
+        }
+        return sb.toString();
     }
 
     public static String findClassPath(String className, ClassLoader classLoader) throws ClassNotFoundException {

@@ -3,22 +3,30 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.openstack.atlas</groupId>
-        <artifactId>ca-parent</artifactId>
-        <version>1.19.8-SNAPSHOT</version>
+        <artifactId>atlas-ca-parent</artifactId>
+        <version>1.19.11-SNAPSHOT</version>
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-ca-rsa</artifactId>
     <packaging>jar</packaging>
-    <name>Atlas :: CA :: RSA</name>
-    <url>http://maven.apache.org</url>
+    <name>Openstack :: Atlas :: CA :: RSA</name>
 
     <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+
+
         <dependency>
             <groupId>org.openstack.atlas</groupId>
             <artifactId>atlas-ca-bc</artifactId>
             <version>${project.version}</version>
         </dependency>
+
     </dependencies>
     <build>
         <defaultGoal>install</defaultGoal>
@@ -33,6 +41,16 @@
                         <target>1.6</target>
                         <optimize>false</optimize>
                         <debug>true</debug>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <configuration>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                        <finalName>${project.artifactId}-${project.version}-assembly</finalName>
+                        <appendAssemblyId>false</appendAssemblyId>
                     </configuration>
                 </plugin>
             </plugins>
@@ -73,4 +91,5 @@
             </build>
         </profile>
     </profiles>
+
 </project>
