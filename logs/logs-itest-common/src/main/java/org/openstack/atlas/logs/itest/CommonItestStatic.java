@@ -9,12 +9,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.joda.time.DateTime;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
-import org.openstack.atlas.logs.hadoop.util.LbLidAidNameContainer;
 import org.openstack.atlas.util.itest.hibernate.HuApp;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 
 public class CommonItestStatic {
+
     public static final String HDUNAME = "HADOOP_USER_NAME";
+
     public static boolean inputStream(BufferedReader stdin, String val) throws IOException {
         String[] resp = stripBlankArgs(stdin.readLine());
         return (resp.length > 0 && resp[0].equalsIgnoreCase(val));
@@ -66,7 +67,16 @@ public class CommonItestStatic {
         return argsOut;
     }
 
-        public static List<LoadBalancerIdAndName> getActiveLoadbalancerIdsAndNames(HuApp huApp) {
+    public static Map<Integer, LoadBalancerIdAndName> getLbIdMap(HuApp huApp) {
+        Map<Integer, LoadBalancerIdAndName> map = new HashMap<Integer, LoadBalancerIdAndName>();
+        for (LoadBalancerIdAndName lb : getActiveLoadbalancerIdsAndNames(huApp)) {
+            int lbId = lb.getLoadbalancerId();
+            map.put(lbId, lb);
+        }
+        return map;
+    }
+
+    public static List<LoadBalancerIdAndName> getActiveLoadbalancerIdsAndNames(HuApp huApp) {
         List<LoadBalancerIdAndName> lbs = new ArrayList<LoadBalancerIdAndName>();
         String queryString = "select l.id,l.accountId,l.name from LoadBalancer l where l.status = 'ACTIVE'";
         huApp.begin();
@@ -84,22 +94,11 @@ public class CommonItestStatic {
         return lbs;
     }
 
-    public static Map<Integer, LbLidAidNameContainer> getLbIdMap(HuApp huApp) {
-        Map<Integer, LbLidAidNameContainer> map = new HashMap<Integer, LbLidAidNameContainer>();
-        for (LoadBalancerIdAndName lb : getActiveLoadbalancerIdsAndNames(huApp)) {
-            LbLidAidNameContainer hlb = new LbLidAidNameContainer();
-            hlb.setName(lb.getName());
-            hlb.setLoadbalancerId(lb.getLoadbalancerId());
-            hlb.setAccountId(lb.getAccountId());
-            map.put(hlb.getLoadbalancerId(), hlb);
-        }
-        return map;
-    }
-    public static Map<Integer, LbLidAidNameContainer> filterLbIdMap(Map<Integer, LbLidAidNameContainer> mapIn, Integer aid, Integer lid) {
-        Map<Integer, LbLidAidNameContainer> mapOut = new HashMap<Integer, LbLidAidNameContainer>();
-        for (Entry<Integer, LbLidAidNameContainer> entry : mapIn.entrySet()) {
+    public static Map<Integer, LoadBalancerIdAndName> filterLbIdMap(Map<Integer, LoadBalancerIdAndName> mapIn, Integer aid, Integer lid) {
+        Map<Integer, LoadBalancerIdAndName> mapOut = new HashMap<Integer, LoadBalancerIdAndName>();
+        for (Entry<Integer, LoadBalancerIdAndName> entry : mapIn.entrySet()) {
             Integer key = entry.getKey();
-            LbLidAidNameContainer val = entry.getValue();
+            LoadBalancerIdAndName val = entry.getValue();
             int vLid = val.getLoadbalancerId();
             int vAid = val.getAccountId();
             if (lid != null && vLid != lid) {
@@ -111,20 +110,5 @@ public class CommonItestStatic {
             mapOut.put(key, val);
         }
         return mapOut;
-    }
-
-    public static List<Long> getHourKeysInRange(long beg, long end) {
-        List<Long> hoursKeysL = new ArrayList<Long>();
-        DateTime currDt = StaticDateTimeUtils.hourKeyToDateTime(beg, true);
-        DateTime endDt = StaticDateTimeUtils.hourKeyToDateTime(end, true);
-        while (true) {
-            if (currDt.isAfter(endDt)) {
-                break;
-            }
-            Long currHour = StaticDateTimeUtils.dateTimeToHourLong(currDt);
-            hoursKeysL.add(currHour);
-            currDt = currDt.plusHours(1);
-        }
-        return hoursKeysL;
     }
 }

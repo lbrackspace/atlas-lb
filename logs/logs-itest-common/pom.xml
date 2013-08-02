@@ -20,11 +20,6 @@
         </dependency>
         <dependency>
             <groupId>org.openstack.atlas</groupId>
-            <artifactId>atlas-data-model</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openstack.atlas</groupId>
             <artifactId>atlas-itest-hibernate-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -110,12 +110,6 @@ public class HdfsCliHelpers {
         return msg;
     }
 
-    public static BufferedReader inputStreamToBufferedReader(InputStream is) {
-        InputStreamReader isr = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(isr, BUFFSIZE);
-        return br;
-    }
-
     public static String confKV(Configuration conf) {
         StringBuilder sb = new StringBuilder();
         List<String> keys = new ArrayList<String>();

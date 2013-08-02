@@ -9,20 +9,21 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.joda.time.DateTime;
 import org.json.simple.parser.ParseException;
 import org.openstack.atlas.config.HadoopLogsConfigs;
-import org.openstack.atlas.logs.hadoop.comparators.LbLidAidNameContainerComparator;
+import org.openstack.atlas.logs.hadoop.comparators.LoadBalancerIdAndNameComparator;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
-import org.openstack.atlas.logs.hadoop.util.LbLidAidNameContainer;
 import org.openstack.atlas.logs.hadoop.util.LogFileNameBuilder;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.itest.hibernate.HibernateDbConf;
@@ -35,8 +36,9 @@ public class CacheFakerMain {
 
     public static final Random rnd = new Random();
     public static final int BUFFSIZE = 1024 * 32;
+    private static Set<String> mkDirSet = new HashSet<String>();
 
-    public static void writeZipFile(String cacheDir, LbLidAidNameContainer lb, int fileHour) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+    public static void writeZipFile(String cacheDir, LoadBalancerIdAndName lb, int fileHour, boolean buildZips) throws FileNotFoundException, UnsupportedEncodingException, IOException {
         int accountId = lb.getAccountId();
         int loadbalancerId = lb.getLoadbalancerId();
         String lbName = lb.getName();
@@ -51,7 +53,15 @@ public class CacheFakerMain {
         String zipDir = StaticFileUtils.mergePathString(cacheDir, fileHourStr, aidStr);
         // Attempt to make the directory
         File zipDirFile = new File(zipDir);
-        zipDirFile.mkdirs();
+
+        if (!mkDirSet.contains(zipDirFile.getAbsolutePath())) {
+            System.out.printf("Creating directory %s ", zipDir);
+            System.out.printf("%s\n", zipDirFile.mkdirs());
+            mkDirSet.add(zipDirFile.getAbsolutePath());
+        }
+        if (!buildZips) {
+            return; // The user just wants directorys
+        }
         String zipFilePath = StaticFileUtils.mergePathString(zipDir, zipName);
         System.out.printf("Opening %s for writing\n", zipFilePath);
         OutputStream os = StaticFileUtils.openOutputFile(zipFilePath);
@@ -69,14 +79,12 @@ public class CacheFakerMain {
         os.close();
     }
 
-
-
     public static void main(String[] args) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException {
         Map<String, String> kwArgs = CommonItestStatic.argMapper(args);
         String[] nonKeywordArgs = CommonItestStatic.stripKwArgs(args);
         if (nonKeywordArgs.length < 2) {
             System.out.printf("Usage is <configFile> <startHour> [stopHour] [outdir=someDir] ");
-            System.out.printf("[aid=SomeAid] [lid=SomeLid] [nrandom=nentries]\n");
+            System.out.printf("[aid=SomeAid] [lid=SomeLid] [dirsonly=<true|false>\n");
             System.out.printf("\n");
             System.out.printf("Create fake zip files for testing the cache reuploader\n");
             System.out.printf("Use the keyword args to limit zips to only the specified account or loadbalancers\n");
@@ -85,8 +93,8 @@ public class CacheFakerMain {
         }
 
         BufferedReader stdin = StaticFileUtils.inputStreamToBufferedReader(System.in, BUFFSIZE);
-        System.out.printf("Press enter to continue\n");
-        stdin.readLine();
+        //System.out.printf("Press enter to continue\n");
+        //stdin.readLine();
 
 
         String jsonConfFileName = StaticFileUtils.expandUser(nonKeywordArgs[0]);
@@ -94,6 +102,13 @@ public class CacheFakerMain {
         long endHour = (nonKeywordArgs.length > 2) ? Long.parseLong(nonKeywordArgs[2]) : begHour;
         Integer aid = (kwArgs.containsKey("aid")) ? Integer.parseInt(kwArgs.get("aid")) : null;
         Integer lid = (kwArgs.containsKey("lid")) ? Integer.parseInt(kwArgs.get("lid")) : null;
+        boolean buildZips = true; // If the user only wants directories only then set build to false
+        if (kwArgs.containsKey("dirsonly")) {
+            String val = kwArgs.get("dirsonly");
+            if (val.equalsIgnoreCase("true")) {
+                buildZips = false;
+            }
+        }
 
         HuApp huApp = new HuApp();
         HibernateDbConf hConf = HibernateDbConf.newHibernateConf(jsonConfFileName);
@@ -101,7 +116,7 @@ public class CacheFakerMain {
         huApp.setDbMap(hConf);
         System.out.printf("Reading LoadBalancers from databases\n");
         double startTime = Debug.getEpochSeconds();
-        Map<Integer, LbLidAidNameContainer> lbMap = CommonItestStatic.getLbIdMap(huApp);
+        Map<Integer, LoadBalancerIdAndName> lbMap = CommonItestStatic.getLbIdMap(huApp);
         lbMap = CommonItestStatic.filterLbIdMap(lbMap, aid, lid);
         double stopTime = Debug.getEpochSeconds();
         int nLbsFound = lbMap.size();
@@ -111,9 +126,9 @@ public class CacheFakerMain {
         if (kwArgs.containsKey("outdir")) {
             outdir = kwArgs.get("outdir");
         }
-        List<LbLidAidNameContainer> lbs = new ArrayList<LbLidAidNameContainer>(lbMap.values());
-        Collections.sort(lbs, new LbLidAidNameContainerComparator());
-        List<Long> hourKeys = CommonItestStatic.getHourKeysInRange(begHour, endHour);
+        List<LoadBalancerIdAndName> lbs = new ArrayList<LoadBalancerIdAndName>(lbMap.values());
+        Collections.sort(lbs, new LoadBalancerIdAndNameComparator());
+        List<Long> hourKeys = StaticLogUtils.getHourKeysInRange(begHour, endHour);
         Collections.sort(hourKeys);
         System.out.printf("Generating zip files for hours: ");
         for (Long hourKey : hourKeys) {
@@ -121,7 +136,7 @@ public class CacheFakerMain {
         }
         System.out.printf("\n");
         System.out.printf("Will be generating zips for:\n");
-        for (LbLidAidNameContainer lb : lbs) {
+        for (LoadBalancerIdAndName lb : lbs) {
             System.out.printf("aid[%8d] lb[%6d] \"%s\"\n", lb.getAccountId(), lb.getLoadbalancerId(), lb.getName());
         }
         long nZips = (long) hourKeys.size() * (long) lbs.size();
@@ -129,9 +144,11 @@ public class CacheFakerMain {
         if (CommonItestStatic.inputStream(stdin, "Y")) {
             System.out.printf("Generating zips:\n");
             for (Long hourKey : hourKeys) {
-                for (LbLidAidNameContainer lb : lbs) {
-                    System.out.printf("Writing file for aid[%8d] lid[%8d]\n", lb.getAccountId(), lb.getLoadbalancerId());
-                    writeZipFile(outdir, lb, hourKey.intValue());
+                for (LoadBalancerIdAndName lb : lbs) {
+                    if (buildZips) {
+                        System.out.printf("Writing file for aid[%8d] lid[%8d]\n", lb.getAccountId(), lb.getLoadbalancerId());
+                    }
+                    writeZipFile(outdir, lb, hourKey.intValue(), buildZips);
                 }
             }
         } else {

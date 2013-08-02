@@ -84,7 +84,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>org.openstack.atlas.logs.itest.ReuploadTestStatic</mainClass>
+                                <mainClass>org.openstack.atlas.logs.itest.ReuploadCli</mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>

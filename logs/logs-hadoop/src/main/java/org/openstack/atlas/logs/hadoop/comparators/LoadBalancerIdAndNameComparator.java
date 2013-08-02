@@ -1,13 +1,12 @@
 package org.openstack.atlas.logs.hadoop.comparators;
 
 import java.util.Comparator;
-import org.openstack.atlas.logs.hadoop.util.LbLidAidNameContainer;
+import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 
-
-public class LbLidAidNameContainerComparator implements Comparator<LbLidAidNameContainer>{
+public class LoadBalancerIdAndNameComparator implements Comparator<LoadBalancerIdAndName> {
 
     @Override
-    public int compare(LbLidAidNameContainer o1, LbLidAidNameContainer o2) {
+    public int compare(LoadBalancerIdAndName o1, LoadBalancerIdAndName o2) {
         if (o1 == null && o2 == null) {
             return 0;
         }

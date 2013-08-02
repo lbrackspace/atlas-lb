@@ -51,7 +51,7 @@ public class HdfsUtils {
     private final Log LOG = LogFactory.getLog(HdfsUtils.class);
     private final VerboseLogger vlog = new VerboseLogger(HdfsUtils.class, VerboseLogger.LogLevel.INFO);
     public static final Pattern sequenceFilePattern = Pattern.compile("^(.*)(part-r-[0-9]+)$");
-    public static final Pattern hdfsZipPattern = Pattern.compile("^(.*)access_log_([0-9]+)_([0-9]{10}).zip$");
+    public static final Pattern hdfsZipPattern = StaticLogUtils.zipLogPattern;
     public static final Pattern hdfsLzoPattern = Pattern.compile("^[0-9]-([0-9]{10})-access_log.aggregated.lzo$");
     public static final Pattern hdfsLzoPatternPre = Pattern.compile("^([0-9]{10})-access_log.aggregated.lzo$");
     public static final Pattern dateHourPattern = Pattern.compile("[0-9]{10}");

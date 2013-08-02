@@ -86,7 +86,7 @@ public class HdfsCli {
         System.setProperty(CommonItestStatic.HDUNAME, user);
         FileSystem lfs = hdfsUtils.getLocalFileSystem();
 
-        BufferedReader stdin = HdfsCliHelpers.inputStreamToBufferedReader(System.in);
+        BufferedReader stdin = StaticFileUtils.inputStreamToBufferedReader(System.in,BUFFER_SIZE);
         System.out.printf("\n");
 
         List<WastedBytesBlock> wastedBlocks = new ArrayList<WastedBytesBlock>();
