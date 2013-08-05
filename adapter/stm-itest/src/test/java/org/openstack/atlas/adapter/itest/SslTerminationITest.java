@@ -436,8 +436,10 @@ public class SslTerminationITest extends STMTestBase {
 
     private void verifyDeleteAccessListWithoutConnectionThrottling() throws Exception {
         verifyAccessListWithSsl();
-        Set<AccessList> deletionList = new HashSet<AccessList>();
-        deletionList.addAll(lb.getAccessLists());
+        List<Integer> deletionList = new ArrayList<Integer>();
+        for (AccessList item : lb.getAccessLists()) {
+            deletionList.add(item.getId());
+        };
         stmAdapter.deleteAccessList(config, lb, deletionList);
         stmClient.getProtection(normalName);
     }
@@ -472,9 +474,10 @@ public class SslTerminationITest extends STMTestBase {
     private void verifyDeleteAccessListWithConnectionThrottling() {
         try {
             verifyAccessListWithSsl();
-
-            Set<AccessList> deletionList = new HashSet<AccessList>();
-            deletionList.addAll(lb.getAccessLists());
+            List<Integer> deletionList = new ArrayList<Integer>();
+            for (AccessList item : lb.getAccessLists()) {
+                deletionList.add(item.getId());
+            }
             stmAdapter.deleteAccessList(config, lb, deletionList);
             Protection protection = stmClient.getProtection(normalName);
             ProtectionProperties properties = protection.getProperties();

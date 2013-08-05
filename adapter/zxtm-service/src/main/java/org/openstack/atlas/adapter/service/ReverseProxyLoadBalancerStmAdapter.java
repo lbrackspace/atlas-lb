@@ -73,7 +73,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException;
 
-    public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Set<AccessList> accessListToDelete)
+    public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> accessListToDelete)
             throws InsufficientRequestException, StmRollBackException;
 
     public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)

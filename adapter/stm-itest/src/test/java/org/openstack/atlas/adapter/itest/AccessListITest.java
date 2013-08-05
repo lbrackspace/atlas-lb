@@ -12,9 +12,7 @@ import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.protection.Protection;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class AccessListITest extends STMTestBase {
 
@@ -203,8 +201,8 @@ public class AccessListITest extends STMTestBase {
     }
 
     public void deleteAccessListItem() {
-        Set<AccessList> deletionItems = new HashSet<AccessList>();
-        deletionItems.add(item2);
+        List<Integer> deletionItems = new ArrayList<Integer>();
+        deletionItems.add(item2.getId());
         try {
             stmAdapter.deleteAccessList(config, lb, deletionItems);
         } catch(Exception e) {
@@ -213,9 +211,9 @@ public class AccessListITest extends STMTestBase {
     }
 
     public void deleteAccessList() {
-        Set<AccessList> deletionItems = new HashSet<AccessList>();
-        deletionItems.add(item1);
-        deletionItems.add(item2);
+        List<Integer> deletionItems = new ArrayList<Integer>();
+        deletionItems.add(item1.getId());
+        deletionItems.add(item2.getId());
         try {
             stmAdapter.deleteAccessList(config, lb, deletionItems);
         } catch(Exception e) {

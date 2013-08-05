@@ -763,9 +763,15 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Set<AccessList> accessListToDelete)
+    public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> accessListToDelete)
                                  throws InsufficientRequestException, StmRollBackException {
-        loadBalancer.getAccessLists().removeAll(accessListToDelete);
+        Set<AccessList> saveItems = new HashSet<AccessList>();
+        for (AccessList item : loadBalancer.getAccessLists()) {
+            if (!accessListToDelete.contains(item.getId())) {
+                saveItems.add(item);
+            }
+        }
+        loadBalancer.setAccessLists(saveItems);
         String name = ZxtmNameBuilder.genVSName(loadBalancer);
         LOG.info(String.format("Deleting Access List on '%s'...", name));
         if (loadBalancer.getConnectionLimit() != null || !loadBalancer.getAccessLists().isEmpty()) {

@@ -6,7 +6,9 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
 import javax.jms.Message;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
@@ -35,7 +37,10 @@ public class DeleteAccessListListener extends BaseListener {
             return;
         }
 
-        Set<AccessList> accessListsToDelete = queueLb.getAccessLists();
+        List<Integer> accessListsToDelete = new ArrayList<Integer>();
+        for (AccessList item : queueLb.getAccessLists()) {
+            accessListsToDelete.add(item.getId());
+        }
 
         try {
             LOG.debug(String.format("Deleting access list for load balancer '%s' in Zeus...", dbLoadBalancer.getId()));
@@ -52,16 +57,18 @@ public class DeleteAccessListListener extends BaseListener {
         }
 
         String atomTitle = "Network Item Successfully Deleted";
-        for (AccessList accessList : accessListsToDelete) {
-            String atomSummary = String.format("Network Item '%d' successfully deleted", accessList.getId());
-            notificationService.saveAccessListEvent(queueLb.getUserName(), queueLb.getAccountId(), queueLb.getId(), accessList.getId(), atomTitle, atomSummary, DELETE_ACCESS_LIST, DELETE, INFO);
+        for (Integer id : accessListsToDelete) {
+            String atomSummary = String.format("Network Item '%d' successfully deleted", id);
+            notificationService.saveAccessListEvent(queueLb.getUserName(), queueLb.getAccountId(), queueLb.getId(), id, atomTitle, atomSummary, DELETE_ACCESS_LIST, DELETE, INFO);
+            LOG.debug(String.format("Removing access list item '%d' from database...", id));
         }
-        for (AccessList accessList : accessListsToDelete) {
-            LOG.debug(String.format("Removing access list item '%d' from database...", accessList.getId()));
+        Set<AccessList> saveList = new HashSet<AccessList>();
+        for (AccessList item : dbLoadBalancer.getAccessLists()) {
+            if (!accessListsToDelete.contains(item.getId())) {
+                saveList.add(item);
+            }
         }
-
-        //Todo:  This is broken, and isn't removing the old items.
-        dbLoadBalancer.getAccessLists().removeAll(accessListsToDelete);
+        dbLoadBalancer.setAccessLists(saveList);
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);
 

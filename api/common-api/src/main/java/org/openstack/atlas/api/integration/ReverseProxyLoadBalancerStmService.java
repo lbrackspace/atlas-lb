@@ -36,7 +36,7 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void addVirtualIps(Integer id, Integer accountId, LoadBalancer loadBalancer) throws Exception;
 
-    void deleteAccessList(LoadBalancer lb, Set<AccessList> accessListToDelete) throws Exception;
+    void deleteAccessList(LoadBalancer lb, List<Integer> accessListToDelete) throws Exception;
 
     void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
 

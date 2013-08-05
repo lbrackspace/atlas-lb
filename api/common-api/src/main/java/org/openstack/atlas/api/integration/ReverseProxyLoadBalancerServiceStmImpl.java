@@ -189,7 +189,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteAccessList(LoadBalancer lb, Set<AccessList> accessListToDelete) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void deleteAccessList(LoadBalancer lb, List<Integer> accessListToDelete) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
             reverseProxyLoadBalancerStmAdapter.deleteAccessList(config, lb, accessListToDelete);

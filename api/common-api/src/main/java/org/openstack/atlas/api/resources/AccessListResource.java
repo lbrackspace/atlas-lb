@@ -4,8 +4,10 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
 import org.openstack.atlas.service.domain.entities.AccountLimitType;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.api.helpers.ResponseFactory;
@@ -84,6 +86,7 @@ public class AccessListResource extends CommonDependencyProvider {
     public Response deleteAccessList(@QueryParam("id") List<Integer> networkItemIds) throws EntityNotFoundException {
         LoadBalancer returnLB = new LoadBalancer();
         Integer size = accountLimitService.getLimit(accountId, AccountLimitType.BATCH_DELETE_LIMIT);
+        boolean isLbEditable;
 
         try {
             returnLB.setId(loadBalancerId);
@@ -91,6 +94,11 @@ public class AccessListResource extends CommonDependencyProvider {
             if (requestHeaders != null) {
                 returnLB.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
             }
+            isLbEditable = loadBalancerService.testAndSetStatusPending(accountId, loadBalancerId);
+            if (!isLbEditable) {
+                throw new ImmutableEntityException("LoadBalancer is not ACTIVE");
+            }
+            loadBalancerService.setStatus(accountId, loadBalancerId, LoadBalancerStatus.PENDING_UPDATE);
             if (networkItemIds.isEmpty()) {
                 returnLB.setAccessLists(new HashSet<org.openstack.atlas.service.domain.entities.AccessList>(
                         accessListService.getAccessListByAccountIdLoadBalancerId(accountId, loadBalancerId)));
