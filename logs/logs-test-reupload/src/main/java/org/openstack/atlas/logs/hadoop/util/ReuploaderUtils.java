@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import org.apache.commons.logging.Log;
@@ -21,12 +23,56 @@ import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 public class ReuploaderUtils {
 
+    private static final long MILLIS_PER_SEC = 1000L;
+    private static final Map<String, DateTime> lockedFiles;
     private String cacheDir;
     private Map<Integer, LoadBalancerIdAndName> loadBalancerIdMap;
     private static final VerboseLogger vlog = new VerboseLogger(ReuploaderUtils.class, VerboseLogger.LogLevel.INFO);
     private static final Log LOG = LogFactory.getLog(ReuploaderUtils.class);
     private static final Comparator<CacheZipInfo> defaultZipInfoComparator = new CacheZipInfo.ZipComparator();
     private static final Comparator<CacheZipDirInfo> defaultZipDirInfoComparator = new CacheZipDirInfo.HourAccountComparator();
+
+    static {
+        lockedFiles = new HashMap<String, DateTime>();
+    }
+
+    public static void clearOldLocks(int secs) {
+        DateTime expireTime = StaticDateTimeUtils.nowDateTime(true).minusSeconds(secs);
+        synchronized (lockedFiles) {
+            List<String> fileNames = new ArrayList<String>(lockedFiles.keySet());
+            for (String fileName : fileNames) {
+                if (expireTime.isAfter(lockedFiles.get(fileName))) {
+                    lockedFiles.remove(fileName);
+                }
+            }
+        }
+    }
+
+    public static boolean addLock(String fileName) {
+        DateTime now = StaticDateTimeUtils.nowDateTime(true);
+        boolean locked;
+        synchronized (lockedFiles) {
+            if (lockedFiles.containsKey(fileName)) {
+                return false;
+            }
+            lockedFiles.put(fileName, now);
+            return true;
+        }
+    }
+
+    public static String showLocks() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("lockedFiles{");
+        synchronized (lockedFiles) {
+            for (Entry<String, DateTime> lockEntry : lockedFiles.entrySet()) {
+                sb.append("{").append(lockEntry.getKey()).
+                        append(",").append(lockEntry.getValue()).
+                        append("},");
+            }
+            sb.append("}");
+        }
+        return sb.toString();
+    }
 
     public ReuploaderUtils(String cacheDir, Map<Integer, LoadBalancerIdAndName> loadBalancerIdMap) {
         this.cacheDir = cacheDir;

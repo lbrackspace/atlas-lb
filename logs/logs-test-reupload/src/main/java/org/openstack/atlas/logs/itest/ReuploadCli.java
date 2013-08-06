@@ -76,8 +76,9 @@ public class ReuploadCli {
         System.out.printf("Useing db config %s\n", hConf.toString());
         huApp.setDbMap(hConf);
         System.out.printf("Reading LoadBalancers from databases\n");
-        lbMap = new HashMap();
+        lbMap = CommonItestStatic.getLbIdMap(huApp);
         System.out.printf("HadoopLogsConfig=%s\n", HadoopLogsConfigs.staticToString());
+
         ru = new ReuploaderUtils(HadoopLogsConfigs.getCacheDir(), lbMap);
 
         ziComp = new CacheZipInfo.ZipComparator();
@@ -110,6 +111,23 @@ public class ReuploadCli {
                     System.out.printf("clearDirs <minusHours>    #Remove any empty directories\n");
                     System.out.printf("delDir <path> #Delete directory if its empty\n");
                     System.out.printf("utc [minusHours] #Get the time stamp in utc for the hour Key that clearDirs would scan\n");
+                    System.out.printf("addLock <fileName> #Test the file locker\n");
+                    System.out.printf("showLocks #Show the current file locks\n");
+                    System.out.printf("clearOldLocks <secs> #Test the lock expiration counter\n");
+                } else if (cmd.equals("addLock") && args.length >= 2) {
+                    String fileName = args[1];
+                    System.out.printf("Locking file %s = ", fileName);
+                    System.out.flush();
+                    System.out.printf("%s\n", ReuploaderUtils.addLock(fileName));
+
+                } else if (cmd.equals("clearOldLocks") && args.length >= 2) {
+                    System.out.printf("Clearing locks older then %s\n", args[1]);
+                    int secs = Integer.parseInt(args[1]);
+                    ReuploaderUtils.clearOldLocks(secs);
+                } else if (cmd.equals("showLocks")) {
+                    System.out.printf("Locks = ");
+                    System.out.flush();
+                    System.out.printf("%s\n", ReuploaderUtils.showLocks());
                 } else if (cmd.equals("delDir") && args.length >= 2) {
                     delDir(args[1]);
                 } else if (cmd.equals("clearDirs") && args.length >= 2) {

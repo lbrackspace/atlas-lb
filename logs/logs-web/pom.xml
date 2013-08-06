@@ -25,6 +25,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-logs-archiver-clients</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.openstack.client.keystone</groupId>
             <artifactId>java-keystone</artifactId>
             <version>1.2</version>

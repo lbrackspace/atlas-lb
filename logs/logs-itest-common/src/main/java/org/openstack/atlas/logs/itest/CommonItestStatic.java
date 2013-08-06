@@ -69,16 +69,16 @@ public class CommonItestStatic {
 
     public static Map<Integer, LoadBalancerIdAndName> getLbIdMap(HuApp huApp) {
         Map<Integer, LoadBalancerIdAndName> map = new HashMap<Integer, LoadBalancerIdAndName>();
-        for (LoadBalancerIdAndName lb : getActiveLoadbalancerIdsAndNames(huApp)) {
+        for (LoadBalancerIdAndName lb : getAllLoadbalancerIdsAndNames(huApp)) {
             int lbId = lb.getLoadbalancerId();
             map.put(lbId, lb);
         }
         return map;
     }
 
-    public static List<LoadBalancerIdAndName> getActiveLoadbalancerIdsAndNames(HuApp huApp) {
+    public static List<LoadBalancerIdAndName> getAllLoadbalancerIdsAndNames(HuApp huApp) {
         List<LoadBalancerIdAndName> lbs = new ArrayList<LoadBalancerIdAndName>();
-        String queryString = "select l.id,l.accountId,l.name from LoadBalancer l where l.status = 'ACTIVE'";
+        String queryString = "select l.id,l.accountId,l.name from LoadBalancer l";
         huApp.begin();
         List rows = huApp.getList(queryString);
         huApp.commit();
