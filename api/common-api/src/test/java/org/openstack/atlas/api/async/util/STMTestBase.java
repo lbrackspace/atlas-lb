@@ -100,6 +100,7 @@ public class STMTestBase {
         vip1.setIpAddress("10.69.0.59");
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
         loadBalancerJoinVip.setVirtualIp(vip1);
+        loadBalancerJoinVip.setId(new LoadBalancerJoinVip.Id(TEST_LOADBALANCER_ID, 10));
         vipList.add(loadBalancerJoinVip);
 
         Set<Node> nodeList = new HashSet<Node>();

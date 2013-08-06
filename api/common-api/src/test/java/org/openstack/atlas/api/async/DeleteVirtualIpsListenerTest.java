@@ -68,7 +68,6 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         ACCOUNT_ID = lb.getAccountId();
         lb.setUserName(USERNAME);
         vipIdsToDelete.add(10);
-        vipIdsToDelete.add(15);
         deleteVirtualIpsListener = new DeleteVirtualIpsListener();
         deleteVirtualIpsListener.setLoadBalancerService(loadBalancerService);
         deleteVirtualIpsListener.setNotificationService(notificationService);
@@ -100,7 +99,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         verify(usageEventHelper).processUsageEvent(eq(lb), eq(UsageEvent.DELETE_VIRTUAL_IP), Matchers.any(Calendar.class));
         verify(usageEventCollection).collectUsageAndProcessUsageRecords(eq(lb), eq(UsageEvent.DELETE_VIRTUAL_IP), Matchers.any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
-        verify(notificationService, times(2)).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
+        verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
     }
 
     @Test
@@ -116,7 +115,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         deleteVirtualIpsListener.doOnMessage(objectMessage);
 
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
-        verify(notificationService, times(2)).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 
     @Test
@@ -135,7 +134,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         verify(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
-        verify(notificationService, times(2)).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 
     @Ignore //This test is for testing a catch block that is currently unreachable... When that is fixed, revisit.
@@ -156,7 +155,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         verify(virtualIpService).removeVipsFromLoadBalancer(lb, vipIdsToDelete);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.DATABASE_FAILURE.name()), anyString());
-        verify(notificationService, times(2)).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ERROR);
     }
 }

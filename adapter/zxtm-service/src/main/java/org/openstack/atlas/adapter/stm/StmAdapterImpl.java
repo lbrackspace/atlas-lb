@@ -471,9 +471,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         if (!jvipsToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVipSet().removeAll(jvipsToRemove);
         if (!jvips6ToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVip6Set().removeAll(jvips6ToRemove);
+        translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+        // After translating, we need to add the vips back into the LB object so that the Listener can properly remove them from the DB
+        if (!jvipsToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVipSet().addAll(jvipsToRemove);
+        if (!jvips6ToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVip6Set().addAll(jvips6ToRemove);
 
         String vipsToRemove = StringUtilities.DelimitString(vipIds, ",");
-        translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
         Map<String, TrafficIp> removeTigMap = translator.getcTrafficIpGroups();
 
         Set<String> tigsToRemove = new HashSet<String>(curTigMap.keySet());
@@ -764,7 +767,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void deleteAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> accessListToDelete)
-                                 throws InsufficientRequestException, StmRollBackException {
+            throws InsufficientRequestException, StmRollBackException {
         Set<AccessList> saveItems = new HashSet<AccessList>();
         for (AccessList item : loadBalancer.getAccessLists()) {
             if (!accessListToDelete.contains(item.getId())) {
