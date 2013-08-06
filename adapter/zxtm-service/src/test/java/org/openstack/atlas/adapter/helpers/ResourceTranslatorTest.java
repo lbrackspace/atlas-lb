@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
@@ -182,7 +183,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(log);
             Assert.assertEquals(logFormat, log.getFormat());
             Assert.assertTrue(cacheEnabled);
-            Assert.assertEquals(lb.getProtocol().name(), createdBasic.getProtocol());
+            Assert.assertEquals(ZxtmConversionUtils.mapProtocol(lb.getProtocol()).getValue(), createdBasic.getProtocol());
             Assert.assertEquals(lb.getPort(), createdBasic.getPort());
             Assert.assertEquals(vsName, createdBasic.getPool());
             Assert.assertTrue(createdBasic.getEnabled());

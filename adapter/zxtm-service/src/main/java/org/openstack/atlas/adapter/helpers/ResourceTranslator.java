@@ -3,6 +3,7 @@ package org.openstack.atlas.adapter.helpers;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
@@ -88,7 +89,7 @@ public class ResourceTranslator {
         }
 
         basic.setPool(ZxtmNameBuilder.genVSName(loadBalancer));
-        basic.setProtocol(loadBalancer.getProtocol().name());
+        basic.setProtocol(ZxtmConversionUtils.mapProtocol(loadBalancer.getProtocol()).getValue());
 
         //protection class settings
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
