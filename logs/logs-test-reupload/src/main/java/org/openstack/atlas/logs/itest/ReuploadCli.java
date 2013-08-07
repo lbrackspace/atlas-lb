@@ -15,9 +15,11 @@ import org.joda.time.DateTime;
 import org.json.simple.parser.ParseException;
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.config.LbLogsConfiguration;
+import org.openstack.atlas.exception.AuthException;
 import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
 import org.openstack.atlas.logs.hadoop.util.CacheZipDirInfo;
 import org.openstack.atlas.logs.hadoop.util.CacheZipInfo;
+import org.openstack.atlas.logs.hadoop.util.ReuploaderThread;
 import org.openstack.atlas.logs.hadoop.util.ReuploaderUtils;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.util.debug.Debug;
@@ -41,7 +43,7 @@ public class ReuploadCli {
     private Comparator<CacheZipInfo> ziComp;
     private Comparator<CacheZipDirInfo> zidComp;
 
-    public void run(String[] argv) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException {
+    public void run(String[] argv) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException, AuthException {
         if (argv.length < 1) {
             System.out.printf("usage is <conf.json> [hadoop-logs.conf]\n");
             System.out.printf("Externally test the reuploader code for CloudFiles\n");
@@ -50,7 +52,7 @@ public class ReuploadCli {
             System.out.printf("will be deduced from the %s file\n", DEFAULT_HADOOP_CONF_FILE);
             return;
         }
-
+        List<ReuploaderThread> uploaders = new ArrayList<ReuploaderThread>();
         BufferedReader stdin = StaticFileUtils.inputStreamToBufferedReader(System.in, BUFFSIZE);
         //System.out.printf("Press enter to continue\n");
         //stdin.readLine();
@@ -114,6 +116,23 @@ public class ReuploadCli {
                     System.out.printf("addLock <fileName> #Test the file locker\n");
                     System.out.printf("showLocks #Show the current file locks\n");
                     System.out.printf("clearOldLocks <secs> #Test the lock expiration counter\n");
+                    System.out.printf("ru #run the uploader thread\n");
+                    System.out.printf("joinThreads #Join reuploader threads\n");
+
+                } else if (cmd.equals("ru")) {
+                    System.out.printf("Spinning up new uploader thread\n");
+                    ReuploaderThread uploader = new ReuploaderThread(new ReuploaderUtils(HadoopLogsConfigs.getCacheDir(), lbMap));
+                    uploader.start();
+                    uploaders.add(uploader);
+
+                } else if (cmd.equals("joinThreads")) {
+                    int nThreads = uploaders.size();
+                    System.out.printf("Joining %d threads\n", nThreads);
+                    for (int i = 0; i < uploaders.size(); i++) {
+                        System.out.printf("Joining %d of %d threads\n", i, nThreads);
+                        uploaders.get(i).join();
+                    }
+                    uploaders = new ArrayList<ReuploaderThread>();
                 } else if (cmd.equals("addLock") && args.length >= 2) {
                     String fileName = args[1];
                     System.out.printf("Locking file %s = ", fileName);
@@ -125,13 +144,12 @@ public class ReuploadCli {
                     int secs = Integer.parseInt(args[1]);
                     ReuploaderUtils.clearOldLocks(secs);
                 } else if (cmd.equals("showLocks")) {
-                    System.out.printf("Locks = ");
-                    System.out.flush();
-                    System.out.printf("%s\n", ReuploaderUtils.showLocks());
+                    showLocks();
                 } else if (cmd.equals("delDir") && args.length >= 2) {
                     delDir(args[1]);
                 } else if (cmd.equals("clearDirs") && args.length >= 2) {
                     int minusHours;
+                    System.out.printf("Removing empty directories\n");
                     try {
                         minusHours = Integer.parseInt(args[1]);
                         clearDirs(minusHours);
@@ -272,12 +290,18 @@ public class ReuploadCli {
         ru.clearDirs(minusHours);
     }
 
-    public static void main(String[] args) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException {
-        ReuploadCli cli = new ReuploadCli();
-        cli.run(args);
-    }
-
     private void delDir(String path) {
         ReuploaderUtils.deleteIfDirectoryIsEmpty(path);
+    }
+
+    private void showLocks() {
+        System.out.printf("Locks = ");
+        System.out.flush();
+        System.out.printf("%s\n", ReuploaderUtils.showLocks());
+    }
+
+    public static void main(String[] args) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException, AuthException {
+        ReuploadCli cli = new ReuploadCli();
+        cli.run(args);
     }
 }

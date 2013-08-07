@@ -4,59 +4,11 @@ import java.util.Comparator;
 
 public class CacheZipInfo {
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final CacheZipInfo other = (CacheZipInfo) obj;
-        if (this.loadbalancerId != other.loadbalancerId) {
-            return false;
-        }
-        if (this.accountId != other.accountId) {
-            return false;
-        }
-        if (this.hourKey != other.hourKey) {
-            return false;
-        }
-        if (this.fileSize != other.fileSize) {
-            return false;
-        }
-        if ((this.zipFile == null) ? (other.zipFile != null) : !this.zipFile.equals(other.zipFile)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 41 * hash + this.loadbalancerId;
-        hash = 41 * hash + this.accountId;
-        hash = 41 * hash + (int) (this.hourKey ^ (this.hourKey >>> 32));
-        hash = 41 * hash + (int) (this.fileSize ^ (this.fileSize >>> 32));
-        hash = 41 * hash + (this.zipFile != null ? this.zipFile.hashCode() : 0);
-        return hash;
-    }
-
     private int loadbalancerId = 0;
     private int accountId = 0;
     private long hourKey = 0;
     private long fileSize = 0;
     private String zipFile = null;
-
-    @Override
-    public String toString() {
-        return "{"
-                + "loadbalancerId=" + loadbalancerId
-                + ", accountId=" + accountId
-                + ", hourKey=" + hourKey
-                + ", zipFile=" + zipFile
-                + "}";
-    }
 
     public CacheZipInfo() {
         loadbalancerId = 0;
@@ -181,5 +133,53 @@ public class CacheZipInfo {
             }
             return 0;
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CacheZipInfo other = (CacheZipInfo) obj;
+        if (this.loadbalancerId != other.loadbalancerId) {
+            return false;
+        }
+        if (this.accountId != other.accountId) {
+            return false;
+        }
+        if (this.hourKey != other.hourKey) {
+            return false;
+        }
+        if (this.fileSize != other.fileSize) {
+            return false;
+        }
+        if ((this.zipFile == null) ? (other.zipFile != null) : !this.zipFile.equals(other.zipFile)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + this.loadbalancerId;
+        hash = 41 * hash + this.accountId;
+        hash = 41 * hash + (int) (this.hourKey ^ (this.hourKey >>> 32));
+        hash = 41 * hash + (int) (this.fileSize ^ (this.fileSize >>> 32));
+        hash = 41 * hash + (this.zipFile != null ? this.zipFile.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "{"
+                + "loadbalancerId=" + loadbalancerId
+                + ", accountId=" + accountId
+                + ", hourKey=" + hourKey
+                + ", zipFile=" + zipFile
+                + "}";
     }
 }

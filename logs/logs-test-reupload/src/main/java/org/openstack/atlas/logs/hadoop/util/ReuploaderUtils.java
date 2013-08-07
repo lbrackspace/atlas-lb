@@ -6,24 +6,29 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Matcher;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
+import org.openstack.atlas.auth.AuthService;
+import org.openstack.atlas.auth.AuthServiceImpl;
+import org.openstack.atlas.cloudfiles.CloudFilesDao;
+import org.openstack.atlas.cloudfiles.CloudFilesDaoImpl;
+import org.openstack.atlas.exception.AuthException;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.util.common.VerboseLogger;
+import org.openstack.atlas.util.config.LbConfiguration;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 public class ReuploaderUtils {
 
-    private static final long MILLIS_PER_SEC = 1000L;
+    private static final int FileLockTTL = 2 * 60 * 60;
+    private static final int hoursToStartOn = 0;
     private static final Map<String, DateTime> lockedFiles;
     private String cacheDir;
     private Map<Integer, LoadBalancerIdAndName> loadBalancerIdMap;
@@ -31,9 +36,19 @@ public class ReuploaderUtils {
     private static final Log LOG = LogFactory.getLog(ReuploaderUtils.class);
     private static final Comparator<CacheZipInfo> defaultZipInfoComparator = new CacheZipInfo.ZipComparator();
     private static final Comparator<CacheZipDirInfo> defaultZipDirInfoComparator = new CacheZipDirInfo.HourAccountComparator();
+    private AuthService authService;
+    private CloudFilesDao cloudFilesDao;
 
     static {
         lockedFiles = new HashMap<String, DateTime>();
+    }
+
+    public ReuploaderUtils(String cacheDir, Map<Integer, LoadBalancerIdAndName> loadBalancerIdMap) throws AuthException {
+        this.cacheDir = cacheDir;
+        this.loadBalancerIdMap = loadBalancerIdMap;
+        this.authService = new AuthServiceImpl(new LbConfiguration());
+        this.cloudFilesDao = new CloudFilesDaoImpl();
+        clearOldLocks(FileLockTTL);
     }
 
     public static void clearOldLocks(int secs) {
@@ -45,6 +60,12 @@ public class ReuploaderUtils {
                     lockedFiles.remove(fileName);
                 }
             }
+        }
+    }
+
+    public static void removeLock(String fileName) {
+        synchronized (lockedFiles) {
+            lockedFiles.remove(fileName);
         }
     }
 
@@ -74,9 +95,51 @@ public class ReuploaderUtils {
         return sb.toString();
     }
 
-    public ReuploaderUtils(String cacheDir, Map<Integer, LoadBalancerIdAndName> loadBalancerIdMap) {
-        this.cacheDir = cacheDir;
-        this.loadBalancerIdMap = loadBalancerIdMap;
+    public void reuploadFiles() {
+        List<CacheZipDirInfo> cacheZipDirInfoList = getLocalZipDirInfo(getCurrentHourKeyMinusHours(hoursToStartOn));
+        List<CacheZipInfo> zipsList = new ArrayList<CacheZipInfo>();
+        for (CacheZipDirInfo cacheZipDirInfo : cacheZipDirInfoList) {
+            zipsList.addAll(cacheZipDirInfo.getZips());
+        }
+        // Sort by date,accountId, and lastly Loadbalancer Id.
+        Collections.sort(zipsList, new CacheZipInfo.ZipComparator());
+        int currAccountId = -1;
+        LoadBalancerIdAndName lb;
+
+        for (CacheZipInfo zipFile : zipsList) {
+            // Try to lock the file otherwise continue to the next;
+
+            if (!addLock(zipFile.getZipFile())) {
+                LOG.warn(String.format("%s: Skipping file %s as its locked already", Debug.threadName(), zipFile.getZipFile()));
+                continue; // 
+            }
+            if (!loadBalancerIdMap.containsKey(zipFile.getLoadbalancerId())) {
+                removeLock(zipFile.getZipFile());
+                // this file didn't map so throw it out.
+                LOG.warn(String.format("%s:coulden't map file %s to a loadbalancer. :(", Debug.threadName(), zipFile.getZipFile()));
+                continue;
+            }
+            try {
+                lb = loadBalancerIdMap.get(zipFile.getLoadbalancerId());
+                String containerName = LogFileNameBuilder.getContainerName(Integer.toString(lb.getLoadbalancerId()), lb.getName(), Long.toString(zipFile.getHourKey()));
+                String remoteFileName = LogFileNameBuilder.getRemoteFileName(Integer.toString(lb.getLoadbalancerId()), lb.getName(), Long.toString(zipFile.getHourKey()));
+                LOG.info(String.format("%s:Sending file %s to [%s]:%s %d bytes", Debug.threadName(), zipFile.getZipFile(), containerName, remoteFileName, zipFile.getFileSize()));
+                if (!new File(zipFile.getZipFile()).canRead()) {
+                    LOG.warn(String.format("%s: Coulden't read file %s perhaps its already sent", Debug.threadName(), zipFile.getZipFile()));
+                    lockedFiles.remove(zipFile.getZipFile());
+                    continue;
+                }
+                cloudFilesDao.uploadLocalFile(authService.getUser(Integer.toString(zipFile.getAccountId())), containerName, zipFile.getZipFile(), remoteFileName);
+                // Delete the file now.
+                if (!new File(zipFile.getZipFile()).delete()) {
+                    LOG.error(String.format("%s:Error deleting file %s", Debug.threadName(), zipFile.getZipFile()));
+                }
+                removeLock(zipFile.getZipFile());
+            } catch (Exception ex) {
+                LOG.error(String.format("%s:Error uploading file %s :(", Debug.threadName(), zipFile.getZipFile()), ex);
+                removeLock(zipFile.getZipFile());
+            }
+        }
     }
 
     public List<CacheZipDirInfo> getLocalZipDirInfo(long endHour) {
@@ -88,35 +151,37 @@ public class ReuploaderUtils {
         return StaticDateTimeUtils.dateTimeToHourLong(dt);
     }
 
-    public static void deleteIfDirectoryIsEmpty(String path) {
+    public static boolean deleteIfDirectoryIsEmpty(String path) {
         File[] subFiles = null;
         File file = new File(path);
         try {
 
             if (!file.isDirectory()) {
-                return; // This isn't even a directory lets skip it\n"
+                return false; // This isn't even a directory lets skip it\n"
             }
             subFiles = file.listFiles();
             if (subFiles == null) {
                 LOG.warn(String.format("Could not determine if directory %s was empty. new File(%s).listFiles() returned null", path));
-                return;
+                return false;
             }
         } catch (Exception ex) {
             LOG.warn(String.format("Could not determine if directory %s was empty: Exception ex", path, Debug.getExtendedStackTrace(ex)), ex);
-            return;
+            return false;
         }
 
         try {
             if (subFiles.length <= 0) { // If the directories empty then try to delete it
                 if (!file.delete()) {
                     throw new IOException();
+                } else {
+                    return true;
                 }
             }
         } catch (Exception ex) {
             LOG.warn(String.format("Could not delete empty directory %s", path), ex);
-            return;
-        }
 
+        }
+        return false;
     }
 
     public void clearDirs(int minusHours) {
@@ -126,7 +191,7 @@ public class ReuploaderUtils {
     public static void clearDirs(String cacheDir, int minusHours) {
         long stopHourKey = getCurrentHourKeyMinusHours(minusHours);
         // First pass clear the empty zip directories
-
+        int nCleared = 0;
         List<Long> hourKeys = new ArrayList<Long>();
         for (Long hourKey : listHourDirectories(cacheDir)) {
             if (hourKey > stopHourKey) {
@@ -141,15 +206,20 @@ public class ReuploaderUtils {
             Collections.sort(accountKeys);
             for (Long accountKey : accountKeys) {
                 String zipDirPath = StaticFileUtils.mergePathString(cacheDir, hourKey.toString(), accountKey.toString());
-                deleteIfDirectoryIsEmpty(zipDirPath);
+                if (deleteIfDirectoryIsEmpty(zipDirPath)) {
+                    nCleared++;
+                }
             }
         }
 
         // Second pass delete the empty hour directories
         for (Long hourKey : hourKeys) {
             String hourKeyDirPath = StaticFileUtils.mergePathString(cacheDir, hourKey.toString());
-            deleteIfDirectoryIsEmpty(hourKeyDirPath);
+            if (deleteIfDirectoryIsEmpty(hourKeyDirPath)) {
+                nCleared++;
+            }
         }
+        LOG.info(String.format("Cleared %d empty directories", nCleared));
     }
 
     public static List<CacheZipDirInfo> getLocalCacheZipDirInfo(String cacheDir, long endHour) {
@@ -209,10 +279,12 @@ public class ReuploaderUtils {
                 zipMatcher.reset(zipName);
                 if (zipMatcher.find()) {
                     String loadBalancerIdStr = zipMatcher.group(2);
-                    String zipPath = StaticFileUtils.mergePathString(cacheDir, Long.toString(hourKey), Integer.toString(accountId));
+                    String zipPath = StaticFileUtils.mergePathString(cacheDir, Long.toString(hourKey), Integer.toString(accountId), zipName);
                     zipInfo.setLoadbalancerId(Integer.parseInt(loadBalancerIdStr));
                     zipInfo.setFileSize(zipFile.length());
                     zipInfo.setZipFile(zipPath);
+                    zipInfo.setAccountId(accountId);
+                    zipInfo.setHourKey(hourKey);
                 }
             } catch (Exception ex) {
                 String msg = String.format("unable to convert zip file into LocalCacheZipInfo: Exception %s", Debug.getExtendedStackTrace(ex));

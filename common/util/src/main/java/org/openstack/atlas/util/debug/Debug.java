@@ -311,6 +311,10 @@ public class Debug {
         return prog;
     }
 
+    public static String threadName() {
+        return Thread.currentThread().getName();
+    }
+
     public static void nop() {
     }
 }

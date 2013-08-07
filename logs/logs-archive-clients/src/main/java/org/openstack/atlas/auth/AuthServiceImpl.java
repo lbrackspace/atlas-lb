@@ -8,6 +8,8 @@ import org.openstack.client.keystone.KeyStoneAdminClient;
 import org.openstack.client.keystone.KeyStoneException;
 import org.openstack.client.keystone.user.User;
 
+import org.openstack.atlas.config.LbLogsConfiguration;
+
 public class AuthServiceImpl implements AuthService {
 
     private static final Logger LOG = Logger.getLogger(AuthServiceImpl.class);
