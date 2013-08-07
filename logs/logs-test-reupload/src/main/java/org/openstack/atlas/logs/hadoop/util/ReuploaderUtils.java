@@ -15,12 +15,13 @@ import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.openstack.atlas.auth.AuthService;
 import org.openstack.atlas.auth.AuthServiceImpl;
+import org.openstack.atlas.auth.AuthUser;
 import org.openstack.atlas.cloudfiles.CloudFilesDao;
 import org.openstack.atlas.cloudfiles.CloudFilesDaoImpl;
 import org.openstack.atlas.exception.AuthException;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.util.common.VerboseLogger;
-import org.openstack.atlas.util.config.LbConfiguration;
+import org.openstack.atlas.config.LbLogsConfiguration;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
@@ -46,7 +47,7 @@ public class ReuploaderUtils {
     public ReuploaderUtils(String cacheDir, Map<Integer, LoadBalancerIdAndName> loadBalancerIdMap) throws AuthException {
         this.cacheDir = cacheDir;
         this.loadBalancerIdMap = loadBalancerIdMap;
-        this.authService = new AuthServiceImpl(new LbConfiguration());
+        this.authService = new AuthServiceImpl(new LbLogsConfiguration());
         this.cloudFilesDao = new CloudFilesDaoImpl();
         clearOldLocks(FileLockTTL);
     }
@@ -106,6 +107,7 @@ public class ReuploaderUtils {
         int currAccountId = -1;
         LoadBalancerIdAndName lb;
 
+
         for (CacheZipInfo zipFile : zipsList) {
             // Try to lock the file otherwise continue to the next;
 
@@ -129,7 +131,9 @@ public class ReuploaderUtils {
                     lockedFiles.remove(zipFile.getZipFile());
                     continue;
                 }
-                cloudFilesDao.uploadLocalFile(authService.getUser(Integer.toString(zipFile.getAccountId())), containerName, zipFile.getZipFile(), remoteFileName);
+                AuthUser user = authService.getUser(Integer.toString(zipFile.getAccountId()));
+                LOG.warn(String.format("user info = %s", user.toString()));
+                cloudFilesDao.uploadLocalFile(user, containerName, zipFile.getZipFile(), remoteFileName);
                 // Delete the file now.
                 if (!new File(zipFile.getZipFile()).delete()) {
                     LOG.error(String.format("%s:Error deleting file %s", Debug.threadName(), zipFile.getZipFile()));

@@ -1,6 +1,7 @@
 package org.openstack.atlas.auth;
 
 public class AuthUser {
+
     private String username;
     private String mossoAccountId;
     private String nastAccountId;
@@ -8,8 +9,18 @@ public class AuthUser {
     private String authKey;
     private boolean enabled;
     private String region;
-
     private String cloudFilesAuthUrl;
+
+    @Override
+    public String toString() {
+        return "AuthUser{" + "username="
+                + username + ", mossoAccountId="
+                + mossoAccountId + ", nastAccountId="
+                + nastAccountId + ", sliceAccountId="
+                + sliceAccountId + ", authKey="
+                + authKey + ", enabled=" + enabled
+                + ", region=" + region + ", cloudFilesAuthUrl=" + cloudFilesAuthUrl + '}';
+    }
 
     public String getCloudFilesAuthUrl() {
         return cloudFilesAuthUrl;
