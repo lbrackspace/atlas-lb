@@ -32,10 +32,7 @@ import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
 import org.rackspace.stingray.client.virtualserver.*;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @RunWith(Enclosed.class)
 public class ResourceTranslatorTest extends STMTestBase {
@@ -70,9 +67,11 @@ public class ResourceTranslatorTest extends STMTestBase {
             expectedError.setError_file(errorFile);
 
             if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
-                rules = java.util.Arrays.asList(StmConstants.XFF, StmConstants.XFP, StmConstants.RATE_LIMIT_HTTP);
+                rules = java.util.Arrays.asList(StmConstants.XFF, StmConstants.XFP);
+                if (lb.getRateLimit() != null) rules.add(StmConstants.RATE_LIMIT_HTTP);
             } else {
-                rules = java.util.Arrays.asList(StmConstants.XFF, StmConstants.XFP, StmConstants.RATE_LIMIT_NON_HTTP);
+                rules = new ArrayList<String>();
+                if (lb.getRateLimit() != null) rules.add(StmConstants.RATE_LIMIT_NON_HTTP);
             }
             translator = new ResourceTranslator();
 

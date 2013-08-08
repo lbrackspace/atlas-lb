@@ -136,10 +136,12 @@ public class ResourceTranslator {
 
         //trafficscript or rule settings
         if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
-            List<String> rules = Arrays.asList(StmConstants.XFF, StmConstants.XFP, StmConstants.RATE_LIMIT_HTTP);
+            List<String> rules = Arrays.asList(StmConstants.XFF, StmConstants.XFP);
+            if (loadBalancer.getRateLimit() != null) rules.add(StmConstants.RATE_LIMIT_HTTP);
             basic.setRequest_rules(rules);
         } else {
-            List<String> rules = Arrays.asList(StmConstants.RATE_LIMIT_NON_HTTP);
+            List<String> rules = new ArrayList<String>();
+            if (loadBalancer.getRateLimit() != null) rules.add(StmConstants.RATE_LIMIT_NON_HTTP);
             basic.setRequest_rules(rules);
         }
 
